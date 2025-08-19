@@ -10,6 +10,7 @@ import { AIService } from '@/services/aiService';
 
 interface OnboardingData {
   name: string;
+  pronouns: string;
   superpowers: string[];
   interests: string[];
   workStyle: {
@@ -58,6 +59,7 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<OnboardingData>({
     name: '',
+    pronouns: '',
     superpowers: [],
     interests: [],
     workStyle: {
@@ -157,8 +159,12 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
   };
 
   const handleComplete = async () => {
-    await completeOnboarding();
-    onComplete();
+    try {
+      await completeOnboarding();
+      onComplete();
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+    }
   };
 
   const canProceed = () => {
@@ -253,20 +259,46 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 2: Name */}
+            {/* Step 2: Name & Pronouns */}
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">What would you like to be called?</h2>
                   <p className="text-sm text-foreground-soft">Just your first name or nickname is perfect</p>
                 </div>
-                <Input
-                  value={data.name}
-                  onChange={(e) => setData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Your name"
-                  className="text-center text-lg"
-                  maxLength={30}
-                />
+                <div className="space-y-4">
+                  <Input
+                    value={data.name}
+                    onChange={(e) => setData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Your name"
+                    className="text-center text-lg"
+                    maxLength={30}
+                  />
+                  <div>
+                    <p className="text-sm font-medium mb-2">Pronouns (optional)</p>
+                    <div className="flex flex-wrap gap-2">
+                      {['she/her', 'he/him', 'they/them', 'other'].map(pronoun => (
+                        <Button
+                          key={pronoun}
+                          variant={data.pronouns === pronoun ? "default" : "outline"}
+                          onClick={() => setData(prev => ({ ...prev, pronouns: pronoun }))}
+                          className="text-sm"
+                        >
+                          {pronoun}
+                        </Button>
+                      ))}
+                    </div>
+                    {data.pronouns === 'other' && (
+                      <Input
+                        value={data.pronouns === 'other' ? '' : data.pronouns}
+                        onChange={(e) => setData(prev => ({ ...prev, pronouns: e.target.value }))}
+                        placeholder="Your pronouns"
+                        className="mt-2"
+                        maxLength={20}
+                      />
+                    )}
+                  </div>
+                </div>
                 <div className="text-center">
                   <Button variant="ghost" onClick={handleSkip} className="text-sm">
                     I'm not sure yet
