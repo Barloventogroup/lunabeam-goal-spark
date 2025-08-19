@@ -20,48 +20,84 @@ export default {
 		extend: {
 			colors: {
 				border: 'hsl(var(--border))',
+				'border-soft': 'hsl(var(--border-soft))',
 				input: 'hsl(var(--input))',
+				'input-border': 'hsl(var(--input-border))',
 				ring: 'hsl(var(--ring))',
-				background: 'hsl(var(--background))',
-				foreground: 'hsl(var(--foreground))',
+				background: {
+					DEFAULT: 'hsl(var(--background))',
+					soft: 'hsl(var(--background-soft))'
+				},
+				foreground: {
+					DEFAULT: 'hsl(var(--foreground))',
+					soft: 'hsl(var(--foreground-soft))'
+				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					soft: 'hsl(var(--primary-soft))',
+					glow: 'hsl(var(--primary-glow))'
+				},
+				supportive: {
+					DEFAULT: 'hsl(var(--supportive))',
+					foreground: 'hsl(var(--supportive-foreground))',
+					soft: 'hsl(var(--supportive-soft))'
+				},
+				encouraging: {
+					DEFAULT: 'hsl(var(--encouraging))',
+					foreground: 'hsl(var(--encouraging-foreground))',
+					soft: 'hsl(var(--encouraging-soft))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+					foreground: 'hsl(var(--secondary-foreground))',
+					soft: 'hsl(var(--secondary-soft))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))',
+					soft: 'hsl(var(--success-soft))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))',
+					soft: 'hsl(var(--warning-soft))'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
-					foreground: 'hsl(var(--destructive-foreground))'
+					foreground: 'hsl(var(--destructive-foreground))',
+					soft: 'hsl(var(--destructive-soft))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
-					foreground: 'hsl(var(--muted-foreground))'
+					foreground: 'hsl(var(--muted-foreground))',
+					soft: 'hsl(var(--muted-soft))'
 				},
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
-				},
-				popover: {
-					DEFAULT: 'hsl(var(--popover))',
-					foreground: 'hsl(var(--popover-foreground))'
+					foreground: 'hsl(var(--accent-foreground))',
+					soft: 'hsl(var(--accent-soft))'
 				},
 				card: {
 					DEFAULT: 'hsl(var(--card))',
-					foreground: 'hsl(var(--card-foreground))'
-				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
+					foreground: 'hsl(var(--card-foreground))',
+					soft: 'hsl(var(--card-soft))',
+					highlight: 'hsl(var(--card-highlight))'
 				}
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-supportive': 'var(--gradient-supportive)',
+				'gradient-soft': 'var(--gradient-soft)'
+			},
+			boxShadow: {
+				'soft': 'var(--shadow-soft)',
+				'card': 'var(--shadow-card)',
+				'elevated': 'var(--shadow-elevated)'
+			},
+			transitionTimingFunction: {
+				'smooth': 'var(--transition-smooth)',
+				'bounce': 'var(--transition-bounce)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
