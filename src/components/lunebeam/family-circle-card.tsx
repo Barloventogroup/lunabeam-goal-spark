@@ -92,7 +92,11 @@ export function FamilyCircleCard({ circle, goals, onNavigate }: FamilyCircleCard
                 {memberships.length} member{memberships.length !== 1 ? 's' : ''}
               </p>
             </div>
-            <Button variant="ghost" size="sm">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Settings className="h-4 w-4" />
             </Button>
           </div>
@@ -106,7 +110,11 @@ export function FamilyCircleCard({ circle, goals, onNavigate }: FamilyCircleCard
               <FamilyInviteModal 
                 circle={circle}
                 trigger={
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <UserPlus className="h-4 w-4 mr-2" />
                     Invite
                   </Button>
@@ -165,7 +173,10 @@ export function FamilyCircleCard({ circle, goals, onNavigate }: FamilyCircleCard
                   </div>
                 </div>
                 <Button 
-                  onClick={() => setIsCheckinOpen(true)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsCheckinOpen(true);
+                  }}
                   className="bg-gradient-to-r from-purple-600 to-pink-600"
                 >
                   Start Check-in
