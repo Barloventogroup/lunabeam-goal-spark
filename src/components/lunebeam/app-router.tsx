@@ -3,8 +3,12 @@ import { useStore } from '@/store/useStore';
 import { OnboardingFlow } from './onboarding-flow';
 import { HomeDashboard } from './home-dashboard';
 import { GoalWizard } from './goal-wizard';
-import { AIChat } from './ai-chat';
-import type { SelectedGoal } from '@/types';
+import { FamilyCircleCard } from './family-circle-card';
+import { WeeklyCheckinModal } from './weekly-checkin-modal';
+import { GoalsList } from './goals-list';
+import { CreateGoal } from './create-goal';
+import { GoalDetail } from './goal-detail';
+import { useStore } from '../../store/useStore';
 
 const AppRouter: React.FC = () => {
   const { isOnboardingComplete } = useStore();
@@ -29,22 +33,17 @@ const AppRouter: React.FC = () => {
     case 'goal-wizard':
       return <GoalWizard onNavigate={handleNavigate} onComplete={() => handleNavigate('home')} />;
     
+    case 'goals-list':
+      return <GoalsList onNavigate={handleNavigate} />;
+        
+    case 'create-goal':
+      return <CreateGoal onNavigate={handleNavigate} />;
+        
     case 'goal-detail':
-      return (
-        <div className="min-h-screen bg-gradient-soft p-4">
-          <div className="max-w-md mx-auto py-6">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold mb-4">Goal Detail</h1>
-              <p className="text-foreground-soft mb-6">Coming soon! Goal detail view with tabs for Plan, Check-ins, Evidence, and History.</p>
-              <button 
-                onClick={() => handleNavigate('home')}
-                className="text-primary hover:underline"
-              >
-                ← Back to Home
-              </button>
-            </div>
-          </div>
-        </div>
+      return viewData ? (
+        <GoalDetail goalId={viewData} onNavigate={handleNavigate} />
+      ) : (
+        <GoalsList onNavigate={handleNavigate} />
       );
     
     case 'check-in':

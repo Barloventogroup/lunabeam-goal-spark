@@ -42,15 +42,7 @@ export type Database = {
           type?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "badges_goal_id_fkey"
-            columns: ["goal_id"]
-            isOneToOne: false
-            referencedRelation: "goals"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       check_ins: {
         Row: {
@@ -95,15 +87,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "check_ins_goal_id_fkey"
-            columns: ["goal_id"]
-            isOneToOne: false
-            referencedRelation: "goals"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       circle_invites: {
         Row: {
@@ -239,15 +223,7 @@ export type Database = {
           url?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "evidence_goal_id_fkey"
-            columns: ["goal_id"]
-            isOneToOne: false
-            referencedRelation: "goals"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       family_circles: {
         Row: {
@@ -275,40 +251,52 @@ export type Database = {
       }
       goals: {
         Row: {
-          check_ins: Json
           created_at: string
-          data_to_track: string[] | null
+          description: string | null
+          domain: string | null
+          due_date: string | null
           id: string
-          rewards: Json
+          owner_id: string
+          priority: string
+          progress_pct: number
+          start_date: string | null
           status: string
+          streak_count: number | null
+          tags: string[] | null
           title: string
           updated_at: string
-          user_id: string
-          week_plan: Json
         }
         Insert: {
-          check_ins: Json
           created_at?: string
-          data_to_track?: string[] | null
+          description?: string | null
+          domain?: string | null
+          due_date?: string | null
           id?: string
-          rewards: Json
+          owner_id: string
+          priority?: string
+          progress_pct?: number
+          start_date?: string | null
           status?: string
+          streak_count?: number | null
+          tags?: string[] | null
           title: string
           updated_at?: string
-          user_id: string
-          week_plan: Json
         }
         Update: {
-          check_ins?: Json
           created_at?: string
-          data_to_track?: string[] | null
+          description?: string | null
+          domain?: string | null
+          due_date?: string | null
           id?: string
-          rewards?: Json
+          owner_id?: string
+          priority?: string
+          progress_pct?: number
+          start_date?: string | null
           status?: string
+          streak_count?: number | null
+          tags?: string[] | null
           title?: string
           updated_at?: string
-          user_id?: string
-          week_plan?: Json
         }
         Relationships: []
       }
@@ -350,6 +338,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      steps: {
+        Row: {
+          created_at: string
+          dependency_step_ids: string[] | null
+          due_date: string | null
+          estimated_effort_min: number | null
+          goal_id: string
+          id: string
+          is_required: boolean
+          notes: string | null
+          order_index: number
+          points: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dependency_step_ids?: string[] | null
+          due_date?: string | null
+          estimated_effort_min?: number | null
+          goal_id: string
+          id?: string
+          is_required?: boolean
+          notes?: string | null
+          order_index?: number
+          points?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dependency_step_ids?: string[] | null
+          due_date?: string | null
+          estimated_effort_min?: number | null
+          goal_id?: string
+          id?: string
+          is_required?: boolean
+          notes?: string | null
+          order_index?: number
+          points?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "steps_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       supporter_consents: {
         Row: {

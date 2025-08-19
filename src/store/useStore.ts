@@ -1,13 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { FamilyCircle, CircleMembership, CircleInvite, WeeklyCheckin, SelectedGoal, Profile, Consent, CheckInEntry, Evidence, Badge } from '@/types';
+import type { FamilyCircle, CircleMembership, CircleInvite, WeeklyCheckin, SelectedGoal, Profile, Consent, CheckInEntry, Evidence, Badge, Goal, Step } from '@/types';
 import { database } from '../services/database';
+import { goalsService, stepsService } from '../services/goalsService';
 
 interface AppState {
   // Core data
   profile: Profile | null;
   consent: Consent;
-  goals: SelectedGoal[];
+  
+  // New Goals & Steps system
+  goals: Goal[];
+  steps: Record<string, Step[]>; // keyed by goal_id
+  
+  // Legacy data (for backwards compatibility)
+  legacyGoals: SelectedGoal[];
   checkIns: CheckInEntry[];
   evidence: Evidence[];
   badges: Badge[];
@@ -16,34 +23,39 @@ interface AppState {
   familyCircles: FamilyCircle[];
   
   // UI state
-  currentGoal: SelectedGoal | null;
+  currentGoal: Goal | null;
   currentStep: number;
   
   // Actions
   setProfile: (profile: Profile) => Promise<void>;
-  addGoal: (goal: Omit<SelectedGoal, 'id' | 'created_at'>) => Promise<void>;
-  setCurrentGoal: (goalId: string | null) => void;
-  addCheckIn: (checkIn: Omit<CheckInEntry, 'id'>) => Promise<void>;
-  addEvidence: (evidence: Omit<Evidence, 'id'>) => Promise<void>;
-  addBadge: (badge: Omit<Badge, 'id'>) => Promise<void>;
   updateConsent: (consent: Consent) => void;
   completeOnboarding: () => Promise<void>;
   setCurrentStep: (step: number) => void;
+  
+  // New Goals & Steps actions
+  loadGoals: () => Promise<void>;
+  loadSteps: (goalId: string) => Promise<void>;
+  setCurrentGoal: (goalId: string | null) => void;
+  
+  // Legacy actions (for backwards compatibility)
+  addGoal: (goal: Omit<SelectedGoal, 'id' | 'created_at'>) => Promise<void>;
+  addCheckIn: (checkIn: Omit<CheckInEntry, 'id'>) => Promise<void>;
+  addEvidence: (evidence: Omit<Evidence, 'id'>) => Promise<void>;
+  addBadge: (badge: Omit<Badge, 'id'>) => Promise<void>;
   
   // Family Circle actions
   loadFamilyCircles: () => Promise<void>;
   createFamilyCircle: (name: string) => Promise<void>;
   
-  // Data loading
+  // Data loading (legacy)
   loadProfile: () => Promise<void>;
-  loadGoals: () => Promise<void>;
   loadCheckIns: (goalId?: string) => Promise<void>;
   loadEvidence: (goalId?: string) => Promise<void>;
   loadBadges: (goalId?: string) => Promise<void>;
   loadSupporterConsents: () => Promise<void>;
   
   // Computed helpers
-  getActiveGoal: () => SelectedGoal | null;
+  getActiveGoal: () => Goal | null;
   getRecentCheckIns: (goalId: string) => CheckInEntry[];
   isOnboardingComplete: () => boolean;
 }
@@ -98,10 +110,17 @@ export const useStore = create<AppState>()(
       // Initial state
       profile: null,
       consent: demoConsent,
+      
+      // New Goals & Steps system
       goals: [],
+      steps: {},
+      
+      // Legacy data
+      legacyGoals: [],
       checkIns: [],
       evidence: [],
       badges: [],
+      
       familyCircles: [],
       currentGoal: null,
       currentStep: 0,
@@ -112,17 +131,40 @@ export const useStore = create<AppState>()(
         set({ profile });
       },
       
-      addGoal: async (goalData) => {
-        const goal = await database.saveGoal(goalData);
-        set((state) => ({ 
-          goals: [...state.goals, goal],
-          currentGoal: goal
-        }));
+      // New Goals & Steps actions
+      loadGoals: async () => {
+        try {
+          console.log('Loading new goals...');
+          const goals = await goalsService.getGoals();
+          console.log('Loaded new goals:', goals);
+          set({ goals });
+        } catch (error) {
+          console.error('Failed to load goals:', error);
+        }
       },
-      
+
+      loadSteps: async (goalId) => {
+        try {
+          const steps = await stepsService.getSteps(goalId);
+          set((state) => ({
+            steps: { ...state.steps, [goalId]: steps }
+          }));
+        } catch (error) {
+          console.error('Failed to load steps:', error);
+        }
+      },
+
       setCurrentGoal: (goalId) => {
         const goal = goalId ? get().goals.find(g => g.id === goalId) || null : null;
         set({ currentGoal: goal });
+      },
+
+      // Legacy actions
+      addGoal: async (goalData) => {
+        const goal = await database.saveGoal(goalData);
+        set((state) => ({ 
+          legacyGoals: [...state.legacyGoals, goal]
+        }));
       },
       
       addCheckIn: async (checkInData) => {
@@ -130,7 +172,7 @@ export const useStore = create<AppState>()(
         set((state) => ({ checkIns: [...state.checkIns, checkIn] }));
         
         // Check if badge should be earned
-        const goal = get().goals.find(g => g.id === checkInData.goal_id);
+        const goal = get().legacyGoals.find(g => g.id === checkInData.goal_id);
         if (goal?.rewards.type === 'badge') {
           // Simple badge logic - can be enhanced
           const goalCheckIns = get().checkIns.filter(c => c.goal_id === checkInData.goal_id);
@@ -200,12 +242,12 @@ export const useStore = create<AppState>()(
         }
       },
       
-      loadGoals: async () => {
+      loadLegacyGoals: async () => {
         try {
           const goals = await database.getGoals();
-          set({ goals });
+          set({ legacyGoals: goals });
         } catch (error) {
-          console.error('Failed to load goals:', error);
+          console.error('Failed to load legacy goals:', error);
         }
       },
       
@@ -279,6 +321,8 @@ export const useStore = create<AppState>()(
         profile: state.profile,
         consent: state.consent,
         goals: state.goals,
+        steps: state.steps,
+        legacyGoals: state.legacyGoals,
         checkIns: state.checkIns,
         evidence: state.evidence,
         badges: state.badges,

@@ -35,6 +35,46 @@ export interface Consent {
   share_with: SupporterConsent[];
 }
 
+// Goals & Steps Types (New MVP Model)
+export type GoalDomain = 'school' | 'work' | 'life' | 'health' | 'other';
+export type GoalPriority = 'low' | 'medium' | 'high';
+export type GoalStatus = 'planned' | 'active' | 'paused' | 'completed' | 'archived';
+export type StepStatus = 'not_started' | 'in_progress' | 'skipped' | 'done';
+
+export interface Goal {
+  id: string;
+  owner_id: string;
+  title: string;
+  description?: string;
+  domain?: GoalDomain;
+  priority: GoalPriority;
+  start_date?: string;
+  due_date?: string;
+  status: GoalStatus;
+  progress_pct: number;
+  streak_count: number;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Step {
+  id: string;
+  goal_id: string;
+  title: string;
+  notes?: string;
+  order_index: number;
+  estimated_effort_min?: number;
+  due_date?: string;
+  status: StepStatus;
+  is_required: boolean;
+  points?: number;
+  dependency_step_ids: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+// Legacy types (kept for backwards compatibility during transition)
 export interface WeekPlan {
   steps: string[];
   time_per_day: string;
