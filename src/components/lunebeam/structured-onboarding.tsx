@@ -13,6 +13,7 @@ import { AIService } from '@/services/aiService';
 interface OnboardingData {
   role: 'individual' | 'parent' | '';
   individualEmail?: string;
+  invitePending?: boolean;
   name: string;
   pronouns: string;
   superpowers: string[];
@@ -35,8 +36,6 @@ interface OnboardingData {
 interface StructuredOnboardingProps {
   onComplete: () => void;
 }
-
-const TOTAL_STEPS = 10;
 
 const SUPERPOWERS = [
   'Problem solver', 'Creative', 'Kind/helper', 'Detail-oriented', 'Curious', 
@@ -64,6 +63,7 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
   const [data, setData] = useState<OnboardingData>({
     role: '',
     individualEmail: '',
+    invitePending: false,
     name: '',
     pronouns: '',
     superpowers: [],
@@ -90,8 +90,14 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
   const [isGenerating, setIsGenerating] = useState(false);
   const { completeOnboarding } = useStore();
 
+  // Dynamic step calculation based on role
+  const getTotalSteps = () => {
+    return data.role === 'parent' ? 10 : 9; // Parent has invite step
+  };
+
   const handleNext = () => {
-    if (currentStep < TOTAL_STEPS) {
+    const totalSteps = getTotalSteps();
+    if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
       generateProfile();
@@ -101,13 +107,19 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
   const handleBack = () => {
     if (showProfile) {
       setShowProfile(false);
-      setCurrentStep(TOTAL_STEPS);
+      setCurrentStep(getTotalSteps());
     } else if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
 
   const handleSkip = () => {
+    handleNext();
+  };
+
+  const handleInvite = () => {
+    // Simple pending invite - just mark as sent
+    setData(prev => ({ ...prev, invitePending: true }));
     handleNext();
   };
 
@@ -176,10 +188,24 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
   const canProceed = () => {
     switch (currentStep) {
       case 1: return data.role !== '' && (data.role === 'individual' || (data.role === 'parent' && data.individualEmail?.trim().length > 0));
-      case 3: return data.name.trim().length > 0;
-      case 4: return data.superpowers.length > 0;
-      case 5: return data.interests.length > 0;
-      case 7: return data.bestTime !== '';
+      case 2: 
+        // For individuals: name validation, for parents: no validation (invite step)
+        return data.role === 'parent' ? true : data.name.trim().length > 0;
+      case 3: 
+        // For individuals: superpowers validation, for parents: name validation  
+        return data.role === 'individual' ? data.superpowers.length > 0 : data.name.trim().length > 0;
+      case 4:
+        // For individuals: interests validation, for parents: superpowers validation
+        return data.role === 'individual' ? data.interests.length > 0 : data.superpowers.length > 0;
+      case 5:
+        // For parents only: interests validation
+        return data.role === 'parent' ? data.interests.length > 0 : true;
+      case 6:
+        // For individuals: best time validation, for parents: no specific validation
+        return data.role === 'individual' ? data.bestTime !== '' : true;
+      case 7:
+        // For parents: best time validation
+        return data.role === 'parent' ? data.bestTime !== '' : true;
       default: return true;
     }
   };
@@ -224,9 +250,6 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               <Button onClick={handleComplete} className="w-full">
                 Let's get started
               </Button>
-              <p className="text-xs text-foreground-soft">
-                You can change this anytime
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -240,10 +263,9 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
         {/* Progress */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-foreground-soft">{currentStep}/{TOTAL_STEPS}</span>
-            <span className="text-sm text-foreground-soft">You can change this anytime</span>
+            <span className="text-sm text-foreground-soft">{currentStep}/{getTotalSteps()}</span>
           </div>
-          <Progress value={(currentStep / TOTAL_STEPS) * 100} className="h-2" />
+          <Progress value={(currentStep / getTotalSteps()) * 100} className="h-2" />
         </div>
 
         <Card className="shadow-card border-0">
@@ -284,47 +306,72 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
                     </div>
                   </RadioGroup>
 
-                  {data.role === 'parent' && (
-                    <div className="space-y-2 mt-4 p-4 bg-muted/30 rounded-lg">
-                      <Label htmlFor="individual-email" className="text-sm font-semibold">
-                        Individual's Email Address
-                      </Label>
-                      <Input
-                        id="individual-email"
-                        type="email"
-                        placeholder="Enter your child's email address"
-                        value={data.individualEmail || ''}
-                        onChange={(e) => setData(prev => ({ ...prev, individualEmail: e.target.value }))}
-                      />
-                      <p className="text-xs text-foreground-soft">
-                        We'll send an email invitation for them to join Lunebeam.
-                      </p>
-                    </div>
-                  )}
+                   {data.role === 'parent' && (
+                     <div className="space-y-4 mt-4">
+                       <div className="p-4 bg-muted/30 rounded-lg">
+                         <Label htmlFor="individual-email" className="text-sm font-semibold">
+                           Individual's Email Address
+                         </Label>
+                         <Input
+                           id="individual-email"
+                           type="email"
+                           placeholder="Enter your child's email address"
+                           value={data.individualEmail || ''}
+                           onChange={(e) => setData(prev => ({ ...prev, individualEmail: e.target.value }))}
+                           className="mt-2"
+                         />
+                         <p className="text-xs text-foreground-soft mt-2">
+                           We'll send an invitation for them to join their Lunebeam account.
+                         </p>
+                       </div>
+                       <div className="text-center p-3 bg-primary/10 rounded-lg">
+                         <p className="text-sm text-primary">
+                           💡 As a supporter, you can invite them to share progress with you later in the app
+                         </p>
+                       </div>
+                     </div>
+                   )}
                 </div>
               </div>
             )}
 
-            {/* Step 2: Welcome */}
-            {currentStep === 2 && (
-              <div className="text-center space-y-6">
-                <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto">
-                  <span className="text-white text-2xl">🌙</span>
-                </div>
-                <div className="space-y-4">
-                  <h1 className="text-2xl font-bold">Welcome to Lunebeam!</h1>
-                  <p className="text-foreground-soft leading-relaxed">
-                    I'm Lune, and I'll help you along the way. You can always ping me if you need any help.
-                  </p>
+            {/* Step 2: Parent Invite (parent only) */}
+            {currentStep === 2 && data.role === 'parent' && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-white text-xl">📧</span>
+                  </div>
+                  <h2 className="text-xl font-semibold mb-2">Send invitation</h2>
                   <p className="text-sm text-foreground-soft">
-                    First, I'll ask you a few questions to get to know you so I can suggest small activities you might enjoy.
+                    We'll send an invitation to {data.individualEmail} to create their Lunebeam account
                   </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="p-4 bg-card-soft rounded-lg text-center">
+                    <p className="text-sm text-foreground-soft mb-2">
+                      <strong>Email to:</strong> {data.individualEmail}
+                    </p>
+                    <p className="text-xs text-foreground-soft">
+                      They'll receive instructions to set up their own account while you continue as their supporter.
+                    </p>
+                  </div>
+
+                  <div className="text-center">
+                    <Button onClick={handleInvite} className="w-full">
+                      Send Invitation
+                    </Button>
+                    <p className="text-xs text-foreground-soft mt-2">
+                      You can continue setting up the support preferences on their behalf
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Step 3: Name & Pronouns */}
-            {currentStep === 3 && (
+            {/* Step 2/3: Name & Pronouns */}
+            {((currentStep === 2 && data.role === 'individual') || (currentStep === 3 && data.role === 'parent')) && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">What would you like to be called?</h2>
@@ -371,8 +418,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 4: Superpowers */}
-            {currentStep === 4 && (
+            {/* Step 3/4: Superpowers */}
+            {((currentStep === 3 && data.role === 'individual') || (currentStep === 4 && data.role === 'parent')) && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">What are your top 3 "superpowers"?</h2>
@@ -413,8 +460,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 5: Interests */}
-            {currentStep === 5 && (
+            {/* Step 4/5: Interests */}
+            {((currentStep === 4 && data.role === 'individual') || (currentStep === 5 && data.role === 'parent')) && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">Choose 3–5 interests to explore</h2>
@@ -460,8 +507,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 6: Work Style */}
-            {currentStep === 6 && (
+            {/* Step 5/6: Work Style */}
+            {((currentStep === 5 && data.role === 'individual') || (currentStep === 6 && data.role === 'parent')) && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">How do you like doing things?</h2>
@@ -494,8 +541,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 7: Best Time */}
-            {currentStep === 7 && (
+            {/* Step 6/7: Best Time */}
+            {((currentStep === 6 && data.role === 'individual') || (currentStep === 7 && data.role === 'parent')) && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">When do you feel at your best?</h2>
@@ -521,8 +568,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 8: Barriers */}
-            {currentStep === 8 && (
+            {/* Step 7/8: Barriers */}
+            {((currentStep === 7 && data.role === 'individual') || (currentStep === 8 && data.role === 'parent')) && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">What gets in your way most?</h2>
@@ -563,8 +610,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 9: Goal Seed */}
-            {currentStep === 9 && (
+            {/* Step 8/9: Goal Seed */}
+            {((currentStep === 8 && data.role === 'individual') || (currentStep === 9 && data.role === 'parent')) && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">One small thing you'd like to try</h2>
@@ -598,8 +645,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 10: Sharing Preferences */}
-            {currentStep === 10 && (
+            {/* Step 9/10: Sharing Preferences */}
+            {((currentStep === 9 && data.role === 'individual') || (currentStep === 10 && data.role === 'parent')) && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">Sharing & support preferences</h2>
@@ -667,7 +714,7 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
                 disabled={!canProceed() || isGenerating}
                 className="ml-auto"
               >
-                {isGenerating ? 'Creating...' : currentStep === TOTAL_STEPS ? 'Create Profile' : 'Next'}
+                {isGenerating ? 'Creating...' : currentStep === getTotalSteps() ? 'Create Profile' : 'Next'}
               </Button>
             </div>
           </CardContent>
