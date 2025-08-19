@@ -31,7 +31,8 @@ export const database = {
       strengths: data.strengths || [],
       interests: data.interests || [],
       challenges: data.challenges || [],
-      comm_pref: data.comm_pref as 'voice' | 'text'
+      comm_pref: data.comm_pref as 'voice' | 'text',
+      onboarding_complete: data.onboarding_complete ?? false
     };
   },
 
@@ -47,7 +48,8 @@ export const database = {
         strengths: profile.strengths,
         interests: profile.interests,
         challenges: profile.challenges,
-        comm_pref: profile.comm_pref
+        comm_pref: profile.comm_pref,
+        onboarding_complete: profile.onboarding_complete ?? false
       });
     
     if (error) throw error;
