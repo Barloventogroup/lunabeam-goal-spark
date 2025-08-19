@@ -72,7 +72,7 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
   const [customPronouns, setCustomPronouns] = useState('');
   const [showProfile, setShowProfile] = useState(false);
   const [generatedProfile, setGeneratedProfile] = useState('');
-  const { completeOnboarding } = useStore();
+  const { completeOnboarding, setProfile } = useStore();
 
   const totalSteps = 9;
 
@@ -167,6 +167,20 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
 
   const handleComplete = async () => {
     try {
+      // Create profile from collected data first
+      const profile = {
+        first_name: data.preferredName || 'User',
+        strengths: data.strengths,
+        interests: data.interests,
+        challenges: [], // Not collected in parent flow, can be added later
+        comm_pref: 'text' as const, // Default to text
+        onboarding_complete: false
+      };
+      
+      // Save the profile to the store
+      await setProfile(profile);
+      
+      // Then complete onboarding
       await completeOnboarding();
       onComplete();
     } catch (error) {
