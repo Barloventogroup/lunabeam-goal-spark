@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { OnboardingConversation } from './onboarding-conversation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,12 +7,17 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 
 export function OnboardingFlow() {
+  const navigate = useNavigate();
   const [roleData, setRoleData] = useState<{ role: 'parent' | 'individual' | ''; individualEmail?: string }>({ role: '' });
   const [showRoleSelection, setShowRoleSelection] = useState(true);
 
   const handleRoleSelection = (role: 'parent' | 'individual') => {
     setRoleData({ role });
     setShowRoleSelection(false);
+  };
+
+  const handleOnboardingComplete = () => {
+    navigate('/');
   };
 
   if (showRoleSelection) {
@@ -57,5 +63,5 @@ export function OnboardingFlow() {
     );
   }
 
-  return <OnboardingConversation roleData={roleData as { role: 'parent' | 'individual'; individualEmail?: string }} onComplete={() => {}} />;
+  return <OnboardingConversation roleData={roleData as { role: 'parent' | 'individual'; individualEmail?: string }} onComplete={handleOnboardingComplete} />;
 }
