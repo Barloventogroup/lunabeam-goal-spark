@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { AIService } from '@/services/aiService';
 import { useAuth } from '@/components/auth/auth-provider';
 import { useToast } from '@/hooks/use-toast';
@@ -11,25 +12,31 @@ import { useToast } from '@/hooks/use-toast';
 interface Message {
   id: string;
   content: string;
-  sender: 'user' | 'luna';
+  sender: 'user' | 'lune';
   timestamp: Date;
+  data?: any;
+  choices?: string[];
 }
 
 interface AIChatProps {
   context?: 'onboarding' | 'reflection' | 'general';
   goalId?: string;
   reflection?: string;
+  userSnapshot?: any;
+  currentGoals?: any[];
 }
 
-export function AIChat({ context = 'general', goalId, reflection }: AIChatProps) {
+export function AIChat({ context = 'general', goalId, reflection, userSnapshot, currentGoals }: AIChatProps) {
   const getInitialMessage = () => {
     switch (context) {
       case 'onboarding':
-        return `Hi! I'm Lune, your personal AI assistant. I'm excited to get to know you better! Let's start with the basics - what's your first name?`;
+        return `Hi! I'm Lune, your personal AI assistant. I'm excited to get to know you better! 
+
+Let's start with something simple - what would you like me to call you?`;
       case 'reflection':
         return `Hi! I'm here to help you reflect on your progress. How did your goal work go today?`;
       default:
-        return `Hi! I'm Luna, your AI coach. I'm here to help you achieve your goals. How can I support you today?`;
+        return `Hi! I'm Lune, your AI coach. I'm here to help you achieve your goals. How can I support you today?`;
     }
   };
 
@@ -37,87 +44,119 @@ export function AIChat({ context = 'general', goalId, reflection }: AIChatProps)
     {
       id: '1',
       content: getInitialMessage(),
-      sender: 'luna',
+      sender: 'lune',
       timestamp: new Date()
     }
   ]);
-  const [input, setInput] = useState('');
+  
+  const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
   const { toast } = useToast();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleChoiceClick = (choice: string) => {
+    sendMessage(choice);
+  };
 
+  const sendMessage = async (messageText?: string) => {
+    const input = messageText || inputMessage;
+    if (!input.trim()) return;
+    
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: input.trim(),
+      content: input,
       sender: 'user',
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    setInputMessage('');
     setIsLoading(true);
 
     try {
-      let aiResponse: any;
+      let mode: 'onboarding' | 'goal_setting' | 'assist' = 'assist';
+      if (context === 'onboarding') mode = 'onboarding';
+      else if (context === 'reflection') mode = 'assist';
 
-      switch (context) {
-        case 'onboarding':
-          aiResponse = await AIService.getCoachingGuidance({
-            question: input.trim(),
-            context: 'onboarding'
-          });
-          break;
-        case 'reflection':
-          if (reflection) {
-            aiResponse = await AIService.analyzeReflection({
-              reflection,
-              goalContext: goalId ? { id: goalId, title: 'Current Goal' } : undefined
-            });
-          } else {
-            aiResponse = await AIService.getCoachingGuidance({
-              question: input.trim(),
-              context: goalId
-            });
+      const response = await AIService.getCoachingGuidance({
+        question: input.trim(),
+        mode,
+        userSnapshot,
+        currentGoals,
+        context: context
+      });
+
+      console.log('AI Response:', response);
+
+      let messageContent = '';
+      let messageData = null;
+      let choices: string[] = [];
+
+      // Handle structured JSON responses
+      if (response.guidance) {
+        try {
+          const parsedGuidance = typeof response.guidance === 'string' 
+            ? JSON.parse(response.guidance) 
+            : response.guidance;
+          
+          messageContent = parsedGuidance.response_text || response.guidance;
+          messageData = parsedGuidance;
+
+          // Extract choices from different response types
+          if (parsedGuidance.next_choices) {
+            choices = parsedGuidance.next_choices;
+          } else if (parsedGuidance.next_prompts) {
+            choices = parsedGuidance.next_prompts;
           }
-          break;
-        default:
-          aiResponse = await AIService.getCoachingGuidance({
-            question: input.trim(),
-            context: goalId
-          });
-          break;
+        } catch (parseError) {
+          messageContent = typeof response.guidance === 'string' 
+            ? response.guidance 
+            : JSON.stringify(response.guidance);
+        }
+      } else if (response.response_text) {
+        messageContent = response.response_text;
+        messageData = response;
+        if (response.next_choices) choices = response.next_choices;
+      } else {
+        messageContent = typeof response === 'string' ? response : JSON.stringify(response);
       }
 
-      // Extract the guidance text from the response object
-      const responseText = aiResponse?.guidance || aiResponse || 'Sorry, I had trouble understanding that. Could you try asking again?';
-
-      const lunaMessage: Message = {
+      const luneMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: responseText,
-        sender: 'luna',
-        timestamp: new Date()
+        content: messageContent,
+        sender: 'lune',
+        timestamp: new Date(),
+        data: messageData,
+        choices: choices.length > 0 ? choices : undefined
       };
 
-      setMessages(prev => [...prev, lunaMessage]);
+      setMessages(prev => [...prev, luneMessage]);
+
     } catch (error) {
-      console.error('Error getting AI response:', error);
+      console.error('Error sending message:', error);
       toast({
-        title: "Error",
-        description: "Sorry, I'm having trouble responding right now. Please try again.",
-        variant: "destructive"
+        title: "Connection Issue",
+        description: "I'm having trouble responding right now. Want to try again?",
+        variant: "destructive",
       });
+
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "I'm having trouble right now. Let me know if you'd like to try again or take a break.",
+        sender: 'lune',
+        timestamp: new Date(),
+        choices: ["Try again", "Take a break"]
+      };
+
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -130,75 +169,139 @@ export function AIChat({ context = 'general', goalId, reflection }: AIChatProps)
     }
   };
 
+  const formatMessage = (message: Message) => {
+    // Display structured data if available
+    if (message.data && message.data.type === 'onboarding_snapshot') {
+      const data = message.data;
+      return (
+        <div className="space-y-3">
+          <p>{message.content}</p>
+          {data.strengths && data.strengths.length > 0 && (
+            <div>
+              <p className="text-sm font-semibold mb-1">Strengths noted:</p>
+              <div className="flex flex-wrap gap-1">
+                {data.strengths.map((strength: string, i: number) => (
+                  <Badge key={i} variant="secondary" className="text-xs">{strength}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+          {data.interests && data.interests.length > 0 && (
+            <div>
+              <p className="text-sm font-semibold mb-1">Interests noted:</p>
+              <div className="flex flex-wrap gap-1">
+                {data.interests.map((interest: string, i: number) => (
+                  <Badge key={i} variant="outline" className="text-xs">{interest}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return <p>{message.content}</p>;
+  };
+
   return (
     <Card className="h-[500px] flex flex-col">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary" />
-          Luna - Your AI Coach
+        <CardTitle className="text-lg flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
+            <Bot className="w-4 h-4 text-white" />
+          </div>
+          Lune
+          {context === 'onboarding' && (
+            <Badge variant="secondary" className="text-xs">Getting to know you</Badge>
+          )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 px-4">
-          <div className="space-y-4 pb-4">
+      
+      <CardContent className="flex-1 flex flex-col p-4 pt-0">
+        <ScrollArea className="flex-1 pr-4">
+          <div className="space-y-4">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${
-                  message.sender === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                {message.sender === 'luna' && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-primary" />
+              <div key={message.id} className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : ''}`}>
+                {message.sender === 'lune' && (
+                  <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <Bot className="w-4 h-4 text-white" />
                   </div>
                 )}
-                <div
-                  className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                    message.sender === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {message.content}
+                <div className={`max-w-[80%] ${message.sender === 'user' ? 'order-first' : ''}`}>
+                  <div className={`rounded-lg p-3 ${
+                    message.sender === 'user' 
+                      ? 'bg-primary text-primary-foreground ml-auto' 
+                      : 'bg-muted'
+                  }`}>
+                    {formatMessage(message)}
+                  </div>
+                  
+                  {/* Quick reply choices */}
+                  {message.choices && message.choices.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {message.choices.map((choice, index) => (
+                        <Button
+                          key={index}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => handleChoiceClick(choice)}
+                        >
+                          {choice}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 {message.sender === 'user' && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                    <User className="h-4 w-4 text-secondary-foreground" />
+                  <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <User className="w-4 h-4" />
                   </div>
                 )}
               </div>
             ))}
+            
             {isLoading && (
-              <div className="flex gap-3 justify-start">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-primary" />
+              <div className="flex gap-3">
+                <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <Bot className="w-4 h-4 text-white" />
                 </div>
-                <div className="bg-muted text-muted-foreground rounded-lg px-3 py-2 text-sm">
-                  Luna is thinking...
+                <div className="bg-muted rounded-lg p-3 max-w-[80%]">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
+          <div ref={messagesEndRef} />
         </ScrollArea>
-        <div className="p-4 border-t">
-          <div className="flex gap-2">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask Luna for guidance..."
-              disabled={isLoading}
-            />
-            <Button 
-              onClick={sendMessage} 
-              disabled={!input.trim() || isLoading}
-              size="icon"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
+        
+        <div className="flex gap-2 mt-4">
+          <Input
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Type your message..."
+            disabled={isLoading}
+            className="flex-1"
+          />
+          <Button 
+            onClick={() => sendMessage()} 
+            disabled={!inputMessage.trim() || isLoading}
+            size="icon"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Helper text for accessibility */}
+        <div className="text-xs text-muted-foreground mt-2 text-center">
+          {context === 'onboarding' && "Take your time. You can always add more details later."}
+          {context === 'reflection' && "Share as much or as little as you'd like."}
+          {context === 'general' && "I'm here to help at your pace."}
         </div>
       </CardContent>
     </Card>

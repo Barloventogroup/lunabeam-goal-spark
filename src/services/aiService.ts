@@ -26,11 +26,14 @@ export interface ReflectionAnalysisRequest {
 
 export interface CoachingRequest {
   question: string;
-  userProfile?: {
-    interests?: string[];
+  mode?: 'onboarding' | 'goal_setting' | 'assist';
+  userSnapshot?: {
+    preferred_name?: string;
     strengths?: string[];
+    interests?: string[];
     challenges?: string[];
-    comm_pref?: string;
+    supports_opted_in?: string[];
+    language_preference?: any;
   };
   currentGoals?: any[];
   recentCheckIns?: any[];

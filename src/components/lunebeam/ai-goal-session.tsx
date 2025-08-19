@@ -111,7 +111,7 @@ Let's start by learning about your experience in this area. What interests you m
         }
         
         Otherwise, continue asking probing questions to understand their experience and desired outcomes.`,
-        userProfile: profile,
+        userSnapshot: profile,
         currentGoals: goals,
         context: `goal_creation_${category}`
       });

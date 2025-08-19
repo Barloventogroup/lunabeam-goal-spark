@@ -14,10 +14,11 @@ serve(async (req) => {
   try {
     const { 
       question, 
-      userProfile, 
-      currentGoals, 
-      recentCheckIns, 
-      context = 'general' 
+      mode = 'assist',
+      userSnapshot = {},
+      currentGoals = [],
+      userMessage,
+      context 
     } = await req.json();
     
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -25,102 +26,155 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    let systemPrompt = '';
-    
-    if (context === 'onboarding') {
-      systemPrompt = `You are Lune, a friendly AI assistant helping with onboarding for Lunebeam, a goal-setting and achievement app.
+    console.log(`AI Coach request - Mode: ${mode}, Question: ${question}`);
 
-Your task is to have a natural conversation to learn about the user:
-1. Basic information (name, age range if appropriate)
-2. Strengths (what they're good at)
-3. Challenges (what they find difficult)  
-4. Interests (what they enjoy or want to learn)
+    // Global System Prompt (always on)
+    const globalSystemPrompt = `System role: You are Lunebeam assistant (lune) — a strengths-based, neurodiversity-affirming guide for teens and young adults.
 
-Your personality:
-- Warm, encouraging, and conversational
-- Ask ONE question at a time to avoid overwhelming them
-- Acknowledge their responses positively
-- Use natural follow-up questions
-- Keep responses concise but friendly
-- Remember this is for goal-setting, so focus on understanding their motivations
+Communication & tone:
+- Warm, concrete, literal; no sarcasm. Short sentences. One idea per line.
+- Offer choices (2–4 options), checklists, and small steps by default.
+- Ask once and remember: identity-first vs. person-first language; pace (fast/medium/slow); detail (bullets vs. expanded).
 
-Important guidelines:
-- Don't ask for sensitive personal information
-- Keep the conversation focused on understanding their strengths, challenges, and interests
-- Be supportive and non-judgmental
-- If they seem hesitant, reassure them that they can always add more details later
-- Use natural, conversational language without markdown formatting
-- Avoid using ** or other formatting around questions
+Boundaries:
+- Educational planning only — not medical, legal, or emergency advice.
+- The user controls what to share. Ask consent before sensitive topics or sharing plans.
+- If risk of harm is mentioned: acknowledge, calm language, suggest crisis options (e.g., 911 for emergencies in the U.S., 211 or local crisis line). State clearly you are not a crisis service.
 
-Start by asking for their first name, then naturally progress through collecting their information.`;
-    } else {
-      systemPrompt = `You are Luna, a supportive AI coach for young people (ages 13-25). You help with:
-- Goal setting and achievement
-- Overcoming challenges and setbacks
-- Building confidence and resilience
-- Developing healthy habits
-- Managing stress and emotions
-- Academic and personal growth
+Universal response rules:
+- Use the mode's JSON schema and return ONLY valid JSON unless the user asks for free text.
+- Pair any challenge with at least one support/accommodation option.
+- If uncertain, ask a short, concrete clarifying question or offer 2–3 choices.
+- Praise effort, not just outcomes; offer a break if the user seems overwhelmed.`;
 
-Your personality:
-- Warm, encouraging, and non-judgmental
-- Age-appropriate and relatable
-- Practical and solution-focused
-- Respectful of autonomy and independence
-- Trauma-informed and safety-conscious
+    let modePrompt = '';
+    let expectedSchema = '';
 
-Communication style:
-- Ask only ONE question at a time to avoid overwhelming the user
-- Use natural, conversational language without markdown formatting
-- Avoid using ** or other formatting around questions
-- Keep responses focused and concise
-- Wait for the user's response before asking the next question
+    switch (mode) {
+      case 'onboarding':
+        modePrompt = `You are running the Onboarding flow. Goal: capture a first Snapshot with minimal effort.
+Ask up to 5 low-effort items per turn. Prefer choices and checkboxes. Offer "Not sure" and "Skip".
 
-Always prioritize the user's wellbeing and suggest professional help for serious mental health concerns.`;
+Collect:
+- Basics: preferred name, pronouns (optional), communication preferences, pace, detail level.
+- Strengths/interests (top 5), energy drains, sensory notes, social preferences.
+- Challenges/frictions (executive function, environments, transitions).
+- Supports the user is willing to try (timers, checklists, quiet space, buddy, shorter steps, visuals).
+- Consent settings (save locally; share with parent/coach Y/N; what to share).
+
+Return ONLY JSON that matches this schema:
+{
+  "type": "onboarding_snapshot",
+  "preferred_name": "",
+  "language_preference": {"style": "identity_first|person_first", "pace": "fast|medium|slow", "detail": "bullets|expanded"},
+  "strengths": ["", ""],
+  "interests": ["", ""],
+  "energy_drains": ["", ""],
+  "sensory_notes": ["", ""],
+  "social_preferences": ["solo|small_group|online_only|in_person_mix"],
+  "challenges": ["", ""],
+  "supports_opted_in": ["timers","checklists","quiet_space","buddy","shorter_steps","visuals","other"],
+  "consent": {"save": true, "share_with_caregiver": false, "share_scope": "summary|full|custom"},
+  "next_prompts": ["short question #1", "short question #2"],
+  "response_text": "Your warm, conversational response to the user"
+}`;
+        break;
+
+      case 'goal_setting':
+        modePrompt = `You are running Goal-setting. Propose 2–3 fitting ideas (at least one "new but fits" option).
+For the chosen idea, create a 7-day micro-goal with ≤3 steps that can be done in ≤30 minutes per day.
+Always include supports and a "too hard? try this" variant. Keep it practical and non-judgmental.
+
+Return ONLY JSON that matches this schema:
+{
+  "type": "goal_plan",
+  "candidate_ideas": [
+    {
+      "title": "",
+      "why_it_fits": "",
+      "first_tiny_step": "",
+      "time_energy_estimate": "10–20 min, low energy",
+      "supports": ["timers","checklists","buddy","quiet_space","shorter_steps","visuals"],
+      "sensory_notes": "",
+      "done_when": ""
+    }
+  ],
+  "selected_goal": {
+    "title": "",
+    "week_plan": {
+      "steps": ["", ""],
+      "time_per_day": "≤30 min",
+      "success_criteria": ["observable, measurable"],
+      "too_hard_try": ["smaller version", "change environment", "buddy option"]
+    },
+    "check_ins": {"frequency": "once_midweek", "method": "in_app|text|email", "encourager": "self|parent|coach"},
+    "rewards": ["user-chosen small reward"],
+    "data_to_track": ["count_of_attempts","minutes_spent","confidence_1_5"]
+  },
+  "response_text": "Your warm, conversational response to the user"
+}`;
+        break;
+
+      case 'assist':
+      default:
+        modePrompt = `You are in Assist mode. Purpose: help the user reflect, log progress, or troubleshoot calmly.
+If the user wants to vent, reflect back in short, literal language. Offer 2–3 choices for next steps.
+If distress appears, offer a short break or calming step first; postpone problem-solving until ready.
+
+Return ONLY JSON that matches this schema:
+{
+  "type": "assist_note",
+  "reflection": {
+    "mood_label": "calm|frustrated|anxious|proud|tired|mixed",
+    "wins": ["", ""],
+    "blockers": ["", ""],
+    "supports_to_try": ["timers","checklists","quiet_space","buddy","shorter_steps","visuals"],
+    "coach_message": "short, validating summary"
+  },
+  "updates": {
+    "goal_progress": {"goal_title": "", "progress_note": "", "metrics": {"attempts": 0, "minutes": 0, "confidence_1_5": 3}},
+    "new_idea_if_requested": {
+      "title": "",
+      "why_it_fits": "",
+      "first_tiny_step": "",
+      "supports": ["timers","checklists"]
+    }
+  },
+  "next_choices": ["log another win", "adjust goal", "take a 3-min break", "see one new idea"],
+  "response_text": "Your warm, conversational response to the user"
+}`;
+        break;
     }
 
+    // Build context information
     let contextInfo = '';
-    if (userProfile) {
-      contextInfo += `User Profile:
-- Interests: ${userProfile.interests?.join(', ') || 'Not specified'}
-- Strengths: ${userProfile.strengths?.join(', ') || 'Not specified'}
-- Challenges: ${userProfile.challenges?.join(', ') || 'Not specified'}
-- Communication preference: ${userProfile.comm_pref || 'Not specified'}
+    if (userSnapshot && Object.keys(userSnapshot).length > 0) {
+      contextInfo += `User Snapshot:
+- Preferred name: ${userSnapshot.preferred_name || 'Not set'}
+- Strengths: ${userSnapshot.strengths?.join(', ') || 'Not specified'}
+- Interests: ${userSnapshot.interests?.join(', ') || 'Not specified'}
+- Challenges: ${userSnapshot.challenges?.join(', ') || 'Not specified'}
+- Supports they like: ${userSnapshot.supports_opted_in?.join(', ') || 'Not specified'}
+- Communication preference: ${userSnapshot.language_preference?.pace || 'Not specified'} pace, ${userSnapshot.language_preference?.detail || 'bullets'} detail
 
 `;
     }
 
-    if (currentGoals?.length) {
+    if (currentGoals?.length > 0) {
       contextInfo += `Current Goals:
 ${currentGoals.map(goal => `- ${goal.title} (${goal.status})`).join('\n')}
 
 `;
     }
 
-    if (recentCheckIns?.length) {
-      contextInfo += `Recent Activity:
-${recentCheckIns.slice(0, 3).map(checkin => 
-        `- ${checkin.date}: ${checkin.count_of_attempts} attempts, ${checkin.minutes_spent}min, confidence: ${checkin.confidence_1_5}/5`
-      ).join('\n')}
+    // Build user prompt
+    const userPrompt = `${contextInfo}User message: "${question || userMessage}"
 
-`;
-    }
+Mode: ${mode}
 
-    let userPrompt = '';
-    
-    if (context === 'onboarding') {
-      userPrompt = `User message: "${question}"
-      
-Please respond naturally as Lune, the friendly onboarding assistant. Have a warm conversation to learn about the user.`;
-    } else {
-      userPrompt = `${contextInfo}User Question: "${question}"
+Please respond according to the mode guidelines above and return valid JSON only.`;
 
-Context: ${context}
-
-Please provide supportive, practical guidance. If this seems to involve serious mental health concerns, gently suggest professional resources while still being helpful.`;
-    }
-
-    console.log('Making OpenAI request for coaching guidance');
+    console.log('Making OpenAI request for Lunebeam guidance');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -131,11 +185,12 @@ Please provide supportive, practical guidance. If this seems to involve serious 
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: globalSystemPrompt },
+          { role: 'system', content: modePrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_tokens: 1000,
-        temperature: 0.8,
+        max_tokens: 1500,
+        temperature: 0.7,
       }),
     });
 
@@ -146,13 +201,34 @@ Please provide supportive, practical guidance. If this seems to involve serious 
     }
 
     const data = await response.json();
-    const guidance = data.choices[0].message.content;
+    let aiResponse = data.choices[0].message.content;
 
-    console.log('Generated coaching guidance successfully');
+    console.log('Raw AI response:', aiResponse);
+
+    // Try to parse JSON response
+    let parsedResponse;
+    try {
+      // Clean up the response if it has markdown formatting
+      aiResponse = aiResponse.replace(/```json\n?|\n?```/g, '').trim();
+      parsedResponse = JSON.parse(aiResponse);
+    } catch (parseError) {
+      console.error('Failed to parse JSON response:', parseError);
+      console.error('Raw response:', aiResponse);
+      
+      // Fallback to text response
+      parsedResponse = {
+        type: 'text_response',
+        response_text: aiResponse,
+        mode: mode,
+        error: 'JSON parsing failed'
+      };
+    }
+
+    console.log('Generated Lunebeam guidance successfully');
 
     return new Response(JSON.stringify({ 
-      guidance,
-      context,
+      ...parsedResponse,
+      mode,
       timestamp: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -161,8 +237,10 @@ Please provide supportive, practical guidance. If this seems to involve serious 
   } catch (error) {
     console.error('Error in ai-coach:', error);
     return new Response(JSON.stringify({ 
+      type: 'error',
       error: 'Failed to generate guidance',
-      details: error.message 
+      details: error.message,
+      response_text: "I'm having trouble right now. Let me know if you'd like to try again or take a break."
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
