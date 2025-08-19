@@ -181,11 +181,11 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
       await completeOnboarding();
     } catch (error) {
       console.warn('Falling back to local profile only (no auth?):', error);
-      // Ensure the app can proceed even if not authenticated
+    } finally {
+      // Ensure app state reflects completion no matter what
       useStore.setState({ profile: localProfile });
+      onComplete();
     }
-
-    onComplete();
   };
 
   if (showProfile) {
