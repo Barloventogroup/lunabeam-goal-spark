@@ -11,14 +11,38 @@ import { GoalDetail } from './goal-detail';
 import { AIChat } from './ai-chat';
 
 const AppRouter: React.FC = () => {
-  const { isOnboardingComplete } = useStore();
+  const { isOnboardingComplete, profile, loadProfile } = useStore();
   const [currentView, setCurrentView] = useState<string>('home');
   const [viewData, setViewData] = useState<any>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+
+  // Load profile on component mount
+  React.useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        await loadProfile();
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+      } finally {
+        setProfileLoaded(true);
+      }
+    };
+    loadUserProfile();
+  }, [loadProfile]);
 
   const handleNavigate = (view: string, data?: any) => {
     setCurrentView(view);
     setViewData(data);
   };
+
+  // Show loading until profile is checked
+  if (!profileLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-soft flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   // Show onboarding if not completed
   if (!isOnboardingComplete()) {
