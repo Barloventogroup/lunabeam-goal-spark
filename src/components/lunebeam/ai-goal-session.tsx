@@ -59,12 +59,20 @@ export const AIGoalSession: React.FC<AIGoalSessionProps> = ({
   };
 
   useEffect(() => {
-    // Initialize conversation with Luna
+    // Initialize conversation with Luna following structured approach
     const welcomeMessage: Message = {
       id: '1',
-      content: `Hi! I'm Luna, and I'm excited to help you create a goal in ${categoryNames[category as keyof typeof categoryNames]}! 🌟
+      content: `Hi! I'm Luna, your neurodiversity-affirming guide. I'm excited to help you create a goal in ${categoryNames[category as keyof typeof categoryNames]}! 🌟
 
-Let's start by learning about your experience in this area. What interests you most about ${categoryNames[category as keyof typeof categoryNames].toLowerCase()}, and what would you like to improve or achieve?`,
+Let's start with what interests you most. Which of these aspects of ${categoryNames[category as keyof typeof categoryNames].toLowerCase()} sounds most appealing?
+
+• Learning new skills or knowledge
+• Building confidence in this area  
+• Connecting with others who share this interest
+• Creating or making something
+• Not sure yet - tell me more about the options
+
+What feels right for you today?`,
       sender: 'luna',
       timestamp: new Date()
     };
@@ -100,30 +108,76 @@ Let's start by learning about your experience in this area. What interests you m
         .join('\n');
 
       const response = await AIService.getCoachingGuidance({
-        question: `Help the user create a ${category} goal. Current conversation: ${conversationHistory}. 
+        question: `GLOBAL SYSTEM PROMPT:
+You are Lunebeam assistant (Luna) — a strengths-based, neurodiversity-affirming guide for teens and young adults.
 
-        IMPORTANT GUIDELINES:
-        - Ask ONLY ONE focused question at a time to avoid overwhelming the user
-        - Keep questions simple and conversational
-        - Build understanding step by step through the conversation
-        - Questions should be specific and actionable, not open-ended
-        
-        If you have gathered sufficient information (specific goal area, current skill level, desired outcome, and realistic timeframe), respond with "GOAL_READY:" followed by a JSON object with:
-        {
-          "title": "goal title",
-          "description": "detailed description", 
-          "steps": ["step 1", "step 2", "step 3"],
-          "timeEstimate": "time per day estimate"
-        }
-        
-        Otherwise, ask ONE specific question to gather missing information in this order:
-        1. What specific aspect interests them most?
-        2. What's their current experience/skill level?
-        3. What specific outcome do they want to achieve?
-        4. How much time can they realistically commit daily?`,
+Communication & tone:
+- Warm, concrete, literal; no sarcasm. Short sentences. One idea per line.
+- Offer choices (2–4 options), checklists, and small steps by default.
+- Ask once and remember: identity-first vs. person-first language; pace (fast/medium/slow); detail (bullets vs. expanded).
+
+Boundaries:
+- Educational planning only — not medical, legal, or emergency advice.
+- The user controls what to share. Ask consent before sensitive topics or sharing plans.
+- If risk of harm is mentioned: acknowledge, calm language, suggest crisis options (e.g., 911 for emergencies). State clearly you are not a crisis service.
+
+Universal response rules:
+- Pair any challenge with at least one support/accommodation option.
+- If uncertain, ask a short, concrete clarifying question or offer 2–3 choices.
+- Praise effort, not just outcomes; offer a break if the user seems overwhelmed.
+
+MODE: GOAL-SETTING
+You are running Goal-setting for ${categoryNames[category as keyof typeof categoryNames]}. 
+
+Task: Through conversation, gather enough information to propose 2-3 fitting ideas (at least one "new but fits" option).
+When ready, create a 7-day micro-goal with ≤3 steps that can be done in ≤30 minutes per day.
+Always include supports and a "too hard? try this" variant. Keep it practical and non-judgmental.
+
+CONVERSATION FLOW:
+1. Ask ONE focused question at a time to avoid overwhelming
+2. Gather: specific interests, current experience/skill level, desired outcome, realistic time commitment
+3. When sufficient info gathered, respond with "GOAL_READY:" + JSON
+
+Current conversation: ${conversationHistory}
+
+If you have enough information (specific goal area, current skill level, desired outcome, and realistic timeframe), respond with "GOAL_READY:" followed by this JSON schema:
+{
+  "type": "goal_plan",
+  "candidate_ideas": [
+    {
+      "title": "specific goal title",
+      "why_it_fits": "connects to their interests/strengths",
+      "first_tiny_step": "10-minute actionable step",
+      "time_energy_estimate": "10-20 min, low energy",
+      "supports": ["timers","checklists","buddy","quiet_space","shorter_steps"],
+      "sensory_notes": "relevant sensory considerations",
+      "done_when": "clear completion criteria"
+    }
+  ],
+  "selected_goal": {
+    "title": "chosen goal title",
+    "week_plan": {
+      "steps": ["day 1-3 step", "day 4-5 step", "day 6-7 step"],
+      "time_per_day": "≤30 min",
+      "success_criteria": ["measurable outcome 1", "measurable outcome 2"],
+      "too_hard_try": ["easier version", "change environment", "buddy option"]
+    },
+    "check_ins": {"frequency": "once_midweek", "method": "in_app", "encourager": "self"},
+    "rewards": ["user-chosen small reward"],
+    "data_to_track": ["count_of_attempts","minutes_spent","confidence_1_5"]
+  }
+}
+
+Otherwise, ask ONE specific question to gather missing information in this order:
+1. What specific aspect of ${categoryNames[category as keyof typeof categoryNames].toLowerCase()} interests you most?
+2. What's your current experience/skill level in this area?
+3. What specific outcome would you like to achieve?
+4. How much time can you realistically commit daily (10-30 minutes)?
+
+Keep questions simple, offer 2-4 choices when helpful, and include "Not sure yet" as an option.`,
         userSnapshot: profile,
         currentGoals: goals,
-        context: `goal_creation_${category}`
+        context: `goal_setting_${category}`
       });
 
       let responseContent = response?.guidance || response || 'I had trouble processing that. Could you tell me more?';
@@ -142,14 +196,16 @@ Let's start by learning about your experience in this area. What interests you m
               id: (Date.now() + 1).toString(),
               content: `Perfect! I've gathered enough information to create your goal. Here's what I've understood:
 
-**Goal: ${goalData.title}**
+**Goal: ${goalData.selected_goal?.title || goalData.candidate_ideas?.[0]?.title}**
 
-${goalData.description}
+${goalData.selected_goal?.week_plan || goalData.candidate_ideas?.[0]?.why_it_fits}
 
-**Suggested steps:**
-${goalData.steps.map((step: string, i: number) => `${i + 1}. ${step}`).join('\n')}
+**7-Day Plan:**
+${goalData.selected_goal?.week_plan?.steps?.map((step: string, i: number) => `${i + 1}. ${step}`).join('\n') || 'Steps will be personalized for you'}
 
-**Estimated time:** ${goalData.timeEstimate}
+**Time commitment:** ${goalData.selected_goal?.week_plan?.time_per_day || goalData.candidate_ideas?.[0]?.time_energy_estimate}
+
+**What will help:** ${goalData.selected_goal?.week_plan?.too_hard_try?.join(', ') || 'Supports available'}
 
 Does this look good to you? I can create this as a 7-day micro-goal to get you started!`,
               sender: 'luna',
@@ -159,8 +215,15 @@ Does this look good to you? I can create this as a 7-day micro-goal to get you s
             setMessages(prev => [...prev, summaryMessage]);
             setSessionPhase('summarizing');
             
-            // Store the goal data for creation
-            (window as any).pendingGoal = { ...goalData, category };
+            // Store the goal data for creation - convert to expected format
+            const convertedGoal = {
+              title: goalData.selected_goal?.title || goalData.candidate_ideas?.[0]?.title || 'Untitled Goal',
+              description: goalData.selected_goal?.week_plan?.success_criteria?.join(' ') || goalData.candidate_ideas?.[0]?.why_it_fits || 'Goal description',
+              category: category,
+              steps: goalData.selected_goal?.week_plan?.steps || ['Step 1', 'Step 2', 'Step 3'],
+              timeEstimate: goalData.selected_goal?.week_plan?.time_per_day || '30 minutes per day'
+            };
+            (window as any).pendingGoal = convertedGoal;
             return;
           } catch (e) {
             console.error('Failed to parse goal JSON:', e);
