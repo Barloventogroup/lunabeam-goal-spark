@@ -106,11 +106,19 @@ ${recentCheckIns.slice(0, 3).map(checkin =>
 `;
     }
 
-    const userPrompt = `${contextInfo}User Question: "${question}"
+    let userPrompt = '';
+    
+    if (context === 'onboarding') {
+      userPrompt = `User message: "${question}"
+      
+Please respond naturally as Lune, the friendly onboarding assistant. Have a warm conversation to learn about the user.`;
+    } else {
+      userPrompt = `${contextInfo}User Question: "${question}"
 
 Context: ${context}
 
 Please provide supportive, practical guidance. If this seems to involve serious mental health concerns, gently suggest professional resources while still being helpful.`;
+    }
 
     console.log('Making OpenAI request for coaching guidance');
 

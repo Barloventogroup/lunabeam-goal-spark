@@ -13,8 +13,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    firstName: ''
+    password: ''
   });
 
   // Redirect if already authenticated
@@ -28,7 +27,7 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(formData.email, formData.password, formData.firstName);
+        const { error } = await signUp(formData.email, formData.password, '');
         if (error) {
           toast.error(error.message);
         } else {
@@ -71,20 +70,6 @@ export default function Auth() {
         
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="Enter your first name"
-                />
-              </div>
-            )}
             
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
