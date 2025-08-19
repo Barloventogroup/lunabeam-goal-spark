@@ -448,7 +448,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_member_circles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          circle_id: string
+        }[]
+      }
+      get_user_owned_circles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          circle_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
