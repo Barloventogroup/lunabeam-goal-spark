@@ -184,7 +184,9 @@ export const useStore = create<AppState>()(
       loadProfile: async () => {
         try {
           const profile = await database.getProfile();
-          set({ profile });
+          // Preserve existing local-only flags like onboarding_complete when DB payload lacks them
+          const existing = get().profile;
+          set({ profile: profile ? { ...existing, ...profile } : (existing ?? null) });
         } catch (error) {
           console.error('Failed to load profile:', error);
         }
