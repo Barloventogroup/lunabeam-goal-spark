@@ -27,7 +27,7 @@ const AppRouter: React.FC = () => {
       return <HomeDashboard onNavigate={handleNavigate} />;
     
     case 'goal-wizard':
-      return <GoalWizard onNavigate={handleNavigate} />;
+      return <GoalWizard onNavigate={handleNavigate} onComplete={() => handleNavigate('home')} />;
     
     case 'goal-detail':
       return (
