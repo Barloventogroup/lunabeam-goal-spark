@@ -59,38 +59,41 @@ export function AIChat({ context = 'general', goalId, reflection }: AIChatProps)
     setIsLoading(true);
 
     try {
-      let response: string;
+      let aiResponse: any;
 
       switch (context) {
         case 'onboarding':
-          response = await AIService.getOnboardingGuidance({
+          aiResponse = await AIService.getOnboardingGuidance({
             step: 'goal_suggestion'
           });
           break;
         case 'reflection':
           if (reflection) {
-            response = await AIService.analyzeReflection({
+            aiResponse = await AIService.analyzeReflection({
               reflection,
               goalContext: goalId ? { id: goalId, title: 'Current Goal' } : undefined
             });
           } else {
-            response = await AIService.getCoachingGuidance({
+            aiResponse = await AIService.getCoachingGuidance({
               question: input.trim(),
               context: goalId
             });
           }
           break;
         default:
-          response = await AIService.getCoachingGuidance({
+          aiResponse = await AIService.getCoachingGuidance({
             question: input.trim(),
             context: goalId
           });
           break;
       }
 
+      // Extract the guidance text from the response object
+      const responseText = aiResponse?.guidance || aiResponse || 'Sorry, I had trouble understanding that. Could you try asking again?';
+
       const lunaMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: response,
+        content: responseText,
         sender: 'luna',
         timestamp: new Date()
       };
