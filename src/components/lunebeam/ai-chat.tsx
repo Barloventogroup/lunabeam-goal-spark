@@ -24,9 +24,11 @@ interface AIChatProps {
   reflection?: string;
   userSnapshot?: any;
   currentGoals?: any[];
+  onUserMessage?: (text: string) => void;
+  onLuneMessage?: (text: string) => void;
 }
 
-export function AIChat({ context = 'general', goalId, reflection, userSnapshot, currentGoals }: AIChatProps) {
+export function AIChat({ context = 'general', goalId, reflection, userSnapshot, currentGoals, onUserMessage, onLuneMessage }: AIChatProps) {
   const getInitialMessage = () => {
     switch (context) {
       case 'onboarding':
@@ -78,6 +80,7 @@ Let's start with something simple - what would you like me to call you?`;
     };
 
     setMessages(prev => [...prev, userMessage]);
+    onUserMessage?.(input.trim());
     setInputMessage('');
     setIsLoading(true);
 
@@ -117,7 +120,7 @@ Let's start with something simple - what would you like me to call you?`;
       };
 
       setMessages(prev => [...prev, luneMessage]);
-
+      onLuneMessage?.(messageContent);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -152,7 +155,7 @@ Let's start with something simple - what would you like me to call you?`;
   };
 
   return (
-    <Card className="h-[500px] flex flex-col">
+    <Card className="flex flex-col max-h-[70vh] overflow-hidden">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
@@ -166,7 +169,7 @@ Let's start with something simple - what would you like me to call you?`;
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col p-4 pt-0">
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="pr-4 max-h-[50vh]">
           <div className="space-y-4">
             {messages.map((message) => (
               <div key={message.id} className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : ''}`}>

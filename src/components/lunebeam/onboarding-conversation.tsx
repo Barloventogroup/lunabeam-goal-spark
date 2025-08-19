@@ -13,15 +13,24 @@ export function OnboardingConversation({ roleData, onComplete }: OnboardingConve
   const [canComplete, setCanComplete] = useState(false);
   const [showCompletionMessage, setShowCompletionMessage] = useState(false);
   const { completeOnboarding } = useStore();
+  const [userTurns, setUserTurns] = useState(0);
+  const [luneTurns, setLuneTurns] = useState(0);
 
-  // Allow completion after user has interacted for a bit
+  // Allow completion after enough interaction or time fallback (2 min)
   useEffect(() => {
     const timer = setTimeout(() => {
       setCanComplete(true);
-    }, 30000); // Allow completion after 30 seconds
+    }, 120000);
 
     return () => clearTimeout(timer);
   }, []);
+
+  // Unlock when there has been a back-and-forth (min 3 user + 3 Lune messages)
+  useEffect(() => {
+    if (userTurns >= 3 && luneTurns >= 3) {
+      setCanComplete(true);
+    }
+  }, [userTurns, luneTurns]);
 
   const handleComplete = async () => {
     setShowCompletionMessage(true);
@@ -113,7 +122,7 @@ Start by introducing yourself and asking for their first name, then naturally pr
             </CardContent>
           </Card>
 
-          <AIChat context="onboarding" />
+          <AIChat context="onboarding" onUserMessage={() => setUserTurns((c) => c + 1)} onLuneMessage={() => setLuneTurns((c) => c + 1)} />
 
           {canComplete && (
             <Card className="p-4 shadow-card border-0 bg-muted/30">
