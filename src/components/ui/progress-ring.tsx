@@ -25,10 +25,12 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
     encouraging: 'hsl(var(--encouraging))'
   };
 
-  const { width, strokeWidth } = sizeMap[size];
+  const selected = sizeMap[size as keyof typeof sizeMap] ?? sizeMap.md;
+  const { width, strokeWidth } = selected;
   const radius = (width - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const offset = circumference - (progress / 100) * circumference;
+  const clamped = Math.max(0, Math.min(100, Number.isFinite(progress) ? progress : 0));
+  const offset = circumference - (clamped / 100) * circumference;
 
   return (
     <div className="relative inline-flex items-center justify-center">
