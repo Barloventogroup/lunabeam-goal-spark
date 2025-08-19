@@ -14,7 +14,6 @@ interface AppState {
   
   // UI state
   currentGoal: SelectedGoal | null;
-  onboardingComplete: boolean;
   currentStep: number;
   
   // Actions
@@ -25,7 +24,7 @@ interface AppState {
   addEvidence: (evidence: Omit<Evidence, 'id'>) => Promise<void>;
   addBadge: (badge: Omit<Badge, 'id'>) => Promise<void>;
   updateConsent: (consent: Consent) => void;
-  completeOnboarding: () => void;
+  completeOnboarding: () => Promise<void>;
   setCurrentStep: (step: number) => void;
   
   // Data loading
@@ -39,6 +38,7 @@ interface AppState {
   // Computed helpers
   getActiveGoal: () => SelectedGoal | null;
   getRecentCheckIns: (goalId: string) => CheckInEntry[];
+  isOnboardingComplete: () => boolean;
 }
 
 // Demo data
@@ -96,7 +96,6 @@ export const useStore = create<AppState>()(
       evidence: [],
       badges: [],
       currentGoal: null,
-      onboardingComplete: false,
       currentStep: 0,
       
       // Actions
@@ -151,9 +150,22 @@ export const useStore = create<AppState>()(
       
       updateConsent: (consent) => set({ consent }),
       
-      completeOnboarding: () => set({ onboardingComplete: true }),
+      completeOnboarding: async () => {
+        const profile = get().profile;
+        if (profile) {
+          const updatedProfile = { ...profile, onboarding_complete: true };
+          await database.saveProfile(updatedProfile);
+          set({ profile: updatedProfile });
+        }
+      },
       
       setCurrentStep: (step) => set({ currentStep: step }),
+      
+      // Computed helper for onboarding status
+      isOnboardingComplete: () => {
+        const profile = get().profile;
+        return profile?.onboarding_complete || false;
+      },
       
       // Helpers
       getActiveGoal: () => {
@@ -237,7 +249,6 @@ export const useStore = create<AppState>()(
         checkIns: state.checkIns,
         evidence: state.evidence,
         badges: state.badges,
-        onboardingComplete: state.onboardingComplete,
         currentGoal: state.currentGoal
       })
     }

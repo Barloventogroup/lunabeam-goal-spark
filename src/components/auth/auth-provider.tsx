@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useStore } from '@/store/useStore';
 
 interface AuthContextType {
   user: User | null;
@@ -17,6 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { loadProfile } = useStore();
 
   useEffect(() => {
     // Set up auth state listener
@@ -26,18 +28,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Clear persisted state for new user signups to ensure they see onboarding
+        // Load user profile when signed in
         if (event === 'SIGNED_IN' && session?.user) {
-          // Check if this is a new user (recently created)
-          const userCreatedAt = new Date(session.user.created_at);
-          const now = new Date();
-          const timeDiff = now.getTime() - userCreatedAt.getTime();
-          const minutesDiff = timeDiff / (1000 * 60);
-          
-          // If user was created less than 5 minutes ago, clear stored state to force onboarding
-          if (minutesDiff < 5) {
-            localStorage.removeItem('lunebeam-store');
-          }
+          setTimeout(() => {
+            loadProfile();
+          }, 0);
         }
       }
     );
@@ -47,10 +42,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Load profile if user is already signed in
+      if (session?.user) {
+        setTimeout(() => {
+          loadProfile();
+        }, 0);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [loadProfile]);
 
   const signUp = async (email: string, password: string, firstName: string) => {
     const redirectUrl = `${window.location.origin}/`;

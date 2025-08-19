@@ -7,7 +7,7 @@ import { AIChat } from './ai-chat';
 import type { SelectedGoal } from '@/types';
 
 const AppRouter: React.FC = () => {
-  const { onboardingComplete } = useStore();
+  const { isOnboardingComplete } = useStore();
   const [currentView, setCurrentView] = useState<string>('home');
   const [viewData, setViewData] = useState<any>(null);
 
@@ -17,7 +17,7 @@ const AppRouter: React.FC = () => {
   };
 
   // Show onboarding if not completed
-  if (!onboardingComplete) {
+  if (!isOnboardingComplete()) {
     return <OnboardingFlow />;
   }
 

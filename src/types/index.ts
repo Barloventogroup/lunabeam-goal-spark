@@ -6,6 +6,7 @@ export interface Profile {
   interests: string[];
   challenges: string[];
   comm_pref: 'voice' | 'text';
+  onboarding_complete?: boolean;
 }
 
 export interface ConsentSection {
