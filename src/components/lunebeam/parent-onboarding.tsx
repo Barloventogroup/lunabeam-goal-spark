@@ -166,26 +166,26 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
   };
 
   const handleComplete = async () => {
+    const localProfile = {
+      first_name: data.preferredName || 'User',
+      strengths: data.strengths,
+      interests: data.interests,
+      challenges: [],
+      comm_pref: 'text' as const,
+      onboarding_complete: true,
+    };
+
     try {
-      // Create profile from collected data first
-      const profile = {
-        first_name: data.preferredName || 'User',
-        strengths: data.strengths,
-        interests: data.interests,
-        challenges: [], // Not collected in parent flow, can be added later
-        comm_pref: 'text' as const, // Default to text
-        onboarding_complete: false
-      };
-      
-      // Save the profile to the store
-      await setProfile(profile);
-      
-      // Then complete onboarding
+      // Try to persist to Supabase via store actions
+      await setProfile({ ...localProfile, onboarding_complete: false });
       await completeOnboarding();
-      onComplete();
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      console.warn('Falling back to local profile only (no auth?):', error);
+      // Ensure the app can proceed even if not authenticated
+      useStore.setState({ profile: localProfile });
     }
+
+    onComplete();
   };
 
   if (showProfile) {
@@ -267,9 +267,6 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
                     To personalize suggestions, we'll ask you a few questions about the person you're exploring Lunebeam for, including name and pronouns, plus a few basics. You can use a nickname or initials and update this anytime. Nothing is shared without your permission.
                   </p>
                 </div>
-                <Button onClick={handleNext} className="w-full">
-                  Let's get started
-                </Button>
               </div>
             )}
 
