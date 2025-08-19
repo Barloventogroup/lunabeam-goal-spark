@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { GoalsList } from '../lunebeam/goals-list';
 import { GoalDetail } from '../lunebeam/goal-detail';
-import { CreateGoal } from '../lunebeam/create-goal';
+import { AIGoalSession } from '../lunebeam/ai-goal-session';
+import { GoalSummary } from '../lunebeam/goal-summary';
 
-type GoalsView = 'list' | 'detail' | 'create';
+type GoalsView = 'list' | 'detail' | 'create' | 'summary';
 
 export const TabGoals: React.FC = () => {
   const [currentView, setCurrentView] = useState<GoalsView>('list');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [aiGoal, setAiGoal] = useState<any>(null);
 
   const handleNavigate = (view: string, data?: any) => {
     switch (view) {
@@ -26,6 +28,11 @@ export const TabGoals: React.FC = () => {
     }
   };
 
+  const handleAiGoalCreated = (goal: any) => {
+    setAiGoal(goal);
+    setCurrentView('summary');
+  };
+
   const renderCurrentView = () => {
     switch (currentView) {
       case 'detail':
@@ -38,7 +45,23 @@ export const TabGoals: React.FC = () => {
           <GoalsList onNavigate={handleNavigate} />
         );
       case 'create':
-        return <CreateGoal onNavigate={handleNavigate} />;
+        return (
+          <AIGoalSession 
+            category="education" 
+            onBack={() => setCurrentView('list')} 
+            onGoalCreated={handleAiGoalCreated}
+          />
+        );
+      case 'summary':
+        return aiGoal ? (
+          <GoalSummary 
+            goal={aiGoal} 
+            onBack={() => setCurrentView('list')}
+            onComplete={() => setCurrentView('list')}
+          />
+        ) : (
+          <GoalsList onNavigate={handleNavigate} />
+        );
       case 'list':
       default:
         return <GoalsList onNavigate={handleNavigate} />;
