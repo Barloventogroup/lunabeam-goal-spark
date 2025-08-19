@@ -31,6 +31,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const { 
     profile, 
     goals,
+    legacyGoals,
     getActiveGoal, 
     getRecentCheckIns, 
     badges, 
@@ -83,16 +84,8 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     
     const lastDate = new Date(lastCheckIn.date);
     
-    switch (activeGoal.check_ins.frequency) {
-      case 'daily':
-        return addDays(lastDate, 1);
-      case 'every_other_day':
-        return addDays(lastDate, 2);
-      case 'once_midweek':
-        return addDays(lastDate, 3);
-      default:
-        return addDays(lastDate, 1);
-    }
+    // Simplified schedule until new check-in settings exist
+    return addDays(lastDate, 1);
   };
 
   const nextCheckIn = getNextCheckInDate();
@@ -125,7 +118,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         {activeGoal ? (
           <Card 
             className="bg-gradient-primary text-primary-foreground shadow-elevated cursor-pointer transform hover:scale-[1.02] transition-bounce"
-            onClick={() => onNavigate('goal-detail', activeGoal)}
+            onClick={() => onNavigate('goal-detail', activeGoal.id)}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -151,7 +144,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="opacity-75">Time Budget</p>
-                  <p className="font-medium">{activeGoal.week_plan.time_per_day}</p>
+                  <p className="font-medium">—</p>
                 </div>
                 <div>
                   <p className="opacity-75">Check-ins</p>
@@ -193,7 +186,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                 <FamilyCircleCard 
                   key={circle.id} 
                   circle={circle} 
-                  goals={goals} 
+                  goals={legacyGoals} 
                   onNavigate={onNavigate}
                 />
               );

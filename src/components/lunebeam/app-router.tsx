@@ -8,7 +8,7 @@ import { WeeklyCheckinModal } from './weekly-checkin-modal';
 import { GoalsList } from './goals-list';
 import { CreateGoal } from './create-goal';
 import { GoalDetail } from './goal-detail';
-import { useStore } from '../../store/useStore';
+import { AIChat } from './ai-chat';
 
 const AppRouter: React.FC = () => {
   const { isOnboardingComplete } = useStore();

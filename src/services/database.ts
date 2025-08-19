@@ -55,55 +55,12 @@ export const database = {
 
   // Goal operations
   async getGoals(): Promise<SelectedGoal[]> {
-    const { data, error } = await supabase
-      .from('goals')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    
-    return data.map(goal => ({
-      id: goal.id,
-      title: goal.title,
-      week_plan: goal.week_plan as any,
-      check_ins: goal.check_ins as any,
-      rewards: goal.rewards as any,
-      data_to_track: goal.data_to_track as any,
-      created_at: goal.created_at,
-      status: goal.status as 'active' | 'completed' | 'paused'
-    }));
+    // Legacy goals API deprecated; return empty during transition to new Goals & Steps
+    return [];
   },
 
-  async saveGoal(goal: Omit<SelectedGoal, 'id' | 'created_at'>): Promise<SelectedGoal> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
-
-    const { data, error } = await supabase
-      .from('goals')
-      .insert({
-        user_id: user.id,
-        title: goal.title,
-        week_plan: goal.week_plan as any,
-        check_ins: goal.check_ins as any,
-        rewards: goal.rewards as any,
-        data_to_track: goal.data_to_track,
-        status: goal.status
-      })
-      .select()
-      .single();
-    
-    if (error) throw error;
-    
-    return {
-      id: data.id,
-      title: data.title,
-      week_plan: data.week_plan as any,
-      check_ins: data.check_ins as any,
-      rewards: data.rewards as any,
-      data_to_track: data.data_to_track as any,
-      created_at: data.created_at,
-      status: data.status as 'active' | 'completed' | 'paused'
-    };
+  async saveGoal(_goal: Omit<SelectedGoal, 'id' | 'created_at'>): Promise<SelectedGoal> {
+    throw new Error('Legacy goals API removed. Use goalsService.createGoal instead.');
   },
 
   // Check-in operations
