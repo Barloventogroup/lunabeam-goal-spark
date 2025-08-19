@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '@/store/useStore';
-import { OnboardingFlow } from './onboarding';
+import { OnboardingFlow } from './onboarding-flow';
 import { HomeDashboard } from './home-dashboard';
 import { GoalWizard } from './goal-wizard';
 import { AIChat } from './ai-chat';

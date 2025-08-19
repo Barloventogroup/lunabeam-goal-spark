@@ -22,10 +22,21 @@ interface AIChatProps {
 }
 
 export function AIChat({ context = 'general', goalId, reflection }: AIChatProps) {
+  const getInitialMessage = () => {
+    switch (context) {
+      case 'onboarding':
+        return `Hi! I'm Lune, your personal AI assistant. I'm excited to get to know you better! Let's start with the basics - what's your first name?`;
+      case 'reflection':
+        return `Hi! I'm here to help you reflect on your progress. How did your goal work go today?`;
+      default:
+        return `Hi! I'm Luna, your AI coach. I'm here to help you achieve your goals. How can I support you today?`;
+    }
+  };
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: `Hi! I'm Luna, your AI coach. I'm here to help you achieve your goals. How can I support you today?`,
+      content: getInitialMessage(),
       sender: 'luna',
       timestamp: new Date()
     }
