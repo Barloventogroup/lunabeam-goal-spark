@@ -101,8 +101,14 @@ Let's start by learning about your experience in this area. What interests you m
 
       const response = await AIService.getCoachingGuidance({
         question: `Help the user create a ${category} goal. Current conversation: ${conversationHistory}. 
+
+        IMPORTANT GUIDELINES:
+        - Ask ONLY ONE focused question at a time to avoid overwhelming the user
+        - Keep questions simple and conversational
+        - Build understanding step by step through the conversation
+        - Questions should be specific and actionable, not open-ended
         
-        If this seems like enough information to create a goal, respond with "GOAL_READY:" followed by a JSON object with:
+        If you have gathered sufficient information (specific goal area, current skill level, desired outcome, and realistic timeframe), respond with "GOAL_READY:" followed by a JSON object with:
         {
           "title": "goal title",
           "description": "detailed description", 
@@ -110,7 +116,11 @@ Let's start by learning about your experience in this area. What interests you m
           "timeEstimate": "time per day estimate"
         }
         
-        Otherwise, continue asking probing questions to understand their experience and desired outcomes.`,
+        Otherwise, ask ONE specific question to gather missing information in this order:
+        1. What specific aspect interests them most?
+        2. What's their current experience/skill level?
+        3. What specific outcome do they want to achieve?
+        4. How much time can they realistically commit daily?`,
         userSnapshot: profile,
         currentGoals: goals,
         context: `goal_creation_${category}`
