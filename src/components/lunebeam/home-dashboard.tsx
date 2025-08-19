@@ -186,7 +186,12 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
               Family Circle
             </h2>
             {familyCircles.map((circle) => (
-              <FamilyCircleCard key={circle.id} circle={circle} goals={goals} />
+              <FamilyCircleCard 
+                key={circle.id} 
+                circle={circle} 
+                goals={goals} 
+                onNavigate={onNavigate}
+              />
             ))}
           </div>
         )}

@@ -13,6 +13,7 @@ import type { FamilyCircle, CircleMembership, SelectedGoal } from "@/types";
 interface FamilyCircleCardProps {
   circle: FamilyCircle;
   goals: SelectedGoal[];
+  onNavigate?: (view: string, data?: any) => void;
 }
 
 const roleColors = {
@@ -29,7 +30,7 @@ const roleLabels = {
   coach: 'Coach'
 };
 
-export function FamilyCircleCard({ circle, goals }: FamilyCircleCardProps) {
+export function FamilyCircleCard({ circle, goals, onNavigate }: FamilyCircleCardProps) {
   const [memberships, setMemberships] = useState<CircleMembership[]>([]);
   const [isCheckinOpen, setIsCheckinOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +74,10 @@ export function FamilyCircleCard({ circle, goals }: FamilyCircleCardProps) {
 
   return (
     <>
-      <Card className="relative">
+      <Card 
+        className="relative cursor-pointer hover:bg-card-soft transition-smooth" 
+        onClick={() => onNavigate?.('family-circle-detail', circle)}
+      >
         <CardHeader>
           <div className="flex items-start justify-between">
             <div>
