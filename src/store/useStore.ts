@@ -254,7 +254,20 @@ export const useStore = create<AppState>()(
           console.log('Store: loadProfile called');
           const profile = await database.getProfile();
           console.log('Store: Profile from DB:', profile);
-          // Preserve existing local-only flags like onboarding_complete when DB payload lacks them
+          
+          // Auto-complete onboarding for profiles that have data but aren't marked complete
+          if (profile && !profile.onboarding_complete && (profile.strengths?.length > 0 || profile.interests?.length > 0)) {
+            console.log('Store: Auto-completing onboarding for existing profile with data');
+            profile.onboarding_complete = true;
+            try {
+              await database.saveProfile(profile);
+              console.log('Store: Successfully saved onboarding completion to DB');
+            } catch (err) {
+              console.warn('Store: Failed to save onboarding completion, using local state');
+            }
+          }
+          
+          // Preserve existing local-only flags when DB payload lacks them
           const existing = get().profile;
           console.log('Store: Existing profile in store:', existing);
           const mergedProfile = profile ? { ...existing, ...profile } : (existing ?? null);
