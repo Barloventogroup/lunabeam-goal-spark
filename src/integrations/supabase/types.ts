@@ -14,7 +14,255 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      badges: {
+        Row: {
+          description: string
+          earned_at: string
+          goal_id: string
+          id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          description: string
+          earned_at?: string
+          goal_id: string
+          id?: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          description?: string
+          earned_at?: string
+          goal_id?: string
+          id?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "badges_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      check_ins: {
+        Row: {
+          confidence_1_5: number | null
+          count_of_attempts: number | null
+          created_at: string
+          date: string
+          evidence_attachments: string[] | null
+          goal_id: string
+          id: string
+          minutes_spent: number | null
+          reflection: string | null
+          reflection_is_voice: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence_1_5?: number | null
+          count_of_attempts?: number | null
+          created_at?: string
+          date?: string
+          evidence_attachments?: string[] | null
+          goal_id: string
+          id?: string
+          minutes_spent?: number | null
+          reflection?: string | null
+          reflection_is_voice?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence_1_5?: number | null
+          count_of_attempts?: number | null
+          created_at?: string
+          date?: string
+          evidence_attachments?: string[] | null
+          goal_id?: string
+          id?: string
+          minutes_spent?: number | null
+          reflection?: string | null
+          reflection_is_voice?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "check_ins_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence: {
+        Row: {
+          description: string | null
+          goal_id: string
+          id: string
+          type: string
+          uploaded_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          description?: string | null
+          goal_id: string
+          id?: string
+          type: string
+          uploaded_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          description?: string | null
+          goal_id?: string
+          id?: string
+          type?: string
+          uploaded_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          check_ins: Json
+          created_at: string
+          data_to_track: string[] | null
+          id: string
+          rewards: Json
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          week_plan: Json
+        }
+        Insert: {
+          check_ins: Json
+          created_at?: string
+          data_to_track?: string[] | null
+          id?: string
+          rewards: Json
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          week_plan: Json
+        }
+        Update: {
+          check_ins?: Json
+          created_at?: string
+          data_to_track?: string[] | null
+          id?: string
+          rewards?: Json
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          week_plan?: Json
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          challenges: string[] | null
+          comm_pref: string
+          created_at: string
+          first_name: string
+          id: string
+          interests: string[] | null
+          strengths: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenges?: string[] | null
+          comm_pref: string
+          created_at?: string
+          first_name: string
+          id?: string
+          interests?: string[] | null
+          strengths?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenges?: string[] | null
+          comm_pref?: string
+          created_at?: string
+          first_name?: string
+          id?: string
+          interests?: string[] | null
+          strengths?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      supporter_consents: {
+        Row: {
+          contact_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          name: string | null
+          notes_visible_to_user: boolean | null
+          redactions: string[] | null
+          role: string
+          scope: string
+          sections: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          name?: string | null
+          notes_visible_to_user?: boolean | null
+          redactions?: string[] | null
+          role: string
+          scope: string
+          sections?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          name?: string | null
+          notes_visible_to_user?: boolean | null
+          redactions?: string[] | null
+          role?: string
+          scope?: string
+          sections?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
