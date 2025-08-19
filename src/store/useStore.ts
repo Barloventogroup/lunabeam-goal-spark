@@ -251,12 +251,17 @@ export const useStore = create<AppState>()(
       // Data loading functions
       loadProfile: async () => {
         try {
+          console.log('Store: loadProfile called');
           const profile = await database.getProfile();
+          console.log('Store: Profile from DB:', profile);
           // Preserve existing local-only flags like onboarding_complete when DB payload lacks them
           const existing = get().profile;
-          set({ profile: profile ? { ...existing, ...profile } : (existing ?? null) });
+          console.log('Store: Existing profile in store:', existing);
+          const mergedProfile = profile ? { ...existing, ...profile } : (existing ?? null);
+          console.log('Store: Merged profile:', mergedProfile);
+          set({ profile: mergedProfile });
         } catch (error) {
-          console.error('Failed to load profile:', error);
+          console.error('Store: Failed to load profile:', error);
         }
       },
       

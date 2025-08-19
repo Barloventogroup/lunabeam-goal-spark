@@ -19,12 +19,15 @@ const AppRouter: React.FC = () => {
   // Load profile on component mount
   React.useEffect(() => {
     const loadUserProfile = async () => {
+      console.log('AppRouter: Loading profile...');
       try {
         await loadProfile();
+        console.log('AppRouter: Profile loaded:', useStore.getState().profile);
       } catch (error) {
-        console.error('Failed to load profile:', error);
+        console.error('AppRouter: Failed to load profile:', error);
       } finally {
         setProfileLoaded(true);
+        console.log('AppRouter: Profile loading complete');
       }
     };
     loadUserProfile();
@@ -35,8 +38,15 @@ const AppRouter: React.FC = () => {
     setViewData(data);
   };
 
+  console.log('AppRouter render:', {
+    profileLoaded,
+    profile,
+    onboardingComplete: isOnboardingComplete()
+  });
+
   // Show loading until profile is checked
   if (!profileLoaded) {
+    console.log('AppRouter: Showing loading...');
     return (
       <div className="min-h-screen bg-gradient-soft flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -46,8 +56,11 @@ const AppRouter: React.FC = () => {
 
   // Show onboarding if not completed
   if (!isOnboardingComplete()) {
+    console.log('AppRouter: Showing onboarding flow');
     return <OnboardingFlow />;
   }
+
+  console.log('AppRouter: Showing main app navigation');
 
   // Main app navigation
   switch (currentView) {
