@@ -10,8 +10,9 @@ import {
   ArrowLeft,
   Play
 } from 'lucide-react';
-import { useStore } from '@/store/useStore';
 import { useToast } from '@/hooks/use-toast';
+import { goalsService, stepsService } from '@/services/goalsService';
+import type { GoalDomain } from '@/types';
 
 interface ExtractedGoal {
   title: string;
@@ -34,7 +35,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
 }) => {
   const [startDate, setStartDate] = useState(new Date());
   const [isCreating, setIsCreating] = useState(false);
-  const { addGoal } = useStore();
+  
   const { toast } = useToast();
 
   const categoryNames = {
@@ -59,35 +60,41 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
     setIsCreating(true);
     
     try {
-      const goalData = {
-        title: goal.title,
-        status: 'active' as const,
-        data_to_track: ['count_of_attempts', 'minutes_spent', 'confidence_1_5'] as ('count_of_attempts' | 'minutes_spent' | 'confidence_1_5')[],
-        week_plan: {
-          steps: goal.steps.slice(0, 3), // Max 3 steps for micro-goal
-          time_per_day: goal.timeEstimate,
-          success_criteria: ['Complete at least 3 attempts this week'],
-          too_hard_try: ['Reduce time commitment', 'Focus on just one step', 'Ask for help']
-        },
-        check_ins: {
-          frequency: 'daily' as const,
-          method: 'in_app' as const,
-          encourager: 'self' as const
-        },
-        rewards: {
-          type: 'badge' as const,
-          criteria: 'milestone_complete' as const,
-          badge_tier: 'silver' as const,
-          proof_required: false,
-          accepted_proof_types: ['photo', 'video'] as ('photo' | 'video' | 'doc')[],
-          custom_label: `${goal.category} achiever`
+      const mapCategoryToDomain = (cat: string): GoalDomain => {
+        switch (cat) {
+          case 'education': return 'school';
+          case 'employment': return 'work';
+          case 'health': return 'health';
+          case 'independent_living':
+          case 'social_skills':
+          default: return 'life';
         }
       };
 
-      await addGoal(goalData);
+      const formatDate = (d: Date) => d.toISOString().slice(0, 10);
+      const due = new Date(startDate);
+      due.setDate(due.getDate() + 6);
+
+      // Create the goal in Supabase
+      const createdGoal = await goalsService.createGoal({
+        title: goal.title,
+        description: goal.description,
+        domain: mapCategoryToDomain(goal.category),
+        priority: 'medium',
+        start_date: formatDate(startDate),
+        due_date: formatDate(due),
+      });
+
+      // Create up to 3 steps for the 7-day micro-goal
+      for (const stepTitle of goal.steps.slice(0, 3)) {
+        await stepsService.createStep(createdGoal.id, {
+          title: stepTitle,
+          is_required: true,
+        });
+      }
       
       toast({
-        title: "Goal Created! 🎉",
+        title: 'Goal Created! 🎉',
         description: `Your ${goal.title} goal is ready to start!`,
       });
       
@@ -95,9 +102,9 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
     } catch (error) {
       console.error('Error creating goal:', error);
       toast({
-        title: "Error",
-        description: "Failed to create goal. Please try again.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to create goal. Please try again.',
+        variant: 'destructive'
       });
     } finally {
       setIsCreating(false);
