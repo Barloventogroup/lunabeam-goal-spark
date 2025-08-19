@@ -91,7 +91,10 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
+    if (showProfile) {
+      setShowProfile(false);
+      setCurrentStep(TOTAL_STEPS);
+    } else if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -122,24 +125,32 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
   const generateProfile = async () => {
     setIsGenerating(true);
     try {
-      // Generate AI profile summary
-      const response = await AIService.getCoachingGuidance({
-        question: `Generate a starter profile summary based on this data: ${JSON.stringify(data)}`,
-        mode: 'assist',
-        userSnapshot: data
-      });
+      // Generate natural voice summary
+      const strengths = data.superpowers.slice(0, 3);
+      const topInterests = data.interests.slice(0, 3);
+      const workPrefs = `${data.workStyle.environment}, ${data.workStyle.activity} activities`;
+      const barriers = data.barriers.length > 0 ? data.barriers.join(' and ') : null;
+      const timePreference = data.bestTime ? `in the ${data.bestTime.toLowerCase()}` : '';
+      const goalHint = data.goalSeed ? `They want to try: ${data.goalSeed}` : '';
       
-      setGeneratedProfile(response.guidance);
+      // Create natural summary
+      let summary = `${data.name || 'This person'} shines at being ${strengths.join(', ')}. `;
+      summary += `They're drawn to ${topInterests.join(', ')} and thrive in ${workPrefs} ${timePreference}. `;
+      if (barriers) {
+        summary += `What sometimes gets in their way: ${barriers}. `;
+      }
+      if (data.goalSeed) {
+        summary += `Their next tiny step: ${data.goalSeed}. `;
+      }
+      summary += `They prefer ${data.sharingPrefs.shareScope === 'private' ? 'keeping things private' : 
+        data.sharingPrefs.shareScope === 'summary' ? 'sharing summaries with supporters' : 'sharing details with supporters'} `;
+      summary += `and like ${data.sharingPrefs.supportStyle.replace('-', ' ')}.`;
+      
+      setGeneratedProfile(summary);
       setShowProfile(true);
     } catch (error) {
       console.error('Error generating profile:', error);
-      // Fallback to manual summary
-      const strengths = data.superpowers.slice(0, 3).join(', ');
-      const topInterests = data.interests.slice(0, 3).join(', ');
-      const workPrefs = `${data.workStyle.environment}, ${data.workStyle.activity} activities in the ${data.bestTime.toLowerCase()}`;
-      const barriers = data.barriers.join(' and ');
-      
-      setGeneratedProfile(`You shine at ${strengths}. You're into ${topInterests} and prefer ${workPrefs}. ${barriers ? `Biggest blockers are ${barriers}.` : ''}`);
+      setGeneratedProfile("We've captured your preferences and you're ready to start your journey!");
       setShowProfile(true);
     }
     setIsGenerating(false);
@@ -169,6 +180,11 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               <span className="text-white text-xl">✨</span>
             </div>
             <CardTitle className="text-2xl">Here's your Starter Profile</CardTitle>
+            {currentStep > 1 && (
+              <Button variant="ghost" onClick={handleBack} className="absolute top-4 left-4">
+                ← Back
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="bg-card-soft rounded-lg p-4">
@@ -192,14 +208,9 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
                 Did I get that right? Don't worry, you can continue adding information to your profile 
                 so we can further personalize your goals and help you shine.
               </p>
-              <div className="space-y-2">
-                <Button onClick={handleComplete} className="w-full">
-                  Let's do it
-                </Button>
-                <Button variant="outline" onClick={handleComplete} className="w-full">
-                  Maybe later
-                </Button>
-              </div>
+              <Button onClick={handleComplete} className="w-full">
+                Let's get started
+              </Button>
               <p className="text-xs text-foreground-soft">
                 You can change this anytime
               </p>
