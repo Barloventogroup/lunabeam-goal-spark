@@ -96,37 +96,16 @@ Let's start with something simple - what would you like me to call you?`;
 
       console.log('AI Response:', response);
 
+      // Simple response handling
       let messageContent = '';
       let messageData = null;
-      let choices: string[] = [];
 
-      // Handle structured JSON responses
-      if (response.guidance) {
-        try {
-          const parsedGuidance = typeof response.guidance === 'string' 
-            ? JSON.parse(response.guidance) 
-            : response.guidance;
-          
-          messageContent = parsedGuidance.response_text || response.guidance;
-          messageData = parsedGuidance;
-
-          // Extract choices from different response types
-          if (parsedGuidance.next_choices) {
-            choices = parsedGuidance.next_choices;
-          } else if (parsedGuidance.next_prompts) {
-            choices = parsedGuidance.next_prompts;
-          }
-        } catch (parseError) {
-          messageContent = typeof response.guidance === 'string' 
-            ? response.guidance 
-            : JSON.stringify(response.guidance);
-        }
-      } else if (response.response_text) {
+      if (response.response_text) {
         messageContent = response.response_text;
-        messageData = response;
-        if (response.next_choices) choices = response.next_choices;
+      } else if (response.guidance) {
+        messageContent = response.guidance;
       } else {
-        messageContent = typeof response === 'string' ? response : JSON.stringify(response);
+        messageContent = typeof response === 'string' ? response : 'I had trouble understanding that. Could you try again?';
       }
 
       const luneMessage: Message = {
@@ -134,8 +113,7 @@ Let's start with something simple - what would you like me to call you?`;
         content: messageContent,
         sender: 'lune',
         timestamp: new Date(),
-        data: messageData,
-        choices: choices.length > 0 ? choices : undefined
+        data: messageData
       };
 
       setMessages(prev => [...prev, luneMessage]);
@@ -170,36 +148,6 @@ Let's start with something simple - what would you like me to call you?`;
   };
 
   const formatMessage = (message: Message) => {
-    // Display structured data if available
-    if (message.data && message.data.type === 'onboarding_snapshot') {
-      const data = message.data;
-      return (
-        <div className="space-y-3">
-          <p>{message.content}</p>
-          {data.strengths && data.strengths.length > 0 && (
-            <div>
-              <p className="text-sm font-semibold mb-1">Strengths noted:</p>
-              <div className="flex flex-wrap gap-1">
-                {data.strengths.map((strength: string, i: number) => (
-                  <Badge key={i} variant="secondary" className="text-xs">{strength}</Badge>
-                ))}
-              </div>
-            </div>
-          )}
-          {data.interests && data.interests.length > 0 && (
-            <div>
-              <p className="text-sm font-semibold mb-1">Interests noted:</p>
-              <div className="flex flex-wrap gap-1">
-                {data.interests.map((interest: string, i: number) => (
-                  <Badge key={i} variant="outline" className="text-xs">{interest}</Badge>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
     return <p>{message.content}</p>;
   };
 
