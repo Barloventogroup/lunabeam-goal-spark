@@ -74,8 +74,9 @@ export function AIChat({ context = 'general', goalId, reflection }: AIChatProps)
 
       switch (context) {
         case 'onboarding':
-          aiResponse = await AIService.getOnboardingGuidance({
-            step: 'goal_suggestion'
+          aiResponse = await AIService.getCoachingGuidance({
+            question: input.trim(),
+            context: 'onboarding'
           });
           break;
         case 'reflection':
