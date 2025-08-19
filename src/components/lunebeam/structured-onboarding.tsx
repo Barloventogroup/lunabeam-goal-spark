@@ -307,14 +307,18 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">What would you like to be called?</h2>
-                  <p className="text-sm text-foreground-soft">Just your first name or nickname is perfect</p>
+                  <h2 className="text-xl font-semibold mb-2">
+                    {data.role === 'parent' ? "What would they like to be called?" : "What would you like to be called?"}
+                  </h2>
+                  <p className="text-sm text-foreground-soft">
+                    Just {data.role === 'parent' ? 'their' : 'your'} first name or nickname is perfect
+                  </p>
                 </div>
                 <div className="space-y-4">
                   <Input
                     value={data.name}
                     onChange={(e) => setData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Your name"
+                    placeholder={data.role === 'parent' ? "Their name" : "Your name"}
                     className="text-center text-lg"
                     maxLength={30}
                   />
@@ -336,7 +340,7 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
                       <Input
                         value={data.pronouns === 'other' ? '' : data.pronouns}
                         onChange={(e) => setData(prev => ({ ...prev, pronouns: e.target.value }))}
-                        placeholder="Your pronouns"
+                        placeholder={data.role === 'parent' ? "Their pronouns" : "Your pronouns"}
                         className="mt-2"
                         maxLength={20}
                       />
@@ -355,8 +359,12 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">What are your top 3 "superpowers"?</h2>
-                  <p className="text-sm text-foreground-soft">Choose up to 3 things you're naturally good at</p>
+                  <h2 className="text-xl font-semibold mb-2">
+                    {data.role === 'parent' ? "What are their top 3 \"superpowers\"?" : "What are your top 3 \"superpowers\"?"}
+                  </h2>
+                  <p className="text-sm text-foreground-soft">
+                    Choose up to 3 things {data.role === 'parent' ? "they're" : "you're"} naturally good at
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {SUPERPOWERS.map(power => (
@@ -397,8 +405,12 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
             {currentStep === 4 && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">Choose 3–5 interests to explore</h2>
-                  <p className="text-sm text-foreground-soft">What sounds fun or interesting to you?</p>
+                  <h2 className="text-xl font-semibold mb-2">
+                    {data.role === 'parent' ? "Choose 3–5 interests they might want to explore" : "Choose 3–5 interests to explore"}
+                  </h2>
+                  <p className="text-sm text-foreground-soft">
+                    What sounds fun or interesting to {data.role === 'parent' ? 'them' : 'you'}?
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {INTERESTS.map(interest => (
@@ -444,7 +456,9 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
             {currentStep === 5 && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">How do you like doing things?</h2>
+                  <h2 className="text-xl font-semibold mb-2">
+                    {data.role === 'parent' ? "How do they like doing things?" : "How do you like doing things?"}
+                  </h2>
                   <p className="text-sm text-foreground-soft">Tap one from each pair</p>
                 </div>
                 <div className="space-y-4">
@@ -478,8 +492,12 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
             {currentStep === 6 && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">When do you feel at your best?</h2>
-                  <p className="text-sm text-foreground-soft">Choose your peak energy time</p>
+                  <h2 className="text-xl font-semibold mb-2">
+                    {data.role === 'parent' ? "When do they feel at their best?" : "When do you feel at your best?"}
+                  </h2>
+                  <p className="text-sm text-foreground-soft">
+                    Choose {data.role === 'parent' ? 'their' : 'your'} peak energy time
+                  </p>
                 </div>
                 <div className="space-y-2">
                   {['Early morning', 'Late morning', 'Afternoon', 'Evening', 'It varies'].map(time => (
@@ -505,7 +523,9 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
             {currentStep === 7 && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">What gets in your way most?</h2>
+                  <h2 className="text-xl font-semibold mb-2">
+                    {data.role === 'parent' ? "What gets in their way most?" : "What gets in your way most?"}
+                  </h2>
                   <p className="text-sm text-foreground-soft">Choose up to 2 things that make activities harder</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -547,13 +567,15 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
             {currentStep === 8 && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">One small thing you'd like to try</h2>
+                  <h2 className="text-xl font-semibold mb-2">
+                    {data.role === 'parent' ? "One small thing they'd like to try" : "One small thing you'd like to try"}
+                  </h2>
                   <p className="text-sm text-foreground-soft">In the next 2 weeks (optional, 120 characters)</p>
                 </div>
                 <Textarea
                   value={data.goalSeed}
                   onChange={(e) => setData(prev => ({ ...prev, goalSeed: e.target.value }))}
-                  placeholder="What would you like to try?"
+                  placeholder={data.role === 'parent' ? "What would they like to try?" : "What would you like to try?"}
                   maxLength={120}
                   rows={3}
                 />
