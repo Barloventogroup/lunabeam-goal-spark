@@ -14,8 +14,10 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
-  LogOut
+  LogOut,
+  MessageCircle
 } from 'lucide-react';
+import { AIChat } from './ai-chat';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/components/auth/auth-provider';
 import { format, addDays, isToday } from 'date-fns';
@@ -247,6 +249,24 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                 <p className="font-medium text-sm">Evidence</p>
                 <p className="text-xs text-foreground-soft">
                   {evidence.length} item{evidence.length !== 1 ? 's' : ''} saved
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* AI Coach */}
+          <Card 
+            className="cursor-pointer hover:bg-card-soft transition-smooth"
+            onClick={() => onNavigate('ai-chat')}
+          >
+            <CardContent className="p-4 text-center space-y-3">
+              <div className="rounded-full bg-primary-soft w-12 h-12 flex items-center justify-center mx-auto">
+                <MessageCircle className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">Luna AI Coach</p>
+                <p className="text-xs text-foreground-soft">
+                  Chat with your AI coach
                 </p>
               </div>
             </CardContent>

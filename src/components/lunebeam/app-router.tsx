@@ -3,6 +3,7 @@ import { useStore } from '@/store/useStore';
 import { OnboardingFlow } from './onboarding';
 import { HomeDashboard } from './home-dashboard';
 import { GoalWizard } from './goal-wizard';
+import { AIChat } from './ai-chat';
 import type { SelectedGoal } from '@/types';
 
 const AppRouter: React.FC = () => {
@@ -132,6 +133,23 @@ const AppRouter: React.FC = () => {
                 ← Back to Home
               </button>
             </div>
+          </div>
+        </div>
+      );
+    
+    case 'ai-chat':
+      return (
+        <div className="min-h-screen bg-gradient-soft p-4">
+          <div className="max-w-md mx-auto py-6 space-y-4">
+            <div className="text-center">
+              <button 
+                onClick={() => handleNavigate('home')}
+                className="text-primary hover:underline mb-4"
+              >
+                ← Back to Home
+              </button>
+            </div>
+            <AIChat context="general" />
           </div>
         </div>
       );
