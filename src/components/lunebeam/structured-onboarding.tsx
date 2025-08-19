@@ -5,10 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { useStore } from '@/store/useStore';
 import { AIService } from '@/services/aiService';
 
 interface OnboardingData {
+  role: 'individual' | 'parent' | '';
+  individualEmail?: string;
   name: string;
   pronouns: string;
   superpowers: string[];
@@ -32,7 +36,7 @@ interface StructuredOnboardingProps {
   onComplete: () => void;
 }
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 10;
 
 const SUPERPOWERS = [
   'Problem solver', 'Creative', 'Kind/helper', 'Detail-oriented', 'Curious', 
@@ -58,6 +62,8 @@ const GOAL_HELPERS = [
 export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<OnboardingData>({
+    role: '',
+    individualEmail: '',
     name: '',
     pronouns: '',
     superpowers: [],
@@ -169,10 +175,11 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
 
   const canProceed = () => {
     switch (currentStep) {
-      case 2: return data.name.trim().length > 0;
-      case 3: return data.superpowers.length > 0;
-      case 4: return data.interests.length > 0;
-      case 6: return data.bestTime !== '';
+      case 1: return data.role !== '' && (data.role === 'individual' || (data.role === 'parent' && data.individualEmail?.trim().length > 0));
+      case 3: return data.name.trim().length > 0;
+      case 4: return data.superpowers.length > 0;
+      case 5: return data.interests.length > 0;
+      case 7: return data.bestTime !== '';
       default: return true;
     }
   };
@@ -241,8 +248,65 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
 
         <Card className="shadow-card border-0">
           <CardContent className="p-6">
-            {/* Step 1: Welcome */}
+            {/* Step 1: Role Selection */}
             {currentStep === 1 && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-white text-xl font-bold">L</span>
+                  </div>
+                  <h1 className="text-2xl font-bold mb-2">Hi! I'm Lune 🌙</h1>
+                  <p className="text-foreground-soft">
+                    I'm your personal assistant. Before we start, I need to know who's creating this account.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold">Who is the main user for this app?</Label>
+                  <RadioGroup value={data.role} onValueChange={(value) => setData(prev => ({ ...prev, role: value as 'parent' | 'individual' }))}>
+                    <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <RadioGroupItem value="individual" id="individual" />
+                      <Label htmlFor="individual" className="flex-1 cursor-pointer">
+                        <div>
+                          <div className="font-semibold">Individual</div>
+                          <div className="text-sm text-foreground-soft">I'm creating this account for myself</div>
+                        </div>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <RadioGroupItem value="parent" id="parent" />
+                      <Label htmlFor="parent" className="flex-1 cursor-pointer">
+                        <div>
+                          <div className="font-semibold">Parent</div>
+                          <div className="text-sm text-foreground-soft">I'm creating this account for my child</div>
+                        </div>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+
+                  {data.role === 'parent' && (
+                    <div className="space-y-2 mt-4 p-4 bg-muted/30 rounded-lg">
+                      <Label htmlFor="individual-email" className="text-sm font-semibold">
+                        Individual's Email Address
+                      </Label>
+                      <Input
+                        id="individual-email"
+                        type="email"
+                        placeholder="Enter your child's email address"
+                        value={data.individualEmail || ''}
+                        onChange={(e) => setData(prev => ({ ...prev, individualEmail: e.target.value }))}
+                      />
+                      <p className="text-xs text-foreground-soft">
+                        We'll send an email invitation for them to join Lunebeam.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Welcome */}
+            {currentStep === 2 && (
               <div className="text-center space-y-6">
                 <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto">
                   <span className="text-white text-2xl">🌙</span>
@@ -259,8 +323,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 2: Name & Pronouns */}
-            {currentStep === 2 && (
+            {/* Step 3: Name & Pronouns */}
+            {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">What would you like to be called?</h2>
@@ -307,8 +371,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 3: Superpowers */}
-            {currentStep === 3 && (
+            {/* Step 4: Superpowers */}
+            {currentStep === 4 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">What are your top 3 "superpowers"?</h2>
@@ -349,8 +413,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 4: Interests */}
-            {currentStep === 4 && (
+            {/* Step 5: Interests */}
+            {currentStep === 5 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">Choose 3–5 interests to explore</h2>
@@ -396,8 +460,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 5: Work Style */}
-            {currentStep === 5 && (
+            {/* Step 6: Work Style */}
+            {currentStep === 6 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">How do you like doing things?</h2>
@@ -430,8 +494,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 6: Best Time */}
-            {currentStep === 6 && (
+            {/* Step 7: Best Time */}
+            {currentStep === 7 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">When do you feel at your best?</h2>
@@ -457,8 +521,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 7: Barriers */}
-            {currentStep === 7 && (
+            {/* Step 8: Barriers */}
+            {currentStep === 8 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">What gets in your way most?</h2>
@@ -499,8 +563,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 8: Goal Seed */}
-            {currentStep === 8 && (
+            {/* Step 9: Goal Seed */}
+            {currentStep === 9 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">One small thing you'd like to try</h2>
@@ -534,8 +598,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 9: Sharing Preferences */}
-            {currentStep === 9 && (
+            {/* Step 10: Sharing Preferences */}
+            {currentStep === 10 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">Sharing & support preferences</h2>
