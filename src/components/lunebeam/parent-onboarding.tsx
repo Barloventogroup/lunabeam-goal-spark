@@ -177,7 +177,7 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
 
     try {
       // Try to persist to Supabase via store actions
-      await setProfile({ ...localProfile, onboarding_complete: false });
+      await setProfile({ ...localProfile, onboarding_complete: true });
       await completeOnboarding();
     } catch (error) {
       console.warn('Falling back to local profile only (no auth?):', error);
