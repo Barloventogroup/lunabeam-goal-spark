@@ -12,13 +12,13 @@ import { Switch } from "@/components/ui/switch";
 import { Trophy, Plus, Calendar, Star, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { database } from "@/services/database";
-import type { FamilyCircle, SelectedGoal } from "@/types";
+import type { FamilyCircle, Goal } from "@/types";
 
 interface WeeklyCheckinModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   circle: FamilyCircle;
-  goals: SelectedGoal[];
+  goals: Goal[];
   weekOf: string;
 }
 

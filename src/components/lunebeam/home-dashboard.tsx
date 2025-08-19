@@ -31,7 +31,6 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const { 
     profile, 
     goals,
-    legacyGoals,
     getActiveGoal, 
     getRecentCheckIns, 
     badges, 
@@ -186,7 +185,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                 <FamilyCircleCard 
                   key={circle.id} 
                   circle={circle} 
-                  goals={legacyGoals} 
+                  goals={goals} 
                   onNavigate={onNavigate}
                 />
               );

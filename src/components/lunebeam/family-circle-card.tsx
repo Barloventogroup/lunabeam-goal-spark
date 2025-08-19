@@ -8,11 +8,11 @@ import { FamilyInviteModal } from "./family-invite-modal";
 import { WeeklyCheckinModal } from "./weekly-checkin-modal";
 import { database } from "@/services/database";
 import { useToast } from "@/hooks/use-toast";
-import type { FamilyCircle, CircleMembership, SelectedGoal } from "@/types";
+import type { FamilyCircle, CircleMembership, Goal } from "@/types";
 
 interface FamilyCircleCardProps {
   circle: FamilyCircle;
-  goals: SelectedGoal[];
+  goals: Goal[];
   onNavigate?: (view: string, data?: any) => void;
 }
 
