@@ -153,6 +153,28 @@ const AppRouter: React.FC = () => {
           </div>
         </div>
       );
+
+    case 'family-circle-detail':
+      return (
+        <div className="min-h-screen bg-gradient-soft p-4">
+          <div className="max-w-md mx-auto py-6">
+            <div className="text-center">
+              <button 
+                onClick={() => handleNavigate('home')}
+                className="text-primary hover:underline mb-4"
+              >
+                ← Back to Home
+              </button>
+              <h1 className="text-2xl font-bold mb-4">
+                {viewData?.name || 'Family Circle'}
+              </h1>
+              <p className="text-foreground-soft mb-6">
+                Coming soon! Manage your family circle, invite members, and share progress.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
     
     default:
       return <HomeDashboard onNavigate={handleNavigate} />;

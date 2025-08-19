@@ -76,7 +76,10 @@ export function FamilyCircleCard({ circle, goals, onNavigate }: FamilyCircleCard
     <>
       <Card 
         className="relative cursor-pointer hover:bg-card-soft transition-smooth" 
-        onClick={() => onNavigate?.('family-circle-detail', circle)}
+        onClick={() => {
+          console.log('Family circle card clicked:', circle);
+          onNavigate?.('family-circle-detail', circle);
+        }}
       >
         <CardHeader>
           <div className="flex items-start justify-between">
