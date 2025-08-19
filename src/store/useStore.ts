@@ -201,11 +201,29 @@ export const useStore = create<AppState>()(
       updateConsent: (consent) => set({ consent }),
       
       completeOnboarding: async () => {
-        const profile = get().profile;
-        if (profile) {
-          const updatedProfile = { ...profile, onboarding_complete: true };
-          await database.saveProfile(updatedProfile);
+        try {
+          const current = get().profile;
+          const baseProfile = current ?? {
+            first_name: 'User',
+            strengths: [],
+            interests: [],
+            challenges: [],
+            comm_pref: 'text' as const,
+            onboarding_complete: true,
+          };
+
+          const updatedProfile = { ...baseProfile, onboarding_complete: true };
+
+          // Persist to DB (best-effort)
+          try {
+            await database.saveProfile(updatedProfile);
+          } catch (err) {
+            console.warn('Failed to save onboarding completion to DB. Using local state only.', err);
+          }
+
           set({ profile: updatedProfile });
+        } catch (error) {
+          console.error('Error completing onboarding:', error);
         }
       },
       
