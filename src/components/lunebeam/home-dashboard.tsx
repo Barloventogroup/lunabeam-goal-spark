@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,9 +13,11 @@ import {
   Plus,
   CheckCircle2,
   Clock,
-  Sparkles
+  Sparkles,
+  LogOut
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useAuth } from '@/components/auth/auth-provider';
 import { format, addDays, isToday } from 'date-fns';
 
 interface HomeDashboardProps {
@@ -23,7 +25,30 @@ interface HomeDashboardProps {
 }
 
 const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
-  const { profile, getActiveGoal, getRecentCheckIns, badges, evidence } = useStore();
+  const { 
+    profile, 
+    getActiveGoal, 
+    getRecentCheckIns, 
+    badges, 
+    evidence,
+    loadProfile,
+    loadGoals,
+    loadCheckIns,
+    loadBadges,
+    loadEvidence
+  } = useStore();
+  
+  const { user, signOut } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      loadProfile();
+      loadGoals();
+      loadCheckIns();
+      loadBadges();
+      loadEvidence();
+    }
+  }, [user, loadProfile, loadGoals, loadCheckIns, loadBadges, loadEvidence]);
   const activeGoal = getActiveGoal();
   const recentCheckIns = activeGoal ? getRecentCheckIns(activeGoal.id) : [];
   const thisWeekBadges = badges.filter(badge => {
@@ -68,13 +93,23 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     <div className="min-h-screen bg-gradient-soft p-4">
       <div className="max-w-md mx-auto py-6 space-y-6">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">
-            Hello, {profile?.first_name}! 🌟
-          </h1>
-          <p className="text-foreground-soft">
-            {format(new Date(), 'EEEE, MMMM d')}
-          </p>
+        <div className="flex justify-between items-start">
+          <div className="text-center flex-1 space-y-2">
+            <h1 className="text-3xl font-bold text-foreground">
+              Hello, {profile?.first_name}! 🌟
+            </h1>
+            <p className="text-foreground-soft">
+              {format(new Date(), 'EEEE, MMMM d')}
+            </p>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={signOut}
+            className="text-foreground-soft hover:text-foreground hover:bg-muted"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
 
         {/* Active Goal Card */}

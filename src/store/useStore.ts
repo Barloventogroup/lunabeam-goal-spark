@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Profile, Consent, SelectedGoal, CheckInEntry, Evidence, Badge } from '../types';
+import { database } from '../services/database';
 
 interface AppState {
   // Core data
@@ -17,15 +18,23 @@ interface AppState {
   currentStep: number;
   
   // Actions
-  setProfile: (profile: Profile) => void;
-  addGoal: (goal: Omit<SelectedGoal, 'id' | 'created_at'>) => void;
+  setProfile: (profile: Profile) => Promise<void>;
+  addGoal: (goal: Omit<SelectedGoal, 'id' | 'created_at'>) => Promise<void>;
   setCurrentGoal: (goalId: string | null) => void;
-  addCheckIn: (checkIn: Omit<CheckInEntry, 'id'>) => void;
-  addEvidence: (evidence: Omit<Evidence, 'id'>) => void;
-  addBadge: (badge: Omit<Badge, 'id'>) => void;
+  addCheckIn: (checkIn: Omit<CheckInEntry, 'id'>) => Promise<void>;
+  addEvidence: (evidence: Omit<Evidence, 'id'>) => Promise<void>;
+  addBadge: (badge: Omit<Badge, 'id'>) => Promise<void>;
   updateConsent: (consent: Consent) => void;
   completeOnboarding: () => void;
   setCurrentStep: (step: number) => void;
+  
+  // Data loading
+  loadProfile: () => Promise<void>;
+  loadGoals: () => Promise<void>;
+  loadCheckIns: (goalId?: string) => Promise<void>;
+  loadEvidence: (goalId?: string) => Promise<void>;
+  loadBadges: (goalId?: string) => Promise<void>;
+  loadSupporterConsents: () => Promise<void>;
   
   // Computed helpers
   getActiveGoal: () => SelectedGoal | null;
@@ -91,15 +100,13 @@ export const useStore = create<AppState>()(
       currentStep: 0,
       
       // Actions
-      setProfile: (profile) => set({ profile }),
+      setProfile: async (profile) => {
+        await database.saveProfile(profile);
+        set({ profile });
+      },
       
-      addGoal: (goalData) => {
-        const goal: SelectedGoal = {
-          ...goalData,
-          id: `goal-${Date.now()}`,
-          created_at: new Date().toISOString(),
-          status: 'active'
-        };
+      addGoal: async (goalData) => {
+        const goal = await database.saveGoal(goalData);
         set((state) => ({ 
           goals: [...state.goals, goal],
           currentGoal: goal
@@ -111,11 +118,8 @@ export const useStore = create<AppState>()(
         set({ currentGoal: goal });
       },
       
-      addCheckIn: (checkInData) => {
-        const checkIn: CheckInEntry = {
-          ...checkInData,
-          id: `checkin-${Date.now()}`
-        };
+      addCheckIn: async (checkInData) => {
+        const checkIn = await database.saveCheckIn(checkInData);
         set((state) => ({ checkIns: [...state.checkIns, checkIn] }));
         
         // Check if badge should be earned
@@ -124,7 +128,7 @@ export const useStore = create<AppState>()(
           // Simple badge logic - can be enhanced
           const goalCheckIns = get().checkIns.filter(c => c.goal_id === checkInData.goal_id);
           if (goalCheckIns.length >= 3 && goal.rewards.criteria === 'streak_3_days') {
-            get().addBadge({
+            await get().addBadge({
               goal_id: checkInData.goal_id,
               type: goal.rewards.badge_tier || 'silver',
               earned_at: new Date().toISOString(),
@@ -135,19 +139,13 @@ export const useStore = create<AppState>()(
         }
       },
       
-      addEvidence: (evidenceData) => {
-        const evidence: Evidence = {
-          ...evidenceData,
-          id: `evidence-${Date.now()}`
-        };
+      addEvidence: async (evidenceData) => {
+        const evidence = await database.saveEvidence(evidenceData);
         set((state) => ({ evidence: [...state.evidence, evidence] }));
       },
       
-      addBadge: (badgeData) => {
-        const badge: Badge = {
-          ...badgeData,
-          id: `badge-${Date.now()}`
-        };
+      addBadge: async (badgeData) => {
+        const badge = await database.saveBadge(badgeData);
         set((state) => ({ badges: [...state.badges, badge] }));
       },
       
@@ -168,6 +166,66 @@ export const useStore = create<AppState>()(
           .filter(c => c.goal_id === goalId)
           .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
           .slice(0, 5);
+      },
+      
+      // Data loading functions
+      loadProfile: async () => {
+        try {
+          const profile = await database.getProfile();
+          set({ profile });
+        } catch (error) {
+          console.error('Failed to load profile:', error);
+        }
+      },
+      
+      loadGoals: async () => {
+        try {
+          const goals = await database.getGoals();
+          set({ goals });
+        } catch (error) {
+          console.error('Failed to load goals:', error);
+        }
+      },
+      
+      loadCheckIns: async (goalId) => {
+        try {
+          const checkIns = await database.getCheckIns(goalId);
+          set({ checkIns });
+        } catch (error) {
+          console.error('Failed to load check-ins:', error);
+        }
+      },
+      
+      loadEvidence: async (goalId) => {
+        try {
+          const evidence = await database.getEvidence(goalId);
+          set({ evidence });
+        } catch (error) {
+          console.error('Failed to load evidence:', error);
+        }
+      },
+      
+      loadBadges: async (goalId) => {
+        try {
+          const badges = await database.getBadges(goalId);
+          set({ badges });
+        } catch (error) {
+          console.error('Failed to load badges:', error);
+        }
+      },
+      
+      loadSupporterConsents: async () => {
+        try {
+          const consents = await database.getSupporterConsents();
+          set((state) => ({
+            consent: {
+              ...state.consent,
+              share_with: consents
+            }
+          }));
+        } catch (error) {
+          console.error('Failed to load supporter consents:', error);
+        }
       }
     }),
     {
