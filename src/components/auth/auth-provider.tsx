@@ -25,6 +25,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Clear persisted state for new user signups to ensure they see onboarding
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Check if this is a new user (recently created)
+          const userCreatedAt = new Date(session.user.created_at);
+          const now = new Date();
+          const timeDiff = now.getTime() - userCreatedAt.getTime();
+          const minutesDiff = timeDiff / (1000 * 60);
+          
+          // If user was created less than 5 minutes ago, clear stored state to force onboarding
+          if (minutesDiff < 5) {
+            localStorage.removeItem('lunebeam-store');
+          }
+        }
       }
     );
 
