@@ -105,6 +105,112 @@ export type Database = {
           },
         ]
       }
+      circle_invites: {
+        Row: {
+          circle_id: string
+          created_at: string
+          delivery_method: string
+          expires_at: string
+          id: string
+          invitee_contact: string
+          invitee_name: string | null
+          inviter_id: string
+          magic_token: string
+          message: string | null
+          parent_led_draft: boolean
+          role: string
+          share_scope: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          circle_id: string
+          created_at?: string
+          delivery_method: string
+          expires_at?: string
+          id?: string
+          invitee_contact: string
+          invitee_name?: string | null
+          inviter_id: string
+          magic_token: string
+          message?: string | null
+          parent_led_draft?: boolean
+          role: string
+          share_scope?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          circle_id?: string
+          created_at?: string
+          delivery_method?: string
+          expires_at?: string
+          id?: string
+          invitee_contact?: string
+          invitee_name?: string | null
+          inviter_id?: string
+          magic_token?: string
+          message?: string | null
+          parent_led_draft?: boolean
+          role?: string
+          share_scope?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_invites_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "family_circles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      circle_memberships: {
+        Row: {
+          circle_id: string
+          consent_log: Json[]
+          created_at: string
+          id: string
+          role: string
+          share_scope: Json
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          circle_id: string
+          consent_log?: Json[]
+          created_at?: string
+          id?: string
+          role: string
+          share_scope?: Json
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          circle_id?: string
+          consent_log?: Json[]
+          created_at?: string
+          id?: string
+          role?: string
+          share_scope?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_memberships_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "family_circles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evidence: {
         Row: {
           description: string | null
@@ -142,6 +248,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      family_circles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       goals: {
         Row: {
@@ -265,6 +395,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      weekly_checkins: {
+        Row: {
+          circle_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          microsteps: Json[]
+          reward: Json | null
+          updated_at: string
+          user_id: string
+          week_of: string
+          wins: Json[]
+        }
+        Insert: {
+          circle_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          microsteps?: Json[]
+          reward?: Json | null
+          updated_at?: string
+          user_id: string
+          week_of: string
+          wins?: Json[]
+        }
+        Update: {
+          circle_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          microsteps?: Json[]
+          reward?: Json | null
+          updated_at?: string
+          user_id?: string
+          week_of?: string
+          wins?: Json[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_checkins_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "family_circles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

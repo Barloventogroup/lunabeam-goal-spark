@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
-import type { Profile, SelectedGoal, CheckInEntry, Evidence, Badge, SupporterConsent } from '@/types';
+import type { Profile, SelectedGoal, CheckInEntry, Evidence, Badge, SupporterConsent, FamilyCircle, CircleMembership, CircleInvite, WeeklyCheckin } from '@/types';
 
 type DbProfile = Database['public']['Tables']['profiles']['Row'];
 type DbGoal = Database['public']['Tables']['goals']['Row'];
@@ -8,6 +8,10 @@ type DbCheckIn = Database['public']['Tables']['check_ins']['Row'];
 type DbEvidence = Database['public']['Tables']['evidence']['Row'];
 type DbBadge = Database['public']['Tables']['badges']['Row'];
 type DbSupporterConsent = Database['public']['Tables']['supporter_consents']['Row'];
+type DbFamilyCircle = Database['public']['Tables']['family_circles']['Row'];
+type DbCircleMembership = Database['public']['Tables']['circle_memberships']['Row'];
+type DbCircleInvite = Database['public']['Tables']['circle_invites']['Row'];
+type DbWeeklyCheckin = Database['public']['Tables']['weekly_checkins']['Row'];
 
 export const database = {
   // Profile operations
@@ -308,5 +312,174 @@ export const database = {
       title: data.title,
       description: data.description
     };
+  },
+
+  // Family Circle operations
+  async getFamilyCircles(): Promise<FamilyCircle[]> {
+    const { data, error } = await supabase
+      .from('family_circles')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async createFamilyCircle(name: string): Promise<FamilyCircle> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('family_circles')
+      .insert({ name, owner_id: user.id })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async getCircleMemberships(circleId: string): Promise<CircleMembership[]> {
+    const { data, error } = await supabase
+      .from('circle_memberships')
+      .select('*')
+      .eq('circle_id', circleId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data.map(membership => ({
+      ...membership,
+      role: membership.role as any,
+      status: membership.status as any,
+      share_scope: membership.share_scope as any
+    }));
+  },
+
+  async createCircleInvite(invite: Omit<CircleInvite, 'id' | 'created_at' | 'updated_at' | 'magic_token' | 'inviter_id'>): Promise<CircleInvite> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    // Generate magic token
+    const magic_token = crypto.randomUUID();
+
+    const { data, error } = await supabase
+      .from('circle_invites')
+      .insert({
+        ...invite,
+        inviter_id: user.id,
+        magic_token,
+        share_scope: invite.share_scope as any
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return {
+      ...data,
+      role: data.role as any,
+      status: data.status as any,
+      delivery_method: data.delivery_method as any,
+      share_scope: data.share_scope as any
+    };
+  },
+
+  async getCircleInvites(circleId?: string): Promise<CircleInvite[]> {
+    let query = supabase
+      .from('circle_invites')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (circleId) {
+      query = query.eq('circle_id', circleId);
+    }
+    
+    const { data, error } = await query;
+    if (error) throw error;
+    
+    return data.map(invite => ({
+      ...invite,
+      role: invite.role as any,
+      status: invite.status as any,
+      delivery_method: invite.delivery_method as any,
+      share_scope: invite.share_scope as any
+    }));
+  },
+
+  async acceptCircleInvite(magic_token: string): Promise<CircleMembership> {
+    const { data: invite, error: inviteError } = await supabase
+      .from('circle_invites')
+      .select('*')
+      .eq('magic_token', magic_token)
+      .eq('status', 'pending')
+      .single();
+    
+    if (inviteError) throw inviteError;
+    if (!invite) throw new Error('Invite not found or expired');
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    // Create membership
+    const { data: membership, error: membershipError } = await supabase
+      .from('circle_memberships')
+      .insert({
+        circle_id: invite.circle_id,
+        user_id: user.id,
+        role: invite.role,
+        share_scope: invite.share_scope
+      })
+      .select()
+      .single();
+    
+    if (membershipError) throw membershipError;
+
+    // Update invite status
+    await supabase
+      .from('circle_invites')
+      .update({ status: 'accepted' })
+      .eq('id', invite.id);
+
+    return {
+      ...membership,
+      role: membership.role as any,
+      status: membership.status as any,
+      share_scope: membership.share_scope as any
+    };
+  },
+
+  async getWeeklyCheckins(circleId?: string, weekOf?: string): Promise<WeeklyCheckin[]> {
+    let query = supabase
+      .from('weekly_checkins')
+      .select('*')
+      .order('week_of', { ascending: false });
+    
+    if (circleId) {
+      query = query.eq('circle_id', circleId);
+    }
+    
+    if (weekOf) {
+      query = query.eq('week_of', weekOf);
+    }
+    
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  async saveWeeklyCheckin(checkin: Omit<WeeklyCheckin, 'id' | 'created_at' | 'updated_at'>): Promise<WeeklyCheckin> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('weekly_checkins')
+      .upsert({
+        ...checkin,
+        user_id: user.id
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
   }
 };

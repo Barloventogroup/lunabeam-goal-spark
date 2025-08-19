@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Profile, Consent, SelectedGoal, CheckInEntry, Evidence, Badge } from '../types';
+import type { FamilyCircle, CircleMembership, CircleInvite, WeeklyCheckin, SelectedGoal, Profile, Consent, CheckInEntry, Evidence, Badge } from '@/types';
 import { database } from '../services/database';
 
 interface AppState {
@@ -11,6 +11,9 @@ interface AppState {
   checkIns: CheckInEntry[];
   evidence: Evidence[];
   badges: Badge[];
+  
+  // Family Circle data
+  familyCircles: FamilyCircle[];
   
   // UI state
   currentGoal: SelectedGoal | null;
@@ -26,6 +29,10 @@ interface AppState {
   updateConsent: (consent: Consent) => void;
   completeOnboarding: () => Promise<void>;
   setCurrentStep: (step: number) => void;
+  
+  // Family Circle actions
+  loadFamilyCircles: () => Promise<void>;
+  createFamilyCircle: (name: string) => Promise<void>;
   
   // Data loading
   loadProfile: () => Promise<void>;
@@ -95,6 +102,7 @@ export const useStore = create<AppState>()(
       checkIns: [],
       evidence: [],
       badges: [],
+      familyCircles: [],
       currentGoal: null,
       currentStep: 0,
       
@@ -240,6 +248,27 @@ export const useStore = create<AppState>()(
         } catch (error) {
           console.error('Failed to load supporter consents:', error);
         }
+      },
+
+      // Family Circle operations
+      loadFamilyCircles: async () => {
+        try {
+          const circles = await database.getFamilyCircles();
+          set({ familyCircles: circles });
+        } catch (error) {
+          console.error('Failed to load family circles:', error);
+        }
+      },
+
+      createFamilyCircle: async (name) => {
+        try {
+          const circle = await database.createFamilyCircle(name);
+          set((state) => ({ 
+            familyCircles: [circle, ...state.familyCircles]
+          }));
+        } catch (error) {
+          console.error('Failed to create family circle:', error);
+        }
       }
     }),
     {
@@ -251,6 +280,7 @@ export const useStore = create<AppState>()(
         checkIns: state.checkIns,
         evidence: state.evidence,
         badges: state.badges,
+        familyCircles: state.familyCircles,
         currentGoal: state.currentGoal
       })
     }

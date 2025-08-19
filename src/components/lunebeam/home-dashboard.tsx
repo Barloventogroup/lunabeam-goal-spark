@@ -18,6 +18,7 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { AIChat } from './ai-chat';
+import { FamilyCircleCard } from './family-circle-card';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/components/auth/auth-provider';
 import { format, addDays, isToday } from 'date-fns';
@@ -29,15 +30,18 @@ interface HomeDashboardProps {
 const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const { 
     profile, 
+    goals,
     getActiveGoal, 
     getRecentCheckIns, 
     badges, 
     evidence,
+    familyCircles,
     loadProfile,
     loadGoals,
     loadCheckIns,
     loadBadges,
-    loadEvidence
+    loadEvidence,
+    loadFamilyCircles
   } = useStore();
   
   const { user, signOut } = useAuth();
@@ -49,8 +53,9 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       loadCheckIns();
       loadBadges();
       loadEvidence();
+      loadFamilyCircles();
     }
-  }, [user, loadProfile, loadGoals, loadCheckIns, loadBadges, loadEvidence]);
+  }, [user, loadProfile, loadGoals, loadCheckIns, loadBadges, loadEvidence, loadFamilyCircles]);
   const activeGoal = getActiveGoal();
   const recentCheckIns = activeGoal ? getRecentCheckIns(activeGoal.id) : [];
   const thisWeekBadges = badges.filter(badge => {
@@ -173,6 +178,19 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           </Card>
         )}
 
+        {/* Family Circle */}
+        {familyCircles.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Family Circle
+            </h2>
+            {familyCircles.map((circle) => (
+              <FamilyCircleCard key={circle.id} circle={circle} goals={goals} />
+            ))}
+          </div>
+        )}
+
         {/* Quick Actions Grid */}
         <div className="grid grid-cols-2 gap-4">
           {/* Next Check-in */}
@@ -218,19 +236,30 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
             </CardContent>
           </Card>
 
-          {/* Supporters */}
+          {/* Family Circle */}
           <Card 
             className="cursor-pointer hover:bg-card-soft transition-smooth"
-            onClick={() => onNavigate('supporters')}
+            onClick={() => {
+              if (familyCircles.length === 0) {
+                // Create first family circle
+                // This would typically open a create modal or navigate to setup
+                onNavigate('family-setup');
+              } else {
+                onNavigate('family-circle', familyCircles[0]);
+              }
+            }}
           >
             <CardContent className="p-4 text-center space-y-3">
               <div className="rounded-full bg-supportive-soft w-12 h-12 flex items-center justify-center mx-auto">
                 <Users className="h-6 w-6 text-supportive" />
               </div>
               <div>
-                <p className="font-medium text-sm">Supporters</p>
+                <p className="font-medium text-sm">Family Circle</p>
                 <p className="text-xs text-foreground-soft">
-                  2 people cheering you on
+                  {familyCircles.length > 0 
+                    ? `${familyCircles[0].name} • Members`
+                    : 'Set up family sharing'
+                  }
                 </p>
               </div>
             </CardContent>

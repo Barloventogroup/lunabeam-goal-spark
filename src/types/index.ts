@@ -97,3 +97,65 @@ export interface Badge {
   title: string;
   description: string;
 }
+
+// Family Circle Types
+export interface FamilyCircle {
+  id: string;
+  name: string;
+  owner_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ShareScope {
+  goals: boolean;
+  progress: boolean;
+  checkins: boolean;
+  badges: boolean;
+  calendar: boolean;
+  notes: boolean;
+  reflections: boolean;
+}
+
+export interface CircleMembership {
+  id: string;
+  circle_id: string;
+  user_id: string;
+  role: 'individual' | 'parent_guide' | 'cheerleader' | 'coach';
+  status: 'pending' | 'active' | 'revoked';
+  share_scope: ShareScope;
+  consent_log: any[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CircleInvite {
+  id: string;
+  circle_id: string;
+  inviter_id: string;
+  invitee_name?: string;
+  invitee_contact: string;
+  role: 'individual' | 'parent_guide' | 'cheerleader' | 'coach';
+  share_scope: ShareScope;
+  message?: string;
+  delivery_method: 'email' | 'sms';
+  magic_token: string;
+  parent_led_draft: boolean;
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WeeklyCheckin {
+  id: string;
+  circle_id: string;
+  user_id: string;
+  week_of: string;
+  wins: any[];
+  microsteps: any[];
+  reward?: any;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
