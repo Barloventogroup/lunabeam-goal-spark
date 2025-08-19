@@ -253,7 +253,9 @@ export const useStore = create<AppState>()(
       // Family Circle operations
       loadFamilyCircles: async () => {
         try {
+          console.log('Loading family circles...');
           const circles = await database.getFamilyCircles();
+          console.log('Loaded family circles:', circles);
           set({ familyCircles: circles });
         } catch (error) {
           console.error('Failed to load family circles:', error);

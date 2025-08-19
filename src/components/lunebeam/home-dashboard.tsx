@@ -41,13 +41,15 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     loadCheckIns,
     loadBadges,
     loadEvidence,
-    loadFamilyCircles
+    loadFamilyCircles,
+    createFamilyCircle
   } = useStore();
   
   const { user, signOut } = useAuth();
 
   useEffect(() => {
     if (user) {
+      console.log('Loading data for user:', user.id);
       loadProfile();
       loadGoals();
       loadCheckIns();
@@ -185,14 +187,33 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
               <Users className="h-5 w-5" />
               Family Circle
             </h2>
-            {familyCircles.map((circle) => (
-              <FamilyCircleCard 
-                key={circle.id} 
-                circle={circle} 
-                goals={goals} 
-                onNavigate={onNavigate}
-              />
-            ))}
+            {familyCircles.map((circle) => {
+              console.log('Rendering family circle:', circle);
+              return (
+                <FamilyCircleCard 
+                  key={circle.id} 
+                  circle={circle} 
+                  goals={goals} 
+                  onNavigate={onNavigate}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {familyCircles.length === 0 && (
+          <div className="text-center py-6 space-y-4">
+            <p className="text-muted-foreground mb-2">No family circles yet</p>
+            <p className="text-sm text-muted-foreground">Create one to share your progress with family</p>
+            <button 
+              onClick={async () => {
+                console.log('Creating test family circle...');
+                await createFamilyCircle('My Family');
+              }}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+            >
+              Create Test Family Circle
+            </button>
           </div>
         )}
 
