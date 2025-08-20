@@ -150,8 +150,25 @@ Let's start with something simple - what would you like me to call you?`;
     }
   };
 
+  const stripMarkup = (text: string) => {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
+      .replace(/\*(.*?)\*/g, '$1') // Remove italic markdown
+      .replace(/__(.*?)__/g, '$1') // Remove underline markdown
+      .replace(/_(.*?)_/g, '$1') // Remove underscore italic
+      .replace(/`(.*?)`/g, '$1') // Remove inline code
+      .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+      .replace(/#+\s*(.*)/g, '$1') // Remove headers
+      .replace(/^\s*[-*+]\s+/gm, '• ') // Convert list markers to bullets
+      .replace(/^\s*\d+\.\s+/gm, '') // Remove numbered list markers
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, '') // Remove images
+      .trim();
+  };
+
   const formatMessage = (message: Message) => {
-    return <p>{message.content}</p>;
+    const cleanContent = stripMarkup(message.content);
+    return <p>{cleanContent}</p>;
   };
 
   return (

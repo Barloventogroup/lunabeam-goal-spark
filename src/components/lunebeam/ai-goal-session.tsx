@@ -259,6 +259,22 @@ Does this look good to you? I can create this as a 7-day micro-goal to get you s
     }
   };
 
+  const stripMarkup = (text: string) => {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
+      .replace(/\*(.*?)\*/g, '$1') // Remove italic markdown
+      .replace(/__(.*?)__/g, '$1') // Remove underline markdown
+      .replace(/_(.*?)_/g, '$1') // Remove underscore italic
+      .replace(/`(.*?)`/g, '$1') // Remove inline code
+      .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+      .replace(/#+\s*(.*)/g, '$1') // Remove headers
+      .replace(/^\s*[-*+]\s+/gm, '• ') // Convert list markers to bullets
+      .replace(/^\s*\d+\.\s+/gm, '') // Remove numbered list markers
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, '') // Remove images
+      .trim();
+  };
+
   const confirmGoal = () => {
     const pendingGoal = (window as any).pendingGoal;
     if (pendingGoal) {
@@ -311,7 +327,7 @@ Does this look good to you? I can create this as a 7-day micro-goal to get you s
                       : 'bg-muted text-foreground'
                   }`}
                 >
-                  {message.content}
+                  {message.sender === 'luna' ? stripMarkup(message.content) : message.content}
                 </div>
                 {message.sender === 'user' && (
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
