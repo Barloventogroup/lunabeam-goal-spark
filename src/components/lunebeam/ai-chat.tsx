@@ -32,13 +32,17 @@ export function AIChat({ context = 'general', goalId, reflection, userSnapshot, 
   const getInitialMessage = () => {
     switch (context) {
       case 'onboarding':
-        return `Hi! I'm Lune, your personal AI assistant. I'm excited to get to know you better! 
+        return `Hey 👋 I'm Lune!
 
-Let's start with something simple - what would you like me to call you?`;
+What should I call you?`;
       case 'reflection':
-        return `Hi! I'm here to help you reflect on your progress. How did your goal work go today?`;
+        return `Hey! How did your goal go today?
+
+Want to share what happened?`;
       default:
-        return `Hi! I'm Lune, your AI coach. I'm here to help you achieve your goals. How can I support you today?`;
+        return `Hey 👋 I'm Lune, your buddy for goals and stuff.
+
+What's on your mind?`;
     }
   };
 
@@ -108,7 +112,7 @@ Let's start with something simple - what would you like me to call you?`;
       } else if (response.guidance) {
         messageContent = response.guidance;
       } else {
-        messageContent = typeof response === 'string' ? response : 'I had trouble understanding that. Could you try again?';
+        messageContent = typeof response === 'string' ? response : 'Hmm, not sure I got that. Want to try again?';
       }
 
       const luneMessage: Message = {
@@ -131,10 +135,10 @@ Let's start with something simple - what would you like me to call you?`;
 
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "I'm having trouble right now. Let me know if you'd like to try again or take a break.",
+        content: "Oops, having some trouble connecting. What do you want to do?",
         sender: 'lune',
         timestamp: new Date(),
-        choices: ["Try again", "Take a break"]
+        choices: ["Try again", "Take a break", "Something else"]
       };
 
       setMessages(prev => [...prev, errorMessage]);
@@ -267,9 +271,9 @@ Let's start with something simple - what would you like me to call you?`;
 
         {/* Helper text for accessibility */}
         <div className="text-xs text-muted-foreground mt-2 text-center">
-          {context === 'onboarding' && "Take your time. You can always add more details later."}
-          {context === 'reflection' && "Share as much or as little as you'd like."}
-          {context === 'general' && "I'm here to help at your pace."}
+          {context === 'onboarding' && "No rush - you can share more anytime"}
+          {context === 'reflection' && "Share whatever feels right"}
+          {context === 'general' && "I'm here when you need me"}
         </div>
       </CardContent>
     </Card>

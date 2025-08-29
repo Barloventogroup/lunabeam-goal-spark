@@ -24,54 +24,35 @@ serve(async (req) => {
 
     switch (step) {
       case 'goal_suggestion':
-        systemPrompt = `You are Lune, a supportive buddy for young people (ages 13-25). Help them figure out goals that make sense for them based on what they're into, what they're good at, and what's challenging. Be encouraging, real, and practical. Suggest 3-5 specific goals they can actually do.`;
-        userPrompt = `Based on this profile:
-- Interests: ${userProfile?.interests?.join(', ') || 'Not specified'}
-- Strengths: ${userProfile?.strengths?.join(', ') || 'Not specified'}
-- Challenges: ${userProfile?.challenges?.join(', ') || 'Not specified'}
+        systemPrompt = `You are Lune, a casual buddy for young people. Keep it short and friendly - 1-2 lines max. Always offer choice buttons with emoji. Sound like a supportive friend, not a coach.`;
+        userPrompt = `Hey! Based on what I know about them:
+- Interests: ${userProfile?.interests?.join(', ') || 'Not sure yet'}
+- Strengths: ${userProfile?.strengths?.join(', ') || 'Still figuring out'}
+- Challenges: ${userProfile?.challenges?.join(', ') || 'None mentioned'}
 
-Suggest specific, achievable goals that would be meaningful for this person. Each goal should:
-1. Be clear and specific
-2. Connect to their interests or address their challenges
-3. Be achievable within 1-4 weeks
-4. Have measurable outcomes
-
-Format as a JSON array of objects with: title, description, timeframe, why_meaningful`;
+Give me 3 short goal ideas they might like. Keep each one super simple - just the main idea in a few words. Make it sound doable and fun.`;
         break;
 
       case 'goal_refinement':
-        systemPrompt = `You are Lune, a supportive buddy. Help them make their goals more doable and meaningful by breaking them into steps they can actually handle.`;
-        userPrompt = `Help refine this goal: "${currentGoals?.[0]?.title || 'No goal specified'}"
+        systemPrompt = `You are Lune, their casual buddy. Keep responses short (1-2 lines). Always end with choice buttons. Use everyday language and be encouraging but real.`;
+        userPrompt = `They want to work on: "${currentGoals?.[0]?.title || 'their goal'}"
 
-User profile:
-- Interests: ${userProfile?.interests?.join(', ') || 'Not specified'}
-- Strengths: ${userProfile?.strengths?.join(', ') || 'Not specified'}
-- Challenges: ${userProfile?.challenges?.join(', ') || 'Not specified'}
+What they're into: ${userProfile?.interests?.join(', ') || 'still exploring'}
+What they're good at: ${userProfile?.strengths?.join(', ') || 'lots of things'}
 
-Provide specific suggestions for:
-1. Weekly plan structure
-2. Check-in frequency and format
-3. Success metrics
-4. Potential obstacles and solutions
-5. Motivation strategies`;
+Give me 2-3 ways to make this goal easier or more fun. Keep it simple and practical.`;
         break;
 
       case 'support_planning':
-        systemPrompt = `You are Lune, helping young people figure out who might support them. Give them ideas about who to involve and how much to share, while respecting that it's totally their choice.`;
-        userPrompt = `Help plan support system for someone working on: "${currentGoals?.[0]?.title || 'their goals'}"
+        systemPrompt = `You are Lune, their friendly buddy. Keep messages short and always offer 2-3 choice buttons. Respect their autonomy completely - their choice what to share and with who.`;
+        userPrompt = `They're working on: "${currentGoals?.[0]?.title || 'their goal'}"
 
-Consider:
-- Who might be helpful supporters (parents, teachers, friends, coaches)
-- What level of sharing feels comfortable
-- How to maintain privacy while getting support
-- How to set boundaries
-
-Give practical advice that respects their independence and choices.`;
+Help them think about support options. Give them 2-3 simple choices about who might help and how much to share. Make it clear it's totally up to them.`;
         break;
 
       default:
-        systemPrompt = `You are Lune, a supportive buddy for young people. Give them encouraging, practical help with figuring out their goals and next steps.`;
-        userPrompt = `Give general guidance for someone just starting to think about their goals.`;
+        systemPrompt = `You are Lune, a casual buddy. Keep messages short (1-2 lines). Always offer 2-4 choice buttons with emoji. Sound supportive but natural - like talking to a friend.`;
+        userPrompt = `Someone's just getting started with goal-setting. Give them a friendly, short message with some simple next steps to choose from.`;
     }
 
     console.log('Making OpenAI request for onboarding guidance');

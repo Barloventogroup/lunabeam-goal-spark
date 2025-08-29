@@ -76,8 +76,8 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">Choose a Category</h1>
-            <p className="text-foreground-soft">What area would you like to work on?</p>
+            <h1 className="text-2xl font-bold text-foreground">What do you want to work on?</h1>
+            <p className="text-foreground-soft">Pick what feels right today</p>
           </div>
         </div>
 
@@ -115,7 +115,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
         </div>
 
         <div className="text-center text-sm text-muted-foreground pt-4">
-          Choose the category that best matches what you'd like to improve or learn
+          Not sure? Pick anything - we can always explore different areas later 😊
         </div>
       </div>
     </div>

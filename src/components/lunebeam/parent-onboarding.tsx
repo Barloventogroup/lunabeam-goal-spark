@@ -219,11 +219,11 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
 
             <div className="text-center space-y-3">
               <p className="text-sm text-foreground-soft">
-                We use this only to personalize ideas. You can edit or delete it later.
+                This helps me suggest goals that fit. You can change it anytime.
               </p>
               <div className="space-y-2">
                 <Button onClick={handleComplete} className="w-full">
-                  Continue
+                  Let's go 🚀
                 </Button>
                 <Button variant="outline" onClick={handleBack} className="w-full">
                   Skip for now
@@ -262,9 +262,9 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
                   <span className="text-white text-xl">👨‍👩‍👧‍👦</span>
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Let's personalize their experience</h2>
+                  <h2 className="text-xl font-semibold mb-4">Let's get to know them</h2>
                   <p className="text-foreground-soft leading-relaxed">
-                    To personalize suggestions, we'll ask you a few questions about the person you're exploring Lunebeam for, including name and pronouns, plus a few basics. You can use a nickname or initials and update this anytime. Nothing is shared without your permission.
+                    A few quick questions help me suggest better goals. Use a nickname if you want - you can change anything later.
                   </p>
                 </div>
               </div>

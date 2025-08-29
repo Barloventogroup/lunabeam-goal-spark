@@ -263,9 +263,9 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
                   <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-white text-xl font-bold">L</span>
                   </div>
-                  <h1 className="text-2xl font-bold mb-2">Hi! I'm Lune 🌙</h1>
+                  <h1 className="text-2xl font-bold mb-2">Hey 👋 I'm Lune</h1>
                   <p className="text-foreground-soft">
-                    I'm your personal assistant. Before we start, I need to know who's creating this account.
+                    Before we start, who's this account for?
                   </p>
                 </div>
 
