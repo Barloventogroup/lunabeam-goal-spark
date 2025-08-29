@@ -15,7 +15,7 @@ import {
 import { AIService } from '@/services/aiService';
 import { useStore } from '@/store/useStore';
 import { useToast } from '@/hooks/use-toast';
-import { SuggestionEngine } from './suggestion-engine';
+import { RoundBasedSuggestionEngine } from './round-based-suggestion-engine';
 
 interface Message {
   id: string;
@@ -46,7 +46,7 @@ export const AIGoalSession: React.FC<AIGoalSessionProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionPhase, setSessionPhase] = useState<'greeting' | 'suggestions' | 'size' | 'summarizing' | 'complete'>('greeting');
+  const [sessionPhase, setSessionPhase] = useState<'greeting' | 'suggestions' | 'summarizing' | 'complete'>('greeting');
   const [selectedSuggestion, setSelectedSuggestion] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { profile, goals } = useStore();
@@ -105,17 +105,40 @@ I'm Lune, and I'm here to help you figure out something fun for ${categoryNames[
 
   const handleSuggestionSelected = (suggestion: any) => {
     setSelectedSuggestion(suggestion);
-    setSessionPhase('size');
     
-    const luneMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      content: `Great choice! "${suggestion.text}"
+    // Create goal directly with follow-up context - NO SIZE SELECTION
+    const goalTitle = suggestion.followUpChoice 
+      ? `${suggestion.text} - ${suggestion.followUpChoice}`
+      : suggestion.text;
+    
+    const convertedGoal = {
+      title: goalTitle,
+      description: `A ${category} goal: ${suggestion.text}`,
+      category: category,
+      steps: [
+        'Start with a small step',
+        'Keep going at your pace', 
+        'Celebrate your progress'
+      ],
+      timeEstimate: '15-30 minutes'
+    };
 
-How big do you want this goal to be?`,
+    const summaryMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: `Perfect! Here's your goal:
+
+**${convertedGoal.title}**
+
+This should take about ${convertedGoal.timeEstimate}.
+
+Sound good?`,
       sender: 'lune',
       timestamp: new Date()
     };
-    setMessages(prev => [...prev, luneMessage]);
+
+    setMessages(prev => [...prev, summaryMessage]);
+    setSessionPhase('summarizing');
+    (window as any).pendingGoal = convertedGoal;
   };
 
   const handleMetaAction = (action: 'new_ideas' | 'explain' | 'write_own' | 'pause') => {
@@ -154,43 +177,7 @@ How big do you want this goal to be?`,
     }
   };
 
-  const handleSizeSelected = (size: 'small' | 'medium' | 'big') => {
-    const sizeInfo = {
-      small: { time: '10-15 min/day', description: 'Quick and easy' },
-      medium: { time: '20-30 min/day', description: 'Just right' },
-      big: { time: '45+ min/day', description: 'Go for it!' }
-    };
-
-    const selectedSize = sizeInfo[size];
-    
-    // Create the goal
-    const convertedGoal = {
-      title: selectedSuggestion.text,
-      description: selectedSuggestion.explain || 'A goal to work on',
-      category: category,
-      steps: [`Day 1-3: Start with ${selectedSuggestion.text.toLowerCase()}`, `Day 4-5: Keep going`, `Day 6-7: Reflect and adjust`],
-      timeEstimate: selectedSize.time
-    };
-
-    const summaryMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      content: `Cool! Here's your goal:
-
-**${convertedGoal.title}**
-
-Size: ${selectedSize.description} (${selectedSize.time})
-
-Your week: ${convertedGoal.steps.join(' → ')}
-
-Sound good?`,
-      sender: 'lune',
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, summaryMessage]);
-    setSessionPhase('summarizing');
-    (window as any).pendingGoal = convertedGoal;
-  };
+  // REMOVED handleSizeSelected - no more size questions!
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -351,37 +338,11 @@ Sound good?`,
               </Button>
             </div>
           ) : sessionPhase === 'suggestions' ? (
-            <SuggestionEngine
+            <RoundBasedSuggestionEngine
               category={category}
               onSelectOption={handleSuggestionSelected}
               onMetaAction={handleMetaAction}
             />
-          ) : sessionPhase === 'size' ? (
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => handleSizeSelected('small')}
-                  className="flex-1 flex items-center gap-2"
-                >
-                  🌱 Small (10-15 min)
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => handleSizeSelected('medium')}
-                  className="flex-1 flex items-center gap-2"
-                >
-                  🌿 Medium (20-30 min)
-                </Button>
-              </div>
-              <Button 
-                variant="outline" 
-                onClick={() => handleSizeSelected('big')}
-                className="w-full flex items-center gap-2"
-              >
-                🌳 Big (45+ min)
-              </Button>
-            </div>
           ) : sessionPhase === 'summarizing' ? (
             <div className="flex gap-2">
               <Button 

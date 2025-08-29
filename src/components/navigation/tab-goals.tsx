@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GoalsList } from '../lunebeam/goals-list';
 import { GoalDetail } from '../lunebeam/goal-detail';
-import { AIGoalSession } from '../lunebeam/ai-goal-session';
+import { LuneAISession } from '../lunebeam/lune-ai-session';
 import { GoalSummary } from '../lunebeam/goal-summary';
 
 type GoalsView = 'list' | 'detail' | 'create' | 'summary';
@@ -46,7 +46,7 @@ export const TabGoals: React.FC = () => {
         );
       case 'create':
         return (
-          <AIGoalSession 
+          <LuneAISession 
             category="education" 
             onBack={() => setCurrentView('list')} 
             onGoalCreated={handleAiGoalCreated}
