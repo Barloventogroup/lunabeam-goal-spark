@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MessageCircle, Bell } from 'lucide-react';
+import lunebeamLogo from '../../assets/lunebeam-logo.svg';
 import { ThisWeeksGoals } from '../lunebeam/this-weeks-goals';
 import { QuickActions } from '../lunebeam/quick-actions';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
@@ -29,9 +30,11 @@ export const TabHome: React.FC<TabHomeProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-card/80 backdrop-blur border-b">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-bold">L</span>
-            </div>
+            <img 
+              src={lunebeamLogo} 
+              alt="Lunebeam logo" 
+              className="w-8 h-8"
+            />
             <h1 className="text-xl font-bold">lunebeam</h1>
           </div>
           
