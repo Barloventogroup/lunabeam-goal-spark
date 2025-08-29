@@ -74,7 +74,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {/* Welcome Message */}
           <div>
             <h2 className="text-2xl font-bold mb-1">
-              Welcome back, {profile?.first_name || 'there'} ✨
+              Welcome back, {profile?.first_name || 'there'}!!
             </h2>
             <p className="text-muted-foreground">Let's keep moving forward, one step at a time.</p>
           </div>
