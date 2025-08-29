@@ -1,4 +1,5 @@
 import { useState, FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,6 +63,15 @@ export default function RequestReset() {
               {msg}
             </p>
           )}
+          
+          <div className="mt-4 text-center">
+            <Link 
+              to="/auth"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              Back to sign in
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
