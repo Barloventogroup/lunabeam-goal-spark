@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, CheckCircle, Plus, Award } from 'lucide-react';
+import { MessageCircle, CheckCircle, Plus, Award } from 'lucide-react';
 import lunebeamLogo from '../../assets/lunebeam-logo.svg';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
@@ -8,10 +8,12 @@ import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
 import { GoalWizard } from '../lunebeam/goal-wizard';
 interface TabHomeProps {
+  onOpenChat: () => void;
   onNavigateToGoals: (goalId?: string) => void;
 }
 type HomeView = 'dashboard' | 'rewards' | 'checkin' | 'add-goal';
 export const TabHome: React.FC<TabHomeProps> = ({
+  onOpenChat,
   onNavigateToGoals
 }) => {
   const [currentView, setCurrentView] = useState<HomeView>('dashboard');
@@ -57,8 +59,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
             <h1 className="text-xl font-bold">lunebeam</h1>
           </div>
           
-          <button className="flex items-center justify-center w-11 h-11 rounded-full bg-muted hover:bg-muted/80 transition-colors" aria-label="Profile">
-            <User className="h-5 w-5 text-muted-foreground" />
+          <button onClick={onOpenChat} className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors" aria-label="Open Lune Chat">
+            <MessageCircle className="h-5 w-5 text-primary" />
           </button>
         </div>
 
