@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageCircle, CheckCircle, Plus, Award } from 'lucide-react';
 import lunebeamLogo from '../../assets/lunebeam-logo.svg';
 import { Button } from '../ui/button';
@@ -7,6 +7,7 @@ import { Progress } from '../ui/progress';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
 import { GoalWizard } from '../lunebeam/goal-wizard';
+import { useStore } from '../../store/useStore';
 interface TabHomeProps {
   onOpenChat: () => void;
   onNavigateToGoals: (goalId?: string) => void;
@@ -18,6 +19,11 @@ export const TabHome: React.FC<TabHomeProps> = ({
 }) => {
   const [currentView, setCurrentView] = useState<HomeView>('dashboard');
   const [showCheckinModal, setShowCheckinModal] = useState(false);
+  const { profile, loadProfile } = useStore();
+  
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
   
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('dashboard')} />;
@@ -67,7 +73,9 @@ export const TabHome: React.FC<TabHomeProps> = ({
         <div className="p-4 space-y-6">
           {/* Welcome Message */}
           <div>
-            <h2 className="text-2xl font-bold mb-1">Welcome back, Oliver ✨</h2>
+            <h2 className="text-2xl font-bold mb-1">
+              Welcome back, {profile?.first_name || 'there'} ✨
+            </h2>
             <p className="text-muted-foreground">Let's keep moving forward, one step at a time.</p>
           </div>
 
