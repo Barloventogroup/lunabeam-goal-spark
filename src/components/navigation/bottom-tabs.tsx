@@ -38,7 +38,7 @@ export const BottomTabs: React.FC = () => {
   const renderActiveTab = () => {
     switch (activeTab) {
       case 'home':
-        return <TabHome onOpenChat={() => setShowChat(true)} onNavigateToGoals={(goalId?: string) => {
+        return <TabHome onNavigateToGoals={(goalId?: string) => {
           setActiveTab('goals');
           // TODO: Pass goalId to goals tab
         }} />;
@@ -49,7 +49,7 @@ export const BottomTabs: React.FC = () => {
       case 'you':
         return <TabYou />;
       default:
-        return <TabHome onOpenChat={() => setShowChat(true)} onNavigateToGoals={() => setActiveTab('goals')} />;
+        return <TabHome onNavigateToGoals={() => setActiveTab('goals')} />;
     }
   };
 
