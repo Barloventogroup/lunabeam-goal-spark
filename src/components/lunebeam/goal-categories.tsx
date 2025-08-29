@@ -7,6 +7,8 @@ import {
   Home, 
   Heart, 
   Users,
+  Building,
+  BookOpen,
   ArrowLeft
 } from 'lucide-react';
 
@@ -21,44 +23,60 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
 }) => {
   const categories = [
     {
-      id: 'education',
-      title: 'Education',
-      description: 'Learning, skills, courses, certifications',
-      icon: GraduationCap,
-      color: 'bg-blue-500/10 text-blue-600 border-blue-200',
-      examples: 'Reading, online courses, studying'
-    },
-    {
-      id: 'employment',
-      title: 'Employment',
-      description: 'Job skills, career development, work habits',
-      icon: Briefcase,
-      color: 'bg-green-500/10 text-green-600 border-green-200',
-      examples: 'Interview skills, networking, productivity'
-    },
-    {
-      id: 'independent_living',
-      title: 'Independent Living',
-      description: 'Daily life skills, self-care, organization',
-      icon: Home,
-      color: 'bg-purple-500/10 text-purple-600 border-purple-200',
-      examples: 'Cooking, budgeting, time management'
-    },
-    {
       id: 'health',
-      title: 'Health',
+      title: '💪 Health',
       description: 'Physical wellness, mental health, self-care',
       icon: Heart,
       color: 'bg-red-500/10 text-red-600 border-red-200',
-      examples: 'Exercise, nutrition, mindfulness'
+      examples: 'Walk, try a snack, sleep better'
+    },
+    {
+      id: 'education',
+      title: '🎓 Education',
+      description: 'Learning, skills, courses, certifications',
+      icon: GraduationCap,
+      color: 'bg-blue-500/10 text-blue-600 border-blue-200',
+      examples: 'Read 1 page, write 1 sentence, review schedule'
+    },
+    {
+      id: 'employment',
+      title: '💼 Employment',
+      description: 'Job skills, career development, work habits',
+      icon: Briefcase,
+      color: 'bg-green-500/10 text-green-600 border-green-200',
+      examples: 'Practice interview Q, update resume, send email'
+    },
+    {
+      id: 'independent_living',
+      title: '🏠 Independent Living',
+      description: 'Daily life skills, self-care, organization',
+      icon: Home,
+      color: 'bg-purple-500/10 text-purple-600 border-purple-200',
+      examples: 'Make bed, set table, laundry to basket'
     },
     {
       id: 'social_skills',
-      title: 'Social Skills',
+      title: '🤝 Social Skills',
       description: 'Communication, relationships, community',
       icon: Users,
       color: 'bg-orange-500/10 text-orange-600 border-orange-200',
-      examples: 'Making friends, conversation, teamwork'
+      examples: 'Say "hi", eye contact 3s, text "how are you?"'
+    },
+    {
+      id: 'housing',
+      title: '🏘 Housing',
+      description: 'Finding and maintaining housing',
+      icon: Building,
+      color: 'bg-teal-500/10 text-teal-600 border-teal-200',
+      examples: 'Browse housing option, list wants/needs, call office'
+    },
+    {
+      id: 'postsecondary',
+      title: '🎓 Postsecondary',
+      description: 'College, trade school, certificates',
+      icon: BookOpen,
+      color: 'bg-indigo-500/10 text-indigo-600 border-indigo-200',
+      examples: 'Look at 1 program, visit disability office site, student story'
     }
   ];
 

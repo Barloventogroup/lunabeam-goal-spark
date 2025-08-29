@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GoalCategories } from './goal-categories';
-import { AIGoalSession } from './ai-goal-session';
+import { LuneAISession } from './lune-ai-session';
 import { GoalSummary } from './goal-summary';
 
 interface ExtractedGoal {
@@ -59,7 +59,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ onComplete }) => {
     
     case 'session':
       return (
-        <AIGoalSession 
+        <LuneAISession 
           category={selectedCategory}
           onBack={handleBack}
           onGoalCreated={handleGoalCreated}

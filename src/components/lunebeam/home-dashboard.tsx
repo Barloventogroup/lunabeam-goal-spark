@@ -20,7 +20,7 @@ import {
 import { AIChat } from './ai-chat';
 import { FamilyCircleCard } from './family-circle-card';
 import { PersonalizedGreeting } from './personalized-greeting';
-import { NotificationHandler } from './notification-handler';
+import { NotificationSystem } from './notification-system';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/components/auth/auth-provider';
 import { format, addDays, isToday } from 'date-fns';
@@ -155,13 +155,13 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           onTodaysSteps={handleTodaysSteps}
         />
         
-        <NotificationHandler
+        <NotificationSystem
           goals={goals}
-          onSnooze={handleSnooze}
-          onSkip={handleSkip}
-          onMakeSmaller={handleMakeSmaller}
+          onSnoozeGoal={(goalId) => handleSnooze(goalId, '1h')}
+          onSkipGoal={handleSkip}
+          onMakeSmallerGoal={handleMakeSmaller}
           onMoveToTomorrow={handleMoveToTomorrow}
-          onDismiss={handleDismiss}
+          onDismissGoal={handleDismiss}
         />
 
         {/* Active Goal Card */}

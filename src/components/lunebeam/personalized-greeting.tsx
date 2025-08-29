@@ -23,11 +23,11 @@ export const PersonalizedGreeting: React.FC<PersonalizedGreetingProps> = ({
       const name = profile?.first_name || 'friend';
 
       if (hour < 12) {
-        return `Good morning, ${name} 👋 Ready to pick up where you left off?`;
+        return `Good morning, ${name} 👋 Ready for a win?`;
       } else if (hour < 17) {
-        return `Hey ${name} 🙂 Want to make a small step today?`;
+        return `Hey ${name} 🙂 Want to take a small step?`;
       } else {
-        return `Welcome back, ${name} 🌙 One little win before you wrap up?`;
+        return `Welcome back, ${name} 🌙 One little goal before bed?`;
       }
     };
 
@@ -46,7 +46,7 @@ export const PersonalizedGreeting: React.FC<PersonalizedGreetingProps> = ({
               onClick={onResumeGoal}
               className="flex items-center gap-2"
             >
-              ▶️ Resume goal
+              ▶️ Resume
             </Button>
           )}
           
@@ -56,7 +56,7 @@ export const PersonalizedGreeting: React.FC<PersonalizedGreetingProps> = ({
               onClick={onNewGoal}
               className="flex items-center gap-2"
             >
-              ➕ New goal
+              ➕ New Goal
             </Button>
           )}
           
@@ -66,7 +66,7 @@ export const PersonalizedGreeting: React.FC<PersonalizedGreetingProps> = ({
               onClick={onTodaysSteps}
               className="flex items-center gap-2"
             >
-              📅 Today's steps
+              📅 Today's Steps
             </Button>
           )}
         </div>
