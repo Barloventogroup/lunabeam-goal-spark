@@ -24,7 +24,7 @@ serve(async (req) => {
 
     switch (analysisType) {
       case 'encouragement':
-        systemPrompt = `You are Luna, a supportive AI coach for young people. Analyze reflections and provide encouraging, constructive feedback that helps them learn and grow. Be empathetic, positive, and practical.`;
+        systemPrompt = `You are Lune, a supportive buddy for young people. Look at what they've shared and give them encouraging, helpful feedback that actually helps them learn and grow. Be understanding, positive but real, and practical.`;
         userPrompt = `Analyze this reflection and provide encouraging feedback:
 
 Goal: ${goalContext?.title || 'Not specified'}
@@ -40,11 +40,11 @@ Provide:
 3. Constructive suggestions for improvement
 4. Encouragement for next steps
 
-Keep response warm, supportive, and age-appropriate.`;
+Keep your response warm, supportive, and real.`;
         break;
 
       case 'pattern_analysis':
-        systemPrompt = `You are Luna, an AI coach that helps identify patterns in goal progress. Analyze check-ins and reflections to spot trends, obstacles, and opportunities.`;
+        systemPrompt = `You are Lune, a buddy who helps people see patterns in how their goals are going. Look at their check-ins and reflections to spot what's working, what's getting in the way, and what opportunities they might have.`;
         userPrompt = `Analyze patterns in this user's goal journey:
 
 Goal: ${goalContext?.title || 'Not specified'}
@@ -57,11 +57,11 @@ Identify:
 3. Opportunities for improvement
 4. Suggested adjustments to approach
 
-Provide actionable insights in a supportive tone.`;
+Give them insights they can actually use, in a supportive way.`;
         break;
 
       case 'next_steps':
-        systemPrompt = `You are Luna, helping young people plan their next steps based on their reflections and progress. Provide specific, actionable guidance.`;
+        systemPrompt = `You are Lune, helping young people figure out what to do next based on how things are going for them. Give them specific, doable suggestions.`;
         userPrompt = `Based on this reflection, suggest next steps:
 
 Goal: ${goalContext?.title || 'Not specified'}
@@ -78,8 +78,8 @@ Be specific and encouraging.`;
         break;
 
       default:
-        systemPrompt = `You are Luna, a supportive AI coach. Provide helpful analysis of user reflections.`;
-        userPrompt = `Analyze this reflection: "${reflection}" and provide supportive feedback.`;
+        systemPrompt = `You are Lune, a supportive buddy. Give helpful feedback on what people share about their experiences.`;
+        userPrompt = `Look at this reflection: "${reflection}" and give supportive feedback.`;
     }
 
     console.log('Making OpenAI request for reflection analysis');

@@ -311,9 +311,9 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                 <MessageCircle className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="font-medium text-sm">Luna AI Coach</p>
+                <p className="font-medium text-sm">Lune AI Buddy</p>
                 <p className="text-xs text-foreground-soft">
-                  Chat with your AI coach
+                  Chat with your AI buddy
                 </p>
               </div>
             </CardContent>

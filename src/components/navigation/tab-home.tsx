@@ -46,7 +46,7 @@ export const TabHome: React.FC<TabHomeProps> = ({ onOpenChat, onNavigateToGoals 
           <button
             onClick={onOpenChat}
             className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
-            aria-label="Open Luna Chat"
+            aria-label="Open Lune Chat"
           >
             <MessageCircle className="h-5 w-5 text-primary" />
           </button>
