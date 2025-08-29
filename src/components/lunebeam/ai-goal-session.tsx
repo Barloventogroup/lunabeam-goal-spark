@@ -15,6 +15,7 @@ import {
 import { AIService } from '@/services/aiService';
 import { useStore } from '@/store/useStore';
 import { useToast } from '@/hooks/use-toast';
+import { SuggestionEngine } from './suggestion-engine';
 
 interface Message {
   id: string;
@@ -45,7 +46,8 @@ export const AIGoalSession: React.FC<AIGoalSessionProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionPhase, setSessionPhase] = useState<'probing' | 'summarizing' | 'complete'>('probing');
+  const [sessionPhase, setSessionPhase] = useState<'greeting' | 'suggestions' | 'size' | 'summarizing' | 'complete'>('greeting');
+  const [selectedSuggestion, setSelectedSuggestion] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { profile, goals } = useStore();
   const { toast } = useToast();
@@ -64,9 +66,7 @@ export const AIGoalSession: React.FC<AIGoalSessionProps> = ({
       id: '1',
       content: `Hey 👋 Want to set a new goal today?
 
-I'm Lune, and I'm here to help you figure out something fun for ${categoryNames[category as keyof typeof categoryNames]}.
-
-What feels most helpful right now?`,
+I'm Lune, and I'm here to help you figure out something fun for ${categoryNames[category as keyof typeof categoryNames]}.`,
       sender: 'lune',
       timestamp: new Date()
     };
@@ -81,6 +81,117 @@ What feels most helpful right now?`,
     scrollToBottom();
   }, [messages]);
 
+  const handleGreetingResponse = (response: 'yes' | 'no') => {
+    if (response === 'yes') {
+      setSessionPhase('suggestions');
+      const luneMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: 'Cool! Let me suggest some ideas for you.',
+        sender: 'lune',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, luneMessage]);
+    } else {
+      const luneMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: 'No worries! Come back anytime you want to set a goal 😊',
+        sender: 'lune',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, luneMessage]);
+      setTimeout(() => onBack(), 1500);
+    }
+  };
+
+  const handleSuggestionSelected = (suggestion: any) => {
+    setSelectedSuggestion(suggestion);
+    setSessionPhase('size');
+    
+    const luneMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: `Great choice! "${suggestion.text}"
+
+How big do you want this goal to be?`,
+      sender: 'lune',
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, luneMessage]);
+  };
+
+  const handleMetaAction = (action: 'new_ideas' | 'explain' | 'write_own' | 'pause') => {
+    switch (action) {
+      case 'new_ideas':
+        // Reset suggestions to show new ideas
+        setSessionPhase('suggestions');
+        const newIdeasMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: 'Sure! Let me show you some fresh ideas.',
+          sender: 'lune',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, newIdeasMessage]);
+        break;
+      case 'write_own':
+        setSessionPhase('complete');
+        const writeOwnMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: 'Perfect! What goal would you like to work on? Just type it below.',
+          sender: 'lune',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, writeOwnMessage]);
+        break;
+      case 'pause':
+        const pauseMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: 'All good! Take your time. Come back whenever you feel ready 😊',
+          sender: 'lune',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, pauseMessage]);
+        setTimeout(() => onBack(), 1500);
+        break;
+    }
+  };
+
+  const handleSizeSelected = (size: 'small' | 'medium' | 'big') => {
+    const sizeInfo = {
+      small: { time: '10-15 min/day', description: 'Quick and easy' },
+      medium: { time: '20-30 min/day', description: 'Just right' },
+      big: { time: '45+ min/day', description: 'Go for it!' }
+    };
+
+    const selectedSize = sizeInfo[size];
+    
+    // Create the goal
+    const convertedGoal = {
+      title: selectedSuggestion.text,
+      description: selectedSuggestion.explain || 'A goal to work on',
+      category: category,
+      steps: [`Day 1-3: Start with ${selectedSuggestion.text.toLowerCase()}`, `Day 4-5: Keep going`, `Day 6-7: Reflect and adjust`],
+      timeEstimate: selectedSize.time
+    };
+
+    const summaryMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: `Cool! Here's your goal:
+
+**${convertedGoal.title}**
+
+Size: ${selectedSize.description} (${selectedSize.time})
+
+Your week: ${convertedGoal.steps.join(' → ')}
+
+Sound good?`,
+      sender: 'lune',
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, summaryMessage]);
+    setSessionPhase('summarizing');
+    (window as any).pendingGoal = convertedGoal;
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -93,123 +204,33 @@ What feels most helpful right now?`,
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
-    setIsLoading(true);
 
-    try {
-      // Create context for the AI based on conversation history
-      const conversationHistory = [...messages, userMessage]
-        .map(m => `${m.sender}: ${m.content}`)
-        .join('\n');
+    if (sessionPhase === 'complete') {
+      // User is writing their own goal
+      const convertedGoal = {
+        title: input.trim(),
+        description: 'Custom goal',
+        category: category,
+        steps: ['Day 1-3: Get started', 'Day 4-5: Keep going', 'Day 6-7: Finish strong'],
+        timeEstimate: '30 minutes per day'
+      };
 
-      const response = await AIService.getCoachingGuidance({
-        question: `You are Lune, a casual buddy helping teens and young adults set goals. Follow these rules:
+      const summaryMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `Love it! Here's your goal:
 
-CONVERSATION STYLE:
-- Keep messages SHORT (1-2 lines max)
-- Ask ONE question per step
-- Always provide 2-4 choice buttons with emoji
-- Include "Not sure" option every time
-- Sound like a supportive friend, not a coach
-- Use everyday language
-- Respect their autonomy
+**${convertedGoal.title}**
 
-GOAL SETTING FLOW for ${categoryNames[category as keyof typeof categoryNames]}:
-1. First ask: "What feels most helpful right now?" 
-   Options: 🌱 Build confidence | 🧠 Learn something new | 🤝 Connect with others | 🎨 Make/create something | ❓ Not sure
-
-2. Then ask: "What's one small thing you want to try?"
-   Give 3-4 specific options for their area
-
-3. Ask: "How big do you want this goal to be?"
-   Options: 🌱 Small (10-15 min) | 🌿 Medium (20-30 min) | 🌳 Big (45+ min) | ❓ Not sure
-
-4. When ready, create goal with: "GOAL_READY:" + JSON
-
-Current conversation: ${conversationHistory}
-
-If you have enough info (specific activity, size preference), respond with "GOAL_READY:" + this JSON:
-{
-  "selected_goal": {
-    "title": "goal title",
-    "week_plan": {
-      "steps": ["day 1-3 action", "day 4-5 action", "day 6-7 action"],
-      "time_per_day": "based on their size choice",
-      "success_criteria": ["what success looks like"],
-      "too_hard_try": ["easier backup plan"]
-    }
-  }
-}
-
-Otherwise, ask your next question with 2-4 choice buttons. Keep it friendly and short!`,
-        userSnapshot: profile,
-        currentGoals: goals,
-        context: `goal_setting_${category}`
-      });
-
-      let responseContent = response?.guidance || response || 'Hmm, not sure I got that. Want to try again?';
-
-      // Check if AI is ready to create a goal
-      if (responseContent.includes('GOAL_READY:')) {
-        const jsonStart = responseContent.indexOf('{');
-        const jsonEnd = responseContent.lastIndexOf('}') + 1;
-        
-        if (jsonStart !== -1 && jsonEnd > jsonStart) {
-          try {
-            const goalData = JSON.parse(responseContent.substring(jsonStart, jsonEnd));
-            
-            // Show summary to user first
-            const summaryMessage: Message = {
-              id: (Date.now() + 1).toString(),
-              content: `Cool! Here's your goal:
-
-**${goalData.selected_goal?.title || goalData.candidate_ideas?.[0]?.title}**
-
-Your week: ${goalData.selected_goal?.week_plan?.steps?.join(' → ') || 'Steps that work for you'}
-
-Time: ${goalData.selected_goal?.week_plan?.time_per_day || '15-30 min/day'}
+Your week: ${convertedGoal.steps.join(' → ')}
 
 Sound good?`,
-              sender: 'lune',
-              timestamp: new Date()
-            };
-
-            setMessages(prev => [...prev, summaryMessage]);
-            setSessionPhase('summarizing');
-            
-            // Store the goal data for creation - convert to expected format
-            const convertedGoal = {
-              title: goalData.selected_goal?.title || goalData.candidate_ideas?.[0]?.title || 'Untitled Goal',
-              description: goalData.selected_goal?.week_plan?.success_criteria?.join(' ') || goalData.candidate_ideas?.[0]?.why_it_fits || 'Goal description',
-              category: category,
-              steps: goalData.selected_goal?.week_plan?.steps || ['Step 1', 'Step 2', 'Step 3'],
-              timeEstimate: goalData.selected_goal?.week_plan?.time_per_day || '30 minutes per day'
-            };
-            (window as any).pendingGoal = convertedGoal;
-            return;
-          } catch (e) {
-            console.error('Failed to parse goal JSON:', e);
-          }
-        }
-      }
-
-      // Regular conversation response
-      const luneMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: responseContent,
         sender: 'lune',
         timestamp: new Date()
       };
 
-      setMessages(prev => [...prev, luneMessage]);
-    } catch (error) {
-      console.error('Error getting AI response:', error);
-      toast({
-        title: "Error",
-        description: "I'm having trouble right now. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
+      setMessages(prev => [...prev, summaryMessage]);
+      setSessionPhase('summarizing');
+      (window as any).pendingGoal = convertedGoal;
     }
   };
 
@@ -313,11 +334,59 @@ Sound good?`,
 
         {/* Input/Actions */}
         <div className="p-4 border-t bg-card/80 backdrop-blur">
-          {sessionPhase === 'summarizing' ? (
+          {sessionPhase === 'greeting' ? (
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
-                onClick={() => setSessionPhase('probing')}
+                onClick={() => handleGreetingResponse('no')}
+                className="flex-1"
+              >
+                Not now
+              </Button>
+              <Button 
+                onClick={() => handleGreetingResponse('yes')}
+                className="flex-1"
+              >
+                Yes, let's go
+              </Button>
+            </div>
+          ) : sessionPhase === 'suggestions' ? (
+            <SuggestionEngine
+              category={category}
+              onSelectOption={handleSuggestionSelected}
+              onMetaAction={handleMetaAction}
+            />
+          ) : sessionPhase === 'size' ? (
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleSizeSelected('small')}
+                  className="flex-1 flex items-center gap-2"
+                >
+                  🌱 Small (10-15 min)
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleSizeSelected('medium')}
+                  className="flex-1 flex items-center gap-2"
+                >
+                  🌿 Medium (20-30 min)
+                </Button>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => handleSizeSelected('big')}
+                className="w-full flex items-center gap-2"
+              >
+                🌳 Big (45+ min)
+              </Button>
+            </div>
+          ) : sessionPhase === 'summarizing' ? (
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setSessionPhase('suggestions')}
                 className="flex-1"
               >
                 Let me refine this
@@ -335,7 +404,7 @@ Sound good?`,
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Chat with Lune..."
+                placeholder="Tell me your goal idea..."
                 disabled={isLoading}
                 className="flex-1"
               />
