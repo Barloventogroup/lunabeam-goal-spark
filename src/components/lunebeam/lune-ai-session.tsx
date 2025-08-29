@@ -1,3 +1,4 @@
+// UPDATED: No "How big" questions - direct goal creation
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
