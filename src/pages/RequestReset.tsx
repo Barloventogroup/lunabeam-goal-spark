@@ -9,15 +9,28 @@ export default function RequestReset() {
   const [email, setEmail] = useState('');
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  const [lastSent, setLastSent] = useState<number>(0);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
+    // Rate limiting: prevent sending within 10 seconds
+    const now = Date.now();
+    if (now - lastSent < 10000) {
+      const remaining = Math.ceil((10000 - (now - lastSent)) / 1000);
+      setMsg(`Please wait ${remaining} seconds before requesting another reset link.`);
+      return;
+    }
+    
     setBusy(true);
     setMsg('Sending…');
     const redirectTo = `${window.location.origin}/auth/callback`;
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
     setBusy(false);
+    
     if (error) return setMsg(error.message);
+    
+    setLastSent(now);
     setMsg('Check your email for a reset link.');
   };
 
