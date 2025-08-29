@@ -60,7 +60,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
             <img 
               src={lunebeamLogo} 
               alt="Lunebeam logo" 
-              className="w-8 h-8"
+              className="w-12 h-12"
             />
             <h1 className="text-xl font-bold">lunebeam</h1>
           </div>
