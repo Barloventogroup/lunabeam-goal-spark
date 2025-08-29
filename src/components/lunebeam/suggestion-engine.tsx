@@ -41,7 +41,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'outside', text: '🌳 Outside near home' },
             { id: 'school', text: '🏫 Around school/work' },
             { id: 'inside', text: '🚶 Inside (hallway, mall)' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ],
           next_follow_up: {
             question: 'For how long?',
@@ -49,7 +50,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
               { id: '5min', text: '⏱ 5 min' },
               { id: '10min', text: '⏱ 10 min' },
               { id: 'more', text: '⏱ More' },
-              { id: 'not_sure', text: '❓ Not sure' }
+              { id: 'not_sure', text: '❓ Not sure' },
+              { id: 'exit', text: '🚪 Exit' }
             ]
           }
         }
@@ -63,7 +65,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'now', text: '🕑 Now' },
             { id: 'bed', text: '🌙 Before bed' },
             { id: 'later', text: '📅 Later today' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ]
         }
       },
@@ -76,7 +79,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'fruit', text: '🍎 A fruit' },
             { id: 'veggie', text: '🥕 A veggie' },
             { id: 'healthy_snack', text: '🥜 Healthy snack' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ]
         }
       }
@@ -98,7 +102,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'book', text: '📖 A book' },
             { id: 'article', text: '📰 An article' },
             { id: 'phone', text: '📲 Something on your phone' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ],
           next_follow_up: {
             question: 'When do you want to read it?',
@@ -106,7 +111,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
               { id: 'now', text: '🕑 Right now' },
               { id: 'bed', text: '🌙 Before bed' },
               { id: 'later', text: '📅 Later today' },
-              { id: 'not_sure', text: '❓ Not sure' }
+              { id: 'not_sure', text: '❓ Not sure' },
+              { id: 'exit', text: '🚪 Exit' }
             ]
           }
         }
@@ -120,14 +126,16 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'music', text: '🎶 Music/entertainment' },
             { id: 'learning', text: '🧠 Learning/knowledge' },
             { id: 'funny', text: '😂 Funny stories' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ],
           next_follow_up: {
             question: 'When will you listen?',
             choices: [
               { id: 'now', text: '🕑 Right now' },
               { id: 'later', text: '📅 Later today' },
-              { id: 'not_sure', text: '❓ Not sure' }
+              { id: 'not_sure', text: '❓ Not sure' },
+              { id: 'exit', text: '🚪 Exit' }
             ]
           }
         }
@@ -141,7 +149,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'spanish', text: '🇪🇸 Spanish' },
             { id: 'french', text: '🇫🇷 French' },
             { id: 'other', text: '🌍 Another language' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ]
         }
       }
@@ -150,6 +159,255 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
       read_page: ['📖 Book → pick one page only.', '📰 Article → skim a short piece.', '📲 Phone → something light you enjoy.'],
       listen_podcast: ['🎶 Music → something fun to listen to.', '🧠 Learning → pick up something new.', '😂 Funny → laugh and learn.'],
       new_word: ['🇪🇸 Spanish → hola, gracias, etc.', '🇫🇷 French → bonjour, merci, etc.', '🌍 Other → pick any language you like.']
+    }
+  },
+  education: {
+    options: {
+      read_textbook: {
+        id: 'read_textbook',
+        text: '📖 Read 1 page of a textbook/article',
+        follow_up: {
+          question: 'When do you want to do it?',
+          choices: [
+            { id: 'now', text: '🕑 Now' },
+            { id: 'later', text: '🌙 Later today' },
+            { id: 'week', text: '📅 This week' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      },
+      write_sentence: {
+        id: 'write_sentence',
+        text: '✍️ Write one sentence for homework/essay',
+        follow_up: {
+          question: 'When do you want to do it?',
+          choices: [
+            { id: 'now', text: '🕑 Now' },
+            { id: 'later', text: '🌙 Later today' },
+            { id: 'week', text: '📅 This week' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      },
+      review_schedule: {
+        id: 'review_schedule',
+        text: '📅 Review your class schedule',
+        follow_up: {
+          question: 'When do you want to do it?',
+          choices: [
+            { id: 'now', text: '🕑 Now' },
+            { id: 'later', text: '🌙 Later today' },
+            { id: 'week', text: '📅 This week' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      },
+      math_problem: {
+        id: 'math_problem',
+        text: '🧩 Do one math/logic problem',
+        follow_up: {
+          question: 'When do you want to do it?',
+          choices: [
+            { id: 'now', text: '🕑 Now' },
+            { id: 'later', text: '🌙 Later today' },
+            { id: 'week', text: '📅 This week' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      },
+      review_notes: {
+        id: 'review_notes',
+        text: '📝 Review today\'s notes',
+        follow_up: {
+          question: 'When do you want to do it?',
+          choices: [
+            { id: 'now', text: '🕑 Now' },
+            { id: 'later', text: '🌙 Later today' },
+            { id: 'week', text: '📅 This week' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      },
+      study_video: {
+        id: 'study_video',
+        text: '🎧 Watch a 2–3 min study video',
+        follow_up: {
+          question: 'When do you want to do it?',
+          choices: [
+            { id: 'now', text: '🕑 Now' },
+            { id: 'later', text: '🌙 Later today' },
+            { id: 'week', text: '📅 This week' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      }
+    },
+    explain_examples: {
+      read_textbook: ['📖 Page → just one page.'],
+      write_sentence: ['✍️ Sentence → one line is enough.'],
+      review_schedule: ['📅 Schedule → quick glance to plan.'],
+      math_problem: ['🧩 Problem → pick one you can do.'],
+      review_notes: ['📝 Notes → skim what you wrote today.'],
+      study_video: ['🎧 Video → short clips work best.']
+    }
+  },
+  employment: {
+    options: {
+      interview_practice: {
+        id: 'interview_practice',
+        text: '💼 Practice one interview question',
+        follow_up: {
+          question: 'Which one first?',
+          choices: [
+            { id: 'basic', text: '💬 Basic question' },
+            { id: 'skills', text: '🧠 Skills question' },
+            { id: 'experience', text: '📝 Experience question' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      },
+      update_resume: {
+        id: 'update_resume',
+        text: '🧑‍💻 Update one resume line',
+        follow_up: {
+          question: 'Which one first?',
+          choices: [
+            { id: 'resume', text: '📝 Resume' },
+            { id: 'email', text: '📬 Email' },
+            { id: 'outfit', text: '👔 Outfit' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      },
+      send_email: {
+        id: 'send_email',
+        text: '📬 Send a professional email',
+        follow_up: {
+          question: 'Which one first?',
+          choices: [
+            { id: 'resume', text: '📝 Resume' },
+            { id: 'email', text: '📬 Email' },
+            { id: 'outfit', text: '👔 Outfit' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      }
+    },
+    explain_examples: {
+      interview_practice: ['💼 Interview → answer one sample Q.'],
+      update_resume: ['🧑‍💻 Resume → add or tweak one line.'],
+      send_email: ['📬 Email → a simple hello/thank-you.']
+    }
+  },
+  independent_living: {
+    options: {
+      make_bed: {
+        id: 'make_bed',
+        text: '🛏️ Make your bed',
+        follow_up: {
+          question: 'Which part do you want to try?',
+          choices: [
+            { id: 'snack', text: '🍳 Snack' },
+            { id: 'clean', text: '🧹 Clean' },
+            { id: 'shopping', text: '🛒 Shopping' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      },
+      set_table: {
+        id: 'set_table',
+        text: '🍽️ Set the table',
+        follow_up: {
+          question: 'Which part do you want to try?',
+          choices: [
+            { id: 'snack', text: '🍳 Snack' },
+            { id: 'clean', text: '🧹 Clean' },
+            { id: 'shopping', text: '🛒 Shopping' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      },
+      laundry: {
+        id: 'laundry',
+        text: '🧺 Put clothes in the laundry',
+        follow_up: {
+          question: 'Which part do you want to try?',
+          choices: [
+            { id: 'snack', text: '🍳 Snack' },
+            { id: 'clean', text: '🧹 Clean' },
+            { id: 'shopping', text: '🛒 Shopping' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      }
+    },
+    explain_examples: {
+      make_bed: ['🛏️ Bed → straighten blanket.'],
+      set_table: ['🍽️ Table → forks/spoons only.'],
+      laundry: ['🧺 Laundry → into basket is fine.']
+    }
+  },
+  social_skills: {
+    options: {
+      practice_hi: {
+        id: 'practice_hi',
+        text: '👋 Practice saying "hi" out loud',
+        follow_up: {
+          question: 'Who do you want to practice with?',
+          choices: [
+            { id: 'family', text: '👨‍👩 Family' },
+            { id: 'friend', text: '📱 Friend' },
+            { id: 'colleague', text: '👩‍🏫 Classmate/colleague' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      },
+      eye_contact: {
+        id: 'eye_contact',
+        text: '🙂 Eye contact for 3 seconds',
+        follow_up: {
+          question: 'Who do you want to practice with?',
+          choices: [
+            { id: 'family', text: '👨‍👩 Family' },
+            { id: 'friend', text: '📱 Friend' },
+            { id: 'colleague', text: '👩‍🏫 Classmate/colleague' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      },
+      text_how_are_you: {
+        id: 'text_how_are_you',
+        text: '📱 Text "how are you?" to someone',
+        follow_up: {
+          question: 'Who do you want to practice with?',
+          choices: [
+            { id: 'family', text: '👨‍👩 Family' },
+            { id: 'friend', text: '📱 Friend' },
+            { id: 'colleague', text: '👩‍🏫 Classmate/colleague' },
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
+          ]
+        }
+      }
+    },
+    explain_examples: {
+      practice_hi: ['👋 Hi → a wave or "hi" is enough.'],
+      eye_contact: ['🙂 Eye contact → 3 seconds only.'],
+      text_how_are_you: ['📱 Text → short, friendly message.']
     }
   },
   social: {
@@ -163,7 +421,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'friend', text: '📱 A friend' },
             { id: 'family', text: '👨‍👩‍👧 Family' },
             { id: 'new', text: '👋 Someone new' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ],
           next_follow_up: {
             question: 'Cool. What do you want to say?',
@@ -171,7 +430,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
               { id: 'just_hi', text: '👋 Just hi' },
               { id: 'ask_how', text: '🙂 Ask how they\'re doing' },
               { id: 'joke', text: '😂 Share a joke/emoji' },
-              { id: 'not_sure', text: '❓ Not sure' }
+              { id: 'not_sure', text: '❓ Not sure' },
+              { id: 'exit', text: '🚪 Exit' }
             ]
           }
         }
@@ -185,14 +445,16 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'friend', text: '☕ A close friend' },
             { id: 'colleague', text: '👩‍🏫 Classmate/colleague' },
             { id: 'family', text: '👨‍👩 Family' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ],
           next_follow_up: {
             question: 'When do you want to do it?',
             choices: [
               { id: 'this_week', text: '📅 This week' },
               { id: 'next_week', text: '📅 Next week' },
-              { id: 'not_sure', text: '⏸ Not sure yet' }
+              { id: 'not_sure', text: '⏸ Not sure yet' },
+              { id: 'exit', text: '🚪 Exit' }
             ]
           }
         }
@@ -206,7 +468,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'friend', text: '😂 A friend' },
             { id: 'group_chat', text: '👥 Group chat' },
             { id: 'family', text: '👨‍👩‍👧 Family' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ]
         }
       }
@@ -228,7 +491,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'shapes', text: '✏️ Shapes or patterns' },
             { id: 'animals', text: '🐱 Animals' },
             { id: 'faces', text: '🙂 Faces' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ],
           next_follow_up: {
             question: 'When do you want to doodle?',
@@ -236,7 +500,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
               { id: 'now', text: '🕑 Right now' },
               { id: 'later', text: '🌙 Later today' },
               { id: 'week', text: '📅 This week' },
-              { id: 'not_sure', text: '❓ Not sure' }
+              { id: 'not_sure', text: '❓ Not sure' },
+              { id: 'exit', text: '🚪 Exit' }
             ]
           }
         }
@@ -250,14 +515,16 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'chill', text: '🎶 Chill' },
             { id: 'energetic', text: '🔥 Energetic' },
             { id: 'happy', text: '🙂 Happy' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ],
           next_follow_up: {
             question: 'How many songs do you want to add?',
             choices: [
               { id: '2to3', text: '2–3 songs' },
               { id: '5plus', text: '5+ songs' },
-              { id: 'not_sure', text: '❓ Not sure' }
+              { id: 'not_sure', text: '❓ Not sure' },
+              { id: 'exit', text: '🚪 Exit' }
             ]
           }
         }
@@ -271,7 +538,8 @@ const SUGGESTION_POOLS: Record<string, CategoryData> = {
             { id: 'nature', text: '🌿 Something in nature' },
             { id: 'art', text: '🎨 Art or design' },
             { id: 'everyday', text: '✨ Something everyday but cool' },
-            { id: 'not_sure', text: '❓ Not sure' }
+            { id: 'not_sure', text: '❓ Not sure' },
+            { id: 'exit', text: '🚪 Exit' }
           ]
         }
       }
@@ -349,6 +617,11 @@ export const SuggestionEngine: React.FC<SuggestionEngineProps> = ({
       return;
     }
 
+    if (choice.id === 'exit') {
+      onMetaAction('pause');
+      return;
+    }
+
     if (currentFollowUp?.next_follow_up) {
       setCurrentFollowUp(currentFollowUp.next_follow_up);
     } else {
@@ -386,6 +659,14 @@ export const SuggestionEngine: React.FC<SuggestionEngineProps> = ({
         return "Here are a few ideas for health goals. Which one feels doable?";
       case 'learning':
         return "Want to pick a quick learning goal?";
+      case 'education':
+        return "Here are some ideas for education goals. Pick one that feels manageable:";
+      case 'employment':
+        return "Here are some work/career ideas. What feels like a good start?";
+      case 'independent_living':
+        return "Here are some living skills ideas. Which one do you want to try?";
+      case 'social_skills':
+        return "Here are some social practice ideas. What feels doable?";
       case 'social':
         return "Here are some easy social goals. What do you think?";
       case 'create':
@@ -432,6 +713,13 @@ export const SuggestionEngine: React.FC<SuggestionEngineProps> = ({
             className="flex items-center gap-2"
           >
             ⏸ Pause for now
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => onMetaAction('pause')}
+            className="flex items-center gap-2"
+          >
+            🚪 Exit
           </Button>
         </div>
       </div>
@@ -503,6 +791,14 @@ export const SuggestionEngine: React.FC<SuggestionEngineProps> = ({
           className="flex items-center gap-2"
         >
           ❓ Not sure
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          onClick={() => onMetaAction('pause')}
+          className="flex items-center gap-2"
+        >
+          🚪 Exit
         </Button>
       </div>
     </div>

@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { AIChat } from './ai-chat';
 import { FamilyCircleCard } from './family-circle-card';
+import { PersonalizedGreeting } from './personalized-greeting';
+import { NotificationHandler } from './notification-handler';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/components/auth/auth-provider';
 import { format, addDays, isToday } from 'date-fns';
@@ -90,6 +92,40 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const nextCheckIn = getNextCheckInDate();
   const isCheckInDue = nextCheckIn ? isToday(nextCheckIn) || nextCheckIn < new Date() : true;
 
+  const handleSnooze = (goalId: string, duration: '15m' | '1h') => {
+    console.log(`Snoozing goal ${goalId} for ${duration}`);
+  };
+
+  const handleSkip = (goalId: string) => {
+    console.log(`Skipping goal ${goalId}`);
+  };
+
+  const handleMakeSmaller = (goalId: string) => {
+    console.log(`Making goal ${goalId} smaller`);
+  };
+
+  const handleMoveToTomorrow = (goalId: string) => {
+    console.log(`Moving goal ${goalId} to tomorrow`);
+  };
+
+  const handleDismiss = (goalId: string) => {
+    console.log(`Dismissing goal ${goalId}`);
+  };
+
+  const handleResumeGoal = () => {
+    if (activeGoal) {
+      onNavigate('goal-detail', activeGoal.id);
+    }
+  };
+
+  const handleNewGoal = () => {
+    onNavigate('goal-wizard');
+  };
+
+  const handleTodaysSteps = () => {
+    onNavigate('weekly');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-soft p-4">
       <div className="max-w-md mx-auto py-6 space-y-6">
@@ -112,6 +148,21 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
+
+        <PersonalizedGreeting 
+          onResumeGoal={handleResumeGoal}
+          onNewGoal={handleNewGoal}
+          onTodaysSteps={handleTodaysSteps}
+        />
+        
+        <NotificationHandler
+          goals={goals}
+          onSnooze={handleSnooze}
+          onSkip={handleSkip}
+          onMakeSmaller={handleMakeSmaller}
+          onMoveToTomorrow={handleMoveToTomorrow}
+          onDismiss={handleDismiss}
+        />
 
         {/* Active Goal Card */}
         {activeGoal ? (
