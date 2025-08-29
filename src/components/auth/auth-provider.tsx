@@ -55,13 +55,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadProfile]);
 
   const signUp = async (email: string, password: string, firstName: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    const { SITE_URL } = await import('@/services/config');
     
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
+        emailRedirectTo: SITE_URL,
         data: {
           first_name: firstName
         }
