@@ -1,4 +1,4 @@
-// UPDATED: No "How big" questions - direct goal creation
+// UPDATED: Comprehensive goal system integration
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import {
 import { useStore } from '@/store/useStore';
 import { useToast } from '@/hooks/use-toast';
 import { RoundBasedSuggestionEngine } from './round-based-suggestion-engine';
+import { ComprehensiveGoalEngine } from './comprehensive-goal-engine';
 
 interface Message {
   id: string;
@@ -44,9 +45,10 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionPhase, setSessionPhase] = useState<'greeting' | 'suggestions' | 'followup' | 'summarizing' | 'refining' | 'refining_input' | 'complete'>('greeting');
+  const [sessionPhase, setSessionPhase] = useState<'greeting' | 'suggestions' | 'followup' | 'summarizing' | 'refining' | 'refining_input' | 'complete' | 'comprehensive'>('comprehensive');
   const [selectedSuggestion, setSelectedSuggestion] = useState<any>(null);
   const [isCustomGoal, setIsCustomGoal] = useState(false);
+  const [comprehensiveGoalData, setComprehensiveGoalData] = useState<any>(null);
   // Refinement state
   const [refineDuration, setRefineDuration] = useState<string>('10 min');
   const [refineFrequency, setRefineFrequency] = useState<string>('once');
@@ -70,7 +72,7 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
 
   useEffect(() => {
     // Only initialize once when component mounts
-    if (messages.length === 0) {
+    if (messages.length === 0 && sessionPhase !== 'comprehensive') {
       const name = profile?.first_name || 'friend';
       const welcomeMessage: Message = {
         id: '1',
@@ -94,7 +96,7 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
 
       return () => clearTimeout(timeoutId);
     }
-  }, [category]); // Removed profile dependency to prevent re-runs
+  }, [category, sessionPhase]); // Added sessionPhase dependency
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -139,6 +141,44 @@ Sound good?`,
     setMessages(prev => [...prev, summaryMessage]);
     setSessionPhase('summarizing');
     (window as any).pendingGoal = convertedGoal;
+  };
+
+  const handleComprehensiveGoalSelect = (goalData: any) => {
+    // Create a detailed goal title with options and inputs
+    let goalTitle = goalData.goal;
+    
+    if (goalData.selectedOption) {
+      goalTitle += ` - ${goalData.selectedOption}`;
+    }
+    
+    // Add custom inputs to the title
+    const customInputValues = Object.values(goalData.customInputs || {}).filter(Boolean);
+    if (customInputValues.length > 0) {
+      goalTitle += ` (${customInputValues.join(', ')})`;
+    }
+    
+    // Add follow-ups to the title  
+    const followUpValues = Object.values(goalData.followUps || {}).filter(Boolean);
+    if (followUpValues.length > 0) {
+      goalTitle += ` • ${followUpValues.join(' • ')}`;
+    }
+
+    setComprehensiveGoalData(goalData);
+    setIsCustomGoal(false);
+
+    const convertedGoal = {
+      title: goalTitle,
+      description: `A ${category} goal: ${goalData.goal}`,
+      category: category,
+      steps: [
+        'Start with a small step',
+        'Keep going at your pace', 
+        'Celebrate your progress'
+      ],
+      timeEstimate: '15-30 minutes'
+    };
+
+    onGoalCreated(convertedGoal);
   };
 
   const handleMetaAction = (action: 'new_ideas' | 'explain' | 'write_own' | 'pause' | 'exit') => {
@@ -323,6 +363,17 @@ Sound good?`,
     setMessages(prev => [...prev, refinedMsg]);
     setSessionPhase('summarizing');
   };
+
+  // If comprehensive mode, render the engine directly
+  if (sessionPhase === 'comprehensive') {
+    return (
+      <ComprehensiveGoalEngine
+        category={category}
+        onSelectGoal={handleComprehensiveGoalSelect}
+        onBack={onBack}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-soft">
