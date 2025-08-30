@@ -1,27 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { TimePicker } from '@/components/ui/time-picker';
-import { ArrowLeft, Send, Calendar, Clock, Bot, User, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, Bot } from 'lucide-react';
 import { GoalFlow } from '@/data/comprehensive-goals';
 import { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-
-interface Message {
-  id: string;
-  type: 'bot' | 'user';
-  content: string;
-  timestamp: Date;
-  options?: string[];
-  customInputEnabled?: boolean;
-  inputType?: 'text' | 'date' | 'time' | 'days_per_week';
-  inputLabel?: string;
-  stepData?: any;
-}
 
 interface GoalWizardChatProps {
   goal: GoalFlow;
@@ -54,7 +42,6 @@ export const GoalWizardChat: React.FC<GoalWizardChatProps> = ({
   onComplete,
   onBack
 }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [wizardData, setWizardData] = useState<WizardData>({
     customInputs: {},
     followUps: {},
@@ -62,10 +49,10 @@ export const GoalWizardChat: React.FC<GoalWizardChatProps> = ({
   });
   const [currentInput, setCurrentInput] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
-  const [isWaitingForInput, setIsWaitingForInput] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string>('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
 
   // Build conversation flow based on goal structure
   const buildConversationFlow = () => {
@@ -175,80 +162,12 @@ export const GoalWizardChat: React.FC<GoalWizardChatProps> = ({
   const conversationFlow = buildConversationFlow();
 
   useEffect(() => {
-    // Start the conversation
-    if (messages.length === 0) {
-      addBotMessage(conversationFlow[0]);
-    }
+    // Set initial message
+    setCurrentMessage(conversationFlow[0]?.content || '');
   }, []);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const addBotMessage = (flowStep: any) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      type: 'bot',
-      content: flowStep.content,
-      timestamp: new Date(),
-      options: flowStep.options || [],
-      customInputEnabled: flowStep.customInputEnabled || false,
-      inputType: flowStep.inputType,
-      inputLabel: flowStep.inputLabel,
-      stepData: flowStep.stepData
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    setIsWaitingForInput(true);
-  };
-
-  const addUserMessage = (content: string) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-  };
-
-  const getEncouragingResponse = () => {
-    const responses = [
-      "Great choice! 💪",
-      "That's a solid step! ✨",
-      "You're making progress already! 🌟",
-      "Perfect! 👏",
-      "Excellent decision! 🎉",
-      "That sounds wonderful! 😊"
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
-
   const handleUserResponse = (response: string, inputType?: string) => {
-    addUserMessage(response);
-    setIsWaitingForInput(false);
-
-    // Add encouraging response
-    const encouragement: Message = {
-      id: (Date.now() + 1).toString(),
-      type: 'bot',
-      content: getEncouragingResponse(),
-      timestamp: new Date()
-    };
-    
-    setTimeout(() => {
-      setMessages(prev => [...prev, encouragement]);
-      
-      // Process the response and move to next step
-      setTimeout(() => {
-        processUserResponse(response, inputType);
-      }, 800);
-    }, 500);
+    processUserResponse(response, inputType);
   };
 
   const processUserResponse = (response: string, inputType?: string) => {
@@ -259,8 +178,7 @@ export const GoalWizardChat: React.FC<GoalWizardChatProps> = ({
       switch (stepData.type) {
         case 'options':
           if (response === 'Custom') {
-            // Handle custom input inline
-            setIsWaitingForInput(true);
+            setShowCustomInput(true);
             return;
           }
           setWizardData(prev => ({ ...prev, selectedOption: response }));
@@ -294,7 +212,6 @@ export const GoalWizardChat: React.FC<GoalWizardChatProps> = ({
           
         case 'confirmation':
           if (response.includes('Yes')) {
-            // Complete the goal
             onComplete({
               goal: goal.goal,
               selectedOption: wizardData.selectedOption,
@@ -307,11 +224,8 @@ export const GoalWizardChat: React.FC<GoalWizardChatProps> = ({
             });
             return;
           } else {
-            // Go back to adjust
             setCurrentStep(Math.max(0, currentStep - 2));
-            setTimeout(() => {
-              addBotMessage(conversationFlow[currentStep - 1]);
-            }, 1000);
+            setCurrentMessage(conversationFlow[currentStep - 1]?.content || '');
             return;
           }
       }
@@ -321,9 +235,8 @@ export const GoalWizardChat: React.FC<GoalWizardChatProps> = ({
     const nextStep = currentStep + 1;
     if (nextStep < conversationFlow.length) {
       setCurrentStep(nextStep);
-      setTimeout(() => {
-        addBotMessage(conversationFlow[nextStep]);
-      }, 1000);
+      setCurrentMessage(conversationFlow[nextStep]?.content || '');
+      setShowCustomInput(false);
     }
   };
 
@@ -356,157 +269,144 @@ export const GoalWizardChat: React.FC<GoalWizardChatProps> = ({
     }
   };
 
-  const getCurrentMessage = () => {
-    return messages[messages.length - 1];
-  };
-
-  const currentMessage = getCurrentMessage();
-  const showDatePicker = currentMessage?.inputType === 'date' && isWaitingForInput;
-  const showTimePicker = currentMessage?.inputType === 'time' && isWaitingForInput;
-  const showOptionsButtons = currentMessage?.options && currentMessage.options.length > 0 && isWaitingForInput;
-  const showTextInput = currentMessage?.customInputEnabled && isWaitingForInput && !showDatePicker && !showTimePicker;
+  const currentFlowStep = conversationFlow[currentStep];
+  const showDatePicker = currentFlowStep?.inputType === 'date';
+  const showTimePicker = currentFlowStep?.inputType === 'time';
+  const showOptionsButtons = currentFlowStep?.options && currentFlowStep.options.length > 0;
+  const showTextInput = (currentFlowStep?.customInputEnabled && !showDatePicker && !showTimePicker) || showCustomInput;
 
   return (
-    <div className="min-h-screen bg-gradient-soft p-4">
-      <div className="max-w-md mx-auto py-6">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onBack}
-            className="p-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-xl font-bold text-foreground">Goal Setup</h1>
-            <p className="text-sm text-foreground-soft">Let's create your perfect goal</p>
-          </div>
+    <div className="min-h-screen bg-gradient-soft flex flex-col">
+      {/* Header */}
+      <div className="flex items-center gap-4 p-4 border-b bg-background/50 backdrop-blur-sm">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={onBack}
+          className="p-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-xl font-bold text-foreground">Goal Setup</h1>
+          <p className="text-sm text-muted-foreground">Let's create your perfect goal</p>
         </div>
+      </div>
 
-        {/* Chat Messages */}
-        <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn(
-                "flex gap-3",
-                message.type === 'user' ? 'justify-end' : 'justify-start'
-              )}
-            >
-              {message.type === 'bot' && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-primary" />
+      {/* Top Half - Interactive Message */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="max-w-2xl w-full">
+          <Card className="border-none shadow-lg bg-background/80 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Bot className="h-6 w-6 text-primary" />
                 </div>
-              )}
-              <div
-                className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-2",
-                  message.type === 'user'
-                    ? 'bg-primary text-primary-foreground ml-auto'
-                    : 'bg-background border'
-                )}
-              >
-                <p className="text-sm">{message.content}</p>
+                <div className="flex-1">
+                  <p className="text-lg leading-relaxed text-foreground">
+                    {currentMessage}
+                  </p>
+                </div>
               </div>
-              {message.type === 'user' && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <User className="h-4 w-4 text-primary-foreground" />
-                </div>
-              )}
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
+            </CardContent>
+          </Card>
         </div>
+      </div>
 
-        {/* Input Area */}
-        <Card>
-          <CardContent className="p-4">
-            {/* Option Buttons */}
-            {showOptionsButtons && (
-              <div className="space-y-2 mb-4">
-                {currentMessage.options!.map((option, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className="w-full text-left justify-start h-auto p-3"
-                    onClick={() => handleUserResponse(option)}
-                  >
-                    <span>{option}</span>
-                  </Button>
-                ))}
-              </div>
-            )}
-
-            {/* Date Picker */}
-            {showDatePicker && (
-              <div className="space-y-3">
-                <p className="text-sm font-medium">{currentMessage.inputLabel}</p>
-                <Popover>
-                  <PopoverTrigger asChild>
+      {/* Bottom Half - Options/Input */}
+      <div className="p-6 border-t bg-background/50 backdrop-blur-sm">
+        <div className="max-w-2xl mx-auto">
+          <Card>
+            <CardContent className="p-6">
+              {/* Option Buttons */}
+              {showOptionsButtons && !showCustomInput && (
+                <div className="grid gap-3">
+                  {currentFlowStep.options!.map((option, index) => (
                     <Button
+                      key={index}
                       variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !selectedDate && "text-muted-foreground"
-                      )}
+                      className="w-full text-left justify-start h-auto p-4 text-base"
+                      onClick={() => handleUserResponse(option)}
                     >
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                      <span>{option}</span>
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={handleDateSelect}
-                      disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
+                  ))}
+                </div>
+              )}
+
+              {/* Date Picker */}
+              {showDatePicker && (
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-muted-foreground">{currentFlowStep.inputLabel}</p>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal h-12 text-base",
+                          !selectedDate && "text-muted-foreground"
+                        )}
+                      >
+                        <Calendar className="mr-2 h-5 w-5" />
+                        {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={handleDateSelect}
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        initialFocus
+                        className="p-3"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
+
+              {/* Time Picker */}
+              {showTimePicker && (
+                <div className="space-y-4">
+                  <TimePicker
+                    time={selectedTime}
+                    onTimeChange={handleTimeSelect}
+                    label={currentFlowStep.inputLabel}
+                  />
+                </div>
+              )}
+
+              {/* Text Input */}
+              {showTextInput && (
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {currentFlowStep?.inputLabel || 'Your response'}
+                  </p>
+                  <div className="flex gap-3">
+                    <Input
+                      value={currentInput}
+                      onChange={(e) => setCurrentInput(e.target.value)}
+                      placeholder={`Type your ${currentFlowStep?.inputLabel?.toLowerCase() || 'response'}...`}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSendMessage();
+                        }
+                      }}
+                      className="flex-1 h-12 text-base"
                     />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            )}
-
-            {/* Time Picker */}
-            {showTimePicker && (
-              <div className="space-y-3">
-                <TimePicker
-                  time={selectedTime}
-                  onTimeChange={handleTimeSelect}
-                  label={currentMessage.inputLabel}
-                />
-              </div>
-            )}
-
-            {/* Text Input */}
-            {showTextInput && (
-              <div className="flex gap-2">
-                <Input
-                  value={currentInput}
-                  onChange={(e) => setCurrentInput(e.target.value)}
-                  placeholder={`Type your ${currentMessage.inputLabel?.toLowerCase() || 'response'}...`}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSendMessage();
-                    }
-                  }}
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={handleSendMessage}
-                  disabled={!currentInput.trim()}
-                  size="sm"
-                  className="px-3"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    <Button 
+                      onClick={handleSendMessage}
+                      disabled={!currentInput.trim()}
+                      className="h-12 px-6"
+                    >
+                      Continue
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
