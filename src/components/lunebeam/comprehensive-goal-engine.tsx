@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { getGoalsForCategory, normalizeCategoryName, GoalFlow } from '@/data/comprehensive-goals';
-import { GoalWizardChat } from './goal-wizard-chat';
+import { GoalWizardEnhanced } from './goal-wizard-enhanced';
 import { DateRange } from 'react-day-picker';
 
 interface ComprehensiveGoalEngineProps {
@@ -80,7 +80,7 @@ export const ComprehensiveGoalEngine: React.FC<ComprehensiveGoalEngineProps> = (
 
   // Goal wizard flow
   return (
-    <GoalWizardChat
+    <GoalWizardEnhanced
       goal={selectedGoal}
       onComplete={onSelectGoal}
       onBack={() => setSelectedGoal(null)}
