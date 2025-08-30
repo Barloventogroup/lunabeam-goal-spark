@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { 
   Bot, 
   User, 
@@ -43,9 +44,16 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionPhase, setSessionPhase] = useState<'greeting' | 'suggestions' | 'followup' | 'summarizing' | 'complete'>('greeting');
+  const [sessionPhase, setSessionPhase] = useState<'greeting' | 'suggestions' | 'followup' | 'summarizing' | 'refining' | 'complete'>('greeting');
   const [selectedSuggestion, setSelectedSuggestion] = useState<any>(null);
   const [isCustomGoal, setIsCustomGoal] = useState(false);
+  // Refinement state
+  const [refineDuration, setRefineDuration] = useState<string>('10 min');
+  const [refineFrequency, setRefineFrequency] = useState<string>('once');
+  const [isDurationCustom, setIsDurationCustom] = useState(false);
+  const [isFrequencyCustom, setIsFrequencyCustom] = useState(false);
+  const [durationCustom, setDurationCustom] = useState<string>('');
+  const [frequencyCustom, setFrequencyCustom] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { profile } = useStore();
   const { toast } = useToast();
@@ -122,6 +130,8 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
       content: `Perfect! Here's your goal:
 
 ${convertedGoal.title}
+
+You can refine its duration and frequency before creating the goal.
 
 Sound good?`,
       sender: 'lune',
@@ -235,6 +245,36 @@ Sound good?`,
     }
   };
 
+  const applyRefinements = () => {
+    const pendingGoal = (window as any).pendingGoal;
+    if (!pendingGoal) return;
+
+    const duration = isDurationCustom ? durationCustom.trim() : refineDuration;
+    const frequency = isFrequencyCustom ? frequencyCustom.trim() : refineFrequency;
+
+    const parts: string[] = [];
+    if (duration) parts.push(duration);
+    if (frequency) parts.push(frequency);
+    const suffix = parts.length ? ` • ${parts.join(' • ')}` : '';
+
+    const refined = {
+      ...pendingGoal,
+      title: `${pendingGoal.title}${suffix}`,
+      description: `${pendingGoal.description}${parts.length ? ` (duration: ${duration || 'n/a'}${frequency ? ', frequency: ' + frequency : ''})` : ''}`
+    };
+
+    (window as any).pendingGoal = refined;
+
+    const refinedMsg: Message = {
+      id: (Date.now() + 1).toString(),
+      content: `Updated! Here's your refined goal:\n\n${refined.title}\n\nSound good?`,
+      sender: 'lune',
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, refinedMsg]);
+    setSessionPhase('summarizing');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-soft">
       <div className="max-w-md mx-auto h-screen flex flex-col">
@@ -315,7 +355,7 @@ Sound good?`,
               {!isCustomGoal && (
                 <Button 
                   variant="outline" 
-                  onClick={() => setSessionPhase('suggestions')}
+                  onClick={() => setSessionPhase('refining')}
                   className="flex-1"
                 >
                   Let me refine this
@@ -327,6 +367,77 @@ Sound good?`,
               >
                 Create Goal
               </Button>
+            </div>
+          ) : sessionPhase === 'refining' ? (
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Duration</p>
+                <Select 
+                  value={isDurationCustom ? 'custom' : refineDuration}
+                  onValueChange={(v) => {
+                    if (v === 'custom') { setIsDurationCustom(true); }
+                    else { setIsDurationCustom(false); setRefineDuration(v); }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5 min">5 min</SelectItem>
+                    <SelectItem value="10 min">10 min</SelectItem>
+                    <SelectItem value="15 min">15 min</SelectItem>
+                    <SelectItem value="30 min">30 min</SelectItem>
+                    <SelectItem value="custom">Custom...</SelectItem>
+                  </SelectContent>
+                </Select>
+                {isDurationCustom && (
+                  <Input 
+                    className="mt-2" 
+                    placeholder="e.g., 20 minutes" 
+                    value={durationCustom}
+                    onChange={(e) => setDurationCustom(e.target.value)}
+                  />
+                )}
+              </div>
+
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Frequency</p>
+                <Select 
+                  value={isFrequencyCustom ? 'custom' : refineFrequency}
+                  onValueChange={(v) => {
+                    if (v === 'custom') { setIsFrequencyCustom(true); }
+                    else { setIsFrequencyCustom(false); setRefineFrequency(v); }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="once">Once</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="3x/week">3x/week</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="custom">Custom...</SelectItem>
+                  </SelectContent>
+                </Select>
+                {isFrequencyCustom && (
+                  <Input 
+                    className="mt-2" 
+                    placeholder="e.g., Mon/Wed/Fri" 
+                    value={frequencyCustom}
+                    onChange={(e) => setFrequencyCustom(e.target.value)}
+                  />
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <Button variant="outline" onClick={() => setSessionPhase('summarizing')} className="flex-1">
+                  Cancel
+                </Button>
+                <Button onClick={applyRefinements} className="flex-1">
+                  Apply refinements
+                </Button>
+              </div>
             </div>
           ) : sessionPhase === 'complete' ? (
             <div className="flex gap-2">
