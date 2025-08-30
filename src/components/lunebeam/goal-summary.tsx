@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { 
   Target, 
   Clock, 
@@ -20,6 +24,8 @@ interface ExtractedGoal {
   category: string;
   steps: string[];
   timeEstimate: string;
+  selectedOption?: string;
+  followUps?: Record<string, string>;
 }
 
 interface GoalSummaryProps {
@@ -44,6 +50,48 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
     independent_living: 'Independent Living',
     health: 'Health',
     social_skills: 'Social Skills'
+  };
+
+  const getGoalSpecificSteps = () => {
+    const goalTitle = goal.title.toLowerCase();
+    
+    if (goalTitle.includes('walk')) {
+      const duration = goal.selectedOption || '10 minutes';
+      const daysPerWeek = goal.followUps?.['Days per week'] || '3';
+      return [
+        `Put on comfortable walking shoes and go for a ${duration} walk`,
+        `Track your walking progress - aim for ${daysPerWeek} days this week`,
+        `Celebrate completing each walk - notice how you feel afterward`
+      ];
+    }
+    
+    if (goalTitle.includes('read')) {
+      return [
+        'Choose your reading material and set up a comfortable reading spot',
+        'Set aside dedicated time each day for reading',
+        'Track pages/chapters completed and reflect on what you learned'
+      ];
+    }
+    
+    if (goalTitle.includes('water')) {
+      const cups = goal.selectedOption || '6 cups/day';
+      return [
+        `Fill a water bottle first thing in the morning`,
+        `Set reminders to drink water throughout the day - target ${cups}`,
+        'Track your daily water intake and notice energy improvements'
+      ];
+    }
+    
+    if (goalTitle.includes('sleep')) {
+      return [
+        'Set a consistent bedtime and stick to it for 7 days',
+        'Create a calming pre-sleep routine (no screens 1 hour before bed)',
+        'Track your sleep quality and morning energy levels'
+      ];
+    }
+    
+    // Default steps if no specific goal type is matched
+    return goal.steps.slice(0, 3);
   };
 
   const getNextWeekDates = () => {
@@ -86,7 +134,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
       });
 
       // Create up to 3 steps for the 7-day micro-goal
-      for (const stepTitle of goal.steps.slice(0, 3)) {
+      for (const stepTitle of getGoalSpecificSteps()) {
         await stepsService.createStep(createdGoal.id, {
           title: stepTitle,
           is_required: true,
@@ -160,7 +208,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {goal.steps.slice(0, 3).map((step, index) => (
+              {getGoalSpecificSteps().map((step, index) => (
                 <div key={index} className="flex items-start gap-3">
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-medium flex items-center justify-center">
                     {index + 1}
@@ -185,6 +233,35 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Time commitment:</span>
                 <Badge variant="outline">{goal.timeEstimate}</Badge>
+              </div>
+              
+              {/* Start Date Picker */}
+              <div className="space-y-2">
+                <span className="text-sm font-medium">Choose your start date:</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={startDate}
+                      onSelect={(date) => date && setStartDate(date)}
+                      disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               
               <div className="grid grid-cols-7 gap-2">
