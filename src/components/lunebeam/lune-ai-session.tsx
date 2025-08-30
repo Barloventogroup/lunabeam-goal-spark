@@ -121,8 +121,6 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
 
 ${convertedGoal.title}
 
-This should take about ${convertedGoal.timeEstimate}.
-
 Sound good?`,
       sender: 'lune',
       timestamp: new Date()
@@ -206,8 +204,6 @@ Sound good?`,
         content: `Love it! Here's your goal:
 
 ${convertedGoal.title}
-
-This should take about ${convertedGoal.timeEstimate}.
 
 Sound good?`,
         sender: 'lune',
