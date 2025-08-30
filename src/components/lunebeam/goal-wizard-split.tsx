@@ -68,6 +68,8 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
         if (!steps.find(s => s.type === 'date_range')) {
           steps.push({ type: 'date_range', title: 'Select dates', data: 'dates', required: true });
         }
+      } else if (input === 'End date') {
+        steps.push({ type: 'end_date', title: 'When should this goal be completed?', data: input, required: true });
       } else if (input === 'Days per week') {
         steps.push({ type: 'days_per_week', title: 'How many days per week?', data: input, required: true });
       } else if (input === 'Bedtime' || input === 'Wake time') {
@@ -143,6 +145,8 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
         return `Fantastic! Let's set a specific target amount. Clear goals are easier to achieve! 🎯${required}`;
       case 'time':
         return `Great thinking! Setting a specific time helps build lasting habits. What works best for your schedule? ⏰${required}`;
+      case 'end_date':
+        return `Perfect! When would you like to complete this goal? Having a clear deadline keeps you motivated! 📅${required}`;
       case 'follow_up':
         return `You're doing amazing! Let's add one more detail to make your plan complete! 🌟`;
       case 'scaffolding':
@@ -260,6 +264,8 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
         return currentStepData.required ? wizardData.followUps[currentStepData.data as string] !== undefined : true;
       case 'time':
         return currentStepData.required ? wizardData.times[currentStepData.data as string] !== undefined : true;
+      case 'end_date':
+        return wizardData.followUps[currentStepData.data as string] !== undefined;
       case 'required_input':
         return wizardData.followUps[currentStepData.data as string] !== undefined;
       case 'custom_input':
@@ -759,6 +765,86 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Perfect choice!
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* End Date Step */}
+            {currentStepData.type === 'end_date' && (
+              <div className="space-y-4">
+                <Card className="border-primary/20 border-2">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      <Label className="text-sm font-medium text-foreground">
+                        {currentStepData.title} *
+                      </Label>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        {["End of this week", "End of this month", "In 2 weeks", "In 30 days", "In 3 months", "Custom date"].map((option) => (
+                          <Button
+                            key={option}
+                            variant={wizardData.followUps[currentStepData.data as string] === option ? "default" : "outline"}
+                            className="h-12 text-sm hover:scale-105 transition-all"
+                            onClick={() => {
+                              if (option === "Custom date") {
+                                setShowCustomInput(true);
+                              } else {
+                                setWizardData(prev => ({
+                                  ...prev,
+                                  followUps: { ...prev.followUps, [currentStepData.data as string]: option }
+                                }));
+                              }
+                            }}
+                          >
+                            {option}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Custom date picker */}
+                    {showCustomInput && (
+                      <div className="space-y-3 mt-3 p-3 bg-primary/5 rounded-lg">
+                        <Label className="text-sm font-medium">Pick your custom end date:</Label>
+                        <DateRangePicker
+                          dateRange={{ from: undefined, to: wizardData.dateRange?.to }}
+                          onDateRangeChange={(dateRange) => {
+                            if (dateRange?.to) {
+                              setWizardData(prev => ({
+                                ...prev,
+                                followUps: { ...prev.followUps, [currentStepData.data as string]: dateRange.to?.toLocaleDateString() || '' },
+                                dateRange: { from: new Date(), to: dateRange.to }
+                              }));
+                              setShowCustomInput(false);
+                            }
+                          }}
+                          placeholder="Pick your end date"
+                          className="w-full"
+                        />
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowCustomInput(false)}
+                          className="w-full"
+                        >
+                          Back to options
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                
+                {/* Continue button */}
+                {!showCustomInput && canProceed() && (
+                  <Button 
+                    onClick={handleNext}
+                    className="w-full h-12 text-base font-medium"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Perfect deadline!
                   </Button>
                 )}
               </div>
