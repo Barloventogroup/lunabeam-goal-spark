@@ -767,6 +767,33 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
             {/* Scaffolding Step */}
             {currentStepData.type === 'scaffolding' && (
               <div className="space-y-4">
+                {/* Goal Summary */}
+                <Card className="border-primary/20 bg-primary/5">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-base mb-3 text-foreground">✨ Your Goal Summary</h3>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium text-foreground">Goal:</span> <span className="text-foreground-soft">{goal.goal}</span></div>
+                      {wizardData.selectedOption && (
+                        <div><span className="font-medium text-foreground">Choice:</span> <span className="text-foreground-soft">{wizardData.customValue || wizardData.selectedOption}</span></div>
+                      )}
+                      {Object.entries(wizardData.followUps).map(([key, value]) => (
+                        <div key={key}><span className="font-medium text-foreground">{key}:</span> <span className="text-foreground-soft">{value}</span></div>
+                      ))}
+                      {Object.entries(wizardData.customInputs).map(([key, value]) => (
+                        <div key={key}><span className="font-medium text-foreground">{key}:</span> <span className="text-foreground-soft">{value}</span></div>
+                      ))}
+                      {Object.entries(wizardData.times).map(([key, value]) => (
+                        <div key={key}><span className="font-medium text-foreground">{key}:</span> <span className="text-foreground-soft">{value}</span></div>
+                      ))}
+                      {wizardData.dateRange?.from && (
+                        <div><span className="font-medium text-foreground">Timeline:</span> <span className="text-foreground-soft">
+                          {wizardData.dateRange.from.toLocaleDateString()}{wizardData.dateRange.to ? ` to ${wizardData.dateRange.to.toLocaleDateString()}` : ''}
+                        </span></div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+                
                 <div className="grid gap-3">
                   <Button
                     variant={wizardData.scaffoldingLevel === 'basic' ? "default" : "outline"}
