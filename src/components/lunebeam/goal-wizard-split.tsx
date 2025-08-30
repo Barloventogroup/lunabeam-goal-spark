@@ -58,7 +58,29 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
   
   if (goal.custom_inputs) {
     goal.custom_inputs.forEach(input => {
-      steps.push({ type: 'custom_input', title: input, data: input });
+      steps.push({ type: 'custom_input', title: input, data: input, required: false });
+    });
+  }
+  
+  if (goal.required_inputs) {
+    goal.required_inputs.forEach(input => {
+      if (input === 'Start date' || input === 'End date') {
+        if (!steps.find(s => s.type === 'date_range')) {
+          steps.push({ type: 'date_range', title: 'Select dates', data: 'dates', required: true });
+        }
+      } else if (input === 'Days per week') {
+        steps.push({ type: 'days_per_week', title: 'How many days per week?', data: input, required: true });
+      } else if (input === 'Bedtime' || input === 'Wake time') {
+        steps.push({ type: 'time', title: input, data: input, required: true });
+      } else if (input === 'Duration' || input === 'Duration per session' || input === 'Duration (minutes)') {
+        steps.push({ type: 'duration', title: input, data: input, required: true });
+      } else if (input === 'Frequency') {
+        steps.push({ type: 'frequency', title: 'How often?', data: input, required: true });
+      } else if (input === 'How much?') {
+        steps.push({ type: 'amount', title: 'How much?', data: input, required: true });
+      } else {
+        steps.push({ type: 'required_input', title: input, data: input, required: true });
+      }
     });
   }
   
@@ -66,14 +88,14 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
     goal.follow_ups.forEach(followUp => {
       if (followUp === 'Start date' || followUp === 'End date') {
         if (!steps.find(s => s.type === 'date_range')) {
-          steps.push({ type: 'date_range', title: 'Select dates', data: 'dates' });
+          steps.push({ type: 'date_range', title: 'Select dates', data: 'dates', required: false });
         }
       } else if (followUp === 'Days per week') {
-        steps.push({ type: 'days_per_week', title: 'How many days per week?', data: followUp });
+        steps.push({ type: 'days_per_week', title: 'How many days per week?', data: followUp, required: false });
       } else if (followUp === 'Bedtime' || followUp === 'Wake time') {
-        steps.push({ type: 'time', title: followUp, data: followUp });
+        steps.push({ type: 'time', title: followUp, data: followUp, required: false });
       } else {
-        steps.push({ type: 'follow_up', title: followUp, data: followUp });
+        steps.push({ type: 'follow_up', title: followUp, data: followUp, required: false });
       }
     });
   }
@@ -100,17 +122,27 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
   const getCurrentMessage = () => {
     if (!currentStepData) return "Let's get started! 🌟";
     
+    const required = currentStepData.required ? " (This is important for your success!)" : "";
+    
     switch (currentStepData.type) {
       case 'options':
         return `Great! Let's personalize your "${goal.goal}" goal. What resonates most with you? 🎯`;
       case 'custom_input':
         return `Perfect! Now let's add some specific details to make this goal uniquely yours! ✨`;
+      case 'required_input':
+        return `This is important! Let's specify ${currentStepData.title.toLowerCase()} to make your goal concrete and achievable! 💪${required}`;
       case 'date_range':
-        return `Awesome! When would you like to start working on this goal? Having a timeline helps you stay focused! 📅`;
+        return `Awesome! When would you like to start working on this goal? Having a timeline helps you stay focused! 📅${required}`;
       case 'days_per_week':
-        return `Excellent choice! How often would you like to work on this? Consistency is key to success! 💪`;
+        return `Excellent choice! How often would you like to work on this? Consistency is key to success! 💪${required}`;
+      case 'duration':
+        return `Perfect! How long will you spend on this each time? Setting clear time boundaries helps you succeed! ⏱️${required}`;
+      case 'frequency':
+        return `Great question! How often will you do this? Regular practice makes all the difference! 🔄${required}`;
+      case 'amount':
+        return `Fantastic! Let's set a specific target amount. Clear goals are easier to achieve! 🎯${required}`;
       case 'time':
-        return `Great thinking! Setting a specific time helps build lasting habits. What works best for your schedule? ⏰`;
+        return `Great thinking! Setting a specific time helps build lasting habits. What works best for your schedule? ⏰${required}`;
       case 'follow_up':
         return `You're doing amazing! Let's add one more detail to make your plan complete! 🌟`;
       case 'scaffolding':
@@ -151,7 +183,9 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
         ...prev,
         customInputs: { ...prev.customInputs, [key]: value }
       }));
-    } else if (currentStepData.type === 'follow_up') {
+    } else if (currentStepData.type === 'follow_up' || currentStepData.type === 'required_input' || 
+               currentStepData.type === 'duration' || currentStepData.type === 'frequency' || 
+               currentStepData.type === 'amount') {
       setWizardData(prev => ({
         ...prev,
         followUps: { ...prev.followUps, [key]: value }
@@ -215,11 +249,23 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
       case 'options':
         return wizardData.selectedOption !== undefined && !showCustomInput;
       case 'date_range':
-        return wizardData.dateRange?.from !== undefined;
+        return currentStepData.required ? wizardData.dateRange?.from !== undefined : true;
       case 'days_per_week':
-        return wizardData.followUps[currentStepData.data as string] !== undefined;
+        return currentStepData.required ? wizardData.followUps[currentStepData.data as string] !== undefined : true;
+      case 'duration':
+        return currentStepData.required ? wizardData.followUps[currentStepData.data as string] !== undefined : true;
+      case 'frequency':
+        return currentStepData.required ? wizardData.followUps[currentStepData.data as string] !== undefined : true;
+      case 'amount':
+        return currentStepData.required ? wizardData.followUps[currentStepData.data as string] !== undefined : true;
       case 'time':
-        return wizardData.times[currentStepData.data as string] !== undefined;
+        return currentStepData.required ? wizardData.times[currentStepData.data as string] !== undefined : true;
+      case 'required_input':
+        return wizardData.followUps[currentStepData.data as string] !== undefined;
+      case 'custom_input':
+        return !currentStepData.required || wizardData.customInputs[currentStepData.data as string] !== undefined;
+      case 'follow_up':
+        return !currentStepData.required || wizardData.followUps[currentStepData.data as string] !== undefined;
       case 'scaffolding':
         return wizardData.scaffoldingLevel !== undefined;
       default:
@@ -523,6 +569,198 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
                     Skip for now
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {/* Required Input, Duration, Frequency, Amount Steps */}
+            {(currentStepData.type === 'required_input' || currentStepData.type === 'duration' || 
+              currentStepData.type === 'frequency' || currentStepData.type === 'amount') && (
+              <div className="space-y-4">
+                <Card className="border-primary/20 border-2">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Star className="h-4 w-4 text-primary" />
+                      <Label className="text-sm font-medium text-foreground">
+                        {currentStepData.title} *
+                      </Label>
+                    </div>
+                    
+                    {/* Duration-specific options */}
+                    {currentStepData.type === 'duration' && (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-3 gap-2">
+                          {["5 min", "10 min", "15 min", "20 min", "30 min", "45 min", "1 hour", "2 hours", "Custom"].map((option) => (
+                            <Button
+                              key={option}
+                              variant={wizardData.followUps[currentStepData.data as string] === option ? "default" : "outline"}
+                              className="h-10 text-sm hover:scale-105 transition-all"
+                              onClick={() => {
+                                if (option === "Custom") {
+                                  setShowCustomInput(true);
+                                } else {
+                                  setWizardData(prev => ({
+                                    ...prev,
+                                    followUps: { ...prev.followUps, [currentStepData.data as string]: option }
+                                  }));
+                                }
+                              }}
+                            >
+                              {option}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Frequency-specific options */}
+                    {currentStepData.type === 'frequency' && (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          {["Daily", "Every other day", "3x per week", "2x per week", "Weekly", "Custom"].map((option) => (
+                            <Button
+                              key={option}
+                              variant={wizardData.followUps[currentStepData.data as string] === option ? "default" : "outline"}
+                              className="h-12 text-sm hover:scale-105 transition-all"
+                              onClick={() => {
+                                if (option === "Custom") {
+                                  setShowCustomInput(true);
+                                } else {
+                                  setWizardData(prev => ({
+                                    ...prev,
+                                    followUps: { ...prev.followUps, [currentStepData.data as string]: option }
+                                  }));
+                                }
+                              }}
+                            >
+                              {option}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Amount-specific options */}
+                    {currentStepData.type === 'amount' && (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          {["1 page", "5 pages", "10 pages", "1 chapter", "30 minutes", "1 hour", "Custom amount"].map((option) => (
+                            <Button
+                              key={option}
+                              variant={wizardData.followUps[currentStepData.data as string] === option ? "default" : "outline"}
+                              className="h-12 text-sm hover:scale-105 transition-all"
+                              onClick={() => {
+                                if (option === "Custom amount") {
+                                  setShowCustomInput(true);
+                                } else {
+                                  setWizardData(prev => ({
+                                    ...prev,
+                                    followUps: { ...prev.followUps, [currentStepData.data as string]: option }
+                                  }));
+                                }
+                              }}
+                            >
+                              {option}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Generic text input for required_input */}
+                    {currentStepData.type === 'required_input' && (
+                      <div className="space-y-3">
+                        <Input
+                          value={customInput}
+                          onChange={(e) => setCustomInput(e.target.value)}
+                          placeholder={`Enter ${currentStepData.title.toLowerCase()}...`}
+                          className="border-primary/30"
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && customInput.trim()) {
+                              handleInputSubmit(currentStepData.data as string, customInput);
+                              setCustomInput('');
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Custom input for duration/frequency/amount */}
+                    {showCustomInput && currentStepData.type !== 'required_input' && (
+                      <div className="space-y-3 mt-3 p-3 bg-primary/5 rounded-lg">
+                        <Label className="text-sm font-medium">Enter custom {currentStepData.title.toLowerCase()}:</Label>
+                        <Input
+                          value={customInput}
+                          onChange={(e) => setCustomInput(e.target.value)}
+                          placeholder={`Type your custom ${currentStepData.title.toLowerCase()}...`}
+                          className="border-primary/30"
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && customInput.trim()) {
+                              setWizardData(prev => ({
+                                ...prev,
+                                followUps: { ...prev.followUps, [currentStepData.data as string]: customInput.trim() }
+                              }));
+                              setCustomInput('');
+                              setShowCustomInput(false);
+                              handleNext();
+                            }
+                          }}
+                        />
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => {
+                              setWizardData(prev => ({
+                                ...prev,
+                                followUps: { ...prev.followUps, [currentStepData.data as string]: customInput.trim() }
+                              }));
+                              setCustomInput('');
+                              setShowCustomInput(false);
+                              handleNext();
+                            }}
+                            disabled={!customInput.trim()}
+                            className="flex-1"
+                          >
+                            <Heart className="h-4 w-4 mr-2" />
+                            Perfect!
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setShowCustomInput(false)}
+                            className="flex-1"
+                          >
+                            Back
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                
+                {/* Continue button for required inputs */}
+                {currentStepData.type === 'required_input' && (
+                  <Button 
+                    onClick={() => {
+                      handleInputSubmit(currentStepData.data as string, customInput);
+                      setCustomInput('');
+                    }}
+                    disabled={!customInput.trim()}
+                    className="w-full h-12 text-base font-medium"
+                  >
+                    <Star className="h-4 w-4 mr-2" />
+                    Got it!
+                  </Button>
+                )}
+                
+                {/* Continue button for duration/frequency/amount when not in custom mode */}
+                {(currentStepData.type === 'duration' || currentStepData.type === 'frequency' || currentStepData.type === 'amount') && 
+                 !showCustomInput && canProceed() && (
+                  <Button 
+                    onClick={handleNext}
+                    className="w-full h-12 text-base font-medium"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Perfect choice!
+                  </Button>
+                )}
               </div>
             )}
 

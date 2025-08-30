@@ -9,6 +9,7 @@ export interface GoalFlow {
   options?: string[];
   custom_inputs?: string[];
   follow_ups?: string[];
+  required_inputs?: string[];
   outputs?: string[];
 }
 
@@ -21,7 +22,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     {
       "goal": "Walk",
       "options": ["10 minutes", "20 minutes", "30 minutes", "Custom"],
-      "follow_ups": ["Days per week"]
+      "required_inputs": ["Days per week", "Duration"]
     },
     {
       "goal": "Eat healthier",
@@ -31,7 +32,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     {
       "goal": "Better sleep",
       "options": ["Set bedtime", "Limit screens", "Add calming routine", "Custom"],
-      "custom_inputs": ["Bedtime", "Wake time", "Target hours"],
+      "required_inputs": ["Bedtime", "Wake time", "Target hours"],
       "outputs": ["Sleep hygiene tips", "Sleep log"]
     },
     {
@@ -43,7 +44,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     {
       "goal": "Stretch",
       "options": ["Morning", "Before bed", "After exercise", "Custom"],
-      "custom_inputs": ["Duration (minutes)"],
+      "required_inputs": ["Duration (minutes)", "Frequency"],
       "outputs": ["Stretch routine video"]
     }
   ],
@@ -53,13 +54,14 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
       "goal": "Read something",
       "options": ["Book", "Article/blog", "Magazine", "Comic/graphic novel", "Custom"],
       "custom_inputs": ["Title", "Topic", "Source"],
-      "follow_ups": ["How much?", "Frequency"],
+      "required_inputs": ["How much?", "Frequency"],
       "outputs": ["Reading log", "Suggested reading list"]
     },
     {
       "goal": "Write something",
       "options": ["Journal", "Poem", "Essay", "Letter", "Text/email", "Custom"],
       "custom_inputs": ["Topic", "Recipient"],
+      "required_inputs": ["How much?", "Frequency"],
       "outputs": ["Writing template", "Starter prompt"]
     },
     {
@@ -83,6 +85,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
       "goal": "Study",
       "options": ["15 minutes", "30 minutes", "45 minutes", "Custom"],
       "custom_inputs": ["Subject/topic"],
+      "required_inputs": ["Frequency", "Duration per session"],
       "outputs": ["Study guide template"]
     }
   ],
@@ -92,6 +95,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
       "goal": "Practice for interview",
       "options": ["Mock interview", "Custom questions"],
       "custom_inputs": ["Target job/role"],
+      "required_inputs": ["Frequency", "Duration per session"],
       "outputs": ["Interview Q&A set", "Feedback log"]
     },
     {
@@ -142,6 +146,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
       "goal": "Cook",
       "options": ["Snack", "Breakfast", "Dinner", "Custom"],
       "custom_inputs": ["Recipe choice"],
+      "required_inputs": ["Frequency"],
       "outputs": ["Recipe card", "Shopping list"]
     },
     {
@@ -166,6 +171,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     {
       "goal": "Eye contact (3s)",
       "options": ["Roleplay", "Real-world"],
+      "required_inputs": ["Frequency", "Duration per session"],
       "outputs": ["Progress tracker"]
     },
     {
@@ -181,6 +187,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     {
       "goal": "Compliment",
       "options": ["Appearance", "Skill", "Effort", "Custom"],
+      "required_inputs": ["Frequency"],
       "outputs": ["Compliment starters"]
     }
   ],
