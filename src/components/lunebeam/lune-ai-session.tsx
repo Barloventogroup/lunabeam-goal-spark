@@ -119,7 +119,7 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
       id: (Date.now() + 1).toString(),
       content: `Perfect! Here's your goal:
 
-**${convertedGoal.title}**
+${convertedGoal.title}
 
 This should take about ${convertedGoal.timeEstimate}.
 
@@ -205,7 +205,7 @@ Sound good?`,
         id: (Date.now() + 1).toString(),
         content: `Love it! Here's your goal:
 
-**${convertedGoal.title}**
+${convertedGoal.title}
 
 This should take about ${convertedGoal.timeEstimate}.
 
