@@ -64,6 +64,8 @@ export const GoalWizardEnhanced: React.FC<GoalWizardEnhancedProps> = ({
         if (!steps.find(s => s.type === 'date_range')) {
           steps.push({ type: 'date_range', title: 'Select dates', data: 'dates' });
         }
+      } else if (followUp === 'Days per week') {
+        steps.push({ type: 'days_per_week', title: 'How many days per week?', data: followUp });
       } else if (followUp === 'Bedtime' || followUp === 'Wake time') {
         steps.push({ type: 'time', title: followUp, data: followUp });
       } else {
@@ -163,6 +165,10 @@ export const GoalWizardEnhanced: React.FC<GoalWizardEnhancedProps> = ({
     
     if (currentStepData.type === 'date_range') {
       return wizardData.dateRange?.from !== undefined;
+    }
+    
+    if (currentStepData.type === 'days_per_week') {
+      return wizardData.followUps[currentStepData.data as string] !== undefined;
     }
     
     if (currentStepData.type === 'time') {
@@ -292,6 +298,39 @@ export const GoalWizardEnhanced: React.FC<GoalWizardEnhancedProps> = ({
                   onDateRangeChange={handleDateRangeChange}
                   placeholder="Pick start and end dates"
                 />
+                <Button 
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                  className="w-full"
+                >
+                  Continue
+                </Button>
+              </div>
+            )}
+
+            {/* Days per Week Step */}
+            {currentStepData.type === 'days_per_week' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-4 gap-2">
+                  {[1, 2, 3, 4, 5, 6, 7].map((days) => (
+                    <Button
+                      key={days}
+                      variant={wizardData.followUps[currentStepData.data as string] === days.toString() ? "default" : "outline"}
+                      className="h-12 text-base font-medium"
+                      onClick={() => {
+                        setWizardData(prev => ({
+                          ...prev,
+                          followUps: { ...prev.followUps, [currentStepData.data as string]: days.toString() }
+                        }));
+                      }}
+                    >
+                      {days}
+                    </Button>
+                  ))}
+                </div>
+                <p className="text-sm text-foreground-soft text-center">
+                  Select how many days per week you want to walk
+                </p>
                 <Button 
                   onClick={handleNext}
                   disabled={!canProceed()}

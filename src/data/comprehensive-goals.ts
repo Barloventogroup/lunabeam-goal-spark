@@ -21,8 +21,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     {
       "goal": "Walk",
       "options": ["10 minutes", "20 minutes", "30 minutes", "Custom"],
-      "follow_ups": ["Start date", "End date", "Frequency"],
-      "outputs": ["Calendar reminder", "Step tracker"]
+      "follow_ups": ["Days per week"]
     },
     {
       "goal": "Eat healthier",
