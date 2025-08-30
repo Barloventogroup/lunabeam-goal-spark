@@ -45,6 +45,7 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [sessionPhase, setSessionPhase] = useState<'greeting' | 'suggestions' | 'followup' | 'summarizing' | 'complete'>('greeting');
   const [selectedSuggestion, setSelectedSuggestion] = useState<any>(null);
+  const [isCustomGoal, setIsCustomGoal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { profile } = useStore();
   const { toast } = useToast();
@@ -97,6 +98,7 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
 
   const handleSuggestionSelected = (suggestion: any) => {
     setSelectedSuggestion(suggestion);
+    setIsCustomGoal(false); // This is a suggested goal, not custom
     
     // Create goal directly with follow-up context
     const goalTitle = suggestion.followUpChoice 
@@ -191,6 +193,8 @@ Sound good?`,
 
     if (sessionPhase === 'complete') {
       // User is writing their own goal
+      setIsCustomGoal(true);
+      
       const convertedGoal = {
         title: input.trim(),
         description: `Custom ${category} goal`,
@@ -308,16 +312,18 @@ Sound good?`,
             />
           ) : sessionPhase === 'summarizing' ? (
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setSessionPhase('suggestions')}
-                className="flex-1"
-              >
-                Let me refine this
-              </Button>
+              {!isCustomGoal && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSessionPhase('suggestions')}
+                  className="flex-1"
+                >
+                  Let me refine this
+                </Button>
+              )}
               <Button 
                 onClick={confirmGoal}
-                className="flex-1"
+                className={isCustomGoal ? "w-full" : "flex-1"}
               >
                 Create Goal
               </Button>
