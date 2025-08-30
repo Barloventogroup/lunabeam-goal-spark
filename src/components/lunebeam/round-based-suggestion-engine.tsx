@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 interface RoundBasedSuggestionEngineProps {
   category: string;
@@ -697,18 +698,17 @@ export const RoundBasedSuggestionEngine: React.FC<RoundBasedSuggestionEngineProp
   onSelectOption,
   onMetaAction
 }) => {
-  const [currentRound, setCurrentRound] = useState<1 | 2>(1);
   const [selectedOption, setSelectedOption] = useState<OptionData | null>(null);
   const [followUpStep, setFollowUpStep] = useState<'question' | 'selected' | null>(null);
-  const [notSureCount, setNotSureCount] = useState(0);
   const [showExplainMode, setShowExplainMode] = useState(false);
   const [showMetaOptions, setShowMetaOptions] = useState(false);
-  const [isNotSurePressed, setIsNotSurePressed] = useState(false);
+  const [userInput, setUserInput] = useState('');
 
   const categoryData = CATEGORY_DATA[category];
   if (!categoryData) return null;
 
-  const currentOptions = currentRound === 1 ? categoryData.round1 : categoryData.round2;
+  // Combine all options from both rounds
+  const allOptions = [...categoryData.round1, ...(categoryData.round2 || [])];
 
   const handleOptionSelect = (option: OptionData) => {
     setSelectedOption(option);
@@ -729,18 +729,6 @@ export const RoundBasedSuggestionEngine: React.FC<RoundBasedSuggestionEngineProp
       onMetaAction('exit');
       return;
     }
-    
-    if (choiceId === 'not_sure') {
-      const newCount = notSureCount + 1;
-      setNotSureCount(newCount);
-      
-      if (newCount >= 2 && !showExplainMode) {
-        setShowExplainMode(true);
-      } else if (newCount >= 3) {
-        setShowMetaOptions(true);
-      }
-      return;
-    }
 
     // Complete the selection
     if (selectedOption) {
@@ -753,80 +741,26 @@ export const RoundBasedSuggestionEngine: React.FC<RoundBasedSuggestionEngineProp
     }
   };
 
-  const handleNotSure = () => {
-    console.log('Not sure clicked, current count:', notSureCount);
-    
-    // Provide immediate visual feedback
-    setIsNotSurePressed(true);
-    
-    const newCount = notSureCount + 1;
-    console.log('New count will be:', newCount);
-    
-    // Batch all state updates together for better performance
-    setNotSureCount(newCount);
-    
-    // Handle state transitions immediately
-    if (newCount >= 3) {
-      console.log('Showing meta options');
-      setShowMetaOptions(true);
-      setShowExplainMode(false);
-    } else if (newCount >= 2) {
-      console.log('Showing explain mode');
-      setShowExplainMode(true);
+  const handleUserInput = () => {
+    if (userInput.trim()) {
+      onSelectOption({
+        id: 'custom',
+        text: userInput.trim(),
+        category: category
+      });
     }
-    
-    // Reset visual feedback
-    setTimeout(() => setIsNotSurePressed(false), 100);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleUserInput();
+    }
   };
 
   const handleExit = () => {
     onMetaAction('exit');
   };
-
-  if (showMetaOptions) {
-    return (
-      <Card className="p-4">
-        <p className="text-sm text-muted-foreground mb-4">All good 👍 Want to...</p>
-        <div className="space-y-2">
-          <Button 
-            variant="outline" 
-            onClick={() => onMetaAction('new_ideas')}
-            className="w-full justify-start"
-          >
-            🔄 See new ideas
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => onMetaAction('explain')}
-            className="w-full justify-start"
-          >
-            📖 Explain more
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => onMetaAction('write_own')}
-            className="w-full justify-start"
-          >
-            ✏️ Write my own
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => onMetaAction('pause')}
-            className="w-full justify-start"
-          >
-            ⏸ Pause
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => onMetaAction('exit')}
-            className="w-full justify-start"
-          >
-            🚪 Exit
-          </Button>
-        </div>
-      </Card>
-    );
-  }
 
   if (showExplainMode && selectedOption) {
     const explanations = categoryData.explainMode[selectedOption.id] || [];
@@ -880,30 +814,10 @@ export const RoundBasedSuggestionEngine: React.FC<RoundBasedSuggestionEngineProp
 
   return (
     <Card className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-muted-foreground">Round {currentRound}</p>
-        {currentRound === 1 && categoryData.round2 && (
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => setCurrentRound(2)}
-          >
-            Round 2 →
-          </Button>
-        )}
-        {currentRound === 2 && (
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => setCurrentRound(1)}
-          >
-            ← Round 1
-          </Button>
-        )}
-      </div>
+      <p className="text-sm text-muted-foreground mb-4">Choose an option or write your own:</p>
       
-      <div className="space-y-2">
-        {currentOptions.map((option) => (
+      <div className="space-y-2 mb-4">
+        {allOptions.map((option) => (
           <Button
             key={option.id}
             variant="outline"
@@ -913,17 +827,24 @@ export const RoundBasedSuggestionEngine: React.FC<RoundBasedSuggestionEngineProp
             {option.text}
           </Button>
         ))}
+      </div>
+
+      <div className="space-y-2">
+        <Input
+          value={userInput}
+          onChange={(e) => setUserInput(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Or write your own goal idea..."
+          className="w-full"
+        />
         
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-2">
           <Button 
-            variant="outline" 
-            onClick={handleNotSure}
-            disabled={isNotSurePressed}
-            className={`flex-1 transition-all duration-150 ${
-              isNotSurePressed ? 'scale-95 opacity-70' : ''
-            }`}
+            onClick={handleUserInput}
+            disabled={!userInput.trim()}
+            className="flex-1"
           >
-            ❓ Not sure
+            Create Goal
           </Button>
           <Button 
             variant="outline" 

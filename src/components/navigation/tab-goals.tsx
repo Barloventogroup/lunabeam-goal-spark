@@ -3,12 +3,14 @@ import { GoalsList } from '../lunebeam/goals-list';
 import { GoalDetail } from '../lunebeam/goal-detail';
 import { LuneAISession } from '../lunebeam/lune-ai-session';
 import { GoalSummary } from '../lunebeam/goal-summary';
+import { GoalCategories } from '../lunebeam/goal-categories';
 
-type GoalsView = 'list' | 'detail' | 'create' | 'summary';
+type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary';
 
 export const TabGoals: React.FC = () => {
   const [currentView, setCurrentView] = useState<GoalsView>('list');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [aiGoal, setAiGoal] = useState<any>(null);
 
   const handleNavigate = (view: string, data?: any) => {
@@ -18,7 +20,7 @@ export const TabGoals: React.FC = () => {
         setCurrentView('detail');
         break;
       case 'create-goal':
-        setCurrentView('create');
+        setCurrentView('categories');
         break;
       case 'goals-list':
       default:
@@ -26,6 +28,11 @@ export const TabGoals: React.FC = () => {
         setSelectedGoalId(null);
         break;
     }
+  };
+
+  const handleCategorySelected = (category: string) => {
+    setSelectedCategory(category);
+    setCurrentView('create');
   };
 
   const handleAiGoalCreated = (goal: any) => {
@@ -44,13 +51,22 @@ export const TabGoals: React.FC = () => {
         ) : (
           <GoalsList onNavigate={handleNavigate} />
         );
-      case 'create':
+      case 'categories':
         return (
+          <GoalCategories 
+            onSelectCategory={handleCategorySelected}
+            onBack={() => setCurrentView('list')}
+          />
+        );
+      case 'create':
+        return selectedCategory ? (
           <LuneAISession 
-            category="education" 
-            onBack={() => setCurrentView('list')} 
+            category={selectedCategory} 
+            onBack={() => setCurrentView('categories')} 
             onGoalCreated={handleAiGoalCreated}
           />
+        ) : (
+          <GoalsList onNavigate={handleNavigate} />
         );
       case 'summary':
         return aiGoal ? (
