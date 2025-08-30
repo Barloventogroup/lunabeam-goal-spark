@@ -703,6 +703,7 @@ export const RoundBasedSuggestionEngine: React.FC<RoundBasedSuggestionEngineProp
   const [notSureCount, setNotSureCount] = useState(0);
   const [showExplainMode, setShowExplainMode] = useState(false);
   const [showMetaOptions, setShowMetaOptions] = useState(false);
+  const [isNotSurePressed, setIsNotSurePressed] = useState(false);
 
   const categoryData = CATEGORY_DATA[category];
   if (!categoryData) return null;
@@ -753,14 +754,23 @@ export const RoundBasedSuggestionEngine: React.FC<RoundBasedSuggestionEngineProp
   };
 
   const handleNotSure = () => {
+    // Provide immediate visual feedback
+    setIsNotSurePressed(true);
+    
     const newCount = notSureCount + 1;
     setNotSureCount(newCount);
     
-    if (newCount >= 2 && !showExplainMode) {
-      setShowExplainMode(true);
-    } else if (newCount >= 3) {
-      setShowMetaOptions(true);
-    }
+    // Use requestAnimationFrame for smooth state updates
+    requestAnimationFrame(() => {
+      if (newCount >= 3) {
+        setShowMetaOptions(true);
+      } else if (newCount >= 2 && !showExplainMode) {
+        setShowExplainMode(true);
+      }
+      
+      // Reset the pressed state
+      setTimeout(() => setIsNotSurePressed(false), 150);
+    });
   };
 
   const handleExit = () => {
@@ -902,7 +912,10 @@ export const RoundBasedSuggestionEngine: React.FC<RoundBasedSuggestionEngineProp
           <Button 
             variant="outline" 
             onClick={handleNotSure}
-            className="flex-1"
+            disabled={isNotSurePressed}
+            className={`flex-1 transition-all duration-150 ${
+              isNotSurePressed ? 'scale-95 opacity-70' : ''
+            }`}
           >
             ❓ Not sure
           </Button>
