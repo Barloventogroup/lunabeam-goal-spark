@@ -21,15 +21,12 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     {
       "goal": "Walk",
       "options": ["10 minutes", "20 minutes", "30 minutes", "Custom"],
-      "custom_inputs": ["Custom duration (minutes)", "Custom distance (steps/miles)"],
-      "follow_ups": ["Start date", "Frequency"],
+      "follow_ups": ["Start date", "End date", "Frequency"],
       "outputs": ["Calendar reminder", "Step tracker"]
     },
     {
       "goal": "Eat healthier",
       "options": ["Eat 1 fruit daily", "Swap soda for water", "Add 1 veggie to lunch", "Custom"],
-      "custom_inputs": ["Specific foods to add or reduce"],
-      "follow_ups": ["Where?"],
       "outputs": ["Shopping list", "Recipe ideas"]
     },
     {
@@ -41,7 +38,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     {
       "goal": "Drink more water",
       "options": ["4 cups/day", "6 cups/day", "8 cups/day", "Custom"],
-      "custom_inputs": ["Number of cups"],
+      "follow_ups": ["Start date", "End date"],
       "outputs": ["Water reminders", "Hydration tracker"]
     },
     {
@@ -57,7 +54,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
       "goal": "Read something",
       "options": ["Book", "Article/blog", "Magazine", "Comic/graphic novel", "Custom"],
       "custom_inputs": ["Title", "Topic", "Source"],
-      "follow_ups": ["How much?", "When?"],
+      "follow_ups": ["How much?", "Frequency"],
       "outputs": ["Reading log", "Suggested reading list"]
     },
     {
@@ -134,7 +131,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     },
     {
       "goal": "Set table",
-      "options": ["Dinner", "Breakfast", "Custom"],
+      "options": ["Breakfast", "Lunch", "Dinner"],
       "outputs": ["Table setting checklist"]
     },
     {
