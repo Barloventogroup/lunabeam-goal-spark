@@ -60,28 +60,32 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
   };
 
   useEffect(() => {
-    // Initialize conversation with casual Lune greeting
-    const name = profile?.first_name || 'friend';
-    const welcomeMessage: Message = {
-      id: '1',
-      content: `Hey ${name} 👋 Let's pick a quick goal for ${categoryNames[category as keyof typeof categoryNames]}!`,
-      sender: 'lune',
-      timestamp: new Date()
-    };
-    setMessages([welcomeMessage]);
-    
-    // Auto-advance to suggestions after a brief moment
-    setTimeout(() => {
-      setSessionPhase('suggestions');
-      const suggestionsMessage: Message = {
-        id: '2',
-        content: 'Here are some ideas to get started 🙂',
+    // Only initialize once when component mounts
+    if (messages.length === 0) {
+      const name = profile?.first_name || 'friend';
+      const welcomeMessage: Message = {
+        id: '1',
+        content: `Hey ${name} 👋 Let's pick a quick goal for ${categoryNames[category as keyof typeof categoryNames]}!`,
         sender: 'lune',
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, suggestionsMessage]);
-    }, 1000);
-  }, [category, profile]);
+      setMessages([welcomeMessage]);
+      
+      // Auto-advance to suggestions after a brief moment
+      const timeoutId = setTimeout(() => {
+        setSessionPhase('suggestions');
+        const suggestionsMessage: Message = {
+          id: '2',
+          content: 'Here are some ideas to get started 🙂',
+          sender: 'lune',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, suggestionsMessage]);
+      }, 1000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [category]); // Removed profile dependency to prevent re-runs
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

@@ -754,23 +754,29 @@ export const RoundBasedSuggestionEngine: React.FC<RoundBasedSuggestionEngineProp
   };
 
   const handleNotSure = () => {
+    console.log('Not sure clicked, current count:', notSureCount);
+    
     // Provide immediate visual feedback
     setIsNotSurePressed(true);
     
     const newCount = notSureCount + 1;
+    console.log('New count will be:', newCount);
+    
+    // Batch all state updates together for better performance
     setNotSureCount(newCount);
     
-    // Use requestAnimationFrame for smooth state updates
-    requestAnimationFrame(() => {
-      if (newCount >= 3) {
-        setShowMetaOptions(true);
-      } else if (newCount >= 2 && !showExplainMode) {
-        setShowExplainMode(true);
-      }
-      
-      // Reset the pressed state
-      setTimeout(() => setIsNotSurePressed(false), 150);
-    });
+    // Handle state transitions immediately
+    if (newCount >= 3) {
+      console.log('Showing meta options');
+      setShowMetaOptions(true);
+      setShowExplainMode(false);
+    } else if (newCount >= 2) {
+      console.log('Showing explain mode');
+      setShowExplainMode(true);
+    }
+    
+    // Reset visual feedback
+    setTimeout(() => setIsNotSurePressed(false), 100);
   };
 
   const handleExit = () => {
