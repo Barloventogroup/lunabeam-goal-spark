@@ -44,7 +44,7 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionPhase, setSessionPhase] = useState<'greeting' | 'suggestions' | 'followup' | 'summarizing' | 'refining' | 'complete'>('greeting');
+  const [sessionPhase, setSessionPhase] = useState<'greeting' | 'suggestions' | 'followup' | 'summarizing' | 'refining' | 'refining_input' | 'complete'>('greeting');
   const [selectedSuggestion, setSelectedSuggestion] = useState<any>(null);
   const [isCustomGoal, setIsCustomGoal] = useState(false);
   // Refinement state
@@ -130,8 +130,6 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
       content: `Perfect! Here's your goal:
 
 ${convertedGoal.title}
-
-You can refine its duration and frequency before creating the goal.
 
 Sound good?`,
       sender: 'lune',
@@ -227,6 +225,57 @@ Sound good?`,
       setMessages(prev => [...prev, summaryMessage]);
       setSessionPhase('summarizing');
       (window as any).pendingGoal = convertedGoal;
+    } else if (sessionPhase === 'refining_input') {
+      // Handle refinement input
+      const userInput = input.trim().toLowerCase();
+      
+      if (userInput.includes("don't know") || userInput.includes("not sure") || userInput.includes("help")) {
+        // Offer contextualized suggestions based on the goal
+        const pendingGoal = (window as any).pendingGoal;
+        const goalText = pendingGoal?.title || '';
+        
+        let suggestions = [];
+        if (goalText.toLowerCase().includes('walk')) {
+          suggestions = ['Make it shorter (5-10 minutes)', 'Make it daily', 'Add a specific time of day', 'Add a location preference'];
+        } else if (goalText.toLowerCase().includes('read') || goalText.toLowerCase().includes('book')) {
+          suggestions = ['Set number of pages', 'Choose a specific time', 'Make it daily', 'Pick a book genre'];
+        } else if (goalText.toLowerCase().includes('exercise') || goalText.toLowerCase().includes('workout')) {
+          suggestions = ['Shorter duration', 'Specific days of week', 'Add equipment needed', 'Set intensity level'];
+        } else {
+          suggestions = ['Change the duration', 'Adjust how often', 'Add a specific time', 'Make it more specific'];
+        }
+        
+        const suggestionMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: `No worries! Here are some ways you could refine "${goalText}":\n\n${suggestions.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\nJust tell me what you'd like to change! 😊`,
+          sender: 'lune',
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, suggestionMessage]);
+      } else {
+        // Process the refinement request
+        const pendingGoal = (window as any).pendingGoal;
+        const refinementText = input.trim();
+        
+        const refinedGoal = {
+          ...pendingGoal,
+          title: `${pendingGoal.title} • ${refinementText}`,
+          description: `${pendingGoal.description} (refined: ${refinementText})`
+        };
+        
+        (window as any).pendingGoal = refinedGoal;
+        
+        const refinedMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: `Perfect! Here's your refined goal:\n\n${refinedGoal.title}\n\nSound good?`,
+          sender: 'lune',
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, refinedMessage]);
+        setSessionPhase('summarizing');
+      }
     }
   };
 
@@ -355,7 +404,16 @@ Sound good?`,
               {!isCustomGoal && (
                 <Button 
                   variant="outline" 
-                  onClick={() => setSessionPhase('refining')}
+                  onClick={() => {
+                    const refineMessage: Message = {
+                      id: (Date.now() + 1).toString(),
+                      content: 'How do you want to refine this goal? 🎯',
+                      sender: 'lune',
+                      timestamp: new Date()
+                    };
+                    setMessages(prev => [...prev, refineMessage]);
+                    setSessionPhase('refining_input');
+                  }}
                   className="flex-1"
                 >
                   Let me refine this
@@ -439,13 +497,13 @@ Sound good?`,
                 </Button>
               </div>
             </div>
-          ) : sessionPhase === 'complete' ? (
+          ) : sessionPhase === 'complete' || sessionPhase === 'refining_input' ? (
             <div className="flex gap-2">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Tell me your goal idea..."
+                placeholder={sessionPhase === 'refining_input' ? "Tell me how to refine it..." : "Tell me your goal idea..."}
                 disabled={isLoading}
                 className="flex-1"
               />
