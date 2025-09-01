@@ -14,15 +14,32 @@ interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
 }
 
+type GoalsTab = 'active' | 'completed';
+
 export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [stepsCount, setStepsCount] = useState<Record<string, { required: number; done: number }>>({});
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<GoalsTab>('active');
   const { toast } = useToast();
 
   const loadGoals = async () => {
     try {
-      const goalsData = await goalsService.getGoals();
+      let goalsData: Goal[];
+      
+      if (activeTab === 'completed') {
+        // Get completed goals
+        goalsData = await goalsService.getGoals({ 
+          status: 'completed' 
+        });
+      } else {
+        // Get active goals (planned, active, paused - not completed or archived)
+        const allGoals = await goalsService.getGoals();
+        goalsData = allGoals.filter(goal => 
+          goal.status !== 'completed' && goal.status !== 'archived'
+        );
+      }
+      
       setGoals(goalsData);
 
       // Load step counts for each goal
@@ -51,7 +68,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
 
   useEffect(() => {
     loadGoals();
-  }, []);
+  }, [activeTab]); // Reload when tab changes
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -120,18 +137,45 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
         </Button>
       </div>
 
+      {/* Tab Buttons */}
+      <div className="flex gap-1 bg-muted p-1 rounded-lg">
+        <Button
+          variant={activeTab === 'active' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('active')}
+          className="flex-1 text-sm"
+        >
+          Active
+        </Button>
+        <Button
+          variant={activeTab === 'completed' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('completed')}
+          className="flex-1 text-sm"
+        >
+          Completed
+        </Button>
+      </div>
+
       {goals.length === 0 ? (
         <Card>
           <CardContent className="text-center py-8">
             <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3>No goals yet</h3>
+            <h3>
+              {activeTab === 'completed' ? 'No completed goals yet' : 'No active goals yet'}
+            </h3>
             <p className="text-body-sm text-muted-foreground mb-4">
-              Create your first goal to get started on your journey!
+              {activeTab === 'completed' 
+                ? 'Complete some goals to see them here!'
+                : 'Create your first goal to get started on your journey!'
+              }
             </p>
-            <Button onClick={() => onNavigate('create-goal')} variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Your First Goal
-            </Button>
+            {activeTab === 'active' && (
+              <Button onClick={() => onNavigate('create-goal')} variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Goal
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
