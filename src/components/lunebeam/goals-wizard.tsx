@@ -76,20 +76,23 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const voiceInput = useVoiceInput();
   const textToSpeech = useTextToSpeech();
 
-  // Load saved progress on mount
+  // Load saved progress on mount only if step is 1 (fresh start)
   useEffect(() => {
-    const saved = localStorage.getItem('goals-wizard-progress');
-    if (saved) {
-      try {
-        const savedState = JSON.parse(saved);
-        if (savedState.step > 1) {
-          setState({ ...savedState, savedProgress: savedState });
+    if (state.step === 1 && !state.category) {
+      const saved = localStorage.getItem('goals-wizard-progress');
+      if (saved) {
+        try {
+          const savedState = JSON.parse(saved);
+          if (savedState.step > 1) {
+            setState(prev => ({ ...prev, savedProgress: savedState }));
+          }
+        } catch (e) {
+          console.error('Error loading saved progress:', e);
+          localStorage.removeItem('goals-wizard-progress'); // Clear corrupted data
         }
-      } catch (e) {
-        console.error('Error loading saved progress:', e);
       }
     }
-  }, []);
+  }, []); // Only run once on mount
 
   // Auto-save progress
   useEffect(() => {
