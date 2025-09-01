@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, CheckCircle, Plus, Award } from 'lucide-react';
-import lunebeamLogo from '../../assets/lunebeam-logo.svg';
+import lunabeamLogo from '../../assets/lunabeam-logo.png';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Progress } from '../ui/progress';
@@ -44,13 +44,12 @@ export const TabHome: React.FC<TabHomeProps> = ({
       <div className="min-h-screen bg-gradient-soft">
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-card/80 backdrop-blur border-b">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center">
             <img 
-              src={lunebeamLogo} 
-              alt="Lunebeam logo" 
-              className="w-8 h-8"
+              src={lunabeamLogo} 
+              alt="Lunabeam logo" 
+              className="h-8"
             />
-            <h1 className="text-xl font-bold font-moonwalk">lunebeam</h1>
           </div>
           
           <button onClick={onOpenChat} className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors" aria-label="Open Lune Chat">
