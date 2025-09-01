@@ -2,9 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, X, Info, Sparkles } from 'lucide-react';
+import { ArrowLeft, X, Info, Sparkles, Mic, Volume2, Users } from 'lucide-react';
 import { GOALS_WIZARD_DATA, FALLBACK_OPTION, Category, CategoryGoal, GoalOption } from '@/data/goals-wizard-data';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  AccessibilityPanel, 
+  ReEngagementPanel, 
+  useVoiceInput, 
+  useTextToSpeech, 
+  ConfettiAnimation 
+} from './accessibility-features';
 
 interface GoalsWizardProps {
   onComplete: (goalData: {
@@ -53,7 +60,21 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const [state, setState] = useState<WizardState>({ step: 1 });
   const [showExplainer, setShowExplainer] = useState<string | null>(null);
   const [affirmation, setAffirmation] = useState<string>("");
+  const [showConfetti, setShowConfetti] = useState(false);
+  
+  // Accessibility states
+  const [isVoiceInputEnabled, setIsVoiceInputEnabled] = useState(false);
+  const [isTextToSpeechEnabled, setIsTextToSpeechEnabled] = useState(false);
+  const [isPeerModeEnabled, setIsPeerModeEnabled] = useState(false);
+  
+  // Re-engagement states
+  const [currentStreak, setCurrentStreak] = useState(3);
+  const [earnedBadges, setEarnedBadges] = useState(['🎯', '⭐']);
+  const [reminderEnabled, setReminderEnabled] = useState(true);
+  
   const { toast } = useToast();
+  const voiceInput = useVoiceInput();
+  const textToSpeech = useTextToSpeech();
 
   // Load saved progress on mount
   useEffect(() => {
@@ -76,6 +97,29 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       localStorage.setItem('goals-wizard-progress', JSON.stringify(state));
     }
   }, [state]);
+
+  // Text-to-speech for questions and explainers
+  useEffect(() => {
+    if (isTextToSpeechEnabled && state.step > 0 && STEPS[state.step - 1]) {
+      const questionText = `${STEPS[state.step - 1].title}. ${STEPS[state.step - 1].subtitle}`;
+      setTimeout(() => textToSpeech.speak(questionText), 500);
+    }
+  }, [state.step, isTextToSpeechEnabled, textToSpeech]);
+
+  // Handle voice input results
+  useEffect(() => {
+    if (voiceInput.transcript && isVoiceInputEnabled) {
+      // Simple keyword matching for voice navigation
+      const transcript = voiceInput.transcript.toLowerCase();
+      if (transcript.includes('next') || transcript.includes('continue')) {
+        if (canProceed()) {
+          handleNext();
+        }
+      } else if (transcript.includes('back') || transcript.includes('previous')) {
+        handleBack();
+      }
+    }
+  }, [voiceInput.transcript, isVoiceInputEnabled]);
 
   const showRandomAffirmation = () => {
     const randomAffirmation = AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)];
@@ -130,6 +174,10 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
 
   const handleComplete = () => {
     if (!state.goal || !state.purpose || !state.details || !state.timing || !state.supports || !state.category) return;
+
+    // Show confetti animation
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000);
 
     const goalData = {
       category: state.category.title,
@@ -305,7 +353,34 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
             />
           )}
         </div>
+
+        {/* Accessibility Panel */}
+        <div className="mt-6">
+          <AccessibilityPanel
+            isVoiceInputEnabled={isVoiceInputEnabled}
+            onVoiceInputToggle={setIsVoiceInputEnabled}
+            isTextToSpeechEnabled={isTextToSpeechEnabled}
+            onTextToSpeechToggle={setIsTextToSpeechEnabled}
+            isPeerModeEnabled={isPeerModeEnabled}
+            onPeerModeToggle={setIsPeerModeEnabled}
+            onStartVoiceInput={voiceInput.startListening}
+            isListening={voiceInput.isListening}
+          />
+        </div>
+
+        {/* Re-engagement Panel */}
+        <div className="mt-4">
+          <ReEngagementPanel
+            currentStreak={currentStreak}
+            earnedBadges={earnedBadges}
+            reminderEnabled={reminderEnabled}
+            onReminderToggle={setReminderEnabled}
+          />
+        </div>
       </div>
+
+      {/* Enhanced Confetti */}
+      {showConfetti && <ConfettiAnimation />}
 
       {/* Footer */}
       {state.step < 7 && (
