@@ -76,16 +76,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
   };
 
   if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Goals</h2>
-        </div>
-        <div className="text-center py-8 text-muted-foreground">
-          Loading goals...
-        </div>
-      </div>
-    );
+    return null; // Don't show loading state
   }
 
   return (
