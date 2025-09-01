@@ -44,13 +44,13 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "walk",
         title: "Walk",
         emoji: "🚶",
-        explainer: "Walking means moving at a steady pace… helps body and mind.",
+        explainer: "Walking means moving at a steady pace for exercise, relaxation, or to get somewhere. It helps your body and mind.",
         purpose: [
-          { id: "fitness", label: "For fitness", emoji: "💪", explainer: "Build strength and improve physical health" },
-          { id: "stress", label: "Reduce stress", emoji: "😌", explainer: "Walking helps calm your mind and reduce anxiety" },
-          { id: "social", label: "Be social", emoji: "👥", explainer: "Walk with friends or meet new people" },
-          { id: "transport", label: "Transportation", emoji: "🚶‍♀️", explainer: "Get where you need to go" },
-          { id: "custom", label: "Other reason", emoji: "✨", explainer: "Tell us your own reason for walking" }
+          { id: "fitness", label: "Fitness/exercise", emoji: "🏋️", explainer: "Build strength and improve physical health" },
+          { id: "stress", label: "Stress relief", emoji: "😌", explainer: "Walking helps calm your mind and reduce anxiety" },
+          { id: "social", label: "Social connection", emoji: "🤝", explainer: "Walk with friends or meet new people" },
+          { id: "transport", label: "Transportation/errand", emoji: "🛒", explainer: "Get where you need to go while being active" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Tell us your own reason for walking" }
         ],
         details: [
           { id: "5min-block", label: "5 min around block", emoji: "🏠", explainer: "Short walk in your neighborhood", isDefault: true },
@@ -58,46 +58,143 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "20min-store", label: "20 min to store", emoji: "🏪", explainer: "Walk to a nearby store or destination" }
         ],
         timing: [
-          { id: "1week-2weeks", label: "1×/week for 2 weeks", emoji: "📅", explainer: "Once per week for two weeks", isDefault: true },
-          { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks" },
+          { id: "1week-2weeks", label: "1×/week for 2 weeks", emoji: "📅", explainer: "Once per week for two weeks" },
+          { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
           { id: "5week-4weeks", label: "5×/week for 4 weeks", emoji: "📅", explainer: "Five times per week for four weeks" }
         ],
         supports: [
-          { id: "reminders", label: "Reminders", emoji: "🔔", explainer: "Get notifications to remind you", isDefault: true },
-          { id: "checklist", label: "Checklist", emoji: "✅", explainer: "Track your progress with a checklist", isDefault: true },
+          { id: "tracker", label: "Step tracker", emoji: "📱", explainer: "Track your steps and distance" },
+          { id: "reminder", label: "Reminder", emoji: "🔔", explainer: "Get notifications to remind you", isDefault: true },
+          { id: "playlist", label: "Calming playlist", emoji: "🎵", explainer: "Music to accompany your walks" },
           { id: "buddy", label: "Walking buddy", emoji: "👥", explainer: "Find someone to walk with" },
-          { id: "playlist", label: "Music playlist", emoji: "🎵", explainer: "Create or use a walking playlist" }
+          { id: "log", label: "Reflection log", emoji: "📝", explainer: "Track how walking makes you feel" }
         ],
-        smartTemplate: "🚶 Walk {duration} {location}, {frequency} for {weeks} (to {purpose})."
+        smartTemplate: "🚶 Walk {duration} {location}, {frequency} for {weeks}."
       },
       {
         id: "stretch",
         title: "Stretch",
         emoji: "🧘",
-        explainer: "Stretching means moving muscles gently to feel flexible and relaxed.",
+        explainer: "Stretching means moving muscles gently to make them longer. It helps you feel flexible and relaxed.",
         purpose: [
-          { id: "morning", label: "Morning routine", emoji: "🌅", explainer: "Start your day with gentle stretching" },
-          { id: "bedtime", label: "Before bedtime", emoji: "🌙", explainer: "Relax before sleep with stretching", isDefault: true },
-          { id: "exercise", label: "After exercise", emoji: "🏃‍♀️", explainer: "Cool down after physical activity" },
-          { id: "relax", label: "To relax", emoji: "😌", explainer: "Use stretching to reduce tension" },
-          { id: "custom", label: "Other reason", emoji: "✨", explainer: "Tell us your own reason for stretching" }
+          { id: "morning", label: "Morning wake-up", emoji: "🌅", explainer: "Start your day with gentle stretching" },
+          { id: "bedtime", label: "Relax before bed", emoji: "🌙", explainer: "Unwind and relax before sleep", isDefault: true },
+          { id: "exercise", label: "After exercise", emoji: "🏋️", explainer: "Cool down after physical activity" },
+          { id: "tension", label: "Reduce tension", emoji: "😌", explainer: "Release muscle tightness and stress" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Tell us your own reason for stretching" }
         ],
         details: [
-          { id: "5min-fullbody", label: "5 min full body", emoji: "🧘‍♀️", explainer: "Quick stretch for your whole body", isDefault: true },
-          { id: "10min-arms", label: "10 min arms", emoji: "💪", explainer: "Focus on stretching your arms and shoulders" },
-          { id: "15min-legs", label: "15 min legs", emoji: "🦵", explainer: "Stretch your legs and hips" }
+          { id: "fullbody-5min", label: "Full body, 5 min", emoji: "🧘‍♀️", explainer: "Quick stretch for your whole body", isDefault: true },
+          { id: "neck-back-10min", label: "Neck/back, 10 min", emoji: "🦴", explainer: "Focus on neck and back muscles" },
+          { id: "arms-10min", label: "Arms, 10 min", emoji: "💪", explainer: "Stretch your arms and shoulders" },
+          { id: "legs-15min", label: "Legs, 15 min", emoji: "🦵", explainer: "Stretch your legs and hips" }
         ],
         timing: [
-          { id: "3week-2weeks", label: "3×/week for 2 weeks", emoji: "📅", explainer: "Three times per week for two weeks" },
-          { id: "5week-3weeks", label: "5×/week for 3 weeks", emoji: "📅", explainer: "Five times per week for three weeks", isDefault: true },
-          { id: "7week-4weeks", label: "7×/week for 4 weeks", emoji: "📅", explainer: "Every day for four weeks" }
+          { id: "morning-3week-2weeks", label: "Morning, 3×/week for 2 weeks", emoji: "🌅", explainer: "Three mornings per week for two weeks" },
+          { id: "afterschool-5week-3weeks", label: "After school, 5×/week for 3 weeks", emoji: "🏫", explainer: "Five times after school for three weeks" },
+          { id: "bedtime-5week-3weeks", label: "Before bed, 5×/week for 3 weeks", emoji: "🌙", explainer: "Five nights before bed for three weeks", isDefault: true },
+          { id: "daily-4weeks", label: "Daily for 4 weeks", emoji: "📅", explainer: "Every day for four weeks" }
         ],
         supports: [
-          { id: "video", label: "Guided video", emoji: "📱", explainer: "Follow along with stretching videos" },
-          { id: "reminder", label: "Reminder", emoji: "🔔", explainer: "Get notifications to remind you", isDefault: true },
-          { id: "checklist", label: "Checklist", emoji: "✅", explainer: "Track your progress", isDefault: true }
+          { id: "video", label: "Guided video", emoji: "📱", explainer: "Follow along with stretching videos", isDefault: true },
+          { id: "checklist", label: "Checklist", emoji: "✅", explainer: "Track your stretching routine" },
+          { id: "reminder", label: "Reminder", emoji: "🔔", explainer: "Get notifications to stretch" },
+          { id: "audio", label: "Calming audio", emoji: "🎵", explainer: "Relaxing sounds while stretching" }
         ],
-        smartTemplate: "🧘 Stretch {duration} {focus}, {frequency} for {weeks}."
+        smartTemplate: "🧘 Stretch {focus} {timing} for {weeks}."
+      },
+      {
+        id: "sleep",
+        title: "Better Sleep",
+        emoji: "🌙",
+        explainer: "Better sleep means going to bed and waking up at the same time each day, and getting enough hours to feel rested.",
+        purpose: [
+          { id: "wake-on-time", label: "Wake up on time", emoji: "⏰", explainer: "Get up when you need to without oversleeping" },
+          { id: "less-tired", label: "Feel less tired", emoji: "💤", explainer: "Have more energy during the day", isDefault: true },
+          { id: "focus", label: "Focus better", emoji: "📚", explainer: "Concentrate better on tasks and school" },
+          { id: "calm", label: "Calm down at night", emoji: "😌", explainer: "Feel more relaxed in the evening" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Tell us your own reason for better sleep" }
+        ],
+        details: [
+          { id: "10pm-7am-30min", label: "10pm-7am, screens off 30min before", emoji: "📱", explainer: "Bedtime 10pm, wake 7am, no screens 30 min before bed", isDefault: true },
+          { id: "9pm-6am-60min", label: "9pm-6am, screens off 60min before", emoji: "📱", explainer: "Earlier bedtime with longer screen break" },
+          { id: "11pm-8am-30min", label: "11pm-8am, screens off 30min before", emoji: "📱", explainer: "Later schedule, still consistent times" },
+          { id: "custom-routine", label: "Add calming routine (read/stretch/music)", emoji: "📖", explainer: "Include relaxing activities before bed" }
+        ],
+        timing: [
+          { id: "5nights-2weeks", label: "5 nights/week for 2 weeks", emoji: "📅", explainer: "Five nights per week for two weeks" },
+          { id: "5nights-3weeks", label: "5 nights/week for 3 weeks", emoji: "📅", explainer: "Five nights per week for three weeks", isDefault: true },
+          { id: "7nights-3weeks", label: "Every night for 3 weeks", emoji: "📅", explainer: "Every single night for three weeks" },
+          { id: "7nights-4weeks", label: "Every night for 4 weeks", emoji: "📅", explainer: "Every single night for four weeks" }
+        ],
+        supports: [
+          { id: "bedtime-alarm", label: "Bedtime alarm", emoji: "⏰", explainer: "Reminder when it's time to get ready for bed", isDefault: true },
+          { id: "calming-activity", label: "Calming activity", emoji: "🧘", explainer: "Relaxing routine before sleep" },
+          { id: "sleep-log", label: "Sleep log", emoji: "📝", explainer: "Track your sleep patterns", isDefault: true }
+        ],
+        smartTemplate: "🌙 Go to bed at {bedtime} and wake up at {waketime}, {frequency} for {weeks}."
+      },
+      {
+        id: "eat-healthier",
+        title: "Eat Healthier",
+        emoji: "🥗",
+        explainer: "Eating healthy means choosing foods like fruits, vegetables, proteins, and whole grains instead of too many sweets or junk food.",
+        purpose: [
+          { id: "energy", label: "More energy", emoji: "🍎", explainer: "Feel more energetic throughout the day", isDefault: true },
+          { id: "fitness", label: "Stay fit/strong", emoji: "💪", explainer: "Support your body's strength and health" },
+          { id: "stress", label: "Reduce stress (snack swaps)", emoji: "😌", explainer: "Replace stress-eating with healthier choices" },
+          { id: "new-foods", label: "Try new foods", emoji: "🥦", explainer: "Explore different healthy options" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Tell us your own reason for eating healthier" }
+        ],
+        details: [
+          { id: "1fruit-lunch", label: "1 fruit at lunch", emoji: "🍎", explainer: "Add one piece of fruit to your lunch", isDefault: true },
+          { id: "2veggie-dinner", label: "2 veggies at dinner", emoji: "🥦", explainer: "Include two vegetables with dinner" },
+          { id: "1protein-meal", label: "1 protein per meal", emoji: "🥚", explainer: "Add protein to each main meal" },
+          { id: "snack-swap", label: "Healthy snack swap", emoji: "🥨", explainer: "Replace one unhealthy snack with a healthy option" }
+        ],
+        timing: [
+          { id: "3days-2weeks", label: "3 days/week for 2 weeks", emoji: "📅", explainer: "Three days per week for two weeks" },
+          { id: "5days-3weeks", label: "5 days/week for 3 weeks", emoji: "📅", explainer: "Five days per week for three weeks", isDefault: true },
+          { id: "daily-3weeks", label: "Every day for 3 weeks", emoji: "📅", explainer: "Daily for three weeks" },
+          { id: "daily-4weeks", label: "Every day for 4 weeks", emoji: "📅", explainer: "Daily for four weeks" }
+        ],
+        supports: [
+          { id: "shopping-list", label: "Shopping list template", emoji: "📝", explainer: "Pre-made list of healthy foods", isDefault: true },
+          { id: "food-log", label: "Food log", emoji: "📊", explainer: "Track what you eat each day" },
+          { id: "snack-chart", label: "Snack swap chart", emoji: "🔄", explainer: "Visual guide for healthy snack alternatives", isDefault: true }
+        ],
+        smartTemplate: "🥗 Eat {focus} {frequency} for {weeks}."
+      },
+      {
+        id: "drink-water",
+        title: "Drink More Water",
+        emoji: "💧",
+        explainer: "Drinking water keeps your body hydrated. Many people aim for 6–8 cups per day.",
+        purpose: [
+          { id: "healthy", label: "Stay healthy", emoji: "💧", explainer: "Keep your body working properly", isDefault: true },
+          { id: "energy", label: "More energy", emoji: "⚡", explainer: "Feel more energetic and alert" },
+          { id: "focus", label: "Focus better", emoji: "🧠", explainer: "Help your brain work better" },
+          { id: "replace-soda", label: "Replace soda/juice", emoji: "😌", explainer: "Substitute sugary drinks with water" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Tell us your own reason for drinking more water" }
+        ],
+        details: [
+          { id: "1cup-morning", label: "1 cup in morning", emoji: "🌅", explainer: "Start your day with a glass of water", isDefault: true },
+          { id: "4cups-allday", label: "4 cups all day", emoji: "📅", explainer: "Spread 4 cups throughout the day" },
+          { id: "6cups-meals", label: "6 cups with meals", emoji: "🍽️", explainer: "Drink water with breakfast, lunch, and dinner" },
+          { id: "8cups-scheduled", label: "8 cups on schedule", emoji: "⏰", explainer: "Drink water at set times throughout the day" },
+          { id: "swap-soda", label: "Swap soda/juice with water", emoji: "🔄", explainer: "Replace one sugary drink with water each day" }
+        ],
+        timing: [
+          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
+          { id: "daily-3weeks", label: "Daily for 3 weeks", emoji: "📅", explainer: "Every day for three weeks", isDefault: true },
+          { id: "daily-4weeks", label: "Daily for 4 weeks", emoji: "📅", explainer: "Every day for four weeks" }
+        ],
+        supports: [
+          { id: "tracker", label: "Hydration tracker", emoji: "📊", explainer: "Track how much water you drink", isDefault: true },
+          { id: "reminder", label: "Reminder", emoji: "🔔", explainer: "Get notifications to drink water", isDefault: true },
+          { id: "bottle", label: "Water bottle with markings", emoji: "🍼", explainer: "Bottle that shows how much you've drunk" }
+        ],
+        smartTemplate: "💧 Drink {amount} {timing} for {weeks}."
       }
     ]
   },
