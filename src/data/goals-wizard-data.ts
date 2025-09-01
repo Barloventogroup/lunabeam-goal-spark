@@ -44,7 +44,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "walk",
         title: "Walk",
         emoji: "🚶",
-        explainer: "Walking means moving at a steady pace for exercise, relaxation, or to get somewhere. It helps your body and mind.",
+        explainer: "Just putting one foot in front of the other! Whether it's around the block or to the store - walking is good for both your body and mind.",
         purpose: [
           { id: "fitness", label: "Fitness/exercise", emoji: "🏋️", explainer: "Build strength and improve physical health" },
           { id: "stress", label: "Stress relief", emoji: "😌", explainer: "Walking helps calm your mind and reduce anxiety" },
@@ -75,7 +75,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "stretch",
         title: "Stretch",
         emoji: "🧘",
-        explainer: "Stretching means moving muscles gently to make them longer. It helps you feel flexible and relaxed.",
+        explainer: "Gentle movements to help your muscles feel loose and happy. It's like giving your body a little hug!",
         purpose: [
           { id: "morning", label: "Morning wake-up", emoji: "🌅", explainer: "Start your day with gentle stretching" },
           { id: "bedtime", label: "Relax before bed", emoji: "🌙", explainer: "Unwind and relax before sleep", isDefault: true },
@@ -107,7 +107,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "sleep",
         title: "Better Sleep",
         emoji: "🌙",
-        explainer: "Better sleep means going to bed and waking up at the same time each day, and getting enough hours to feel rested.",
+        explainer: "Getting consistent, quality zzz's! It's about finding a rhythm that works for you and sticking to it.",
         purpose: [
           { id: "wake-on-time", label: "Wake up on time", emoji: "⏰", explainer: "Get up when you need to without oversleeping" },
           { id: "less-tired", label: "Feel less tired", emoji: "💤", explainer: "Have more energy during the day", isDefault: true },
@@ -138,7 +138,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "eat-healthier",
         title: "Eat Healthier",
         emoji: "🥗",
-        explainer: "Eating healthy means choosing foods like fruits, vegetables, proteins, and whole grains instead of too many sweets or junk food.",
+        explainer: "Fueling your body with good stuff! Think colorful foods that make you feel energized rather than sluggish.",
         purpose: [
           { id: "energy", label: "More energy", emoji: "🍎", explainer: "Feel more energetic throughout the day", isDefault: true },
           { id: "fitness", label: "Stay fit/strong", emoji: "💪", explainer: "Support your body's strength and health" },
@@ -169,7 +169,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "drink-water",
         title: "Drink More Water",
         emoji: "💧",
-        explainer: "Drinking water keeps your body hydrated. Many people aim for 6–8 cups per day.",
+        explainer: "H2O is your friend! Your body runs on water, so keeping it topped up helps everything work better.",
         purpose: [
           { id: "healthy", label: "Stay healthy", emoji: "💧", explainer: "Keep your body working properly", isDefault: true },
           { id: "energy", label: "More energy", emoji: "⚡", explainer: "Feel more energetic and alert" },
@@ -207,7 +207,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "read",
         title: "Read Something",
         emoji: "📖",
-        explainer: "Reading means looking at words in a book, article, or online.",
+        explainer: "Diving into words and stories! Whether it's a book, article, or even a really good blog post.",
         purpose: [
           { id: "learn", label: "To learn", emoji: "🧠", explainer: "Gain new knowledge and information", isDefault: true },
           { id: "relax", label: "To relax", emoji: "😌", explainer: "Enjoy reading for pleasure" },
@@ -242,7 +242,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "interview",
         title: "Practice Interview",
         emoji: "🎤",
-        explainer: "An interview is a conversation to see if you fit a job.",
+        explainer: "It's like a friendly chat where you show off why you'd be awesome at a job. Practice makes it way less scary!",
         purpose: [
           { id: "confidence", label: "Build confidence", emoji: "💪", explainer: "Feel more confident in interviews", isDefault: true },
           { id: "prepare", label: "Prepare for interview", emoji: "📋", explainer: "Get ready for an upcoming interview" },
@@ -276,7 +276,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "make-bed",
         title: "Make Bed", 
         emoji: "🛏️",
-        explainer: "Making bed = straighten sheets, blanket, pillows.",
+        explainer: "Starting your day by tidying up your sleep space. It's surprisingly satisfying!",
         purpose: [
           { id: "tidy", label: "Tidy room", emoji: "🧹", explainer: "Keep your space organized", isDefault: true },
           { id: "calm", label: "Feel calm", emoji: "😌", explainer: "Start day with accomplished feeling" },
@@ -310,7 +310,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "say-hi",
         title: "Say Hi",
         emoji: "👋",
-        explainer: "Saying hi = greeting by wave, smile, or words.",
+        explainer: "Just a simple wave, smile, or quick 'hey there!' - it's all about making friendly connections.",
         purpose: [
           { id: "friends", label: "Make friends", emoji: "👥", explainer: "Connect with new people" },
           { id: "practice", label: "Practice skill", emoji: "🎯", explainer: "Get better at social interactions" },
@@ -343,7 +343,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "browse",
         title: "Browse Options",
         emoji: "🔍",
-        explainer: "Browsing = looking at apartments/dorms online, flyers, or offices.",
+        explainer: "Checking out what's out there! Whether online, flyers, or visiting offices - it's all about exploring your options.",
         purpose: [
           { id: "move", label: "Planning to move", emoji: "📦", explainer: "Looking for a new place to live" },
           { id: "learn", label: "Learn about housing", emoji: "📚", explainer: "Understand housing options", isDefault: true },
@@ -376,7 +376,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "programs",
         title: "Look for Programs",
         emoji: "🔍",
-        explainer: "Program = course of study at college, training center, certificate.",
+        explainer: "Exploring what you could study or train for! From college degrees to certificates - seeing what catches your interest.",
         purpose: [
           { id: "college", label: "For college", emoji: "🎓", explainer: "Research college programs", isDefault: true },
           { id: "training", label: "For training", emoji: "🛠️", explainer: "Look at vocational training" },
@@ -409,7 +409,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "play-game",
         title: "Play Game",
         emoji: "🎮",
-        explainer: "Games can be video, board, or puzzles.",
+        explainer: "Fun time! Whether it's video games, board games, or puzzles - whatever helps you unwind and enjoy yourself.",
         purpose: [
           { id: "relax", label: "To relax", emoji: "😌", explainer: "Unwind and have fun", isDefault: true },
           { id: "socialize", label: "Be social", emoji: "👥", explainer: "Play games with others" },
@@ -441,7 +441,7 @@ export const FALLBACK_OPTION: GoalOption = {
   id: "unsure",
   label: "I'm not sure",
   emoji: "🤔",
-  explainer: "We'll help you choose something small and easy to start with."
+  explainer: "No worries! We've got some super gentle starter ideas that feel totally doable."
 };
 
 // Starter goals for "I'm not sure" fallback
