@@ -4,9 +4,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, X, Sparkles, Mic, Volume2, Users, MessageSquare, Send } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ArrowLeft, X, Sparkles, Mic, Volume2, Users, MessageSquare, Send, CalendarIcon } from 'lucide-react';
 import { GOALS_WIZARD_DATA, FALLBACK_OPTION, STARTER_GOALS, Category, CategoryGoal, GoalOption } from '@/data/goals-wizard-data';
 import { useToast } from '@/hooks/use-toast';
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { 
   AccessibilityPanel, 
   ReEngagementPanel, 
@@ -22,9 +26,11 @@ interface GoalsWizardProps {
     goal: string;
     purpose: string;
     details: string;
-    timing: string;
+    frequency: string;
+    duration: string;
     supports: string[];
     smartGoal: string;
+    startDate?: Date;
   }) => void;
   onBack: () => void;
 }
@@ -35,8 +41,10 @@ interface WizardState {
   goal?: CategoryGoal;
   purpose?: GoalOption;
   details?: GoalOption;
-  timing?: GoalOption;
+  frequency?: GoalOption;
+  duration?: GoalOption;
   supports?: GoalOption[];
+  startDate?: Date;
   savedProgress?: WizardState;
 }
 
@@ -45,9 +53,10 @@ const STEPS = [
   { id: 2, title: "Pick Goal", subtitle: "What specific goal interests you?" },
   { id: 3, title: "Why?", subtitle: "What's your main reason for this goal?" },
   { id: 4, title: "Details", subtitle: "How do you want to do this?" },
-  { id: 5, title: "When?", subtitle: "How often and for how long?" },
-  { id: 6, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
-  { id: 7, title: "Confirm", subtitle: "Ready to start your goal?" }
+  { id: 5, title: "How Often?", subtitle: "How frequently do you want to do this?" },
+  { id: 6, title: "How Long?", subtitle: "For how many weeks?" },
+  { id: 7, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
+  { id: 8, title: "Confirm", subtitle: "Ready to start your goal?" }
 ];
 
 const AFFIRMATIONS = [
@@ -137,7 +146,8 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     const title = state.goal?.title ?? "";
 
     const detailsPart = state.details?.label;
-    const timingPart = state.timing?.label;
+    const frequencyPart = state.frequency?.label;
+    const durationPart = state.duration?.label;
     const purposeSuffix = state.purpose?.label
       ? ` to ${state.purpose.label.toLowerCase()}`
       : "";
@@ -147,12 +157,16 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
 
     let sentence = `${emoji}${title}`;
 
-    if (detailsPart && timingPart) {
-      sentence += ` ${detailsPart}, ${timingPart}`;
-    } else if (detailsPart) {
+    if (detailsPart) {
       sentence += ` ${detailsPart}`;
-    } else if (timingPart) {
-      sentence += ` ${timingPart}`;
+    }
+
+    if (frequencyPart && durationPart) {
+      sentence += `, ${frequencyPart} for ${durationPart}`;
+    } else if (frequencyPart) {
+      sentence += `, ${frequencyPart}`;
+    } else if (durationPart) {
+      sentence += ` for ${durationPart}`;
     }
 
     sentence += purposeSuffix ? `${purposeSuffix}.` : ".";
@@ -165,7 +179,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   };
 
   const handleComplete = () => {
-    if (!state.goal || !state.purpose || !state.details || !state.timing || !state.supports || !state.category) return;
+    if (!state.goal || !state.purpose || !state.details || !state.frequency || !state.duration || !state.supports || !state.category) return;
 
     // Show confetti animation
     setShowConfetti(true);
@@ -176,9 +190,11 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       goal: state.goal.title,
       purpose: state.purpose.label,
       details: state.details.label,
-      timing: state.timing.label,
+      frequency: state.frequency.label,
+      duration: state.duration.label,
       supports: state.supports.map(s => s.label),
-      smartGoal: buildSmartGoal()
+      smartGoal: buildSmartGoal(),
+      startDate: state.startDate
     };
 
     // Clear saved progress
@@ -201,8 +217,10 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       goal: undefined,
       purpose: undefined,
       details: undefined,
-      timing: undefined,
+      frequency: undefined,
+      duration: undefined,
       supports: [],
+      startDate: undefined,
       savedProgress: null
     });
   };
@@ -236,8 +254,10 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
           setState(prev => ({ ...prev, purpose: customOption, step: 4 }));
         } else if (state.step === 4 && !state.details) {
           setState(prev => ({ ...prev, details: customOption, step: 5 }));
-        } else if (state.step === 5 && !state.timing) {
-          setState(prev => ({ ...prev, timing: customOption, step: 6 }));
+        } else if (state.step === 5 && !state.frequency) {
+          setState(prev => ({ ...prev, frequency: customOption, step: 6 }));
+        } else if (state.step === 6 && !state.duration) {
+          setState(prev => ({ ...prev, duration: customOption, step: 7 }));
         }
 
         showRandomAffirmation();
@@ -422,19 +442,28 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
           )}
 
           {state.step === 5 && state.goal && (
-            <OptionSelection
-              title="Timing"
-              options={state.goal.timing}
-              onSelect={(timing) => {
+            <FrequencySelection
+              onSelect={(frequency) => {
                 showRandomAffirmation();
-                setState(prev => ({ ...prev, timing, step: 6 }));
+                setState(prev => ({ ...prev, frequency, step: 6 }));
               }}
-              selected={state.timing}
+              selected={state.frequency}
               showCustomInput={() => setShowCustomDialog(true)}
             />
           )}
 
           {state.step === 6 && state.goal && (
+            <DurationSelection
+              onSelect={(duration) => {
+                showRandomAffirmation();
+                setState(prev => ({ ...prev, duration, step: 7 }));
+              }}
+              selected={state.duration}
+              showCustomInput={() => setShowCustomDialog(true)}
+            />
+          )}
+
+          {state.step === 7 && state.goal && (
             <MultiOptionSelection
               title="Support"
               options={state.goal.supports}
@@ -445,9 +474,11 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
             />
           )}
 
-          {state.step === 7 && (
+          {state.step === 8 && (
             <GoalConfirmation
               smartGoal={buildSmartGoal()}
+              startDate={state.startDate}
+              onStartDateChange={(date) => setState(prev => ({ ...prev, startDate: date }))}
               onComplete={handleComplete}
               onEdit={() => setState(prev => ({ ...prev, step: 3 }))}
             />
@@ -459,7 +490,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       {showConfetti && <ConfettiAnimation />}
 
       {/* Footer - only show when step > 2 AND not on category selection */}
-      {state.step < 7 && state.step > 2 && (
+      {state.step < 8 && state.step > 2 && (
         <div className="fixed bottom-16 left-0 right-0 bg-background/95 backdrop-blur border-t z-40">
           <div className="max-w-md mx-auto p-4 space-y-3">
             {/* SMART Preview */}
@@ -480,11 +511,11 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
             )}
 
             {/* Review Goal Button for Supports Step */}
-            {state.step === 6 && (
+            {state.step === 7 && (
               <Button 
                 onClick={() => {
                   showRandomAffirmation();
-                  setState(prev => ({ ...prev, step: 7 }));
+                  setState(prev => ({ ...prev, step: 8 }));
                 }}
                 className="w-full"
                 size="lg"
@@ -523,12 +554,12 @@ const CategorySelection: React.FC<{
               // Auto-select this goal with defaults and go to timing step
               if (onSelectDefault) {
                 onSelectDefault({ 
-                  step: 5, // Go to timing step, not confirmation
+                  step: 5, // Go to frequency step
                   category: { id: 'starter', title: 'Starter Goals', emoji: '🌟', goals: [goal] },
                   goal: goal,
                   purpose: goal.purpose.find(p => p.isDefault) || goal.purpose[0],
                   details: goal.details.find(d => d.isDefault) || goal.details[0],
-                  timing: undefined, // Let user choose timing
+                  frequency: undefined, // Let user choose frequency
                   supports: [], // Let user choose supports
                   savedProgress: null
                 });
@@ -798,9 +829,11 @@ const MultiOptionSelection: React.FC<{
 // Goal Confirmation Component
 const GoalConfirmation: React.FC<{
   smartGoal: string;
+  startDate?: Date;
+  onStartDateChange: (date: Date | undefined) => void;
   onComplete: () => void;
   onEdit: () => void;
-}> = ({ smartGoal, onComplete, onEdit }) => {
+}> = ({ smartGoal, startDate, onStartDateChange, onComplete, onEdit }) => {
   return (
     <div className="text-center space-y-6">
       <div className="text-6xl animate-bounce">🎉</div>
@@ -814,6 +847,37 @@ const GoalConfirmation: React.FC<{
           <CardContent className="p-4">
             <div className="text-lg font-semibold text-foreground mb-2">Your SMART Goal:</div>
             <div className="text-foreground">{smartGoal}</div>
+          </CardContent>
+        </Card>
+
+        {/* Start Date Picker */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm font-medium text-foreground mb-3">When would you like to start?</div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !startDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, "PPP") : <span>Pick a start date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={onStartDateChange}
+                  disabled={(date) => date < new Date()}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
           </CardContent>
         </Card>
         
@@ -833,6 +897,109 @@ const GoalConfirmation: React.FC<{
           Make Changes
         </Button>
       </div>
+    </div>
+  );
+};
+
+// Frequency Selection Component
+const FrequencySelection: React.FC<{
+  onSelect: (frequency: GoalOption) => void;
+  selected?: GoalOption;
+  showCustomInput?: () => void;
+}> = ({ onSelect, selected, showCustomInput }) => {
+  const frequencyOptions: GoalOption[] = [
+    { id: "1x-week", label: "1×/week", emoji: "📅", explainer: "Once per week" },
+    { id: "2x-week", label: "2×/week", emoji: "📅", explainer: "Twice per week" },
+    { id: "3x-week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+    { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" }
+  ];
+
+  return (
+    <div className="space-y-3">
+      {frequencyOptions.map((option) => (
+        <Card 
+          key={option.id}
+          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+            selected?.id === option.id 
+              ? 'border-primary bg-primary/5' 
+              : 'hover:border-primary/30'
+          }`}
+          onClick={() => onSelect(option)}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="text-xl">{option.emoji}</div>
+              <div className="font-medium text-foreground">{option.label}</div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+
+      {/* Custom Input Option */}
+      {showCustomInput && (
+        <Card 
+          className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/30 border-dashed"
+          onClick={showCustomInput}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="text-xl">💬</div>
+              <div className="font-medium text-foreground">Other</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+// Duration Selection Component
+const DurationSelection: React.FC<{
+  onSelect: (duration: GoalOption) => void;
+  selected?: GoalOption;
+  showCustomInput?: () => void;
+}> = ({ onSelect, selected, showCustomInput }) => {
+  const durationOptions: GoalOption[] = [
+    { id: "2-weeks", label: "2 weeks", emoji: "📅", explainer: "For 2 weeks", isDefault: true },
+    { id: "3-weeks", label: "3 weeks", emoji: "📅", explainer: "For 3 weeks" },
+    { id: "4-weeks", label: "4 weeks", emoji: "📅", explainer: "For 4 weeks" }
+  ];
+
+  return (
+    <div className="space-y-3">
+      {durationOptions.map((option) => (
+        <Card 
+          key={option.id}
+          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+            selected?.id === option.id 
+              ? 'border-primary bg-primary/5' 
+              : 'hover:border-primary/30'
+          }`}
+          onClick={() => onSelect(option)}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="text-xl">{option.emoji}</div>
+              <div className="font-medium text-foreground">{option.label}</div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+
+      {/* Custom Input Option */}
+      {showCustomInput && (
+        <Card 
+          className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/30 border-dashed"
+          onClick={showCustomInput}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="text-xl">💬</div>
+              <div className="font-medium text-foreground">Other</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
