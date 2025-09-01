@@ -43,7 +43,7 @@ const STEPS = [
   { id: 3, title: "Why?", subtitle: "What's your main reason for this goal?" },
   { id: 4, title: "Details", subtitle: "How do you want to do this?" },
   { id: 5, title: "When?", subtitle: "How often and for how long?" },
-  { id: 6, title: "Support", subtitle: "What will help you succeed?" },
+  { id: 6, title: "Support", subtitle: "What would help you stick with it?" },
   { id: 7, title: "Confirm", subtitle: "Ready to start your goal?" }
 ];
 
@@ -376,12 +376,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
               title="Support"
               options={state.goal.supports}
               onSelect={(supports) => {
-                if (supports.length > 0) {
-                  showRandomAffirmation();
-                  setState(prev => ({ ...prev, supports, step: 7 }));
-                } else {
-                  setState(prev => ({ ...prev, supports }));
-                }
+                setState(prev => ({ ...prev, supports }));
               }}
               selected={state.supports || []}
             />
@@ -419,6 +414,21 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
               <div className="text-center text-sm text-primary font-medium animate-fade-in">
                 {affirmation}
               </div>
+            )}
+
+            {/* Review Goal Button for Supports Step */}
+            {state.step === 6 && (
+              <Button 
+                onClick={() => {
+                  showRandomAffirmation();
+                  setState(prev => ({ ...prev, step: 7 }));
+                }}
+                className="w-full"
+                size="lg"
+              >
+                Review your goal
+                <Sparkles className="ml-2 h-4 w-4" />
+              </Button>
             )}
           </div>
         </div>
