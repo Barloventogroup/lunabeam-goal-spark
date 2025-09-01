@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Calendar, Target, Flag } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Plus, Calendar, Target, Flag, MoreVertical, Trash2 } from 'lucide-react';
 import { goalsService, stepsService } from '@/services/goalsService';
 import type { Goal, Step } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -70,6 +72,27 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
     }
   };
 
+  const handleDeleteGoal = async (goalId: string, goalTitle: string) => {
+    try {
+      await goalsService.deleteGoal(goalId);
+      
+      toast({
+        title: 'Goal archived',
+        description: `"${goalTitle}" has been moved to your archive`,
+      });
+      
+      // Reload goals to reflect the change
+      loadGoals();
+    } catch (error) {
+      console.error('Failed to delete goal:', error);
+      toast({
+        title: 'Couldn\'t archive goal',
+        description: 'Something went wrong. Give it another try.',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return null;
     return new Date(dateStr).toLocaleDateString();
@@ -121,12 +144,14 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
               <Card 
                 key={goal.id} 
                 className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => onNavigate('goal-detail', goal.id)}
               >
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h4>{goal.title}</h4>
+                    <div 
+                      className="flex-1 cursor-pointer"
+                      onClick={() => onNavigate('goal-detail', goal.id)}
+                    >
+                      <h4 className="mb-2">{goal.title}</h4>
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant={getStatusColor(goal.status)}>
                           {goal.status}
@@ -146,17 +171,63 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
                         </div>
                       )}
                     </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-bold text-primary">
-                        {Math.round(progressPct)}%
+                    <div className="flex items-start gap-2">
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-primary">
+                          {Math.round(progressPct)}%
+                        </div>
+                        <div className="text-caption">
+                          {stepCount.done} of {stepCount.required} steps done
+                        </div>
                       </div>
-                      <div className="text-caption">
-                        {stepCount.done} of {stepCount.required} steps done
-                      </div>
+                      
+                      {/* Goal Menu */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40 bg-background border shadow-lg z-50">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem 
+                                className="text-destructive focus:text-destructive cursor-pointer"
+                                onSelect={(e) => e.preventDefault()}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Archive Goal
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Archive this goal?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  "{goal.title}" will be moved to your archive. You can always restore it later if needed.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Keep Goal</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDeleteGoal(goal.id, goal.title)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Archive Goal
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent onClick={() => onNavigate('goal-detail', goal.id)}>
                   {goal.description && (
                     <p className="text-body-sm text-muted-foreground mb-3 line-clamp-2">
                       {goal.description}
@@ -171,11 +242,11 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
                   </div>
                   {goal.tags?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-3">
-                        {goal.tags.map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-caption">
-                            {tag}
-                          </Badge>
-                        ))}
+                      {goal.tags.map((tag, index) => (
+                        <Badge key={index} variant="outline" className="text-caption">
+                          {tag}
+                        </Badge>
+                      ))}
                     </div>
                   )}
                 </CardContent>
