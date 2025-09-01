@@ -4,8 +4,9 @@ import { GoalDetail } from '../lunebeam/goal-detail';
 import { LuneAISession } from '../lunebeam/lune-ai-session';
 import { GoalSummary } from '../lunebeam/goal-summary';
 import { GoalCategories } from '../lunebeam/goal-categories';
+import { GoalsWizard } from '../lunebeam/goals-wizard';
 
-type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary';
+type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wizard';
 
 export const TabGoals: React.FC = () => {
   const [currentView, setCurrentView] = useState<GoalsView>('list');
@@ -20,7 +21,7 @@ export const TabGoals: React.FC = () => {
         setCurrentView('detail');
         break;
       case 'create-goal':
-        setCurrentView('categories');
+        setCurrentView('wizard');
         break;
       case 'goals-list':
       default:
@@ -37,6 +38,11 @@ export const TabGoals: React.FC = () => {
 
   const handleAiGoalCreated = (goal: any) => {
     setAiGoal(goal);
+    setCurrentView('summary');
+  };
+
+  const handleWizardGoalCreated = (goalData: any) => {
+    setAiGoal(goalData);
     setCurrentView('summary');
   };
 
@@ -77,6 +83,13 @@ export const TabGoals: React.FC = () => {
           />
         ) : (
           <GoalsList onNavigate={handleNavigate} />
+        );
+      case 'wizard':
+        return (
+          <GoalsWizard 
+            onComplete={handleWizardGoalCreated}
+            onBack={() => setCurrentView('list')}
+          />
         );
       case 'list':
       default:
