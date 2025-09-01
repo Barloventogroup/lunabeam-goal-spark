@@ -69,11 +69,10 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
     if (isWizardGoal) {
       const wizardGoal = goal as WizardGoalData;
       return [
-        `${wizardGoal.details} ${wizardGoal.frequency} for ${wizardGoal.duration}`,
-        'Track progress weekly',
-        'Celebrate achievements',
-        wizardGoal.supports.join(', ')
-      ].filter(Boolean);
+        "Set up your routine and environment",
+        "Track your progress daily", 
+        "Celebrate each completed session"
+      ];
     }
     
     // Legacy format handling
@@ -81,37 +80,34 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
     const goalTitle = extractedGoal.title?.toLowerCase() || '';
     
     if (goalTitle.includes('walk')) {
-      const duration = extractedGoal.selectedOption || '10 minutes';
-      const daysPerWeek = extractedGoal.followUps?.['Days per week'] || '3';
       return [
-        `Put on comfortable walking shoes and go for a ${duration} walk`,
-        `Track your walking progress - aim for ${daysPerWeek} days this week`,
-        `Celebrate completing each walk - notice how you feel afterward`
+        "Put on comfortable walking shoes",
+        "Find a walking buddy or playlist",
+        "Track your walking sessions"
       ];
     }
     
     if (goalTitle.includes('read')) {
       return [
-        'Choose your reading material and set up a comfortable reading spot',
-        'Set aside dedicated time each day for reading',
-        'Track pages/chapters completed and reflect on what you learned'
+        "Choose your reading material",
+        "Set up a comfortable reading spot", 
+        "Track pages completed daily"
       ];
     }
     
     if (goalTitle.includes('water')) {
-      const cups = extractedGoal.selectedOption || '6 cups/day';
       return [
-        `Fill a water bottle first thing in the morning`,
-        `Set reminders to drink water throughout the day - target ${cups}`,
-        'Track your daily water intake and notice energy improvements'
+        "Fill a water bottle first thing in the morning",
+        "Set reminders to drink water throughout the day",
+        "Track your daily water intake"
       ];
     }
     
     if (goalTitle.includes('sleep')) {
       return [
-        'Set a consistent bedtime and stick to it for 7 days',
-        'Create a calming pre-sleep routine (no screens 1 hour before bed)',
-        'Track your sleep quality and morning energy levels'
+        "Set a consistent bedtime reminder",
+        "Create a calming pre-sleep routine",
+        "Track your sleep quality daily"
       ];
     }
     
@@ -234,7 +230,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5" />
-              Suggested Steps (≤3 for this week)
+              Suggested Steps
             </CardTitle>
           </CardHeader>
           <CardContent>
