@@ -89,7 +89,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
   }
 
   return (
-    <div className="space-y-4 px-4">
+    <div className="space-y-4 px-4 pt-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <Target className="h-6 w-6" />
