@@ -389,33 +389,35 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
       {/* Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur border-b z-40">
         <div className="max-w-md mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={state.step === 1 ? onBack : handleBack}
-              className="p-2 flex items-center justify-center"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            
-            <div className="flex-1 mx-4 flex flex-col items-center">
-              <div className="text-sm font-medium text-center">
-                Step {state.step} of {STEPS.length}
-              </div>
-              <Progress value={(state.step / STEPS.length) * 100} className="mt-1 w-full" />
+          <div className="flex flex-col">
+            <div className="text-sm font-medium text-center mb-1">
+              Step {state.step} of {STEPS.length}
             </div>
-            
-            {/* Exit Button - Available on all steps */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleExit}
-              className="p-2 flex items-center justify-center"
-              title="Exit wizard"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center justify-between">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={state.step === 1 ? onBack : handleBack}
+                className="p-2 flex items-center justify-center"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              
+              <div className="flex-1 mx-4">
+                <Progress value={(state.step / STEPS.length) * 100} className="w-full" />
+              </div>
+              
+              {/* Exit Button - Available on all steps */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleExit}
+                className="p-2 flex items-center justify-center"
+                title="Exit wizard"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
