@@ -393,7 +393,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
 
       {/* Footer */}
       {state.step < 7 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t z-50">
+        <div className="fixed bottom-16 left-0 right-0 bg-background/95 backdrop-blur border-t z-40">
           <div className="max-w-md mx-auto p-4 space-y-3">
             {/* SMART Preview */}
             {state.step > 2 && (
