@@ -20,6 +20,7 @@ export default {
 		extend: {
 			fontFamily: {
 				'moonwalk': ['Space Mono', 'monospace'],
+				'montserrat': ['Montserrat', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

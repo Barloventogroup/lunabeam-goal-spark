@@ -44,12 +44,15 @@ export const TabHome: React.FC<TabHomeProps> = ({
       <div className="min-h-screen bg-gradient-soft">
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-card/80 backdrop-blur border-b">
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
             <img 
               src={lunabeamLogo} 
               alt="Lunabeam logo" 
               className="h-8"
             />
+            <span className="text-xl font-montserrat font-semibold text-foreground">
+              lunebeam
+            </span>
           </div>
           
           <button onClick={onOpenChat} className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors" aria-label="Open Lune Chat">
