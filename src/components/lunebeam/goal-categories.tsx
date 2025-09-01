@@ -94,7 +94,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">What do you want to work on?</h1>
+            <h1>What do you want to work on?</h1>
             <p className="text-foreground-soft">Pick what feels right today</p>
           </div>
         </div>
@@ -132,7 +132,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
           })}
         </div>
 
-        <div className="text-center text-sm text-muted-foreground pt-4">
+        <div className="text-center text-caption pt-4">
           Not sure? Pick anything - we can always explore different areas later 😊
         </div>
       </div>

@@ -91,7 +91,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
   return (
     <div className="space-y-4 px-4 pt-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
+        <h2 className="flex items-center gap-2">
           <Target className="h-6 w-6" />
           Goals
         </h2>
@@ -110,8 +110,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
         <Card>
           <CardContent className="text-center py-8">
             <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">No goals yet</h3>
-            <p className="text-muted-foreground mb-4">
+            <h3>No goals yet</h3>
+            <p className="text-body-sm text-muted-foreground mb-4">
               Create your first goal to get started on your journey!
             </p>
             <Button onClick={() => onNavigate('create-goal')} variant="outline">
@@ -135,7 +135,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <CardTitle className="text-lg mb-2">{goal.title}</CardTitle>
+                      <h4>{goal.title}</h4>
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant={getStatusColor(goal.status)}>
                           {goal.status}
@@ -149,17 +149,17 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
                         )}
                       </div>
                       {goal.due_date && (
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1 text-body-sm text-muted-foreground">
                           <Calendar className="h-4 w-4" />
                           Due {formatDate(goal.due_date)}
                         </div>
                       )}
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-primary">
+                      <div className="text-3xl font-bold text-primary">
                         {Math.round(progressPct)}%
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-caption">
                         {stepCount.done} of {stepCount.required} steps done
                       </div>
                     </div>
@@ -167,12 +167,12 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
                 </CardHeader>
                 <CardContent>
                   {goal.description && (
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                    <p className="text-body-sm text-muted-foreground mb-3 line-clamp-2">
                       {goal.description}
                     </p>
                   )}
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
+                    <div className="flex justify-between items-center text-body-sm">
                       <span>Progress</span>
                       <span>{stepCount.done}/{stepCount.required} steps</span>
                     </div>
@@ -180,11 +180,11 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
                   </div>
                   {goal.tags?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-3">
-                      {goal.tags.map((tag, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
+                        {goal.tags.map((tag, index) => (
+                          <Badge key={index} variant="outline" className="text-caption">
+                            {tag}
+                          </Badge>
+                        ))}
                     </div>
                   )}
                 </CardContent>

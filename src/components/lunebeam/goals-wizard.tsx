@@ -425,10 +425,10 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
         <div className="space-y-6">
           {/* Question */}
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1>
               {STEPS[state.step - 1]?.title}
             </h1>
-            <p className="text-foreground-soft">
+            <p className="text-body-sm text-foreground-soft">
               {STEPS[state.step - 1]?.subtitle}
             </p>
           </div>
@@ -917,23 +917,21 @@ const GoalConfirmation: React.FC<{
       <div className="text-6xl animate-bounce">🎉</div>
       
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-foreground">
+        <h3>
           Fantastic! Your goal is ready!
-        </h2>
+        </h3>
         
         <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
           <CardContent className="p-4">
-            <div className="text-lg font-semibold text-foreground mb-2">Your SMART Goal:</div>
-            <div className="text-foreground">{smartGoal}</div>
+            <h5 className="mb-2">Your SMART Goal:</h5>
+            <div className="text-body">{smartGoal}</div>
           </CardContent>
         </Card>
 
         {/* Start Date Picker */}
         <Card>
           <CardContent className="p-4">
-            <div className="text-sm font-medium text-foreground mb-3">
-              When would you like to start? <span className="text-destructive">*</span>
-            </div>
+            <h6 className="mb-3">When would you like to start? <span className="text-destructive">*</span></h6>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -961,7 +959,7 @@ const GoalConfirmation: React.FC<{
           </CardContent>
         </Card>
         
-        <p className="text-foreground-soft">
+        <p className="text-body-sm text-foreground-soft">
           You're all set to start making positive changes! 
           Remember, small consistent steps lead to big results.
         </p>
