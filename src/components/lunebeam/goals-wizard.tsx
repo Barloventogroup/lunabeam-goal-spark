@@ -284,17 +284,16 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
               <Progress value={(state.step / (STEPS.length - 1)) * 100} className="mt-1" />
             </div>
             
-            {/* Exit Button for Confirmation Step */}
-            {state.step === 7 && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleExit}
-                className="p-2"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+            {/* Exit Button - Available on all steps */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleExit}
+              className="p-2"
+              title="Exit wizard"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>
