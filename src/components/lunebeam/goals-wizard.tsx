@@ -161,15 +161,22 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
 
   const buildSmartGoal = () => {
     if (!state.goal || !state.purpose || !state.details || !state.timing) return "";
-    
-    let template = state.goal.smartTemplate;
-    template = template.replace('{purpose}', state.purpose.label);
-    template = template.replace('{details}', state.details.label);
-    template = template.replace('{timing}', state.timing.label);
+
+    // Compose a friendly SMART sentence from selected labels
+    const emoji = state.goal.emoji ? `${state.goal.emoji} ` : "";
+    const title = state.goal.title;
+    const detailsPart = state.details.label; // already includes duration/place wording
+    const timingPart = state.timing.label;   // already contains frequency + weeks phrasing
+    const purposeSuffix = state.purpose?.label
+      ? ` to ${state.purpose.label.toLowerCase()}`
+      : "";
+
+    let sentence = `${emoji}${title} ${detailsPart}, ${timingPart}${purposeSuffix}.`;
+
     if (state.supports?.length) {
-      template += ` (with ${state.supports.map(s => s.label).join(', ')})`;
+      sentence += ` (with ${state.supports.map(s => s.label).join(', ')})`;
     }
-    return template;
+    return sentence;
   };
 
   const handleComplete = () => {
@@ -437,7 +444,7 @@ const CategorySelection: React.FC<{
                 ? 'border-primary bg-primary/5' 
                 : 'hover:border-primary/30'
             }`}
-            onClick={() => onSelect(category)}
+            onClick={() => { onSelect(category); onShowExplainer(category.id); }}
           >
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -461,7 +468,7 @@ const CategorySelection: React.FC<{
           </Card>
           
           {showExplainer === category.id && (
-            <Card className="mt-2 bg-muted/50">
+            <Card className="mt-2 bg-muted/50 animate-fade-in">
               <CardContent className="p-3">
                 <div className="text-sm text-foreground-soft">
                   Goals in this category help with {category.title.toLowerCase()} skills and habits.
@@ -515,7 +522,7 @@ const GoalSelection: React.FC<{
                 ? 'border-primary bg-primary/5' 
                 : 'hover:border-primary/30'
             }`}
-            onClick={() => onSelect(goal)}
+            onClick={() => { onSelect(goal); onShowExplainer(goal.id); }}
           >
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -539,7 +546,7 @@ const GoalSelection: React.FC<{
           </Card>
           
           {showExplainer === goal.id && (
-            <Card className="mt-2 bg-muted/50">
+            <Card className="mt-2 bg-muted/50 animate-fade-in">
               <CardContent className="p-3">
                 <div className="text-sm text-foreground-soft">
                   {goal.explainer}
@@ -589,7 +596,7 @@ const OptionSelection: React.FC<{
                 ? 'border-primary bg-primary/5' 
                 : 'hover:border-primary/30'
             }`}
-            onClick={() => onSelect(option)}
+            onClick={() => { onSelect(option); onShowExplainer(option.id); }}
           >
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -613,7 +620,7 @@ const OptionSelection: React.FC<{
           </Card>
           
           {showExplainer === option.id && (
-            <Card className="mt-2 bg-muted/50">
+            <Card className="mt-2 bg-muted/50 animate-fade-in">
               <CardContent className="p-3">
                 <div className="text-sm text-foreground-soft">
                   {option.explainer}
@@ -629,15 +636,19 @@ const OptionSelection: React.FC<{
         <Card 
           className="cursor-pointer transition-all duration-200 hover:scale-[1.02] border-dashed hover:border-primary/30"
           onClick={() => {
-            // Auto-select default or first option
+            // Auto-select default or first option and show explainer
             const defaultOption = options.find(o => o.isDefault) || options[0];
             onSelect(defaultOption);
+            onShowExplainer(defaultOption.id);
           }}
         >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="text-xl">{FALLBACK_OPTION.emoji}</div>
-              <div className="font-semibold text-foreground">{FALLBACK_OPTION.label}</div>
+              <div>
+                <div className="font-semibold text-foreground">{FALLBACK_OPTION.label}</div>
+                <div className="text-xs text-foreground-soft mt-1">We’ll start small: {(options.find(o => o.isDefault) || options[0]).label}.</div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -703,7 +714,7 @@ const MultiOptionSelection: React.FC<{
           </Card>
           
           {showExplainer === option.id && (
-            <Card className="mt-2 bg-muted/50">
+            <Card className="mt-2 bg-muted/50 animate-fade-in">
               <CardContent className="p-3">
                 <div className="text-sm text-foreground-soft">
                   {option.explainer}
