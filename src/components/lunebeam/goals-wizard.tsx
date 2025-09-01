@@ -528,24 +528,6 @@ const GoalSelection: React.FC<{
           </CardContent>
         </Card>
       ))}
-      
-      {/* Fallback Option */}
-      <Card 
-        className="cursor-pointer transition-all duration-200 hover:scale-[1.02] border-dashed hover:border-primary/50"
-        onClick={() => onSelect(category.goals[0])}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <div className="text-2xl">{FALLBACK_OPTION.emoji}</div>
-            <div className="flex-1">
-              <div className="font-semibold text-foreground mb-1">{FALLBACK_OPTION.label}</div>
-              <div className="text-sm text-foreground-soft">
-                {FALLBACK_OPTION.explainer}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
