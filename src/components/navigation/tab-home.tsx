@@ -94,11 +94,11 @@ export const TabHome: React.FC<TabHomeProps> = ({
               <h3 className="text-lg font-semibold">Your Goals</h3>
               <Button
                 onClick={() => setCurrentView('add-goal')}
-                size="lg"
-                className="rounded-full w-12 h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                size="sm"
+                className="rounded-full w-8 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
                 aria-label="Add Goal"
               >
-                <Plus className="h-6 w-6" />
+                <Plus className="h-4 w-4" />
               </Button>
             </div>
             {activeGoals.length > 0 ? (
