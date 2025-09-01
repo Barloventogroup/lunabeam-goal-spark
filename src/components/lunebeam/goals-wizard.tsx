@@ -394,16 +394,16 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
               variant="ghost" 
               size="sm" 
               onClick={state.step === 1 ? onBack : handleBack}
-              className="p-2"
+              className="p-2 flex items-center justify-center"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
             
-            <div className="flex-1 mx-4">
-            <div className="text-sm font-medium text-center">
-              Step {state.step} of {STEPS.length}
-            </div>
-            <Progress value={(state.step / STEPS.length) * 100} className="mt-1" />
+            <div className="flex-1 mx-4 flex flex-col items-center">
+              <div className="text-sm font-medium text-center">
+                Step {state.step} of {STEPS.length}
+              </div>
+              <Progress value={(state.step / STEPS.length) * 100} className="mt-1 w-full" />
             </div>
             
             {/* Exit Button - Available on all steps */}
@@ -411,7 +411,7 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
               variant="ghost" 
               size="sm" 
               onClick={handleExit}
-              className="p-2"
+              className="p-2 flex items-center justify-center"
               title="Exit wizard"
             >
               <X className="h-4 w-4" />
@@ -974,10 +974,6 @@ const GoalConfirmation: React.FC<{
         >
           Start My Goal!
           <Sparkles className="ml-2 h-4 w-4" />
-        </Button>
-        
-        <Button onClick={onEdit} variant="outline" className="w-full">
-          Make Changes
         </Button>
       </div>
     </div>
