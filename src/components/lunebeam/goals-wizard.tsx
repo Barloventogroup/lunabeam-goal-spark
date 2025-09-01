@@ -958,9 +958,6 @@ const GoalConfirmation: React.FC<{
                 />
               </PopoverContent>
             </Popover>
-            {!startDate && (
-              <p className="text-sm text-destructive mt-1">When would you like to begin this journey?</p>
-            )}
           </CardContent>
         </Card>
         
