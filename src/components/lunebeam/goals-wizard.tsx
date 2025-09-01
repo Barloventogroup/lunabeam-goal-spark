@@ -398,17 +398,6 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
                 {affirmation}
               </div>
             )}
-
-            {/* Next Button */}
-            <Button 
-              onClick={handleNext}
-              disabled={!canProceed()}
-              className="w-full"
-              size="lg"
-            >
-              {state.step === 6 ? "Review Goal" : "Next"}
-              <Sparkles className="ml-2 h-4 w-4" />
-            </Button>
           </div>
         </div>
       )}
