@@ -11,6 +11,7 @@ type TabType = 'home' | 'goals' | 'team' | 'you' | 'chat';
 export const BottomTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [showChat, setShowChat] = useState(false);
+  const [isWizardActive, setIsWizardActive] = useState(false);
 
   const tabs = [
     {
@@ -43,7 +44,7 @@ export const BottomTabs: React.FC = () => {
           // TODO: Pass goalId to goals tab
         }} />;
       case 'goals':
-        return <TabGoals />;
+        return <TabGoals onWizardStateChange={setIsWizardActive} />;
       case 'team':
         return <TabTeam />;
       case 'you':
@@ -80,36 +81,38 @@ export const BottomTabs: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Main content */}
-      <div className="flex-1 pb-20">
+      <div className={`flex-1 ${isWizardActive ? 'pb-0' : 'pb-20'}`}>
         {renderActiveTab()}
       </div>
 
-      {/* Bottom tab bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur border-t border-border">
-        <div className="flex items-center justify-around px-2 py-2">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 rounded-lg transition-colors ${
-                  isActive 
-                    ? 'text-primary bg-primary/10' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-              >
-                <Icon className={`h-5 w-5 mb-1 ${isActive ? 'text-primary' : ''}`} />
-                <span className="text-xs font-medium truncate">
-                  {tab.label}
-                </span>
-              </button>
-            );
-          })}
+      {/* Bottom tab bar - hidden during wizard */}
+      {!isWizardActive && (
+        <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur border-t border-border">
+          <div className="flex items-center justify-around px-2 py-2">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 rounded-lg transition-colors ${
+                    isActive 
+                      ? 'text-primary bg-primary/10' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  }`}
+                >
+                  <Icon className={`h-5 w-5 mb-1 ${isActive ? 'text-primary' : ''}`} />
+                  <span className="text-xs font-medium truncate">
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
