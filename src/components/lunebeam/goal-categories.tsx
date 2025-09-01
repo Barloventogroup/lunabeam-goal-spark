@@ -25,7 +25,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     {
       id: 'health',
       title: '💪 Health',
-      description: 'Physical wellness, mental health, self-care',
+      description: 'Taking care of your body and mind - the good stuff that makes you feel awesome',
       icon: Heart,
       color: 'bg-red-500/10 text-red-600 border-red-200',
       examples: 'Walk, try a snack, sleep better'
@@ -33,7 +33,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     {
       id: 'education',
       title: '🎓 Education',
-      description: 'Learning, skills, courses, certifications',
+      description: 'Learning new things and growing your brain power - no matter how small the step',
       icon: GraduationCap,
       color: 'bg-blue-500/10 text-blue-600 border-blue-200',
       examples: 'Read 1 page, write 1 sentence, review schedule'
@@ -41,7 +41,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     {
       id: 'employment',
       title: '💼 Employment',
-      description: 'Job skills, career development, work habits',
+      description: 'Building work skills and confidence - one small step toward your future',
       icon: Briefcase,
       color: 'bg-green-500/10 text-green-600 border-green-200',
       examples: 'Practice interview Q, update resume, send email'
@@ -49,7 +49,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     {
       id: 'independent_living',
       title: '🏠 Independent Living',
-      description: 'Daily life skills, self-care, organization',
+      description: 'Everyday life stuff that makes you feel more independent and capable',
       icon: Home,
       color: 'bg-purple-500/10 text-purple-600 border-purple-200',
       examples: 'Make bed, set table, laundry to basket'
@@ -57,7 +57,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     {
       id: 'social_skills',
       title: '🤝 Social Skills',
-      description: 'Communication, relationships, community',
+      description: 'Connecting with people in your own comfortable way - even tiny interactions count',
       icon: Users,
       color: 'bg-orange-500/10 text-orange-600 border-orange-200',
       examples: 'Say "hi", eye contact 3s, text "how are you?"'
@@ -65,7 +65,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     {
       id: 'housing',
       title: '🏘 Housing',
-      description: 'Finding and maintaining housing',
+      description: 'Exploring housing options and figuring out what works for you',
       icon: Building,
       color: 'bg-teal-500/10 text-teal-600 border-teal-200',
       examples: 'Browse housing option, list wants/needs, call office'
@@ -73,7 +73,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     {
       id: 'postsecondary',
       title: '🎓 Postsecondary',
-      description: 'College, trade school, certificates',
+      description: "Checking out what's next after high school - colleges, trades, certificates, whatever interests you",
       icon: BookOpen,
       color: 'bg-indigo-500/10 text-indigo-600 border-indigo-200',
       examples: 'Look at 1 program, visit disability office site, student story'

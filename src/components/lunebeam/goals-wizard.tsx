@@ -528,7 +528,7 @@ const CategorySelection: React.FC<{
             <Card className="mt-2 bg-muted/50 animate-fade-in">
               <CardContent className="p-3">
                 <div className="text-sm text-foreground-soft">
-                  Goals in this category help with {category.title.toLowerCase()} skills and habits.
+                  These are all about {category.title.toLowerCase()} - pick whatever feels doable right now!
                 </div>
               </CardContent>
             </Card>
