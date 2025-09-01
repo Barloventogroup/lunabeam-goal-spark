@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { 
   Target, 
   Clock, 
   CheckCircle2,
   ArrowLeft,
-  Play
+  Play,
+  HelpCircle,
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { goalsService, stepsService } from '@/services/goalsService';
+import { AIService } from '@/services/aiService';
 import type { GoalDomain } from '@/types';
 
 interface ExtractedGoal {
@@ -48,6 +52,10 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
   onComplete 
 }) => {
   const [isCreating, setIsCreating] = useState(false);
+  const [microSteps, setMicroSteps] = useState<string[]>([]);
+  const [isLoadingSteps, setIsLoadingSteps] = useState(true);
+  const [checkedSteps, setCheckedSteps] = useState<Record<string, boolean>>({});
+  const [showBreakdown, setShowBreakdown] = useState(false);
   
   // Get start date from wizard goal data or default to today
   const startDate = ('startDate' in goal && goal.startDate) ? goal.startDate : new Date();
@@ -62,57 +70,80 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
     social_skills: 'Social Skills'
   };
 
-  const getGoalSpecificSteps = () => {
-    // Check if this is a new wizard goal format
-    const isWizardGoal = 'smartGoal' in goal;
-    
-    if (isWizardGoal) {
-      const wizardGoal = goal as WizardGoalData;
-      return [
-        "Set up your routine and environment",
-        "Track your progress daily", 
-        "Celebrate each completed session"
-      ];
+  // Load AI-generated micro steps on component mount
+  useEffect(() => {
+    const generateMicroSteps = async () => {
+      try {
+        const isWizardGoal = 'smartGoal' in goal;
+        const goalTitle = isWizardGoal ? (goal as WizardGoalData).goal : (goal as ExtractedGoal).title;
+        const goalDescription = isWizardGoal ? (goal as WizardGoalData).smartGoal : (goal as ExtractedGoal).description;
+        const frequency = isWizardGoal ? (goal as WizardGoalData).frequency : '';
+        const duration = isWizardGoal ? (goal as WizardGoalData).duration : '';
+        
+        const response = await AIService.getCoachingGuidance({
+          question: `Generate 3 specific micro preparation steps for this goal. These should be actionable preparation tasks that help set up for success, not the goal execution itself. Focus on what needs to be prepared or organized before starting:
+
+Goal: ${goalTitle}
+Description: ${goalDescription}
+Frequency: ${frequency}
+Duration: ${duration}
+Category: ${goal.category}
+
+Return only 3 concise preparation steps, each starting with an action verb. Each step should be something that can be checked off before beginning the goal.`,
+          mode: 'goal_setting'
+        });
+
+        if (response?.suggestions) {
+          const steps = response.suggestions.split('\n')
+            .filter((step: string) => step.trim())
+            .slice(0, 3)
+            .map((step: string) => step.replace(/^\d+\.\s*/, '').trim());
+          setMicroSteps(steps);
+        }
+      } catch (error) {
+        console.error('Error generating micro steps:', error);
+        // Fallback to default steps if AI fails
+        setMicroSteps([
+          "Set up your workspace and tools",
+          "Schedule time in your calendar", 
+          "Prepare any materials needed"
+        ]);
+      } finally {
+        setIsLoadingSteps(false);
+      }
+    };
+
+    generateMicroSteps();
+  }, [goal]);
+
+  const handleStepCheck = (stepIndex: number, checked: boolean) => {
+    setCheckedSteps(prev => ({
+      ...prev,
+      [stepIndex]: checked
+    }));
+  };
+
+  const requestStepBreakdown = async (step: string) => {
+    try {
+      const response = await AIService.getCoachingGuidance({
+        question: `Break down this preparation step into 2-3 smaller, more specific micro-tasks: "${step}". Make each sub-task very specific and actionable.`,
+        mode: 'assist'
+      });
+      
+      if (response?.suggestions) {
+        toast({
+          title: 'Step Breakdown',
+          description: response.suggestions,
+        });
+      }
+    } catch (error) {
+      console.error('Error breaking down step:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to break down step. Please try again.',
+        variant: 'destructive'
+      });
     }
-    
-    // Legacy format handling
-    const extractedGoal = goal as ExtractedGoal;
-    const goalTitle = extractedGoal.title?.toLowerCase() || '';
-    
-    if (goalTitle.includes('walk')) {
-      return [
-        "Put on comfortable walking shoes",
-        "Find a walking buddy or playlist",
-        "Track your walking sessions"
-      ];
-    }
-    
-    if (goalTitle.includes('read')) {
-      return [
-        "Choose your reading material",
-        "Set up a comfortable reading spot", 
-        "Track pages completed daily"
-      ];
-    }
-    
-    if (goalTitle.includes('water')) {
-      return [
-        "Fill a water bottle first thing in the morning",
-        "Set reminders to drink water throughout the day",
-        "Track your daily water intake"
-      ];
-    }
-    
-    if (goalTitle.includes('sleep')) {
-      return [
-        "Set a consistent bedtime reminder",
-        "Create a calming pre-sleep routine",
-        "Track your sleep quality daily"
-      ];
-    }
-    
-    // Default steps if no specific goal type is matched
-    return extractedGoal.steps?.slice(0, 3) || [];
   };
 
   const getNextWeekDates = () => {
@@ -158,8 +189,8 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
         due_date: formatDate(due),
       });
 
-      // Create up to 3 steps for the micro-goal
-      for (const stepTitle of getGoalSpecificSteps()) {
+      // Create up to 3 steps for the micro-goal using AI-generated steps
+      for (const stepTitle of microSteps) {
         await stepsService.createStep(createdGoal.id, {
           title: stepTitle,
           is_required: true,
@@ -225,25 +256,58 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
           </CardContent>
         </Card>
 
-        {/* Suggested Steps */}
+        {/* Preparation Steps */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5" />
-              Suggested Steps
+              Preparation Steps
             </CardTitle>
+            <p className="text-sm text-muted-foreground">Complete these micro-tasks before starting your goal</p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {getGoalSpecificSteps().map((step, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-medium flex items-center justify-center">
-                    {index + 1}
+            {isLoadingSteps ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <span className="ml-2 text-sm text-muted-foreground">Generating personalized steps...</span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {microSteps.map((step, index) => (
+                  <div key={index} className="flex items-start gap-3 group">
+                    <Checkbox 
+                      id={`step-${index}`}
+                      checked={checkedSteps[index] || false}
+                      onCheckedChange={(checked) => handleStepCheck(index, checked === true)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <label 
+                        htmlFor={`step-${index}`} 
+                        className="text-sm text-foreground cursor-pointer block"
+                      >
+                        {step}
+                      </label>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => requestStepBreakdown(step)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
+                      title="Break down this step further"
+                    >
+                      <HelpCircle className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <p className="text-sm text-foreground">{step}</p>
+                ))}
+                
+                <div className="mt-4 pt-4 border-t border-border">
+                  <p className="text-xs text-muted-foreground">
+                    💡 Hover over the help icon next to any step to break it down further
+                  </p>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
