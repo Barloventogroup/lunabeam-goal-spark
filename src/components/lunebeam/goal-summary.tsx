@@ -28,8 +28,20 @@ interface ExtractedGoal {
   followUps?: Record<string, string>;
 }
 
+interface WizardGoalData {
+  category: string;
+  goal: string;
+  purpose: string;
+  details: string;
+  frequency: string;
+  duration: string;
+  supports: string[];
+  smartGoal: string;
+  startDate?: Date;
+}
+
 interface GoalSummaryProps {
-  goal: ExtractedGoal;
+  goal: ExtractedGoal | WizardGoalData;
   onBack: () => void;
   onComplete: () => void;
 }
@@ -53,11 +65,26 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
   };
 
   const getGoalSpecificSteps = () => {
-    const goalTitle = goal.title.toLowerCase();
+    // Check if this is a new wizard goal format
+    const isWizardGoal = 'smartGoal' in goal;
+    
+    if (isWizardGoal) {
+      const wizardGoal = goal as WizardGoalData;
+      return [
+        `${wizardGoal.details} ${wizardGoal.frequency} for ${wizardGoal.duration}`,
+        'Track progress weekly',
+        'Celebrate achievements',
+        wizardGoal.supports.join(', ')
+      ].filter(Boolean);
+    }
+    
+    // Legacy format handling
+    const extractedGoal = goal as ExtractedGoal;
+    const goalTitle = extractedGoal.title?.toLowerCase() || '';
     
     if (goalTitle.includes('walk')) {
-      const duration = goal.selectedOption || '10 minutes';
-      const daysPerWeek = goal.followUps?.['Days per week'] || '3';
+      const duration = extractedGoal.selectedOption || '10 minutes';
+      const daysPerWeek = extractedGoal.followUps?.['Days per week'] || '3';
       return [
         `Put on comfortable walking shoes and go for a ${duration} walk`,
         `Track your walking progress - aim for ${daysPerWeek} days this week`,
@@ -74,7 +101,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
     }
     
     if (goalTitle.includes('water')) {
-      const cups = goal.selectedOption || '6 cups/day';
+      const cups = extractedGoal.selectedOption || '6 cups/day';
       return [
         `Fill a water bottle first thing in the morning`,
         `Set reminders to drink water throughout the day - target ${cups}`,
@@ -91,7 +118,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
     }
     
     // Default steps if no specific goal type is matched
-    return goal.steps.slice(0, 3);
+    return extractedGoal.steps?.slice(0, 3) || [];
   };
 
   const getNextWeekDates = () => {
@@ -124,9 +151,13 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
       due.setDate(due.getDate() + 6);
 
       // Create the goal in Supabase
+      const isWizardGoal = 'smartGoal' in goal;
+      const wizardGoal = isWizardGoal ? goal as WizardGoalData : null;
+      const extractedGoal = isWizardGoal ? null : goal as ExtractedGoal;
+      
       const createdGoal = await goalsService.createGoal({
-        title: goal.title,
-        description: goal.description,
+        title: wizardGoal?.goal || extractedGoal?.title || 'Goal',
+        description: wizardGoal?.smartGoal || extractedGoal?.description || 'Generated goal',
         domain: mapCategoryToDomain(goal.category),
         priority: 'medium',
         start_date: formatDate(startDate),
@@ -143,7 +174,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
       
       toast({
         title: 'Goal Created! 🎉',
-        description: `Your ${goal.title} goal is ready to start!`,
+        description: `Your ${wizardGoal?.goal || extractedGoal?.title || 'goal'} is ready to start!`,
       });
       
       onComplete();
@@ -184,7 +215,9 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
             <div className="flex items-center gap-3">
               <Target className="h-6 w-6" />
               <div className="flex-1">
-                <CardTitle className="text-xl">{goal.title}</CardTitle>
+                <CardTitle className="text-xl">
+                  {'smartGoal' in goal ? (goal as WizardGoalData).goal : (goal as ExtractedGoal).title}
+                </CardTitle>
                 <Badge variant="secondary" className="mt-1">
                   {categoryNames[goal.category as keyof typeof categoryNames]}
                 </Badge>
@@ -193,7 +226,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
           </CardHeader>
           <CardContent>
             <p className="text-primary-foreground/90 leading-relaxed">
-              {goal.description}
+              {'smartGoal' in goal ? (goal as WizardGoalData).smartGoal : (goal as ExtractedGoal).description}
             </p>
           </CardContent>
         </Card>
@@ -232,7 +265,9 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Time commitment:</span>
-                <Badge variant="outline">{goal.timeEstimate}</Badge>
+                <Badge variant="outline">
+                  {'smartGoal' in goal ? `${(goal as WizardGoalData).frequency} for ${(goal as WizardGoalData).duration}` : (goal as ExtractedGoal).timeEstimate}
+                </Badge>
               </div>
               
               {/* Start Date Picker */}
