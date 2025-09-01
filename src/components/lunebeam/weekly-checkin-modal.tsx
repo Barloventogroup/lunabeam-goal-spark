@@ -145,8 +145,8 @@ export function WeeklyCheckinModal({
       setSelectedReward('');
     } catch (error) {
       toast({
-        title: "Failed to save check-in",
-        description: "Please try again",
+        title: "Couldn't save that",
+        description: "Give it another try when you're ready",
         variant: "destructive"
       });
     } finally {

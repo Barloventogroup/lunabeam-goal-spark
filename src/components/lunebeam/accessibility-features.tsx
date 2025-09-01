@@ -167,8 +167,8 @@ export const useVoiceInput = () => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
         toast({
-          title: "Voice input error",
-          description: "Please try again or use text input.",
+          title: "Oops, mic trouble!",
+          description: "No worries - you can type instead or try the mic again.",
           variant: "destructive"
         });
       };

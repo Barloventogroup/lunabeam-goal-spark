@@ -53,8 +53,8 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
     } catch (error) {
       console.error('Failed to load goal:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load goal. Please try again.',
+        title: 'Hmm, trouble loading',
+        description: 'Give it another try when you\'re ready',
         variant: 'destructive'
       });
     } finally {
@@ -80,13 +80,13 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
       setNewStepTitle('');
       
       toast({
-        description: 'Step added successfully!'
+        description: 'Nice! Step added to your goal ✨'
       });
     } catch (error) {
       console.error('Failed to add step:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to add step. Please try again.',
+        title: 'Step got stuck',
+        description: 'Let\'s try adding that again',
         variant: 'destructive'
       });
     }
@@ -104,14 +104,14 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
 
       if (newStatus === 'done') {
         toast({
-          description: 'Step done. Nice progress!'
+          description: 'Step done! You\'re making great progress 🎉'
         });
       }
     } catch (error) {
       console.error('Failed to update step:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to update step. Please try again.',
+        title: 'Something got stuck',
+        description: 'Mind trying that step update again?',
         variant: 'destructive'
       });
     }
@@ -124,13 +124,13 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
       setGoal(updatedGoal);
       
       toast({
-        description: 'Step skipped'
+        description: 'Step skipped - no worries, you can always come back to it'
       });
     } catch (error) {
       console.error('Failed to skip step:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to skip step. Please try again.',
+        title: 'Skip didn\'t work',
+        description: 'Try that again when you\'re ready',
         variant: 'destructive'
       });
     }
@@ -143,13 +143,13 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
       setGoal(updatedGoal);
       
       toast({
-        description: 'Step deleted'
+        description: 'Step removed from your goal'
       });
     } catch (error) {
       console.error('Failed to delete step:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to delete step. Please try again.',
+        title: 'Couldn\'t remove that step',
+        description: 'Give it another try',
         variant: 'destructive'
       });
     }

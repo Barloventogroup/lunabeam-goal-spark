@@ -132,15 +132,15 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
       
       if (response?.suggestions) {
         toast({
-          title: 'Step Breakdown',
+          title: 'Here\'s how to break it down',
           description: response.suggestions,
         });
       }
     } catch (error) {
       console.error('Error breaking down step:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to break down step. Please try again.',
+        title: 'Hmm, that didn\'t work',
+        description: 'Try breaking down that step again when you\'re ready',
         variant: 'destructive'
       });
     }
@@ -199,15 +199,15 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
       
       toast({
         title: 'Goal Created! 🎉',
-        description: `Your ${wizardGoal?.goal || extractedGoal?.title || 'goal'} is ready to start!`,
+        description: `Your ${wizardGoal?.goal || extractedGoal?.title || 'goal'} is ready to go!`,
       });
       
       onComplete();
     } catch (error) {
       console.error('Error creating goal:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to create goal. Please try again.',
+        title: 'Oops!',
+        description: 'Something went wrong creating your goal. Mind giving it another shot?',
         variant: 'destructive'
       });
     } finally {

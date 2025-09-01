@@ -125,8 +125,8 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     // Save progress and exit
     if (state.step > 1) {
       toast({
-        title: "Progress saved!",
-        description: "You can continue where you left off next time.",
+        title: "Your progress is saved!",
+        description: "You can pick up right where you left off next time.",
       });
     }
     onBack();
@@ -174,8 +174,8 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     if (!state.goal || !state.purpose || !state.details || !state.frequency || !state.duration || !state.supports || !state.category || !state.startDate) {
       if (!state.startDate) {
         toast({
-          title: 'Start date required',
-          description: 'Please select a start date for your goal.',
+          title: 'Almost there!',
+          description: 'Just pick a start date and you\'re all set.',
           variant: 'destructive'
         });
       }
@@ -264,7 +264,7 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
 
       toast({
         title: 'Goal Created! 🎉',
-        description: `Your ${state.goal.title} is ready to start!`,
+        description: `Your ${state.goal.title} is ready to go!`,
       });
 
       // Clear saved progress
@@ -274,8 +274,8 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
     } catch (error) {
       console.error('Error creating goal:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to create goal. Please try again.',
+        title: 'Oops!',
+        description: 'Something went wrong creating your goal. Let\'s try again!',
         variant: 'destructive'
       });
     }
@@ -343,15 +343,15 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
         setCustomInput("");
         
         toast({
-          title: "Added to your goal!",
-          description: "Your input has been processed and added.",
+          title: "Got it!",
+          description: "Your input has been added to your goal.",
         });
       }
     } catch (error) {
       console.error('Error processing custom input:', error);
       toast({
-        title: "Couldn't process input",
-        description: "Please try again or select from the options above.",
+        title: "Hmm, that didn't work",
+        description: "Try again or pick from the options above.",
         variant: "destructive"
       });
     } finally {

@@ -114,8 +114,8 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
       onComplete?.();
     } catch (error) {
       toast({
-        title: "Error creating goal",
-        description: "Please try again.",
+        title: "Oops, something hiccupped",
+        description: "Let's give that another shot.",
         variant: "destructive"
       });
     } finally {

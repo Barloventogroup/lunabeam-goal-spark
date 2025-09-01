@@ -38,8 +38,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
     } catch (error) {
       console.error('Failed to load goals:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load goals. Please try again.',
+        title: 'Trouble loading your goals',
+        description: 'Give it a refresh when you\'re ready',
         variant: 'destructive'
       });
     } finally {

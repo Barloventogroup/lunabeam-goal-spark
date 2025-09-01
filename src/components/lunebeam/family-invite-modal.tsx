@@ -91,8 +91,8 @@ export function FamilyInviteModal({ circle, trigger }: FamilyInviteModalProps) {
   const handleSendInvite = async () => {
     if (!inviteeContact.trim()) {
       toast({
-        title: "Contact required",
-        description: "Please enter an email or phone number",
+        title: "Almost there!",
+        description: "Who should we invite? Add their email or phone",
         variant: "destructive"
       });
       return;
@@ -128,8 +128,8 @@ export function FamilyInviteModal({ circle, trigger }: FamilyInviteModalProps) {
       setParentLedDraft(false);
     } catch (error) {
       toast({
-        title: "Failed to send invite",
-        description: "Please try again later",
+        title: "Invite didn't go through",
+        description: "Let's try again in a bit",
         variant: "destructive"
       });
     } finally {

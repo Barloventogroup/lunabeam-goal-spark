@@ -32,8 +32,8 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
     
     if (!formData.title.trim()) {
       toast({
-        title: 'Error',
-        description: 'Goal title is required',
+        title: 'Hey!',
+        description: 'Your goal needs a title first',
         variant: 'destructive'
       });
       return;
@@ -41,8 +41,8 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
 
     if (formData.title.length > 80) {
       toast({
-        title: 'Error',
-        description: 'Goal title must be 80 characters or less',
+        title: 'Almost there!',
+        description: 'Let\'s keep it short and sweet - under 80 characters',
         variant: 'destructive'
       });
       return;
@@ -63,7 +63,7 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
       const goal = await goalsService.createGoal(goalData);
       
       toast({
-        description: 'Goal created successfully!'
+        description: 'Nice! Your goal is ready to go! 🎉'
       });
 
       // Navigate to the new goal's detail page
@@ -71,8 +71,8 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
     } catch (error) {
       console.error('Failed to create goal:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to create goal. Please try again.',
+        title: 'Oops!',
+        description: 'Something went wrong. Mind trying again?',
         variant: 'destructive'
       });
     } finally {

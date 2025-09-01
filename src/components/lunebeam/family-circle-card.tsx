@@ -47,8 +47,8 @@ export function FamilyCircleCard({ circle, goals, onNavigate }: FamilyCircleCard
       setMemberships(data);
     } catch (error) {
       toast({
-        title: "Failed to load members",
-        description: "Please refresh the page",
+        title: "Couldn't load your circle",
+        description: "Give it a refresh when you're ready",
         variant: "destructive"
       });
     } finally {
