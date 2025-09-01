@@ -49,8 +49,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "fitness", label: "Fitness/exercise", emoji: "🏋️", explainer: "Build strength and improve physical health" },
           { id: "stress", label: "Stress relief", emoji: "😌", explainer: "Walking helps calm your mind and reduce anxiety" },
           { id: "social", label: "Social connection", emoji: "🤝", explainer: "Walk with friends or meet new people" },
-          { id: "transport", label: "Transportation/errand", emoji: "🛒", explainer: "Get where you need to go while being active" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Tell us your own reason for walking" }
+          { id: "transport", label: "Transportation/errand", emoji: "🛒", explainer: "Get where you need to go while being active" }
         ],
         details: [
           { id: "5min-block", label: "5 min around block", emoji: "🏠", explainer: "Short walk in your neighborhood", isDefault: true },
@@ -80,8 +79,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "morning", label: "Morning wake-up", emoji: "🌅", explainer: "Start your day with gentle stretching" },
           { id: "bedtime", label: "Relax before bed", emoji: "🌙", explainer: "Unwind and relax before sleep", isDefault: true },
           { id: "exercise", label: "After exercise", emoji: "🏋️", explainer: "Cool down after physical activity" },
-          { id: "tension", label: "Reduce tension", emoji: "😌", explainer: "Release muscle tightness and stress" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Tell us your own reason for stretching" }
+          { id: "tension", label: "Reduce tension", emoji: "😌", explainer: "Release muscle tightness and stress" }
         ],
         details: [
           { id: "fullbody-5min", label: "Full body, 5 min", emoji: "🧘‍♀️", explainer: "Quick stretch for your whole body", isDefault: true },
@@ -112,8 +110,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "wake-on-time", label: "Wake up on time", emoji: "⏰", explainer: "Get up when you need to without oversleeping" },
           { id: "less-tired", label: "Feel less tired", emoji: "💤", explainer: "Have more energy during the day", isDefault: true },
           { id: "focus", label: "Focus better", emoji: "📚", explainer: "Concentrate better on tasks and school" },
-          { id: "calm", label: "Calm down at night", emoji: "😌", explainer: "Feel more relaxed in the evening" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Tell us your own reason for better sleep" }
+          { id: "calm", label: "Calm down at night", emoji: "😌", explainer: "Feel more relaxed in the evening" }
         ],
         details: [
           { id: "10pm-7am-30min", label: "10pm-7am, screens off 30min before", emoji: "📱", explainer: "Bedtime 10pm, wake 7am, no screens 30 min before bed", isDefault: true },
@@ -143,8 +140,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "energy", label: "More energy", emoji: "🍎", explainer: "Feel more energetic throughout the day", isDefault: true },
           { id: "fitness", label: "Stay fit/strong", emoji: "💪", explainer: "Support your body's strength and health" },
           { id: "stress", label: "Reduce stress (snack swaps)", emoji: "😌", explainer: "Replace stress-eating with healthier choices" },
-          { id: "new-foods", label: "Try new foods", emoji: "🥦", explainer: "Explore different healthy options" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Tell us your own reason for eating healthier" }
+          { id: "new-foods", label: "Try new foods", emoji: "🥦", explainer: "Explore different healthy options" }
         ],
         details: [
           { id: "1fruit-lunch", label: "1 fruit at lunch", emoji: "🍎", explainer: "Add one piece of fruit to your lunch", isDefault: true },
@@ -174,8 +170,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "healthy", label: "Stay healthy", emoji: "💧", explainer: "Keep your body working properly", isDefault: true },
           { id: "energy", label: "More energy", emoji: "⚡", explainer: "Feel more energetic and alert" },
           { id: "focus", label: "Focus better", emoji: "🧠", explainer: "Help your brain work better" },
-          { id: "replace-soda", label: "Replace soda/juice", emoji: "😌", explainer: "Substitute sugary drinks with water" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Tell us your own reason for drinking more water" }
+          { id: "replace-soda", label: "Replace soda/juice", emoji: "😌", explainer: "Substitute sugary drinks with water" }
         ],
         details: [
           { id: "1cup-morning", label: "1 cup in morning", emoji: "🌅", explainer: "Start your day with a glass of water", isDefault: true },
@@ -211,8 +206,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         purpose: [
           { id: "learn", label: "To learn", emoji: "🧠", explainer: "Gain new knowledge and information", isDefault: true },
           { id: "relax", label: "To relax", emoji: "😌", explainer: "Enjoy reading for pleasure" },
-          { id: "focus", label: "Improve focus", emoji: "🎯", explainer: "Practice concentration skills" },
-          { id: "custom", label: "Other reason", emoji: "✨", explainer: "Tell us your own reason for reading" }
+          { id: "focus", label: "Improve focus", emoji: "🎯", explainer: "Practice concentration skills" }
         ],
         details: [
           { id: "1page", label: "1 page", emoji: "📄", explainer: "Read just one page", isDefault: true },
@@ -246,8 +240,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         purpose: [
           { id: "confidence", label: "Build confidence", emoji: "💪", explainer: "Feel more confident in interviews", isDefault: true },
           { id: "prepare", label: "Prepare for interview", emoji: "📋", explainer: "Get ready for an upcoming interview" },
-          { id: "improve", label: "Improve answers", emoji: "💬", explainer: "Practice giving better responses" },
-          { id: "custom", label: "Other reason", emoji: "✨", explainer: "Tell us your own reason" }
+          { id: "improve", label: "Improve answers", emoji: "💬", explainer: "Practice giving better responses" }
         ],
         details: [
           { id: "greeting", label: "Practice greeting", emoji: "👋", explainer: "How to introduce yourself" },
@@ -280,8 +273,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         purpose: [
           { id: "tidy", label: "Tidy room", emoji: "🧹", explainer: "Keep your space organized", isDefault: true },
           { id: "calm", label: "Feel calm", emoji: "😌", explainer: "Start day with accomplished feeling" },
-          { id: "routine", label: "Morning routine", emoji: "🌅", explainer: "Make it part of your daily routine" },
-          { id: "custom", label: "Other reason", emoji: "✨", explainer: "Tell us your own reason" }
+          { id: "routine", label: "Morning routine", emoji: "🌅", explainer: "Make it part of your daily routine" }
         ],
         details: [
           { id: "blanket", label: "Just blanket", emoji: "🛏️", explainer: "Simply pull up the blanket", isDefault: true },
@@ -314,8 +306,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         purpose: [
           { id: "friends", label: "Make friends", emoji: "👥", explainer: "Connect with new people" },
           { id: "practice", label: "Practice skill", emoji: "🎯", explainer: "Get better at social interactions" },
-          { id: "school", label: "For school/work", emoji: "🏫", explainer: "Be friendly in school or work settings", isDefault: true },
-          { id: "custom", label: "Other reason", emoji: "✨", explainer: "Tell us your own reason" }
+          { id: "school", label: "For school/work", emoji: "🏫", explainer: "Be friendly in school or work settings", isDefault: true }
         ],
         details: [
           { id: "classmate", label: "To classmate", emoji: "🎓", explainer: "Say hi to someone from school", isDefault: true },
@@ -347,8 +338,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         purpose: [
           { id: "move", label: "Planning to move", emoji: "📦", explainer: "Looking for a new place to live" },
           { id: "learn", label: "Learn about housing", emoji: "📚", explainer: "Understand housing options", isDefault: true },
-          { id: "help", label: "Help family", emoji: "👨‍👩‍👧‍👦", explainer: "Research for family member" },
-          { id: "custom", label: "Other reason", emoji: "✨", explainer: "Tell us your own reason" }
+          { id: "help", label: "Help family", emoji: "👨‍👩‍👧‍👦", explainer: "Research for family member" }
         ],
         details: [
           { id: "apt-online", label: "Apartments online", emoji: "💻", explainer: "Look at apartment websites", isDefault: true },
@@ -380,8 +370,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         purpose: [
           { id: "college", label: "For college", emoji: "🎓", explainer: "Research college programs", isDefault: true },
           { id: "training", label: "For training", emoji: "🛠️", explainer: "Look at vocational training" },
-          { id: "parent", label: "Parent request", emoji: "👨‍👩‍👧‍👦", explainer: "Researching for family" },
-          { id: "custom", label: "Other reason", emoji: "✨", explainer: "Tell us your own reason" }
+          { id: "parent", label: "Parent request", emoji: "👨‍👩‍👧‍👦", explainer: "Researching for family" }
         ],
         details: [
           { id: "2yr-sites", label: "2-year college sites", emoji: "🏫", explainer: "Community college websites", isDefault: true },
@@ -413,8 +402,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         purpose: [
           { id: "relax", label: "To relax", emoji: "😌", explainer: "Unwind and have fun", isDefault: true },
           { id: "socialize", label: "Be social", emoji: "👥", explainer: "Play games with others" },
-          { id: "focus", label: "Improve focus", emoji: "🎯", explainer: "Practice concentration" },
-          { id: "custom", label: "Other reason", emoji: "✨", explainer: "Tell us your own reason" }
+          { id: "focus", label: "Improve focus", emoji: "🎯", explainer: "Practice concentration" }
         ],
         details: [
           { id: "10min-board", label: "10 min board game", emoji: "🎲", explainer: "Short board game session", isDefault: true },

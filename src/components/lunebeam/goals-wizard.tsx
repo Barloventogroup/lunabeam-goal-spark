@@ -396,75 +396,42 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
           </Dialog>
 
           {state.step === 3 && state.goal && (
-            <div className="space-y-4">
-              <OptionSelection
-                title="Purpose"
-                options={state.goal.purpose}
-                onSelect={(purpose) => {
-                  showRandomAffirmation();
-                  setState(prev => ({ ...prev, purpose, step: 4 }));
-                }}
-                selected={state.purpose}
-              />
-              
-              {/* Custom Input Button */}
-              <Button 
-                variant="outline" 
-                onClick={() => setShowCustomDialog(true)}
-                className="w-full border-dashed"
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Describe in your own words
-              </Button>
-            </div>
+            <OptionSelection
+              title="Purpose"
+              options={state.goal.purpose}
+              onSelect={(purpose) => {
+                showRandomAffirmation();
+                setState(prev => ({ ...prev, purpose, step: 4 }));
+              }}
+              selected={state.purpose}
+              showCustomInput={() => setShowCustomDialog(true)}
+            />
           )}
 
           {state.step === 4 && state.goal && (
-            <div className="space-y-4">
-              <OptionSelection
-                title="Details"
-                options={state.goal.details}
-                onSelect={(details) => {
-                  showRandomAffirmation();
-                  setState(prev => ({ ...prev, details, step: 5 }));
-                }}
-                selected={state.details}
-              />
-              
-              {/* Custom Input Button */}
-              <Button 
-                variant="outline" 
-                onClick={() => setShowCustomDialog(true)}
-                className="w-full border-dashed"
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Describe in your own words
-              </Button>
-            </div>
+            <OptionSelection
+              title="Details"
+              options={state.goal.details}
+              onSelect={(details) => {
+                showRandomAffirmation();
+                setState(prev => ({ ...prev, details, step: 5 }));
+              }}
+              selected={state.details}
+              showCustomInput={() => setShowCustomDialog(true)}
+            />
           )}
 
           {state.step === 5 && state.goal && (
-            <div className="space-y-4">
-              <OptionSelection
-                title="Timing"
-                options={state.goal.timing}
-                onSelect={(timing) => {
-                  showRandomAffirmation();
-                  setState(prev => ({ ...prev, timing, step: 6 }));
-                }}
-                selected={state.timing}
-              />
-              
-              {/* Custom Input Button */}
-              <Button 
-                variant="outline" 
-                onClick={() => setShowCustomDialog(true)}
-                className="w-full border-dashed"
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Describe in your own words
-              </Button>
-            </div>
+            <OptionSelection
+              title="Timing"
+              options={state.goal.timing}
+              onSelect={(timing) => {
+                showRandomAffirmation();
+                setState(prev => ({ ...prev, timing, step: 6 }));
+              }}
+              selected={state.timing}
+              showCustomInput={() => setShowCustomDialog(true)}
+            />
           )}
 
           {state.step === 6 && state.goal && (
@@ -672,7 +639,8 @@ const OptionSelection: React.FC<{
   onSelect: (option: GoalOption) => void;
   selected?: GoalOption;
   allowFallback?: boolean;
-}> = ({ title, options, onSelect, selected, allowFallback }) => {
+  showCustomInput?: () => void;
+}> = ({ title, options, onSelect, selected, allowFallback, showCustomInput }) => {
   return (
     <div className="space-y-3">
       {options.map((option) => (
@@ -693,6 +661,21 @@ const OptionSelection: React.FC<{
           </CardContent>
         </Card>
       ))}
+
+      {/* Custom Input Option */}
+      {showCustomInput && (
+        <Card 
+          className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/30 border-dashed"
+          onClick={showCustomInput}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="text-xl">💬</div>
+              <div className="font-medium text-foreground">Describe in your own words</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       
       {/* Fallback Option */}
       {allowFallback && (
