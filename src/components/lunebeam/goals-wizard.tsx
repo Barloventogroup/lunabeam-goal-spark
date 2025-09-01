@@ -678,7 +678,23 @@ const OptionSelection: React.FC<{
         <Card 
           className="cursor-pointer transition-all duration-200 hover:scale-[1.02] border-dashed hover:border-primary/30"
           onClick={() => {
-            // Auto-select default or first option and show explainer
+            // Fallback behavior
+            if (title === "Timing") {
+              // Use easy-start defaults if not present in options
+              const defaultTiming: GoalOption =
+                options.find(o => /1×\/week/.test(o.label) && /2 weeks/.test(o.label)) || {
+                  id: "1week-2weeks",
+                  label: "1×/week for 2 weeks",
+                  emoji: "📅",
+                  explainer: "Once per week for two weeks",
+                  isDefault: true
+                };
+              onSelect(defaultTiming);
+              onShowExplainer(defaultTiming.id);
+              return;
+            }
+
+            // Otherwise, auto-select default or first option and show explainer
             const defaultOption = options.find(o => o.isDefault) || options[0];
             onSelect(defaultOption);
             onShowExplainer(defaultOption.id);
@@ -689,7 +705,11 @@ const OptionSelection: React.FC<{
               <div className="text-xl">{FALLBACK_OPTION.emoji}</div>
               <div>
                 <div className="font-semibold text-foreground">{FALLBACK_OPTION.label}</div>
-                <div className="text-xs text-foreground-soft mt-1">We’ll start small: {(options.find(o => o.isDefault) || options[0]).label}.</div>
+                <div className="text-xs text-foreground-soft mt-1">
+                  {title === "Timing" 
+                    ? "Small steps count — let's start once a week." 
+                    : `We’ll start small: ${(options.find(o => o.isDefault) || options[0]).label}.`}
+                </div>
               </div>
             </div>
           </CardContent>
@@ -772,6 +792,17 @@ const MultiOptionSelection: React.FC<{
         <Card 
           className="cursor-pointer transition-all duration-200 hover:scale-[1.02] border-dashed hover:border-primary/30"
           onClick={() => {
+            // Prefer Reminder + Checklist as defaults
+            const reminder = options.find(o => /reminder/i.test(o.label));
+            const checklist = options.find(o => /checklist/i.test(o.label));
+            const preferred = [reminder, checklist].filter(Boolean) as GoalOption[];
+
+            if (preferred.length > 0) {
+              onSelect(preferred);
+              return;
+            }
+
+            // Fallback to options marked as default, otherwise first option
             const defaults = options.filter(o => o.isDefault);
             onSelect(defaults.length > 0 ? defaults : [options[0]]);
           }}
