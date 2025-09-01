@@ -305,7 +305,6 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
                 setState(prev => ({ ...prev, purpose, step: 4 }));
               }}
               selected={state.purpose}
-              allowFallback
             />
           )}
 
@@ -318,7 +317,6 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
                 setState(prev => ({ ...prev, details, step: 5 }));
               }}
               selected={state.details}
-              allowFallback
             />
           )}
 
