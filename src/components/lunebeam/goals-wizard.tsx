@@ -43,7 +43,7 @@ const STEPS = [
   { id: 3, title: "Why?", subtitle: "What's your main reason for this goal?" },
   { id: 4, title: "Details", subtitle: "How do you want to do this?" },
   { id: 5, title: "When?", subtitle: "How often and for how long?" },
-  { id: 6, title: "Support", subtitle: "What would help you stick with it?" },
+  { id: 6, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
   { id: 7, title: "Confirm", subtitle: "Ready to start your goal?" }
 ];
 
