@@ -9,11 +9,17 @@ export const goalsService = {
     dueBefore?: string;
     dueAfter?: string;
     q?: string;
+    includeArchived?: boolean;
   }): Promise<Goal[]> {
     let query = supabase
       .from('goals')
       .select('*')
       .eq('owner_id', (await supabase.auth.getUser()).data.user?.id);
+
+    // By default, exclude archived goals unless specifically requested
+    if (!filters?.includeArchived) {
+      query = query.neq('status', 'archived');
+    }
 
     if (filters?.status) {
       query = query.eq('status', filters.status);
