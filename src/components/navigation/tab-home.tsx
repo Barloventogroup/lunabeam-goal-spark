@@ -155,7 +155,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                       </div>
                       <div>
                         <p className="font-medium text-sm">{b.title}</p>
-                        <p className="text-xs text-muted-foreground">{b.type}</p>
+                        <p className="text-sm text-muted-foreground">{b.type}</p>
                       </div>
                     </CardContent>
                   </Card>
