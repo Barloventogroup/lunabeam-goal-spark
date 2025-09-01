@@ -19,7 +19,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'bauhaus': ['Orbitron', 'sans-serif'],
+				'moonwalk': ['Space Mono', 'monospace'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
