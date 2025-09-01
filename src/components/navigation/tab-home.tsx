@@ -4,6 +4,7 @@ import lunebeamLogo from '../../assets/lunebeam-logo.svg';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Progress } from '../ui/progress';
+import { Badge } from '../ui/badge';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
 import { GoalWizard } from '../lunebeam/goal-wizard';
@@ -19,11 +20,13 @@ export const TabHome: React.FC<TabHomeProps> = ({
 }) => {
   const [currentView, setCurrentView] = useState<HomeView>('dashboard');
   const [showCheckinModal, setShowCheckinModal] = useState(false);
-  const { profile, loadProfile } = useStore();
+  const { profile, loadProfile, goals, badges, loadGoals, loadBadges } = useStore();
   
   useEffect(() => {
     loadProfile();
-  }, [loadProfile]);
+    loadGoals();
+    loadBadges();
+  }, [loadProfile, loadGoals, loadBadges]);
   
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('dashboard')} />;
@@ -34,23 +37,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
       </div>;
   }
 
-  // Mock data - in real app this would come from store/API
-  const mockGoals = [
-    {
-      id: '1',
-      title: 'Practice Social Skills',
-      subtitle: '3 rounds this week • Next step due today',
-      buttonText: 'Continue',
-      buttonVariant: 'default' as const
-    },
-    {
-      id: '2',
-      title: 'Independent Living Skills',
-      subtitle: '2 of 4 steps done • Explain mode available',
-      buttonText: 'View Plan',
-      buttonVariant: 'outline' as const
-    }
-  ];
+  // Active goals from store
+  const activeGoals = goals.filter((g) => g.status === 'active' || g.status === 'planned');
 
   return <>
       <div className="min-h-screen bg-gradient-soft">
@@ -101,57 +89,87 @@ export const TabHome: React.FC<TabHomeProps> = ({
             </Card>
           </div>
 
-          {/* Your Goals */}
           <div>
             <h3 className="text-lg font-semibold mb-3">Your Goals</h3>
-            <div className="space-y-3">
-              {mockGoals.map((goal) => (
-                <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-semibold mb-1">{goal.title}</h4>
-                        <p className="text-sm text-muted-foreground">{goal.subtitle}</p>
+            {activeGoals.length > 0 ? (
+              <div className="space-y-3">
+                {activeGoals.map((goal) => (
+                  <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1" onClick={() => onNavigateToGoals(goal.id)}>
+                          <h4 className="font-semibold mb-1">{goal.title}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {Math.round(goal.progress_pct || 0)}% complete
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm"
+                            onClick={() => setShowCheckinModal(true)}
+                          >
+                            Check In
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onNavigateToGoals(goal.id)}
+                          >
+                            View Plan
+                          </Button>
+                        </div>
                       </div>
-                      <Button 
-                        variant={goal.buttonVariant}
-                        size="sm"
-                        onClick={() => onNavigateToGoals(goal.id)}
-                      >
-                        {goal.buttonText}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                  No active goals yet
+                </CardContent>
+              </Card>
+            )}
           </div>
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-3">
-            <Button 
-              variant="outline" 
-              className="h-20 flex flex-col gap-2"
+          {/* Centered Add Goal Button */}
+          <div className="flex justify-center py-2">
+            <Button
               onClick={() => setCurrentView('add-goal')}
+              size="lg"
+              className="rounded-full w-16 h-16 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+              aria-label="Add Goal"
             >
-              <Plus className="h-6 w-6 text-blue-600" />
-              <div className="text-center">
-                <div className="font-semibold">Add Goal</div>
-                <div className="text-xs text-muted-foreground">Start something new</div>
-              </div>
+              <Plus className="h-8 w-8" />
             </Button>
-            
-            <Button 
-              variant="outline" 
-              className="h-20 flex flex-col gap-2"
-              onClick={() => setCurrentView('rewards')}
-            >
-              <Award className="h-6 w-6 text-purple-600" />
-              <div className="text-center">
-                <div className="font-semibold">Rewards</div>
-                <div className="text-xs text-muted-foreground">3 new achievements</div>
+          </div>
+
+          {/* Rewards/Badges */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold">Rewards</h3>
+            {badges.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {badges.slice(0,4).map((b) => (
+                  <Card key={b.id} className="bg-card/60">
+                    <CardContent className="p-4 text-center space-y-2">
+                      <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mx-auto">
+                        <Award className="h-6 w-6 text-accent-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{b.title}</p>
+                        <p className="text-xs text-muted-foreground">{b.type}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            </Button>
+            ) : (
+              <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                  No badges yet — complete goals to earn rewards!
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Encouragement Message */}
