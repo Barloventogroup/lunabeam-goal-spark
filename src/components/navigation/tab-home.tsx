@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, CheckCircle, Plus, Award } from 'lucide-react';
-import lunabeamLogo from '../../assets/lunabeam-logo.png';
+import lunabeamLogo from '../../assets/lunabeam-logo-exact.png';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Progress } from '../ui/progress';
