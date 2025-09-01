@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, X, Info, Sparkles, Mic, Volume2, Users } from 'lucide-react';
+import { ArrowLeft, X, Sparkles, Mic, Volume2, Users } from 'lucide-react';
 import { GOALS_WIZARD_DATA, FALLBACK_OPTION, STARTER_GOALS, Category, CategoryGoal, GoalOption } from '@/data/goals-wizard-data';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -58,7 +58,6 @@ const AFFIRMATIONS = [
 
 export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) => {
   const [state, setState] = useState<WizardState>({ step: 1 });
-  const [showExplainer, setShowExplainer] = useState<string | null>(null);
   const [affirmation, setAffirmation] = useState<string>("");
   const [showConfetti, setShowConfetti] = useState(false);
   
@@ -236,7 +235,6 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       supports: [],
       savedProgress: null
     });
-    setShowExplainer(null);
   };
 
   // Show resume dialog if we have saved progress
@@ -286,18 +284,8 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
               <Progress value={(state.step / (STEPS.length - 1)) * 100} className="mt-1" />
             </div>
             
-            {/* Next Button in Header */}
-            {state.step < 7 ? (
-              <Button 
-                onClick={handleNext}
-                disabled={!canProceed()}
-                size="sm"
-                className="px-4"
-              >
-                {state.step === 6 ? "Review" : "Next"}
-                <Sparkles className="ml-1 h-3 w-3" />
-              </Button>
-            ) : (
+            {/* Exit Button for Confirmation Step */}
+            {state.step === 7 && (
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -327,10 +315,10 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
           {/* Step Content */}
           {state.step === 1 && (
             <CategorySelection 
-              onSelect={(category) => setState(prev => ({ ...prev, category }))}
-              selected={state.category}
-              onShowExplainer={setShowExplainer}
-              showExplainer={showExplainer}
+              onSelect={(category) => {
+                showRandomAffirmation();
+                setState(prev => ({ ...prev, category, step: 2 }));
+              }}
               onSelectDefault={(defaultState) => setState(defaultState)}
             />
           )}
@@ -338,10 +326,10 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
           {state.step === 2 && state.category && (
             <GoalSelection 
               category={state.category}
-              onSelect={(goal) => setState(prev => ({ ...prev, goal }))}
-              selected={state.goal}
-              onShowExplainer={setShowExplainer}
-              showExplainer={showExplainer}
+              onSelect={(goal) => {
+                showRandomAffirmation();
+                setState(prev => ({ ...prev, goal, step: 3 }));
+              }}
             />
           )}
 
@@ -349,10 +337,11 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
             <OptionSelection
               title="Purpose"
               options={state.goal.purpose}
-              onSelect={(purpose) => setState(prev => ({ ...prev, purpose }))}
+              onSelect={(purpose) => {
+                showRandomAffirmation();
+                setState(prev => ({ ...prev, purpose, step: 4 }));
+              }}
               selected={state.purpose}
-              onShowExplainer={setShowExplainer}
-              showExplainer={showExplainer}
               allowFallback
             />
           )}
@@ -361,10 +350,11 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
             <OptionSelection
               title="Details"
               options={state.goal.details}
-              onSelect={(details) => setState(prev => ({ ...prev, details }))}
+              onSelect={(details) => {
+                showRandomAffirmation();
+                setState(prev => ({ ...prev, details, step: 5 }));
+              }}
               selected={state.details}
-              onShowExplainer={setShowExplainer}
-              showExplainer={showExplainer}
               allowFallback
             />
           )}
@@ -373,10 +363,11 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
             <OptionSelection
               title="Timing"
               options={state.goal.timing}
-              onSelect={(timing) => setState(prev => ({ ...prev, timing }))}
+              onSelect={(timing) => {
+                showRandomAffirmation();
+                setState(prev => ({ ...prev, timing, step: 6 }));
+              }}
               selected={state.timing}
-              onShowExplainer={setShowExplainer}
-              showExplainer={showExplainer}
             />
           )}
 
@@ -384,10 +375,15 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
             <MultiOptionSelection
               title="Support"
               options={state.goal.supports}
-              onSelect={(supports) => setState(prev => ({ ...prev, supports }))}
+              onSelect={(supports) => {
+                if (supports.length > 0) {
+                  showRandomAffirmation();
+                  setState(prev => ({ ...prev, supports, step: 7 }));
+                } else {
+                  setState(prev => ({ ...prev, supports }));
+                }
+              }}
               selected={state.supports || []}
-              onShowExplainer={setShowExplainer}
-              showExplainer={showExplainer}
             />
           )}
 
@@ -434,11 +430,8 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
 // Category Selection Component
 const CategorySelection: React.FC<{
   onSelect: (category: Category) => void;
-  selected?: Category;
-  onShowExplainer: (id: string | null) => void;
-  showExplainer: string | null;
   onSelectDefault?: (defaults: WizardState) => void;
-}> = ({ onSelect, selected, onShowExplainer, showExplainer, onSelectDefault }) => {
+}> = ({ onSelect, onSelectDefault }) => {
   const [showStarterGoals, setShowStarterGoals] = useState(false);
 
   if (showStarterGoals) {
@@ -470,11 +463,13 @@ const CategorySelection: React.FC<{
             }}
           >
             <CardContent className="p-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3">
                 <div className="text-2xl">{goal.emoji}</div>
-                <div>
-                  <div className="font-semibold text-foreground">{goal.title}</div>
-                  <div className="text-sm text-foreground-soft">{goal.explainer}</div>
+                <div className="flex-1">
+                  <div className="font-semibold text-foreground mb-1">{goal.title}</div>
+                  <div className="text-sm text-foreground-soft">
+                    {goal.explainer}
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -494,62 +489,38 @@ const CategorySelection: React.FC<{
   return (
     <div className="space-y-3">
       {GOALS_WIZARD_DATA.map((category) => (
-        <div key={category.id}>
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-              selected?.id === category.id 
-                ? 'border-primary bg-primary/5' 
-                : 'hover:border-primary/30'
-            }`}
-            onClick={() => { onSelect(category); onShowExplainer(category.id); }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl">{category.emoji}</div>
-                  <div className="font-semibold text-foreground">{category.title}</div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onShowExplainer(showExplainer === category.id ? null : category.id);
-                  }}
-                  className="p-1"
-                >
-                  <Info className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {showExplainer === category.id && (
-            <Card className="mt-2 bg-muted/50 animate-fade-in">
-              <CardContent className="p-3">
+        <Card 
+          key={category.id}
+          className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/50"
+          onClick={() => onSelect(category)}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="text-2xl">{category.emoji}</div>
+              <div className="flex-1">
+                <div className="font-semibold text-foreground mb-1">{category.title}</div>
                 <div className="text-sm text-foreground-soft">
                   These are all about {category.title.toLowerCase()} - pick whatever feels doable right now!
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       ))}
       
       {/* Fallback Option */}
       <Card 
-        className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] border-dashed ${
-          selected?.id === 'unsure' 
-            ? 'border-primary bg-primary/5' 
-            : 'hover:border-primary/30'
-        }`}
+        className="cursor-pointer transition-all duration-200 hover:scale-[1.02] border-dashed hover:border-primary/50"
         onClick={() => setShowStarterGoals(true)}
       >
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="text-2xl">{FALLBACK_OPTION.emoji}</div>
-              <div className="font-semibold text-foreground">{FALLBACK_OPTION.label}</div>
+          <div className="flex items-start gap-3">
+            <div className="text-2xl">{FALLBACK_OPTION.emoji}</div>
+            <div className="flex-1">
+              <div className="font-semibold text-foreground mb-1">{FALLBACK_OPTION.label}</div>
+              <div className="text-sm text-foreground-soft">
+                {FALLBACK_OPTION.explainer}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -562,67 +533,43 @@ const CategorySelection: React.FC<{
 const GoalSelection: React.FC<{
   category: Category;
   onSelect: (goal: CategoryGoal) => void;
-  selected?: CategoryGoal;
-  onShowExplainer: (id: string | null) => void;
-  showExplainer: string | null;
-}> = ({ category, onSelect, selected, onShowExplainer, showExplainer }) => {
+}> = ({ category, onSelect }) => {
   return (
     <div className="space-y-3">
       {category.goals.map((goal) => (
-        <div key={goal.id}>
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-              selected?.id === goal.id 
-                ? 'border-primary bg-primary/5' 
-                : 'hover:border-primary/30'
-            }`}
-            onClick={() => { onSelect(goal); onShowExplainer(goal.id); }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl">{goal.emoji}</div>
-                  <div className="font-semibold text-foreground">{goal.title}</div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onShowExplainer(showExplainer === goal.id ? null : goal.id);
-                  }}
-                  className="p-1"
-                >
-                  <Info className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {showExplainer === goal.id && (
-            <Card className="mt-2 bg-muted/50 animate-fade-in">
-              <CardContent className="p-3">
+        <Card 
+          key={goal.id}
+          className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/50"
+          onClick={() => onSelect(goal)}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="text-2xl">{goal.emoji}</div>
+              <div className="flex-1">
+                <div className="font-semibold text-foreground mb-1">{goal.title}</div>
                 <div className="text-sm text-foreground-soft">
                   {goal.explainer}
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       ))}
       
       {/* Fallback Option */}
       <Card 
-        className="cursor-pointer transition-all duration-200 hover:scale-[1.02] border-dashed hover:border-primary/30"
-        onClick={() => {
-          // Auto-select first goal as fallback
-          onSelect(category.goals[0]);
-        }}
+        className="cursor-pointer transition-all duration-200 hover:scale-[1.02] border-dashed hover:border-primary/50"
+        onClick={() => onSelect(category.goals[0])}
       >
         <CardContent className="p-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-3">
             <div className="text-2xl">{FALLBACK_OPTION.emoji}</div>
-            <div className="font-semibold text-foreground">{FALLBACK_OPTION.label}</div>
+            <div className="flex-1">
+              <div className="font-semibold text-foreground mb-1">{FALLBACK_OPTION.label}</div>
+              <div className="text-sm text-foreground-soft">
+                {FALLBACK_OPTION.explainer}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -636,53 +583,27 @@ const OptionSelection: React.FC<{
   options: GoalOption[];
   onSelect: (option: GoalOption) => void;
   selected?: GoalOption;
-  onShowExplainer: (id: string | null) => void;
-  showExplainer: string | null;
   allowFallback?: boolean;
-}> = ({ title, options, onSelect, selected, onShowExplainer, showExplainer, allowFallback }) => {
+}> = ({ title, options, onSelect, selected, allowFallback }) => {
   return (
     <div className="space-y-3">
       {options.map((option) => (
-        <div key={option.id}>
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-              selected?.id === option.id 
-                ? 'border-primary bg-primary/5' 
-                : 'hover:border-primary/30'
-            }`}
-            onClick={() => { onSelect(option); onShowExplainer(option.id); }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="text-xl">{option.emoji}</div>
-                  <div className="font-semibold text-foreground">{option.label}</div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onShowExplainer(showExplainer === option.id ? null : option.id);
-                  }}
-                  className="p-1"
-                >
-                  <Info className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {showExplainer === option.id && (
-            <Card className="mt-2 bg-muted/50 animate-fade-in">
-              <CardContent className="p-3">
-                <div className="text-sm text-foreground-soft">
-                  {option.explainer}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        <Card 
+          key={option.id}
+          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+            selected?.id === option.id 
+              ? 'border-primary bg-primary/5' 
+              : 'hover:border-primary/30'
+          }`}
+          onClick={() => onSelect(option)}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="text-xl">{option.emoji}</div>
+              <div className="font-medium text-foreground">{option.label}</div>
+            </div>
+          </CardContent>
+        </Card>
       ))}
       
       {/* Fallback Option */}
@@ -702,14 +623,12 @@ const OptionSelection: React.FC<{
                   isDefault: true
                 };
               onSelect(defaultTiming);
-              onShowExplainer(defaultTiming.id);
               return;
             }
 
-            // Otherwise, auto-select default or first option and show explainer
+            // Otherwise, auto-select default or first option
             const defaultOption = options.find(o => o.isDefault) || options[0];
             onSelect(defaultOption);
-            onShowExplainer(defaultOption.id);
           }}
         >
           <CardContent className="p-4">
@@ -720,7 +639,7 @@ const OptionSelection: React.FC<{
                 <div className="text-xs text-foreground-soft mt-1">
                   {title === "Timing" 
                     ? "Small steps count — let's start once a week." 
-                    : `We’ll start small: ${(options.find(o => o.isDefault) || options[0]).label}.`}
+                    : `We'll start small: ${(options.find(o => o.isDefault) || options[0]).label}.`}
                 </div>
               </div>
             </div>
@@ -737,9 +656,7 @@ const MultiOptionSelection: React.FC<{
   options: GoalOption[];
   onSelect: (options: GoalOption[]) => void;
   selected: GoalOption[];
-  onShowExplainer: (id: string | null) => void;
-  showExplainer: string | null;
-}> = ({ options, onSelect, selected, onShowExplainer, showExplainer }) => {
+}> = ({ options, onSelect, selected }) => {
   const handleToggle = (option: GoalOption) => {
     const isSelected = selected.some(s => s.id === option.id);
     if (isSelected) {
@@ -752,51 +669,27 @@ const MultiOptionSelection: React.FC<{
   return (
     <div className="space-y-3">
       {options.map((option) => (
-        <div key={option.id}>
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-              selected.some(s => s.id === option.id)
-                ? 'border-primary bg-primary/5' 
-                : 'hover:border-primary/30'
-            }`}
-            onClick={() => handleToggle(option)}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="text-xl">{option.emoji}</div>
-                  <div className="font-semibold text-foreground">{option.label}</div>
-                  {option.isDefault && (
-                    <div className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
-                      Recommended
-                    </div>
-                  )}
+        <Card 
+          key={option.id}
+          className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+            selected.some(s => s.id === option.id)
+              ? 'border-primary bg-primary/5' 
+              : 'hover:border-primary/30'
+          }`}
+          onClick={() => handleToggle(option)}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="text-xl">{option.emoji}</div>
+              <div className="font-semibold text-foreground">{option.label}</div>
+              {option.isDefault && (
+                <div className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
+                  Recommended
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onShowExplainer(showExplainer === option.id ? null : option.id);
-                  }}
-                  className="p-1"
-                >
-                  <Info className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {showExplainer === option.id && (
-            <Card className="mt-2 bg-muted/50 animate-fade-in">
-              <CardContent className="p-3">
-                <div className="text-sm text-foreground-soft">
-                  {option.explainer}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       ))}
       
       {/* Auto-select defaults if none selected */}
