@@ -364,7 +364,6 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
               selected={state.timing}
               onShowExplainer={setShowExplainer}
               showExplainer={showExplainer}
-              allowFallback
             />
           )}
 
