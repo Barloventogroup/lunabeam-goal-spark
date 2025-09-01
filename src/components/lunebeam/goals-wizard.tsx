@@ -305,6 +305,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
               selected={state.category}
               onShowExplainer={setShowExplainer}
               showExplainer={showExplainer}
+              onSelectDefault={(defaultState) => setState(defaultState)}
             />
           )}
 
@@ -411,7 +412,8 @@ const CategorySelection: React.FC<{
   selected?: Category;
   onShowExplainer: (id: string | null) => void;
   showExplainer: string | null;
-}> = ({ onSelect, selected, onShowExplainer, showExplainer }) => {
+  onSelectDefault?: (defaults: WizardState) => void;
+}> = ({ onSelect, selected, onShowExplainer, showExplainer, onSelectDefault }) => {
   return (
     <div className="space-y-3">
       {GOALS_WIZARD_DATA.map((category) => (
@@ -465,8 +467,25 @@ const CategorySelection: React.FC<{
             : 'hover:border-primary/30'
         }`}
         onClick={() => {
-          // Auto-select first category as fallback
-          onSelect(GOALS_WIZARD_DATA[0]);
+          // Auto-select health category and proceed with defaults
+          const healthCategory = GOALS_WIZARD_DATA[0]; // Health category
+          onSelect(healthCategory);
+          
+          // Set up defaults for the complete flow using the callback
+          if (onSelectDefault) {
+            setTimeout(() => {
+              const walkGoal = healthCategory.goals[0]; // Walk goal
+              onSelectDefault({ 
+                step: 7, // Jump to confirmation
+                category: healthCategory,
+                goal: walkGoal,
+                purpose: walkGoal.purpose.find(p => p.isDefault) || walkGoal.purpose[0],
+                details: walkGoal.details.find(d => d.isDefault) || walkGoal.details[0],
+                timing: walkGoal.timing.find(t => t.isDefault) || walkGoal.timing[0],
+                supports: walkGoal.supports.filter(s => s.isDefault).slice(0, 1)
+              });
+            }, 100);
+          }
         }}
       >
         <CardContent className="p-4">
