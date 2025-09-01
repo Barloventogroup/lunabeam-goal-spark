@@ -2,14 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { 
   Target, 
   Clock, 
-  Calendar,
   CheckCircle2,
   ArrowLeft,
   Play
@@ -51,8 +47,10 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
   onBack, 
   onComplete 
 }) => {
-  const [startDate, setStartDate] = useState(new Date());
   const [isCreating, setIsCreating] = useState(false);
+  
+  // Get start date from wizard goal data or default to today
+  const startDate = ('startDate' in goal && goal.startDate) ? goal.startDate : new Date();
   
   const { toast } = useToast();
 
@@ -164,7 +162,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
         due_date: formatDate(due),
       });
 
-      // Create up to 3 steps for the 7-day micro-goal
+      // Create up to 3 steps for the micro-goal
       for (const stepTitle of getGoalSpecificSteps()) {
         await stepsService.createStep(createdGoal.id, {
           title: stepTitle,
@@ -205,7 +203,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
           </Button>
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-foreground">Goal Summary</h1>
-            <p className="text-foreground-soft">Review and confirm your 7-day micro-goal</p>
+            <p className="text-foreground-soft">Review and confirm your micro-goal</p>
           </div>
         </div>
 
@@ -258,7 +256,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              7-Day Timeline
+              Timeline
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -268,35 +266,6 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
                 <Badge variant="outline">
                   {'smartGoal' in goal ? `${(goal as WizardGoalData).frequency} for ${(goal as WizardGoalData).duration}` : (goal as ExtractedGoal).timeEstimate}
                 </Badge>
-              </div>
-              
-              {/* Start Date Picker */}
-              <div className="space-y-2">
-                <span className="text-sm font-medium">Choose your start date:</span>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !startDate && "text-muted-foreground"
-                      )}
-                    >
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={startDate}
-                      onSelect={(date) => date && setStartDate(date)}
-                      disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
               </div>
               
               <div className="grid grid-cols-7 gap-2">
@@ -353,7 +322,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
             ) : (
               <>
                 <Play className="h-5 w-5 mr-2" />
-                Start My 7-Day Goal
+                Start My Goal
               </>
             )}
           </Button>
