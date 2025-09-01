@@ -52,9 +52,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "transport", label: "Transportation/errand", emoji: "🛒", explainer: "Get where you need to go while being active" }
         ],
         details: [
-          { id: "5min-block", label: "5 min around block", emoji: "🏠", explainer: "Short walk in your neighborhood", isDefault: true },
-          { id: "10min-park", label: "10 min in park", emoji: "🌳", explainer: "Walk in a nearby park or green space" },
-          { id: "20min-store", label: "20 min to store", emoji: "🏪", explainer: "Walk to a nearby store or destination" }
+          { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Short 5-minute walk", isDefault: true },
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Moderate 10-minute walk" },
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Longer 20-minute walk" }
         ],
         timing: [
           { id: "1week-2weeks", label: "1×/week for 2 weeks", emoji: "📅", explainer: "Once per week for two weeks" },
@@ -82,10 +82,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "tension", label: "Reduce tension", emoji: "😌", explainer: "Release muscle tightness and stress" }
         ],
         details: [
-          { id: "fullbody-5min", label: "Full body, 5 min", emoji: "🧘‍♀️", explainer: "Quick stretch for your whole body", isDefault: true },
-          { id: "neck-back-10min", label: "Neck/back, 10 min", emoji: "🦴", explainer: "Focus on neck and back muscles" },
-          { id: "arms-10min", label: "Arms, 10 min", emoji: "💪", explainer: "Stretch your arms and shoulders" },
-          { id: "legs-15min", label: "Legs, 15 min", emoji: "🦵", explainer: "Stretch your legs and hips" }
+          { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Quick 5-minute stretch session", isDefault: true },
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Moderate 10-minute stretch session" },
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Longer 20-minute stretch session" }
         ],
         timing: [
           { id: "morning-3week-2weeks", label: "Morning, 3×/week for 2 weeks", emoji: "🌅", explainer: "Three mornings per week for two weeks" },
@@ -209,10 +208,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "focus", label: "Improve focus", emoji: "🎯", explainer: "Practice concentration skills" }
         ],
         details: [
-          { id: "1page", label: "1 page", emoji: "📄", explainer: "Read just one page", isDefault: true },
-          { id: "5pages", label: "5 pages", emoji: "📄", explainer: "Read five pages" },
-          { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Read for five minutes" },
-          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Read for ten minutes" }
+          { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Read for 5 minutes", isDefault: true },
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Read for 10 minutes" },
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Read for 20 minutes" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
