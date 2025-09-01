@@ -427,6 +427,58 @@ const CategorySelection: React.FC<{
   showExplainer: string | null;
   onSelectDefault?: (defaults: WizardState) => void;
 }> = ({ onSelect, selected, onShowExplainer, showExplainer, onSelectDefault }) => {
+  const [showStarterGoals, setShowStarterGoals] = useState(false);
+
+  if (showStarterGoals) {
+    return (
+      <div className="space-y-3">
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold">Here are some simple starter goals:</h3>
+          <p className="text-sm text-foreground-soft">Pick one to get started!</p>
+        </div>
+        
+        {STARTER_GOALS.map((goal) => (
+          <Card 
+            key={goal.id}
+            className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/30"
+            onClick={() => {
+              // Auto-select this goal with defaults and jump to confirmation
+              if (onSelectDefault) {
+                onSelectDefault({ 
+                  step: 7, // Jump to confirmation
+                  category: { id: 'starter', title: 'Starter Goals', emoji: '🌟', goals: [goal] },
+                  goal: goal,
+                  purpose: goal.purpose.find(p => p.isDefault) || goal.purpose[0],
+                  details: goal.details.find(d => d.isDefault) || goal.details[0],
+                  timing: goal.timing.find(t => t.isDefault) || goal.timing[0],
+                  supports: goal.supports.filter(s => s.isDefault).slice(0, 1),
+                  savedProgress: null
+                });
+              }
+            }}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="text-2xl">{goal.emoji}</div>
+                <div>
+                  <div className="font-semibold text-foreground">{goal.title}</div>
+                  <div className="text-sm text-foreground-soft">{goal.explainer}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        
+        <Button 
+          variant="outline" 
+          onClick={() => setShowStarterGoals(false)}
+          className="w-full mt-4"
+        >
+          ← Back to categories
+        </Button>
+      </div>
+    );
+  }
   return (
     <div className="space-y-3">
       {GOALS_WIZARD_DATA.map((category) => (
@@ -479,27 +531,7 @@ const CategorySelection: React.FC<{
             ? 'border-primary bg-primary/5' 
             : 'hover:border-primary/30'
         }`}
-        onClick={() => {
-          // Auto-select health category and proceed with defaults
-          const healthCategory = GOALS_WIZARD_DATA[0]; // Health category
-          onSelect(healthCategory);
-          
-          // Set up defaults for the complete flow using the callback
-          if (onSelectDefault) {
-            setTimeout(() => {
-              const walkGoal = healthCategory.goals[0]; // Walk goal
-              onSelectDefault({ 
-                step: 7, // Jump to confirmation
-                category: healthCategory,
-                goal: walkGoal,
-                purpose: walkGoal.purpose.find(p => p.isDefault) || walkGoal.purpose[0],
-                details: walkGoal.details.find(d => d.isDefault) || walkGoal.details[0],
-                timing: walkGoal.timing.find(t => t.isDefault) || walkGoal.timing[0],
-                supports: walkGoal.supports.filter(s => s.isDefault).slice(0, 1)
-              });
-            }, 100);
-          }
-        }}
+        onClick={() => setShowStarterGoals(true)}
       >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
@@ -522,44 +554,6 @@ const GoalSelection: React.FC<{
   onShowExplainer: (id: string | null) => void;
   showExplainer: string | null;
 }> = ({ category, onSelect, selected, onShowExplainer, showExplainer }) => {
-  const [showStarterGoals, setShowStarterGoals] = useState(false);
-
-  if (showStarterGoals) {
-    return (
-      <div className="space-y-3">
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold">Here are some simple starter goals:</h3>
-          <p className="text-sm text-foreground-soft">Pick one to get started!</p>
-        </div>
-        
-        {STARTER_GOALS.map((goal) => (
-          <Card 
-            key={goal.id}
-            className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/30"
-            onClick={() => onSelect(goal)}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="text-2xl">{goal.emoji}</div>
-                <div>
-                  <div className="font-semibold text-foreground">{goal.title}</div>
-                  <div className="text-sm text-foreground-soft">{goal.explainer}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        
-        <Button 
-          variant="outline" 
-          onClick={() => setShowStarterGoals(false)}
-          className="w-full mt-4"
-        >
-          ← Back to {category.title} goals
-        </Button>
-      </div>
-    );
-  }
   return (
     <div className="space-y-3">
       {category.goals.map((goal) => (
@@ -608,7 +602,10 @@ const GoalSelection: React.FC<{
       {/* Fallback Option */}
       <Card 
         className="cursor-pointer transition-all duration-200 hover:scale-[1.02] border-dashed hover:border-primary/30"
-        onClick={() => setShowStarterGoals(true)}
+        onClick={() => {
+          // Auto-select first goal as fallback
+          onSelect(category.goals[0]);
+        }}
       >
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
