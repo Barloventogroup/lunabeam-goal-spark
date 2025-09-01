@@ -210,7 +210,17 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
 
   const handleStartFresh = () => {
     localStorage.removeItem('goals-wizard-progress');
-    setState({ step: 1 });
+    setState({ 
+      step: 1,
+      category: undefined,
+      goal: undefined,
+      purpose: undefined,
+      details: undefined,
+      timing: undefined,
+      supports: [],
+      savedProgress: null
+    });
+    setShowExplainer(null);
   };
 
   // Show resume dialog if we have saved progress
