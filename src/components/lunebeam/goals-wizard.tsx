@@ -322,10 +322,10 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
             </Button>
             
             <div className="flex-1 mx-4">
-              <div className="text-sm font-medium text-center">
-                Step {state.step} of {STEPS.length - 1}
-              </div>
-              <Progress value={(state.step / (STEPS.length - 1)) * 100} className="mt-1" />
+            <div className="text-sm font-medium text-center">
+              Step {state.step} of {STEPS.length}
+            </div>
+            <Progress value={(state.step / STEPS.length) * 100} className="mt-1" />
             </div>
             
             {/* Exit Button - Available on all steps */}

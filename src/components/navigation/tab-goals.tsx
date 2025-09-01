@@ -50,8 +50,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange }) => {
   };
 
   const handleWizardGoalCreated = (goalData: any) => {
-    setAiGoal(goalData);
-    setCurrentView('summary');
+    setCurrentView('list');
     onWizardStateChange?.(false);
   };
 
