@@ -671,7 +671,7 @@ const OptionSelection: React.FC<{
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="text-xl">💬</div>
-              <div className="font-medium text-foreground">Describe in your own words</div>
+              <div className="font-medium text-foreground">Other</div>
             </div>
           </CardContent>
         </Card>
