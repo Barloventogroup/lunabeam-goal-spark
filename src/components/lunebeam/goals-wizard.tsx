@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, X, Sparkles, Mic, Volume2, Users } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { ArrowLeft, X, Sparkles, Mic, Volume2, Users, MessageSquare, Send } from 'lucide-react';
 import { GOALS_WIZARD_DATA, FALLBACK_OPTION, STARTER_GOALS, Category, CategoryGoal, GoalOption } from '@/data/goals-wizard-data';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -12,6 +14,7 @@ import {
   useTextToSpeech, 
   ConfettiAnimation 
 } from './accessibility-features';
+import { AIService } from '@/services/aiService';
 
 interface GoalsWizardProps {
   onComplete: (goalData: {
@@ -60,6 +63,9 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const [state, setState] = useState<WizardState>({ step: 1 });
   const [affirmation, setAffirmation] = useState<string>("");
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showCustomDialog, setShowCustomDialog] = useState(false);
+  const [customInput, setCustomInput] = useState("");
+  const [isProcessingInput, setIsProcessingInput] = useState(false);
   
   // Accessibility states
   const [isVoiceInputEnabled, setIsVoiceInputEnabled] = useState(false);
@@ -201,6 +207,60 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     });
   };
 
+  const handleCustomInput = async () => {
+    if (!customInput.trim()) return;
+    
+    setIsProcessingInput(true);
+    
+    try {
+      const response = await AIService.getCoachingGuidance({
+        question: customInput,
+        mode: 'assist',
+        context: `User is creating a goal. Current progress: ${buildSmartGoal() || 'Starting new goal'}`,
+        userSnapshot: {},
+        currentGoals: []
+      });
+
+      if (response?.guidance) {
+        // Parse the AI response and update the goal
+        // For now, we'll add it as a custom purpose or detail
+        const customOption: GoalOption = {
+          id: 'custom-' + Date.now(),
+          label: customInput.slice(0, 50) + (customInput.length > 50 ? '...' : ''),
+          emoji: '✨',
+          explainer: response.guidance
+        };
+
+        // Determine where to add the custom input based on current step
+        if (state.step === 3 && !state.purpose) {
+          setState(prev => ({ ...prev, purpose: customOption, step: 4 }));
+        } else if (state.step === 4 && !state.details) {
+          setState(prev => ({ ...prev, details: customOption, step: 5 }));
+        } else if (state.step === 5 && !state.timing) {
+          setState(prev => ({ ...prev, timing: customOption, step: 6 }));
+        }
+
+        showRandomAffirmation();
+        setShowCustomDialog(false);
+        setCustomInput("");
+        
+        toast({
+          title: "Added to your goal!",
+          description: "Your input has been processed and added.",
+        });
+      }
+    } catch (error) {
+      console.error('Error processing custom input:', error);
+      toast({
+        title: "Couldn't process input",
+        description: "Please try again or select from the options above.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessingInput(false);
+    }
+  };
+
   // Show resume dialog if we have saved progress
   if (state.savedProgress && state.step === 1) {
     return (
@@ -296,40 +356,115 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
             />
           )}
 
+          {/* Custom Input Dialog */}
+          <Dialog open={showCustomDialog} onOpenChange={setShowCustomDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Tell us more about your goal</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Textarea
+                  placeholder="Describe what you want to work on in your own words..."
+                  value={customInput}
+                  onChange={(e) => setCustomInput(e.target.value)}
+                  className="min-h-[100px]"
+                />
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleCustomInput}
+                    disabled={!customInput.trim() || isProcessingInput}
+                    className="flex-1"
+                  >
+                    {isProcessingInput ? (
+                      "Processing..."
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Add to goal
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowCustomDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           {state.step === 3 && state.goal && (
-            <OptionSelection
-              title="Purpose"
-              options={state.goal.purpose}
-              onSelect={(purpose) => {
-                showRandomAffirmation();
-                setState(prev => ({ ...prev, purpose, step: 4 }));
-              }}
-              selected={state.purpose}
-            />
+            <div className="space-y-4">
+              <OptionSelection
+                title="Purpose"
+                options={state.goal.purpose}
+                onSelect={(purpose) => {
+                  showRandomAffirmation();
+                  setState(prev => ({ ...prev, purpose, step: 4 }));
+                }}
+                selected={state.purpose}
+              />
+              
+              {/* Custom Input Button */}
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCustomDialog(true)}
+                className="w-full border-dashed"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Describe in your own words
+              </Button>
+            </div>
           )}
 
           {state.step === 4 && state.goal && (
-            <OptionSelection
-              title="Details"
-              options={state.goal.details}
-              onSelect={(details) => {
-                showRandomAffirmation();
-                setState(prev => ({ ...prev, details, step: 5 }));
-              }}
-              selected={state.details}
-            />
+            <div className="space-y-4">
+              <OptionSelection
+                title="Details"
+                options={state.goal.details}
+                onSelect={(details) => {
+                  showRandomAffirmation();
+                  setState(prev => ({ ...prev, details, step: 5 }));
+                }}
+                selected={state.details}
+              />
+              
+              {/* Custom Input Button */}
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCustomDialog(true)}
+                className="w-full border-dashed"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Describe in your own words
+              </Button>
+            </div>
           )}
 
           {state.step === 5 && state.goal && (
-            <OptionSelection
-              title="Timing"
-              options={state.goal.timing}
-              onSelect={(timing) => {
-                showRandomAffirmation();
-                setState(prev => ({ ...prev, timing, step: 6 }));
-              }}
-              selected={state.timing}
-            />
+            <div className="space-y-4">
+              <OptionSelection
+                title="Timing"
+                options={state.goal.timing}
+                onSelect={(timing) => {
+                  showRandomAffirmation();
+                  setState(prev => ({ ...prev, timing, step: 6 }));
+                }}
+                selected={state.timing}
+              />
+              
+              {/* Custom Input Button */}
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCustomDialog(true)}
+                className="w-full border-dashed"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Describe in your own words
+              </Button>
+            </div>
           )}
 
           {state.step === 6 && state.goal && (
