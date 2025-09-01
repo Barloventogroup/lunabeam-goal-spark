@@ -854,8 +854,8 @@ const GoalConfirmation: React.FC<{
         <Card>
           <CardContent className="p-4">
             <div className="text-sm font-medium text-foreground mb-3">When would you like to start?</div>
-            <Popover>
-              <PopoverTrigger asChild>
+            <Dialog>
+              <DialogTrigger asChild>
                 <Button
                   variant="outline"
                   className={cn(
@@ -866,18 +866,23 @@ const GoalConfirmation: React.FC<{
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {startDate ? format(startDate, "PPP") : <span>Pick a start date</span>}
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={onStartDateChange}
-                  disabled={(date) => date < new Date()}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Choose your start date</DialogTitle>
+                </DialogHeader>
+                <div className="flex justify-center">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={onStartDateChange}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
         
