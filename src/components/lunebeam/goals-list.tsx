@@ -89,17 +89,22 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 relative">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <Target className="h-6 w-6" />
           Goals
         </h2>
-        <Button onClick={() => onNavigate('create-goal')}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Goal
-        </Button>
       </div>
+
+      {/* Floating Action Button */}
+      <Button 
+        onClick={() => onNavigate('create-goal')}
+        className="fixed top-4 right-4 z-50 w-12 h-12 rounded-full p-0 bg-primary hover:bg-primary/90 shadow-lg"
+        size="sm"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
 
       {goals.length === 0 ? (
         <Card>
@@ -109,9 +114,9 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
             <p className="text-muted-foreground mb-4">
               Create your first goal to get started on your journey!
             </p>
-            <Button onClick={() => onNavigate('create-goal')}>
+            <Button onClick={() => onNavigate('create-goal')} variant="outline">
               <Plus className="h-4 w-4 mr-2" />
-              Create Goal
+              Create Your First Goal
             </Button>
           </CardContent>
         </Card>
