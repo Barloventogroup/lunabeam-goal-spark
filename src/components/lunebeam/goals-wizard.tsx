@@ -442,16 +442,16 @@ const CategorySelection: React.FC<{
             key={goal.id}
             className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/30"
             onClick={() => {
-              // Auto-select this goal with defaults and jump to confirmation
+              // Auto-select this goal with defaults and go to timing step
               if (onSelectDefault) {
                 onSelectDefault({ 
-                  step: 7, // Jump to confirmation
+                  step: 5, // Go to timing step, not confirmation
                   category: { id: 'starter', title: 'Starter Goals', emoji: '🌟', goals: [goal] },
                   goal: goal,
                   purpose: goal.purpose.find(p => p.isDefault) || goal.purpose[0],
                   details: goal.details.find(d => d.isDefault) || goal.details[0],
-                  timing: goal.timing.find(t => t.isDefault) || goal.timing[0],
-                  supports: goal.supports.filter(s => s.isDefault).slice(0, 1),
+                  timing: undefined, // Let user choose timing
+                  supports: [], // Let user choose supports
                   savedProgress: null
                 });
               }
@@ -627,7 +627,7 @@ const OptionSelection: React.FC<{
   onShowExplainer: (id: string | null) => void;
   showExplainer: string | null;
   allowFallback?: boolean;
-}> = ({ options, onSelect, selected, onShowExplainer, showExplainer, allowFallback }) => {
+}> = ({ title, options, onSelect, selected, onShowExplainer, showExplainer, allowFallback }) => {
   return (
     <div className="space-y-3">
       {options.map((option) => (
