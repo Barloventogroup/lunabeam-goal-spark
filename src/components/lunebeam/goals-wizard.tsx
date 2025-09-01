@@ -171,7 +171,16 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   };
 
   const handleComplete = async () => {
-    if (!state.goal || !state.purpose || !state.details || !state.frequency || !state.duration || !state.supports || !state.category) return;
+    if (!state.goal || !state.purpose || !state.details || !state.frequency || !state.duration || !state.supports || !state.category || !state.startDate) {
+      if (!state.startDate) {
+        toast({
+          title: 'Start date required',
+          description: 'Please select a start date for your goal.',
+          variant: 'destructive'
+        });
+      }
+      return;
+    }
 
     // Show confetti animation
     setShowConfetti(true);
@@ -922,36 +931,36 @@ const GoalConfirmation: React.FC<{
         {/* Start Date Picker */}
         <Card>
           <CardContent className="p-4">
-            <div className="text-sm font-medium text-foreground mb-3">When would you like to start?</div>
-            <Dialog>
-              <DialogTrigger asChild>
+            <div className="text-sm font-medium text-foreground mb-3">
+              When would you like to start? <span className="text-destructive">*</span>
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
+                    !startDate && "text-muted-foreground border-destructive"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {startDate ? format(startDate, "PPP") : <span>Pick a start date</span>}
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Choose your start date</DialogTitle>
-                </DialogHeader>
-                <div className="flex justify-center">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={onStartDateChange}
-                    disabled={(date) => date < new Date()}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </div>
-              </DialogContent>
-            </Dialog>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={onStartDateChange}
+                  disabled={(date) => date < new Date()}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+            {!startDate && (
+              <p className="text-sm text-destructive mt-1">Start date is required</p>
+            )}
           </CardContent>
         </Card>
         
@@ -962,7 +971,12 @@ const GoalConfirmation: React.FC<{
       </div>
       
       <div className="space-y-3">
-        <Button onClick={onComplete} className="w-full" size="lg">
+        <Button 
+          onClick={onComplete} 
+          className="w-full" 
+          size="lg"
+          disabled={!startDate}
+        >
           Start My Goal!
           <Sparkles className="ml-2 h-4 w-4" />
         </Button>
