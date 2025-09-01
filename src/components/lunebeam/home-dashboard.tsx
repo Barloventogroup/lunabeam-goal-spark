@@ -164,64 +164,113 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           onDismissGoal={handleDismiss}
         />
 
-        {/* Active Goal Card */}
-        {activeGoal ? (
-          <Card 
-            className="bg-gradient-primary text-primary-foreground shadow-elevated cursor-pointer transform hover:scale-[1.02] transition-bounce"
-            onClick={() => onNavigate('goal-detail', activeGoal.id)}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">This Week's Goal</CardTitle>
-                <Target className="h-6 w-6" />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <h3 className="text-xl font-semibold">{activeGoal.title}</h3>
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm opacity-90">Progress</p>
-                  <p className="font-medium">{Math.round(getGoalProgress())}% Complete</p>
-                </div>
-                <ProgressRing progress={getGoalProgress()} size="md" color="encouraging">
-                  <span className="text-sm font-bold text-encouraging">
-                    {Math.round(getGoalProgress())}%
-                  </span>
-                </ProgressRing>
-              </div>
+        {/* Active Goals Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Active Goals
+            </h2>
+          </div>
+          
+          {goals.filter(goal => goal.status === 'active' || goal.status === 'planned').length > 0 ? (
+            <div className="space-y-3">
+              {goals.filter(goal => goal.status === 'active' || goal.status === 'planned').map((goal) => (
+                <Card key={goal.id} className="hover:bg-card-soft transition-smooth">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 cursor-pointer" onClick={() => onNavigate('goal-detail', goal.id)}>
+                        <h3 className="font-medium text-foreground mb-1">{goal.title}</h3>
+                        <div className="flex items-center gap-4 text-sm text-foreground-soft">
+                          <span>Progress: {Math.round(goal.progress_pct || 0)}%</span>
+                          <span>Priority: {goal.priority}</span>
+                        </div>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => onNavigate('check-in', goal)}
+                        className="ml-4 shrink-0"
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        Check In
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="border-dashed border-2 border-muted">
+              <CardContent className="p-6 text-center">
+                <p className="text-muted-foreground mb-4">No active goals yet</p>
+                <p className="text-sm text-muted-foreground">Create your first goal to get started!</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="opacity-75">Time Budget</p>
-                  <p className="font-medium">—</p>
-                </div>
-                <div>
-                  <p className="opacity-75">Check-ins</p>
-                  <p className="font-medium">{recentCheckIns.length} recorded</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card 
-            className="border-dashed border-2 border-primary/30 bg-primary-soft/20 cursor-pointer hover:bg-primary-soft/30 transition-smooth"
+        {/* Centered Add Goal Button */}
+        <div className="flex justify-center py-4">
+          <Button
             onClick={() => onNavigate('goal-wizard')}
+            size="lg"
+            className="rounded-full w-16 h-16 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
           >
-            <CardContent className="p-8 text-center space-y-4">
-              <div className="rounded-full bg-primary/10 w-16 h-16 flex items-center justify-center mx-auto">
-                <Plus className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">Ready for a tiny goal?</h3>
-                <p className="text-foreground-soft">Let's pick something small and meaningful for this week</p>
-              </div>
-              <Button variant="large" size="lg">
-                Pick a Goal
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+            <Plus className="h-8 w-8" />
+          </Button>
+        </div>
+
+        {/* Rewards/Badges Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Award className="h-5 w-5" />
+              Rewards & Badges
+            </h2>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => onNavigate('badges')}
+              className="text-primary"
+            >
+              View All
+            </Button>
+          </div>
+          
+          {badges.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {badges.slice(0, 4).map((badge) => (
+                <Card key={badge.id} className="bg-gradient-subtle border-0">
+                  <CardContent className="p-4 text-center space-y-2">
+                    <div className="rounded-full bg-accent w-12 h-12 flex items-center justify-center mx-auto">
+                      <Award className="h-6 w-6 text-accent-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{badge.title}</p>
+                      <p className="text-xs text-muted-foreground">{badge.type}</p>
+                      {thisWeekBadges.some(tb => tb.id === badge.id) && (
+                        <Badge variant="secondary" className="text-xs mt-1">
+                          New!
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="border-dashed border-2 border-muted">
+              <CardContent className="p-6 text-center">
+                <div className="rounded-full bg-muted w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                  <Award className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground mb-2">No badges earned yet</p>
+                <p className="text-sm text-muted-foreground">Complete goals and check-ins to earn rewards!</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         {/* Family Circle */}
         {familyCircles.length > 0 && (
