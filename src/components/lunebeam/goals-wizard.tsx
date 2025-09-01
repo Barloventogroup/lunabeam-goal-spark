@@ -163,22 +163,35 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   };
 
   const buildSmartGoal = () => {
-    if (!state.goal || !state.purpose || !state.details || !state.timing) return "";
+    // Build a progressive SMART sentence that updates live
+    const emoji = state.goal?.emoji ? `${state.goal.emoji} ` : "";
+    const title = state.goal?.title ?? "";
 
-    // Compose a friendly SMART sentence from selected labels
-    const emoji = state.goal.emoji ? `${state.goal.emoji} ` : "";
-    const title = state.goal.title;
-    const detailsPart = state.details.label; // already includes duration/place wording
-    const timingPart = state.timing.label;   // already contains frequency + weeks phrasing
+    const detailsPart = state.details?.label;
+    const timingPart = state.timing?.label;
     const purposeSuffix = state.purpose?.label
       ? ` to ${state.purpose.label.toLowerCase()}`
       : "";
 
-    let sentence = `${emoji}${title} ${detailsPart}, ${timingPart}${purposeSuffix}.`;
+    // If nothing is chosen yet, return empty string to show helper text
+    if (!title) return "";
+
+    let sentence = `${emoji}${title}`;
+
+    if (detailsPart && timingPart) {
+      sentence += ` ${detailsPart}, ${timingPart}`;
+    } else if (detailsPart) {
+      sentence += ` ${detailsPart}`;
+    } else if (timingPart) {
+      sentence += ` ${timingPart}`;
+    }
+
+    sentence += purposeSuffix ? `${purposeSuffix}.` : ".";
 
     if (state.supports?.length) {
-      sentence += ` (with ${state.supports.map(s => s.label).join(', ')})`;
+      sentence += ` (with ${state.supports.map((s) => s.label).join(', ')})`;
     }
+
     return sentence;
   };
 
