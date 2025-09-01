@@ -108,7 +108,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1" onClick={() => onNavigateToGoals(goal.id)}>
-                          <h4 className="font-semibold mb-1">{goal.title}</h4>
+                          <h4 className="text-sm font-bold mb-1">{goal.title}</h4>
                           <p className="text-sm text-muted-foreground">
                             {Math.round(goal.progress_pct || 0)}% complete
                           </p>
