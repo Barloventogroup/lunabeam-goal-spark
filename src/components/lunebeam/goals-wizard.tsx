@@ -19,19 +19,11 @@ import {
   ConfettiAnimation 
 } from './accessibility-features';
 import { AIService } from '@/services/aiService';
+import { goalsService, stepsService } from '@/services/goalsService';
+import type { GoalDomain } from '@/types';
 
 interface GoalsWizardProps {
-  onComplete: (goalData: {
-    category: string;
-    goal: string;
-    purpose: string;
-    details: string;
-    frequency: string;
-    duration: string;
-    supports: string[];
-    smartGoal: string;
-    startDate?: Date;
-  }) => void;
+  onComplete: () => void;
   onBack: () => void;
 }
 
@@ -178,29 +170,106 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     return sentence;
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!state.goal || !state.purpose || !state.details || !state.frequency || !state.duration || !state.supports || !state.category) return;
 
     // Show confetti animation
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 3000);
 
-    const goalData = {
-      category: state.category.title,
-      goal: state.goal.title,
-      purpose: state.purpose.label,
-      details: state.details.label,
-      frequency: state.frequency.label,
-      duration: state.duration.label,
-      supports: state.supports.map(s => s.label),
-      smartGoal: buildSmartGoal(),
-      startDate: state.startDate
-    };
+    try {
+      const mapCategoryToDomain = (cat: string): GoalDomain => {
+        switch (cat.toLowerCase()) {
+          case 'education': return 'school';
+          case 'employment': return 'work';
+          case 'health': return 'health';
+          case 'independent living':
+          case 'social skills':
+          default: return 'life';
+        }
+      };
 
-    // Clear saved progress
-    localStorage.removeItem('goals-wizard-progress');
-    
-    onComplete(goalData);
+      const formatDate = (d: Date) => d.toISOString().slice(0, 10);
+      const startDate = state.startDate || new Date();
+      const due = new Date(startDate);
+      
+      // Calculate due date based on duration
+      const durationWeeks = parseInt(state.duration.label.split(' ')[0]) || 2;
+      due.setDate(due.getDate() + (durationWeeks * 7));
+
+      // Create the goal in Supabase
+      const createdGoal = await goalsService.createGoal({
+        title: state.goal.title,
+        description: buildSmartGoal(),
+        domain: mapCategoryToDomain(state.category.title),
+        priority: 'medium',
+        start_date: formatDate(startDate),
+        due_date: formatDate(due),
+      });
+
+      // Generate and create micro-steps using AI
+      try {
+        const response = await AIService.getCoachingGuidance({
+          question: `Generate 3 specific micro preparation steps for this goal. These should be actionable preparation tasks that help set up for success, not the goal execution itself. Focus on what needs to be prepared or organized before starting:
+
+Goal: ${state.goal.title}
+Description: ${buildSmartGoal()}
+Frequency: ${state.frequency.label}
+Duration: ${state.duration.label}
+Category: ${state.category.title}
+
+Return only 3 concise preparation steps, each starting with an action verb. Each step should be something that can be checked off before beginning the goal.`,
+          mode: 'goal_setting'
+        });
+
+        if (response?.suggestions) {
+          const steps = response.suggestions.split('\n')
+            .filter((step: string) => step.trim())
+            .slice(0, 3)
+            .map((step: string) => step.replace(/^\d+\.\s*/, '').trim());
+          
+          // Create steps in database
+          for (const stepTitle of steps) {
+            await stepsService.createStep(createdGoal.id, {
+              title: stepTitle,
+              is_required: true,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error generating micro steps:', error);
+        // Create fallback steps if AI fails
+        const fallbackSteps = [
+          "Set up your workspace and tools",
+          "Schedule time in your calendar", 
+          "Prepare any materials needed"
+        ];
+        
+        for (const stepTitle of fallbackSteps) {
+          await stepsService.createStep(createdGoal.id, {
+            title: stepTitle,
+            is_required: true,
+          });
+        }
+      }
+
+      toast({
+        title: 'Goal Created! 🎉',
+        description: `Your ${state.goal.title} is ready to start!`,
+      });
+
+      // Clear saved progress
+      localStorage.removeItem('goals-wizard-progress');
+      
+      onComplete();
+    } catch (error) {
+      console.error('Error creating goal:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create goal. Please try again.',
+        variant: 'destructive'
+      });
+    }
   };
 
   const handleResumeSaved = () => {
