@@ -18,6 +18,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'bauhaus': ['Orbitron', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				'border-soft': 'hsl(var(--border-soft))',

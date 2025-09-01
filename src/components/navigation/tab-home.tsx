@@ -50,7 +50,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
               alt="Lunebeam logo" 
               className="w-8 h-8"
             />
-            <h1 className="text-xl font-bold">lunebeam</h1>
+            <h1 className="text-xl font-bold font-bauhaus">lunebeam</h1>
           </div>
           
           <button onClick={onOpenChat} className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors" aria-label="Open Lune Chat">
