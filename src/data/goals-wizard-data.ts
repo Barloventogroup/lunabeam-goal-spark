@@ -443,3 +443,83 @@ export const FALLBACK_OPTION: GoalOption = {
   emoji: "🤔",
   explainer: "We'll help you choose something small and easy to start with."
 };
+
+// Starter goals for "I'm not sure" fallback
+export const STARTER_GOALS: CategoryGoal[] = [
+  {
+    id: "drink-water",
+    title: "Drink Water",
+    emoji: "💧",
+    explainer: "Start your day by drinking a glass of water. It's simple and healthy!",
+    purpose: [
+      { id: "hydration", label: "Stay hydrated", emoji: "💧", explainer: "Keep your body healthy", isDefault: true }
+    ],
+    details: [
+      { id: "1-glass-morning", label: "1 glass in the morning", emoji: "🌅", explainer: "One glass when you wake up", isDefault: true }
+    ],
+    timing: [
+      { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every morning for one week", isDefault: true }
+    ],
+    supports: [
+      { id: "reminder", label: "Morning reminder", emoji: "🔔", explainer: "Get a reminder to drink water", isDefault: true }
+    ],
+    smartTemplate: "💧 Drink {amount} {timing} for {duration}."
+  },
+  {
+    id: "make-bed",
+    title: "Make Bed",
+    emoji: "🛏️",
+    explainer: "Start your day by making your bed. It takes 2 minutes and feels great!",
+    purpose: [
+      { id: "routine", label: "Morning routine", emoji: "🌅", explainer: "Start your day with accomplishment", isDefault: true }
+    ],
+    details: [
+      { id: "simple-tidy", label: "Simple tidy", emoji: "✨", explainer: "Just pull covers and fluff pillows", isDefault: true }
+    ],
+    timing: [
+      { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every morning for one week", isDefault: true }
+    ],
+    supports: [
+      { id: "reminder", label: "Morning reminder", emoji: "🔔", explainer: "Get a reminder to make your bed", isDefault: true }
+    ],
+    smartTemplate: "🛏️ Make bed {style} {timing} for {duration}."
+  },
+  {
+    id: "say-hi",
+    title: "Say Hi",
+    emoji: "👋",
+    explainer: "Greet someone new or someone you haven't talked to in a while. Small connections matter!",
+    purpose: [
+      { id: "connection", label: "Social connection", emoji: "🤝", explainer: "Build relationships with others", isDefault: true }
+    ],
+    details: [
+      { id: "one-person", label: "To 1 person", emoji: "👤", explainer: "Say hi to one person each day", isDefault: true }
+    ],
+    timing: [
+      { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every day for one week", isDefault: true }
+    ],
+    supports: [
+      { id: "log", label: "Connection log", emoji: "📝", explainer: "Track the people you greet", isDefault: true }
+    ],
+    smartTemplate: "👋 Say hi {target} {timing} for {duration}."
+  },
+  {
+    id: "listen-music",
+    title: "Listen to Music",
+    emoji: "🎶",
+    explainer: "Take 5 minutes to listen to your favorite song. Music can boost your mood instantly!",
+    purpose: [
+      { id: "mood", label: "Boost mood", emoji: "😊", explainer: "Feel happier and more energized", isDefault: true }
+    ],
+    details: [
+      { id: "favorite-song", label: "1 favorite song", emoji: "🎵", explainer: "Listen to a song you love", isDefault: true }
+    ],
+    timing: [
+      { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every day for one week", isDefault: true }
+    ],
+    supports: [
+      { id: "playlist", label: "Mood playlist", emoji: "🎧", explainer: "Create a playlist of uplifting songs", isDefault: true }
+    ],
+    smartTemplate: "🎶 Listen to {music} {timing} for {duration}."
+  }
+];

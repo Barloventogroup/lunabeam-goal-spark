@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, X, Info, Sparkles, Mic, Volume2, Users } from 'lucide-react';
-import { GOALS_WIZARD_DATA, FALLBACK_OPTION, Category, CategoryGoal, GoalOption } from '@/data/goals-wizard-data';
+import { GOALS_WIZARD_DATA, FALLBACK_OPTION, STARTER_GOALS, Category, CategoryGoal, GoalOption } from '@/data/goals-wizard-data';
 import { useToast } from '@/hooks/use-toast';
 import { 
   AccessibilityPanel, 
@@ -509,6 +509,44 @@ const GoalSelection: React.FC<{
   onShowExplainer: (id: string | null) => void;
   showExplainer: string | null;
 }> = ({ category, onSelect, selected, onShowExplainer, showExplainer }) => {
+  const [showStarterGoals, setShowStarterGoals] = useState(false);
+
+  if (showStarterGoals) {
+    return (
+      <div className="space-y-3">
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold">Here are some simple starter goals:</h3>
+          <p className="text-sm text-foreground-soft">Pick one to get started!</p>
+        </div>
+        
+        {STARTER_GOALS.map((goal) => (
+          <Card 
+            key={goal.id}
+            className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/30"
+            onClick={() => onSelect(goal)}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="text-2xl">{goal.emoji}</div>
+                <div>
+                  <div className="font-semibold text-foreground">{goal.title}</div>
+                  <div className="text-sm text-foreground-soft">{goal.explainer}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        
+        <Button 
+          variant="outline" 
+          onClick={() => setShowStarterGoals(false)}
+          className="w-full mt-4"
+        >
+          ← Back to {category.title} goals
+        </Button>
+      </div>
+    );
+  }
   return (
     <div className="space-y-3">
       {category.goals.map((goal) => (
@@ -557,10 +595,7 @@ const GoalSelection: React.FC<{
       {/* Fallback Option */}
       <Card 
         className="cursor-pointer transition-all duration-200 hover:scale-[1.02] border-dashed hover:border-primary/30"
-        onClick={() => {
-          // Auto-select first goal as fallback
-          onSelect(category.goals[0]);
-        }}
+        onClick={() => setShowStarterGoals(true)}
       >
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
