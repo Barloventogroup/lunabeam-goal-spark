@@ -263,7 +263,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       </div>
 
       {/* Main Content */}
-      <div className="max-w-md mx-auto p-4 pb-20">{/* Add extra padding for starter goals */}
+      <div className="max-w-md mx-auto p-4 pb-8">{/* Reduced bottom padding for category selection */}
         <div className="space-y-6">
           {/* Question */}
           <div className="text-center space-y-2">
@@ -358,8 +358,8 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       {/* Enhanced Confetti */}
       {showConfetti && <ConfettiAnimation />}
 
-      {/* Footer */}
-      {state.step < 7 && (
+      {/* Footer - only show when step > 2 AND not on category selection */}
+      {state.step < 7 && state.step > 2 && (
         <div className="fixed bottom-16 left-0 right-0 bg-background/95 backdrop-blur border-t z-40">
           <div className="max-w-md mx-auto p-4 space-y-3">
             {/* SMART Preview */}
