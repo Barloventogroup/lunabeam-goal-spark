@@ -100,42 +100,18 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     }
   }, [state]);
 
-  // Text-to-speech for questions and explainers
-  useEffect(() => {
-    if (isTextToSpeechEnabled && state.step > 0 && STEPS[state.step - 1]) {
-      const questionText = `${STEPS[state.step - 1].title}. ${STEPS[state.step - 1].subtitle}`;
-      setTimeout(() => textToSpeech.speak(questionText), 500);
-    }
-  }, [state.step, isTextToSpeechEnabled, textToSpeech]);
-
-  // Handle voice input results
-  useEffect(() => {
-    if (voiceInput.transcript && isVoiceInputEnabled) {
-      // Simple keyword matching for voice navigation
-      const transcript = voiceInput.transcript.toLowerCase();
-      if (transcript.includes('next') || transcript.includes('continue')) {
-        if (canProceed()) {
-          handleNext();
-        }
-      } else if (transcript.includes('back') || transcript.includes('previous')) {
-        handleBack();
-      }
-    }
-  }, [voiceInput.transcript, isVoiceInputEnabled]);
-
   const showRandomAffirmation = () => {
     const randomAffirmation = AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)];
     setAffirmation(randomAffirmation);
     setTimeout(() => setAffirmation(""), 3000);
   };
 
-  const handleNext = () => {
-    showRandomAffirmation();
-    setState(prev => ({ ...prev, step: prev.step + 1 }));
-  };
-
   const handleBack = () => {
-    setState(prev => ({ ...prev, step: Math.max(1, prev.step - 1) }));
+    if (state.step > 1) {
+      setState(prev => ({ ...prev, step: prev.step - 1 }));
+    } else {
+      onBack();
+    }
   };
 
   const handleExit = () => {
@@ -147,18 +123,6 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       });
     }
     onBack();
-  };
-
-  const canProceed = () => {
-    switch (state.step) {
-      case 1: return !!state.category;
-      case 2: return !!state.goal;
-      case 3: return !!state.purpose;
-      case 4: return !!state.details;
-      case 5: return !!state.timing;
-      case 6: return !!state.supports?.length;
-      default: return false;
-    }
   };
 
   const buildSmartGoal = () => {
@@ -299,7 +263,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       </div>
 
       {/* Main Content */}
-      <div className="max-w-md mx-auto p-4 pb-32">
+      <div className="max-w-md mx-auto p-4 pb-20">{/* Add extra padding for starter goals */}
         <div className="space-y-6">
           {/* Question */}
           <div className="text-center space-y-2">
