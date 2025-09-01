@@ -260,14 +260,27 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
               <Progress value={(state.step / (STEPS.length - 1)) * 100} className="mt-1" />
             </div>
             
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleExit}
-              className="p-2"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            {/* Next Button in Header */}
+            {state.step < 7 ? (
+              <Button 
+                onClick={handleNext}
+                disabled={!canProceed()}
+                size="sm"
+                className="px-4"
+              >
+                {state.step === 6 ? "Review" : "Next"}
+                <Sparkles className="ml-1 h-3 w-3" />
+              </Button>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleExit}
+                className="p-2"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -359,30 +372,6 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
               onEdit={() => setState(prev => ({ ...prev, step: 3 }))}
             />
           )}
-        </div>
-
-        {/* Accessibility Panel */}
-        <div className="mt-6">
-          <AccessibilityPanel
-            isVoiceInputEnabled={isVoiceInputEnabled}
-            onVoiceInputToggle={setIsVoiceInputEnabled}
-            isTextToSpeechEnabled={isTextToSpeechEnabled}
-            onTextToSpeechToggle={setIsTextToSpeechEnabled}
-            isPeerModeEnabled={isPeerModeEnabled}
-            onPeerModeToggle={setIsPeerModeEnabled}
-            onStartVoiceInput={voiceInput.startListening}
-            isListening={voiceInput.isListening}
-          />
-        </div>
-
-        {/* Re-engagement Panel */}
-        <div className="mt-4">
-          <ReEngagementPanel
-            currentStreak={currentStreak}
-            earnedBadges={earnedBadges}
-            reminderEnabled={reminderEnabled}
-            onReminderToggle={setReminderEnabled}
-          />
         </div>
       </div>
 
