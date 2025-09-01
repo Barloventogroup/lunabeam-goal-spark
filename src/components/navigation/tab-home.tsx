@@ -90,7 +90,17 @@ export const TabHome: React.FC<TabHomeProps> = ({
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-3">Your Goals</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold">Your Goals</h3>
+              <Button
+                onClick={() => setCurrentView('add-goal')}
+                size="lg"
+                className="rounded-full w-12 h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                aria-label="Add Goal"
+              >
+                <Plus className="h-6 w-6" />
+              </Button>
+            </div>
             {activeGoals.length > 0 ? (
               <div className="space-y-3">
                 {activeGoals.map((goal) => (
@@ -130,18 +140,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
                 </CardContent>
               </Card>
             )}
-          </div>
-
-          {/* Centered Add Goal Button */}
-          <div className="flex justify-center py-2">
-            <Button
-              onClick={() => setCurrentView('add-goal')}
-              size="lg"
-              className="rounded-full w-16 h-16 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-              aria-label="Add Goal"
-            >
-              <Plus className="h-8 w-8" />
-            </Button>
           </div>
 
           {/* Rewards/Badges */}
