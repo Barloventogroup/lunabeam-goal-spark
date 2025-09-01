@@ -89,22 +89,22 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
   }
 
   return (
-    <div className="space-y-4 relative">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <Target className="h-6 w-6" />
           Goals
         </h2>
+        
+        {/* Circular Add Button */}
+        <Button 
+          onClick={() => onNavigate('create-goal')}
+          className="w-10 h-10 rounded-full p-0 bg-primary hover:bg-primary/90"
+          size="sm"
+        >
+          <Plus className="h-5 w-5" />
+        </Button>
       </div>
-
-      {/* Floating Action Button */}
-      <Button 
-        onClick={() => onNavigate('create-goal')}
-        className="fixed top-4 right-4 z-50 w-12 h-12 rounded-full p-0 bg-primary hover:bg-primary/90 shadow-lg"
-        size="sm"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
 
       {goals.length === 0 ? (
         <Card>
