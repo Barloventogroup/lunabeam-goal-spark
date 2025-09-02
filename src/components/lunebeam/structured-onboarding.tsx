@@ -212,7 +212,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
 
   if (showProfile) {
     return (
-      <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-primary p-4 flex items-center justify-center">
         <Card className="w-full max-w-md shadow-card border-0">
           <CardHeader className="text-center">
             <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
@@ -313,14 +313,15 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
             {/* Step 2: Superpowers */}
             {currentStep === 2 && (
               <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">
+                <div className="text-left">
+                  <h2 className="text-lg font-semibold mb-2">
                     {data.role === 'parent' ? "What are their top 3 \"superpowers\"?" : "What are your top 3 \"superpowers\"?"}
                   </h2>
-                  <p className="text-sm text-foreground-soft">
+                  <p className="text-sm text-black">
                     Choose up to 3 things {data.role === 'parent' ? "they're" : "you're"} naturally good at
                   </p>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 <div className="flex flex-wrap gap-2">
                   {SUPERPOWERS.map(power => (
                     <Button
@@ -330,7 +331,8 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                         ...prev,
                         superpowers: toggleSelection(prev.superpowers, power, 3)
                       }))}
-                      className="text-sm h-auto py-2 px-3"
+                      className="text-sm h-auto py-2 px-3 border-0"
+                      style={{ backgroundColor: data.superpowers.includes(power) ? undefined : '#E0E0E0' }}
                       disabled={!data.superpowers.includes(power) && data.superpowers.length >= 3}
                     >
                       {power}
@@ -349,24 +351,28 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     onClick={() => addCustomOption('superpowers', customSuperpower, setCustomSuperpower)}
                     disabled={data.superpowers.length >= 3 || !customSuperpower.trim()}
                     size="sm"
+                    className="border-0"
+                    style={{ backgroundColor: '#E0E0E0' }}
                   >
                     Add
                   </Button>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
             {/* Step 3: Interests */}
             {currentStep === 3 && (
               <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">
+                <div className="text-left">
+                  <h2 className="text-lg font-semibold mb-2">
                     {data.role === 'parent' ? "Choose 3–5 interests they might want to explore" : "Choose 3–5 interests to explore"}
                   </h2>
-                  <p className="text-sm text-foreground-soft">
+                  <p className="text-sm text-black">
                     What sounds fun or interesting to {data.role === 'parent' ? 'them' : 'you'}?
                   </p>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 <div className="flex flex-wrap gap-2">
                   {INTERESTS.map(interest => (
                     <Button
@@ -376,7 +382,8 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                         ...prev,
                         interests: toggleSelection(prev.interests, interest, 5)
                       }))}
-                      className="text-sm h-auto py-2 px-3"
+                      className="text-sm h-auto py-2 px-3 border-0"
+                      style={{ backgroundColor: data.interests.includes(interest) ? undefined : '#E0E0E0' }}
                       disabled={!data.interests.includes(interest) && data.interests.length >= 5}
                     >
                       {interest}
@@ -395,27 +402,26 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     onClick={() => addCustomOption('interests', customInterest, setCustomInterest)}
                     disabled={data.interests.length >= 5 || !customInterest.trim()}
                     size="sm"
+                    className="border-0"
+                    style={{ backgroundColor: '#E0E0E0' }}
                   >
                     Add
                   </Button>
                 </div>
-                <div className="text-center">
-                  <Button variant="ghost" onClick={handleSkip} className="text-sm">
-                    It depends
-                  </Button>
-                </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
             {/* Step 4: Work Style */}
             {currentStep === 4 && (
               <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">
+                <div className="text-left">
+                  <h2 className="text-lg font-semibold mb-2">
                     {data.role === 'parent' ? "How do they like doing things?" : "How do you like doing things?"}
                   </h2>
-                  <p className="text-sm text-foreground-soft">Tap one from each pair</p>
+                  <p className="text-sm text-black">Tap one from each pair</p>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 <div className="space-y-4">
                   {[
                     { key: 'socialPreference', options: ['solo', 'with-others'], labels: ['Solo', 'With others'] },
@@ -432,7 +438,8 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                             ...prev,
                             workStyle: { ...prev.workStyle, [key]: option }
                           }))}
-                          className="flex-1"
+                          className="flex-1 border-0"
+                          style={{ backgroundColor: data.workStyle[key as keyof typeof data.workStyle] === option ? undefined : '#E0E0E0' }}
                         >
                           {labels[index]}
                         </Button>
@@ -440,49 +447,49 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     </div>
                   ))}
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
             {/* Step 5: Best Time */}
             {currentStep === 5 && (
               <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">
+                <div className="text-left">
+                  <h2 className="text-lg font-semibold mb-2">
                     {data.role === 'parent' ? "When do they feel at their best?" : "When do you feel at your best?"}
                   </h2>
-                  <p className="text-sm text-foreground-soft">
+                  <p className="text-sm text-black">
                     Choose {data.role === 'parent' ? 'their' : 'your'} peak energy time
                   </p>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 <div className="space-y-2">
                   {['Early morning', 'Late morning', 'Afternoon', 'Evening', 'It varies'].map(time => (
                     <Button
                       key={time}
                       variant={data.bestTime === time ? "default" : "outline"}
                       onClick={() => setData(prev => ({ ...prev, bestTime: time }))}
-                      className="w-full justify-start"
+                      className="w-full justify-start border-0"
+                      style={{ backgroundColor: data.bestTime === time ? undefined : '#E0E0E0' }}
                     >
                       {time}
                     </Button>
                   ))}
                 </div>
-                <div className="text-center">
-                  <Button variant="ghost" onClick={handleSkip} className="text-sm">
-                    Skip
-                  </Button>
-                </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
             {/* Step 6: Barriers */}
             {currentStep === 6 && (
               <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">
+                <div className="text-left">
+                  <h2 className="text-lg font-semibold mb-2">
                     {data.role === 'parent' ? "What gets in their way most?" : "What gets in your way most?"}
                   </h2>
-                  <p className="text-sm text-foreground-soft">Choose up to 2 things that make activities harder</p>
+                  <p className="text-sm text-black">Choose up to 2 things that make activities harder</p>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 <div className="flex flex-wrap gap-2">
                   {BARRIERS.map(barrier => (
                     <Button
@@ -492,7 +499,8 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                         ...prev,
                         barriers: toggleSelection(prev.barriers, barrier, 2)
                       }))}
-                      className="text-sm h-auto py-2 px-3"
+                      className="text-sm h-auto py-2 px-3 border-0"
+                      style={{ backgroundColor: data.barriers.includes(barrier) ? undefined : '#E0E0E0' }}
                       disabled={!data.barriers.includes(barrier) && data.barriers.length >= 2}
                     >
                       {barrier}
@@ -511,22 +519,26 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     onClick={() => addCustomOption('barriers', customBarrier, setCustomBarrier)}
                     disabled={data.barriers.length >= 2 || !customBarrier.trim()}
                     size="sm"
+                    className="border-0"
+                    style={{ backgroundColor: '#E0E0E0' }}
                   >
                     Add
                   </Button>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
             {/* Step 7: Goal Seed */}
             {currentStep === 7 && (
               <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">
+                <div className="text-left">
+                  <h2 className="text-lg font-semibold mb-2">
                     {data.role === 'parent' ? "One small thing they'd like to try" : "One small thing you'd like to try"}
                   </h2>
-                  <p className="text-sm text-foreground-soft">In the next 2 weeks (optional, 120 characters)</p>
+                  <p className="text-sm text-black">In the next 2 weeks (optional, 120 characters)</p>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 <Textarea
                   value={data.goalSeed}
                   onChange={(e) => setData(prev => ({ ...prev, goalSeed: e.target.value }))}
@@ -545,23 +557,26 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                         key={helper}
                         variant="ghost"
                         onClick={() => setData(prev => ({ ...prev, goalSeed: helper }))}
-                        className="text-xs h-auto py-1 px-2"
+                        className="text-xs h-auto py-1 px-2 border-0"
+                        style={{ backgroundColor: '#E0E0E0' }}
                       >
                         {helper}
                       </Button>
                     ))}
                   </div>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
             {/* Step 8: Sharing Preferences */}
             {currentStep === 8 && (
               <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">Sharing & support preferences</h2>
-                  <p className="text-sm text-foreground-soft">How would you like help along the way?</p>
+                <div className="text-left">
+                  <h2 className="text-lg font-semibold mb-2">Sharing & support preferences</h2>
+                  <p className="text-sm text-black">How would you like help along the way?</p>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm font-medium mb-2">Privacy</p>
@@ -578,7 +593,8 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                             ...prev,
                             sharingPrefs: { ...prev.sharingPrefs, shareScope: option.value as any }
                           }))}
-                          className="w-full justify-start text-sm"
+                          className="w-full justify-start text-sm border-0"
+                          style={{ backgroundColor: data.sharingPrefs.shareScope === option.value ? undefined : '#E0E0E0' }}
                         >
                           {option.label}
                         </Button>
@@ -600,7 +616,8 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                             ...prev,
                             sharingPrefs: { ...prev.sharingPrefs, supportStyle: option.value as any }
                           }))}
-                          className="w-full justify-start text-sm"
+                          className="w-full justify-start text-sm border-0"
+                          style={{ backgroundColor: data.sharingPrefs.supportStyle === option.value ? undefined : '#E0E0E0' }}
                         >
                           {option.label}
                         </Button>
@@ -608,6 +625,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     </div>
                   </div>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
