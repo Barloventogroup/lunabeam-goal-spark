@@ -123,7 +123,7 @@ export default function Auth() {
               <div className="mb-3 text-center">
                 <Link 
                   to="/auth/request-reset"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
                 >
                   Forgot your password?
                 </Link>
