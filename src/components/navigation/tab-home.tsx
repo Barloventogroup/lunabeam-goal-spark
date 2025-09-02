@@ -47,7 +47,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
             <img 
               src="/lovable-uploads/0ad98147-5215-415a-8cc2-a2fdfbc4e115.png" 
               alt="Lunabeam logo" 
-              className="h-8"
+              className="h-12"
             />
           </div>
           
