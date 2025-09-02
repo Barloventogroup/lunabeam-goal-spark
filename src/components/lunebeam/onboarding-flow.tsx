@@ -47,7 +47,7 @@ export function OnboardingFlow() {
 
   if (showRoleSelection) {
     return (
-      <div className="min-h-screen bg-gradient-auth p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-primary p-4 flex items-center justify-center">
         <Card className="w-full max-w-md shadow-card border-0">
           <CardHeader className="text-left">
             <CardTitle className="text-2xl">Welcome to lunabeam!</CardTitle>
