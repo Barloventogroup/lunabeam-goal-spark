@@ -430,54 +430,6 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     </Button>
                   ))}
                 </div>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      value={customSuperpower}
-                      onChange={(e) => setCustomSuperpower(e.target.value)}
-                      placeholder="Other superpower..."
-                      className="flex-1 h-10"
-                      maxLength={20}
-                    />
-                    <Button
-                      onClick={() => addCustomOption('superpowers', customSuperpower, setCustomSuperpower)}
-                      disabled={data.superpowers.length >= 3 || !customSuperpower.trim()}
-                      className="h-10 px-6 border-0 text-sm text-white"
-                      style={{ 
-                        backgroundColor: customSuperpower.trim() && data.superpowers.length < 3 ? '#2196F3' : '#E0E0E0'
-                      }}
-                    >
-                      Add
-                    </Button>
-                  </div>
-                  {validationMessages.superpowers && (
-                    <p className="text-xs text-red-500">{validationMessages.superpowers}</p>
-                  )}
-                  {suggestions.superpowers && suggestions.superpowers.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      <span className="text-xs text-black">Try: </span>
-                      {suggestions.superpowers.map(suggestion => (
-                        <button
-                          key={suggestion}
-                          onClick={() => {
-                            setCustomSuperpower(suggestion);
-                            setValidationMessages(prev => {
-                              const { superpowers: _, ...rest } = prev;
-                              return rest;
-                            });
-                            setSuggestions(prev => {
-                              const { superpowers: _, ...rest } = prev;
-                              return rest;
-                            });
-                          }}
-                          className="text-xs text-blue-600 underline"
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
                 <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
@@ -510,54 +462,6 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                       {interest}
                     </Button>
                   ))}
-                </div>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      value={customInterest}
-                      onChange={(e) => setCustomInterest(e.target.value)}
-                      placeholder="Other interest..."
-                      className="flex-1 h-10"
-                      maxLength={20}
-                    />
-                    <Button
-                      onClick={() => addCustomOption('interests', customInterest, setCustomInterest)}
-                      disabled={data.interests.length >= 5 || !customInterest.trim()}
-                      className="h-10 px-6 border-0 text-sm text-white"
-                      style={{ 
-                        backgroundColor: customInterest.trim() && data.interests.length < 5 ? '#2196F3' : '#E0E0E0'
-                      }}
-                    >
-                      Add
-                    </Button>
-                  </div>
-                  {validationMessages.interests && (
-                    <p className="text-xs text-red-500">{validationMessages.interests}</p>
-                  )}
-                  {suggestions.interests && suggestions.interests.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      <span className="text-xs text-black">Try: </span>
-                      {suggestions.interests.map(suggestion => (
-                        <button
-                          key={suggestion}
-                          onClick={() => {
-                            setCustomInterest(suggestion);
-                            setValidationMessages(prev => {
-                              const { interests: _, ...rest } = prev;
-                              return rest;
-                            });
-                            setSuggestions(prev => {
-                              const { interests: _, ...rest } = prev;
-                              return rest;
-                            });
-                          }}
-                          className="text-xs text-blue-600 underline"
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
