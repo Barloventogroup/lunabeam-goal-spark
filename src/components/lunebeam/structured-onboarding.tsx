@@ -352,8 +352,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                   <Button
                     onClick={() => addCustomOption('superpowers', customSuperpower, setCustomSuperpower)}
                     disabled={data.superpowers.length >= 3 || !customSuperpower.trim()}
-                    size="sm"
-                    className="border-0"
+                    className="px-6 border-0 text-sm"
                     style={{ backgroundColor: '#E0E0E0' }}
                   >
                     Add
@@ -403,8 +402,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                   <Button
                     onClick={() => addCustomOption('interests', customInterest, setCustomInterest)}
                     disabled={data.interests.length >= 5 || !customInterest.trim()}
-                    size="sm"
-                    className="border-0"
+                    className="px-6 border-0 text-sm"
                     style={{ backgroundColor: '#E0E0E0' }}
                   >
                     Add
