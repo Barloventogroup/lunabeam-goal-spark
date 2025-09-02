@@ -39,6 +39,13 @@ export default function RequestReset() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
+          <div className="flex justify-center mb-2">
+            <img 
+              src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
+              alt="Lunabeam logo"
+              className="h-12 w-auto object-cover object-center"
+            />
+          </div>
           <CardTitle>Reset your password</CardTitle>
         </CardHeader>
         <CardContent>
