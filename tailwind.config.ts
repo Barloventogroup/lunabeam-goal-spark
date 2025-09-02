@@ -61,10 +61,10 @@ export default {
 					foreground: 'hsl(var(--secondary-foreground))',
 					soft: 'hsl(var(--secondary-soft))'
 				},
-				success: {
-					DEFAULT: 'hsl(var(--success))',
-					foreground: 'hsl(var(--success-foreground))',
-					soft: 'hsl(var(--success-soft))'
+				checkin: {
+					DEFAULT: 'hsl(var(--checkin))',
+					foreground: 'hsl(var(--checkin-foreground))',
+					soft: 'hsl(var(--checkin-soft))'
 				},
 				warning: {
 					DEFAULT: 'hsl(var(--warning))',

@@ -118,6 +118,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                         <div className="flex gap-2">
                           <Button 
                             size="sm"
+                            variant="checkin"
                             onClick={() => setShowCheckinModal(true)}
                           >
                             Check In
