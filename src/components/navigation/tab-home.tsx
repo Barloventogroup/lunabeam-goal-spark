@@ -50,7 +50,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
             <img 
               src="/lovable-uploads/64e7aee9-9745-46c4-a776-e36caa39a983.png" 
               alt="Lunabeam logo"
-              className="h-16 w-auto object-cover object-center"
+              className="h-20 w-auto object-cover object-center"
               style={{ objectPosition: 'center' }}
             />
           </div>
