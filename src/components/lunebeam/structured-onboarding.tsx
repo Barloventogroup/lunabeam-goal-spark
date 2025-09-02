@@ -520,8 +520,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                   <Button
                     onClick={() => addCustomOption('barriers', customBarrier, setCustomBarrier)}
                     disabled={data.barriers.length >= 2 || !customBarrier.trim()}
-                    size="sm"
-                    className="border-0"
+                    className="px-6 border-0 text-sm"
                     style={{ backgroundColor: '#E0E0E0' }}
                   >
                     Add
