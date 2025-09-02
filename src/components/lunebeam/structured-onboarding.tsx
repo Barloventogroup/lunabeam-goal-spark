@@ -346,14 +346,17 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     value={customSuperpower}
                     onChange={(e) => setCustomSuperpower(e.target.value)}
                     placeholder="Other superpower..."
-                    className="flex-1"
+                    className="flex-1 h-10"
                     maxLength={20}
                   />
                   <Button
                     onClick={() => addCustomOption('superpowers', customSuperpower, setCustomSuperpower)}
                     disabled={data.superpowers.length >= 3 || !customSuperpower.trim()}
-                    className="px-6 border-0 text-sm"
-                    style={{ backgroundColor: '#E0E0E0' }}
+                    className="h-10 px-6 border-0 text-sm"
+                    variant={customSuperpower.trim() && data.superpowers.length < 3 ? "default" : "outline"}
+                    style={{ 
+                      backgroundColor: customSuperpower.trim() && data.superpowers.length < 3 ? undefined : '#E0E0E0'
+                    }}
                   >
                     Add
                   </Button>
@@ -396,14 +399,17 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     value={customInterest}
                     onChange={(e) => setCustomInterest(e.target.value)}
                     placeholder="Other interest..."
-                    className="flex-1"
+                    className="flex-1 h-10"
                     maxLength={20}
                   />
                   <Button
                     onClick={() => addCustomOption('interests', customInterest, setCustomInterest)}
                     disabled={data.interests.length >= 5 || !customInterest.trim()}
-                    className="px-6 border-0 text-sm"
-                    style={{ backgroundColor: '#E0E0E0' }}
+                    className="h-10 px-6 border-0 text-sm"
+                    variant={customInterest.trim() && data.interests.length < 5 ? "default" : "outline"}
+                    style={{ 
+                      backgroundColor: customInterest.trim() && data.interests.length < 5 ? undefined : '#E0E0E0'
+                    }}
                   >
                     Add
                   </Button>
@@ -512,14 +518,17 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     value={customBarrier}
                     onChange={(e) => setCustomBarrier(e.target.value)}
                     placeholder="Other barrier..."
-                    className="flex-1"
+                    className="flex-1 h-10"
                     maxLength={20}
                   />
                   <Button
                     onClick={() => addCustomOption('barriers', customBarrier, setCustomBarrier)}
                     disabled={data.barriers.length >= 2 || !customBarrier.trim()}
-                    className="px-6 border-0 text-sm"
-                    style={{ backgroundColor: '#E0E0E0' }}
+                    className="h-10 px-6 border-0 text-sm"
+                    variant={customBarrier.trim() && data.barriers.length < 2 ? "default" : "outline"}
+                    style={{ 
+                      backgroundColor: customBarrier.trim() && data.barriers.length < 2 ? undefined : '#E0E0E0'
+                    }}
                   >
                     Add
                   </Button>
