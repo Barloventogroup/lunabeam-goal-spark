@@ -263,7 +263,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
         {/* Progress */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-foreground-soft">{currentStep}/{getTotalSteps()}</span>
+            <span className="text-sm text-white">{currentStep}/{getTotalSteps()}</span>
           </div>
           <Progress value={(currentStep / getTotalSteps()) * 100} className="h-2" />
         </div>
@@ -273,7 +273,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
             {/* Step 1: Name & Pronouns */}
             {currentStep === 1 && (
               <div className="space-y-6">
-                <div className="text-center">
+                <div className="text-left">
                   <h2 className="text-lg font-semibold mb-2">
                     {data.role === 'parent' ? "What would they like to be called?" : "What would you like to be called?"}
                   </h2>
@@ -281,7 +281,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     Just {data.role === 'parent' ? 'their' : 'your'} first name or nickname is perfect
                   </p>
                 </div>
-                <hr style={{ borderColor: '#E0E0E0' }} />
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 <div className="space-y-4">
                   <Input
                     value={data.name}
@@ -317,11 +317,6 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                       />
                     )}
                   </div>
-                </div>
-                <div className="text-center">
-                  <Button variant="ghost" onClick={handleSkip} className="text-sm">
-                    I'm not sure yet
-                  </Button>
                 </div>
               </div>
             )}
