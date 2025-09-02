@@ -255,10 +255,8 @@ export const useStore = create<AppState>()(
           const profile = await database.getProfile();
           console.log('Store: Profile from DB:', profile);
           
-          // Preserve existing local-only flags when DB payload lacks them
-          const existing = get().profile;
-          console.log('Store: Existing profile in store:', existing);
-          const mergedProfile = profile ? { ...existing, ...profile } : (existing ?? null);
+          // Do NOT carry over local state across accounts when DB has no profile
+          const mergedProfile = profile ?? null;
           console.log('Store: Merged profile:', mergedProfile);
           set({ profile: mergedProfile });
         } catch (error) {
