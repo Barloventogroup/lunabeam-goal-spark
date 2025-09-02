@@ -24,6 +24,10 @@
     --primary-soft: 200 60% 85%;
     --primary-glow: 200 100% 70%;
 
+    /* Progress Colors */
+    --progress: 190 50% 65%;
+    --progress-foreground: 0 0% 100%;
+
     /* Supportive Colors */
     --supportive: 150 50% 50%;
     --supportive-foreground: 0 0% 100%;
@@ -122,6 +126,10 @@
     --primary-foreground: 215 25% 8%;
     --primary-soft: 200 40% 25%;
     --primary-glow: 200 100% 80%;
+
+    /* Progress Colors */
+    --progress: 190 50% 65%;
+    --progress-foreground: 215 25% 8%;
 
     /* Supportive Colors */
     --supportive: 150 50% 60%;

@@ -42,6 +42,10 @@ export default {
 					soft: 'hsl(var(--primary-soft))',
 					glow: 'hsl(var(--primary-glow))'
 				},
+				progress: {
+					DEFAULT: 'hsl(var(--progress))',
+					foreground: 'hsl(var(--progress-foreground))'
+				},
 				supportive: {
 					DEFAULT: 'hsl(var(--supportive))',
 					foreground: 'hsl(var(--supportive-foreground))',
