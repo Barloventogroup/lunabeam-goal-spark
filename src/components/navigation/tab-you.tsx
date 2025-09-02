@@ -13,16 +13,23 @@ import {
   ChevronRight,
   Trophy,
   Star,
-  Coins
+  Coins,
+  LogOut
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useAuth } from '../auth/auth-provider';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
 
 type YouView = 'profile' | 'rewards' | 'settings';
 
 export const TabYou: React.FC = () => {
   const { profile, badges } = useStore();
+  const { signOut } = useAuth();
   const [currentView, setCurrentView] = useState<YouView>('profile');
+
+  const handleLogout = () => {
+    signOut();
+  };
 
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('profile')} />;
@@ -158,6 +165,21 @@ export const TabYou: React.FC = () => {
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Logout */}
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleLogout}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <LogOut className="h-5 w-5 text-red-500" />
+                  <div>
+                    <div className="font-medium text-red-600">Log Out</div>
+                    <div className="text-sm text-muted-foreground">Sign out of your account</div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
