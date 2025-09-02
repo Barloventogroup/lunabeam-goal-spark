@@ -10,52 +10,74 @@ export function OnboardingFlow() {
   const navigate = useNavigate();
   const [roleData, setRoleData] = useState<{ role: 'parent' | 'individual' | ''; individualEmail?: string }>({ role: '' });
   const [showRoleSelection, setShowRoleSelection] = useState(true);
+  const [showInterstitial, setShowInterstitial] = useState(false);
 
   const handleRoleSelection = (role: 'parent' | 'individual') => {
     setRoleData({ role });
+    setShowInterstitial(true);
+  };
+
+  const handleInterstitialNext = () => {
     setShowRoleSelection(false);
+    setShowInterstitial(false);
   };
 
   const handleOnboardingComplete = () => {
     navigate('/');
   };
 
+  // Show interstitial screen
+  if (showInterstitial) {
+    return (
+      <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center">
+          <h1 className="text-xl font-medium text-black mb-8">
+            The next questions will help me suggest goals and personalize your experience. Ready?
+          </h1>
+          <Button
+            onClick={handleInterstitialNext}
+            className="w-full"
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (showRoleSelection) {
     return (
       <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
         <Card className="w-full max-w-md shadow-card border-0">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-xl font-bold">L</span>
-            </div>
-            <CardTitle className="text-2xl">Welcome to Lunabeam! 🌙</CardTitle>
-            <p className="text-foreground-soft">
+            <CardTitle className="text-2xl">Welcome to Lunabeam</CardTitle>
+            <p className="text-black">
               Before we start, I need to know who's creating this account.
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
-              <Label className="text-base font-semibold">Who is the main user for this app?</Label>
-              <RadioGroup value={roleData.role} onValueChange={(value) => handleRoleSelection(value as 'parent' | 'individual')}>
-                <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                  <RadioGroupItem value="individual" id="individual" />
-                  <Label htmlFor="individual" className="flex-1 cursor-pointer">
-                    <div>
-                      <div className="font-semibold">Individual</div>
-                      <div className="text-sm text-foreground-soft">I'm creating this account for myself</div>
-                    </div>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                  <RadioGroupItem value="parent" id="parent" />
-                  <Label htmlFor="parent" className="flex-1 cursor-pointer">
-                    <div>
-                      <div className="font-semibold">Parent</div>
-                      <div className="text-sm text-foreground-soft">I'm creating this account on behalf of somebody else with their consent</div>
-                    </div>
-                  </Label>
-                </div>
-              </RadioGroup>
+              <Label className="text-base font-semibold">Who is the main user for Lunebeam?</Label>
+              <div className="space-y-3">
+                <button
+                  onClick={() => handleRoleSelection('individual')}
+                  className="w-full p-4 border rounded-full hover:bg-muted/50 transition-colors text-left"
+                >
+                  <div>
+                    <div className="font-semibold">Individual</div>
+                    <div className="text-sm text-foreground-soft">I'm creating this account for myself</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleRoleSelection('parent')}
+                  className="w-full p-4 border rounded-full hover:bg-muted/50 transition-colors text-left"
+                >
+                  <div>
+                    <div className="font-semibold">Parent</div>
+                    <div className="text-sm text-foreground-soft">I'm creating this account for my child</div>
+                  </div>
+                </button>
+              </div>
             </div>
           </CardContent>
         </Card>
