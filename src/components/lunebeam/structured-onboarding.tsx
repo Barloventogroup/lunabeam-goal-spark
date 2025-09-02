@@ -88,7 +88,7 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
   const [showProfile, setShowProfile] = useState(false);
   const [generatedProfile, setGeneratedProfile] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const { completeOnboarding } = useStore();
+  const { completeOnboarding, setProfile } = useStore();
 
   // Dynamic step calculation based on role
   const getTotalSteps = () => {
@@ -177,11 +177,25 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
   };
 
   const handleComplete = async () => {
+    const localProfile = {
+      first_name: data.name || 'User',
+      strengths: data.superpowers,
+      interests: data.interests,
+      challenges: data.barriers,
+      comm_pref: 'text' as const,
+      onboarding_complete: true,
+    };
+
     try {
+      // Save the profile data collected during onboarding
+      await setProfile({ ...localProfile, onboarding_complete: true });
       await completeOnboarding();
-      onComplete();
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      console.warn('Falling back to local profile only (no auth?):', error);
+    } finally {
+      // Ensure app state reflects completion no matter what
+      useStore.setState({ profile: localProfile });
+      onComplete();
     }
   };
 
