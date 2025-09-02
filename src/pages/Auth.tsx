@@ -87,7 +87,7 @@ export default function Auth() {
         <CardContent>
           {!isSignUp && (
             <div className="mb-4 mt-8 text-sm text-black text-center">
-              Login with your email to access your account
+              Sign in with your email to access your account
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -119,6 +119,17 @@ export default function Auth() {
               />
             </div>
             
+            {!isSignUp && (
+              <div className="mb-3 text-center">
+                <Link 
+                  to="/auth/request-reset"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+            )}
+            
             <Button 
               type="submit" 
               className="w-full" 
@@ -127,17 +138,6 @@ export default function Auth() {
               {loading ? 'Loading...' : (isSignUp ? 'Create Account' : 'Sign In')}
             </Button>
           </form>
-          
-          {!isSignUp && (
-            <div className="mt-3 text-center">
-              <Link 
-                to="/auth/request-reset"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Forgot your password?
-              </Link>
-            </div>
-          )}
           
           <div className="mt-4 text-center">
             <Button
