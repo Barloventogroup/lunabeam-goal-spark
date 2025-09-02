@@ -89,8 +89,8 @@
     --gradient-progress: linear-gradient(90deg, #E8F5E8, #006400);
 
     /* Badge colors */
-    --badge-planned: 239 220 126; /* #EFDC7E */
-    --badge-active: 76 159 112; /* #4C9F70 */
+    --badge-planned: 158 158 158; /* #9E9E9E */
+    --badge-active: 33 150 243; /* #2196F3 */
     --badge-category: 231 234 239; /* #E7EAEF */
 
     /* Shadows */
@@ -198,8 +198,8 @@
     --gradient-progress: linear-gradient(90deg, #E8F5E8, #006400);
 
     /* Badge colors */
-    --badge-planned: 239 220 126; /* #EFDC7E */
-    --badge-active: 76 159 112; /* #4C9F70 */
+    --badge-planned: 158 158 158; /* #9E9E9E */
+    --badge-active: 33 150 243; /* #2196F3 */
     --badge-category: 231 234 239; /* #E7EAEF */
 
     /* Shadows (more subtle in dark mode) */
