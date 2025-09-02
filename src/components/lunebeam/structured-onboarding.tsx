@@ -593,7 +593,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                         key={helper}
                         variant="ghost"
                         onClick={() => setData(prev => ({ ...prev, goalSeed: helper }))}
-                        className="text-xs h-auto py-1 px-2 border-0"
+                        className="text-sm h-auto py-2 px-3 border-0"
                         style={{ backgroundColor: '#E0E0E0' }}
                       >
                         {helper}
