@@ -269,7 +269,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
         </div>
 
         <Card className="shadow-card border-0">
-          <CardContent className="p-6">
+          <CardContent className="p-6" style={{ minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
             {/* Step 1: Name & Pronouns */}
             {currentStep === 1 && (
               <div className="space-y-6">
@@ -631,7 +631,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
             )}
 
             {/* Navigation */}
-            <div className="pt-6 mt-6 space-y-2">
+            <div className="pt-6 mt-auto space-y-2">
               {currentStep > 1 && (
                 <Button variant="ghost" onClick={handleBack} className="w-full">
                   Back
