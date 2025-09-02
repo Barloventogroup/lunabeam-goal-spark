@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Navigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +8,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { toast } from 'sonner';
 
 export default function Auth() {
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn, signUp, signOut } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -16,10 +16,6 @@ export default function Auth() {
     password: ''
   });
 
-  // Redirect if already authenticated
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +66,14 @@ export default function Auth() {
           <CardDescription>
             {isSignUp ? 'Create your account' : 'Welcome back — sign in'}
           </CardDescription>
+          {user && (
+            <div className="mt-2 text-sm text-muted-foreground">
+              You're currently signed in. 
+              <Button variant="ghost" className="ml-1 px-2 py-0 h-6" onClick={async () => { await signOut(); }}>
+                Sign out to switch account
+              </Button>
+            </div>
+          )}
         </CardHeader>
         
         <CardContent>
