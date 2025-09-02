@@ -352,10 +352,9 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                   <Button
                     onClick={() => addCustomOption('superpowers', customSuperpower, setCustomSuperpower)}
                     disabled={data.superpowers.length >= 3 || !customSuperpower.trim()}
-                    className="h-10 px-6 border-0 text-sm"
-                    variant={customSuperpower.trim() && data.superpowers.length < 3 ? "default" : "outline"}
+                    className="h-10 px-6 border-0 text-sm text-white"
                     style={{ 
-                      backgroundColor: customSuperpower.trim() && data.superpowers.length < 3 ? undefined : '#E0E0E0'
+                      backgroundColor: customSuperpower.trim() && data.superpowers.length < 3 ? '#2196F3' : '#E0E0E0'
                     }}
                   >
                     Add
@@ -405,10 +404,9 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                   <Button
                     onClick={() => addCustomOption('interests', customInterest, setCustomInterest)}
                     disabled={data.interests.length >= 5 || !customInterest.trim()}
-                    className="h-10 px-6 border-0 text-sm"
-                    variant={customInterest.trim() && data.interests.length < 5 ? "default" : "outline"}
+                    className="h-10 px-6 border-0 text-sm text-white"
                     style={{ 
-                      backgroundColor: customInterest.trim() && data.interests.length < 5 ? undefined : '#E0E0E0'
+                      backgroundColor: customInterest.trim() && data.interests.length < 5 ? '#2196F3' : '#E0E0E0'
                     }}
                   >
                     Add
@@ -524,10 +522,9 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                   <Button
                     onClick={() => addCustomOption('barriers', customBarrier, setCustomBarrier)}
                     disabled={data.barriers.length >= 2 || !customBarrier.trim()}
-                    className="h-10 px-6 border-0 text-sm"
-                    variant={customBarrier.trim() && data.barriers.length < 2 ? "default" : "outline"}
+                    className="h-10 px-6 border-0 text-sm text-white"
                     style={{ 
-                      backgroundColor: customBarrier.trim() && data.barriers.length < 2 ? undefined : '#E0E0E0'
+                      backgroundColor: customBarrier.trim() && data.barriers.length < 2 ? '#2196F3' : '#E0E0E0'
                     }}
                   >
                     Add
