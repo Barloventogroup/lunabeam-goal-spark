@@ -47,35 +47,31 @@ export function OnboardingFlow() {
 
   if (showRoleSelection) {
     return (
-      <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-auth p-4 flex items-center justify-center">
         <Card className="w-full max-w-md shadow-card border-0">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome to Lunabeam</CardTitle>
+          <CardHeader className="text-left">
+            <CardTitle className="text-2xl">Welcome to lunabeam!</CardTitle>
             <p className="text-black">
               Before we start, I need to know who's creating this account.
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
-              <Label className="text-base font-semibold">Who is the main user for Lunebeam?</Label>
+              <Label className="text-base font-semibold text-left">Who is the main user for lunabeam?</Label>
               <div className="space-y-3">
                 <button
                   onClick={() => handleRoleSelection('individual')}
-                  className="w-full p-4 border rounded-full hover:bg-muted/50 transition-colors text-left"
+                  className="w-full p-4 rounded-full hover:opacity-80 transition-colors text-center"
+                  style={{ backgroundColor: '#E0E0E0' }}
                 >
-                  <div>
-                    <div className="font-semibold">Individual</div>
-                    <div className="text-sm text-foreground-soft">I'm creating this account for myself</div>
-                  </div>
+                  <div className="text-sm text-black">I'm creating this account for myself</div>
                 </button>
                 <button
                   onClick={() => handleRoleSelection('parent')}
-                  className="w-full p-4 border rounded-full hover:bg-muted/50 transition-colors text-left"
+                  className="w-full p-4 rounded-full hover:opacity-80 transition-colors text-center"
+                  style={{ backgroundColor: '#E0E0E0' }}
                 >
-                  <div>
-                    <div className="font-semibold">Parent</div>
-                    <div className="text-sm text-foreground-soft">I'm creating this account for my child</div>
-                  </div>
+                  <div className="text-sm text-black">I'm creating this account on someone else's behalf.</div>
                 </button>
               </div>
             </div>
