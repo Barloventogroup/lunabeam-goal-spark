@@ -48,8 +48,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
         <div className="flex items-center justify-between p-4 bg-card/80 backdrop-blur">
           <div className="flex items-center">
             <img 
-              src="/lovable-uploads/bd6e21ea-b75a-440f-9bd6-91203d1980fe.png" 
-              alt="Lunabeam logo" 
+              src="/lovable-uploads/3b9eef4d-c0a8-4ac7-b81c-3bb50c62d653.png" 
+              alt="Lunabeam logo"
               className="h-16 w-auto object-cover object-center"
               style={{ objectPosition: 'center' }}
             />
