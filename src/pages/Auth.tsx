@@ -101,7 +101,7 @@ export default function Auth() {
                 onChange={handleInputChange}
                 required
                 placeholder="Enter your email"
-                className="border-gray-500 focus:border-primary text-sm"
+                className="border-gray-500 focus:border-primary text-sm bg-[#E0E0E0]"
               />
             </div>
             
@@ -115,7 +115,7 @@ export default function Auth() {
                 required
                 placeholder="Enter your password"
                 minLength={6}
-                className="border-gray-500 focus:border-primary text-sm"
+                className="border-gray-500 focus:border-primary text-sm bg-[#E0E0E0]"
               />
             </div>
             
