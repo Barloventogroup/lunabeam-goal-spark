@@ -120,7 +120,7 @@ export default function Auth() {
             </div>
             
             {!isSignUp && (
-              <div className="mb-3 mt-0 text-center">
+              <div className="mb-6 -mt-2 text-center">
                 <Link 
                   to="/auth/request-reset"
                   className="text-xs text-muted-foreground hover:text-primary transition-colors"
