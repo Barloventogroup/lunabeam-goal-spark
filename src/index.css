@@ -87,7 +87,11 @@
     --gradient-supportive: linear-gradient(135deg, hsl(var(--supportive)), hsl(var(--supportive-soft)));
     --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--background-soft)));
     --gradient-progress: linear-gradient(90deg, #67BFD1, #EFDC7E);
-    --gradient-goals: linear-gradient(135deg, #67BFD1, #EFDC7E);
+
+    /* Badge colors */
+    --badge-planned: 239 220 126; /* #EFDC7E */
+    --badge-active: 76 159 112; /* #4C9F70 */
+    --badge-category: 231 234 239; /* #E7EAEF */
 
     /* Shadows */
     --shadow-soft: 0 4px 15px -3px hsl(var(--primary) / 0.12);
@@ -192,7 +196,11 @@
     --gradient-supportive: linear-gradient(135deg, hsl(var(--supportive)), hsl(var(--supportive-soft)));
     --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--background-soft)));
     --gradient-progress: linear-gradient(90deg, #67BFD1, #EFDC7E);
-    --gradient-goals: linear-gradient(135deg, #67BFD1, #EFDC7E);
+
+    /* Badge colors */
+    --badge-planned: 239 220 126; /* #EFDC7E */
+    --badge-active: 76 159 112; /* #4C9F70 */
+    --badge-category: 231 234 239; /* #E7EAEF */
 
     /* Shadows (more subtle in dark mode) */
     --shadow-soft: 0 4px 15px -3px hsl(var(--primary) / 0.15);

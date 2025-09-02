@@ -81,10 +81,10 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'default';
+      case 'active': return 'active';
       case 'completed': return 'default';
       case 'paused': return 'secondary';
-      case 'planned': return 'outline';
+      case 'planned': return 'planned';
       default: return 'default';
     }
   };
@@ -205,7 +205,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
                           {goal.priority}
                         </Badge>
                         {goal.domain && (
-                          <Badge variant="outline">{goal.domain}</Badge>
+                          <Badge variant="category">{goal.domain}</Badge>
                         )}
                       </div>
                       {goal.due_date && (

@@ -91,14 +91,16 @@ export default {
 					foreground: 'hsl(var(--card-foreground))',
 					soft: 'hsl(var(--card-soft))',
 					highlight: 'hsl(var(--card-highlight))'
-				}
+				},
+				'badge-planned': 'hsl(var(--badge-planned))',
+				'badge-active': 'hsl(var(--badge-active))',
+				'badge-category': 'hsl(var(--badge-category))'
 			},
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-supportive': 'var(--gradient-supportive)',
 				'gradient-soft': 'var(--gradient-soft)',
-				'gradient-progress': 'var(--gradient-progress)',
-				'gradient-goals': 'var(--gradient-goals)'
+				'gradient-progress': 'var(--gradient-progress)'
 			},
 			boxShadow: {
 				'soft': 'var(--shadow-soft)',
