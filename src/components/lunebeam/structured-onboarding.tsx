@@ -189,11 +189,37 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
 
   const addCustomOption = (field: 'superpowers' | 'interests' | 'barriers', value: string, setter: (value: string) => void) => {
     if (value.trim()) {
+      // Validate the word when trying to add it
+      const hasInvalidChars = /[^a-zA-Z\s/-]/.test(value.trim());
+      
+      if (hasInvalidChars) {
+        // Show validation message
+        setValidationMessages(prev => ({
+          ...prev,
+          [field]: "Are you sure that's a word?"
+        }));
+        
+        // Show suggestions
+        const commonWords: { [key: string]: string[] } = {
+          superpowers: ['Smart', 'Fast', 'Strong', 'Friendly', 'Helpful', 'Artistic', 'Musical', 'Athletic'],
+          interests: ['Photography', 'Dancing', 'Singing', 'Drawing', 'Writing', 'Swimming', 'Running', 'Cycling'],
+          barriers: ['Stress', 'Fatigue', 'Anxiety', 'Distractions', 'Interruptions', 'Perfectionism']
+        };
+        
+        setSuggestions(prev => ({
+          ...prev,
+          [field]: commonWords[field].filter(w => w.toLowerCase().includes(value.toLowerCase().substring(0, 2)))
+        }));
+        return; // Don't add the word if it's invalid
+      }
+      
+      // If valid, add the word and clear any previous validation
       setData(prev => ({
         ...prev,
         [field]: [...prev[field], value.trim()]
       }));
       setter('');
+      
       // Clear validation when successfully added
       setValidationMessages(prev => {
         const { [field]: _, ...rest } = prev;
@@ -408,10 +434,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                   <div className="flex gap-2">
                     <Input
                       value={customSuperpower}
-                      onChange={(e) => {
-                        setCustomSuperpower(e.target.value);
-                        validateWord(e.target.value, 'superpowers');
-                      }}
+                      onChange={(e) => setCustomSuperpower(e.target.value)}
                       placeholder="Other superpower..."
                       className="flex-1 h-10"
                       maxLength={20}
@@ -492,10 +515,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                   <div className="flex gap-2">
                     <Input
                       value={customInterest}
-                      onChange={(e) => {
-                        setCustomInterest(e.target.value);
-                        validateWord(e.target.value, 'interests');
-                      }}
+                      onChange={(e) => setCustomInterest(e.target.value)}
                       placeholder="Other interest..."
                       className="flex-1 h-10"
                       maxLength={20}
@@ -642,10 +662,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                   <div className="flex gap-2">
                     <Input
                       value={customBarrier}
-                      onChange={(e) => {
-                        setCustomBarrier(e.target.value);
-                        validateWord(e.target.value, 'barriers');
-                      }}
+                      onChange={(e) => setCustomBarrier(e.target.value)}
                       placeholder="Other barrier..."
                       className="flex-1 h-10"
                       maxLength={20}
