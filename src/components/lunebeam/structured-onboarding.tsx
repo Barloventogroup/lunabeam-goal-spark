@@ -268,8 +268,9 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
           <Progress value={(currentStep / getTotalSteps()) * 100} className="h-2" />
         </div>
 
-        <Card className="shadow-card border-0">
-          <CardContent className="p-6" style={{ minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
+        <Card className="shadow-card border-0 h-[640px]">
+          <CardContent className="p-6 h-full flex flex-col">
+            <div className="flex-1 overflow-y-auto">
             {/* Step 1: Name & Pronouns */}
             {currentStep === 1 && (
               <div className="space-y-6">
@@ -630,6 +631,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
               </div>
             )}
 
+            </div>
             {/* Navigation */}
             <div className="pt-6 mt-auto space-y-2">
               {currentStep > 1 && (
