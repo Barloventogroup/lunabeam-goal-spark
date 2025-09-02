@@ -281,6 +281,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     Just {data.role === 'parent' ? 'their' : 'your'} first name or nickname is perfect
                   </p>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 <div className="space-y-4">
                   <Input
                     value={data.name}
