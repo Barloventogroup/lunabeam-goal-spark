@@ -28,7 +28,7 @@ export function OnboardingFlow() {
             <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-white text-xl font-bold">L</span>
             </div>
-            <CardTitle className="text-2xl">Hi! I'm Lune 🌙</CardTitle>
+            <CardTitle className="text-2xl">Welcome to Lunabeam! 🌙</CardTitle>
             <p className="text-foreground-soft">
               I'm your personal assistant. Before we start, I need to know who's creating this account.
             </p>

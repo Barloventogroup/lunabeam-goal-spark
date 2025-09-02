@@ -74,13 +74,16 @@ export default function AuthCallback() {
     })();
   }, [status]);
 
-  // Redirects based on intent
+  // Redirects based on intent with delay for success
   useEffect(() => {
     if (status === 'ready') {
       nav('/auth/reset', { replace: true });
     }
     if (status === 'success') {
-      nav('/', { replace: true });
+      // Show confirmation message for 2 seconds before redirecting
+      setTimeout(() => {
+        nav('/', { replace: true });
+      }, 2000);
     }
   }, [status, nav]);
 
