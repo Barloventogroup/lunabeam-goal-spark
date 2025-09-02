@@ -147,7 +147,7 @@ export default function Auth() {
             >
               {isSignUp 
                 ? 'Already have an account? Sign in' 
-                : "Don't have an account? Sign up"
+                : <>Don't have an account? <span className="font-bold">Sign up</span></>
               }
             </Button>
           </div>
