@@ -6,7 +6,7 @@ import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
-import { GoalWizard } from '../lunebeam/goal-wizard';
+import { GoalsWizard } from '../lunebeam/goals-wizard';
 import { useStore } from '../../store/useStore';
 interface TabHomeProps {
   onOpenChat: () => void;
@@ -32,7 +32,10 @@ export const TabHome: React.FC<TabHomeProps> = ({
   }
   if (currentView === 'add-goal') {
     return <div className="min-h-screen">
-        <GoalWizard onComplete={() => setCurrentView('dashboard')} />
+        <GoalsWizard 
+          onComplete={() => setCurrentView('dashboard')}
+          onBack={() => setCurrentView('dashboard')}
+        />
       </div>;
   }
 
