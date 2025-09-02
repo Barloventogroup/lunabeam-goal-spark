@@ -174,7 +174,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
           </div>
 
           {/* Encouragement Message */}
-          <Card className="border-transparent" style={{ backgroundColor: '#EFDC7E80' }}>
+          <Card style={{ backgroundColor: '#EFDC7E80' }}>
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <span className="text-2xl">🎉</span>
