@@ -45,7 +45,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   return <>
       <div className="min-h-screen bg-gradient-soft">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-card/80 backdrop-blur border-b">
+        <div className="flex items-center justify-between p-4 bg-card/80 backdrop-blur">
           <div className="flex items-center">
             <img 
               src="/lovable-uploads/d51154b6-d57c-4e03-a2c8-55e214d3b5c2.png" 
@@ -70,7 +70,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
           </div>
 
           {/* Checked In Today */}
-          <Card className="bg-green-50 border-green-200">
+          <Card className="bg-green-50 shadow-soft">
             <CardContent className="flex items-center gap-3 p-4">
               <CheckCircle className="h-6 w-6 text-green-600" />
               <div>
@@ -83,7 +83,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {/* This Week's Progress */}
           <div>
             <h3 className="text-lg font-semibold mb-3">This Week's Progress</h3>
-            <Card>
+            <Card className="shadow-soft">
               <CardContent className="p-4">
                 <Progress value={60} className="mb-2" />
                 <p className="text-sm text-muted-foreground">3 of 5 steps completed</p>
@@ -106,7 +106,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
             {activeGoals.length > 0 ? (
               <div className="space-y-3">
                 {activeGoals.map((goal) => (
-                  <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                  <Card key={goal.id} className="cursor-pointer hover:shadow-card transition-all duration-200 shadow-soft">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1" onClick={() => onNavigateToGoals(goal.id)}>
@@ -137,7 +137,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                 ))}
               </div>
             ) : (
-              <Card>
+              <Card className="shadow-soft">
                 <CardContent className="p-6 text-center text-muted-foreground">
                   No active goals yet
                 </CardContent>
@@ -151,7 +151,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
             {badges.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
                 {badges.slice(0,4).map((b) => (
-                  <Card key={b.id} className="bg-card/60">
+                  <Card key={b.id} className="bg-card/60 shadow-soft">
                     <CardContent className="p-4 text-center space-y-2">
                       <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mx-auto">
                         <Award className="h-6 w-6 text-accent-foreground" />
@@ -165,7 +165,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                 ))}
               </div>
             ) : (
-              <Card>
+              <Card className="shadow-soft">
                 <CardContent className="p-6 text-center text-muted-foreground">
                   No badges yet — complete goals to earn rewards!
                 </CardContent>
@@ -174,7 +174,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
           </div>
 
           {/* Encouragement Message */}
-          <Card style={{ backgroundColor: '#EFDC7E80' }}>
+          <Card className="shadow-soft" style={{ backgroundColor: '#EFDC7E80' }}>
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <span className="text-2xl">🎉</span>
