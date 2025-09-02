@@ -30,7 +30,7 @@ export function OnboardingFlow() {
             </div>
             <CardTitle className="text-2xl">Welcome to Lunabeam! 🌙</CardTitle>
             <p className="text-foreground-soft">
-              I'm your personal assistant. Before we start, I need to know who's creating this account.
+              Before we start, I need to know who's creating this account.
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -51,7 +51,7 @@ export function OnboardingFlow() {
                   <Label htmlFor="parent" className="flex-1 cursor-pointer">
                     <div>
                       <div className="font-semibold">Parent</div>
-                      <div className="text-sm text-foreground-soft">I'm creating this account for my child</div>
+                      <div className="text-sm text-foreground-soft">I'm creating this account on behalf of somebody else with their consent</div>
                     </div>
                   </Label>
                 </div>

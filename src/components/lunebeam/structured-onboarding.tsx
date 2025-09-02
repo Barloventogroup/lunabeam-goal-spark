@@ -35,6 +35,7 @@ interface OnboardingData {
 
 interface StructuredOnboardingProps {
   onComplete: () => void;
+  roleData?: { role: 'parent' | 'individual'; individualEmail?: string };
 }
 
 const SUPERPOWERS = [
@@ -58,11 +59,11 @@ const GOAL_HELPERS = [
   'Learn 3 guitar chords', 'Organize one drawer', 'Text a friend'
 ];
 
-export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) {
+export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<OnboardingData>({
-    role: '',
-    individualEmail: '',
+    role: roleData?.role || 'individual',
+    individualEmail: roleData?.individualEmail || '',
     invitePending: false,
     name: '',
     pronouns: '',
@@ -92,7 +93,7 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
 
   // Dynamic step calculation based on role
   const getTotalSteps = () => {
-    return 9; // Same steps for both roles now
+    return 8; // Updated to 8 steps after removing role selection
   };
 
   const handleNext = () => {
@@ -201,11 +202,10 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return data.role !== '';
-      case 2: return data.name.trim().length > 0;
-      case 3: return data.superpowers.length > 0;
-      case 4: return data.interests.length > 0;
-      case 6: return data.bestTime !== '';
+      case 1: return data.name.trim().length > 0;
+      case 2: return data.superpowers.length > 0;
+      case 3: return data.interests.length > 0;
+      case 5: return data.bestTime !== '';
       default: return true;
     }
   };
@@ -270,55 +270,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
 
         <Card className="shadow-card border-0">
           <CardContent className="p-6">
-            {/* Step 1: Role Selection */}
+            {/* Step 1: Name & Pronouns */}
             {currentStep === 1 && (
-              <div className="space-y-6">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white text-xl font-bold">L</span>
-                  </div>
-                  <h1 className="text-2xl font-bold mb-2">Hey 👋 I'm Lune</h1>
-                  <p className="text-foreground-soft">
-                    Before we start, who's this account for?
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <Label className="text-base font-semibold">Who is the main user for this app?</Label>
-                  <RadioGroup value={data.role} onValueChange={(value) => setData(prev => ({ ...prev, role: value as 'parent' | 'individual' }))}>
-                    <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <RadioGroupItem value="individual" id="individual" />
-                      <Label htmlFor="individual" className="flex-1 cursor-pointer">
-                        <div>
-                          <div className="font-semibold">Individual</div>
-                          <div className="text-sm text-foreground-soft">I'm creating this account for myself</div>
-                        </div>
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <RadioGroupItem value="parent" id="parent" />
-                      <Label htmlFor="parent" className="flex-1 cursor-pointer">
-                        <div>
-                          <div className="font-semibold">Parent</div>
-                          <div className="text-sm text-foreground-soft">I'm creating this account for my child</div>
-                        </div>
-                      </Label>
-                    </div>
-                  </RadioGroup>
-
-                   {data.role === 'parent' && (
-                     <div className="text-center p-3 bg-primary/10 rounded-lg">
-                       <p className="text-sm text-primary">
-                         💡 As a supporter, you can invite them to share progress with you later from their individual profile
-                       </p>
-                     </div>
-                   )}
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Name & Pronouns */}
-            {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">
@@ -369,8 +322,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 3: Superpowers */}
-            {currentStep === 3 && (
+            {/* Step 2: Superpowers */}
+            {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">
@@ -415,8 +368,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 4: Interests */}
-            {currentStep === 4 && (
+            {/* Step 3: Interests */}
+            {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">
@@ -466,8 +419,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 5: Work Style */}
-            {currentStep === 5 && (
+            {/* Step 4: Work Style */}
+            {currentStep === 4 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">
@@ -502,8 +455,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 6: Best Time */}
-            {currentStep === 6 && (
+            {/* Step 5: Best Time */}
+            {currentStep === 5 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">
@@ -533,8 +486,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 7: Barriers */}
-            {currentStep === 7 && (
+            {/* Step 6: Barriers */}
+            {currentStep === 6 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">
@@ -577,8 +530,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 8: Goal Seed */}
-            {currentStep === 8 && (
+            {/* Step 7: Goal Seed */}
+            {currentStep === 7 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">
@@ -614,8 +567,8 @@ export function StructuredOnboarding({ onComplete }: StructuredOnboardingProps) 
               </div>
             )}
 
-            {/* Step 9: Sharing Preferences */}
-            {currentStep === 9 && (
+            {/* Step 8: Sharing Preferences */}
+            {currentStep === 8 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold mb-2">Sharing & support preferences</h2>

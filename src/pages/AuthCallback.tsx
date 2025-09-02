@@ -87,22 +87,43 @@ export default function AuthCallback() {
     }
   }, [status, nav]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="max-w-md w-full space-y-4 p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">Auth Callback</h1>
-          <p className="text-muted-foreground mt-2">{msg}</p>
-          {status === 'error' && (
-            <button 
-              onClick={() => nav('/auth/request-reset')}
-              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              Request new link
-            </button>
-          )}
+  // Show a simple loading state while processing
+  if (status === 'success') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="max-w-md w-full space-y-4 p-6 text-center">
+          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-white text-xl font-bold">✓</span>
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">Email confirmed!</h1>
+          <p className="text-muted-foreground">Redirecting...</p>
         </div>
       </div>
+    );
+  }
+
+  // Show error state only if there's an error
+  if (status === 'error') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="max-w-md w-full space-y-4 p-6 text-center">
+          <h1 className="text-2xl font-bold text-foreground">Authentication Error</h1>
+          <p className="text-muted-foreground mt-2">{msg}</p>
+          <button 
+            onClick={() => nav('/auth/request-reset')}
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          >
+            Request new link
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show minimal loading for other states
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
     </div>
   );
 }
