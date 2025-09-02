@@ -72,7 +72,7 @@ export default function Auth() {
             />
           </div>
           <CardDescription>
-            {isSignUp ? 'Create your account' : 'Welcome back — sign in'}
+            Guiding big dreams, one step at a time
           </CardDescription>
           {user && (
             <div className="mt-2 text-sm text-muted-foreground">
@@ -85,10 +85,14 @@ export default function Auth() {
         </CardHeader>
         
         <CardContent>
+          {!isSignUp && (
+            <div className="mb-4 text-sm text-muted-foreground text-center">
+              Login with your email to access your account
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 name="email"
@@ -97,11 +101,11 @@ export default function Auth() {
                 onChange={handleInputChange}
                 required
                 placeholder="Enter your email"
+                className="border-gray-300 focus:border-primary"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 name="password"
@@ -111,6 +115,7 @@ export default function Auth() {
                 required
                 placeholder="Enter your password"
                 minLength={6}
+                className="border-gray-300 focus:border-primary"
               />
             </div>
             
