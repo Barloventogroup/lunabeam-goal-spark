@@ -140,16 +140,16 @@ export default function Auth() {
           </form>
           
           <div className="mt-4 text-center">
-            <Button
-              variant="ghost"
+            <button
+              type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               {isSignUp 
                 ? 'Already have an account? Sign in' 
-                : <>Don't have an account? <span className="font-bold">Sign up</span></>
+                : <>Don't have an account? Sign up</>
               }
-            </Button>
+            </button>
           </div>
         </CardContent>
       </Card>
