@@ -120,7 +120,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                             Check In
                           </Button>
                           <Button 
-                            variant="outline"
+                            variant="plan"
                             size="sm"
                             onClick={() => onNavigateToGoals(goal.id)}
                           >

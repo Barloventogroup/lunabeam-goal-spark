@@ -14,6 +14,7 @@ const buttonVariants = cva(
         encouraging: "bg-encouraging text-encouraging-foreground hover:bg-encouraging/90 shadow-soft",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-soft",
         outline: "border-2 border-border bg-card text-card-foreground hover:bg-card-soft hover:border-primary/50",
+        plan: "border-2 border-progress bg-card text-progress hover:bg-progress hover:text-progress-foreground hover:border-progress shadow-soft",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-secondary-soft text-foreground-soft hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",

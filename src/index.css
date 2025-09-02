@@ -70,7 +70,7 @@
     --border-soft: 215 15% 90%;
     --input: 0 0% 100%;
     --input-border: 215 20% 80%;
-    --ring: 200 80% 45%;
+    --ring: 190 50% 65%;
 
     /* Spacing & Effects */
     --radius: 1rem;
@@ -173,7 +173,7 @@
     --border-soft: 215 10% 22%;
     --input: 215 20% 15%;
     --input-border: 215 15% 30%;
-    --ring: 200 80% 55%;
+    --ring: 190 50% 65%;
 
     /* Gradients (darker variants) */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-soft)));
