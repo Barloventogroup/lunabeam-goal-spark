@@ -562,58 +562,9 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     </Button>
                   ))}
                 </div>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      value={customBarrier}
-                      onChange={(e) => setCustomBarrier(e.target.value)}
-                      placeholder="Other barrier..."
-                      className="flex-1 h-10"
-                      maxLength={20}
-                    />
-                    <Button
-                      onClick={() => addCustomOption('barriers', customBarrier, setCustomBarrier)}
-                      disabled={data.barriers.length >= 2 || !customBarrier.trim()}
-                      className="h-10 px-6 border-0 text-sm text-white"
-                      style={{ 
-                        backgroundColor: customBarrier.trim() && data.barriers.length < 2 ? '#2196F3' : '#E0E0E0'
-                      }}
-                    >
-                      Add
-                    </Button>
-                  </div>
-                  {validationMessages.barriers && (
-                    <p className="text-xs text-red-500">{validationMessages.barriers}</p>
-                  )}
-                  {suggestions.barriers && suggestions.barriers.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      <span className="text-xs text-black">Try: </span>
-                      {suggestions.barriers.map(suggestion => (
-                        <button
-                          key={suggestion}
-                          onClick={() => {
-                            setCustomBarrier(suggestion);
-                            setValidationMessages(prev => {
-                              const { barriers: _, ...rest } = prev;
-                              return rest;
-                            });
-                            setSuggestions(prev => {
-                              const { barriers: _, ...rest } = prev;
-                              return rest;
-                            });
-                          }}
-                          className="text-xs text-blue-600 underline"
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
                 <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
-
             {/* Step 7: Goal Seed */}
             {currentStep === 7 && (
               <div className="space-y-6">
