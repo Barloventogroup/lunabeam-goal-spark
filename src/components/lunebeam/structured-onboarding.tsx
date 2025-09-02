@@ -638,7 +638,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
             {/* Navigation */}
             <div className="pt-6 mt-auto space-y-2">
               {currentStep > 1 && (
-                <Button variant="ghost" onClick={handleBack} className="w-full">
+                <Button variant="ghost" onClick={handleBack} className="w-full text-white" style={{ backgroundColor: '#87CEEB' }}>
                   Back
                 </Button>
               )}
