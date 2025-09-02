@@ -71,7 +71,7 @@ export default function Auth() {
               className="h-16 w-auto object-cover object-center"
             />
           </div>
-          <CardDescription>
+          <CardDescription className="text-black font-bold">
             Guiding big dreams, one step at a time
           </CardDescription>
           {user && (
