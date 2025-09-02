@@ -86,6 +86,8 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
   const [customSuperpower, setCustomSuperpower] = useState('');
   const [customInterest, setCustomInterest] = useState('');
   const [customBarrier, setCustomBarrier] = useState('');
+  const [validationMessages, setValidationMessages] = useState<{[key: string]: string}>({});
+  const [suggestions, setSuggestions] = useState<{[key: string]: string[]}>({});
   const [showProfile, setShowProfile] = useState(false);
   const [generatedProfile, setGeneratedProfile] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -133,6 +135,37 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
     return array;
   };
 
+  const validateWord = (word: string, field: 'superpowers' | 'interests' | 'barriers') => {
+    const commonWords: { [key: string]: string[] } = {
+      superpowers: ['Smart', 'Fast', 'Strong', 'Friendly', 'Helpful', 'Artistic', 'Musical', 'Athletic'],
+      interests: ['Photography', 'Dancing', 'Singing', 'Drawing', 'Writing', 'Swimming', 'Running', 'Cycling'],
+      barriers: ['Stress', 'Fatigue', 'Anxiety', 'Distractions', 'Interruptions', 'Perfectionism']
+    };
+
+    // Simple word validation - check if it's at least 2 characters and contains letters
+    const isValid = word.length >= 2 && /^[a-zA-Z\s/-]+$/.test(word);
+    
+    if (!isValid && word.length > 0) {
+      setValidationMessages(prev => ({
+        ...prev,
+        [field]: "Are you sure that's a word?"
+      }));
+      setSuggestions(prev => ({
+        ...prev,
+        [field]: commonWords[field].filter(w => w.toLowerCase().includes(word.toLowerCase().substring(0, 2)))
+      }));
+    } else {
+      setValidationMessages(prev => {
+        const { [field]: _, ...rest } = prev;
+        return rest;
+      });
+      setSuggestions(prev => {
+        const { [field]: _, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
   const addCustomOption = (field: 'superpowers' | 'interests' | 'barriers', value: string, setter: (value: string) => void) => {
     if (value.trim()) {
       setData(prev => ({
@@ -140,6 +173,15 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
         [field]: [...prev[field], value.trim()]
       }));
       setter('');
+      // Clear validation when successfully added
+      setValidationMessages(prev => {
+        const { [field]: _, ...rest } = prev;
+        return rest;
+      });
+      setSuggestions(prev => {
+        const { [field]: _, ...rest } = prev;
+        return rest;
+      });
     }
   };
 
@@ -341,24 +383,56 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     </Button>
                   ))}
                 </div>
-                <div className="flex gap-2">
-                  <Input
-                    value={customSuperpower}
-                    onChange={(e) => setCustomSuperpower(e.target.value)}
-                    placeholder="Other superpower..."
-                    className="flex-1 h-10"
-                    maxLength={20}
-                  />
-                  <Button
-                    onClick={() => addCustomOption('superpowers', customSuperpower, setCustomSuperpower)}
-                    disabled={data.superpowers.length >= 3 || !customSuperpower.trim()}
-                    className="h-10 px-6 border-0 text-sm text-white"
-                    style={{ 
-                      backgroundColor: customSuperpower.trim() && data.superpowers.length < 3 ? '#2196F3' : '#E0E0E0'
-                    }}
-                  >
-                    Add
-                  </Button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={customSuperpower}
+                      onChange={(e) => {
+                        setCustomSuperpower(e.target.value);
+                        validateWord(e.target.value, 'superpowers');
+                      }}
+                      placeholder="Other superpower..."
+                      className="flex-1 h-10"
+                      maxLength={20}
+                    />
+                    <Button
+                      onClick={() => addCustomOption('superpowers', customSuperpower, setCustomSuperpower)}
+                      disabled={data.superpowers.length >= 3 || !customSuperpower.trim()}
+                      className="h-10 px-6 border-0 text-sm text-white"
+                      style={{ 
+                        backgroundColor: customSuperpower.trim() && data.superpowers.length < 3 ? '#2196F3' : '#E0E0E0'
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  {validationMessages.superpowers && (
+                    <p className="text-xs text-red-500">{validationMessages.superpowers}</p>
+                  )}
+                  {suggestions.superpowers && suggestions.superpowers.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-xs text-black">Try: </span>
+                      {suggestions.superpowers.map(suggestion => (
+                        <button
+                          key={suggestion}
+                          onClick={() => {
+                            setCustomSuperpower(suggestion);
+                            setValidationMessages(prev => {
+                              const { superpowers: _, ...rest } = prev;
+                              return rest;
+                            });
+                            setSuggestions(prev => {
+                              const { superpowers: _, ...rest } = prev;
+                              return rest;
+                            });
+                          }}
+                          className="text-xs text-blue-600 underline"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
@@ -393,24 +467,56 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     </Button>
                   ))}
                 </div>
-                <div className="flex gap-2">
-                  <Input
-                    value={customInterest}
-                    onChange={(e) => setCustomInterest(e.target.value)}
-                    placeholder="Other interest..."
-                    className="flex-1 h-10"
-                    maxLength={20}
-                  />
-                  <Button
-                    onClick={() => addCustomOption('interests', customInterest, setCustomInterest)}
-                    disabled={data.interests.length >= 5 || !customInterest.trim()}
-                    className="h-10 px-6 border-0 text-sm text-white"
-                    style={{ 
-                      backgroundColor: customInterest.trim() && data.interests.length < 5 ? '#2196F3' : '#E0E0E0'
-                    }}
-                  >
-                    Add
-                  </Button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={customInterest}
+                      onChange={(e) => {
+                        setCustomInterest(e.target.value);
+                        validateWord(e.target.value, 'interests');
+                      }}
+                      placeholder="Other interest..."
+                      className="flex-1 h-10"
+                      maxLength={20}
+                    />
+                    <Button
+                      onClick={() => addCustomOption('interests', customInterest, setCustomInterest)}
+                      disabled={data.interests.length >= 5 || !customInterest.trim()}
+                      className="h-10 px-6 border-0 text-sm text-white"
+                      style={{ 
+                        backgroundColor: customInterest.trim() && data.interests.length < 5 ? '#2196F3' : '#E0E0E0'
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  {validationMessages.interests && (
+                    <p className="text-xs text-red-500">{validationMessages.interests}</p>
+                  )}
+                  {suggestions.interests && suggestions.interests.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-xs text-black">Try: </span>
+                      {suggestions.interests.map(suggestion => (
+                        <button
+                          key={suggestion}
+                          onClick={() => {
+                            setCustomInterest(suggestion);
+                            setValidationMessages(prev => {
+                              const { interests: _, ...rest } = prev;
+                              return rest;
+                            });
+                            setSuggestions(prev => {
+                              const { interests: _, ...rest } = prev;
+                              return rest;
+                            });
+                          }}
+                          className="text-xs text-blue-600 underline"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
@@ -511,24 +617,56 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     </Button>
                   ))}
                 </div>
-                <div className="flex gap-2">
-                  <Input
-                    value={customBarrier}
-                    onChange={(e) => setCustomBarrier(e.target.value)}
-                    placeholder="Other barrier..."
-                    className="flex-1 h-10"
-                    maxLength={20}
-                  />
-                  <Button
-                    onClick={() => addCustomOption('barriers', customBarrier, setCustomBarrier)}
-                    disabled={data.barriers.length >= 2 || !customBarrier.trim()}
-                    className="h-10 px-6 border-0 text-sm text-white"
-                    style={{ 
-                      backgroundColor: customBarrier.trim() && data.barriers.length < 2 ? '#2196F3' : '#E0E0E0'
-                    }}
-                  >
-                    Add
-                  </Button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={customBarrier}
+                      onChange={(e) => {
+                        setCustomBarrier(e.target.value);
+                        validateWord(e.target.value, 'barriers');
+                      }}
+                      placeholder="Other barrier..."
+                      className="flex-1 h-10"
+                      maxLength={20}
+                    />
+                    <Button
+                      onClick={() => addCustomOption('barriers', customBarrier, setCustomBarrier)}
+                      disabled={data.barriers.length >= 2 || !customBarrier.trim()}
+                      className="h-10 px-6 border-0 text-sm text-white"
+                      style={{ 
+                        backgroundColor: customBarrier.trim() && data.barriers.length < 2 ? '#2196F3' : '#E0E0E0'
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  {validationMessages.barriers && (
+                    <p className="text-xs text-red-500">{validationMessages.barriers}</p>
+                  )}
+                  {suggestions.barriers && suggestions.barriers.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-xs text-black">Try: </span>
+                      {suggestions.barriers.map(suggestion => (
+                        <button
+                          key={suggestion}
+                          onClick={() => {
+                            setCustomBarrier(suggestion);
+                            setValidationMessages(prev => {
+                              const { barriers: _, ...rest } = prev;
+                              return rest;
+                            });
+                            setSuggestions(prev => {
+                              const { barriers: _, ...rest } = prev;
+                              return rest;
+                            });
+                          }}
+                          className="text-xs text-blue-600 underline"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
