@@ -61,7 +61,7 @@ export function OnboardingFlow() {
             <div className="flex justify-between items-center pt-4">
               <Button 
                 variant="ghost"
-                onClick={() => window.location.href = '/auth'}
+                onClick={() => navigate('/auth')}
                 className="text-sm"
               >
                 ← Back to Sign Up
