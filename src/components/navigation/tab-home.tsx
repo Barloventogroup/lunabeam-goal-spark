@@ -124,7 +124,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                             Check In
                           </Button>
                           <Button 
-                            variant="plan"
+                            variant="default"
                             size="sm"
                             onClick={() => onNavigateToGoals(goal.id)}
                           >
