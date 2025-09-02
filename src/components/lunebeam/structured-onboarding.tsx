@@ -136,6 +136,8 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
   };
 
   const validateWord = (word: string, field: 'superpowers' | 'interests' | 'barriers') => {
+    console.log('Validating word:', word, 'for field:', field);
+    
     const commonWords: { [key: string]: string[] } = {
       superpowers: ['Smart', 'Fast', 'Strong', 'Friendly', 'Helpful', 'Artistic', 'Musical', 'Athletic'],
       interests: ['Photography', 'Dancing', 'Singing', 'Drawing', 'Writing', 'Swimming', 'Running', 'Cycling'],
@@ -144,10 +146,13 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
 
     // Only validate if the word has at least 2 characters
     if (word.length >= 2) {
-      // Simple word validation - check if it contains only letters, spaces, hyphens, and slashes
-      const isValid = /^[a-zA-Z\s/-]+$/.test(word);
+      // Check for invalid characters (anything that's not letters, spaces, hyphens, or slashes)
+      const hasInvalidChars = /[^a-zA-Z\s/-]/.test(word);
       
-      if (!isValid) {
+      console.log('Word has invalid chars:', hasInvalidChars);
+      
+      if (hasInvalidChars) {
+        console.log('Setting validation message for:', field);
         setValidationMessages(prev => ({
           ...prev,
           [field]: "Are you sure that's a word?"
@@ -158,6 +163,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
         }));
       } else {
         // Clear validation for valid words
+        console.log('Clearing validation for:', field);
         setValidationMessages(prev => {
           const { [field]: _, ...rest } = prev;
           return rest;
@@ -169,6 +175,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
       }
     } else {
       // Clear validation when less than 2 characters
+      console.log('Clearing validation (less than 2 chars) for:', field);
       setValidationMessages(prev => {
         const { [field]: _, ...rest } = prev;
         return rest;
