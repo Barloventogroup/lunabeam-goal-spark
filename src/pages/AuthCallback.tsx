@@ -10,7 +10,7 @@ function getHashParams(hash: string) {
 
 export default function AuthCallback() {
   const nav = useNavigate();
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'success' | 'error'>('loading');
   const [msg, setMsg] = useState<string>('Processing…');
 
   useEffect(() => {
@@ -20,12 +20,11 @@ export default function AuthCallback() {
         const code = url.searchParams.get('code');
 
         if (code) {
-          // New-style PKCE callback: exchange ?code= for a session
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          // New-style PKCE callback: exchange ?code= for a session (email confirm, magic link, etc.)
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
-          // After exchange, show reset form ONLY if this was a recovery flow
-          setStatus('ready');
-          setMsg('You are signed in for password recovery.');
+          setStatus('success');
+          setMsg('Email confirmed! Redirecting…');
           return;
         }
 
@@ -36,7 +35,7 @@ export default function AuthCallback() {
 
         if (hash && (hashParams['access_token'] || hashParams['refresh_token'])) {
           // Supabase v1 hash tokens — set them as session
-          const { data, error } = await supabase.auth.setSession({
+          const { error } = await supabase.auth.setSession({
             access_token: hashParams['access_token'],
             refresh_token: hashParams['refresh_token']
           });
@@ -44,6 +43,10 @@ export default function AuthCallback() {
           if (type === 'recovery') {
             setStatus('ready');
             setMsg('You are signed in for password recovery.');
+            return;
+          } else {
+            setStatus('success');
+            setMsg('Email confirmed! Redirecting…');
             return;
           }
         }
@@ -71,10 +74,13 @@ export default function AuthCallback() {
     })();
   }, [status]);
 
-  // When ready, go to reset screen
+  // Redirects based on intent
   useEffect(() => {
     if (status === 'ready') {
       nav('/auth/reset', { replace: true });
+    }
+    if (status === 'success') {
+      nav('/', { replace: true });
     }
   }, [status, nav]);
 

@@ -68,7 +68,7 @@ export default function Auth() {
             />
           </div>
           <CardDescription>
-            {isSignUp ? 'Create your account' : 'Welcome back'}
+            {isSignUp ? 'Create your account' : 'Welcome back — sign in'}
           </CardDescription>
         </CardHeader>
         
