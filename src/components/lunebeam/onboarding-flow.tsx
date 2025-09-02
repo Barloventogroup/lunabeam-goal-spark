@@ -57,23 +57,6 @@ export function OnboardingFlow() {
                 </div>
               </RadioGroup>
             </div>
-            
-            <div className="flex justify-between items-center pt-4">
-              <Button 
-                variant="ghost"
-                onClick={() => navigate('/auth')}
-                className="text-sm"
-              >
-                ← Back to Sign Up
-              </Button>
-              <Button 
-                onClick={() => roleData.role && handleRoleSelection(roleData.role)}
-                disabled={!roleData.role}
-                className="px-8"
-              >
-                Continue
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
