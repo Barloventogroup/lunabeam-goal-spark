@@ -440,7 +440,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                             ...prev,
                             workStyle: { ...prev.workStyle, [key]: option }
                           }))}
-                          className="flex-1 border-0"
+                          className="flex-1 border-0 text-sm"
                           style={{ backgroundColor: data.workStyle[key as keyof typeof data.workStyle] === option ? undefined : '#E0E0E0' }}
                         >
                           {labels[index]}
