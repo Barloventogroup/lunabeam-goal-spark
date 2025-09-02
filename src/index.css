@@ -58,9 +58,9 @@
     --success-soft: 150 40% 90%;
 
     /* Check-in Colors */
-    --checkin: 239 220 126; /* #EFDC7E */
+    --checkin: 255 239 128; /* #FFEF80 */
     --checkin-foreground: 0 0% 0%; /* Black text for contrast */
-    --checkin-soft: 249 237 197; /* Light version of #EFDC7E */
+    --checkin-soft: 255 249 190; /* Light version of #FFEF80 */
 
     --warning: 35 85% 55%;
     --warning-foreground: 215 25% 15%;
@@ -172,9 +172,9 @@
     --success-soft: 150 30% 25%;
 
     /* Check-in Colors */
-    --checkin: 239 220 126; /* #EFDC7E */
+    --checkin: 255 239 128; /* #FFEF80 */
     --checkin-foreground: 0 0% 0%; /* Black text for contrast */
-    --checkin-soft: 249 237 197; /* Light version of #EFDC7E */
+    --checkin-soft: 255 249 190; /* Light version of #FFEF80 */
 
     --warning: 35 75% 65%;
     --warning-foreground: 215 25% 8%;
