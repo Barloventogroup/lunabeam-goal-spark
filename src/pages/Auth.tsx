@@ -86,7 +86,7 @@ export default function Auth() {
         
         <CardContent>
           {!isSignUp && (
-            <div className="mb-4 text-sm text-muted-foreground text-center">
+            <div className="mb-4 mt-6 text-sm text-black text-center">
               Login with your email to access your account
             </div>
           )}
