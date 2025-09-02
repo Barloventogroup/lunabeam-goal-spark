@@ -198,7 +198,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
                       <h4 className="mb-2">{goal.title}</h4>
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant={getStatusColor(goal.status)}>
-                          {goal.status}
+                          {goal.status === 'active' ? 'In Progress' : goal.status}
                         </Badge>
                         <Badge variant={getPriorityColor(goal.priority)}>
                           <Flag className="h-3 w-3 mr-1" />
