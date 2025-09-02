@@ -174,15 +174,15 @@ export const TabHome: React.FC<TabHomeProps> = ({
           </div>
 
           {/* Encouragement Message */}
-          <Card className="bg-orange-50 border-orange-200">
+          <Card className="border-transparent" style={{ backgroundColor: '#EFDC7E80' }}>
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <span className="text-2xl">✨</span>
+                <span className="text-2xl">🎉</span>
                 <div>
-                  <h3 className="font-semibold text-orange-800 mb-1">
+                  <h3 className="font-semibold text-gray-800 mb-1">
                     Small steps lead to big changes
                   </h3>
-                  <p className="text-sm text-orange-700">
+                  <p className="text-sm text-gray-700">
                     Progress isn't about perfection — it's about showing up consistently for yourself.
                   </p>
                 </div>
