@@ -277,7 +277,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                   <h2 className="text-lg font-semibold mb-2">
                     {data.role === 'parent' ? "What would they like to be called?" : "What would you like to be called?"}
                   </h2>
-                  <p className="text-lg text-black">
+                  <p className="text-sm text-black">
                     Just {data.role === 'parent' ? 'their' : 'your'} first name or nickname is perfect
                   </p>
                 </div>
@@ -287,14 +287,14 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     value={data.name}
                     onChange={(e) => setData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder={data.role === 'parent' ? "Their name" : "Your name"}
-                    className="text-center text-lg"
+                    className="text-center text-sm"
                     maxLength={30}
                     style={{ backgroundColor: '#E0E0E0' }}
                   />
                   <div>
                     <p className="text-sm font-medium mb-2">Pronouns (optional)</p>
                     <div className="flex flex-wrap gap-2">
-                      {['she/her', 'he/him', 'they/them', 'other'].map(pronoun => (
+                      {['she/her', 'he/him', 'they/them'].map(pronoun => (
                         <Button
                           key={pronoun}
                           variant={data.pronouns === pronoun ? "default" : "outline"}
@@ -306,18 +306,9 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                         </Button>
                       ))}
                     </div>
-                    {data.pronouns === 'other' && (
-                      <Input
-                        value={data.pronouns === 'other' ? '' : data.pronouns}
-                        onChange={(e) => setData(prev => ({ ...prev, pronouns: e.target.value }))}
-                        placeholder={data.role === 'parent' ? "Their pronouns" : "Your pronouns"}
-                        className="mt-2"
-                        maxLength={20}
-                        style={{ backgroundColor: '#E0E0E0' }}
-                      />
-                    )}
                   </div>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
