@@ -471,7 +471,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                       key={time}
                       variant={data.bestTime === time ? "default" : "outline"}
                       onClick={() => setData(prev => ({ ...prev, bestTime: time }))}
-                      className="w-full justify-start border-0"
+                      className="w-full justify-start border-0 text-sm"
                       style={{ backgroundColor: data.bestTime === time ? undefined : '#E0E0E0' }}
                     >
                       {time}
