@@ -222,10 +222,6 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
             <Badge variant={getStatusColor(goal.status)}>
               {goal.status === 'active' ? 'In Progress' : goal.status}
             </Badge>
-            <Badge variant={getPriorityColor(goal.priority)}>
-              <Flag className="h-3 w-3 mr-1" />
-              {goal.priority}
-            </Badge>
             {goal.domain && (
               <Badge variant="outline">{goal.domain}</Badge>
             )}

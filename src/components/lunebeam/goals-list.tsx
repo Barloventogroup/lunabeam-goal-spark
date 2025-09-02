@@ -200,10 +200,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
                         <Badge variant={getStatusColor(goal.status)}>
                           {goal.status === 'active' ? 'In Progress' : goal.status}
                         </Badge>
-                        <Badge variant={getPriorityColor(goal.priority)}>
-                          <Flag className="h-3 w-3 mr-1" />
-                          {goal.priority}
-                        </Badge>
                         {goal.domain && (
                           <Badge variant="category">{goal.domain}</Badge>
                         )}
