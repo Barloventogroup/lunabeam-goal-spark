@@ -97,7 +97,8 @@ export default {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-supportive': 'var(--gradient-supportive)',
 				'gradient-soft': 'var(--gradient-soft)',
-				'gradient-progress': 'var(--gradient-progress)'
+				'gradient-progress': 'var(--gradient-progress)',
+				'gradient-goals': 'var(--gradient-goals)'
 			},
 			boxShadow: {
 				'soft': 'var(--shadow-soft)',

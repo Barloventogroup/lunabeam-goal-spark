@@ -87,6 +87,7 @@
     --gradient-supportive: linear-gradient(135deg, hsl(var(--supportive)), hsl(var(--supportive-soft)));
     --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--background-soft)));
     --gradient-progress: linear-gradient(90deg, #67BFD1, #EFDC7E);
+    --gradient-goals: linear-gradient(135deg, #67BFD1, #EFDC7E);
 
     /* Shadows */
     --shadow-soft: 0 4px 15px -3px hsl(var(--primary) / 0.12);
@@ -191,6 +192,7 @@
     --gradient-supportive: linear-gradient(135deg, hsl(var(--supportive)), hsl(var(--supportive-soft)));
     --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--background-soft)));
     --gradient-progress: linear-gradient(90deg, #67BFD1, #EFDC7E);
+    --gradient-goals: linear-gradient(135deg, #67BFD1, #EFDC7E);
 
     /* Shadows (more subtle in dark mode) */
     --shadow-soft: 0 4px 15px -3px hsl(var(--primary) / 0.15);

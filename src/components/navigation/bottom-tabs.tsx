@@ -103,7 +103,25 @@ export const BottomTabs: React.FC = () => {
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
                 >
-                  <Icon className={`h-5 w-5 mb-1 ${isActive ? 'text-primary' : ''}`} />
+                  <Icon 
+                    className={`h-5 w-5 mb-1 ${
+                      isActive && tab.id === 'goals' 
+                        ? 'text-transparent bg-gradient-goals bg-clip-text' 
+                        : isActive 
+                          ? 'text-primary' 
+                          : ''
+                    }`} 
+                    style={
+                      isActive && tab.id === 'goals' 
+                        ? { 
+                            background: 'var(--gradient-goals)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text'
+                          }
+                        : undefined
+                    }
+                  />
                   <span className="text-xs font-medium truncate">
                     {tab.label}
                   </span>
