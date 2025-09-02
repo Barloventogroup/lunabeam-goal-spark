@@ -258,7 +258,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
   }
 
   return (
-    <div className="min-h-screen bg-gradient-soft p-4">
+    <div className="min-h-screen bg-gradient-primary p-4">
       <div className="max-w-md mx-auto py-6">
         {/* Progress */}
         <div className="mb-6">
@@ -274,13 +274,14 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
             {currentStep === 1 && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-2">
+                  <h2 className="text-lg font-semibold mb-2">
                     {data.role === 'parent' ? "What would they like to be called?" : "What would you like to be called?"}
                   </h2>
-                  <p className="text-sm text-foreground-soft">
+                  <p className="text-lg text-black">
                     Just {data.role === 'parent' ? 'their' : 'your'} first name or nickname is perfect
                   </p>
                 </div>
+                <hr style={{ borderColor: '#E0E0E0' }} />
                 <div className="space-y-4">
                   <Input
                     value={data.name}
@@ -288,6 +289,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     placeholder={data.role === 'parent' ? "Their name" : "Your name"}
                     className="text-center text-lg"
                     maxLength={30}
+                    style={{ backgroundColor: '#E0E0E0' }}
                   />
                   <div>
                     <p className="text-sm font-medium mb-2">Pronouns (optional)</p>
@@ -297,7 +299,8 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                           key={pronoun}
                           variant={data.pronouns === pronoun ? "default" : "outline"}
                           onClick={() => setData(prev => ({ ...prev, pronouns: pronoun }))}
-                          className="text-sm"
+                          className="text-sm border-0"
+                          style={{ backgroundColor: data.pronouns === pronoun ? undefined : '#E0E0E0' }}
                         >
                           {pronoun}
                         </Button>
@@ -310,6 +313,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                         placeholder={data.role === 'parent' ? "Their pronouns" : "Your pronouns"}
                         className="mt-2"
                         maxLength={20}
+                        style={{ backgroundColor: '#E0E0E0' }}
                       />
                     )}
                   </div>
@@ -624,17 +628,17 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
             )}
 
             {/* Navigation */}
-            <div className="flex justify-between pt-6 mt-6 border-t border-border">
-              {currentStep > 1 ? (
-                <Button variant="ghost" onClick={handleBack}>
+            <div className="pt-6 mt-6 border-t border-border space-y-2">
+              {currentStep > 1 && (
+                <Button variant="ghost" onClick={handleBack} className="w-full">
                   Back
                 </Button>
-              ) : <div />}
+              )}
               
               <Button 
                 onClick={handleNext} 
                 disabled={!canProceed() || isGenerating}
-                className="ml-auto"
+                className="w-full"
               >
                 {isGenerating ? 'Creating...' : currentStep === getTotalSteps() ? 'Create Profile' : 'Next'}
               </Button>
