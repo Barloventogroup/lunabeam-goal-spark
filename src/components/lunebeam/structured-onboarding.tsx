@@ -142,19 +142,33 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
       barriers: ['Stress', 'Fatigue', 'Anxiety', 'Distractions', 'Interruptions', 'Perfectionism']
     };
 
-    // Simple word validation - check if it's at least 2 characters and contains letters
-    const isValid = word.length >= 2 && /^[a-zA-Z\s/-]+$/.test(word);
-    
-    if (!isValid && word.length > 0) {
-      setValidationMessages(prev => ({
-        ...prev,
-        [field]: "Are you sure that's a word?"
-      }));
-      setSuggestions(prev => ({
-        ...prev,
-        [field]: commonWords[field].filter(w => w.toLowerCase().includes(word.toLowerCase().substring(0, 2)))
-      }));
+    // Only validate if the word has at least 2 characters
+    if (word.length >= 2) {
+      // Simple word validation - check if it contains only letters, spaces, hyphens, and slashes
+      const isValid = /^[a-zA-Z\s/-]+$/.test(word);
+      
+      if (!isValid) {
+        setValidationMessages(prev => ({
+          ...prev,
+          [field]: "Are you sure that's a word?"
+        }));
+        setSuggestions(prev => ({
+          ...prev,
+          [field]: commonWords[field].filter(w => w.toLowerCase().includes(word.toLowerCase().substring(0, 2)))
+        }));
+      } else {
+        // Clear validation for valid words
+        setValidationMessages(prev => {
+          const { [field]: _, ...rest } = prev;
+          return rest;
+        });
+        setSuggestions(prev => {
+          const { [field]: _, ...rest } = prev;
+          return rest;
+        });
+      }
     } else {
+      // Clear validation when less than 2 characters
       setValidationMessages(prev => {
         const { [field]: _, ...rest } = prev;
         return rest;
