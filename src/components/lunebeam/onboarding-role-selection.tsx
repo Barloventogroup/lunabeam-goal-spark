@@ -3,7 +3,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface OnboardingRoleSelectionProps {
   onComplete: (data: { role: 'parent' | 'individual'; individualEmail?: string }) => void;
@@ -12,17 +11,48 @@ interface OnboardingRoleSelectionProps {
 export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionProps) {
   const [role, setRole] = useState<'parent' | 'individual' | ''>('');
   const [individualEmail, setIndividualEmail] = useState('');
+  const [showInterstitial, setShowInterstitial] = useState(false);
 
-  const handleContinue = () => {
-    if (role) {
-      onComplete({
-        role: role as 'parent' | 'individual',
-        individualEmail: role === 'parent' ? individualEmail : undefined
-      });
+  const handleRoleSelection = (selectedRole: 'parent' | 'individual') => {
+    setRole(selectedRole);
+    if (selectedRole === 'individual') {
+      setShowInterstitial(true);
     }
   };
 
-  const canContinue = role && (role === 'individual' || (role === 'parent' && individualEmail.trim().length > 0));
+  const handleParentContinue = () => {
+    if (role === 'parent' && individualEmail.trim().length > 0) {
+      setShowInterstitial(true);
+    }
+  };
+
+  const handleInterstitialNext = () => {
+    onComplete({
+      role: role as 'parent' | 'individual',
+      individualEmail: role === 'parent' ? individualEmail : undefined
+    });
+  };
+
+  const canParentContinue = role === 'parent' && individualEmail.trim().length > 0;
+
+  // Show interstitial screen
+  if (showInterstitial) {
+    return (
+      <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center">
+          <h1 className="text-xl font-medium text-black mb-8">
+            The next questions will help me suggest goals and personalize your experience. Ready?
+          </h1>
+          <Button
+            onClick={handleInterstitialNext}
+            className="w-full"
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-soft p-4">
@@ -44,37 +74,34 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
         <Card className="p-6 shadow-card border-0">
           <CardContent className="p-0 space-y-6">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white text-xl font-bold">L</span>
-              </div>
-              <h1 className="text-2xl font-bold mb-2">Hi! I'm Lune 🌙</h1>
-              <p className="text-foreground-soft">
-                I'm your personal AI assistant. Before we start, I need to know who's creating this account.
+              <h1 className="text-2xl font-bold mb-2">Welcome to Lunabeam</h1>
+              <p className="text-black">
+                Before we start, I need to know who's creating this account.
               </p>
             </div>
 
             <div className="space-y-4">
-              <Label className="text-base font-semibold">Who is the main user for this app?</Label>
-              <RadioGroup value={role} onValueChange={(value) => setRole(value as 'parent' | 'individual')}>
-                <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <RadioGroupItem value="individual" id="individual" />
-                  <Label htmlFor="individual" className="flex-1 cursor-pointer">
-                    <div>
-                      <div className="font-semibold">Individual</div>
-                      <div className="text-sm text-foreground-soft">I'm creating this account for myself</div>
-                    </div>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <RadioGroupItem value="parent" id="parent" />
-                  <Label htmlFor="parent" className="flex-1 cursor-pointer">
-                    <div>
-                      <div className="font-semibold">Parent</div>
-                      <div className="text-sm text-foreground-soft">I'm creating this account for my child</div>
-                    </div>
-                  </Label>
-                </div>
-              </RadioGroup>
+              <Label className="text-base font-semibold">Who is the main user for Lunebeam?</Label>
+              <div className="space-y-3">
+                <button
+                  onClick={() => handleRoleSelection('individual')}
+                  className="w-full p-4 border rounded-full hover:bg-muted/50 transition-colors text-left"
+                >
+                  <div>
+                    <div className="font-semibold">Individual</div>
+                    <div className="text-sm text-foreground-soft">I'm creating this account for myself</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleRoleSelection('parent')}
+                  className="w-full p-4 border rounded-full hover:bg-muted/50 transition-colors text-left"
+                >
+                  <div>
+                    <div className="font-semibold">Parent</div>
+                    <div className="text-sm text-foreground-soft">I'm creating this account for my child</div>
+                  </div>
+                </button>
+              </div>
 
               {role === 'parent' && (
                 <div className="space-y-2 mt-4 p-4 bg-muted/30 rounded-lg">
@@ -91,21 +118,18 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
                   <p className="text-xs text-foreground-soft">
                     We'll send an email invitation for them to join Lunebeam.
                   </p>
+                  <Button
+                    onClick={handleParentContinue}
+                    disabled={!canParentContinue}
+                    className="w-full mt-4"
+                  >
+                    Continue
+                  </Button>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
-
-        <div className="flex gap-4 mt-6">
-          <Button
-            onClick={handleContinue}
-            disabled={!canContinue}
-            className="w-full"
-          >
-            Continue
-          </Button>
-        </div>
       </div>
     </div>
   );
