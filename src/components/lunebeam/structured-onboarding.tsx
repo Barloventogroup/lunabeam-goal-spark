@@ -286,8 +286,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     value={data.name}
                     onChange={(e) => setData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder={data.role === 'parent' ? "Their name" : "Your name"}
-                    className="text-left text-sm bg-white border border-gray-300"
-                    style={{ borderRadius: '25px', borderColor: '#E0E0E0' }}
+                    className="text-left text-sm"
                     maxLength={30}
                   />
                   <div>
