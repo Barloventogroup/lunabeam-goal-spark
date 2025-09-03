@@ -4,17 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
-  MessageCircle, 
   ChevronDown, 
   ChevronUp, 
   MoreHorizontal,
   CheckCircle2,
-  Circle,
   Clock,
-  Sparkles,
   HelpCircle,
   X,
-  AlertTriangle
+  AlertTriangle,
+  ArrowDown
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -233,19 +231,24 @@ export const StepsList: React.FC<StepsListProps> = ({
     }
   };
 
+  const hasDependencies = (step: Step, allSteps: Step[]): boolean => {
+    return step.dependency_step_ids && step.dependency_step_ids.length > 0;
+  };
+
   const getPrecursorText = (step: Step): string | null => {
-    // For now, database steps don't have precursor dependencies
+    if (hasDependencies(step, steps)) {
+      const dependencyCount = step.dependency_step_ids?.length || 0;
+      return `Requires ${dependencyCount} other step${dependencyCount > 1 ? 's' : ''}`;
+    }
     return null;
   };
 
     if (steps.length === 0) {
       return (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">Steps to get rolling</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => onOpenChat()}>
-              <MessageCircle className="h-4 w-4" />
-            </Button>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-foreground">Recommended steps</CardTitle>
+            <p className="text-sm text-muted-foreground">AI-generated action items tailored to your goal. Click to mark progress, provide feedback, or get more help.</p>
           </CardHeader>
           <CardContent className="py-6">
             <p className="text-muted-foreground mb-4">We're preparing a few quick wins for you…</p>
@@ -268,18 +271,16 @@ export const StepsList: React.FC<StepsListProps> = ({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <div className="space-y-1">
-          <CardTitle className="text-lg font-semibold text-foreground">Steps to get rolling</CardTitle>
+      <CardHeader className="pb-4">
+        <div className="space-y-2">
+          <CardTitle className="text-lg font-semibold text-foreground">Recommended steps</CardTitle>
+          <p className="text-sm text-muted-foreground">AI-generated action items tailored to your goal. Click to mark progress, provide feedback, or get more help.</p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>{doneSteps.length}/{actionableSteps.length} done</span>
             <span>•</span>
             <span>{progressPercent}%</span>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => onOpenChat()}>
-          <MessageCircle className="h-4 w-4" />
-        </Button>
       </CardHeader>
 
       <CardContent className="space-y-3">
@@ -292,22 +293,23 @@ export const StepsList: React.FC<StepsListProps> = ({
         </div>
 
         {/* Steps list */}
-        <div className="space-y-3">
-          {(showingQueuedSteps ? steps.filter(s => (!s.type || s.type === 'action') && !s.hidden) : visibleSteps).map((step) => {
+        <div className="space-y-1">
+          {(showingQueuedSteps ? steps.filter(s => (!s.type || s.type === 'action') && !s.hidden) : visibleSteps).map((step, index) => {
             const isBlocked = isStepBlocked(step);
             const precursorText = getPrecursorText(step);
             const isExpanded = expandedSteps.has(step.id);
+            const hasNextStep = index < (showingQueuedSteps ? steps.filter(s => (!s.type || s.type === 'action') && !s.hidden).length - 1 : visibleSteps.length - 1);
 
             return (
               <div key={step.id} className="space-y-2">
-                <div className={`flex items-start gap-3 p-3 border border-border rounded-lg transition-colors ${
+                <div className={`flex items-center gap-3 p-4 border border-border rounded-lg transition-colors ${
                   isBlocked ? 'opacity-60' : 'hover:bg-muted/50'
                 }`}>
                   {getStepIcon(step) && (
                     <button
                       onClick={() => !isBlocked && handleStepToggle(step.id, step.status)}
                       disabled={isBlocked}
-                      className="flex-shrink-0 mt-0.5"
+                      className="flex-shrink-0"
                     >
                       {getStepIcon(step)}
                     </button>
@@ -315,7 +317,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                   
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className={`font-medium ${step.status === 'done' ? 'line-through text-muted-foreground' : ''}`}>
+                      <span className={`font-medium text-base ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                         {step.title}
                       </span>
                       {isBlocked && (
@@ -341,7 +343,7 @@ export const StepsList: React.FC<StepsListProps> = ({
 
                     {precursorText && (
                       <div className="flex items-center gap-1 text-xs text-amber-600">
-                        <Clock className="h-3 w-3" />
+                        <ArrowDown className="h-3 w-3" />
                         {precursorText}
                       </div>
                     )}
@@ -353,10 +355,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => onOpenChat(step)} aria-label="Ask about this step">
-                      <MessageCircle className="h-4 w-4" />
-                    </Button>
+                  <div className="flex items-center">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm">
@@ -384,6 +383,13 @@ export const StepsList: React.FC<StepsListProps> = ({
                     </DropdownMenu>
                   </div>
                 </div>
+
+                {/* Dependency arrow connector */}
+                {hasNextStep && (
+                  <div className="flex justify-center">
+                    <ArrowDown className="h-4 w-4 text-muted-foreground/50" />
+                  </div>
+                )}
 
                 {/* Expanded content */}
                 {isExpanded && (
