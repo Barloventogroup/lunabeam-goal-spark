@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Calendar, MoreVertical, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -247,17 +247,29 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="border-transparent bg-gray-600 hover:bg-gray-700 text-white">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="bg-background border border-input shadow-lg z-50">
+              <DropdownMenuItem onClick={() => {/* TODO: Open check-in modal */}}>
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Check In
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {/* TODO: Add buddy functionality */}}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Buddy
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {/* TODO: Share functionality */}}>
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </DropdownMenuItem>
               {goal.status === 'completed' && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Archive Goal
+                      Archive
                     </DropdownMenuItem>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
