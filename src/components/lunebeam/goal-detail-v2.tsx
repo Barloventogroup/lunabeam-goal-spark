@@ -86,6 +86,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                   notes: stepData.explainer,
                   is_required: stepData.is_required,
                   estimated_effort_min: stepData.estimated_effort_min,
+                  due_date: stepData.due_date,
                 });
                 savedSteps.push(step);
               } catch (error) {

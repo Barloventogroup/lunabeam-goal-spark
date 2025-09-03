@@ -3,6 +3,13 @@ import type { Goal, Step, StepMetadata } from '@/types';
 // Simple rules-based step generation for common goals
 export const stepsGenerator = {
   async generateSteps(goal: Goal): Promise<Step[]> {
+    // 1) Try to generate milestone steps from SMART-like description
+    const milestone = generateMilestoneSteps(goal);
+    if (milestone.length > 0) {
+      return milestone;
+    }
+
+    // 2) Fallback to rules-based base steps
     const baseSteps = getBaseStepsForGoal(goal);
     
     return baseSteps.map((stepData, index) => ({
@@ -25,6 +32,72 @@ export const stepsGenerator = {
     }));
   }
 };
+
+function generateMilestoneSteps(goal: Goal): Step[] {
+  const desc = (goal.description || '').toLowerCase();
+  const title = goal.title || '';
+
+  // Detect patterns like "20 minutes, 2×/week for 2 weeks"
+  const freqMatch = desc.match(/(\d+)\s*[×x]\s*\/\s*week/);
+  const durMatch = desc.match(/for\s+(\d+)\s+weeks?/);
+  const minsMatch = desc.match(/(\d+)\s*min/);
+
+  if (!freqMatch || !durMatch) return [];
+
+  const frequency = Math.max(1, parseInt(freqMatch[1], 10));
+  const weeks = Math.max(1, parseInt(durMatch[1], 10));
+  const minutes = minsMatch ? parseInt(minsMatch[1], 10) : undefined;
+  const totalSessions = frequency * weeks;
+
+  // Start from goal.start_date if available, otherwise today
+  const start = goal.start_date ? new Date(goal.start_date) : new Date();
+  const steps: Step[] = [];
+
+  // Distribute sessions evenly through each week
+  const daySpacing = 7 / frequency; // e.g., 3.5 days for 2x/week
+
+  for (let i = 0; i < totalSessions; i++) {
+    const weekIndex = Math.floor(i / frequency); // 0-based
+    const sessionIndex = i % frequency; // 0..frequency-1
+
+    const dayOffset = Math.round(weekIndex * 7 + (sessionIndex + 1) * daySpacing);
+    const due = new Date(start);
+    due.setDate(due.getDate() + dayOffset);
+
+    const labelMinutes = minutes ? `${minutes} min` : '';
+    const stepTitle = `Week ${weekIndex + 1}, Session ${sessionIndex + 1}: ${title}${labelMinutes ? ` · ${labelMinutes}` : ''}`;
+
+    steps.push({
+      id: `ms_${goal.id}_${i}_${Date.now()}`,
+      goal_id: goal.id,
+      title: stepTitle,
+      explainer: `Complete a ${labelMinutes || 'scheduled'} session for your goal.`,
+      notes: undefined,
+      order_index: i,
+      estimated_effort_min: minutes,
+      due_date: due.toISOString().slice(0, 10),
+      status: 'todo',
+      type: 'action',
+      is_required: true,
+      hidden: false,
+      blocked: false,
+      isBlocking: false,
+      points: undefined,
+      dependency_step_ids: [],
+      precursors: [],
+      dependencies: [],
+      supportingLinks: [],
+      aiGenerated: true,
+      userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+      metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 4 },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  }
+
+  return steps;
+}
+
 
 interface BaseStepData {
   title: string;
