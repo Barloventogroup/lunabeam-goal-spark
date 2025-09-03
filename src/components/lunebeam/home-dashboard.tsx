@@ -91,7 +91,10 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
 
   const nextCheckIn = getNextCheckInDate();
   const isCheckInDue = nextCheckIn ? isToday(nextCheckIn) || nextCheckIn < new Date() : true;
-
+  
+  const hasActiveOrPlannedGoals = goals.some(goal => goal.status === 'active' || goal.status === 'planned');
+  const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'User';
+  
   const handleSnooze = (goalId: string, duration: '15m' | '1h') => {
     console.log(`Snoozing goal ${goalId} for ${duration}`);
   };
@@ -148,11 +151,11 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         {/* Welcome Message */}
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-foreground">
-            {goals.length === 0 ? `Welcome ${profile?.first_name || 'User'}!` : `Welcome back, ${profile?.first_name || 'User'}!!`}
+            {!hasActiveOrPlannedGoals ? <>Welcome {displayName}!</> : <>Welcome back, {displayName}!!</>}
           </h1>
-          {goals.length === 0 ? (
+          {!hasActiveOrPlannedGoals ? (
             <p className="text-muted-foreground">
-              👋 Hey {profile?.first_name || 'User'}! Welcome aboard. Let's kick things off by setting your very first goal (see that big plus sign in the blue circle? That is where you start. And remember, big or small, every step counts. Ready to get started?
+              👋 Hey {displayName}! Welcome aboard. Let’s kick things off by setting your very first goal (see that big plus sign in the blue circle — that is where you start). And remember, big or small, every step counts. Ready to get started?
             </p>
           ) : (
             <p className="text-muted-foreground">
@@ -162,7 +165,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         </div>
 
         {/* Checked In Today */}
-        {goals.length > 0 && recentCheckIns.some(checkIn => isToday(new Date(checkIn.date))) && (
+        {hasActiveOrPlannedGoals && recentCheckIns.some(checkIn => isToday(new Date(checkIn.date))) && (
           <Card className="bg-green-50 border-green-200">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -179,7 +182,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         )}
 
         {/* This Week's Progress */}
-        {goals.length > 0 && activeGoal && (
+        {hasActiveOrPlannedGoals && activeGoal && (
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-foreground">This Week's Progress</h2>
             <Card>
@@ -280,7 +283,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           </Card>
         </div>
 
-        {goals.length > 0 && (
+        {hasActiveOrPlannedGoals && (
           <PersonalizedGreeting 
             onResumeGoal={handleResumeGoal}
             onNewGoal={handleNewGoal}

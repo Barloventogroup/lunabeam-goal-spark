@@ -41,7 +41,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
   // Active goals from store
   const activeGoals = goals.filter((g) => g.status === 'active' || g.status === 'planned');
-
+  const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'there';
+  
   return <>
       <div className="min-h-screen bg-gradient-soft">
         {/* Header */}
@@ -64,32 +65,42 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {/* Welcome Message */}
           <div>
             <h2 className="text-2xl font-bold mb-1">
-              Welcome back, {profile?.first_name || 'there'}!!
+              {activeGoals.length === 0 ? `Welcome ${displayName}!` : `Welcome back, ${displayName}!!`}
             </h2>
-            <p className="text-muted-foreground">Let's keep moving forward, one step at a time.</p>
+            {activeGoals.length === 0 ? (
+              <p className="text-muted-foreground">
+                👋 Hey {displayName}! Welcome aboard. Let’s kick things off by setting your very first goal (see that big plus sign in the blue circle — that is where you start). And remember, big or small, every step counts. Ready to get started?
+              </p>
+            ) : (
+              <p className="text-muted-foreground">Let's keep moving forward, one step at a time.</p>
+            )}
           </div>
 
           {/* Checked In Today */}
-          <Card className="bg-green-50 shadow-soft">
-            <CardContent className="flex items-center gap-3 p-4">
-              <CheckCircle className="h-6 w-6 text-green-600" />
-              <div>
-                <h3 className="font-semibold text-green-800">Checked In Today</h3>
-                <p className="text-sm text-green-700">Great job staying on track!</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* This Week's Progress */}
-          <div>
-            <h3 className="text-lg font-semibold mb-3">This Week's Progress</h3>
-            <Card className="shadow-soft">
-              <CardContent className="p-4">
-                <Progress value={60} className="mb-2" />
-                <p className="text-sm text-muted-foreground">3 of 5 steps completed</p>
+          {activeGoals.length > 0 && (
+            <Card className="bg-green-50 shadow-soft">
+              <CardContent className="flex items-center gap-3 p-4">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+                <div>
+                  <h3 className="font-semibold text-green-800">Checked In Today</h3>
+                  <p className="text-sm text-green-700">Great job staying on track!</p>
+                </div>
               </CardContent>
             </Card>
-          </div>
+          )}
+
+          {/* This Week's Progress */}
+          {activeGoals.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3">This Week's Progress</h3>
+              <Card className="shadow-soft">
+                <CardContent className="p-4">
+                  <Progress value={60} className="mb-2" />
+                  <p className="text-sm text-muted-foreground">3 of 5 steps completed</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -173,22 +184,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
             )}
           </div>
 
-          {/* Encouragement Message */}
-          <Card className="shadow-soft" style={{ backgroundColor: '#EFDC7E80' }}>
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">🎉</span>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">
-                    Small steps lead to big changes
-                  </h3>
-                  <p className="text-sm text-gray-700">
-                    Progress isn't about perfection — it's about showing up consistently for yourself.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
