@@ -213,27 +213,6 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           </Card>
         )}
 
-        {/* This Week's Progress */}
-        {!isFirstTimeUser && hasProgressToShow && (
-          <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">This Week's Progress</h2>
-            <Card>
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  <div className="w-full bg-muted rounded-full h-3">
-                    <div 
-                      className="bg-primary h-3 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.round(activeGoal.progress_pct || 0)}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {Math.round(activeGoal.progress_pct || 0)}% of goal completed
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
 
         {/* Your Goals */}
         <div className="space-y-4">

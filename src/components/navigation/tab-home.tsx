@@ -100,18 +100,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
             </Card>
           )}
 
-          {/* This Week's Progress */}
-          {activeGoals.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3">This Week's Progress</h3>
-              <Card className="shadow-soft">
-                <CardContent className="p-4">
-                  <Progress value={60} className="mb-2" />
-                  <p className="text-sm text-muted-foreground">3 of 5 steps completed</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
 
           <div>
             <div className="flex items-center justify-between mb-3">
