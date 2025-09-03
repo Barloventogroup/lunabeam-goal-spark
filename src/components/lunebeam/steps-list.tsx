@@ -340,23 +340,17 @@ export const StepsList: React.FC<StepsListProps> = ({
                       <TableRow>
                         <TableCell></TableCell>
                         <TableCell colSpan={3} className="p-3 border-t">
-                          <div className="pl-4 relative">
-                            <div className="pr-32 pb-12">
-                              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                                {(step.explainer?.trim() || step.notes?.trim() || "We're here to support you! If you need more details about this step, just tap \"Need More Help\" and we'll provide personalized guidance to help you succeed.")}
-                              </p>
-                            </div>
-                            <div className="absolute bottom-0 right-0">
-                              <Button
+                          <div className="pl-4">
+                            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                              {(step.explainer?.trim() || step.notes?.trim() || "We're here to support you! If you need more details about this step, just tap \"Need More Help\" and we'll provide personalized guidance to help you succeed.")}
+                              {"\n\n"}
+                              <button
                                 onClick={() => handleNeedHelp(step)}
-                                className="h-8 px-3 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors dark:bg-blue-950/50 dark:hover:bg-blue-950 dark:text-blue-300 dark:border-blue-800"
-                                variant="outline"
-                                size="sm"
+                                className="text-blue-600 hover:text-blue-800 underline text-sm cursor-pointer bg-transparent border-none p-0 dark:text-blue-400 dark:hover:text-blue-300"
                               >
-                                <HelpCircle className="w-3 h-3 mr-1" />
-                                Need More Help
-                              </Button>
-                            </div>
+                                Need more help?
+                              </button>
+                            </p>
                           </div>
                         </TableCell>
                       </TableRow>
