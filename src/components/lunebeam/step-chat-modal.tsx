@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, User, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-const luneIconUrl = '/lovable-uploads/397f2dfa-5e52-40b8-8208-bde35ef28b05.png';
+const lunaIconUrl = '/lovable-uploads/397f2dfa-5e52-40b8-8208-bde35ef28b05.png';
 import type { Step, Goal } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -62,7 +62,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
     const initialMessage: ChatMessage = {
       id: `init-${Date.now()}`,
       role: 'assistant',
-      content: `Hi! I'm Lune, and I'm here to help you with this step: "${step?.title}"\n\nI can help you:\n• Break this down into smaller, more manageable pieces\n• Clarify what exactly needs to be done\n• Provide specific examples or resources\n• Create additional sub-steps if needed\n\nWhat specifically would you like help with?`,
+      content: `Hi! I'm Luna, and I'm here to help you with this step: "${step?.title}"\n\nI can help you:\n• Break this down into smaller, more manageable pieces\n• Clarify what exactly needs to be done\n• Provide specific examples or resources\n• Create additional sub-steps if needed\n\nWhat specifically would you like help with?`,
       timestamp: new Date()
     };
     setMessages([initialMessage]);
@@ -152,8 +152,8 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
       <DialogContent className="max-w-2xl h-[600px] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <img src={luneIconUrl} alt="Lune" className="h-4 w-4" />
-            Lune
+            <img src={lunaIconUrl} alt="Luna" className="h-4 w-4" />
+            Luna
           </DialogTitle>
           {step && (
             <p className="text-xs text-muted-foreground truncate">
@@ -174,7 +174,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                 >
                   {message.role === 'assistant' && (
                     <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <img src={luneIconUrl} alt="Lune" className="h-3 w-3" />
+                      <img src={lunaIconUrl} alt="Luna" className="h-3 w-3" />
                     </div>
                   )}
                   <div
@@ -196,7 +196,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
               {isLoading && (
                 <div className="flex gap-3 justify-start">
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <img src={luneIconUrl} alt="Lune" className="h-3 w-3" />
+                    <img src={lunaIconUrl} alt="Luna" className="h-3 w-3" />
                   </div>
                   <div className="bg-muted p-2 rounded-lg">
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -213,7 +213,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask Lune for help breaking down this step..."
+                placeholder="Ask Luna for help breaking down this step..."
                 disabled={isLoading}
                 className="flex-1"
               />
