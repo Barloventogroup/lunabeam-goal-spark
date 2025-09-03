@@ -446,8 +446,21 @@ export const StepsList: React.FC<StepsListProps> = ({
                          <TableCell></TableCell>
                          <TableCell colSpan={4} className="p-0 bg-muted/20">
                            {subSteps.length > 0 ? (
-                             /* Google Flights style sub-steps cards */
                              <div className="p-4">
+                               {/* Main step description section */}
+                               <div className="mb-6 pb-4 border-b border-border/40">
+                                 <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap mb-3">
+                                   {(mainStep.explainer?.trim() || mainStep.notes?.trim() || "Here are the sub-steps to complete this main step.")}
+                                 </p>
+                                 <button
+                                   onClick={() => handleNeedHelp(mainStep)}
+                                   className="text-primary hover:text-primary/80 underline text-sm cursor-pointer bg-transparent border-none p-0"
+                                 >
+                                   Need more help?
+                                 </button>
+                               </div>
+                               
+                               {/* Google Flights style sub-steps cards */}
                                <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
                                  {subSteps.map((subStep) => (
                                    <div
