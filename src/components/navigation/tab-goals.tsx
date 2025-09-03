@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GoalsList } from '../lunebeam/goals-list';
-import { GoalDetail } from '../lunebeam/goal-detail';
+import { GoalDetailV2 } from '../lunebeam/goal-detail-v2';
 import { LuneAISession } from '../lunebeam/lune-ai-session';
 import { GoalSummary } from '../lunebeam/goal-summary';
 import { GoalCategories } from '../lunebeam/goal-categories';
@@ -58,9 +58,9 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange }) => {
     switch (currentView) {
       case 'detail':
         return selectedGoalId ? (
-          <GoalDetail 
+          <GoalDetailV2 
             goalId={selectedGoalId} 
-            onNavigate={handleNavigate}
+            onBack={() => handleNavigate('goals-list')}
           />
         ) : (
           <GoalsList onNavigate={handleNavigate} />
