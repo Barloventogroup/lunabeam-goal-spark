@@ -95,7 +95,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
 
   // Dynamic step calculation based on role
   const getTotalSteps = () => {
-    return 8; // Updated to 8 steps after removing role selection
+    return 7; // Updated to 7 steps after removing sharing preferences
   };
 
   const handleNext = () => {
@@ -252,9 +252,6 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
       if (data.goalSeed) {
         summary += `Their next tiny step: ${data.goalSeed}. `;
       }
-      summary += `They prefer ${data.sharingPrefs.shareScope === 'private' ? 'keeping things private' : 
-        data.sharingPrefs.shareScope === 'summary' ? 'sharing summaries with supporters' : 'sharing details with supporters'} `;
-      summary += `and like ${data.sharingPrefs.supportStyle.replace('-', ' ')}.`;
       
       setGeneratedProfile(summary);
       setShowProfile(true);
@@ -300,6 +297,41 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
   };
 
   if (showProfile) {
+    const getEmojiForTag = (tag: string) => {
+      const emojiMap: { [key: string]: string } = {
+        // Superpowers
+        'Problem solver': '🧩',
+        'Creative': '🎨',
+        'Kind/helper': '🤝',
+        'Detail-oriented': '🔍',
+        'Curious': '🤔',
+        'Organizer': '📋',
+        'Hands-on': '🛠️',
+        'Techie': '💻',
+        'Outdoorsy': '🌲',
+        'Patient': '⏳',
+        'Leader': '👑',
+        'Communicator': '💬',
+        // Interests  
+        'Animals': '🐾',
+        'Art/Design': '🎨',
+        'Building/Making': '🔨',
+        'Games': '🎮',
+        'Music': '🎵',
+        'Sports/Fitness': '⚽',
+        'Cooking': '👨‍🍳',
+        'Nature': '🌿',
+        'Cars': '🚗',
+        'Reading/Writing': '📚',
+        'Tech/Coding': '💻',
+        'Volunteering/Helping': '🤝',
+        'Money/Business': '💼',
+        'Puzzles': '🧩',
+        'Spirituality': '🙏'
+      };
+      return emojiMap[tag] || '⭐';
+    };
+
     return (
       <div className="min-h-screen bg-gradient-primary p-4 flex items-center justify-center">
         <Card className="w-full max-w-md shadow-card border-0">
@@ -308,31 +340,37 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
               <span className="text-white text-xl">✨</span>
             </div>
             <CardTitle className="text-2xl">Here's your Starter Profile</CardTitle>
-            {currentStep > 1 && (
-              <Button variant="ghost" onClick={handleBack} className="absolute top-4 left-4">
-                ← Back
-              </Button>
-            )}
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="bg-card-soft rounded-lg p-4">
-              <p className="text-foreground-soft leading-relaxed">{generatedProfile}</p>
+              <p className="text-sm text-black leading-relaxed">{generatedProfile}</p>
             </div>
             
             <div className="space-y-2">
               <p className="text-sm font-medium">Your tags:</p>
-              <div className="flex flex-wrap gap-1">
-                {data.superpowers.map(power => (
-                  <Badge key={power} variant="secondary" className="text-xs">{power}</Badge>
-                ))}
-                {data.interests.map(interest => (
-                  <Badge key={interest} variant="outline" className="text-xs">{interest}</Badge>
+              <div className="flex flex-wrap gap-2">
+                {[...data.superpowers, ...data.interests].map(tag => (
+                  <div 
+                    key={tag} 
+                    className="flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1 text-sm"
+                    title={tag}
+                  >
+                    <span>{getEmojiForTag(tag)}</span>
+                    <span>{tag}</span>
+                  </div>
                 ))}
               </div>
             </div>
 
             <div className="text-center space-y-3">
-              <p className="text-sm text-foreground-soft">
+              <Button 
+                onClick={handleBack} 
+                className="mx-auto mb-2 px-6 rounded-full text-white" 
+                style={{ backgroundColor: '#87CEEB' }}
+              >
+                Back
+              </Button>
+              <p className="text-sm text-black">
                 Did I get that right? Don't worry, you can continue adding information to your profile 
                 so we can further personalize your goals and help you shine.
               </p>
@@ -605,65 +643,6 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
               </div>
             )}
 
-            {/* Step 8: Sharing Preferences */}
-            {currentStep === 8 && (
-              <div className="space-y-6">
-                <div className="text-left">
-                  <h2 className="text-lg font-semibold mb-2">Sharing & support preferences</h2>
-                  <p className="text-sm text-black">How would you like help along the way?</p>
-                </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium mb-2">Privacy</p>
-                    <div className="space-y-2">
-                      {[
-                        { value: 'private', label: 'Keep private' },
-                        { value: 'summary', label: 'Share a summary with my supporter' },
-                        { value: 'details', label: 'Share details with my supporter' }
-                      ].map(option => (
-                        <Button
-                          key={option.value}
-                          variant={data.sharingPrefs.shareScope === option.value ? "default" : "outline"}
-                          onClick={() => setData(prev => ({
-                            ...prev,
-                            sharingPrefs: { ...prev.sharingPrefs, shareScope: option.value as any }
-                          }))}
-                          className="w-full justify-start text-sm border-0"
-                          style={{ backgroundColor: data.sharingPrefs.shareScope === option.value ? undefined : '#E0E0E0' }}
-                        >
-                          {option.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium mb-2">Preferred help</p>
-                    <div className="space-y-2">
-                      {[
-                        { value: 'gentle-reminders', label: 'Gentle reminders' },
-                        { value: 'step-by-step', label: 'Step-by-step checklist' },
-                        { value: 'celebrate-wins', label: 'Celebrate wins only' }
-                      ].map(option => (
-                        <Button
-                          key={option.value}
-                          variant={data.sharingPrefs.supportStyle === option.value ? "default" : "outline"}
-                          onClick={() => setData(prev => ({
-                            ...prev,
-                            sharingPrefs: { ...prev.sharingPrefs, supportStyle: option.value as any }
-                          }))}
-                          className="w-full justify-start text-sm border-0"
-                          style={{ backgroundColor: data.sharingPrefs.supportStyle === option.value ? undefined : '#E0E0E0' }}
-                        >
-                          {option.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
-              </div>
-            )}
 
             </div>
             {/* Navigation */}
