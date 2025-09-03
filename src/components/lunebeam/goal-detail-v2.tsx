@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { goalsService, stepsService } from '@/services/goalsService';
 import { StepsList } from './steps-list';
 import { StepsChat } from './steps-chat';
+import { StepChatModal } from './step-chat-modal';
 import { ProgressBar } from './progress-bar';
 import { stepsGenerator } from '@/services/stepsGenerator';
 import type { Goal, Step, GoalProgress } from '@/types';
@@ -39,6 +40,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
   const [showChat, setShowChat] = useState(false);
+  const [showStepChat, setShowStepChat] = useState(false);
+  const [selectedStep, setSelectedStep] = useState<Step | null>(null);
   const [chatStep, setChatStep] = useState<Step | undefined>(undefined);
   const { toast } = useToast();
 
@@ -127,6 +130,25 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     const progress = calculateProgress(updatedSteps);
     setSteps(updatedSteps);
     setGoal({ ...updatedGoal, progress });
+  };
+
+  const handleOpenStepChat = (step: Step) => {
+    setSelectedStep(step);
+    setShowStepChat(true);
+  };
+
+  const handleStepChatUpdate = async (newSteps: Step[]) => {
+    // Reload steps from database to get the latest data
+    try {
+      const updatedSteps = await stepsService.getSteps(goalId);
+      const progress = calculateProgress(updatedSteps);
+      setSteps(updatedSteps);
+      if (goal) {
+        setGoal({ ...goal, progress });
+      }
+    } catch (error) {
+      console.error('Failed to reload steps:', error);
+    }
   };
 
   const handleDeleteGoal = async () => {
@@ -289,6 +311,16 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         goal={goal}
         steps={steps}
         onStepsUpdate={handleStepsUpdate}
+        onOpenStepChat={handleOpenStepChat}
+      />
+
+      {/* Step Chat Modal */}
+      <StepChatModal
+        isOpen={showStepChat}
+        onClose={() => setShowStepChat(false)}
+        step={selectedStep}
+        goal={goal}
+        onStepsUpdate={handleStepChatUpdate}
       />
 
       {/* Steps Chat */}

@@ -10,8 +10,6 @@ import {
   CheckCircle2,
   Clock,
   HelpCircle,
-  X,
-  AlertTriangle,
   ArrowDown
 } from 'lucide-react';
 import {
@@ -33,12 +31,14 @@ interface StepsListProps {
   goal: Goal;
   steps: Step[];
   onStepsUpdate: (steps: Step[], goal: Goal) => void;
+  onOpenStepChat?: (step: Step) => void;
 }
 
 export const StepsList: React.FC<StepsListProps> = ({ 
   goal, 
   steps, 
-  onStepsUpdate
+  onStepsUpdate,
+  onOpenStepChat
 }) => {
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
   const [showingQueuedSteps, setShowingQueuedSteps] = useState(false);
@@ -136,45 +136,9 @@ export const StepsList: React.FC<StepsListProps> = ({
     return [];
   };
 
-  const handleStepFeedback = async (stepId: string, feedbackType: 'tooBig' | 'confusing' | 'notRelevant') => {
-    try {
-      if (feedbackType === 'notRelevant') {
-        // Hide the step
-        const isTemp = stepId.startsWith('step_');
-        
-        if (isTemp) {
-          const updatedSteps = steps.map(s => s.id === stepId ? { ...s, hidden: true } : s);
-          onStepsUpdate(updatedSteps, goal);
-        } else {
-          const { step: updatedStep, goal: updatedGoal } = await stepsService.updateStep(stepId, {
-            status: 'skipped'
-          });
-          
-          const updatedSteps = steps.map(s => s.id === stepId ? updatedStep : s);
-          onStepsUpdate(updatedSteps, updatedGoal);
-        }
-        
-        toast({
-          description: "Step hidden. No worries - everyone's path is different."
-        });
-      } else if (feedbackType === 'tooBig') {
-        toast({
-          title: "\"Too big\" feedback",
-          description: "This step feels overwhelming. We'll help break it down into smaller, manageable pieces soon!"
-        });
-      } else if (feedbackType === 'confusing') {
-        toast({
-          title: "\"Confusing\" feedback", 
-          description: "This step isn't clear. We'll work on making the instructions simpler and more specific!"
-        });
-      }
-    } catch (error) {
-      console.error('Failed to process feedback:', error);
-      toast({
-        title: 'Feedback not saved',
-        description: 'Try again when you\'re ready',
-        variant: 'destructive'
-      });
+  const handleNeedHelp = (step: Step) => {
+    if (onOpenStepChat) {
+      onOpenStepChat(step);
     }
   };
 
@@ -367,36 +331,16 @@ export const StepsList: React.FC<StepsListProps> = ({
                             </p>
                         </div>
 
-                        {/* Right side - Action buttons */}
-                        <div className="flex flex-col gap-2 min-w-[120px]">
+                        {/* Right side - Help button */}
+                        <div className="flex flex-col gap-2 min-w-[140px]">
                           <Button
-                            onClick={() => handleStepFeedback(step.id, 'tooBig')}
-                            className="h-8 px-3 rounded-full bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 transition-colors dark:bg-orange-950/50 dark:hover:bg-orange-950 dark:text-orange-300 dark:border-orange-800"
-                            variant="outline"
-                            size="sm"
-                          >
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            Too Big
-                          </Button>
-                          
-                          <Button
-                            onClick={() => handleStepFeedback(step.id, 'confusing')}
-                            className="h-8 px-3 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition-colors dark:bg-purple-950/50 dark:hover:bg-purple-950 dark:text-purple-300 dark:border-purple-800"
+                            onClick={() => handleNeedHelp(step)}
+                            className="h-8 px-3 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors dark:bg-blue-950/50 dark:hover:bg-blue-950 dark:text-blue-300 dark:border-blue-800"
                             variant="outline"
                             size="sm"
                           >
                             <HelpCircle className="h-3 w-3 mr-1" />
-                            Confusing
-                          </Button>
-                          
-                          <Button
-                            onClick={() => handleStepFeedback(step.id, 'notRelevant')}
-                            className="h-8 px-3 rounded-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 transition-colors dark:bg-red-950/50 dark:hover:bg-red-950 dark:text-red-300 dark:border-red-800"
-                            variant="outline"
-                            size="sm"
-                          >
-                            <X className="h-3 w-3 mr-1" />
-                            Not Relevant
+                            Need More Help
                           </Button>
                         </div>
                       </div>
