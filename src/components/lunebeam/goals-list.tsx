@@ -232,7 +232,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 bg-transparent hover:bg-gray-100"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <MoreVertical className="h-4 w-4" />

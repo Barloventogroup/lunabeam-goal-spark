@@ -247,7 +247,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="border-transparent bg-gray-600 hover:bg-gray-700 text-white">
+              <Button variant="ghost" size="sm" className="bg-transparent hover:bg-gray-100 border-transparent">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
