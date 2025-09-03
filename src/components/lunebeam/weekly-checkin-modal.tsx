@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,6 +60,7 @@ export function WeeklyCheckinModal({
   weekOf 
 }: WeeklyCheckinModalProps) {
   const [checkinText, setCheckinText] = useState('');
+  const [mood, setMood] = useState<'proud' | 'happy' | 'accomplished' | 'relieved'>('proud');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const handleSaveCheckin = async () => {
@@ -81,6 +83,7 @@ export function WeeklyCheckinModal({
 
       onOpenChange(false);
       setCheckinText('');
+      setMood('proud');
     } catch (error) {
       toast({
         title: "Couldn't save that",
@@ -95,8 +98,8 @@ export function WeeklyCheckinModal({
   const renderCheckinForm = () => (
     <Card>
       <CardContent className="space-y-4 pt-6">
-        <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">{goal.title}</h3>
+        <div className="text-left">
+          <h3 className="text-lg font-semibold mb-2">Goal: {goal.title}</h3>
         </div>
         
         <div className="space-y-3">
@@ -109,15 +112,30 @@ export function WeeklyCheckinModal({
             className="min-h-[100px]"
           />
         </div>
+
+        <div className="space-y-3">
+          <Label>How do you feel?</Label>
+          <Select value={mood} onValueChange={(value: 'proud' | 'happy' | 'accomplished' | 'relieved') => setMood(value)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="proud">😊 proud</SelectItem>
+              <SelectItem value="happy">😄 happy</SelectItem>
+              <SelectItem value="accomplished">🎉 accomplished</SelectItem>
+              <SelectItem value="relieved">😌 relieved</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         
         <div className="flex justify-center pt-4">
           <Button 
             onClick={handleSaveCheckin}
             disabled={isLoading || !checkinText.trim()}
-            className="w-full max-w-md"
+            className="w-full max-w-md bg-purple-600 hover:bg-purple-700 text-sm"
             size="lg"
           >
-            {isLoading ? "Saving..." : "Check In"}
+            {isLoading ? "Saving..." : "Check in"}
           </Button>
         </div>
       </CardContent>
