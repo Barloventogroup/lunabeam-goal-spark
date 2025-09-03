@@ -8,6 +8,7 @@ interface AppState {
   // Core data
   profile: Profile | null;
   consent: Consent;
+  justCompletedOnboarding: boolean;
   
   // New Goals & Steps system
   goals: Goal[];
@@ -30,6 +31,7 @@ interface AppState {
   setProfile: (profile: Profile) => Promise<void>;
   updateConsent: (consent: Consent) => void;
   completeOnboarding: () => Promise<void>;
+  clearJustCompletedOnboarding: () => void;
   setCurrentStep: (step: number) => void;
   
   // New Goals & Steps actions
@@ -110,6 +112,7 @@ export const useStore = create<AppState>()(
       // Initial state
       profile: null,
       consent: demoConsent,
+      justCompletedOnboarding: false,
       
       // New Goals & Steps system
       goals: [],
@@ -201,6 +204,7 @@ export const useStore = create<AppState>()(
       updateConsent: (consent) => set({ consent }),
       
       completeOnboarding: async () => {
+        set({ justCompletedOnboarding: true });
         try {
           const current = get().profile;
           const baseProfile = current ?? {
@@ -225,6 +229,10 @@ export const useStore = create<AppState>()(
         } catch (error) {
           console.error('Error completing onboarding:', error);
         }
+      },
+      
+      clearJustCompletedOnboarding: () => {
+        set({ justCompletedOnboarding: false });
       },
       
       setCurrentStep: (step) => set({ currentStep: step }),
@@ -348,7 +356,7 @@ export const useStore = create<AppState>()(
         checkIns: state.checkIns,
         evidence: state.evidence,
         badges: state.badges,
-        familyCircles: state.familyCircles,
+        justCompletedOnboarding: state.justCompletedOnboarding,
         currentGoal: state.currentGoal
       })
     }
