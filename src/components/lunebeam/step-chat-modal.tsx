@@ -156,7 +156,9 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
       .replace(/^\s*\d+\.\s+/gm, '') // Remove numbered list markers
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
       .replace(/!\[([^\]]*)\]\([^)]+\)/g, '') // Remove images
-      .trim();
+      .replace(/\n\s*\n\s*\n/g, '\n\n') // Normalize multiple line breaks to max 2
+      .replace(/^\s+|\s+$/g, '') // Trim start and end
+      .replace(/[ \t]+/g, ' '); // Normalize spaces and tabs
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -196,13 +198,14 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                       <img src={lunaIcon16} alt="Luna" className="h-3 w-3" />
                     </div>
                   )}
-                  <div
-                    className={`max-w-[80%] p-2 rounded-lg whitespace-pre-wrap text-sm ${
-                      message.role === 'user'
-                        ? 'bg-primary text-primary-foreground ml-auto'
-                        : 'bg-muted'
-                    }`}
-                  >
+                   <div
+                     className={`max-w-[80%] p-2 rounded-lg text-sm ${
+                       message.role === 'user'
+                         ? 'bg-primary text-primary-foreground ml-auto'
+                         : 'bg-muted'
+                     }`}
+                     style={{ whiteSpace: 'pre-line' }}
+                   >
                     {stripMarkup(message.content)}
                   </div>
                   {message.role === 'user' && (

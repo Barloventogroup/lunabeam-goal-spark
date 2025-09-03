@@ -168,7 +168,9 @@ export const StepsChat: React.FC<StepsChatProps> = ({ goal, steps, step, isOpen,
       .replace(/^\s*\d+\.\s+/gm, '') // Remove numbered list markers
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
       .replace(/!\[([^\]]*)\]\([^)]+\)/g, '') // Remove images
-      .trim();
+      .replace(/\n\s*\n\s*\n/g, '\n\n') // Normalize multiple line breaks to max 2
+      .replace(/^\s+|\s+$/g, '') // Trim start and end
+      .replace(/[ \t]+/g, ' '); // Normalize spaces and tabs
   };
 
   const generateResponse = (input: string): string => {
