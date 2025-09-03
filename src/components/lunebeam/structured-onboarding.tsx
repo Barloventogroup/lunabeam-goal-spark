@@ -16,6 +16,7 @@ interface OnboardingData {
   invitePending?: boolean;
   name: string;
   pronouns: string;
+  age: string;
   superpowers: string[];
   interests: string[];
   workStyle: {
@@ -67,6 +68,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
     invitePending: false,
     name: '',
     pronouns: '',
+    age: '',
     superpowers: [],
     interests: [],
     workStyle: {
@@ -418,22 +420,34 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
                     className="text-left text-sm"
                     maxLength={30}
                   />
-                  <div>
-                    <p className="text-sm font-medium mb-2">Pronouns (optional)</p>
-                    <div className="flex flex-wrap gap-2">
-                      {['she/her', 'he/him', 'they/them'].map(pronoun => (
-                        <Button
-                          key={pronoun}
-                          variant={data.pronouns === pronoun ? "default" : "outline"}
-                          onClick={() => setData(prev => ({ ...prev, pronouns: pronoun }))}
-                          className="text-sm border-0"
-                          style={{ backgroundColor: data.pronouns === pronoun ? undefined : '#E0E0E0' }}
-                        >
-                          {pronoun}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+                   <div>
+                     <p className="text-sm font-medium mb-2">Pronouns (optional)</p>
+                     <div className="flex flex-wrap gap-2">
+                       {['she/her', 'he/him', 'they/them'].map(pronoun => (
+                         <Button
+                           key={pronoun}
+                           variant={data.pronouns === pronoun ? "default" : "outline"}
+                           onClick={() => setData(prev => ({ ...prev, pronouns: pronoun }))}
+                           className="text-sm border-0"
+                           style={{ backgroundColor: data.pronouns === pronoun ? undefined : '#E0E0E0' }}
+                         >
+                           {pronoun}
+                         </Button>
+                       ))}
+                     </div>
+                   </div>
+                   <div>
+                     <p className="text-sm font-medium mb-2">Age</p>
+                     <Input
+                       value={data.age}
+                       onChange={(e) => setData(prev => ({ ...prev, age: e.target.value }))}
+                       placeholder={data.role === 'parent' ? "Their age" : "Your age"}
+                       className="text-left text-sm"
+                       type="number"
+                       min="1"
+                       max="100"
+                     />
+                   </div>
                 </div>
                 <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
