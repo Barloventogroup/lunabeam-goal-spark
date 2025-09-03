@@ -238,9 +238,15 @@ export const StepsList: React.FC<StepsListProps> = ({
           <CardTitle className="text-lg font-semibold text-foreground">Recommended steps</CardTitle>
           <p className="text-sm text-muted-foreground">Here's a short list of steps and things to keep in mind as you work on your goal.</p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>{doneSteps.length}/{actionableSteps.length} done</span>
-            <span>•</span>
-            <span>{progressPercent}%</span>
+            <span>
+              {actionableSteps.length === 0 ? 'No actionable steps' : `${doneSteps.length}/${actionableSteps.length} done`}
+            </span>
+            {actionableSteps.length > 0 && (
+              <>
+                <span>•</span>
+                <span>{progressPercent}%</span>
+              </>
+            )}
           </div>
         </div>
       </CardHeader>
