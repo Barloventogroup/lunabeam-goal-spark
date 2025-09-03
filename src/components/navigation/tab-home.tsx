@@ -22,10 +22,21 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const { profile, loadProfile, goals, badges, loadGoals, loadBadges } = useStore();
   
   useEffect(() => {
+    console.log('TabHome mounted - loading data');
     loadProfile();
     loadGoals();
     loadBadges();
   }, [loadProfile, loadGoals, loadBadges]);
+
+  // Refresh data when component becomes visible
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('TabHome: Periodic refresh');
+      loadGoals();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [loadGoals]);
   
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('dashboard')} />;

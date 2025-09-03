@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home, Target, Users, User, MessageCircle } from 'lucide-react';
 import { TabHome } from './tab-home';
 import { TabGoals } from './tab-goals';
 import { TabTeam } from './tab-team';
 import { TabYou } from './tab-you';
 import { AIChat } from '../lunebeam/ai-chat';
+import { useStore } from '@/store/useStore';
 
 type TabType = 'home' | 'goals' | 'team' | 'you' | 'chat';
 
@@ -12,6 +13,7 @@ export const BottomTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [showChat, setShowChat] = useState(false);
   const [isWizardActive, setIsWizardActive] = useState(false);
+  const { loadGoals } = useStore();
 
   const tabs = [
     {
@@ -35,6 +37,14 @@ export const BottomTabs: React.FC = () => {
       icon: User,
     },
   ];
+
+  // Refresh data when switching to home tab
+  useEffect(() => {
+    if (activeTab === 'home') {
+      console.log('Switched to home tab - refreshing data');
+      loadGoals();
+    }
+  }, [activeTab, loadGoals]);
 
   const renderActiveTab = () => {
     switch (activeTab) {

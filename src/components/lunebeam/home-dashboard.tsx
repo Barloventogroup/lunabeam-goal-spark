@@ -65,6 +65,19 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     }
   }, [user, loadProfile, loadGoals, loadCheckIns, loadBadges, loadEvidence, loadFamilyCircles]);
 
+  // Add refresh data when tab becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        console.log('Tab became visible - refreshing goals data');
+        loadGoals();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user, loadGoals]);
+
   const activeGoal = getActiveGoal();
   const activeGoalSteps = activeGoal ? steps[activeGoal.id] || [] : [];
 

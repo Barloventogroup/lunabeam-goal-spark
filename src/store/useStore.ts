@@ -141,6 +141,19 @@ export const useStore = create<AppState>()(
           const goals = await goalsService.getGoals();
           console.log('Loaded new goals:', goals);
           set({ goals });
+          
+          // Also refresh steps for the active goal
+          const activeGoal = goals.find(g => g.status === 'active');
+          if (activeGoal) {
+            try {
+              const steps = await stepsService.getSteps(activeGoal.id);
+              set((state) => ({
+                steps: { ...state.steps, [activeGoal.id]: steps }
+              }));
+            } catch (error) {
+              console.error('Failed to load steps for active goal:', error);
+            }
+          }
         } catch (error) {
           console.error('Failed to load goals:', error);
         }
