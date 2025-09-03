@@ -129,6 +129,17 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
         }
       }
 
+      // Check if we should redirect (reached chat limit)
+      if (data.shouldRedirect) {
+        setTimeout(() => {
+          onClose();
+          toast({
+            title: "Chat limit reached",
+            description: "For more help, create additional steps to break things down further."
+          });
+        }, 2000); // Give user time to read the final message
+      }
+
     } catch (error) {
       console.error('Error getting step assistance:', error);
       const errorMessage: ChatMessage = {

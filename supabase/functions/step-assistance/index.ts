@@ -22,6 +22,22 @@ serve(async (req) => {
       userMessage: userMessage.substring(0, 100) 
     });
 
+    // Count assistant responses in conversation history
+    const assistantResponseCount = conversationHistory.filter(msg => msg.role === 'assistant').length;
+    
+    // Limit chat to 3 responses, then redirect to steps view
+    if (assistantResponseCount >= 3) {
+      return new Response(JSON.stringify({
+        response: `I've helped you with a few questions already! For more detailed assistance, I'd recommend creating additional steps to break this down further. 
+
+Click "Add Step" to create more specific sub-steps, or check your steps list to see what's next. You've got this! 🚀`,
+        suggestedSteps: [],
+        shouldRedirect: true
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Check for similar steps in prior weeks that have substeps
     const inheritedSubsteps = await checkForSimilarPriorSteps(step, goal);
 
@@ -42,22 +58,23 @@ Step Description: ${step.notes || step.explainer || 'No description provided'}
 Estimated Time: ${step.estimated_effort_min ? `${step.estimated_effort_min} minutes` : 'Not specified'}
 
 Your communication style:
-- Talk like a knowledgeable friend who gets the struggles of being their age
-- Use relatable examples from their world: social media, streaming, gaming, school/work, apps they use
-- Be encouraging but realistic about challenges
+- Be concise and focused - you have limited responses
+- Talk like a supportive friend who gets their struggles
+- Use relatable examples from their world: social media, gaming, apps
+- Keep responses under 150 words when possible
 
-Use analogies and examples they'll connect with:
-- "Think of it like creating a good Instagram post - you plan, draft, edit, then post"
-- "It's like when you're binge-watching a series - some episodes set up what happens next"
-- "Similar to learning a new game - start with the tutorial before jumping into harder levels"
-- "Like organizing your phone apps - group similar things together to find them easier"
-- "Think of dependencies like group chat messages - some responses only make sense after reading earlier ones"
+Use quick analogies they'll connect with:
+- "Like organizing your phone apps"
+- "Similar to learning a new game - start simple"
+- "Think of it like creating content - plan, create, share"
 
 Your role is to:
-1. Answer their specific questions in a relatable way
-2. Give practical advice using examples from their daily life
-3. Explain things clearly without being condescending
-4. Provide encouragement that acknowledges their real challenges
+1. Answer their specific questions quickly and clearly
+2. Give practical, actionable advice
+3. Focus on breaking things into manageable steps
+4. Encourage them to create more specific sub-steps
+
+IMPORTANT: Keep responses short and actionable. If they need extensive help, suggest they create additional sub-steps instead of long explanations.
 
 ONLY suggest breaking a step into sub-steps if:
 - They explicitly ask for help breaking it down
@@ -70,7 +87,7 @@ If you do suggest sub-steps, format them like this at the end:
 2. Another Step | Another description (estimated time)
 [/SUB-STEPS]
 
-Be conversational and supportive. Use their language and references they'll actually understand.`;
+Be supportive but keep it brief - they can always create more steps for detailed guidance.`;
 
     // Prepare conversation history for context
     const messages = [
