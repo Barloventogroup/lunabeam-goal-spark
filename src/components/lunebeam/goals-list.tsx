@@ -12,11 +12,12 @@ import { useToast } from '@/hooks/use-toast';
 
 interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
+  refreshTrigger?: number; // Optional prop to trigger refresh
 }
 
 type GoalsTab = 'active' | 'completed';
 
-export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
+export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger }) => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [stepsCount, setStepsCount] = useState<Record<string, { required: number; done: number }>>({});
   const [loading, setLoading] = useState(true);
@@ -46,11 +47,12 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
       const counts: Record<string, { required: number; done: number }> = {};
       for (const goal of goalsData) {
         const steps = await stepsService.getSteps(goal.id);
-        const requiredSteps = steps.filter(step => step.is_required);
-        const doneRequired = requiredSteps.filter(step => step.status === 'done');
+        // Use same logic as goal detail view - actionable steps only
+        const actionableSteps = steps.filter(s => s.type === 'action' && !s.hidden && s.status !== 'skipped');
+        const doneSteps = actionableSteps.filter(s => s.status === 'done');
         counts[goal.id] = {
-          required: requiredSteps.length,
-          done: doneRequired.length
+          required: actionableSteps.length,
+          done: doneSteps.length
         };
       }
       setStepsCount(counts);
@@ -68,7 +70,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
 
   useEffect(() => {
     loadGoals();
-  }, [activeTab]); // Reload when tab changes
+  }, [activeTab, refreshTrigger]); // Reload when tab changes or refresh is triggered
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {

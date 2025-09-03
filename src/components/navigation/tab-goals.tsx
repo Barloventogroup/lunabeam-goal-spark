@@ -18,6 +18,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [aiGoal, setAiGoal] = useState<any>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Handle initial goal ID navigation
   useEffect(() => {
@@ -43,6 +44,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
       default:
         setCurrentView('list');
         setSelectedGoalId(null);
+        setRefreshTrigger(prev => prev + 1); // Trigger refresh
         onWizardStateChange?.(false);
         break;
     }
@@ -61,6 +63,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
 
   const handleWizardGoalCreated = () => {
     setCurrentView('list');
+    setRefreshTrigger(prev => prev + 1); // Trigger refresh when new goal created
     onWizardStateChange?.(false);
   };
 
@@ -73,7 +76,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             onBack={() => handleNavigate('goals-list')}
           />
         ) : (
-          <GoalsList onNavigate={handleNavigate} />
+          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />
         );
       case 'categories':
         return (
@@ -90,7 +93,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             onGoalCreated={handleAiGoalCreated}
           />
         ) : (
-          <GoalsList onNavigate={handleNavigate} />
+          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />
         );
       case 'summary':
         return aiGoal ? (
@@ -100,7 +103,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             onComplete={() => setCurrentView('list')}
           />
         ) : (
-          <GoalsList onNavigate={handleNavigate} />
+          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />
         );
       case 'wizard':
         return (
@@ -114,7 +117,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
         );
       case 'list':
       default:
-        return <GoalsList onNavigate={handleNavigate} />;
+        return <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />;
     }
   };
 
