@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { 
   ChevronDown, 
   ChevronUp, 
@@ -260,80 +267,95 @@ export const StepsList: React.FC<StepsListProps> = ({
           />
         </div>
 
-        {/* Steps list */}
-        <div className="space-y-1">
-          {(showingQueuedSteps ? steps.filter(s => (!s.type || s.type === 'action') && !s.hidden) : visibleSteps).map((step, index) => {
-            const isBlocked = isStepBlocked(step);
-            const precursorText = getPrecursorText(step);
-            const isExpanded = expandedSteps.has(step.id);
-            const hasNextStep = index < (showingQueuedSteps ? steps.filter(s => (!s.type || s.type === 'action') && !s.hidden).length - 1 : visibleSteps.length - 1);
+        {/* Steps table */}
+        <div className="border border-border rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-8"></TableHead>
+                <TableHead>Step</TableHead>
+                <TableHead className="w-24">Status</TableHead>
+                <TableHead className="w-32">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(showingQueuedSteps ? steps.filter(s => (!s.type || s.type === 'action') && !s.hidden) : visibleSteps).map((step, index) => {
+                const isBlocked = isStepBlocked(step);
+                const precursorText = getPrecursorText(step);
+                const isExpanded = expandedSteps.has(step.id);
 
-            return (
-              <div key={step.id} className="space-y-2">
-                <div className={`border border-gray-300 rounded-lg transition-colors ${
-                  isBlocked ? 'opacity-60' : 'hover:bg-muted/50'
-                }`}>
-                  {/* Main step row */}
-                  <div className="flex items-center gap-3 p-4">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => toggleStepExpanded(step.id)}
-                      className="text-muted-foreground hover:text-foreground p-0 h-auto"
-                    >
-                      {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    </Button>
-                    
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`font-medium text-sm ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                          {step.title.replace(/^Day\s+\d+:\s*/i, '')}
-                        </span>
-                        {isBlocked && (
-                          <Badge variant="outline" className="text-xs">
-                            Blocked
-                          </Badge>
-                        )}
-                      </div>
-
-                      {precursorText && (
-                        <div className="flex items-center gap-1 text-xs text-amber-600">
-                          <ArrowDown className="h-3 w-3" />
-                          {precursorText}
-                        </div>
-                      )}
-
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {getStepIcon(step)}
-                      {step.status !== 'done' && (
-                        <Button
-                          onClick={() => !isBlocked && handleStepToggle(step.id, step.status)}
-                          disabled={isBlocked}
-                          className="h-8 px-4 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors"
-                          variant="outline"
+                return (
+                  <React.Fragment key={step.id}>
+                    {/* Main step row */}
+                    <TableRow className={`${isBlocked ? 'opacity-60' : 'hover:bg-muted/50'} cursor-pointer`}>
+                      <TableCell className="p-2">
+                        <Button 
+                          variant="ghost" 
                           size="sm"
+                          onClick={() => toggleStepExpanded(step.id)}
+                          className="text-muted-foreground hover:text-foreground p-1 h-auto"
                         >
-                          Mark Complete
+                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </Button>
-                      )}
-                    </div>
-                  </div>
+                      </TableCell>
+                      
+                      <TableCell className="p-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`font-medium text-sm ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                              {step.title.replace(/^Day\s+\d+:\s*/i, '')}
+                            </span>
+                            {isBlocked && (
+                              <Badge variant="outline" className="text-xs">
+                                Blocked
+                              </Badge>
+                            )}
+                          </div>
 
-                  {/* Expanded content */}
-                  {isExpanded && (
-                    <div className="border-t border-gray-300">
-                      <div className="flex p-4 gap-4">
-                        {/* Left side - Step explanation */}
-                        <div className="flex-1 pl-8">
-                            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                              {(step.explainer?.trim() || step.notes?.trim() || "No description yet. Tap \u201CConfusing\u201D and we\u2019ll clarify this step.")}
-                            </p>
+                          {precursorText && (
+                            <div className="flex items-center gap-1 text-xs text-amber-600">
+                              <ArrowDown className="h-3 w-3" />
+                              {precursorText}
+                            </div>
+                          )}
                         </div>
+                      </TableCell>
 
-                        {/* Right side - Help button */}
-                        <div className="flex flex-col gap-2 min-w-[140px]">
+                      <TableCell className="p-3">
+                        <div className="flex items-center gap-2">
+                          {getStepIcon(step)}
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="p-3">
+                        <div className="flex items-center gap-2">
+                          {step.status !== 'done' && (
+                            <Button
+                              onClick={() => !isBlocked && handleStepToggle(step.id, step.status)}
+                              disabled={isBlocked}
+                              className="h-8 px-4 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors"
+                              variant="outline"
+                              size="sm"
+                            >
+                              Mark Complete
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+
+                    {/* Expanded content row */}
+                    {isExpanded && (
+                      <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell colSpan={2} className="p-3 border-t">
+                          <div className="pl-4">
+                            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                              {(step.explainer?.trim() || step.notes?.trim() || "No description yet. Tap \"Confusing\" and we'll clarify this step.")}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="p-3 border-t">
                           <Button
                             onClick={() => handleNeedHelp(step)}
                             className="h-8 px-3 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors dark:bg-blue-950/50 dark:hover:bg-blue-950 dark:text-blue-300 dark:border-blue-800"
@@ -342,21 +364,14 @@ export const StepsList: React.FC<StepsListProps> = ({
                           >
                             Need More Help
                           </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Dependency arrow connector */}
-                {hasNextStep && (
-                  <div className="flex justify-center">
-                    <ArrowDown className="h-4 w-4 text-muted-foreground/50" />
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
 
         {/* Show more steps */}
