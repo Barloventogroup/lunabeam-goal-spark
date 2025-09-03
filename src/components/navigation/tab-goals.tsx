@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoalsList } from '../lunebeam/goals-list';
 import { GoalDetailV2 } from '../lunebeam/goal-detail-v2';
 import { LuneAISession } from '../lunebeam/lune-ai-session';
@@ -10,13 +10,23 @@ type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wiza
 
 interface TabGoalsProps {
   onWizardStateChange?: (isWizardActive: boolean) => void;
+  initialGoalId?: string | null;
 }
 
-export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange }) => {
+export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initialGoalId }) => {
   const [currentView, setCurrentView] = useState<GoalsView>('list');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [aiGoal, setAiGoal] = useState<any>(null);
+
+  // Handle initial goal ID navigation
+  useEffect(() => {
+    if (initialGoalId) {
+      setSelectedGoalId(initialGoalId);
+      setCurrentView('detail');
+      onWizardStateChange?.(false);
+    }
+  }, [initialGoalId, onWizardStateChange]);
 
   const handleNavigate = (view: string, data?: any) => {
     switch (view) {

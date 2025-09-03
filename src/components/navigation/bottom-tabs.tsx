@@ -13,6 +13,7 @@ export const BottomTabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [showChat, setShowChat] = useState(false);
   const [isWizardActive, setIsWizardActive] = useState(false);
+  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const { loadGoals } = useStore();
 
   const tabs = [
@@ -38,11 +39,14 @@ export const BottomTabs: React.FC = () => {
     },
   ];
 
-  // Refresh data when switching to home tab
+  // Refresh data when switching to home tab and clear goal selection when leaving goals
   useEffect(() => {
     if (activeTab === 'home') {
       console.log('Switched to home tab - refreshing data');
       loadGoals();
+    } else if (activeTab !== 'goals') {
+      // Clear selected goal when leaving goals tab
+      setSelectedGoalId(null);
     }
   }, [activeTab, loadGoals]);
 
@@ -51,10 +55,10 @@ export const BottomTabs: React.FC = () => {
       case 'home':
         return <TabHome onOpenChat={() => setShowChat(true)} onNavigateToGoals={(goalId?: string) => {
           setActiveTab('goals');
-          // TODO: Pass goalId to goals tab
+          setSelectedGoalId(goalId || null);
         }} />;
       case 'goals':
-        return <TabGoals onWizardStateChange={setIsWizardActive} />;
+        return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} />;
       case 'team':
         return <TabTeam />;
       case 'you':

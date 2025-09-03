@@ -138,7 +138,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                             size="sm"
                             onClick={() => onNavigateToGoals(goal.id)}
                           >
-                            View Plan
+                            View
                           </Button>
                         </div>
                       </div>

@@ -254,7 +254,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                           variant="outline"
                           onClick={() => onNavigate('goal-detail', goal.id)}
                         >
-                          View Plan
+                          View
                         </Button>
                       </div>
                     </div>
