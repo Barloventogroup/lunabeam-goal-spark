@@ -35,7 +35,7 @@ interface StepsListProps {
   goal: Goal;
   steps: Step[];
   onStepsUpdate: (steps: Step[], goal: Goal) => void;
-  onOpenChat: () => void;
+  onOpenChat: (step?: Step) => void;
 }
 
 export const StepsList: React.FC<StepsListProps> = ({ 
@@ -89,16 +89,23 @@ export const StepsList: React.FC<StepsListProps> = ({
         newStatus = 'todo';
       }
 
-      const { step: updatedStep, goal: updatedGoal } = await stepsService.updateStep(stepId, {
-        status: newStatus
-      });
+      const isTemp = stepId.startsWith('step_');
 
-      const updatedSteps = steps.map(s => s.id === stepId ? updatedStep : s);
-      onStepsUpdate(updatedSteps, updatedGoal);
+      let stepsAfter: Step[] = steps;
+      if (isTemp) {
+        stepsAfter = steps.map(s => s.id === stepId ? { ...s, status: newStatus } as Step : s);
+        onStepsUpdate(stepsAfter, goal);
+      } else {
+        const { step: updatedStep, goal: updatedGoal } = await stepsService.updateStep(stepId, {
+          status: newStatus
+        });
+        stepsAfter = steps.map(s => s.id === stepId ? updatedStep : s);
+        onStepsUpdate(stepsAfter, updatedGoal);
+      }
 
       // Check for unlocked dependencies
       if (newStatus === 'done') {
-        const unlockedSteps = checkForUnlockedSteps(updatedSteps, stepId);
+        const unlockedSteps = checkForUnlockedSteps(stepsAfter, stepId);
         if (unlockedSteps.length > 0) {
           toast({
             title: "Nice! Next step is ready.",
@@ -233,40 +240,31 @@ export const StepsList: React.FC<StepsListProps> = ({
     return `Unlocks after: ${precursorTitles.join(', ')}`;
   };
 
-  if (visibleSteps.length === 0) {
     return (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Steps to get rolling</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onOpenChat}>
+          <Button variant="ghost" size="sm" onClick={() => onOpenChat()}>
             <MessageCircle className="h-4 w-4" />
           </Button>
         </CardHeader>
-        <CardContent className="text-center py-8">
-          <div className="space-y-4">
-            <p className="text-muted-foreground">We'll start you with a few quick wins.</p>
-            <Button 
-              onClick={generateSteps}
-              disabled={generating}
-              className="gap-2"
-            >
-              {generating ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4" />
-                  Generate steps
-                </>
-              )}
-            </Button>
+        <CardContent className="py-6">
+          <p className="text-muted-foreground mb-4">We're preparing a few quick wins for you…</p>
+          <div className="space-y-3">
+            {[1,2,3,4,5].map((i) => (
+              <div key={i} className="flex items-center gap-3 p-3 border rounded-lg">
+                <div className="w-5 h-5 rounded-full bg-muted animate-pulse" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 w-2/3 bg-muted rounded animate-pulse" />
+                  <div className="h-2 w-1/2 bg-muted rounded animate-pulse" />
+                </div>
+                <div className="w-16 h-6 bg-muted rounded animate-pulse" />
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
     );
-  }
 
   return (
     <Card>
@@ -279,7 +277,7 @@ export const StepsList: React.FC<StepsListProps> = ({
             <span>{progressPercent}%</span>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={onOpenChat}>
+        <Button variant="ghost" size="sm" onClick={() => onOpenChat()}>
           <MessageCircle className="h-4 w-4" />
         </Button>
       </CardHeader>
@@ -353,31 +351,36 @@ export const StepsList: React.FC<StepsListProps> = ({
                     )}
                   </div>
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <HelpCircle className="h-4 w-4 mr-2" />
-                        More help
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleStepFeedback(step.id, 'tooBig')}>
-                        <AlertTriangle className="h-4 w-4 mr-2" />
-                        Too big
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleStepFeedback(step.id, 'confusing')}>
-                        <HelpCircle className="h-4 w-4 mr-2" />
-                        Confusing
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleStepFeedback(step.id, 'notRelevant')}>
-                        <X className="h-4 w-4 mr-2" />
-                        Not relevant
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => onOpenChat(step)} aria-label="Ask about this step">
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <HelpCircle className="h-4 w-4 mr-2" />
+                          More help
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStepFeedback(step.id, 'tooBig')}>
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          Too big
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStepFeedback(step.id, 'confusing')}>
+                          <HelpCircle className="h-4 w-4 mr-2" />
+                          Confusing
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStepFeedback(step.id, 'notRelevant')}>
+                          <X className="h-4 w-4 mr-2" />
+                          Not relevant
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
 
                 {/* Expanded content */}

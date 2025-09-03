@@ -39,6 +39,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
   const [showChat, setShowChat] = useState(false);
+  const [chatStep, setChatStep] = useState<Step | undefined>(undefined);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,10 +66,10 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       ]);
 
       if (goalData) {
-        // Auto-generate steps if none exist and goal is active
+        // Auto-generate steps if none exist
         let finalSteps = stepsData || [];
         
-        if ((!stepsData || stepsData.length === 0) && goalData.status === 'active') {
+        if (!stepsData || stepsData.length === 0) {
           try {
             console.log('Generating steps for goal:', goalData.title);
             const generatedSteps = await stepsGenerator.generateSteps(goalData);
@@ -271,13 +272,17 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         goal={goal}
         steps={steps}
         onStepsUpdate={handleStepsUpdate}
-        onOpenChat={() => setShowChat(true)}
+        onOpenChat={(step) => {
+          setChatStep(step);
+          setShowChat(true);
+        }}
       />
 
       {/* Steps Chat */}
       <StepsChat 
         goal={goal}
         steps={steps}
+        step={chatStep}
         isOpen={showChat}
         onClose={() => setShowChat(false)}
       />

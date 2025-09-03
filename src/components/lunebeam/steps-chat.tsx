@@ -16,11 +16,12 @@ interface Message {
 interface StepsChatProps {
   goal: Goal;
   steps: Step[];
+  step?: Step;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const StepsChat: React.FC<StepsChatProps> = ({ goal, steps, isOpen, onClose }) => {
+export const StepsChat: React.FC<StepsChatProps> = ({ goal, steps, step, isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -38,15 +39,16 @@ export const StepsChat: React.FC<StepsChatProps> = ({ goal, steps, isOpen, onClo
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       // Add welcome message
+      const context = step ? `your step: "${step.title}"` : `your goal: "${goal.title}"`;
       const welcomeMessage: Message = {
         id: 'welcome',
-        content: `Hi! I'm here to help with your goal: "${goal.title}". Ask me anything about your steps, how to tackle them, or what to do if you're stuck. Let's keep this focused on your current goal and steps.`,
+        content: `Hi! I'm here to help with ${context}. Ask about what to do next, why it matters, or how to break it down. Let's keep this focused on your current steps.`,
         role: 'assistant',
         timestamp: new Date()
       };
       setMessages([welcomeMessage]);
     }
-  }, [isOpen, goal.title, messages.length]);
+  }, [isOpen, goal.title, step?.title, messages.length]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -191,15 +193,15 @@ export const StepsChat: React.FC<StepsChatProps> = ({ goal, steps, isOpen, onClo
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-md h-96 flex flex-col">
+      <Card className="w-full max-w-md h-96 flex flex-col" role="dialog" aria-label="Steps chat">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <div>
             <CardTitle className="text-lg">StepCoach</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Help with: {goal.title}
+              Help with: {step ? step.title : goal.title}
             </p>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close chat">
             <X className="h-4 w-4" />
           </Button>
         </CardHeader>
