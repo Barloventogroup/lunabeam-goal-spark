@@ -109,6 +109,42 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
         supportingLinks: [],
         userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
         metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 3 }
+      },
+      {
+        title: "Research your therapist",
+        explainer: "Look up their background and approach to feel more prepared.",
+        isBlocking: false,
+        precursors: [],
+        dependencies: [],
+        estimated_effort_min: 6,
+        is_required: false,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 2 }
+      },
+      {
+        title: "Plan your route",
+        explainer: "Check how to get there and how long it takes.",
+        isBlocking: false,
+        precursors: ["book_appointment"],
+        dependencies: [],
+        estimated_effort_min: 4,
+        is_required: false,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 2 }
+      },
+      {
+        title: "Set arrival reminder",
+        explainer: "Add a phone reminder to leave 15 minutes early.",
+        isBlocking: false,
+        precursors: ["add_calendar"],
+        dependencies: [],
+        estimated_effort_min: 2,
+        is_required: false,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 3 }
       }
     ];
   }
@@ -151,6 +187,54 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
         supportingLinks: [],
         userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
         metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 3 }
+      },
+      {
+        title: "Review syllabus",
+        explainer: "Go through course requirements and upcoming deadlines.",
+        isBlocking: false,
+        precursors: [],
+        dependencies: [],
+        estimated_effort_min: 8,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 4 }
+      },
+      {
+        title: "Set study reminders",
+        explainer: "Add phone alerts for each study session.",
+        isBlocking: false,
+        precursors: ["create_schedule"],
+        dependencies: [],
+        estimated_effort_min: 3,
+        is_required: false,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 3 }
+      },
+      {
+        title: "Find study buddy",
+        explainer: "Connect with a classmate for accountability and help.",
+        isBlocking: false,
+        precursors: [],
+        dependencies: [],
+        estimated_effort_min: 10,
+        is_required: false,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 3, scoreImpact: 3 }
+      },
+      {
+        title: "Create backup plan",
+        explainer: "Plan what to do if you fall behind schedule.",
+        isBlocking: false,
+        precursors: ["create_schedule"],
+        dependencies: [],
+        estimated_effort_min: 5,
+        is_required: false,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 2 }
       }
     ];
   }
@@ -193,6 +277,54 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
         supportingLinks: [],
         userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
         metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 3 }
+      },
+      {
+        title: "Track progress",
+        explainer: "Set up a simple way to record your workouts.",
+        isBlocking: false,
+        precursors: [],
+        dependencies: [],
+        estimated_effort_min: 5,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 4 }
+      },
+      {
+        title: "Plan recovery days",
+        explainer: "Schedule rest days between intense workouts.",
+        isBlocking: false,
+        precursors: ["plan_routine"],
+        dependencies: [],
+        estimated_effort_min: 3,
+        is_required: false,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 3 }
+      },
+      {
+        title: "Find workout music",
+        explainer: "Create an energizing playlist to keep you motivated.",
+        isBlocking: false,
+        precursors: [],
+        dependencies: [],
+        estimated_effort_min: 8,
+        is_required: false,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 2 }
+      },
+      {
+        title: "Set mini rewards",
+        explainer: "Plan small treats for completing each week.",
+        isBlocking: false,
+        precursors: [],
+        dependencies: [],
+        estimated_effort_min: 4,
+        is_required: false,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 3 }
       }
     ];
   }
@@ -234,6 +366,54 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       supportingLinks: [],
       userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
       metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 4 }
+    },
+    {
+      title: "Check your progress",
+      explainer: "Look back at what you've accomplished so far.",
+      isBlocking: false,
+      precursors: ["take_action"],
+      dependencies: [],
+      estimated_effort_min: 3,
+      is_required: true,
+      supportingLinks: [],
+      userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+      metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 3 }
+    },
+    {
+      title: "Plan next steps",
+      explainer: "Think about what comes next to keep momentum going.",
+      isBlocking: false,
+      precursors: ["take_action"],
+      dependencies: [],
+      estimated_effort_min: 6,
+      is_required: false,
+      supportingLinks: [],
+      userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+      metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 4 }
+    },
+    {
+      title: "Get support",
+      explainer: "Tell someone about your goal or ask for help.",
+      isBlocking: false,
+      precursors: [],
+      dependencies: [],
+      estimated_effort_min: 8,
+      is_required: false,
+      supportingLinks: [],
+      userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+      metadata: { version: 1, source: 'rules', scoreEase: 3, scoreImpact: 3 }
+    },
+    {
+      title: "Celebrate wins",
+      explainer: "Take a moment to appreciate your progress.",
+      isBlocking: false,
+      precursors: ["check_progress"],
+      dependencies: [],
+      estimated_effort_min: 2,
+      is_required: false,
+      supportingLinks: [],
+      userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+      metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 2 }
     }
   ];
 }
