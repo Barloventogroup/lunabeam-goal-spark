@@ -53,7 +53,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
     return [
       {
         title: "Pick a session date",
-        explainer: "Open your calendar and choose any day next week.",
+        explainer: "Open your calendar and choose any day next week. Why: Having a specific date creates commitment and makes the appointment feel real, reducing the chance you'll postpone it indefinitely.",
         isBlocking: true,
         precursors: [],
         dependencies: ["book_appointment"],
@@ -65,7 +65,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Book the appointment",
-        explainer: "Use the clinic link or call; confirm time and location.",
+        explainer: "Use the clinic link or call; confirm time and location. Why: Actually booking secures your spot and creates accountability - you've made a real commitment that's harder to back out of.",
         isBlocking: true,
         precursors: ["pick_date"],
         dependencies: ["add_calendar", "pack_basics"],
@@ -77,7 +77,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Add it to your calendar",
-        explainer: "Add date, address, and a 1-hour reminder.",
+        explainer: "Add date, address, and a 1-hour reminder. Why: Calendar reminders prevent you from accidentally scheduling over it or forgetting, and having the address ready reduces last-minute stress.",
         isBlocking: false,
         precursors: ["book_appointment"],
         dependencies: [],
@@ -89,7 +89,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Prep 3 topics",
-        explainer: "Jot 3 things you want to talk about.",
+        explainer: "Jot 3 things you want to talk about. Why: Preparing topics helps you make the most of your limited session time and reduces the anxiety of not knowing what to say.",
         isBlocking: false,
         precursors: [],
         dependencies: [],
@@ -101,7 +101,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Pack basics",
-        explainer: "ID, payment method, and any forms.",
+        explainer: "ID, payment method, and any forms. Why: Having everything ready prevents delays or having to reschedule because you forgot something essential.",
         isBlocking: false,
         precursors: ["book_appointment"],
         dependencies: [],
@@ -113,7 +113,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Research your therapist",
-        explainer: "Look up their background and approach to feel more prepared.",
+        explainer: "Look up their background and approach to feel more prepared. Why: Understanding their style helps set realistic expectations and can reduce first-session anxiety by making them feel less like a stranger.",
         isBlocking: false,
         precursors: [],
         dependencies: [],
@@ -125,7 +125,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Plan your route",
-        explainer: "Check how to get there and how long it takes.",
+        explainer: "Check how to get there and how long it takes. Why: Knowing your route prevents being late and arriving stressed, which could negatively impact your first session.",
         isBlocking: false,
         precursors: ["book_appointment"],
         dependencies: [],
@@ -137,7 +137,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Set arrival reminder",
-        explainer: "Add a phone reminder to leave 15 minutes early.",
+        explainer: "Add a phone reminder to leave 15 minutes early. Why: Extra time buffer accounts for unexpected delays and helps you arrive calm rather than rushed and anxious.",
         isBlocking: false,
         precursors: ["add_calendar"],
         dependencies: [],
@@ -155,7 +155,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
     return [
       {
         title: "Set up study space",
-        explainer: "Find a quiet spot with good lighting and minimal distractions.",
+        explainer: "Find a quiet spot with good lighting and minimal distractions. Why: A dedicated study environment signals to your brain it's time to focus and helps build consistent study habits.",
         isBlocking: false,
         precursors: [],
         dependencies: ["create_schedule"],
@@ -167,7 +167,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Create study schedule",
-        explainer: "Block out specific times for studying each subject.",
+        explainer: "Block out specific times for studying each subject. Why: Scheduled study sessions become automatic habits and prevent important subjects from getting neglected when life gets busy.",
         isBlocking: true,
         precursors: ["set_up_space"],
         dependencies: ["gather_materials"],
@@ -179,7 +179,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Gather materials",
-        explainer: "Collect textbooks, notes, pens, and any tech you need.",
+        explainer: "Collect textbooks, notes, pens, and any tech you need. Why: Having everything ready eliminates friction and excuses that could derail your study sessions.",
         isBlocking: false,
         precursors: ["create_schedule"],
         dependencies: [],
@@ -191,7 +191,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Review syllabus",
-        explainer: "Go through course requirements and upcoming deadlines.",
+        explainer: "Go through course requirements and upcoming deadlines. Why: Understanding what's expected helps you prioritize your study time and avoid last-minute panic about assignments you forgot.",
         isBlocking: false,
         precursors: [],
         dependencies: [],
@@ -203,7 +203,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Set study reminders",
-        explainer: "Add phone alerts for each study session.",
+        explainer: "Add phone alerts for each study session. Why: Reminders help you stick to your schedule even when you're tired or distracted by other activities.",
         isBlocking: false,
         precursors: ["create_schedule"],
         dependencies: [],
@@ -215,7 +215,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Find study buddy",
-        explainer: "Connect with a classmate for accountability and help.",
+        explainer: "Connect with a classmate for accountability and help. Why: Study partners provide motivation, help explain difficult concepts, and make you less likely to skip study sessions.",
         isBlocking: false,
         precursors: [],
         dependencies: [],
@@ -227,7 +227,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Create backup plan",
-        explainer: "Plan what to do if you fall behind schedule.",
+        explainer: "Plan what to do if you fall behind schedule. Why: Having a recovery strategy prevents one missed session from derailing your entire study plan.",
         isBlocking: false,
         precursors: ["create_schedule"],
         dependencies: [],
@@ -245,7 +245,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
     return [
       {
         title: "Choose workout time",
-        explainer: "Pick a consistent time that works with your schedule.",
+        explainer: "Pick a consistent time that works with your schedule. Why: Consistent timing helps exercise become an automatic habit rather than something you have to decide about daily.",
         isBlocking: true,
         precursors: [],
         dependencies: ["plan_routine"],
@@ -257,7 +257,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Plan simple routine",
-        explainer: "Start with 3-4 basic exercises you can do consistently.",
+        explainer: "Start with 3-4 basic exercises you can do consistently. Why: Simple routines are easier to stick with long-term, and consistency matters more than complexity when building fitness habits.",
         isBlocking: true,
         precursors: ["choose_time"],
         dependencies: ["get_ready"],
@@ -269,7 +269,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Get workout clothes ready",
-        explainer: "Lay out comfortable clothes and shoes the night before.",
+        explainer: "Lay out comfortable clothes and shoes the night before. Why: Removing barriers like searching for workout clothes makes it easier to follow through when motivation is low.",
         isBlocking: false,
         precursors: ["plan_routine"],
         dependencies: [],
@@ -281,7 +281,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Track progress",
-        explainer: "Set up a simple way to record your workouts.",
+        explainer: "Set up a simple way to record your workouts. Why: Seeing your progress over time provides motivation and helps you notice improvements you might otherwise miss.",
         isBlocking: false,
         precursors: [],
         dependencies: [],
@@ -293,7 +293,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Plan recovery days",
-        explainer: "Schedule rest days between intense workouts.",
+        explainer: "Schedule rest days between intense workouts. Why: Rest days prevent injury and burnout while allowing your muscles to recover and grow stronger.",
         isBlocking: false,
         precursors: ["plan_routine"],
         dependencies: [],
@@ -305,7 +305,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Find workout music",
-        explainer: "Create an energizing playlist to keep you motivated.",
+        explainer: "Create an energizing playlist to keep you motivated. Why: Music boosts energy and makes workouts more enjoyable, helping you exercise longer and look forward to the next session.",
         isBlocking: false,
         precursors: [],
         dependencies: [],
@@ -317,7 +317,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
       },
       {
         title: "Set mini rewards",
-        explainer: "Plan small treats for completing each week.",
+        explainer: "Plan small treats for completing each week. Why: Rewards create positive associations with exercise and give you something to look forward to beyond just the workout itself.",
         isBlocking: false,
         precursors: [],
         dependencies: [],
@@ -334,7 +334,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
   return [
     {
       title: "Break it down",
-      explainer: "List the main parts of this goal in simple steps.",
+      explainer: "List the main parts of this goal in simple steps. Why: Complex goals feel overwhelming, but breaking them into smaller pieces makes progress feel achievable and helps you see a clear path forward.",
       isBlocking: false,
       precursors: [],
       dependencies: ["plan_first_step"],
@@ -346,7 +346,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
     },
     {
       title: "Plan first step",
-      explainer: "Pick the easiest thing you can do today to get started.",
+      explainer: "Pick the easiest thing you can do today to get started. Why: Starting with something easy builds momentum and confidence, making it more likely you'll continue with harder steps later.",
       isBlocking: true,
       precursors: ["break_down"],
       dependencies: ["take_action"],
@@ -358,7 +358,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
     },
     {
       title: "Take first action",
-      explainer: "Do that first step - even 2 minutes counts!",
+      explainer: "Do that first step - even 2 minutes counts! Why: Taking action, however small, breaks the inertia of planning and proves to yourself that progress is possible.",
       isBlocking: false,
       precursors: ["plan_first_step"],
       dependencies: [],
@@ -370,7 +370,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
     },
     {
       title: "Check your progress",
-      explainer: "Look back at what you've accomplished so far.",
+      explainer: "Look back at what you've accomplished so far. Why: Acknowledging progress boosts motivation and helps you see that your efforts are working, even when the goal still feels far away.",
       isBlocking: false,
       precursors: ["take_action"],
       dependencies: [],
@@ -382,7 +382,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
     },
     {
       title: "Plan next steps",
-      explainer: "Think about what comes next to keep momentum going.",
+      explainer: "Think about what comes next to keep momentum going. Why: Having a clear next action prevents the momentum from your current progress from fizzling out due to uncertainty.",
       isBlocking: false,
       precursors: ["take_action"],
       dependencies: [],
@@ -394,7 +394,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
     },
     {
       title: "Get support",
-      explainer: "Tell someone about your goal or ask for help.",
+      explainer: "Tell someone about your goal or ask for help. Why: Sharing your goals creates accountability and opens up opportunities for advice, encouragement, and practical assistance.",
       isBlocking: false,
       precursors: [],
       dependencies: [],
@@ -406,7 +406,7 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
     },
     {
       title: "Celebrate wins",
-      explainer: "Take a moment to appreciate your progress.",
+      explainer: "Take a moment to appreciate your progress. Why: Celebrating creates positive associations with working toward goals and reinforces the behaviors that led to success.",
       isBlocking: false,
       precursors: ["check_progress"],
       dependencies: [],
