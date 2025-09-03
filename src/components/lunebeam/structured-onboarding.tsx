@@ -363,17 +363,17 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
             </div>
 
             <div className="text-center space-y-3">
-              <Button 
-                onClick={handleBack} 
-                className="mx-auto mb-2 px-6 rounded-full text-white" 
-                style={{ backgroundColor: '#87CEEB' }}
-              >
-                Back
-              </Button>
               <p className="text-sm text-black">
                 Did I get that right? Don't worry, you can continue adding information to your profile 
                 so we can further personalize your goals and help you shine.
               </p>
+              <Button 
+                onClick={handleBack} 
+                className="w-full mb-2 rounded-full text-white" 
+                style={{ backgroundColor: '#87CEEB' }}
+              >
+                Back
+              </Button>
               <Button onClick={handleComplete} className="w-full">
                 Let's get started
               </Button>
