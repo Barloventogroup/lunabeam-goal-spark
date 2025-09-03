@@ -76,26 +76,42 @@ export const StepsList: React.FC<StepsListProps> = ({
   const sortedActionableSteps = steps
     .filter(s => (!s.type || s.type === 'action') && !s.hidden)
     .sort((a, b) => {
-      // First, group by main session steps vs sub-steps
-      const aIsMainStep = a.title.includes('Week ') && a.title.includes('Session');
-      const bIsMainStep = b.title.includes('Week ') && b.title.includes('Session');
+      // Parse week/session for main steps
+      const aWeekMatch = a.title.match(/Week (\d+)/);
+      const aSessionMatch = a.title.match(/Session (\d+)/);
+      const bWeekMatch = b.title.match(/Week (\d+)/);
+      const bSessionMatch = b.title.match(/Session (\d+)/);
       
-      // If one is main and other is sub, main comes first
-      if (aIsMainStep && !bIsMainStep) return -1;
-      if (!aIsMainStep && bIsMainStep) return 1;
+      const aIsMainStep = aWeekMatch && aSessionMatch;
+      const bIsMainStep = bWeekMatch && bSessionMatch;
       
       // Both are main steps - sort by week then session
       if (aIsMainStep && bIsMainStep) {
-        const aWeek = parseInt(a.title.match(/Week (\d+)/)?.[1] || '0');
-        const bWeek = parseInt(b.title.match(/Week (\d+)/)?.[1] || '0');
+        const aWeek = parseInt(aWeekMatch[1]);
+        const bWeek = parseInt(bWeekMatch[1]);
         if (aWeek !== bWeek) return aWeek - bWeek;
         
-        const aSession = parseInt(a.title.match(/Session (\d+)/)?.[1] || '0');
-        const bSession = parseInt(b.title.match(/Session (\d+)/)?.[1] || '0');
+        const aSession = parseInt(aSessionMatch[1]);
+        const bSession = parseInt(bSessionMatch[1]);
         return aSession - bSession;
       }
       
-      // Both are sub-steps - sort by order_index, then creation time
+      // One is main, one is sub - use order_index to group them properly
+      if (aIsMainStep && !bIsMainStep) {
+        // Check if b should come right after a
+        const aIndex = a.order_index ?? 0;
+        const bIndex = b.order_index ?? Number.POSITIVE_INFINITY;
+        return bIndex > aIndex && bIndex < aIndex + 10 ? -1 : aIndex - bIndex;
+      }
+      
+      if (!aIsMainStep && bIsMainStep) {
+        // Check if a should come right after b
+        const aIndex = a.order_index ?? Number.POSITIVE_INFINITY;
+        const bIndex = b.order_index ?? 0;
+        return aIndex > bIndex && aIndex < bIndex + 10 ? 1 : aIndex - bIndex;
+      }
+      
+      // Both are sub-steps - sort by order_index
       const aIndex = a.order_index ?? Number.POSITIVE_INFINITY;
       const bIndex = b.order_index ?? Number.POSITIVE_INFINITY;
       if (aIndex !== bIndex) return aIndex - bIndex;
@@ -103,8 +119,8 @@ export const StepsList: React.FC<StepsListProps> = ({
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
 
-  const visibleSteps = sortedActionableSteps.slice(0, 8); // Show more steps to reduce confusion
-  const queuedSteps = sortedActionableSteps.slice(8);
+  const visibleSteps = sortedActionableSteps.slice(0, 10); // Show more steps to see proper grouping
+  const queuedSteps = sortedActionableSteps.slice(10);
 
   const handleMarkComplete = async (stepId: string) => {
     try {
@@ -282,7 +298,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                   <TableHead className="w-8"></TableHead>
                   <TableHead>Step</TableHead>
                   <TableHead className="w-20">Due</TableHead>
-                  <TableHead className="w-24 text-center">Status</TableHead>
+                  <TableHead className="w-24">Status</TableHead>
                   <TableHead className="w-32">Action</TableHead>
                 </TableRow>
             </TableHeader>
@@ -316,7 +332,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                                   <div className="w-2 h-0.5 bg-muted-foreground/40"></div>
                                 </div>
                               )}
-                              <span className={`text-base font-medium ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                              <span className={`text-sm font-medium ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                                 {step.title.replace(/^Day\s+\d+:\s*/i, '')}
                               </span>
                               {isBlocked && (
