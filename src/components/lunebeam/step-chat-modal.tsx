@@ -5,10 +5,30 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, User, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-
-const lunaIconUrl = '/lovable-uploads/22ad6b2e-d3d9-4766-bef4-e941fec16d0d.png?' + Date.now();
+import { removeBackground, loadImageFromUrl } from '@/utils/backgroundRemoval';
 import type { Step, Goal } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+
+// Process Luna icon to ensure transparent background
+let processedLunaIconUrl: string | null = null;
+
+const getProcessedLunaIcon = async (): Promise<string> => {
+  if (processedLunaIconUrl) return processedLunaIconUrl;
+  
+  try {
+    console.log('Processing Luna icon...');
+    const originalIconUrl = '/lovable-uploads/7b606de4-c759-4367-bb17-6941c1cdf9f7.png';
+    const img = await loadImageFromUrl(originalIconUrl);
+    const processedBlob = await removeBackground(img);
+    processedLunaIconUrl = URL.createObjectURL(processedBlob);
+    console.log('Luna icon processed successfully');
+    return processedLunaIconUrl;
+  } catch (error) {
+    console.error('Failed to process Luna icon, using original:', error);
+    // Fallback to original if processing fails
+    return '/lovable-uploads/7b606de4-c759-4367-bb17-6941c1cdf9f7.png';
+  }
+};
 
 interface StepChatModalProps {
   isOpen: boolean;
@@ -36,8 +56,14 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [lunaIconUrl, setLunaIconUrl] = useState<string>('/lovable-uploads/7b606de4-c759-4367-bb17-6941c1cdf9f7.png');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Process Luna icon on component mount
+  useEffect(() => {
+    getProcessedLunaIcon().then(setLunaIconUrl);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
