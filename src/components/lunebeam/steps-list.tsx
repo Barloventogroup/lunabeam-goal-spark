@@ -362,11 +362,9 @@ export const StepsList: React.FC<StepsListProps> = ({
                       <div className="flex p-4 gap-4">
                         {/* Left side - Step explanation */}
                         <div className="flex-1 pl-8">
-                          {(step.explainer || step.notes) && (
                             <p className="text-sm text-muted-foreground leading-relaxed">
-                              {step.explainer || step.notes}
+                              {(step.explainer?.trim() || step.notes?.trim() || "No description yet. Tap \u201CConfusing\u201D and we\u2019ll clarify this step.")}
                             </p>
-                          )}
                         </div>
 
                         {/* Right side - Action buttons */}
