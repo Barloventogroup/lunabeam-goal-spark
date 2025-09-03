@@ -272,7 +272,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       <CardHeader className="pb-4">
         <div className="space-y-2">
           <CardTitle className="text-lg font-semibold text-foreground">Recommended steps</CardTitle>
-          <p className="text-sm text-muted-foreground">AI-generated action items tailored to your goal. Click to mark progress, provide feedback, or get more help.</p>
+          <p className="text-sm text-muted-foreground">Here's a short list of steps and things to keep in mind as you work on your goal.</p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>{doneSteps.length}/{actionableSteps.length} done</span>
             <span>•</span>
@@ -354,31 +354,14 @@ export const StepsList: React.FC<StepsListProps> = ({
                   </div>
 
                   <div className="flex items-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-background border shadow-lg z-50">
-                        <DropdownMenuItem onClick={() => toggleStepExpanded(step.id)}>
-                          <HelpCircle className="h-4 w-4 mr-2" />
-                          More help
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStepFeedback(step.id, 'tooBig')}>
-                          <AlertTriangle className="h-4 w-4 mr-2" />
-                          Too big
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStepFeedback(step.id, 'confusing')}>
-                          <HelpCircle className="h-4 w-4 mr-2" />
-                          Confusing
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStepFeedback(step.id, 'notRelevant')}>
-                          <X className="h-4 w-4 mr-2" />
-                          Not relevant
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => toggleStepExpanded(step.id)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </Button>
                   </div>
                 </div>
 
@@ -389,22 +372,59 @@ export const StepsList: React.FC<StepsListProps> = ({
                   </div>
                 )}
 
-                {/* Expanded content */}
+                {/* Expanded content with pill-shaped action buttons */}
                 {isExpanded && (
                   <Collapsible open={isExpanded}>
-                    <CollapsibleContent className="ml-8 p-3 bg-muted/50 rounded-lg">
-                      <div className="space-y-2">
-                        <p className="text-sm font-medium">More help:</p>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          <li>• Try breaking this step into even smaller parts</li>
-                          <li>• Set a timer for just 5 minutes to get started</li>
-                          <li>• Ask someone for help if you get stuck</li>
-                        </ul>
-                        {step.estimated_effort_min && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Estimated time: {step.estimated_effort_min} minutes
-                          </p>
-                        )}
+                    <CollapsibleContent className="ml-8 p-4 bg-muted/30 rounded-lg border">
+                      <div className="space-y-3">
+                        <div className="flex flex-col gap-2">
+                          {step.status !== 'done' && (
+                            <Button
+                              onClick={() => handleStepToggle(step.id, step.status)}
+                              className="w-full h-9 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors"
+                              variant="outline"
+                            >
+                              <CheckCircle2 className="h-4 w-4 mr-2" />
+                              Mark Complete
+                            </Button>
+                          )}
+                          
+                          <Button
+                            onClick={() => toggleStepExpanded(step.id)}
+                            className="w-full h-9 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors dark:bg-blue-950/50 dark:hover:bg-blue-950 dark:text-blue-300 dark:border-blue-800"
+                            variant="outline"
+                          >
+                            <HelpCircle className="h-4 w-4 mr-2" />
+                            More Help
+                          </Button>
+                          
+                          <Button
+                            onClick={() => handleStepFeedback(step.id, 'tooBig')}
+                            className="w-full h-9 rounded-full bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 transition-colors dark:bg-orange-950/50 dark:hover:bg-orange-950 dark:text-orange-300 dark:border-orange-800"
+                            variant="outline"
+                          >
+                            <AlertTriangle className="h-4 w-4 mr-2" />
+                            Too Big
+                          </Button>
+                          
+                          <Button
+                            onClick={() => handleStepFeedback(step.id, 'confusing')}
+                            className="w-full h-9 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition-colors dark:bg-purple-950/50 dark:hover:bg-purple-950 dark:text-purple-300 dark:border-purple-800"
+                            variant="outline"
+                          >
+                            <HelpCircle className="h-4 w-4 mr-2" />
+                            Confusing
+                          </Button>
+                          
+                          <Button
+                            onClick={() => handleStepFeedback(step.id, 'notRelevant')}
+                            className="w-full h-9 rounded-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 transition-colors dark:bg-red-950/50 dark:hover:bg-red-950 dark:text-red-300 dark:border-red-800"
+                            variant="outline"
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            Not Relevant
+                          </Button>
+                        </div>
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
