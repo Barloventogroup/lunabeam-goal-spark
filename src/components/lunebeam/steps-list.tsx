@@ -72,34 +72,32 @@ export const StepsList: React.FC<StepsListProps> = ({
     ? Math.round((doneSteps.length / actionableSteps.length) * 100) 
     : 0;
 
-  // Get visible steps (first 5, ordered by dependencies and impact)
-  const visibleSteps = getVisibleSteps(steps);
-  const queuedSteps = steps.filter(s => 
-    (!s.type || s.type === 'action') && !s.hidden && !visibleSteps.includes(s)
-  );
-
-  function getVisibleSteps(allSteps: Step[]): Step[] {
-    const actionable = allSteps.filter(s => 
-      (!s.type || s.type === 'action') && !s.hidden
-    );
-    
-    // Sort by: required steps first, then by order_index
-    const sorted = actionable.sort((a, b) => {
+  // Compute sorted actionable steps and split into visible + queued
+  const sortedActionableSteps = steps
+    .filter(s => (!s.type || s.type === 'action') && !s.hidden)
+    .sort((a, b) => {
       // Required steps first
       if (a.is_required && !b.is_required) return -1;
       if (!a.is_required && b.is_required) return 1;
-      
-      // Then by order_index (if available)
-      if (a.order_index !== undefined && b.order_index !== undefined) {
-        return a.order_index - b.order_index;
+
+      // Then by order_index (treat undefined as Infinity so they go last)
+      const aIndex = a.order_index ?? Number.POSITIVE_INFINITY;
+      const bIndex = b.order_index ?? Number.POSITIVE_INFINITY;
+      if (aIndex !== bIndex) return aIndex - bIndex;
+
+      // Then by due_date if both present
+      if (a.due_date && b.due_date) {
+        const aDue = new Date(a.due_date).getTime();
+        const bDue = new Date(b.due_date).getTime();
+        if (aDue !== bDue) return aDue - bDue;
       }
-      
+
       // Fallback to creation time
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
 
-    return sorted.slice(0, 5);
-  }
+  const visibleSteps = sortedActionableSteps.slice(0, 5);
+  const queuedSteps = sortedActionableSteps.slice(5);
 
   const handleMarkComplete = async (stepId: string) => {
     try {
@@ -273,13 +271,13 @@ export const StepsList: React.FC<StepsListProps> = ({
         <div className="border border-border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
-               <TableRow>
-                 <TableHead className="w-8"></TableHead>
-                 <TableHead>Step</TableHead>
-                 <TableHead className="w-20">Due</TableHead>
-                 <TableHead className="w-24">Status</TableHead>
-                 <TableHead className="w-32">Action</TableHead>
-               </TableRow>
+                 <TableRow>
+                  <TableHead className="w-8"></TableHead>
+                  <TableHead>Step</TableHead>
+                  <TableHead className="w-20">Due</TableHead>
+                  <TableHead className="w-24 text-center">Status</TableHead>
+                  <TableHead className="w-32">Action</TableHead>
+                </TableRow>
             </TableHeader>
             <TableBody>
               {(showingQueuedSteps ? [...visibleSteps, ...queuedSteps] : visibleSteps).map((step, index) => {
@@ -305,7 +303,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                        <TableCell className="p-2">
                          <div className="space-y-1">
                            <div className="flex items-center gap-2">
-                             <span className={`text-sm font-medium ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                             <span className={`text-base font-medium ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                                {step.title.replace(/^Day\s+\d+:\s*/i, '')}
                              </span>
                              {isBlocked && (
@@ -335,11 +333,9 @@ export const StepsList: React.FC<StepsListProps> = ({
                          )}
                        </TableCell>
 
-                       <TableCell className="p-2">
-                         <div className="flex items-center justify-center">
-                           {getStepIcon(step)}
-                         </div>
-                       </TableCell>
+                        <TableCell className="p-2 text-center">
+                          {getStepIcon(step)}
+                        </TableCell>
 
                        <TableCell className="p-2">
                          <div className="flex items-center gap-2">
