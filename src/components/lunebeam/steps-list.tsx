@@ -216,7 +216,7 @@ export const StepsList: React.FC<StepsListProps> = ({
             <p className="text-muted-foreground mb-4">We're preparing a few quick wins for you…</p>
             <div className="space-y-3">
               {[1,2,3,4,5].map((i) => (
-                <div key={i} className="flex items-center gap-3 p-3 border rounded-lg">
+                <div key={i} className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg">
                   <div className="w-5 h-5 rounded-full bg-muted animate-pulse" />
                   <div className="flex-1 space-y-2">
                     <div className="h-3 w-2/3 bg-muted rounded animate-pulse" />
@@ -264,7 +264,7 @@ export const StepsList: React.FC<StepsListProps> = ({
 
             return (
               <div key={step.id} className="space-y-2">
-                <div className={`border border-border rounded-lg transition-colors ${
+                <div className={`border border-gray-300 rounded-lg transition-colors ${
                   isBlocked ? 'opacity-60' : 'hover:bg-muted/50'
                 }`}>
                   {/* Main step row */}
@@ -297,11 +297,6 @@ export const StepsList: React.FC<StepsListProps> = ({
                         </div>
                       )}
 
-                      {step.estimated_effort_min && (
-                        <div className="text-xs text-muted-foreground">
-                          About {step.estimated_effort_min} min
-                        </div>
-                      )}
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -322,7 +317,7 @@ export const StepsList: React.FC<StepsListProps> = ({
 
                   {/* Expanded content */}
                   {isExpanded && (
-                    <div className="border-t border-border">
+                    <div className="border-t border-gray-300">
                       <div className="flex p-4 gap-4">
                         {/* Left side - Step explanation */}
                         <div className="flex-1 pl-8">
