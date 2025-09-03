@@ -67,6 +67,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const [showCustomDialog, setShowCustomDialog] = useState(false);
   const [customInput, setCustomInput] = useState("");
   const [isProcessingInput, setIsProcessingInput] = useState(false);
+  const [isCreatingGoal, setIsCreatingGoal] = useState(false);
   
   // Accessibility states
   const [isVoiceInputEnabled, setIsVoiceInputEnabled] = useState(false);
@@ -171,6 +172,8 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   };
 
   const handleComplete = async () => {
+    if (isCreatingGoal) return; // Prevent double-clicking
+    
     if (!state.goal || !state.purpose || !state.details || !state.frequency || !state.duration || !state.supports || !state.category || !state.startDate) {
       if (!state.startDate) {
         toast({
@@ -181,6 +184,8 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       }
       return;
     }
+
+    setIsCreatingGoal(true);
 
     // Show confetti animation
     setShowConfetti(true);
@@ -278,6 +283,8 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
         description: 'Something went wrong creating your goal. Let\'s try again!',
         variant: 'destructive'
       });
+    } finally {
+      setIsCreatingGoal(false);
     }
   };
 
@@ -561,6 +568,7 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
               onStartDateChange={(date) => setState(prev => ({ ...prev, startDate: date }))}
               onComplete={handleComplete}
               onEdit={() => setState(prev => ({ ...prev, step: 3 }))}
+              isCreating={isCreatingGoal}
             />
           )}
         </div>
@@ -913,7 +921,8 @@ const GoalConfirmation: React.FC<{
   onStartDateChange: (date: Date | undefined) => void;
   onComplete: () => void;
   onEdit: () => void;
-}> = ({ smartGoal, startDate, onStartDateChange, onComplete, onEdit }) => {
+  isCreating?: boolean;
+}> = ({ smartGoal, startDate, onStartDateChange, onComplete, onEdit, isCreating = false }) => {
   return (
     <div className="text-center space-y-6">
       <div className="text-6xl animate-bounce">🎉</div>
@@ -972,10 +981,14 @@ const GoalConfirmation: React.FC<{
           onClick={onComplete} 
           className="w-full" 
           size="lg"
-          disabled={!startDate}
+          disabled={!startDate || isCreating}
         >
-          Start My Goal!
-          <Sparkles className="ml-2 h-4 w-4" />
+          {isCreating ? 'Creating Your Goal...' : 'Start My Goal!'}
+          {isCreating ? (
+            <div className="ml-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          ) : (
+            <Sparkles className="ml-2 h-4 w-4" />
+          )}
         </Button>
       </div>
     </div>
