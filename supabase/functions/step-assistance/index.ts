@@ -28,9 +28,17 @@ serve(async (req) => {
     // Limit chat to 3 responses, then redirect to steps view
     if (assistantResponseCount >= 3) {
       return new Response(JSON.stringify({
-        response: `I've helped you with a few questions already! For more detailed assistance, I'd recommend creating additional steps to break this down further. 
+        response: `Great questions! We've covered some solid ground here, and I can tell you're really thinking this through. 
 
-Click "Add Step" to create more specific sub-steps, or check your steps list to see what's next. You've got this! 🚀`,
+You're ready to take action now! Here's what I'd suggest for your next steps:
+
+1. **Create specific sub-steps** - Break "${step.title}" into smaller, bite-sized actions you can tackle one at a time
+2. **Set mini-deadlines** - Give each sub-step a realistic timeline  
+3. **Start with the easiest piece** - Build momentum with quick wins
+
+The step creation tool will let me give you way more detailed, personalized guidance for each piece. Think of it like unlocking the next level - you've got the basics down, now you can dive deeper!
+
+I'll be right here whenever you create new steps and need more help. You've totally got this! 🌟`,
         suggestedSteps: [],
         shouldRedirect: true
       }), {
