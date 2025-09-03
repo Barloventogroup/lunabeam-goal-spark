@@ -10,11 +10,14 @@ import { GoalsWizard } from '../lunebeam/goals-wizard';
 import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { useStore } from '../../store/useStore';
 import type { Goal } from '../../types';
+
 interface TabHomeProps {
   onOpenChat: () => void;
   onNavigateToGoals: (goalId?: string) => void;
 }
+
 type HomeView = 'dashboard' | 'rewards' | 'checkin' | 'add-goal';
+
 export const TabHome: React.FC<TabHomeProps> = ({
   onOpenChat,
   onNavigateToGoals
@@ -22,6 +25,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const [currentView, setCurrentView] = useState<HomeView>('dashboard');
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+
   const {
     profile,
     loadProfile,
@@ -30,6 +34,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
     loadGoals,
     loadBadges
   } = useStore();
+
   useEffect(() => {
     console.log('TabHome mounted - loading data');
     loadProfile();
@@ -46,6 +51,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
     return () => clearInterval(interval);
   }, [loadGoals]);
+
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('dashboard')} />;
   }
@@ -58,6 +64,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   // Active goals from store
   const activeGoals = goals.filter(g => g.status === 'active' || g.status === 'planned');
   const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'there';
+
   return <>
       <div className="min-h-screen bg-gradient-soft">
         {/* Header */}
@@ -78,7 +85,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
               {activeGoals.length === 0 ? `Welcome ${displayName}!` : `Welcome back, ${displayName}!!`}
             </h2>
             {activeGoals.length === 0 ? <p className="text-muted-foreground">
-                👋 Hey {displayName}! Welcome aboard. Let’s kick things off by setting your very first goal (see that big plus sign in the blue circle — that is where you start). And remember, big or small, every step counts. Ready to get started?
+                👋 Hey {displayName}! Welcome aboard. Let's kick things off by setting your very first goal (see that big plus sign in the blue circle — that is where you start). And remember, big or small, every step counts.
               </p> : <p className="text-muted-foreground">Let's keep moving forward, one step at a time.</p>}
           </div>
 

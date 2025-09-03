@@ -14,7 +14,7 @@ export const FirstTimeReminder: React.FC<FirstTimeReminderProps> = ({ onNavigate
   const [showPath, setShowPath] = useState(false);
   const { profile } = useStore();
 
-  const goalSeed = profile?.interests?.join(', ') || 'set your first goal';
+  const goalSeed = profile?.interests?.[0] || 'set your first goal';
   const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'you';
 
   const handleHelpClick = () => {
@@ -52,11 +52,10 @@ export const FirstTimeReminder: React.FC<FirstTimeReminderProps> = ({ onNavigate
         <CollapsibleContent>
           <CardContent className="px-4 pb-4 pt-0 space-y-4">
             <div className="text-sm text-muted-foreground">
-              Ready to get started, {displayName}? 
               {!showPath && (
                 <button 
                   onClick={handleHelpClick}
-                  className="ml-1 text-primary hover:text-primary/80 underline font-medium"
+                  className="text-primary hover:text-primary/80 underline font-medium"
                 >
                   Need help setting goals?
                 </button>
