@@ -88,18 +88,9 @@ export const StepsList: React.FC<StepsListProps> = ({
     return sorted.slice(0, 5);
   }
 
-  const handleStepToggle = async (stepId: string, currentStatus: StepStatus) => {
+  const handleMarkComplete = async (stepId: string) => {
     try {
-      let newStatus: StepStatus;
-      
-      if (currentStatus === 'todo') {
-        newStatus = 'doing';
-      } else if (currentStatus === 'doing') {
-        newStatus = 'done';
-      } else {
-        newStatus = 'todo';
-      }
-
+      const newStatus: StepStatus = 'done';
       const isTemp = stepId.startsWith('step_');
 
       let stepsAfter: Step[] = steps;
@@ -115,18 +106,16 @@ export const StepsList: React.FC<StepsListProps> = ({
       }
 
       // Check for unlocked dependencies
-      if (newStatus === 'done') {
-        const unlockedSteps = checkForUnlockedSteps(stepsAfter, stepId);
-        if (unlockedSteps.length > 0) {
-          toast({
-            title: "Nice! Next step is ready.",
-            description: `${unlockedSteps[0].title} is now available.`,
-          });
-        } else {
-          toast({
-            description: "Step done! You're making great progress 🎉"
-          });
-        }
+      const unlockedSteps = checkForUnlockedSteps(stepsAfter, stepId);
+      if (unlockedSteps.length > 0) {
+        toast({
+          title: "Nice! Next step is ready.",
+          description: `${unlockedSteps[0].title} is now available.`,
+        });
+      } else {
+        toast({
+          description: "Step done! You're making great progress 🎉"
+        });
       }
     } catch (error) {
       console.error('Failed to update step:', error);
@@ -331,7 +320,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                         <div className="flex items-center gap-2">
                           {step.status !== 'done' && (
                             <Button
-                              onClick={() => !isBlocked && handleStepToggle(step.id, step.status)}
+                              onClick={() => !isBlocked && handleMarkComplete(step.id)}
                               disabled={isBlocked}
                               className="h-8 px-4 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors"
                               variant="outline"
