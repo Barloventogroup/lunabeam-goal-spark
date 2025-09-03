@@ -20,7 +20,7 @@ export const generateLunaIcon = (size: number = 24): string => {
   ctx.textBaseline = 'middle';
   
   // Use a much larger font size to make the letter clearly visible
-  const fontSize = Math.floor(size * 0.98); // Increased 50% larger (was 0.65, now 0.98)
+  const fontSize = Math.floor(size * 1.27); // Increased 30% larger (was 0.98, now 1.27)
   ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
   
   // Draw "L" text
