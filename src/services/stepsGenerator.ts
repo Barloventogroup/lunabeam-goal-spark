@@ -67,11 +67,23 @@ function generateMilestoneSteps(goal: Goal): Step[] {
     const labelMinutes = minutes ? `${minutes} min` : '';
     const stepTitle = `Week ${weekIndex + 1}, Session ${sessionIndex + 1}: ${title}${labelMinutes ? ` · ${labelMinutes}` : ''}`;
 
+    // Add dependencies: current week sessions depend on previous week sessions
+    const dependencyIds: string[] = [];
+    if (weekIndex > 0) {
+      // Depend on the last session of the previous week
+      const prevWeekLastSessionIndex = (weekIndex * frequency) - 1;
+      if (prevWeekLastSessionIndex >= 0) {
+        dependencyIds.push(`ms_${goal.id}_${prevWeekLastSessionIndex}_${Date.now()}`);
+      }
+    }
+
+    const stepId = `ms_${goal.id}_${i}_${Date.now()}`;
+    
     steps.push({
-      id: `ms_${goal.id}_${i}_${Date.now()}`,
+      id: stepId,
       goal_id: goal.id,
       title: stepTitle,
-      explainer: `Complete a ${labelMinutes || 'scheduled'} session for your goal.`,
+      explainer: `Complete a ${labelMinutes || 'scheduled'} session for your goal.${weekIndex > 0 ? ' Building on previous week\'s progress.' : ''}`,
       notes: undefined,
       order_index: i,
       estimated_effort_min: minutes,
@@ -83,7 +95,7 @@ function generateMilestoneSteps(goal: Goal): Step[] {
       blocked: false,
       isBlocking: false,
       points: undefined,
-      dependency_step_ids: [],
+      dependency_step_ids: dependencyIds,
       precursors: [],
       dependencies: [],
       supportingLinks: [],
@@ -94,6 +106,17 @@ function generateMilestoneSteps(goal: Goal): Step[] {
       updated_at: new Date().toISOString(),
     });
   }
+
+  // Fix dependency IDs to reference actual step IDs
+  steps.forEach((step, index) => {
+    const weekIndex = Math.floor(index / frequency);
+    if (weekIndex > 0) {
+      const prevWeekLastSessionIndex = (weekIndex * frequency) - 1;
+      if (prevWeekLastSessionIndex >= 0 && steps[prevWeekLastSessionIndex]) {
+        step.dependency_step_ids = [steps[prevWeekLastSessionIndex].id];
+      }
+    }
+  });
 
   return steps;
 }

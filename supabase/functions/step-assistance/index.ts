@@ -22,6 +22,9 @@ serve(async (req) => {
       userMessage: userMessage.substring(0, 100) 
     });
 
+    // Check for similar steps in prior weeks that have substeps
+    const inheritedSubsteps = await checkForSimilarPriorSteps(step, goal);
+
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not found');
@@ -105,10 +108,18 @@ Be conversational and supportive. Use their language and references they'll actu
     // Parse potential sub-steps from the response
     const suggestedSteps = parseSubSteps(assistantResponse, step, goal);
 
-    // If sub-steps were suggested, create them in the database
+    // Combine AI suggested steps with inherited substeps from similar prior weeks
+    let allSteps = [...suggestedSteps];
+    if (inheritedSubsteps.length > 0 && suggestedSteps.length === 0) {
+      // Only auto-inherit if no new steps were suggested by AI
+      allSteps = inheritedSubsteps;
+      console.log(`Auto-inheriting ${inheritedSubsteps.length} substeps from similar prior week steps`);
+    }
+
+    // If sub-steps were suggested or inherited, create them in the database
     let createdSteps = [];
-    if (suggestedSteps.length > 0) {
-      createdSteps = await createSubSteps(suggestedSteps, step, goal);
+    if (allSteps.length > 0) {
+      createdSteps = await createSubSteps(allSteps, step, goal);
     }
 
     return new Response(JSON.stringify({
@@ -185,4 +196,89 @@ async function createSubSteps(subSteps: any[], parentStep: any, goal: any) {
   }
 
   return createdSteps;
+}
+
+async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<any[]> {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // Extract week info from current step title (e.g., "Week 3, Session 1: Walk")
+  const weekMatch = currentStep.title.match(/Week (\d+)/);
+  if (!weekMatch) return [];
+
+  const currentWeek = parseInt(weekMatch[1]);
+  if (currentWeek <= 1) return []; // No prior weeks to check
+
+  try {
+    // Get all steps for this goal
+    const { data: allSteps, error } = await supabase
+      .from('steps')
+      .select('*')
+      .eq('goal_id', goal.id)
+      .order('order_index');
+
+    if (error || !allSteps) {
+      console.error('Error fetching steps for similarity check:', error);
+      return [];
+    }
+
+    // Find similar steps from prior weeks
+    const baseActivity = currentStep.title.replace(/Week \d+, Session \d+:\s*/, '');
+    const similarPriorSteps = allSteps.filter(step => {
+      const stepWeekMatch = step.title.match(/Week (\d+)/);
+      if (!stepWeekMatch) return false;
+      
+      const stepWeek = parseInt(stepWeekMatch[1]);
+      const stepActivity = step.title.replace(/Week \d+, Session \d+:\s*/, '');
+      
+      return stepWeek < currentWeek && stepActivity === baseActivity;
+    });
+
+    if (similarPriorSteps.length === 0) return [];
+
+    // Find the most recent similar step that has substeps
+    const mostRecentSimilar = similarPriorSteps.reduce((latest, step) => {
+      const stepWeek = parseInt(step.title.match(/Week (\d+)/)?.[1] || '0');
+      const latestWeek = parseInt(latest.title.match(/Week (\d+)/)?.[1] || '0');
+      return stepWeek > latestWeek ? step : latest;
+    });
+
+    // Get substeps for the most recent similar step
+    const { data: substeps, error: substepsError } = await supabase
+      .from('steps')
+      .select('*')
+      .eq('goal_id', goal.id)
+      .gt('order_index', mostRecentSimilar.order_index)
+      .lt('order_index', mostRecentSimilar.order_index + 10) // Reasonable range for substeps
+      .order('order_index');
+
+    if (substepsError || !substeps || substeps.length === 0) {
+      return [];
+    }
+
+    // Filter out main milestone steps, keep only substeps
+    const actualSubsteps = substeps.filter(step => 
+      !step.title.match(/Week \d+, Session \d+:/) && 
+      step.order_index > mostRecentSimilar.order_index
+    );
+
+    if (actualSubsteps.length === 0) return [];
+
+    console.log(`Found ${actualSubsteps.length} substeps from similar prior week step`);
+
+    // Convert substeps to the format expected by createSubSteps
+    return actualSubsteps.map((substep, index) => ({
+      title: substep.title,
+      notes: substep.notes || substep.explainer,
+      estimated_effort_min: substep.estimated_effort_min,
+      goal_id: goal.id,
+      is_required: substep.is_required,
+      order_index: (currentStep.order_index || 0) + index + 1
+    }));
+
+  } catch (error) {
+    console.error('Error in checkForSimilarPriorSteps:', error);
+    return [];
+  }
 }
