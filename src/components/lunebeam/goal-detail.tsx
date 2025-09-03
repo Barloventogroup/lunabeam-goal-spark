@@ -225,6 +225,12 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
             {goal.domain && (
               <Badge variant="outline">{goal.domain}</Badge>
             )}
+            {goal.due_date && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                Due {formatDate(goal.due_date)}
+              </Badge>
+            )}
           </div>
         </div>
         <div className="text-right">

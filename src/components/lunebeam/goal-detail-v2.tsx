@@ -223,6 +223,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                   {goal.domain}
                 </Badge>
               )}
+              {goal.due_date && (
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  Due {formatDate(goal.due_date)}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
@@ -282,17 +288,6 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </Card>
       )}
 
-      {/* Due Date */}
-      {goal.due_date && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Due: {formatDate(goal.due_date)}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Progress Bar */}
       {goal.progress && goal.progress.actionable > 0 && (
