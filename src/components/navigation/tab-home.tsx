@@ -19,8 +19,14 @@ export const TabHome: React.FC<TabHomeProps> = ({
 }) => {
   const [currentView, setCurrentView] = useState<HomeView>('dashboard');
   const [showCheckinModal, setShowCheckinModal] = useState(false);
-  const { profile, loadProfile, goals, badges, loadGoals, loadBadges } = useStore();
-  
+  const {
+    profile,
+    loadProfile,
+    goals,
+    badges,
+    loadGoals,
+    loadBadges
+  } = useStore();
   useEffect(() => {
     console.log('TabHome mounted - loading data');
     loadProfile();
@@ -37,39 +43,29 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
     return () => clearInterval(interval);
   }, [loadGoals]);
-  
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('dashboard')} />;
   }
   if (currentView === 'add-goal') {
     return <div className="min-h-screen">
-        <GoalsWizard 
-          onComplete={() => setCurrentView('dashboard')}
-          onBack={() => setCurrentView('dashboard')}
-        />
+        <GoalsWizard onComplete={() => setCurrentView('dashboard')} onBack={() => setCurrentView('dashboard')} />
       </div>;
   }
 
   // Active goals from store
-  const activeGoals = goals.filter((g) => g.status === 'active' || g.status === 'planned');
+  const activeGoals = goals.filter(g => g.status === 'active' || g.status === 'planned');
   const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'there';
-  
   return <>
       <div className="min-h-screen bg-gradient-soft">
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-card/80 backdrop-blur">
           <div className="flex items-center">
-            <img 
-              src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
-              alt="Lunabeam logo"
-              className="h-10 w-auto object-cover object-center"
-              style={{ objectPosition: 'center' }}
-            />
+            <img src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" alt="Lunabeam logo" className="h-10 w-auto object-cover object-center" style={{
+            objectPosition: 'center'
+          }} />
           </div>
           
-          <button onClick={onOpenChat} className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors" aria-label="Open Lune Chat">
-            <MessageCircle className="h-5 w-5 text-primary" />
-          </button>
+          
         </div>
 
         <div className="p-4 space-y-6">
@@ -78,18 +74,13 @@ export const TabHome: React.FC<TabHomeProps> = ({
             <h2 className="text-2xl font-bold mb-1">
               {activeGoals.length === 0 ? `Welcome ${displayName}!` : `Welcome back, ${displayName}!!`}
             </h2>
-            {activeGoals.length === 0 ? (
-              <p className="text-muted-foreground">
+            {activeGoals.length === 0 ? <p className="text-muted-foreground">
                 👋 Hey {displayName}! Welcome aboard. Let’s kick things off by setting your very first goal (see that big plus sign in the blue circle — that is where you start). And remember, big or small, every step counts. Ready to get started?
-              </p>
-            ) : (
-              <p className="text-muted-foreground">Let's keep moving forward, one step at a time.</p>
-            )}
+              </p> : <p className="text-muted-foreground">Let's keep moving forward, one step at a time.</p>}
           </div>
 
           {/* Checked In Today */}
-          {activeGoals.length > 0 && (
-            <Card className="bg-green-50 shadow-soft">
+          {activeGoals.length > 0 && <Card className="bg-green-50 shadow-soft">
               <CardContent className="flex items-center gap-3 p-4">
                 <CheckCircle className="h-6 w-6 text-green-600" />
                 <div>
@@ -97,26 +88,18 @@ export const TabHome: React.FC<TabHomeProps> = ({
                   <p className="text-sm text-green-700">Great job staying on track!</p>
                 </div>
               </CardContent>
-            </Card>
-          )}
+            </Card>}
 
 
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold">Your Goals</h3>
-              <Button
-                onClick={() => setCurrentView('add-goal')}
-                size="sm"
-                className="rounded-full w-8 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-                aria-label="Add Goal"
-              >
+              <Button onClick={() => setCurrentView('add-goal')} size="sm" className="rounded-full w-8 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" aria-label="Add Goal">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            {activeGoals.length > 0 ? (
-              <div className="space-y-3">
-                {activeGoals.map((goal) => (
-                  <Card key={goal.id} className="cursor-pointer hover:shadow-card transition-all duration-200 shadow-soft">
+            {activeGoals.length > 0 ? <div className="space-y-3">
+                {activeGoals.map(goal => <Card key={goal.id} className="cursor-pointer hover:shadow-card transition-all duration-200 shadow-soft">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1" onClick={() => onNavigateToGoals(goal.id)}>
@@ -126,42 +109,28 @@ export const TabHome: React.FC<TabHomeProps> = ({
                           </p>
                         </div>
                         <div className="flex gap-2">
-                          <Button 
-                            size="sm"
-                            variant="checkin"
-                            onClick={() => setShowCheckinModal(true)}
-                          >
+                          <Button size="sm" variant="checkin" onClick={() => setShowCheckinModal(true)}>
                             Check In
                           </Button>
-                          <Button 
-                            variant="default"
-                            size="sm"
-                            onClick={() => onNavigateToGoals(goal.id)}
-                          >
+                          <Button variant="default" size="sm" onClick={() => onNavigateToGoals(goal.id)}>
                             View
                           </Button>
                         </div>
                       </div>
                     </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="shadow-soft">
+                  </Card>)}
+              </div> : <Card className="shadow-soft">
                 <CardContent className="p-6 text-center text-muted-foreground">
                   No active goals yet
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
           </div>
 
           {/* Rewards/Badges */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Rewards</h3>
-            {badges.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3">
-                {badges.slice(0,4).map((b) => (
-                  <Card key={b.id} className="bg-card/60 shadow-soft">
+            {badges.length > 0 ? <div className="grid grid-cols-2 gap-3">
+                {badges.slice(0, 4).map(b => <Card key={b.id} className="bg-card/60 shadow-soft">
                     <CardContent className="p-4 text-center space-y-2">
                       <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mx-auto">
                         <Award className="h-6 w-6 text-accent-foreground" />
@@ -171,16 +140,12 @@ export const TabHome: React.FC<TabHomeProps> = ({
                         <p className="text-sm text-muted-foreground">{b.type}</p>
                       </div>
                     </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="shadow-soft">
+                  </Card>)}
+              </div> : <Card className="shadow-soft">
                 <CardContent className="p-6 text-center text-muted-foreground">
                   No badges yet — complete goals to earn rewards!
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
           </div>
 
         </div>
