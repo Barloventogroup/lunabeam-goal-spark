@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, User, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-const lunaIconUrl = '/lovable-uploads/22ad6b2e-d3d9-4766-bef4-e941fec16d0d.png';
+const lunaIconUrl = '/lovable-uploads/22ad6b2e-d3d9-4766-bef4-e941fec16d0d.png?' + Date.now();
 import type { Step, Goal } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
