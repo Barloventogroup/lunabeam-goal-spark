@@ -123,10 +123,10 @@ export function WeeklyCheckinModal({
         <div className="space-y-3">
           <Label>How do you feel?</Label>
           <Select value={mood} onValueChange={(value: 'proud' | 'happy' | 'accomplished' | 'relieved') => setMood(value)}>
-            <SelectTrigger className="bg-white border border-input">
+            <SelectTrigger className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-white border border-input shadow-lg z-50">
+            <SelectContent className="bg-background border border-input shadow-lg z-50">
               <SelectItem value="proud">😊 proud</SelectItem>
               <SelectItem value="happy">😄 happy</SelectItem>
               <SelectItem value="accomplished">🎉 accomplished</SelectItem>
@@ -140,7 +140,7 @@ export function WeeklyCheckinModal({
             onClick={handleSaveCheckin}
             disabled={isLoading || !checkinText.trim()}
             variant="checkin"
-            className="w-full max-w-md text-sm relative overflow-hidden"
+            className="w-full max-w-md text-base relative overflow-hidden"
             size="lg"
           >
             {isLoading ? "Saving..." : "Check in"}
