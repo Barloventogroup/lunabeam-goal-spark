@@ -33,14 +33,12 @@ interface StepsListProps {
   goal: Goal;
   steps: Step[];
   onStepsUpdate: (steps: Step[], goal: Goal) => void;
-  onOpenChat: (step?: Step) => void;
 }
 
 export const StepsList: React.FC<StepsListProps> = ({ 
   goal, 
   steps, 
-  onStepsUpdate,
-  onOpenChat 
+  onStepsUpdate
 }) => {
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
   const [showingQueuedSteps, setShowingQueuedSteps] = useState(false);

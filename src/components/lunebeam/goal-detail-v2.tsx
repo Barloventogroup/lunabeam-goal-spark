@@ -289,10 +289,6 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         goal={goal}
         steps={steps}
         onStepsUpdate={handleStepsUpdate}
-        onOpenChat={(step) => {
-          setChatStep(step);
-          setShowChat(true);
-        }}
       />
 
       {/* Steps Chat */}
