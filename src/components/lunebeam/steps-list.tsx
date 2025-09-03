@@ -317,7 +317,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2">
                         <span className={`font-medium text-base ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                          {step.title}
+                          {step.title.replace(/^Day\s+\d+:\s*/i, '')}
                         </span>
                         {isBlocked && (
                           <Badge variant="outline" className="text-xs">
