@@ -3,8 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { Send, User, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+
+const luneIconUrl = '/lovable-uploads/397f2dfa-5e52-40b8-8208-bde35ef28b05.png';
 import type { Step, Goal } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -60,7 +62,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
     const initialMessage: ChatMessage = {
       id: `init-${Date.now()}`,
       role: 'assistant',
-      content: `Hi! I'm here to help you with this step: "${step?.title}"\n\nI can help you:\n• Break this down into smaller, more manageable pieces\n• Clarify what exactly needs to be done\n• Provide specific examples or resources\n• Create additional sub-steps if needed\n\nWhat specifically would you like help with?`,
+      content: `Hi! I'm Lune, and I'm here to help you with this step: "${step?.title}"\n\nI can help you:\n• Break this down into smaller, more manageable pieces\n• Clarify what exactly needs to be done\n• Provide specific examples or resources\n• Create additional sub-steps if needed\n\nWhat specifically would you like help with?`,
       timestamp: new Date()
     };
     setMessages([initialMessage]);
@@ -149,12 +151,12 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl h-[600px] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5 text-primary" />
-            Step Assistant
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <img src={luneIconUrl} alt="Lune" className="h-4 w-4" />
+            Lune
           </DialogTitle>
           {step && (
-            <p className="text-sm text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground truncate">
               Helping with: "{step.title}"
             </p>
           )}
@@ -171,12 +173,12 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                   }`}
                 >
                   {message.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-4 w-4 text-primary" />
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <img src={luneIconUrl} alt="Lune" className="h-3 w-3" />
                     </div>
                   )}
                   <div
-                    className={`max-w-[80%] p-3 rounded-lg whitespace-pre-wrap ${
+                    className={`max-w-[80%] p-2 rounded-lg whitespace-pre-wrap text-sm ${
                       message.role === 'user'
                         ? 'bg-primary text-primary-foreground ml-auto'
                         : 'bg-muted'
@@ -185,19 +187,19 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                     {message.content}
                   </div>
                   {message.role === 'user' && (
-                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                      <User className="h-4 w-4" />
+                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                      <User className="h-3 w-3" />
                     </div>
                   )}
                 </div>
               ))}
               {isLoading && (
                 <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Bot className="h-4 w-4 text-primary" />
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <img src={luneIconUrl} alt="Lune" className="h-3 w-3" />
                   </div>
-                  <div className="bg-muted p-3 rounded-lg">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                  <div className="bg-muted p-2 rounded-lg">
+                    <Loader2 className="h-3 w-3 animate-spin" />
                   </div>
                 </div>
               )}
@@ -211,7 +213,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask for help breaking down this step..."
+                placeholder="Ask Lune for help breaking down this step..."
                 disabled={isLoading}
                 className="flex-1"
               />
@@ -220,7 +222,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                 disabled={isLoading || !inputValue.trim()}
                 size="sm"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3 w-3" />
               </Button>
             </div>
           </div>
