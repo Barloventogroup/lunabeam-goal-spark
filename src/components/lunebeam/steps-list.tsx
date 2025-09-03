@@ -351,7 +351,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                         <TableCell colSpan={2} className="p-3 border-t">
                           <div className="pl-4">
                             <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                              {(step.explainer?.trim() || step.notes?.trim() || "No description yet. Tap \"Confusing\" and we'll clarify this step.")}
+                              {(step.explainer?.trim() || step.notes?.trim() || "We're here to support you! If you need more details about this step, just tap \"Need More Help\" and we'll provide personalized guidance to help you succeed.")}
                             </p>
                           </div>
                         </TableCell>
