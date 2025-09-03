@@ -17,7 +17,8 @@ import {
   CheckCircle2,
   Clock,
   HelpCircle,
-  ArrowDown
+  ArrowDown,
+  Calendar
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -33,6 +34,16 @@ import {
 import type { Goal, Step, StepStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { stepsService } from '@/services/goalsService';
+
+// Utility function to format dates
+const formatDate = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric',
+    year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+  });
+};
 
 interface StepsListProps {
   goal: Goal;
@@ -262,12 +273,13 @@ export const StepsList: React.FC<StepsListProps> = ({
         <div className="border border-border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="w-8"></TableHead>
-                <TableHead>Step</TableHead>
-                <TableHead className="w-24">Status</TableHead>
-                <TableHead className="w-32">Action</TableHead>
-              </TableRow>
+               <TableRow>
+                 <TableHead className="w-8"></TableHead>
+                 <TableHead>Step</TableHead>
+                 <TableHead className="w-20">Due</TableHead>
+                 <TableHead className="w-24">Status</TableHead>
+                 <TableHead className="w-32">Action</TableHead>
+               </TableRow>
             </TableHeader>
             <TableBody>
               {(showingQueuedSteps ? [...visibleSteps, ...queuedSteps] : visibleSteps).map((step, index) => {
@@ -312,11 +324,22 @@ export const StepsList: React.FC<StepsListProps> = ({
                         </div>
                       </TableCell>
 
-                      <TableCell className="p-3">
-                        <div className="flex items-center gap-2">
-                          {getStepIcon(step)}
-                        </div>
-                      </TableCell>
+                       <TableCell className="p-3">
+                         {step.due_date ? (
+                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                             <Calendar className="h-3 w-3" />
+                             {formatDate(step.due_date)}
+                           </div>
+                         ) : (
+                           <span className="text-xs text-muted-foreground">—</span>
+                         )}
+                       </TableCell>
+
+                       <TableCell className="p-3">
+                         <div className="flex items-center gap-2">
+                           {getStepIcon(step)}
+                         </div>
+                       </TableCell>
 
                       <TableCell className="p-3">
                         <div className="flex items-center gap-2">
@@ -339,7 +362,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                     {isExpanded && (
                       <TableRow>
                         <TableCell></TableCell>
-                        <TableCell colSpan={3} className="p-3 border-t">
+                        <TableCell colSpan={4} className="p-3 border-t">
                           <div className="pl-4">
                             <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                               {(step.explainer?.trim() || step.notes?.trim() || "We're here to support you! If you need more details about this step, just tap \"Need More Help\" and we'll provide personalized guidance to help you succeed.")}
