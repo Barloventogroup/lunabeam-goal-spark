@@ -183,7 +183,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-background px-4 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-1">
@@ -191,7 +191,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">{goal.title}</h1>
+            <h1 className="text-xl font-semibold text-foreground">{goal.title}</h1>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant={getStatusColor(goal.status)}>
                 {goal.status === 'active' ? 'In Progress' : goal.status}

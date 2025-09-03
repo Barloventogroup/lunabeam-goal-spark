@@ -220,7 +220,7 @@ export const StepsList: React.FC<StepsListProps> = ({
 
   const getStepIcon = (step: Step) => {
     if (isStepBlocked(step)) {
-      return <Circle className="h-5 w-5 text-muted-foreground opacity-50" />;
+      return null; // No icon for blocked steps
     }
 
     switch (step.status) {
@@ -229,7 +229,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       case 'doing':
         return <Clock className="h-5 w-5 text-blue-600" />;
       default:
-        return <Circle className="h-5 w-5 text-muted-foreground" />;
+        return null; // No icon for todo steps
     }
   };
 
@@ -270,7 +270,7 @@ export const StepsList: React.FC<StepsListProps> = ({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div className="space-y-1">
-          <CardTitle className="text-lg">Steps to get rolling</CardTitle>
+          <CardTitle className="text-lg font-semibold text-foreground">Steps to get rolling</CardTitle>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>{doneSteps.length}/{actionableSteps.length} done</span>
             <span>•</span>
@@ -300,16 +300,18 @@ export const StepsList: React.FC<StepsListProps> = ({
 
             return (
               <div key={step.id} className="space-y-2">
-                <div className={`flex items-start gap-3 p-3 border rounded-lg transition-colors ${
+                <div className={`flex items-start gap-3 p-3 border border-border rounded-lg transition-colors ${
                   isBlocked ? 'opacity-60' : 'hover:bg-muted/50'
                 }`}>
-                  <button
-                    onClick={() => !isBlocked && handleStepToggle(step.id, step.status)}
-                    disabled={isBlocked}
-                    className="flex-shrink-0 mt-0.5"
-                  >
-                    {getStepIcon(step)}
-                  </button>
+                  {getStepIcon(step) && (
+                    <button
+                      onClick={() => !isBlocked && handleStepToggle(step.id, step.status)}
+                      disabled={isBlocked}
+                      className="flex-shrink-0 mt-0.5"
+                    >
+                      {getStepIcon(step)}
+                    </button>
+                  )}
                   
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center gap-2">
