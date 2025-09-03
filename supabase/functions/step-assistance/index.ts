@@ -28,17 +28,15 @@ serve(async (req) => {
     // Limit chat to 3 responses, then redirect to steps view
     if (assistantResponseCount >= 3) {
       return new Response(JSON.stringify({
-        response: `Great questions! We've covered some solid ground here, and I can tell you're really thinking this through. 
+        response: `Perfect! Tuesday and Wednesday sound like great days to start. 
 
-You're ready to take action now! Here's what I'd suggest for your next steps:
+You're all set up now! Here's what happens next:
 
-1. **Create specific sub-steps** - Break "${step.title}" into smaller, bite-sized actions you can tackle one at a time
-2. **Set mini-deadlines** - Give each sub-step a realistic timeline  
-3. **Start with the easiest piece** - Build momentum with quick wins
+**What I do:** I'll keep all your new sub-steps organized and ready for you. Each one will have its own detailed guidance when you need it.
 
-The step creation tool will let me give you way more detailed, personalized guidance for each piece. Think of it like unlocking the next level - you've got the basics down, now you can dive deeper!
+**What you do:** Tackle your sub-steps one by one! Start with "Choose Your 2 Days" - you've already done that (Tuesday & Wednesday), so mark it complete and move to the next one.
 
-I'll be right here whenever you create new steps and need more help. You've totally got this! 🌟`,
+Remember, each sub-step unlocks more personalized help when you need it. You've got a solid plan now - time to put it into action! 🌙✨`,
         suggestedSteps: [],
         shouldRedirect: true
       }), {

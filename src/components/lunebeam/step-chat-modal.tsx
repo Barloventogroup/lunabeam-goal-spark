@@ -35,6 +35,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [shouldHideInput, setShouldHideInput] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -58,6 +59,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
     } else if (!isOpen) {
       setIsInitialized(false);
       setMessages([]);
+      setShouldHideInput(false);
     }
   }, [isOpen, step, isInitialized]);
 
@@ -131,13 +133,10 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
 
       // Check if we should redirect (reached chat limit)
       if (data.shouldRedirect) {
+        setShouldHideInput(true);
         setTimeout(() => {
           onClose();
-          toast({
-            title: "Chat limit reached",
-            description: "For more help, create additional steps to break things down further."
-          });
-        }, 2000); // Give user time to read the final message
+        }, 3000); // Give user time to read the final message
       }
 
     } catch (error) {
@@ -240,25 +239,27 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
             </div>
           </ScrollArea>
 
-          <div className="border-t pt-4 mt-4">
-            <div className="flex gap-2">
-              <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ask Luna for help breaking down this step..."
-                disabled={isLoading}
-                className="flex-1"
-              />
-              <Button
-                onClick={sendMessage}
-                disabled={isLoading || !inputValue.trim()}
-                size="sm"
-              >
-                <Send className="h-3 w-3" />
-              </Button>
+          {!shouldHideInput && (
+            <div className="border-t pt-4 mt-4">
+              <div className="flex gap-2">
+                <Input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask Luna for help breaking down this step..."
+                  disabled={isLoading}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={sendMessage}
+                  disabled={isLoading || !inputValue.trim()}
+                  size="sm"
+                >
+                  <Send className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
