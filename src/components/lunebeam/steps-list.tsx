@@ -289,95 +289,95 @@ export const StepsList: React.FC<StepsListProps> = ({
 
                 return (
                   <React.Fragment key={step.id}>
-                    {/* Main step row */}
-                    <TableRow className={`${isBlocked ? 'opacity-60' : 'hover:bg-muted/50'} cursor-pointer`}>
-                      <TableCell className="p-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => toggleStepExpanded(step.id)}
-                          className="text-muted-foreground hover:text-foreground p-1 h-auto"
-                        >
-                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </Button>
-                      </TableCell>
-                      
-                      <TableCell className="p-3">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className={`font-medium text-sm ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                              {step.title.replace(/^Day\s+\d+:\s*/i, '')}
-                            </span>
-                            {isBlocked && (
-                              <Badge variant="outline" className="text-xs">
-                                Blocked
-                              </Badge>
-                            )}
-                          </div>
+                     {/* Main step row */}
+                     <TableRow className={`${isBlocked ? 'opacity-60' : 'hover:bg-muted/50'} cursor-pointer`}>
+                       <TableCell className="p-2 w-8">
+                         <Button 
+                           variant="ghost" 
+                           size="sm"
+                           onClick={() => toggleStepExpanded(step.id)}
+                           className="text-muted-foreground hover:text-foreground p-1 h-auto"
+                         >
+                           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                         </Button>
+                       </TableCell>
+                       
+                       <TableCell className="p-2">
+                         <div className="space-y-1">
+                           <div className="flex items-center gap-2">
+                             <span className={`text-sm font-medium ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                               {step.title.replace(/^Day\s+\d+:\s*/i, '')}
+                             </span>
+                             {isBlocked && (
+                               <Badge variant="outline" className="text-xs">
+                                 Blocked
+                               </Badge>
+                             )}
+                           </div>
 
-                          {precursorText && (
-                            <div className="flex items-center gap-1 text-xs text-amber-600">
-                              <ArrowDown className="h-3 w-3" />
-                              {precursorText}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
+                           {precursorText && (
+                             <div className="flex items-center gap-1 text-xs text-amber-600">
+                               <ArrowDown className="h-3 w-3" />
+                               {precursorText}
+                             </div>
+                           )}
+                         </div>
+                       </TableCell>
 
-                       <TableCell className="p-3">
+                       <TableCell className="p-2">
                          {step.due_date ? (
                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
                              <Calendar className="h-3 w-3" />
-                             {formatDate(step.due_date)}
+                             <span>{formatDate(step.due_date)}</span>
                            </div>
                          ) : (
                            <span className="text-xs text-muted-foreground">—</span>
                          )}
                        </TableCell>
 
-                       <TableCell className="p-3">
-                         <div className="flex items-center gap-2">
+                       <TableCell className="p-2">
+                         <div className="flex items-center justify-center">
                            {getStepIcon(step)}
                          </div>
                        </TableCell>
 
-                      <TableCell className="p-3">
-                        <div className="flex items-center gap-2">
-                          {step.status !== 'done' && (
-                            <Button
-                              onClick={() => !isBlocked && handleMarkComplete(step.id)}
-                              disabled={isBlocked}
-                              className="h-8 px-4 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors"
-                              variant="outline"
-                              size="sm"
-                            >
-                              Mark Complete
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                       <TableCell className="p-2">
+                         <div className="flex items-center gap-2">
+                           {step.status !== 'done' && (
+                             <Button
+                               onClick={() => !isBlocked && handleMarkComplete(step.id)}
+                               disabled={isBlocked}
+                               className="h-7 px-3 text-xs rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors"
+                               variant="outline"
+                               size="sm"
+                             >
+                               Mark Complete
+                             </Button>
+                           )}
+                         </div>
+                       </TableCell>
+                     </TableRow>
 
-                    {/* Expanded content row */}
-                    {isExpanded && (
-                      <TableRow>
-                        <TableCell></TableCell>
-                        <TableCell colSpan={4} className="p-3 border-t">
-                          <div className="pl-4">
-                            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                              {(step.explainer?.trim() || step.notes?.trim() || "We're here to support you! If you need more details about this step, just tap \"Need More Help\" and we'll provide personalized guidance to help you succeed.")}
-                              {"\n\n"}
-                              <button
-                                onClick={() => handleNeedHelp(step)}
-                                className="text-blue-600 hover:text-blue-800 underline text-sm cursor-pointer bg-transparent border-none p-0 dark:text-blue-400 dark:hover:text-blue-300"
-                              >
-                                Need more help?
-                              </button>
-                            </p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
+                     {/* Expanded content row */}
+                     {isExpanded && (
+                       <TableRow>
+                         <TableCell></TableCell>
+                         <TableCell colSpan={4} className="p-3 border-t">
+                           <div className="pl-4">
+                             <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                               {(step.explainer?.trim() || step.notes?.trim() || "We're here to support you! If you need more details about this step, just tap \"Need More Help\" and we'll provide personalized guidance to help you succeed.")}
+                               {"\n\n"}
+                               <button
+                                 onClick={() => handleNeedHelp(step)}
+                                 className="text-primary hover:text-primary/80 underline text-sm cursor-pointer bg-transparent border-none p-0"
+                               >
+                                 Need more help?
+                               </button>
+                             </p>
+                           </div>
+                         </TableCell>
+                       </TableRow>
+                     )}
                   </React.Fragment>
                 );
               })}
