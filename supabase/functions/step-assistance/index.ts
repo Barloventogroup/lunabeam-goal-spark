@@ -196,6 +196,22 @@ async function createSubSteps(subSteps: any[], parentStep: any, goal: any) {
 
   console.log(`Creating ${subSteps.length} sub-steps for step ${parentStep.id}`);
 
+  // First, shift existing steps to make room for new sub-steps
+  const baseOrderIndex = parentStep.order_index || 0;
+  const { error: shiftError } = await supabase
+    .from('steps')
+    .update({ 
+      order_index: supabase.raw(`order_index + ${subSteps.length}`)
+    })
+    .eq('goal_id', goal.id)
+    .gt('order_index', baseOrderIndex);
+
+  if (shiftError) {
+    console.error('Error shifting existing steps:', shiftError);
+  } else {
+    console.log(`Shifted ${subSteps.length} positions for existing steps after index ${baseOrderIndex}`);
+  }
+
   const createdSteps = [];
   
   for (const subStep of subSteps) {
