@@ -144,25 +144,32 @@ export const StepsList: React.FC<StepsListProps> = ({
     try {
       if (feedbackType === 'notRelevant') {
         // Hide the step
-        const { step: updatedStep, goal: updatedGoal } = await stepsService.updateStep(stepId, {
-          hidden: true
-        });
+        const isTemp = stepId.startsWith('step_');
         
-        const updatedSteps = steps.map(s => s.id === stepId ? updatedStep : s);
-        onStepsUpdate(updatedSteps, updatedGoal);
+        if (isTemp) {
+          const updatedSteps = steps.map(s => s.id === stepId ? { ...s, hidden: true } : s);
+          onStepsUpdate(updatedSteps, goal);
+        } else {
+          const { step: updatedStep, goal: updatedGoal } = await stepsService.updateStep(stepId, {
+            status: 'skipped'
+          });
+          
+          const updatedSteps = steps.map(s => s.id === stepId ? updatedStep : s);
+          onStepsUpdate(updatedSteps, updatedGoal);
+        }
         
         toast({
           description: "Step hidden. No worries - everyone's path is different."
         });
       } else if (feedbackType === 'tooBig') {
-        // TODO: Implement step splitting
         toast({
-          description: "We'll help break this down into smaller steps soon!"
+          title: "\"Too big\" feedback",
+          description: "This step feels overwhelming. We'll help break it down into smaller, manageable pieces soon!"
         });
       } else if (feedbackType === 'confusing') {
-        // TODO: Implement explainer rewrite
         toast({
-          description: "We'll work on making this clearer!"
+          title: "\"Confusing\" feedback", 
+          description: "This step isn't clear. We'll work on making the instructions simpler and more specific!"
         });
       }
     } catch (error) {
@@ -354,8 +361,8 @@ export const StepsList: React.FC<StepsListProps> = ({
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                      <DropdownMenuContent align="end" className="bg-background border shadow-lg z-50">
+                        <DropdownMenuItem onClick={() => toggleStepExpanded(step.id)}>
                           <HelpCircle className="h-4 w-4 mr-2" />
                           More help
                         </DropdownMenuItem>
@@ -377,16 +384,21 @@ export const StepsList: React.FC<StepsListProps> = ({
                 </div>
 
                 {/* Expanded content */}
-                {isExpanded && step.supportingLinks?.length > 0 && (
+                {isExpanded && (
                   <Collapsible open={isExpanded}>
                     <CollapsibleContent className="ml-8 p-3 bg-muted/50 rounded-lg">
                       <div className="space-y-2">
                         <p className="text-sm font-medium">More help:</p>
                         <ul className="text-sm text-muted-foreground space-y-1">
-                          {step.supportingLinks.slice(0, 3).map((link, index) => (
-                            <li key={index}>• {link}</li>
-                          ))}
+                          <li>• Try breaking this step into even smaller parts</li>
+                          <li>• Set a timer for just 5 minutes to get started</li>
+                          <li>• Ask someone for help if you get stuck</li>
                         </ul>
+                        {step.estimated_effort_min && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Estimated time: {step.estimated_effort_min} minutes
+                          </p>
+                        )}
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
