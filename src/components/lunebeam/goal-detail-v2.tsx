@@ -252,28 +252,30 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Archive Goal
-                  </DropdownMenuItem>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Archive this goal?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will move the goal to your archived goals. You can restore it later if needed.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteGoal}>
+              {goal.status === 'completed' && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <Trash2 className="h-4 w-4 mr-2" />
                       Archive Goal
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Archive this goal?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will move the goal to your archived goals. You can restore it later if needed.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteGoal}>
+                        Archive Goal
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
