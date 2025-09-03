@@ -148,15 +148,21 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         {/* Welcome Message */}
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-foreground">
-            Welcome back, {profile?.first_name || 'User'}!!
+            {goals.length === 0 ? `Welcome ${profile?.first_name || 'User'}!` : `Welcome back, ${profile?.first_name || 'User'}!!`}
           </h1>
-          <p className="text-muted-foreground">
-            Let's keep moving forward, one step at a time.
-          </p>
+          {goals.length === 0 ? (
+            <p className="text-muted-foreground">
+              👋 Hey {profile?.first_name || 'User'}! Welcome aboard. Let's kick things off by setting your very first goal (see that big plus sign in the blue circle? That is where you start. And remember, big or small, every step counts. Ready to get started?
+            </p>
+          ) : (
+            <p className="text-muted-foreground">
+              Let's keep moving forward, one step at a time.
+            </p>
+          )}
         </div>
 
         {/* Checked In Today */}
-        {recentCheckIns.some(checkIn => isToday(new Date(checkIn.date))) && (
+        {goals.length > 0 && recentCheckIns.some(checkIn => isToday(new Date(checkIn.date))) && (
           <Card className="bg-green-50 border-green-200">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -173,7 +179,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         )}
 
         {/* This Week's Progress */}
-        {activeGoal && (
+        {goals.length > 0 && activeGoal && (
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-foreground">This Week's Progress</h2>
             <Card>
@@ -274,11 +280,13 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           </Card>
         </div>
 
-        <PersonalizedGreeting 
-          onResumeGoal={handleResumeGoal}
-          onNewGoal={handleNewGoal}
-          onTodaysSteps={handleTodaysSteps}
-        />
+        {goals.length > 0 && (
+          <PersonalizedGreeting 
+            onResumeGoal={handleResumeGoal}
+            onNewGoal={handleNewGoal}
+            onTodaysSteps={handleTodaysSteps}
+          />
+        )}
         
         <NotificationSystem
           goals={goals}
