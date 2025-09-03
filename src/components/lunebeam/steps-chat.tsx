@@ -155,6 +155,22 @@ export const StepsChat: React.FC<StepsChatProps> = ({ goal, steps, step, isOpen,
     return !hasOffTopicWords && hasOnTopicWords;
   };
 
+  const stripMarkup = (text: string): string => {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
+      .replace(/\*(.*?)\*/g, '$1') // Remove italic markdown
+      .replace(/__(.*?)__/g, '$1') // Remove underline markdown
+      .replace(/_(.*?)_/g, '$1') // Remove underscore italic
+      .replace(/`(.*?)`/g, '$1') // Remove inline code
+      .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+      .replace(/#+\s*(.*)/g, '$1') // Remove headers
+      .replace(/^\s*[-*+]\s+/gm, '• ') // Convert list markers to bullets
+      .replace(/^\s*\d+\.\s+/gm, '') // Remove numbered list markers
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, '') // Remove images
+      .trim();
+  };
+
   const generateResponse = (input: string): string => {
     const lowerInput = input.toLowerCase();
     
@@ -221,7 +237,7 @@ export const StepsChat: React.FC<StepsChatProps> = ({ goal, steps, step, isOpen,
                         : 'bg-muted'
                     }`}
                   >
-                    <p className="text-sm">{message.content}</p>
+                    <p className="text-sm">{stripMarkup(message.content)}</p>
                   </div>
                 </div>
               ))}
