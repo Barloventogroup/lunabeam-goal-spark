@@ -17,6 +17,7 @@ export const stepsGenerator = {
       aiGenerated: true,
       dependency_step_ids: [],
       notes: stepData.explainer,
+      explainer: stepData.explainer,
       due_date: undefined,
       points: undefined,
       created_at: new Date().toISOString(),
