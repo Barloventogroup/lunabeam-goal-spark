@@ -333,7 +333,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
     };
 
     return (
-      <div className="min-h-screen bg-gradient-primary p-4 flex items-center justify-center">
+      <div className="min-h-screen p-4 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #E8F0F3 0%, #f0f8fb 100%)' }}>
         <Card className="w-full max-w-md shadow-card border-0">
           <CardHeader className="text-center">
             <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
@@ -385,7 +385,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
   }
 
   return (
-    <div className="min-h-screen bg-gradient-primary p-4">
+    <div className="min-h-screen p-4" style={{ background: 'linear-gradient(135deg, #E8F0F3 0%, #f0f8fb 100%)' }}>
       <div className="max-w-md mx-auto py-6">
         {/* Progress */}
         <div className="mb-6">
