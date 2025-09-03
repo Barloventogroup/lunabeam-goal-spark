@@ -1,4 +1,4 @@
-export const generateLunaLetterIcon = (size: number = 24): string => {
+export const generateLunaIcon = (size: number = 24): string => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   
@@ -8,23 +8,18 @@ export const generateLunaLetterIcon = (size: number = 24): string => {
   canvas.width = size;
   canvas.height = size;
   
-  // Create circular background with gradient
-  const gradient = ctx.createLinearGradient(0, 0, size, size);
-  gradient.addColorStop(0, '#22c55e'); // Green
-  gradient.addColorStop(1, '#3b82f6'); // Blue
-  
-  // Draw circular background
-  ctx.fillStyle = gradient;
+  // Draw circular background with specified color
+  ctx.fillStyle = '#E8F0F3'; // Light gray-blue color
   ctx.beginPath();
   ctx.arc(size / 2, size / 2, size / 2, 0, 2 * Math.PI);
   ctx.fill();
   
-  // Add text
+  // Add white letter "L"
   ctx.fillStyle = 'white';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   
-  // Use a clean, modern font - make it slightly larger for single letter
+  // Use a clean, modern font - make it bold for better visibility
   const fontSize = Math.floor(size * 0.5);
   ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
   
@@ -34,7 +29,7 @@ export const generateLunaLetterIcon = (size: number = 24): string => {
   return canvas.toDataURL('image/png');
 };
 
-// Generate different sizes for the letter L icon
-export const getLunaLetterIcon = (size: number = 24): string => {
-  return generateLunaLetterIcon(size);
+// Generate Luna icon for any size
+export const getLunaIcon = (size: number = 24): string => {
+  return generateLunaIcon(size);
 };
