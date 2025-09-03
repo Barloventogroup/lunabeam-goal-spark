@@ -50,7 +50,9 @@ export const StepsList: React.FC<StepsListProps> = ({
   const { toast } = useToast();
 
   // Calculate progress
-  const actionableSteps = steps.filter(s => s.type === 'action' && !s.hidden);
+  const actionableSteps = steps.filter(s => 
+    (!s.type || s.type === 'action') && !s.hidden && s.status !== 'skipped'
+  );
   const doneSteps = actionableSteps.filter(s => s.status === 'done');
   const progressPercent = actionableSteps.length > 0 
     ? Math.round((doneSteps.length / actionableSteps.length) * 100) 
@@ -61,18 +63,23 @@ export const StepsList: React.FC<StepsListProps> = ({
   const queuedSteps = steps.filter(s => !visibleSteps.includes(s));
 
   function getVisibleSteps(allSteps: Step[]): Step[] {
-    const actionable = allSteps.filter(s => s.type === 'action' && !s.hidden);
+    const actionable = allSteps.filter(s => 
+      (!s.type || s.type === 'action') && !s.hidden
+    );
     
-    // Sort by: precursors first, then by impact/ease
+    // Sort by: required steps first, then by order_index
     const sorted = actionable.sort((a, b) => {
-      // Steps with no precursors first
-      if (a.precursors.length === 0 && b.precursors.length > 0) return -1;
-      if (a.precursors.length > 0 && b.precursors.length === 0) return 1;
+      // Required steps first
+      if (a.is_required && !b.is_required) return -1;
+      if (!a.is_required && b.is_required) return 1;
       
-      // Then by impact (higher first) and ease (easier first)
-      const aScore = a.metadata.scoreImpact * 10 - a.metadata.scoreEase;
-      const bScore = b.metadata.scoreImpact * 10 - b.metadata.scoreEase;
-      return bScore - aScore;
+      // Then by order_index (if available)
+      if (a.order_index !== undefined && b.order_index !== undefined) {
+        return a.order_index - b.order_index;
+      }
+      
+      // Fallback to creation time
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
 
     return sorted.slice(0, 5);
@@ -129,12 +136,8 @@ export const StepsList: React.FC<StepsListProps> = ({
   };
 
   const checkForUnlockedSteps = (allSteps: Step[], completedStepId: string): Step[] => {
-    return allSteps.filter(step => 
-      step.precursors.includes(completedStepId) &&
-      step.precursors.every(precursorId => 
-        allSteps.find(s => s.id === precursorId)?.status === 'done'
-      )
-    );
+    // For now, database steps don't have complex dependency logic
+    return [];
   };
 
   const handleStepFeedback = async (stepId: string, feedbackType: 'tooBig' | 'confusing' | 'notRelevant') => {
@@ -204,10 +207,8 @@ export const StepsList: React.FC<StepsListProps> = ({
   };
 
   const isStepBlocked = (step: Step): boolean => {
-    return step.precursors.some(precursorId => {
-      const precursor = steps.find(s => s.id === precursorId);
-      return precursor && precursor.status !== 'done';
-    });
+    // For database steps, we don't have complex precursor logic yet
+    return false;
   };
 
   const getStepIcon = (step: Step) => {
@@ -226,19 +227,8 @@ export const StepsList: React.FC<StepsListProps> = ({
   };
 
   const getPrecursorText = (step: Step): string | null => {
-    const incompletePrecursors = step.precursors.filter(precursorId => {
-      const precursor = steps.find(s => s.id === precursorId);
-      return precursor && precursor.status !== 'done';
-    });
-
-    if (incompletePrecursors.length === 0) return null;
-
-    const precursorTitles = incompletePrecursors.map(id => {
-      const precursor = steps.find(s => s.id === id);
-      return precursor?.title || 'Unknown step';
-    });
-
-    return `Unlocks after: ${precursorTitles.join(', ')}`;
+    // For now, database steps don't have precursor dependencies
+    return null;
   };
 
     if (steps.length === 0) {
@@ -296,7 +286,7 @@ export const StepsList: React.FC<StepsListProps> = ({
 
         {/* Steps list */}
         <div className="space-y-3">
-          {(showingQueuedSteps ? steps.filter(s => s.type === 'action' && !s.hidden) : visibleSteps).map((step) => {
+          {(showingQueuedSteps ? steps.filter(s => (!s.type || s.type === 'action') && !s.hidden) : visibleSteps).map((step) => {
             const isBlocked = isStepBlocked(step);
             const precursorText = getPrecursorText(step);
             const isExpanded = expandedSteps.has(step.id);
@@ -326,10 +316,10 @@ export const StepsList: React.FC<StepsListProps> = ({
                       )}
                     </div>
                     
-                    {step.explainer && (
+                    {step.notes && (
                       <p className="text-sm text-muted-foreground">
-                        {step.explainer}
-                        {step.explainer.length > 80 && (
+                        {step.notes}
+                        {step.notes && step.notes.length > 80 && (
                           <button
                             onClick={() => toggleStepExpanded(step.id)}
                             className="ml-1 text-primary hover:underline"
