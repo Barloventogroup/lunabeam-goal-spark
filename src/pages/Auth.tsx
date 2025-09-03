@@ -73,7 +73,7 @@ export default function Auth() {
             <img 
               src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
               alt="Lunabeam logo"
-              className="h-16 w-auto object-cover object-center"
+              className="h-11 w-auto object-cover object-center"
             />
           </div>
           <CardDescription className="text-black font-bold">
