@@ -45,6 +45,7 @@ export const StepsList: React.FC<StepsListProps> = ({
   onOpenChat 
 }) => {
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
+  const [showingQueuedSteps, setShowingQueuedSteps] = useState(false);
   const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
 
@@ -295,7 +296,7 @@ export const StepsList: React.FC<StepsListProps> = ({
 
         {/* Steps list */}
         <div className="space-y-3">
-          {visibleSteps.map((step) => {
+          {(showingQueuedSteps ? steps.filter(s => s.type === 'action' && !s.hidden) : visibleSteps).map((step) => {
             const isBlocked = isStepBlocked(step);
             const precursorText = getPrecursorText(step);
             const isExpanded = expandedSteps.has(step.id);
@@ -406,11 +407,31 @@ export const StepsList: React.FC<StepsListProps> = ({
         </div>
 
         {/* Show more steps */}
-        {queuedSteps.length > 0 && (
+        {queuedSteps.length > 0 && !showingQueuedSteps && (
           <div className="pt-2 border-t">
-            <Button variant="ghost" size="sm" className="w-full text-muted-foreground">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="w-full text-muted-foreground"
+              onClick={() => setShowingQueuedSteps(true)}
+            >
               Show next steps ({queuedSteps.length})
               <ChevronDown className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        )}
+
+        {/* Show fewer steps */}
+        {showingQueuedSteps && (
+          <div className="pt-2 border-t">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="w-full text-muted-foreground"
+              onClick={() => setShowingQueuedSteps(false)}
+            >
+              Show fewer steps
+              <ChevronUp className="h-4 w-4 ml-1" />
             </Button>
           </div>
         )}
