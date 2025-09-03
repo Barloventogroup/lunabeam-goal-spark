@@ -63,7 +63,9 @@ export const StepsList: React.FC<StepsListProps> = ({
 
   // Get visible steps (first 5, ordered by dependencies and impact)
   const visibleSteps = getVisibleSteps(steps);
-  const queuedSteps = steps.filter(s => !visibleSteps.includes(s));
+  const queuedSteps = steps.filter(s => 
+    (!s.type || s.type === 'action') && !s.hidden && !visibleSteps.includes(s)
+  );
 
   function getVisibleSteps(allSteps: Step[]): Step[] {
     const actionable = allSteps.filter(s => 
@@ -268,7 +270,7 @@ export const StepsList: React.FC<StepsListProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(showingQueuedSteps ? steps.filter(s => (!s.type || s.type === 'action') && !s.hidden) : visibleSteps).map((step, index) => {
+              {(showingQueuedSteps ? [...visibleSteps, ...queuedSteps] : visibleSteps).map((step, index) => {
                 const isBlocked = isStepBlocked(step);
                 const precursorText = getPrecursorText(step);
                 const isExpanded = expandedSteps.has(step.id);
