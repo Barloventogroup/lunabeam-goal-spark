@@ -345,6 +345,7 @@ export type Database = {
           dependency_step_ids: string[] | null
           due_date: string | null
           estimated_effort_min: number | null
+          explainer: string | null
           goal_id: string
           id: string
           is_required: boolean
@@ -360,6 +361,7 @@ export type Database = {
           dependency_step_ids?: string[] | null
           due_date?: string | null
           estimated_effort_min?: number | null
+          explainer?: string | null
           goal_id: string
           id?: string
           is_required?: boolean
@@ -375,6 +377,7 @@ export type Database = {
           dependency_step_ids?: string[] | null
           due_date?: string | null
           estimated_effort_min?: number | null
+          explainer?: string | null
           goal_id?: string
           id?: string
           is_required?: boolean
