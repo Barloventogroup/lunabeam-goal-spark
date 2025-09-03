@@ -115,7 +115,7 @@ export const stepsService = {
     return (data || []) as Step[];
   },
 
-  // Create step
+  // Create step (with auto-scheduling)
   async createStep(goalId: string, stepData: {
     title: string;
     is_required?: boolean;
@@ -141,6 +141,15 @@ export const stepsService = {
       .single();
 
     if (stepError) throw stepError;
+
+    // Auto-schedule steps if this is the first step added
+    if (count === 0) {
+      // Import here to avoid circular dependency
+      const { smartSchedulingService } = await import('./smartSchedulingService');
+      setTimeout(() => {
+        smartSchedulingService.autoScheduleSteps(goalId).catch(console.error);
+      }, 100);
+    }
 
     // Get updated goal with progress
     const { data: goalData, error: goalError } = await supabase

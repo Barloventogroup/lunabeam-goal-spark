@@ -22,13 +22,15 @@ interface CheckInModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (response: CheckInResponse) => Promise<{ feedback: CheckInFeedback }>;
+  onRequestExtension?: (prompt: CheckInPrompt) => void;
 }
 
 export const CheckInModal: React.FC<CheckInModalProps> = ({
   prompt,
   isOpen,
   onClose,
-  onSubmit
+  onSubmit,
+  onRequestExtension
 }) => {
   const [completed, setCompleted] = useState(false);
   const [confidence, setConfidence] = useState(3);
@@ -169,6 +171,22 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
                     Still working on it
                   </Button>
                 </div>
+                
+                {!completed && (
+                  <div className="mt-3 p-3 bg-muted/50 rounded-lg">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        onRequestExtension?.(prompt);
+                        handleClose();
+                      }}
+                      className="w-full text-sm"
+                    >
+                      🕒 I need more time - adjust my schedule
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* Confidence Level */}
