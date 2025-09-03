@@ -122,8 +122,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
   return (
     <div className="space-y-4 px-4 pt-6">
       <div className="flex justify-between items-center">
-        <h2 className="flex items-center gap-2">
-          <Target className="h-6 w-6" />
+        <h2>
           Goals
         </h2>
         
@@ -160,7 +159,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate }) => {
       {goals.length === 0 ? (
         <Card>
           <CardContent className="text-center py-8">
-            <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <h3>
               {activeTab === 'completed' ? 'No completed goals yet' : 'No active goals yet'}
             </h3>

@@ -81,9 +81,6 @@ export const ThisWeeksGoals: React.FC<ThisWeeksGoalsProps> = ({ onGoalClick }) =
         // Empty state
         <Card className="border-dashed border-2 border-muted-foreground/25">
           <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/30 flex items-center justify-center">
-              <Target className="h-8 w-8 text-muted-foreground" />
-            </div>
             <h3 className="font-medium mb-2">Nothing due this week</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Want to plan a goal for this week?

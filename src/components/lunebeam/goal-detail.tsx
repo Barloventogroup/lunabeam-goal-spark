@@ -270,8 +270,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
       {/* Steps Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
+          <CardTitle>
             Steps
           </CardTitle>
         </CardHeader>
@@ -292,7 +291,6 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
           {/* Steps List */}
           {steps.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p>No steps yet. Add one tiny step to get started.</p>
             </div>
           ) : (

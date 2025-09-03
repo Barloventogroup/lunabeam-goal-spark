@@ -238,7 +238,6 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
         <Card className="border-primary/20 bg-gradient-primary text-primary-foreground">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Target className="h-6 w-6" />
               <div className="flex-1">
                 <CardTitle className="text-xl">
                   {'smartGoal' in goal ? (goal as WizardGoalData).goal : (goal as ExtractedGoal).title}
@@ -357,7 +356,6 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-encouraging/10 flex items-center justify-center">
-                <Target className="h-5 w-5 text-encouraging" />
               </div>
               <div>
                 <p className="font-medium text-encouraging">Success Goal</p>

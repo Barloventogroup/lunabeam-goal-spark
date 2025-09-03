@@ -105,8 +105,7 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
         <Button variant="ghost" size="sm" onClick={() => onNavigate('goals-list')}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Target className="h-6 w-6" />
+        <h1 className="text-2xl font-bold">
           Create New Goal
         </h1>
       </div>
