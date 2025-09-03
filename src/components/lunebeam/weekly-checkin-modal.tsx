@@ -62,6 +62,7 @@ export function WeeklyCheckinModal({
   const [checkinText, setCheckinText] = useState('');
   const [mood, setMood] = useState<'proud' | 'happy' | 'accomplished' | 'relieved'>('proud');
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const { toast } = useToast();
   const handleSaveCheckin = async () => {
     if (!checkinText.trim()) {
@@ -74,6 +75,8 @@ export function WeeklyCheckinModal({
     }
 
     setIsLoading(true);
+    setShowConfetti(true);
+    
     try {
       // TODO: Save check-in to database
       toast({
@@ -81,9 +84,13 @@ export function WeeklyCheckinModal({
         description: "Great job on your progress"
       });
 
-      onOpenChange(false);
-      setCheckinText('');
-      setMood('proud');
+      // Keep confetti for a moment before closing
+      setTimeout(() => {
+        onOpenChange(false);
+        setCheckinText('');
+        setMood('proud');
+        setShowConfetti(false);
+      }, 2000);
     } catch (error) {
       toast({
         title: "Couldn't save that",
@@ -116,10 +123,10 @@ export function WeeklyCheckinModal({
         <div className="space-y-3">
           <Label>How do you feel?</Label>
           <Select value={mood} onValueChange={(value: 'proud' | 'happy' | 'accomplished' | 'relieved') => setMood(value)}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-white border border-input">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white border border-input shadow-lg z-50">
               <SelectItem value="proud">😊 proud</SelectItem>
               <SelectItem value="happy">😄 happy</SelectItem>
               <SelectItem value="accomplished">🎉 accomplished</SelectItem>
@@ -132,10 +139,15 @@ export function WeeklyCheckinModal({
           <Button 
             onClick={handleSaveCheckin}
             disabled={isLoading || !checkinText.trim()}
-            className="w-full max-w-md bg-purple-600 hover:bg-purple-700 text-sm"
+            variant="checkin"
+            className="w-full max-w-md text-sm relative overflow-hidden"
             size="lg"
           >
             {isLoading ? "Saving..." : "Check in"}
+            {/* Confetti animation overlay */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="confetti-container opacity-0 transition-opacity duration-300"></div>
+            </div>
           </Button>
         </div>
       </CardContent>
@@ -155,6 +167,56 @@ export function WeeklyCheckinModal({
         <div className="space-y-6">
           {renderCheckinForm()}
         </div>
+
+        {/* Confetti Animation */}
+        {showConfetti && (
+          <div className="fixed inset-0 pointer-events-none z-50">
+            <div className="confetti-animation">
+              {Array.from({ length: 50 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="confetti-piece"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random() * 2}s`,
+                    backgroundColor: ['#9333ea', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'][Math.floor(Math.random() * 5)]
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            .confetti-animation {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              overflow: hidden;
+            }
+            
+            .confetti-piece {
+              position: absolute;
+              width: 8px;
+              height: 8px;
+              animation: confetti-fall 3s linear forwards;
+            }
+            
+            @keyframes confetti-fall {
+              0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+              }
+              100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+              }
+            }
+          `
+        }} />
       </DialogContent>
     </Dialog>
   );
