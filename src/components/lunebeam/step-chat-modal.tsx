@@ -5,9 +5,12 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, User, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { getLunaIcon } from '@/utils/iconGenerator';
+import { getLunaLetterIcon } from '@/utils/iconGenerator';
 import type { Step, Goal } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+
+// Luna brand logo (circular rings)
+const lunaLogoUrl = '/lovable-uploads/f6c0b8cd-d2f5-43e3-927d-8b1964ad93fe.png';
 
 interface StepChatModalProps {
   isOpen: boolean;
@@ -38,9 +41,8 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Generate Luna icon URLs for different sizes
-  const lunaIcon16 = getLunaIcon(16);
-  const lunaIcon24 = getLunaIcon(24);
+  // Generate Luna letter icon for chat messages (just "L")
+  const lunaLetterIcon = getLunaLetterIcon(16);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -155,7 +157,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
       <DialogContent className="max-w-2xl h-[600px] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <img src={lunaIcon16} alt="Luna" className="h-4 w-4" />
+            <img src={lunaLogoUrl} alt="Luna" className="h-4 w-4" />
             Luna
           </DialogTitle>
           {step && (
@@ -177,7 +179,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                 >
                   {message.role === 'assistant' && (
                     <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <img src={lunaIcon16} alt="Luna" className="h-3 w-3" />
+                      <img src={lunaLetterIcon} alt="Luna" className="h-3 w-3" />
                     </div>
                   )}
                   <div
@@ -199,7 +201,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
               {isLoading && (
                 <div className="flex gap-3 justify-start">
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <img src={lunaIcon16} alt="Luna" className="h-3 w-3" />
+                    <img src={lunaLetterIcon} alt="Luna" className="h-3 w-3" />
                   </div>
                   <div className="bg-muted p-2 rounded-lg">
                     <Loader2 className="h-3 w-3 animate-spin" />

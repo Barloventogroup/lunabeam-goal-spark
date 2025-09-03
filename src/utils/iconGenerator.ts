@@ -1,4 +1,4 @@
-export const generateLunaIcon = (size: number = 24): string => {
+export const generateLunaLetterIcon = (size: number = 24): string => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   
@@ -24,17 +24,17 @@ export const generateLunaIcon = (size: number = 24): string => {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   
-  // Use a clean, modern font
-  const fontSize = Math.floor(size * 0.4);
-  ctx.font = `${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+  // Use a clean, modern font - make it slightly larger for single letter
+  const fontSize = Math.floor(size * 0.5);
+  ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
   
-  // Draw "lu" text in small caps style
-  ctx.fillText('lu', size / 2, size / 2);
+  // Draw "L" text
+  ctx.fillText('L', size / 2, size / 2);
   
   return canvas.toDataURL('image/png');
 };
 
-// Generate different sizes
-export const getLunaIcon = (size: number = 24): string => {
-  return generateLunaIcon(size);
+// Generate different sizes for the letter L icon
+export const getLunaLetterIcon = (size: number = 24): string => {
+  return generateLunaLetterIcon(size);
 };
