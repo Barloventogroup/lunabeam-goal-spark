@@ -221,48 +221,76 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
         due_date: formatDate(due),
       });
 
-      // Generate and create micro-steps using AI
+      // Generate and create milestone steps based on goal frequency and duration
       try {
+        const frequencyNum = parseInt(state.frequency.label.split('×')[0]) || 1;
+        const durationWeeks = parseInt(state.duration.label.split(' ')[0]) || 2;
+        const totalSessions = frequencyNum * durationWeeks;
+        
         const response = await AIService.getCoachingGuidance({
-          question: `Generate 3 specific micro preparation steps for this goal. These should be actionable preparation tasks that help set up for success, not the goal execution itself. Focus on what needs to be prepared or organized before starting:
+          question: `Generate ${totalSessions} milestone steps for this goal execution. Each step should represent one session/milestone of the goal being completed, NOT preparation tasks. Include the session number and make each step actionable:
 
-Goal: ${state.goal.title}
+Goal: ${state.goal.title}  
 Description: ${buildSmartGoal()}
-Frequency: ${state.frequency.label}
-Duration: ${state.duration.label}
-Category: ${state.category.title}
+Frequency: ${state.frequency.label} (${frequencyNum} times per week)
+Duration: ${state.duration.label} (${durationWeeks} weeks)
+Total Sessions: ${totalSessions}
 
-Return only 3 concise preparation steps, each starting with an action verb. Each step should be something that can be checked off before beginning the goal.`,
+Return exactly ${totalSessions} milestone steps, each representing one execution session. Format like "Week 1: Complete first 20-minute walk session" or "Session 2: Walk 20 minutes with playlist". Each step should be a specific milestone completion, not preparation.`,
           mode: 'goal_setting'
         });
 
         if (response?.suggestions) {
           const steps = response.suggestions.split('\n')
             .filter((step: string) => step.trim())
-            .slice(0, 3)
+            .slice(0, totalSessions)
             .map((step: string) => step.replace(/^\d+\.\s*/, '').trim());
           
-          // Create steps in database
-          for (const stepTitle of steps) {
+          // Create milestone steps with calculated due dates
+          for (let i = 0; i < steps.length; i++) {
+            const stepTitle = steps[i];
+            
+            // Calculate due date based on frequency distribution
+            const weekNumber = Math.floor(i / frequencyNum);
+            const sessionInWeek = i % frequencyNum;
+            
+            // Distribute sessions evenly across the week
+            const daysPerSession = 7 / frequencyNum;
+            const dayOffset = weekNumber * 7 + Math.round(sessionInWeek * daysPerSession + daysPerSession);
+            
+            const stepDueDate = new Date(startDate);
+            stepDueDate.setDate(stepDueDate.getDate() + dayOffset);
+            
             await stepsService.createStep(createdGoal.id, {
               title: stepTitle,
               is_required: true,
+              due_date: formatDate(stepDueDate),
             });
           }
         }
       } catch (error) {
-        console.error('Error generating micro steps:', error);
-        // Create fallback steps if AI fails
-        const fallbackSteps = [
-          "Set up your workspace and tools",
-          "Schedule time in your calendar", 
-          "Prepare any materials needed"
-        ];
+        console.error('Error generating milestone steps:', error);
+        // Create fallback milestone steps if AI fails
+        const frequencyNum = parseInt(state.frequency.label.split('×')[0]) || 1;
+        const durationWeeks = parseInt(state.duration.label.split(' ')[0]) || 2;
+        const totalSessions = frequencyNum * durationWeeks;
         
-        for (const stepTitle of fallbackSteps) {
+        for (let i = 0; i < totalSessions; i++) {
+          const weekNumber = Math.floor(i / frequencyNum) + 1;
+          const sessionInWeek = (i % frequencyNum) + 1;
+          
+          // Calculate due date
+          const weekDays = Math.floor(i / frequencyNum);
+          const sessionDays = Math.round((i % frequencyNum) * (7 / frequencyNum)) + Math.round(7 / frequencyNum);
+          const dayOffset = weekDays * 7 + sessionDays;
+          
+          const stepDueDate = new Date(startDate);
+          stepDueDate.setDate(stepDueDate.getDate() + dayOffset);
+          
           await stepsService.createStep(createdGoal.id, {
-            title: stepTitle,
+            title: `Week ${weekNumber}, Session ${sessionInWeek}: ${state.goal.title}`,
             is_required: true,
+            due_date: formatDate(stepDueDate),
           });
         }
       }
