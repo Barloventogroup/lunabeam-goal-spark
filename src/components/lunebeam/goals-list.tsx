@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Calendar, Target, Flag, MoreVertical, Trash2 } from 'lucide-react';
+import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2 } from 'lucide-react';
 import { goalsService, stepsService } from '@/services/goalsService';
 import type { Goal, Step } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -239,6 +239,18 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40 bg-background border shadow-lg z-50">
+                          <DropdownMenuItem onClick={() => {/* TODO: Open check-in modal */}}>
+                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                            Check In
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {/* TODO: Add buddy functionality */}}>
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Add Buddy
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {/* TODO: Share functionality */}}>
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Share
+                          </DropdownMenuItem>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <DropdownMenuItem 
