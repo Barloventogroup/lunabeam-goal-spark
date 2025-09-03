@@ -300,69 +300,110 @@ export const StepsList: React.FC<StepsListProps> = ({
 
             return (
               <div key={step.id} className="space-y-2">
-                <div className={`flex items-center gap-3 p-4 border border-border rounded-lg transition-colors ${
+                <div className={`border border-border rounded-lg transition-colors ${
                   isBlocked ? 'opacity-60' : 'hover:bg-muted/50'
                 }`}>
-                  {getStepIcon(step) && (
-                    <button
-                      onClick={() => !isBlocked && handleStepToggle(step.id, step.status)}
-                      disabled={isBlocked}
-                      className="flex-shrink-0"
-                    >
-                      {getStepIcon(step)}
-                    </button>
-                  )}
-                  
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className={`font-medium text-base ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                        {step.title}
-                      </span>
-                      {isBlocked && (
-                        <Badge variant="outline" className="text-xs">
-                          Blocked
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    {step.notes && (
-                      <p className="text-sm text-muted-foreground">
-                        {step.notes}
-                        {step.notes && step.notes.length > 80 && (
-                          <button
-                            onClick={() => toggleStepExpanded(step.id)}
-                            className="ml-1 text-primary hover:underline"
-                          >
-                            More
-                          </button>
-                        )}
-                      </p>
-                    )}
-
-                    {precursorText && (
-                      <div className="flex items-center gap-1 text-xs text-amber-600">
-                        <ArrowDown className="h-3 w-3" />
-                        {precursorText}
-                      </div>
-                    )}
-
-                    {step.estimated_effort_min && (
-                      <div className="text-xs text-muted-foreground">
-                        About {step.estimated_effort_min} min
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center">
+                  {/* Main step row */}
+                  <div className="flex items-center gap-3 p-4">
                     <Button 
                       variant="ghost" 
                       size="sm"
                       onClick={() => toggleStepExpanded(step.id)}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground p-0 h-auto"
                     >
                       {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </Button>
+                    
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`font-medium text-base ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                          {step.title}
+                        </span>
+                        {isBlocked && (
+                          <Badge variant="outline" className="text-xs">
+                            Blocked
+                          </Badge>
+                        )}
+                      </div>
+
+                      {precursorText && (
+                        <div className="flex items-center gap-1 text-xs text-amber-600">
+                          <ArrowDown className="h-3 w-3" />
+                          {precursorText}
+                        </div>
+                      )}
+
+                      {step.estimated_effort_min && (
+                        <div className="text-xs text-muted-foreground">
+                          About {step.estimated_effort_min} min
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {getStepIcon(step)}
+                      {step.status !== 'done' && (
+                        <Button
+                          onClick={() => !isBlocked && handleStepToggle(step.id, step.status)}
+                          disabled={isBlocked}
+                          className="h-8 px-4 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors"
+                          variant="outline"
+                          size="sm"
+                        >
+                          Mark Complete
+                        </Button>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Expanded content */}
+                  {isExpanded && (
+                    <div className="border-t border-border">
+                      <div className="flex p-4 gap-4">
+                        {/* Left side - Step explanation */}
+                        <div className="flex-1 pl-8">
+                          {step.notes && (
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              {step.notes}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Right side - Action buttons */}
+                        <div className="flex flex-col gap-2 min-w-[120px]">
+                          <Button
+                            onClick={() => handleStepFeedback(step.id, 'tooBig')}
+                            className="h-8 px-3 rounded-full bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 transition-colors dark:bg-orange-950/50 dark:hover:bg-orange-950 dark:text-orange-300 dark:border-orange-800"
+                            variant="outline"
+                            size="sm"
+                          >
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Too Big
+                          </Button>
+                          
+                          <Button
+                            onClick={() => handleStepFeedback(step.id, 'confusing')}
+                            className="h-8 px-3 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition-colors dark:bg-purple-950/50 dark:hover:bg-purple-950 dark:text-purple-300 dark:border-purple-800"
+                            variant="outline"
+                            size="sm"
+                          >
+                            <HelpCircle className="h-3 w-3 mr-1" />
+                            Confusing
+                          </Button>
+                          
+                          <Button
+                            onClick={() => handleStepFeedback(step.id, 'notRelevant')}
+                            className="h-8 px-3 rounded-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 transition-colors dark:bg-red-950/50 dark:hover:bg-red-950 dark:text-red-300 dark:border-red-800"
+                            variant="outline"
+                            size="sm"
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Not Relevant
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Dependency arrow connector */}
@@ -370,64 +411,6 @@ export const StepsList: React.FC<StepsListProps> = ({
                   <div className="flex justify-center">
                     <ArrowDown className="h-4 w-4 text-muted-foreground/50" />
                   </div>
-                )}
-
-                {/* Expanded content with pill-shaped action buttons */}
-                {isExpanded && (
-                  <Collapsible open={isExpanded}>
-                    <CollapsibleContent className="ml-8 p-4 bg-muted/30 rounded-lg border">
-                      <div className="space-y-3">
-                        <div className="flex flex-col gap-2">
-                          {step.status !== 'done' && (
-                            <Button
-                              onClick={() => handleStepToggle(step.id, step.status)}
-                              className="w-full h-9 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors"
-                              variant="outline"
-                            >
-                              <CheckCircle2 className="h-4 w-4 mr-2" />
-                              Mark Complete
-                            </Button>
-                          )}
-                          
-                          <Button
-                            onClick={() => toggleStepExpanded(step.id)}
-                            className="w-full h-9 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors dark:bg-blue-950/50 dark:hover:bg-blue-950 dark:text-blue-300 dark:border-blue-800"
-                            variant="outline"
-                          >
-                            <HelpCircle className="h-4 w-4 mr-2" />
-                            More Help
-                          </Button>
-                          
-                          <Button
-                            onClick={() => handleStepFeedback(step.id, 'tooBig')}
-                            className="w-full h-9 rounded-full bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 transition-colors dark:bg-orange-950/50 dark:hover:bg-orange-950 dark:text-orange-300 dark:border-orange-800"
-                            variant="outline"
-                          >
-                            <AlertTriangle className="h-4 w-4 mr-2" />
-                            Too Big
-                          </Button>
-                          
-                          <Button
-                            onClick={() => handleStepFeedback(step.id, 'confusing')}
-                            className="w-full h-9 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition-colors dark:bg-purple-950/50 dark:hover:bg-purple-950 dark:text-purple-300 dark:border-purple-800"
-                            variant="outline"
-                          >
-                            <HelpCircle className="h-4 w-4 mr-2" />
-                            Confusing
-                          </Button>
-                          
-                          <Button
-                            onClick={() => handleStepFeedback(step.id, 'notRelevant')}
-                            className="w-full h-9 rounded-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 transition-colors dark:bg-red-950/50 dark:hover:bg-red-950 dark:text-red-300 dark:border-red-800"
-                            variant="outline"
-                          >
-                            <X className="h-4 w-4 mr-2" />
-                            Not Relevant
-                          </Button>
-                        </div>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
                 )}
               </div>
             );
