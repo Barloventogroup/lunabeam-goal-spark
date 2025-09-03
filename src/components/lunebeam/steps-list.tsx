@@ -339,7 +339,6 @@ export const StepsList: React.FC<StepsListProps> = ({
                             variant="outline"
                             size="sm"
                           >
-                            <HelpCircle className="h-3 w-3 mr-1" />
                             Need More Help
                           </Button>
                         </div>
