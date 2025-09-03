@@ -39,7 +39,14 @@ export interface Consent {
 export type GoalDomain = 'school' | 'work' | 'life' | 'health' | 'other';
 export type GoalPriority = 'low' | 'medium' | 'high';
 export type GoalStatus = 'planned' | 'active' | 'paused' | 'completed' | 'archived';
-export type StepStatus = 'not_started' | 'in_progress' | 'skipped' | 'done';
+export type StepStatus = 'todo' | 'doing' | 'done' | 'skipped';
+export type StepType = 'action' | 'container';
+
+export interface GoalProgress {
+  done: number;
+  actionable: number;
+  percent: number;
+}
 
 export interface Goal {
   id: string;
@@ -56,20 +63,46 @@ export interface Goal {
   tags: string[];
   created_at: string;
   updated_at: string;
+  progress?: GoalProgress;
+}
+
+export interface StepFeedback {
+  tooBig: boolean;
+  confusing: boolean;
+  notRelevant: boolean;
+  needsMoreSteps: boolean;
+}
+
+export interface StepMetadata {
+  version: number;
+  source: 'rules' | 'llm';
+  scoreEase: number; // 1-5
+  scoreImpact: number; // 1-5
 }
 
 export interface Step {
   id: string;
   goal_id: string;
   title: string;
+  explainer?: string; // ≤140 chars plain language
   notes?: string;
   order_index: number;
   estimated_effort_min?: number;
   due_date?: string;
   status: StepStatus;
+  type: StepType;
   is_required: boolean;
+  hidden: boolean;
+  blocked: boolean;
+  isBlocking: boolean;
   points?: number;
   dependency_step_ids: string[];
+  precursors: string[];
+  dependencies: string[];
+  supportingLinks: string[];
+  aiGenerated: boolean;
+  userFeedback: StepFeedback;
+  metadata: StepMetadata;
   created_at: string;
   updated_at: string;
 }

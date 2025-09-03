@@ -21,6 +21,9 @@ import { AIChat } from './ai-chat';
 import { FamilyCircleCard } from './family-circle-card';
 import { PersonalizedGreeting } from './personalized-greeting';
 import { NotificationSystem } from './notification-system';
+import { StepsList } from './steps-list';
+import { StepsChat } from './steps-chat';
+import { ProgressBar } from './progress-bar';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/components/auth/auth-provider';
 import { format, addDays, isToday } from 'date-fns';
@@ -223,12 +226,20 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
               {goals.filter(goal => goal.status === 'active' || goal.status === 'planned').map((goal) => (
                 <Card key={goal.id}>
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex-1">
                         <h3 className="font-semibold text-foreground mb-1">{goal.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {Math.round(goal.progress_pct || 0)}% complete • Next step due today
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 bg-muted rounded-full h-1.5">
+                            <div 
+                              className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                              style={{ width: `${Math.round(goal.progress_pct || 0)}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {Math.round(goal.progress_pct || 0)}%
+                          </span>
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <Button 
