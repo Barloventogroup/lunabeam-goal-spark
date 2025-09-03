@@ -119,8 +119,57 @@ export const StepsList: React.FC<StepsListProps> = ({
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
 
-  const visibleSteps = sortedActionableSteps.slice(0, 10); // Show more steps to see proper grouping
+  const visibleSteps = sortedActionableSteps.slice(0, 10);
   const queuedSteps = sortedActionableSteps.slice(10);
+
+  // Group steps with their sub-steps
+  const groupedSteps = visibleSteps.reduce((acc, step) => {
+    const isMainStep = step.title.includes('Week ') && step.title.includes('Session');
+    
+    if (isMainStep) {
+      acc.push({
+        mainStep: step,
+        subSteps: []
+      });
+    } else {
+      // This is a sub-step, find its parent main step
+      const lastGroup = acc[acc.length - 1];
+      if (lastGroup) {
+        lastGroup.subSteps.push(step);
+      } else {
+        // No main step found, treat as standalone
+        acc.push({
+          mainStep: step,
+          subSteps: []
+        });
+      }
+    }
+    
+    return acc;
+  }, [] as Array<{ mainStep: Step; subSteps: Step[] }>);
+
+  const queuedGroupedSteps = queuedSteps.reduce((acc, step) => {
+    const isMainStep = step.title.includes('Week ') && step.title.includes('Session');
+    
+    if (isMainStep) {
+      acc.push({
+        mainStep: step,
+        subSteps: []
+      });
+    } else {
+      const lastGroup = acc[acc.length - 1];
+      if (lastGroup) {
+        lastGroup.subSteps.push(step);
+      } else {
+        acc.push({
+          mainStep: step,
+          subSteps: []
+        });
+      }
+    }
+    
+    return acc;
+  }, [] as Array<{ mainStep: Step; subSteps: Step[] }>);
 
   const handleMarkComplete = async (stepId: string) => {
     try {
@@ -159,6 +208,11 @@ export const StepsList: React.FC<StepsListProps> = ({
         variant: 'destructive'
       });
     }
+  };
+
+  // Helper function to check if all sub-steps are completed
+  const areAllSubStepsCompleted = (subSteps: Step[]): boolean => {
+    return subSteps.length === 0 || subSteps.every(subStep => subStep.status === 'done');
   };
 
   const checkForUnlockedSteps = (allSteps: Step[], completedStepId: string): Step[] => {
@@ -303,41 +357,44 @@ export const StepsList: React.FC<StepsListProps> = ({
                 </TableRow>
             </TableHeader>
             <TableBody>
-              {(showingQueuedSteps ? [...visibleSteps, ...queuedSteps] : visibleSteps).map((step, index) => {
-                const isBlocked = isStepBlocked(step);
-                const precursorText = getPrecursorText(step);
-                const isExpanded = expandedSteps.has(step.id);
+              {(showingQueuedSteps ? [...groupedSteps, ...queuedGroupedSteps] : groupedSteps).map((group, groupIndex) => {
+                const { mainStep, subSteps } = group;
+                const isBlocked = isStepBlocked(mainStep);
+                const precursorText = getPrecursorText(mainStep);
+                const isExpanded = expandedSteps.has(mainStep.id);
+                const allSubStepsCompleted = areAllSubStepsCompleted(subSteps);
 
                 return (
-                  <React.Fragment key={step.id}>
+                  <React.Fragment key={mainStep.id}>
                      {/* Main step row */}
                      <TableRow className={`${isBlocked ? 'opacity-60' : 'hover:bg-muted/50'} cursor-pointer`}>
                        <TableCell className="p-2 w-8">
-                         <Button 
-                           variant="ghost" 
-                           size="sm"
-                           onClick={() => toggleStepExpanded(step.id)}
-                           className="text-muted-foreground hover:text-foreground p-1 h-auto"
-                         >
-                           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                         </Button>
+                         {(subSteps.length > 0 || mainStep.explainer || mainStep.notes) && (
+                           <Button 
+                             variant="ghost" 
+                             size="sm"
+                             onClick={() => toggleStepExpanded(mainStep.id)}
+                             className="text-muted-foreground hover:text-foreground p-1 h-auto"
+                           >
+                             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                           </Button>
+                         )}
                        </TableCell>
                        
                         <TableCell className="p-2">
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              {/* Add indentation for sub-steps */}
-                              {!step.title.includes('Week ') && (
-                                <div className="w-4 flex items-center justify-center">
-                                  <div className="w-2 h-0.5 bg-muted-foreground/40"></div>
-                                </div>
-                              )}
-                              <span className={`text-sm font-medium ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                                {step.title.replace(/^Day\s+\d+:\s*/i, '')}
+                              <span className={`text-sm font-medium ${mainStep.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                                {mainStep.title.replace(/^Day\s+\d+:\s*/i, '')}
                               </span>
                               {isBlocked && (
                                 <Badge variant="outline" className="text-xs">
                                   Blocked
+                                </Badge>
+                              )}
+                              {subSteps.length > 0 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {subSteps.filter(s => s.status === 'done').length}/{subSteps.length} sub-steps
                                 </Badge>
                               )}
                             </div>
@@ -352,10 +409,10 @@ export const StepsList: React.FC<StepsListProps> = ({
                         </TableCell>
 
                        <TableCell className="p-2">
-                         {step.due_date ? (
+                         {mainStep.due_date ? (
                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
                              <Calendar className="h-3 w-3" />
-                             <span>{formatDate(step.due_date)}</span>
+                             <span>{formatDate(mainStep.due_date)}</span>
                            </div>
                          ) : (
                            <span className="text-xs text-muted-foreground">—</span>
@@ -363,16 +420,16 @@ export const StepsList: React.FC<StepsListProps> = ({
                        </TableCell>
 
                         <TableCell className="p-2 text-center">
-                          {getStepIcon(step)}
+                          {getStepIcon(mainStep)}
                         </TableCell>
 
                        <TableCell className="p-2">
                          <div className="flex items-center gap-2">
-                           {step.status !== 'done' && (
+                           {mainStep.status !== 'done' && (
                              <Button
-                               onClick={() => !isBlocked && handleMarkComplete(step.id)}
-                               disabled={isBlocked}
-                               className="h-7 px-3 text-xs rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors"
+                               onClick={() => !isBlocked && handleMarkComplete(mainStep.id)}
+                               disabled={isBlocked || (subSteps.length > 0 && !allSubStepsCompleted)}
+                               className="h-7 px-3 text-xs rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors disabled:opacity-50"
                                variant="outline"
                                size="sm"
                              >
@@ -383,23 +440,91 @@ export const StepsList: React.FC<StepsListProps> = ({
                        </TableCell>
                      </TableRow>
 
-                     {/* Expanded content row */}
+                     {/* Expanded content row - sub-steps cards or description */}
                      {isExpanded && (
                        <TableRow>
                          <TableCell></TableCell>
-                         <TableCell colSpan={4} className="p-3 border-t">
-                           <div className="pl-4">
-                             <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                               {(step.explainer?.trim() || step.notes?.trim() || "We're here to support you! If you need more details about this step, just tap \"Need More Help\" and we'll provide personalized guidance to help you succeed.")}
-                               {"\n\n"}
-                               <button
-                                 onClick={() => handleNeedHelp(step)}
-                                 className="text-primary hover:text-primary/80 underline text-sm cursor-pointer bg-transparent border-none p-0"
-                               >
-                                 Need more help?
-                               </button>
-                             </p>
-                           </div>
+                         <TableCell colSpan={4} className="p-0 bg-muted/20">
+                           {subSteps.length > 0 ? (
+                             /* Google Flights style sub-steps cards */
+                             <div className="p-4">
+                               <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
+                                 {subSteps.map((subStep) => (
+                                   <div
+                                     key={subStep.id}
+                                     className={`flex-shrink-0 w-80 border rounded-lg p-4 bg-background transition-all duration-200 ${
+                                       subStep.status === 'done' 
+                                         ? 'border-green-200 bg-green-50/50' 
+                                         : 'border-border hover:border-primary/40'
+                                     }`}
+                                   >
+                                     {/* Sub-step title */}
+                                     <div className="flex items-center gap-2 mb-3">
+                                       <h4 className={`text-sm font-medium ${
+                                         subStep.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'
+                                       }`}>
+                                         {subStep.title}
+                                       </h4>
+                                       {subStep.status === 'done' && (
+                                         <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                       )}
+                                     </div>
+
+                                     {/* Sub-step description */}
+                                     <div className="mb-4 min-h-[60px]">
+                                       <p className="text-xs text-muted-foreground leading-relaxed">
+                                         {subStep.explainer?.trim() || subStep.notes?.trim() || "Complete this sub-step to move forward."}
+                                       </p>
+                                     </div>
+
+                                     {/* Due date if present */}
+                                     {subStep.due_date && (
+                                       <div className="flex items-center gap-1 mb-3 text-xs text-muted-foreground">
+                                         <Calendar className="h-3 w-3" />
+                                         <span>Due {formatDate(subStep.due_date)}</span>
+                                       </div>
+                                     )}
+
+                                     {/* Mark complete button */}
+                                     <div className="flex gap-2">
+                                       {subStep.status !== 'done' ? (
+                                         <Button
+                                           onClick={() => handleMarkComplete(subStep.id)}
+                                           className="w-full h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+                                           size="sm"
+                                         >
+                                           Mark Complete
+                                         </Button>
+                                       ) : (
+                                         <Button
+                                           variant="outline"
+                                           className="w-full h-8 text-xs border-green-200 text-green-700 cursor-default"
+                                           size="sm"
+                                           disabled
+                                         >
+                                           Completed
+                                         </Button>
+                                       )}
+                                     </div>
+                                   </div>
+                                 ))}
+                               </div>
+                             </div>
+                           ) : (
+                             /* Regular description for steps without sub-steps */
+                             <div className="p-4">
+                               <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                                 {(mainStep.explainer?.trim() || mainStep.notes?.trim() || "We're here to support you! If you need more details about this step, just tap \"Need More Help\" and we'll provide personalized guidance to help you succeed.")}
+                                 {"\n\n"}
+                                 <button
+                                   onClick={() => handleNeedHelp(mainStep)}
+                                   className="text-primary hover:text-primary/80 underline text-sm cursor-pointer bg-transparent border-none p-0"
+                                 >
+                                   Need more help?
+                                 </button>
+                               </p>
+                             </div>
+                           )}
                          </TableCell>
                        </TableRow>
                      )}
