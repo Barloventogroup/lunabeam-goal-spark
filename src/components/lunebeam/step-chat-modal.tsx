@@ -134,9 +134,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
       // Check if we should redirect (reached chat limit)
       if (data.shouldRedirect) {
         setShouldHideInput(true);
-        setTimeout(() => {
-          onClose();
-        }, 3000); // Give user time to read the final message
+        // Don't auto-close - let user close manually when ready
       }
 
     } catch (error) {
