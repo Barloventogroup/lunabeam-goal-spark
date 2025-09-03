@@ -76,28 +76,35 @@ export const StepsList: React.FC<StepsListProps> = ({
   const sortedActionableSteps = steps
     .filter(s => (!s.type || s.type === 'action') && !s.hidden)
     .sort((a, b) => {
-      // Required steps first
-      if (a.is_required && !b.is_required) return -1;
-      if (!a.is_required && b.is_required) return 1;
-
-      // Then by order_index (treat undefined as Infinity so they go last)
+      // First, group by main session steps vs sub-steps
+      const aIsMainStep = a.title.includes('Week ') && a.title.includes('Session');
+      const bIsMainStep = b.title.includes('Week ') && b.title.includes('Session');
+      
+      // If one is main and other is sub, main comes first
+      if (aIsMainStep && !bIsMainStep) return -1;
+      if (!aIsMainStep && bIsMainStep) return 1;
+      
+      // Both are main steps - sort by week then session
+      if (aIsMainStep && bIsMainStep) {
+        const aWeek = parseInt(a.title.match(/Week (\d+)/)?.[1] || '0');
+        const bWeek = parseInt(b.title.match(/Week (\d+)/)?.[1] || '0');
+        if (aWeek !== bWeek) return aWeek - bWeek;
+        
+        const aSession = parseInt(a.title.match(/Session (\d+)/)?.[1] || '0');
+        const bSession = parseInt(b.title.match(/Session (\d+)/)?.[1] || '0');
+        return aSession - bSession;
+      }
+      
+      // Both are sub-steps - sort by order_index, then creation time
       const aIndex = a.order_index ?? Number.POSITIVE_INFINITY;
       const bIndex = b.order_index ?? Number.POSITIVE_INFINITY;
       if (aIndex !== bIndex) return aIndex - bIndex;
-
-      // Then by due_date if both present
-      if (a.due_date && b.due_date) {
-        const aDue = new Date(a.due_date).getTime();
-        const bDue = new Date(b.due_date).getTime();
-        if (aDue !== bDue) return aDue - bDue;
-      }
-
-      // Fallback to creation time
+      
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
 
-  const visibleSteps = sortedActionableSteps.slice(0, 5);
-  const queuedSteps = sortedActionableSteps.slice(5);
+  const visibleSteps = sortedActionableSteps.slice(0, 8); // Show more steps to reduce confusion
+  const queuedSteps = sortedActionableSteps.slice(8);
 
   const handleMarkComplete = async (stepId: string) => {
     try {
@@ -300,27 +307,33 @@ export const StepsList: React.FC<StepsListProps> = ({
                          </Button>
                        </TableCell>
                        
-                       <TableCell className="p-2">
-                         <div className="space-y-1">
-                           <div className="flex items-center gap-2">
-                             <span className={`text-base font-medium ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                               {step.title.replace(/^Day\s+\d+:\s*/i, '')}
-                             </span>
-                             {isBlocked && (
-                               <Badge variant="outline" className="text-xs">
-                                 Blocked
-                               </Badge>
-                             )}
-                           </div>
+                        <TableCell className="p-2">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              {/* Add indentation for sub-steps */}
+                              {!step.title.includes('Week ') && (
+                                <div className="w-4 flex items-center justify-center">
+                                  <div className="w-2 h-0.5 bg-muted-foreground/40"></div>
+                                </div>
+                              )}
+                              <span className={`text-base font-medium ${step.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                                {step.title.replace(/^Day\s+\d+:\s*/i, '')}
+                              </span>
+                              {isBlocked && (
+                                <Badge variant="outline" className="text-xs">
+                                  Blocked
+                                </Badge>
+                              )}
+                            </div>
 
-                           {precursorText && (
-                             <div className="flex items-center gap-1 text-xs text-amber-600">
-                               <ArrowDown className="h-3 w-3" />
-                               {precursorText}
-                             </div>
-                           )}
-                         </div>
-                       </TableCell>
+                            {precursorText && (
+                              <div className="flex items-center gap-1 text-xs text-amber-600">
+                                <ArrowDown className="h-3 w-3" />
+                                {precursorText}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
 
                        <TableCell className="p-2">
                          {step.due_date ? (
