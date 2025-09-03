@@ -73,7 +73,24 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
           try {
             console.log('Generating steps for goal:', goalData.title);
             const generatedSteps = await stepsGenerator.generateSteps(goalData);
-            finalSteps = generatedSteps;
+            
+            // Save each generated step to the database
+            const savedSteps: Step[] = [];
+            for (const stepData of generatedSteps) {
+              try {
+                const { step } = await stepsService.createStep(goalData.id, {
+                  title: stepData.title,
+                  notes: stepData.explainer,
+                  is_required: stepData.is_required,
+                  estimated_effort_min: stepData.estimated_effort_min,
+                });
+                savedSteps.push(step);
+              } catch (error) {
+                console.error('Failed to save generated step:', stepData.title, error);
+              }
+            }
+            
+            finalSteps = savedSteps;
             
             toast({
               description: "Generated helpful steps to get you started! 🎯"
