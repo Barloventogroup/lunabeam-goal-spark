@@ -201,13 +201,14 @@ export function FamilyCircleCard({ circle, goals, onNavigate }: FamilyCircleCard
         </CardContent>
       </Card>
 
-      <WeeklyCheckinModal
-        isOpen={isCheckinOpen}
-        onOpenChange={setIsCheckinOpen}
-        circle={circle}
-        goals={goals}
-        weekOf={getCurrentWeek()}
-      />
+      {goals.length > 0 && (
+        <WeeklyCheckinModal
+          isOpen={isCheckinOpen}
+          onOpenChange={setIsCheckinOpen}
+          goal={goals[0]}
+          weekOf={getCurrentWeek()}
+        />
+      )}
     </>
   );
 }

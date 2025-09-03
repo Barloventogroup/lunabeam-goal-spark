@@ -8,6 +8,7 @@ import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
 import { GoalsWizard } from '../lunebeam/goals-wizard';
 import { useStore } from '../../store/useStore';
+import type { Goal } from '../../types';
 interface TabHomeProps {
   onOpenChat: () => void;
   onNavigateToGoals: (goalId?: string) => void;
@@ -19,6 +20,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
 }) => {
   const [currentView, setCurrentView] = useState<HomeView>('dashboard');
   const [showCheckinModal, setShowCheckinModal] = useState(false);
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const {
     profile,
     loadProfile,
@@ -108,14 +110,21 @@ export const TabHome: React.FC<TabHomeProps> = ({
                             {Math.round(goal.progress_pct || 0)}% complete
                           </p>
                         </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="checkin" onClick={() => setShowCheckinModal(true)}>
-                            Check In
-                          </Button>
-                          <Button variant="default" size="sm" onClick={() => onNavigateToGoals(goal.id)}>
-                            View
-                          </Button>
-                        </div>
+                         <div className="flex gap-2">
+                           <Button 
+                             size="sm" 
+                             variant="checkin" 
+                             onClick={() => {
+                               setSelectedGoal(goal);
+                               setShowCheckinModal(true);
+                             }}
+                           >
+                             Check In
+                           </Button>
+                           <Button variant="default" size="sm" onClick={() => onNavigateToGoals(goal.id)}>
+                             View
+                           </Button>
+                         </div>
                       </div>
                     </CardContent>
                   </Card>)}
@@ -152,12 +161,13 @@ export const TabHome: React.FC<TabHomeProps> = ({
       </div>
 
       {/* Check-in Modal */}
-      {showCheckinModal && <WeeklyCheckinModal isOpen={showCheckinModal} onOpenChange={setShowCheckinModal} circle={{
-      id: 'default',
-      name: 'My Circle',
-      owner_id: '',
-      created_at: '',
-      updated_at: ''
-    }} goals={[]} weekOf={new Date().toISOString().split('T')[0]} />}
+      {selectedGoal && (
+        <WeeklyCheckinModal 
+          isOpen={showCheckinModal} 
+          onOpenChange={setShowCheckinModal} 
+          goal={selectedGoal}
+          weekOf={new Date().toISOString().split('T')[0]} 
+        />
+      )}
     </>;
 };
