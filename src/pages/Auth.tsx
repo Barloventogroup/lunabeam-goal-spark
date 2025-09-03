@@ -67,7 +67,7 @@ export default function Auth() {
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
     }}>
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-2">
             <img 
