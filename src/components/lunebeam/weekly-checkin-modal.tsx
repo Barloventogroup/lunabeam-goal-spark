@@ -113,7 +113,7 @@ export function WeeklyCheckinModal({
           <Label htmlFor="checkin-text">How did you do?</Label>
           <Textarea
             id="checkin-text"
-            placeholder="Walked 10 min M/W/F"
+            placeholder="add your reflections here"
             value={checkinText}
             onChange={(e) => setCheckinText(e.target.value)}
             className="min-h-[100px]"
