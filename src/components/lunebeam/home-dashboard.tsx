@@ -33,6 +33,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const { 
     profile, 
     goals,
+    steps,
     getActiveGoal, 
     getRecentCheckIns, 
     badges, 
@@ -41,6 +42,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     justCompletedOnboarding,
     loadProfile,
     loadGoals,
+    loadSteps,
     loadCheckIns,
     loadBadges,
     loadEvidence,
@@ -62,7 +64,16 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       loadFamilyCircles();
     }
   }, [user, loadProfile, loadGoals, loadCheckIns, loadBadges, loadEvidence, loadFamilyCircles]);
+
   const activeGoal = getActiveGoal();
+  const activeGoalSteps = activeGoal ? steps[activeGoal.id] || [] : [];
+
+  useEffect(() => {
+    // Load steps for active goal when it changes
+    if (activeGoal) {
+      loadSteps(activeGoal.id);
+    }
+  }, [activeGoal?.id, loadSteps]);
   const recentCheckIns = activeGoal ? getRecentCheckIns(activeGoal.id) : [];
   const thisWeekBadges = badges.filter(badge => {
     const earnedDate = new Date(badge.earned_at);
@@ -96,6 +107,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   
   const hasActiveOrPlannedGoals = goals.some(goal => goal.status === 'active' || goal.status === 'planned');
   const isFirstTimeUser = justCompletedOnboarding && !hasActiveOrPlannedGoals;
+  const hasProgressToShow = activeGoal && ((activeGoal.progress_pct || 0) > 0 || activeGoalSteps.length > 0);
   const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'User';
   
   const handleSnooze = (goalId: string, duration: '15m' | '1h') => {
@@ -189,7 +201,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         )}
 
         {/* This Week's Progress */}
-        {!isFirstTimeUser && activeGoal && (
+        {!isFirstTimeUser && hasProgressToShow && (
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-foreground">This Week's Progress</h2>
             <Card>
