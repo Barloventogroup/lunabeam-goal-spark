@@ -7,6 +7,7 @@ import { Badge } from '../ui/badge';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
 import { GoalsWizard } from '../lunebeam/goals-wizard';
+import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { useStore } from '../../store/useStore';
 import type { Goal } from '../../types';
 interface TabHomeProps {
@@ -80,6 +81,11 @@ export const TabHome: React.FC<TabHomeProps> = ({
                 👋 Hey {displayName}! Welcome aboard. Let’s kick things off by setting your very first goal (see that big plus sign in the blue circle — that is where you start). And remember, big or small, every step counts. Ready to get started?
               </p> : <p className="text-muted-foreground">Let's keep moving forward, one step at a time.</p>}
           </div>
+
+          {/* First Time User Reminder */}
+          {activeGoals.length === 0 && (
+            <FirstTimeReminder onNavigateToGoals={() => setCurrentView('add-goal')} />
+          )}
 
           {/* Checked In Today */}
           {activeGoals.length > 0 && <Card className="bg-green-50 shadow-soft">
