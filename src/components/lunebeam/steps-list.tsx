@@ -345,7 +345,7 @@ export const StepsList: React.FC<StepsListProps> = ({
         </div>
 
         {/* Steps table */}
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
+        <div className="border border-border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
                  <TableRow>
@@ -448,7 +448,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                            {subSteps.length > 0 ? (
                              <div className="p-4">
                                {/* Main step description section */}
-                               <div className="mb-6 pb-4 border-b border-gray-200">
+                               <div className="mb-6 pb-4 border-b border-border">
                                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap mb-3">
                                    {(mainStep.explainer?.trim() || mainStep.notes?.trim() || "Here are the sub-steps to complete this main step.")}
                                  </p>
