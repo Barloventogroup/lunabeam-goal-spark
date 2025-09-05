@@ -300,7 +300,7 @@ export const StepsList: React.FC<StepsListProps> = ({
             <p className="text-muted-foreground mb-4">We're preparing a few quick wins for you…</p>
             <div className="space-y-3">
               {[1,2,3,4,5].map((i) => (
-                <div key={i} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
+                <div key={i} className="flex items-center gap-3 p-3 border border-border rounded-lg">
                   <div className="w-5 h-5 rounded-full bg-muted animate-pulse" />
                   <div className="flex-1 space-y-2">
                     <div className="h-3 w-2/3 bg-muted rounded animate-pulse" />
@@ -465,11 +465,11 @@ export const StepsList: React.FC<StepsListProps> = ({
                                  {subSteps.map((subStep) => (
                                    <div
                                      key={subStep.id}
-                                      className={`flex-shrink-0 w-80 border rounded-lg p-4 bg-background transition-all duration-200 ${
-                                        subStep.status === 'done' 
-                                          ? 'border-green-200 bg-green-50/50' 
-                                          : 'border-gray-200 hover:border-primary/40'
-                                      }`}
+                                       className={`flex-shrink-0 w-80 border rounded-lg p-4 bg-background transition-all duration-200 ${
+                                         subStep.status === 'done' 
+                                           ? 'border-green-200 bg-green-50/50' 
+                                           : 'border-border hover:border-primary/40'
+                                       }`}
                                    >
                                      {/* Sub-step title */}
                                      <div className="flex items-center gap-2 mb-3">
