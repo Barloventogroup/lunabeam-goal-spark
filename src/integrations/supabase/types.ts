@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_claims: {
+        Row: {
+          claim_passcode: string
+          claim_token: string
+          claimed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          individual_id: string
+          provisioner_id: string
+          status: Database["public"]["Enums"]["invite_status"]
+        }
+        Insert: {
+          claim_passcode: string
+          claim_token: string
+          claimed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          individual_id: string
+          provisioner_id: string
+          status?: Database["public"]["Enums"]["invite_status"]
+        }
+        Update: {
+          claim_passcode?: string
+          claim_token?: string
+          claimed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          individual_id?: string
+          provisioner_id?: string
+          status?: Database["public"]["Enums"]["invite_status"]
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           description: string
@@ -302,10 +338,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: Database["public"]["Enums"]["account_status"]
           challenges: string[] | null
+          claimed_at: string | null
           comm_pref: string
           created_at: string
+          created_by_supporter: string | null
           first_name: string
+          guardian_locked_until: string | null
           id: string
           interests: string[] | null
           onboarding_complete: boolean
@@ -314,10 +354,14 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_status?: Database["public"]["Enums"]["account_status"]
           challenges?: string[] | null
+          claimed_at?: string | null
           comm_pref: string
           created_at?: string
+          created_by_supporter?: string | null
           first_name: string
+          guardian_locked_until?: string | null
           id?: string
           interests?: string[] | null
           onboarding_complete?: boolean
@@ -326,10 +370,14 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_status?: Database["public"]["Enums"]["account_status"]
           challenges?: string[] | null
+          claimed_at?: string | null
           comm_pref?: string
           created_at?: string
+          created_by_supporter?: string | null
           first_name?: string
+          guardian_locked_until?: string | null
           id?: string
           interests?: string[] | null
           onboarding_complete?: boolean
@@ -443,6 +491,93 @@ export type Database = {
         }
         Relationships: []
       }
+      supporter_invites: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          individual_id: string
+          invite_token: string
+          invitee_email: string
+          invitee_name: string | null
+          inviter_id: string
+          message: string | null
+          permission_level: Database["public"]["Enums"]["permission_level"]
+          role: Database["public"]["Enums"]["user_role"]
+          specific_goals: string[] | null
+          status: Database["public"]["Enums"]["invite_status"]
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          individual_id: string
+          invite_token: string
+          invitee_email: string
+          invitee_name?: string | null
+          inviter_id: string
+          message?: string | null
+          permission_level: Database["public"]["Enums"]["permission_level"]
+          role: Database["public"]["Enums"]["user_role"]
+          specific_goals?: string[] | null
+          status?: Database["public"]["Enums"]["invite_status"]
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          individual_id?: string
+          invite_token?: string
+          invitee_email?: string
+          invitee_name?: string | null
+          inviter_id?: string
+          message?: string | null
+          permission_level?: Database["public"]["Enums"]["permission_level"]
+          role?: Database["public"]["Enums"]["user_role"]
+          specific_goals?: string[] | null
+          status?: Database["public"]["Enums"]["invite_status"]
+        }
+        Relationships: []
+      }
+      supporters: {
+        Row: {
+          created_at: string
+          id: string
+          individual_id: string
+          invited_by: string | null
+          is_provisioner: boolean
+          permission_level: Database["public"]["Enums"]["permission_level"]
+          role: Database["public"]["Enums"]["user_role"]
+          specific_goals: string[] | null
+          supporter_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          individual_id: string
+          invited_by?: string | null
+          is_provisioner?: boolean
+          permission_level?: Database["public"]["Enums"]["permission_level"]
+          role?: Database["public"]["Enums"]["user_role"]
+          specific_goals?: string[] | null
+          supporter_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          individual_id?: string
+          invited_by?: string | null
+          is_provisioner?: boolean
+          permission_level?: Database["public"]["Enums"]["permission_level"]
+          role?: Database["public"]["Enums"]["user_role"]
+          specific_goals?: string[] | null
+          supporter_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       weekly_checkins: {
         Row: {
           circle_id: string
@@ -495,6 +630,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_user_permission: {
+        Args: { _action: string; _goal_id?: string; _individual_id: string }
+        Returns: boolean
+      }
+      claim_account: {
+        Args: { _claim_token: string; _passcode: string }
+        Returns: Json
+      }
       get_user_member_circles: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -509,7 +652,10 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      account_status: "active" | "pending_user_consent" | "user_claimed"
+      invite_status: "pending" | "accepted" | "declined" | "expired"
+      permission_level: "viewer" | "collaborator" | "admin"
+      user_role: "individual" | "supporter" | "friend" | "provider" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -636,6 +782,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      account_status: ["active", "pending_user_consent", "user_claimed"],
+      invite_status: ["pending", "accepted", "declined", "expired"],
+      permission_level: ["viewer", "collaborator", "admin"],
+      user_role: ["individual", "supporter", "friend", "provider", "admin"],
+    },
   },
 } as const
