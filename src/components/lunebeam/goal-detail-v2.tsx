@@ -215,7 +215,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
           </Button>
           <div className="flex-1">
             <h1 className="text-xl font-semibold text-foreground">{goal.title}</h1>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex flex-wrap items-center gap-2 mt-1">
               <Badge variant={getStatusColor(goal.status)}>
                 {goal.status === 'active' ? 'In Progress' : goal.status}
               </Badge>
@@ -227,7 +227,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               {goal.due_date && (
                 <Badge variant="outline" className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  Due {formatDate(goal.due_date)}
+                  <span className="truncate">Due {formatDate(goal.due_date)}</span>
                 </Badge>
               )}
             </div>
