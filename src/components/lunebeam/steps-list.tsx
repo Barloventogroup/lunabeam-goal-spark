@@ -348,7 +348,7 @@ export const StepsList: React.FC<StepsListProps> = ({
         <div className="border border-border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
-                 <TableRow>
+                 <TableRow className="border-b border-border">
                   <TableHead className="w-8"></TableHead>
                   <TableHead>Step</TableHead>
                   <TableHead className="w-20">Due</TableHead>
@@ -367,7 +367,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                 return (
                   <React.Fragment key={mainStep.id}>
                      {/* Main step row */}
-                     <TableRow className={`${isBlocked ? 'opacity-60' : 'hover:bg-muted/50'} cursor-pointer`}>
+                     <TableRow className={`border-b border-border ${isBlocked ? 'opacity-60' : 'hover:bg-muted/50'} cursor-pointer`}>
                        <TableCell className="p-2 w-8">
                          {(subSteps.length > 0 || mainStep.explainer || mainStep.notes) && (
                            <Button 
@@ -442,7 +442,7 @@ export const StepsList: React.FC<StepsListProps> = ({
 
                      {/* Expanded content row - sub-steps cards or description */}
                      {isExpanded && (
-                       <TableRow>
+                       <TableRow className="border-b border-border">
                          <TableCell></TableCell>
                          <TableCell colSpan={4} className="p-0 bg-muted/20">
                            {subSteps.length > 0 ? (
