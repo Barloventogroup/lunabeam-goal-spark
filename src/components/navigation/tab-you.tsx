@@ -19,8 +19,9 @@ import {
 import { useStore } from '@/store/useStore';
 import { useAuth } from '../auth/auth-provider';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
+import { ProfileView } from '../lunebeam/profile-view';
 
-type YouView = 'profile' | 'rewards' | 'settings';
+type YouView = 'profile' | 'rewards' | 'settings' | 'profileDetail';
 
 export const TabYou: React.FC = () => {
   const { profile, badges } = useStore();
@@ -33,6 +34,10 @@ export const TabYou: React.FC = () => {
 
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('profile')} />;
+  }
+
+  if (currentView === 'profileDetail') {
+    return <ProfileView onBack={() => setCurrentView('profile')} />;
   }
 
   return (
@@ -71,7 +76,9 @@ export const TabYou: React.FC = () => {
                   </div>
                 )}
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <button onClick={() => setCurrentView('profileDetail')}>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
             </div>
           </CardContent>
         </Card>
