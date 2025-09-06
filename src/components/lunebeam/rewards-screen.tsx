@@ -89,39 +89,31 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
 
           {/* Goals Completed Tab */}
           <TabsContent value="goals" className="space-y-4">
+            {/* Completed Goals Section */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-yellow-500" />
-                  Completed & Archived Goals ({allCompletedAndArchived.length})
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  Completed Goals ({completedGoals.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {allCompletedAndArchived.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="font-medium mb-2">No completed goals yet</h3>
+                {completedGoals.length === 0 ? (
+                  <div className="text-center py-6">
+                    <CheckCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
-                      Keep working on your goals to see them here!
+                      No completed goals yet
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {allCompletedAndArchived.map((goal) => (
+                    {completedGoals.map((goal) => (
                       <div 
                         key={goal.id} 
-                        className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30"
+                        className="flex items-center gap-4 p-4 border rounded-lg bg-green-500/5"
                       >
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          goal.status === 'completed' 
-                            ? 'bg-green-500/10' 
-                            : 'bg-orange-500/10'
-                        }`}>
-                          {goal.status === 'completed' ? (
-                            <CheckCircle className="h-5 w-5 text-green-500" />
-                          ) : (
-                            <Archive className="h-5 w-5 text-orange-500" />
-                          )}
+                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                          <CheckCircle className="h-5 w-5 text-green-500" />
                         </div>
                         <div className="flex-1">
                           <h4 className="font-medium">{goal.title}</h4>
@@ -132,26 +124,67 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
                             <Badge variant="outline" className="text-xs">
                               {goal.domain || 'General'}
                             </Badge>
-                            <Badge 
-                              variant={goal.status === 'completed' ? 'default' : 'secondary'} 
-                              className="text-xs"
-                            >
-                              {goal.status === 'completed' ? 'Completed' : 'Archived'}
-                            </Badge>
                             <span className="text-xs text-muted-foreground">
-                              {goal.status === 'completed' ? 'Completed' : 'Archived'} {new Date(goal.updated_at).toLocaleDateString()}
+                              Completed {new Date(goal.updated_at).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className={`text-lg font-bold ${
-                            goal.status === 'completed' ? 'text-green-500' : 'text-orange-500'
-                          }`}>
-                            {goal.status === 'completed' ? '100%' : `${Math.round(goal.progress_pct)}%`}
+                          <div className="text-lg font-bold text-green-500">100%</div>
+                          <div className="text-xs text-muted-foreground">Complete</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Archived Goals Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Archive className="h-5 w-5 text-orange-500" />
+                  Archived Goals ({archivedGoals.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {archivedGoals.length === 0 ? (
+                  <div className="text-center py-6">
+                    <Archive className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      No archived goals yet
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {archivedGoals.map((goal) => (
+                      <div 
+                        key={goal.id} 
+                        className="flex items-center gap-4 p-4 border rounded-lg bg-orange-500/5"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+                          <Archive className="h-5 w-5 text-orange-500" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium">{goal.title}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {goal.description || 'No description'}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="outline" className="text-xs">
+                              {goal.domain || 'General'}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              Archived {new Date(goal.updated_at).toLocaleDateString()}
+                            </span>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {goal.status === 'completed' ? 'Complete' : 'Archived'}
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-orange-500">
+                            {Math.round(goal.progress_pct)}%
                           </div>
+                          <div className="text-xs text-muted-foreground">Archived</div>
                         </div>
                       </div>
                     ))}
