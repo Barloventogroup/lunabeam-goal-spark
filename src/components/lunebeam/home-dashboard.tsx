@@ -300,31 +300,29 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         </div>
 
         {/* Stats Overview */}
-        {!isFirstTimeUser && (
-          <div className="grid grid-cols-3 gap-4">
-            <Card className="text-center">
-              <CardContent className="p-4">
-                <Trophy className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
-                <div className="text-2xl font-bold">{allCompletedAndArchived.length}</div>
-                <div className="text-xs text-muted-foreground">Goals Completed</div>
-              </CardContent>
-            </Card>
-            <Card className="text-center">
-              <CardContent className="p-4">
-                <Star className="h-6 w-6 mx-auto mb-2 text-blue-500" />
-                <div className="text-2xl font-bold">{badges.length}</div>
-                <div className="text-xs text-muted-foreground">Badges Earned</div>
-              </CardContent>
-            </Card>
-            <Card className="text-center">
-              <CardContent className="p-4">
-                <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
-                <div className="text-2xl font-bold">{mockPoints}</div>
-                <div className="text-xs text-muted-foreground">Points</div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        <div className="grid grid-cols-3 gap-4">
+          <Card className="text-center">
+            <CardContent className="p-4">
+              <Trophy className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
+              <div className="text-2xl font-bold">{allCompletedAndArchived.length || 0}</div>
+              <div className="text-xs text-muted-foreground">Goals Completed</div>
+            </CardContent>
+          </Card>
+          <Card className="text-center">
+            <CardContent className="p-4">
+              <Star className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+              <div className="text-2xl font-bold">{badges.length || 0}</div>
+              <div className="text-xs text-muted-foreground">Badges Earned</div>
+            </CardContent>
+          </Card>
+          <Card className="text-center">
+            <CardContent className="p-4">
+              <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
+              <div className="text-2xl font-bold">{mockPoints || 247}</div>
+              <div className="text-xs text-muted-foreground">Points</div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Add Goal and Rewards Cards */}
         <div className="grid grid-cols-2 gap-4">
