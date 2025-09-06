@@ -190,7 +190,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
               </CardContent>
             </Card>
 
-            {badges.length > 0 ? (
+            {badges.length > 0 && (
               <div className="grid grid-cols-2 gap-3">
                 {badges.slice(0, 4).map((b) => (
                   <Card key={b.id} className="bg-card/60 shadow-soft">
@@ -206,12 +206,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
                   </Card>
                 ))}
               </div>
-            ) : (
-              <Card className="shadow-soft">
-                <CardContent className="p-6 text-center text-muted-foreground">
-                  No badges yet — complete goals to earn rewards!
-                </CardContent>
-              </Card>
             )}
           </div>
 
