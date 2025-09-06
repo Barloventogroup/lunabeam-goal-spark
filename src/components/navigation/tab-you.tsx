@@ -59,22 +59,6 @@ export const TabYou: React.FC = () => {
               <div className="flex-1">
                 <h2 className="text-xl font-bold">{profile?.first_name || 'User'}</h2>
                 <p className="text-muted-foreground">Lunabeam Member</p>
-                
-                {/* Strengths & Interests */}
-                {(profile?.strengths || profile?.interests) && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {profile?.strengths?.slice(0, 2).map(strength => (
-                      <Badge key={strength} variant="secondary" className="text-xs">
-                        {strength}
-                      </Badge>
-                    ))}
-                    {profile?.interests?.slice(0, 2).map(interest => (
-                      <Badge key={interest} variant="outline" className="text-xs">
-                        {interest}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
               </div>
               <button onClick={() => setCurrentView('profileDetail')}>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
