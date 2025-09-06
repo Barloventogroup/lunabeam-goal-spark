@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Trophy, Star, Award, Coins, Crown, CheckCircle, Calendar } from 'lucide-react';
+import { ArrowLeft, Trophy, Star, Award, Coins, Crown, CheckCircle, Calendar, Archive } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
 interface RewardsScreenProps {
@@ -20,6 +20,8 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
 
   const mockPoints = 247;
   const completedGoals = goals.filter(goal => goal.status === 'completed');
+  const archivedGoals = goals.filter(goal => goal.status === 'archived');
+  const allCompletedAndArchived = [...completedGoals, ...archivedGoals];
   const allBadges = badges;
 
   const getBadgeIcon = (type: string) => {
@@ -57,7 +59,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
           <Card className="text-center">
             <CardContent className="p-4">
               <Trophy className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
-              <div className="text-2xl font-bold">{completedGoals.length}</div>
+              <div className="text-2xl font-bold">{allCompletedAndArchived.length}</div>
               <div className="text-xs text-muted-foreground">Goals Completed</div>
             </CardContent>
           </Card>
@@ -91,11 +93,11 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Trophy className="h-5 w-5 text-yellow-500" />
-                  Completed Goals ({completedGoals.length})
+                  Completed & Archived Goals ({allCompletedAndArchived.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {completedGoals.length === 0 ? (
+                {allCompletedAndArchived.length === 0 ? (
                   <div className="text-center py-8">
                     <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="font-medium mb-2">No completed goals yet</h3>
@@ -105,13 +107,21 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {completedGoals.map((goal) => (
+                    {allCompletedAndArchived.map((goal) => (
                       <div 
                         key={goal.id} 
                         className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30"
                       >
-                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          goal.status === 'completed' 
+                            ? 'bg-green-500/10' 
+                            : 'bg-orange-500/10'
+                        }`}>
+                          {goal.status === 'completed' ? (
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                          ) : (
+                            <Archive className="h-5 w-5 text-orange-500" />
+                          )}
                         </div>
                         <div className="flex-1">
                           <h4 className="font-medium">{goal.title}</h4>
@@ -122,14 +132,26 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
                             <Badge variant="outline" className="text-xs">
                               {goal.domain || 'General'}
                             </Badge>
+                            <Badge 
+                              variant={goal.status === 'completed' ? 'default' : 'secondary'} 
+                              className="text-xs"
+                            >
+                              {goal.status === 'completed' ? 'Completed' : 'Archived'}
+                            </Badge>
                             <span className="text-xs text-muted-foreground">
-                              Completed {new Date(goal.updated_at).toLocaleDateString()}
+                              {goal.status === 'completed' ? 'Completed' : 'Archived'} {new Date(goal.updated_at).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-bold text-green-500">100%</div>
-                          <div className="text-xs text-muted-foreground">Complete</div>
+                          <div className={`text-lg font-bold ${
+                            goal.status === 'completed' ? 'text-green-500' : 'text-orange-500'
+                          }`}>
+                            {goal.status === 'completed' ? '100%' : `${Math.round(goal.progress_pct)}%`}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {goal.status === 'completed' ? 'Complete' : 'Archived'}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -210,7 +232,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
                   
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div className="p-3 rounded-lg bg-muted/30">
-                      <div className="text-xl font-bold">{completedGoals.length * 50}</div>
+                      <div className="text-xl font-bold">{allCompletedAndArchived.length * 50}</div>
                       <div className="text-xs text-muted-foreground">From Goals</div>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/30">
@@ -218,7 +240,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
                       <div className="text-xs text-muted-foreground">From Badges</div>
                     </div>
                     <div className="p-3 rounded-lg bg-muted/30">
-                      <div className="text-xl font-bold">{mockPoints - (completedGoals.length * 50) - (allBadges.length * 25)}</div>
+                      <div className="text-xl font-bold">{mockPoints - (allCompletedAndArchived.length * 50) - (allBadges.length * 25)}</div>
                       <div className="text-xs text-muted-foreground">From Activities</div>
                     </div>
                   </div>
