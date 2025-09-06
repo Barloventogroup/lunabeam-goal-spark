@@ -356,7 +356,9 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                 <p className="text-sm text-muted-foreground">
                   {thisWeekBadges.length > 0 
                     ? `${thisWeekBadges.length} new achievement${thisWeekBadges.length !== 1 ? 's' : ''}`
-                    : `${badges.length} badge${badges.length !== 1 ? 's' : ''} earned`
+                    : badges.length > 0 
+                      ? `${badges.length} badge${badges.length !== 1 ? 's' : ''} earned`
+                      : `0 badges earned`
                   }
                 </p>
               </div>
