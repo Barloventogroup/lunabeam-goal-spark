@@ -50,7 +50,7 @@ export const TabYou: React.FC = () => {
 
       <div className="px-6 pt-6 pb-4 space-y-6">
         {/* Profile Card */}
-        <Card>
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('profileDetail')}>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xl font-bold">
@@ -60,9 +60,7 @@ export const TabYou: React.FC = () => {
                 <h2 className="text-xl font-bold">{profile?.first_name || 'User'}</h2>
                 <p className="text-muted-foreground">Lunabeam Member</p>
               </div>
-              <button onClick={() => setCurrentView('profileDetail')}>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </button>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
