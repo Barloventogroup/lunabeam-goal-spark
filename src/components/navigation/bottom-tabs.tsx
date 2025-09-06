@@ -29,7 +29,7 @@ export const BottomTabs: React.FC = () => {
     },
     {
       id: 'team' as const,
-      label: 'Friends',
+      label: 'Community',
       icon: Users,
     },
     {
