@@ -73,7 +73,7 @@ export const TabFriends: React.FC = () => {
         {/* Header */}
         <div className="p-6 pt-8 bg-card/80 backdrop-blur border-b">
           <div>
-            <h1 className="text-xl font-bold">Friends</h1>
+            <h1 className="text-xl font-bold">Community</h1>
             <p className="text-sm text-muted-foreground">
               Manage your support network
             </p>
@@ -81,6 +81,27 @@ export const TabFriends: React.FC = () => {
         </div>
 
         <div className="px-6 py-6 space-y-6">
+          {/* Invitations */}
+          <Card className="bg-gradient-subtle border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Invitations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Manage friend requests</p>
+                  <p className="text-xs text-muted-foreground mt-1">3 pending invitations</p>
+                </div>
+                <Button variant="outline" size="sm">
+                  View All
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Share & Invite */}
           <Card>
             <CardHeader>
