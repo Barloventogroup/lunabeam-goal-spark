@@ -176,7 +176,7 @@ export const TabYou: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <LogOut className="h-5 w-5 text-red-500" />
                   <div>
-                    <div className="font-medium text-red-600">Log Out</div>
+                    <div className="font-medium text-red-600">Sign Out</div>
                     <div className="text-sm text-muted-foreground">Sign out of your account</div>
                   </div>
                 </div>
