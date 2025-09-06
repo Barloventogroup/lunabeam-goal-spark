@@ -15,7 +15,8 @@ import {
   Clock,
   Sparkles,
   LogOut,
-  MessageCircle
+  MessageCircle,
+  ChevronRight
 } from 'lucide-react';
 import { AIChat } from './ai-chat';
 import { FamilyCircleCard } from './family-circle-card';
@@ -228,7 +229,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                 onClick={() => onNavigate('goals')}
                 className="text-primary hover:text-primary/80"
               >
-                More
+                More Goals <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             )}
           </div>
@@ -285,11 +286,11 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-center text-center">
-                      <div className="text-muted-foreground">
-                        <Plus className="h-5 w-5 mx-auto mb-1" />
+                      <div className="text-muted-foreground flex items-center gap-2">
                         <p className="text-sm font-medium">
-                          View {goals.filter(goal => goal.status === 'active' || goal.status === 'planned').length - 3} more goal{goals.filter(goal => goal.status === 'active' || goal.status === 'planned').length - 3 !== 1 ? 's' : ''}
+                          More Goals
                         </p>
+                        <ChevronRight className="h-4 w-4" />
                       </div>
                     </div>
                   </CardContent>

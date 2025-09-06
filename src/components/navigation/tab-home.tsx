@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, CheckCircle, Plus, Award } from 'lucide-react';
+import { MessageCircle, CheckCircle, Plus, Award, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Progress } from '../ui/progress';
@@ -117,7 +117,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                     onClick={() => onNavigateToGoals()}
                     className="text-primary hover:text-primary/80"
                   >
-                    More
+                    More Goals <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
                 )}
                 <Button onClick={() => setCurrentView('add-goal')} size="sm" className="rounded-full w-8 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" aria-label="Add Goal">
@@ -162,11 +162,11 @@ export const TabHome: React.FC<TabHomeProps> = ({
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center justify-center text-center">
-                        <div className="text-muted-foreground">
-                          <Plus className="h-5 w-5 mx-auto mb-1" />
+                        <div className="text-muted-foreground flex items-center gap-2">
                           <p className="text-sm font-medium">
-                            View {activeGoals.length - 3} more goal{activeGoals.length - 3 !== 1 ? 's' : ''}
+                            More Goals
                           </p>
+                          <ChevronRight className="h-4 w-4" />
                         </div>
                       </div>
                     </CardContent>
