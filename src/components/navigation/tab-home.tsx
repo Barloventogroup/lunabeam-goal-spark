@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, CheckCircle, Plus, Award, ChevronRight } from 'lucide-react';
+import { MessageCircle, CheckCircle, Plus, Award, ChevronRight, Star, Coins } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Progress } from '../ui/progress';
@@ -64,6 +64,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   // Active goals from store
   const activeGoals = goals.filter(g => g.status === 'active' || g.status === 'planned');
   const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'there';
+  const mockPoints = 247; // Placeholder points to match Rewards screen
 
   return <>
       <div className="min-h-screen bg-gradient-soft">
@@ -170,8 +171,29 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {/* Rewards/Badges */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Rewards</h3>
-            {badges.length > 0 ? <div className="grid grid-cols-2 gap-3">
-                {badges.slice(0, 4).map(b => <Card key={b.id} className="bg-card/60 shadow-soft">
+
+            {/* Stats inside Rewards card */}
+            <Card className="shadow-soft">
+              <CardContent className="p-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center p-4 rounded-lg bg-muted/30">
+                    <Star className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+                    <div className="text-2xl font-bold">{badges.length || 0}</div>
+                    <div className="text-xs text-muted-foreground">Badges Earned</div>
+                  </div>
+                  <div className="text-center p-4 rounded-lg bg-muted/30">
+                    <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
+                    <div className="text-2xl font-bold">{mockPoints}</div>
+                    <div className="text-xs text-muted-foreground">Points</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {badges.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {badges.slice(0, 4).map((b) => (
+                  <Card key={b.id} className="bg-card/60 shadow-soft">
                     <CardContent className="p-4 text-center space-y-2">
                       <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mx-auto">
                         <Award className="h-6 w-6 text-accent-foreground" />
@@ -181,12 +203,16 @@ export const TabHome: React.FC<TabHomeProps> = ({
                         <p className="text-sm text-muted-foreground">{b.type}</p>
                       </div>
                     </CardContent>
-                  </Card>)}
-              </div> : <Card className="shadow-soft">
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="shadow-soft">
                 <CardContent className="p-6 text-center text-muted-foreground">
                   No badges yet — complete goals to earn rewards!
                 </CardContent>
-              </Card>}
+              </Card>
+            )}
           </div>
 
         </div>
