@@ -38,12 +38,12 @@ export const TabYou: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-soft">
       {/* Header */}
-      <div className="p-4 bg-card/80 backdrop-blur border-b">
+      <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b">
         <h1 className="text-xl font-bold">You</h1>
         <p className="text-sm text-muted-foreground">Profile, settings, and achievements</p>
       </div>
 
-      <div className="p-4 space-y-6">
+      <div className="px-6 pt-6 pb-4 space-y-6">
         {/* Profile Card */}
         <Card>
           <CardContent className="p-6">
@@ -53,7 +53,7 @@ export const TabYou: React.FC = () => {
               </div>
               <div className="flex-1">
                 <h2 className="text-xl font-bold">{profile?.first_name || 'User'}</h2>
-                <p className="text-muted-foreground">Lunebeam Member</p>
+                <p className="text-muted-foreground">Lunabeam Member</p>
                 
                 {/* Strengths & Interests */}
                 {(profile?.strengths || profile?.interests) && (
