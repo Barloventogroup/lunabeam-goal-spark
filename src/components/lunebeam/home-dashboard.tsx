@@ -325,7 +325,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         </div>
 
         {/* Add Goal and Rewards Cards */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-4">
           {/* Add Goal */}
           <Card 
             className="cursor-pointer hover:bg-muted/50 transition-colors"
@@ -344,23 +344,25 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
 
           {/* Rewards */}
           <Card 
-            className="cursor-pointer hover:bg-muted/50 transition-colors"
+            className="cursor-pointer hover:bg-muted/50 transition-colors col-span-2"
             onClick={() => onNavigate('badges')}
           >
-            <CardContent className="p-6 text-center space-y-3">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
-                <Award className="h-6 w-6 text-purple-600" />
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-foreground">Rewards</h3>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div>
-                <p className="font-semibold text-foreground">Rewards</p>
-                <p className="text-sm text-muted-foreground">
-                  {thisWeekBadges.length > 0 
-                    ? `${thisWeekBadges.length} new achievement${thisWeekBadges.length !== 1 ? 's' : ''}`
-                    : badges.length > 0 
-                      ? `${badges.length} badge${badges.length !== 1 ? 's' : ''} earned`
-                      : `0 badges earned`
-                  }
-                </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 rounded-lg bg-muted/30">
+                  <Star className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+                  <div className="text-2xl font-bold">{badges.length || 0}</div>
+                  <div className="text-xs text-muted-foreground">Badges Earned</div>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-muted/30">
+                  <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
+                  <div className="text-2xl font-bold">{mockPoints || 247}</div>
+                  <div className="text-xs text-muted-foreground">Points</div>
+                </div>
               </div>
             </CardContent>
           </Card>
