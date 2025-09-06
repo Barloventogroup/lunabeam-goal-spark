@@ -1,20 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Target, Users, User, MessageCircle } from 'lucide-react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { TabHome } from './tab-home';
 import { TabGoals } from './tab-goals';
 import { TabFriends } from './tab-friends';
 import { TabYou } from './tab-you';
+import { TabInvitations } from './tab-invitations';
 import { AIChat } from '../lunebeam/ai-chat';
 import { useStore } from '@/store/useStore';
 
 type TabType = 'home' | 'goals' | 'team' | 'you' | 'chat';
 
 export const BottomTabs: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('home');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [showChat, setShowChat] = useState(false);
   const [isWizardActive, setIsWizardActive] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const { loadGoals } = useStore();
+
+  // Determine active tab from current path
+  const getActiveTab = (): TabType => {
+    const path = location.pathname;
+    if (path === '/goals') return 'goals';
+    if (path === '/team') return 'team';
+    if (path === '/you') return 'you';
+    return 'home';
+  };
+
+  const activeTab = getActiveTab();
 
   const tabs = [
     {
@@ -50,22 +64,9 @@ export const BottomTabs: React.FC = () => {
     }
   }, [activeTab, loadGoals]);
 
-  const renderActiveTab = () => {
-    switch (activeTab) {
-      case 'home':
-        return <TabHome onOpenChat={() => setShowChat(true)} onNavigateToGoals={(goalId?: string) => {
-          setActiveTab('goals');
-          setSelectedGoalId(goalId || null);
-        }} />;
-      case 'goals':
-        return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} />;
-      case 'team':
-        return <TabFriends />;
-      case 'you':
-        return <TabYou />;
-      default:
-        return <TabHome onOpenChat={() => setShowChat(true)} onNavigateToGoals={() => setActiveTab('goals')} />;
-    }
+  const handleNavigateToGoals = (goalId?: string) => {
+    setSelectedGoalId(goalId || null);
+    navigate('/goals');
   };
 
   // Full-screen chat overlay
@@ -96,7 +97,13 @@ export const BottomTabs: React.FC = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Main content */}
       <div className={`flex-1 ${isWizardActive ? 'pb-0' : 'pb-20'}`}>
-        {renderActiveTab()}
+        <Routes>
+          <Route path="/" element={<TabHome onOpenChat={() => setShowChat(true)} onNavigateToGoals={handleNavigateToGoals} />} />
+          <Route path="/goals" element={<TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} />} />
+          <Route path="/team" element={<TabFriends />} />
+          <Route path="/you" element={<TabYou />} />
+          <Route path="/invitations" element={<TabInvitations />} />
+        </Routes>
       </div>
 
       {/* Bottom tab bar - hidden during wizard */}
@@ -110,7 +117,7 @@ export const BottomTabs: React.FC = () => {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => navigate(tab.id === 'home' ? '/' : `/${tab.id}`)}
                   className={`flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 rounded-lg transition-colors ${
                     isActive 
                       ? 'text-primary bg-primary/10' 
