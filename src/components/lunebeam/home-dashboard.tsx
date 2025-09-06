@@ -107,6 +107,14 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const allCompletedAndArchived = [...completedGoals, ...archivedGoals];
   const mockPoints = 247; // Matching rewards screen
 
+  // Debug logging
+  console.log('HomeDashboard Debug:', {
+    badges: badges,
+    badgesLength: badges.length,
+    mockPoints: mockPoints,
+    allCompletedAndArchived: allCompletedAndArchived.length
+  });
+
   // Calculate progress
   const getGoalProgress = () => {
     if (!activeGoal || recentCheckIns.length === 0) return 0;
@@ -351,6 +359,10 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-foreground">Rewards</h3>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+              {/* Debug: Force render to see if this section is being reached */}
+              <div style={{background: 'red', padding: '10px', color: 'white'}}>
+                DEBUG: badges={badges.length}, points={mockPoints}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 rounded-lg bg-muted/30">
