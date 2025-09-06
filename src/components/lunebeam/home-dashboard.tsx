@@ -325,7 +325,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         </div>
 
         {/* Add Goal and Rewards Cards */}
-        <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           {/* Add Goal */}
           <Card 
             className="cursor-pointer hover:bg-muted/50 transition-colors"
