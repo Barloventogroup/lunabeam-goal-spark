@@ -339,6 +339,7 @@ export type Database = {
       profiles: {
         Row: {
           account_status: Database["public"]["Enums"]["account_status"]
+          avatar_url: string | null
           challenges: string[] | null
           claimed_at: string | null
           comm_pref: string
@@ -355,6 +356,7 @@ export type Database = {
         }
         Insert: {
           account_status?: Database["public"]["Enums"]["account_status"]
+          avatar_url?: string | null
           challenges?: string[] | null
           claimed_at?: string | null
           comm_pref: string
@@ -371,6 +373,7 @@ export type Database = {
         }
         Update: {
           account_status?: Database["public"]["Enums"]["account_status"]
+          avatar_url?: string | null
           challenges?: string[] | null
           claimed_at?: string | null
           comm_pref?: string

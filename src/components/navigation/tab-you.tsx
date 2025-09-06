@@ -53,9 +53,17 @@ export const TabYou: React.FC = () => {
         <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('profileDetail')}>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xl font-bold">
-                {profile?.first_name?.charAt(0) || 'U'}
-              </div>
+              {profile?.avatar_url ? (
+                <img 
+                  src={profile.avatar_url} 
+                  alt="Profile picture"
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xl font-bold">
+                  {profile?.first_name?.charAt(0) || 'U'}
+                </div>
+              )}
               <div className="flex-1">
                 <h2 className="text-xl font-bold">{profile?.first_name || 'User'}</h2>
                 <p className="text-muted-foreground">Lunabeam Member</p>

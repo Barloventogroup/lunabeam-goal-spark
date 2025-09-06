@@ -1,12 +1,17 @@
 // Lunebeam Core Types
 
 export interface Profile {
+  id?: string;
+  user_id?: string;
   first_name: string;
   strengths: string[];
   interests: string[];
   challenges: string[];
   comm_pref: 'voice' | 'text';
   onboarding_complete?: boolean;
+  avatar_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ConsentSection {
