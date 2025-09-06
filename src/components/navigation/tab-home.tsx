@@ -109,21 +109,9 @@ export const TabHome: React.FC<TabHomeProps> = ({
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold">Your Goals</h3>
-              <div className="flex items-center gap-2">
-                {activeGoals.length > 3 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => onNavigateToGoals()}
-                    className="text-primary hover:text-primary/80"
-                  >
-                    More Goals <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
-                )}
-                <Button onClick={() => setCurrentView('add-goal')} size="sm" className="rounded-full w-8 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" aria-label="Add Goal">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+              <Button onClick={() => setCurrentView('add-goal')} size="sm" className="rounded-full w-8 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" aria-label="Add Goal">
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
             {activeGoals.length > 0 ? <div className="space-y-3">
                 {activeGoals.slice(0, 3).map(goal => <Card key={goal.id} className="cursor-pointer hover:shadow-card transition-all duration-200 shadow-soft">
@@ -161,7 +149,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                     onClick={() => onNavigateToGoals()}
                   >
                     <CardContent className="p-4">
-                      <div className="flex items-center justify-center text-center">
+                      <div className="flex items-center justify-end text-right w-full">
                         <div className="text-muted-foreground flex items-center gap-2">
                           <p className="text-sm font-medium">
                             More Goals

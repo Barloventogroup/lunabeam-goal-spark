@@ -222,16 +222,6 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">Your Goals</h2>
-            {goals.filter(goal => goal.status === 'active' || goal.status === 'planned').length > 3 && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => onNavigate('goals')}
-                className="text-primary hover:text-primary/80"
-              >
-                More Goals <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            )}
           </div>
           
           {goals.filter(goal => goal.status === 'active' || goal.status === 'planned').length > 0 ? (
@@ -285,7 +275,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('goals')}
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-center text-center">
+                    <div className="flex items-center justify-end text-right w-full">
                       <div className="text-muted-foreground flex items-center gap-2">
                         <p className="text-sm font-medium">
                           More Goals
