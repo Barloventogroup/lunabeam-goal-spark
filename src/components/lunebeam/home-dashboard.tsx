@@ -16,7 +16,10 @@ import {
   Sparkles,
   LogOut,
   MessageCircle,
-  ChevronRight
+  ChevronRight,
+  Trophy,
+  Star,
+  Coins
 } from 'lucide-react';
 import { AIChat } from './ai-chat';
 import { FamilyCircleCard } from './family-circle-card';
@@ -97,6 +100,12 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     const weekAgo = addDays(new Date(), -7);
     return earnedDate >= weekAgo;
   });
+
+  // Calculate stats for consistency with rewards screen
+  const completedGoals = goals.filter(goal => goal.status === 'completed');
+  const archivedGoals = goals.filter(goal => goal.status === 'archived');
+  const allCompletedAndArchived = [...completedGoals, ...archivedGoals];
+  const mockPoints = 247; // Matching rewards screen
 
   // Calculate progress
   const getGoalProgress = () => {
@@ -289,6 +298,33 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
             </div>
           ) : null}
         </div>
+
+        {/* Stats Overview */}
+        {!isFirstTimeUser && (
+          <div className="grid grid-cols-3 gap-4">
+            <Card className="text-center">
+              <CardContent className="p-4">
+                <Trophy className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
+                <div className="text-2xl font-bold">{allCompletedAndArchived.length}</div>
+                <div className="text-xs text-muted-foreground">Goals Completed</div>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="p-4">
+                <Star className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+                <div className="text-2xl font-bold">{badges.length}</div>
+                <div className="text-xs text-muted-foreground">Badges Earned</div>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="p-4">
+                <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
+                <div className="text-2xl font-bold">{mockPoints}</div>
+                <div className="text-xs text-muted-foreground">Points</div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Add Goal and Rewards Cards */}
         <div className="grid grid-cols-2 gap-4">
