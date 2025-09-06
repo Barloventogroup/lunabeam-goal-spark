@@ -71,9 +71,7 @@ export const TabYou: React.FC = () => {
                   </div>
                 )}
               </div>
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4" />
-              </Button>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
