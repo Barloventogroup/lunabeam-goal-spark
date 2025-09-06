@@ -109,12 +109,24 @@ export const TabHome: React.FC<TabHomeProps> = ({
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold">Your Goals</h3>
-              <Button onClick={() => setCurrentView('add-goal')} size="sm" className="rounded-full w-8 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" aria-label="Add Goal">
-                <Plus className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                {activeGoals.length > 3 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => onNavigateToGoals()}
+                    className="text-primary hover:text-primary/80"
+                  >
+                    More
+                  </Button>
+                )}
+                <Button onClick={() => setCurrentView('add-goal')} size="sm" className="rounded-full w-8 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" aria-label="Add Goal">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             {activeGoals.length > 0 ? <div className="space-y-3">
-                {activeGoals.map(goal => <Card key={goal.id} className="cursor-pointer hover:shadow-card transition-all duration-200 shadow-soft">
+                {activeGoals.slice(0, 3).map(goal => <Card key={goal.id} className="cursor-pointer hover:shadow-card transition-all duration-200 shadow-soft">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1" onClick={() => onNavigateToGoals(goal.id)}>
@@ -141,6 +153,25 @@ export const TabHome: React.FC<TabHomeProps> = ({
                       </div>
                     </CardContent>
                   </Card>)}
+                
+                {/* Show More button as a card when there are more than 3 goals */}
+                {activeGoals.length > 3 && (
+                  <Card 
+                    className="cursor-pointer hover:bg-muted/50 transition-colors border-dashed"
+                    onClick={() => onNavigateToGoals()}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-center text-center">
+                        <div className="text-muted-foreground">
+                          <Plus className="h-5 w-5 mx-auto mb-1" />
+                          <p className="text-sm font-medium">
+                            View {activeGoals.length - 3} more goal{activeGoals.length - 3 !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div> : <Card className="shadow-soft">
                 <CardContent className="p-6 text-center text-muted-foreground">
                   No active goals yet

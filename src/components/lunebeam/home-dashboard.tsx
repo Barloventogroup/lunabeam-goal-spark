@@ -219,11 +219,26 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
 
         {/* Your Goals */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-foreground">Your Goals</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">Your Goals</h2>
+            {goals.filter(goal => goal.status === 'active' || goal.status === 'planned').length > 3 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => onNavigate('goals')}
+                className="text-primary hover:text-primary/80"
+              >
+                More
+              </Button>
+            )}
+          </div>
           
           {goals.filter(goal => goal.status === 'active' || goal.status === 'planned').length > 0 ? (
             <div className="space-y-3">
-              {goals.filter(goal => goal.status === 'active' || goal.status === 'planned').map((goal) => (
+              {goals
+                .filter(goal => goal.status === 'active' || goal.status === 'planned')
+                .slice(0, 3)
+                .map((goal) => (
                 <Card key={goal.id}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
@@ -261,6 +276,25 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                   </CardContent>
                 </Card>
               ))}
+              
+              {/* Show More button as a card when there are more than 3 goals */}
+              {goals.filter(goal => goal.status === 'active' || goal.status === 'planned').length > 3 && (
+                <Card 
+                  className="cursor-pointer hover:bg-muted/50 transition-colors border-dashed"
+                  onClick={() => onNavigate('goals')}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-center text-center">
+                      <div className="text-muted-foreground">
+                        <Plus className="h-5 w-5 mx-auto mb-1" />
+                        <p className="text-sm font-medium">
+                          View {goals.filter(goal => goal.status === 'active' || goal.status === 'planned').length - 3} more goal{goals.filter(goal => goal.status === 'active' || goal.status === 'planned').length - 3 !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           ) : null}
         </div>
