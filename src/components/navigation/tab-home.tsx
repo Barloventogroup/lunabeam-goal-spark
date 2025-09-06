@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, CheckCircle, Plus, Award, ChevronRight, Star, Coins, Users } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { MessageCircle, CheckCircle, Plus, Award, ChevronRight, Star, Coins } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Progress } from '../ui/progress';
@@ -23,7 +22,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
   onOpenChat,
   onNavigateToGoals
 }) => {
-  const navigate = useNavigate();
   const [currentView, setCurrentView] = useState<HomeView>('dashboard');
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
@@ -96,32 +94,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {activeGoals.length === 0 && (
             <FirstTimeReminder onNavigateToGoals={() => setCurrentView('add-goal')} />
           )}
-
-          {/* Invitations Card */}
-          <Card 
-            className="bg-gradient-subtle border-primary/20 cursor-pointer hover:shadow-elegant transition-all duration-300"
-            onClick={() => navigate('/invitations')}
-          >
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">Invitations</h3>
-                    <p className="text-sm text-muted-foreground">Manage friend requests</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
-                    3 pending
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Checked In Today */}
           {activeGoals.length > 0 && <Card className="bg-green-50 shadow-soft">
