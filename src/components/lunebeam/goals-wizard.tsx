@@ -510,6 +510,16 @@ Example:
           <div className="text-sm text-muted-foreground">
             Step {state.step} of {STEPS.length}
           </div>
+
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onBack}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="w-4 h-4" />
+            Exit
+          </Button>
         </div>
         
         <Progress value={progress} className="mb-4" />
