@@ -209,12 +209,11 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own reading purpose" }
         ],
         details: [
-          { id: "1page", label: "1 page", emoji: "📄", explainer: "Read 1 page", isDefault: true },
-          { id: "5pages", label: "5 pages", emoji: "📄", explainer: "Read 5 pages" },
-          { id: "10pages", label: "10 pages", emoji: "📄", explainer: "Read 10 pages" },
-          { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Read for 5 minutes" },
-          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Read for 10 minutes" },
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Read for 15 minutes" }
+          { id: "textbook", label: "Textbook", emoji: "📚", explainer: "Read from a textbook" },
+          { id: "article", label: "Article", emoji: "📰", explainer: "Read an article or blog post" },
+          { id: "comic", label: "Comic", emoji: "📚", explainer: "Read a comic or graphic novel" },
+          { id: "blog", label: "Blog", emoji: "💻", explainer: "Read a blog post or online content" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Choose your own reading material" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
