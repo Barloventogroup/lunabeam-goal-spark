@@ -528,12 +528,6 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "keep-current", label: "Keep it current", emoji: "✅", explainer: "Maintain up-to-date information" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom update purpose" }
         ],
-        details: [
-          { id: "new-job", label: "New job", emoji: "💼", explainer: "Add recent work experience" },
-          { id: "skill", label: "Skill", emoji: "⭐", explainer: "Add new skills learned", isDefault: true },
-          { id: "education", label: "Education", emoji: "🎓", explainer: "Update education information" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom update" }
-        ],
         frequency: [
           { id: "30min-by-date", label: "30 minutes by [date]", emoji: "📅", explainer: "Complete in 30 minutes by specific date" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom timeline" }
