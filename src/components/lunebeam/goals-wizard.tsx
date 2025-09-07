@@ -48,7 +48,7 @@ const STEPS = [
   { id: 4, title: "Details", subtitle: "How do you want to do this?" },
   { id: 5, title: "Amount", subtitle: "How much do you want to read?" },
   { id: 6, title: "How Often?", subtitle: "How frequently do you want to do this?" },
-  { id: 7, title: "How Long?", subtitle: "For how many weeks?" },
+  { id: 7, title: "How Long?", subtitle: "For how many days/weeks?" },
   { id: 8, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
   { id: 9, title: "Confirm", subtitle: "Ready to start your goal?" }
 ];
@@ -119,6 +119,11 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const showRandomAffirmation = () => {
     const randomAffirmation = AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)];
     setAffirmation(randomAffirmation);
+    setTimeout(() => setAffirmation(""), 3000);
+  };
+
+  const showCustomAffirmation = (message: string) => {
+    setAffirmation(message);
     setTimeout(() => setAffirmation(""), 3000);
   };
 
@@ -773,7 +778,12 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
               title="Purpose"
               options={state.goal.purpose}
               onSelect={(purpose) => {
-                if (purpose.id === 'other') {
+                if (purpose.id === 'other' || purpose.id === 'unsure') {
+                  if (state.goal?.id === 'read') {
+                    showCustomAffirmation("Let's write something for fun!");
+                    setState(prev => ({ ...prev, purpose, step: 4 }));
+                    return;
+                  }
                   setShowCustomDialog(true);
                   return;
                 }
@@ -790,7 +800,12 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
               title="Details"
               options={state.goal.details}
               onSelect={(details) => {
-                if (details.id === 'other') {
+                if (details.id === 'other' || details.id === 'unsure') {
+                  if (state.goal?.id === 'read') {
+                    showCustomAffirmation("Don't worry, you don't need to know now. Write something, you'll let me know what afterwards. You can do it!");
+                    setState(prev => ({ ...prev, details, step: state.goal?.amount ? 5 : 6 }));
+                    return;
+                  }
                   setShowCustomDialog(true);
                   return;
                 }
@@ -817,27 +832,53 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
           )}
 
           {state.step === 6 && state.goal && (
-            <FrequencySelection
-              onSelect={(frequency) => {
-                showRandomAffirmation();
-                setState(prev => ({ ...prev, frequency, step: 7 }));
-              }}
-              selected={state.frequency}
-              showCustomInput={() => setShowCustomDialog(true)}
-            />
+            state.goal.frequency ? (
+              <OptionSelection
+                title="How Often?"
+                options={state.goal.frequency}
+                onSelect={(frequency) => {
+                  showRandomAffirmation();
+                  setState(prev => ({ ...prev, frequency, step: 7 }));
+                }}
+                selected={state.frequency}
+                showCustomInput={() => setShowCustomDialog(true)}
+              />
+            ) : (
+              <FrequencySelection
+                onSelect={(frequency) => {
+                  showRandomAffirmation();
+                  setState(prev => ({ ...prev, frequency, step: 7 }));
+                }}
+                selected={state.frequency}
+                showCustomInput={() => setShowCustomDialog(true)}
+              />
+            )
           )}
 
           {state.step === 7 && state.goal && (
-            <OptionSelection
-              title="How Long?"
-              options={state.goal.timing}
-              onSelect={(duration) => {
-                showRandomAffirmation();
-                setState(prev => ({ ...prev, duration, step: 8 }));
-              }}
-              selected={state.duration}
-              showCustomInput={() => setShowDurationDialog(true)}
-            />
+            state.goal.duration ? (
+              <OptionSelection
+                title="How Long?"
+                options={state.goal.duration}
+                onSelect={(duration) => {
+                  showRandomAffirmation();
+                  setState(prev => ({ ...prev, duration, step: 8 }));
+                }}
+                selected={state.duration}
+                showCustomInput={() => setShowDurationDialog(true)}
+              />
+            ) : (
+              <OptionSelection
+                title="How Long?"
+                options={state.goal.timing}
+                onSelect={(duration) => {
+                  showRandomAffirmation();
+                  setState(prev => ({ ...prev, duration, step: 8 }));
+                }}
+                selected={state.duration}
+                showCustomInput={() => setShowDurationDialog(true)}
+              />
+            )
           )}
 
           {state.step === 8 && state.goal && (

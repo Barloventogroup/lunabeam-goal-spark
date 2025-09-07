@@ -228,6 +228,18 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Read for 30 minutes" },
           { id: "15min-default", label: "15 minutes", emoji: "⏰", explainer: "Read for 15 minutes", isDefault: true }
         ],
+        frequency: [
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+          { id: "5week", label: "5×/week", emoji: "📅", explainer: "Five times per week" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        duration: [
+          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "For two weeks" },
+          { id: "3weeks", label: "3 weeks", emoji: "📅", explainer: "For three weeks", isDefault: true },
+          { id: "4weeks", label: "4 weeks", emoji: "📅", explainer: "For four weeks" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
           { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
