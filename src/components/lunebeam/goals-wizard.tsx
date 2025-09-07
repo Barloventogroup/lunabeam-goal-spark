@@ -69,9 +69,12 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const [showCustomDialog, setShowCustomDialog] = useState(false);
   const [showAmountDialog, setShowAmountDialog] = useState(false);
   const [showDurationDialog, setShowDurationDialog] = useState(false);
+  const [showFrequencyDialog, setShowFrequencyDialog] = useState(false);
   const [customInput, setCustomInput] = useState("");
   const [customAmount, setCustomAmount] = useState("");
   const [customAmountType, setCustomAmountType] = useState<"pages" | "minutes">("minutes");
+  const [customFrequency, setCustomFrequency] = useState("");
+  const [customFrequencyType, setCustomFrequencyType] = useState<"daily" | "weekly">("daily");
   const [customDuration, setCustomDuration] = useState("");
   const [customDurationType, setCustomDurationType] = useState<"weeks" | "days">("weeks");
   const [isProcessingInput, setIsProcessingInput] = useState(false);
@@ -543,6 +546,46 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
     });
   };
 
+  const handleCustomFrequency = () => {
+    if (!customFrequency.trim()) return;
+    
+    const frequency = parseInt(customFrequency);
+    if (isNaN(frequency) || frequency <= 0) {
+      toast({
+        title: "Invalid frequency",
+        description: "Please enter a valid number.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const timeUnit = customFrequencyType === "daily" ? "day" : "week";
+    const timeUnitPlural = customFrequencyType === "daily" ? "days" : "weeks";
+    const displayLabel = frequency === 1 
+      ? (customFrequencyType === "daily" ? "Daily" : "Weekly")
+      : `${frequency}×/${timeUnit}`;
+
+    const customFrequencyOption: GoalOption = {
+      id: `custom-${customFrequencyType}-${frequency}`,
+      label: displayLabel,
+      emoji: "📅",
+      explainer: frequency === 1 
+        ? `Every ${timeUnit}`
+        : `${frequency} times per ${timeUnit}`
+    };
+
+    setState(prev => ({ ...prev, frequency: customFrequencyOption, step: 7 }));
+    showRandomAffirmation();
+    setShowFrequencyDialog(false);
+    setCustomFrequency("");
+    
+    toast({
+      title: "Great choice!",
+      description: `Set to ${customFrequencyOption.label}.`,
+      duration: 2000,
+    });
+  };
+
   // Show resume dialog if we have saved progress
   if (state.savedProgress && state.step === 1) {
     return (
@@ -773,6 +816,53 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
             </DialogContent>
           </Dialog>
 
+          {/* Custom Frequency Dialog */}
+          <Dialog open={showFrequencyDialog} onOpenChange={setShowFrequencyDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Custom Frequency</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">How often?</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Enter number"
+                      value={customFrequency}
+                      onChange={(e) => setCustomFrequency(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-input rounded-md text-sm"
+                      min="1"
+                    />
+                    <select
+                      value={customFrequencyType}
+                      onChange={(e) => setCustomFrequencyType(e.target.value as "daily" | "weekly")}
+                      className="px-3 py-2 border border-input rounded-md text-sm"
+                    >
+                      <option value="daily">times per day</option>
+                      <option value="weekly">times per week</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleCustomFrequency}
+                    disabled={!customFrequency.trim()}
+                    className="flex-1"
+                  >
+                    Set Frequency
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowFrequencyDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           {state.step === 3 && state.goal && (
             <OptionSelection
               title="Purpose"
@@ -841,7 +931,7 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
                   setState(prev => ({ ...prev, frequency, step: 7 }));
                 }}
                 selected={state.frequency}
-                showCustomInput={() => setShowCustomDialog(true)}
+                showCustomInput={() => setShowFrequencyDialog(true)}
               />
             ) : (
               <FrequencySelection
@@ -850,7 +940,7 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
                   setState(prev => ({ ...prev, frequency, step: 7 }));
                 }}
                 selected={state.frequency}
-                showCustomInput={() => setShowCustomDialog(true)}
+                showCustomInput={() => setShowFrequencyDialog(true)}
               />
             )
           )}
