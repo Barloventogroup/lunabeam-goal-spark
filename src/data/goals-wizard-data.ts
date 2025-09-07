@@ -552,28 +552,178 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "make-bed",
         title: "Make Bed", 
         emoji: "🛏️",
-        explainer: "Starting your day by tidying up your sleep space. It's surprisingly satisfying!",
+        explainer: "Starting your day by tidying up your sleep space. Try making your bed just 1 time this week.",
         purpose: [
-          { id: "tidy", label: "Tidy room", emoji: "🧹", explainer: "Keep your space organized", isDefault: true },
-          { id: "calm", label: "Feel calm", emoji: "😌", explainer: "Start day with accomplished feeling" },
-          { id: "routine", label: "Morning routine", emoji: "🌅", explainer: "Make it part of your daily routine" }
+          { id: "tidy", label: "Keep room tidy", emoji: "🧹", explainer: "Keep your space organized", isDefault: true },
+          { id: "calm", label: "Feel calm/organized", emoji: "😌", explainer: "Start day with accomplished feeling" },
+          { id: "routine", label: "Start morning routine", emoji: "🌅", explainer: "Make it part of your daily routine" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
         ],
         details: [
-          { id: "blanket", label: "Just blanket", emoji: "🛏️", explainer: "Simply pull up the blanket", isDefault: true },
-          { id: "sheets-blanket", label: "Sheets + blanket", emoji: "🛏️", explainer: "Straighten sheets and blanket" },
-          { id: "full", label: "Full bed making", emoji: "🛏️", explainer: "Sheets, blanket, and pillows" },
+          { id: "full-process", label: "Pull up sheets → Smooth blanket → Arrange pillows", emoji: "🛏️", explainer: "Complete bed making process" },
+          { id: "blanket-only", label: "Straighten blanket only", emoji: "🛏️", explainer: "Just pull up and smooth the blanket", isDefault: true },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom bed making style" }
         ],
         timing: [
           { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true },
-          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week" },
-          { id: "weekends", label: "Weekends", emoji: "📅", explainer: "Saturdays and Sundays" }
+          { id: "3week", label: "3× per week", emoji: "📅", explainer: "Three times per week" },
+          { id: "weekends", label: "Weekends only", emoji: "📅", explainer: "Saturdays and Sundays only" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
         ],
         supports: [
-          { id: "checklist", label: "Step checklist", emoji: "✅", explainer: "Visual steps to follow", isDefault: true },
-          { id: "reminder", label: "Morning reminder", emoji: "🔔", explainer: "Notification to make your bed" }
+          { id: "checklist", label: "Bed-making checklist with pictures", emoji: "✅", explainer: "Visual steps with pictures to follow", isDefault: true },
+          { id: "reminder", label: "Reminder → \"Make bed after waking up\"", emoji: "🔔", explainer: "Notification to make your bed after waking up" }
         ],
-        smartTemplate: "🛏️ Make bed {level} from {start_date} to {due_date}."
+        smartTemplate: "🛏️ Make my bed {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "set-table",
+        title: "Set Table",
+        emoji: "🍽️",
+        explainer: "Help prepare the table for family meals. Set the table once for dinner this week.",
+        purpose: [
+          { id: "help-family", label: "Help family", emoji: "👪", explainer: "Contribute to family meals", isDefault: true },
+          { id: "responsibility", label: "Learn daily responsibility", emoji: "🎓", explainer: "Practice taking on household responsibilities" },
+          { id: "meal-prep", label: "Get ready for meals", emoji: "🎉", explainer: "Prepare for enjoyable family meals" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "full-setting", label: "Plates → Utensils → Cups → Napkins", emoji: "🍽️", explainer: "Complete table setting process" },
+          { id: "plates-only", label: "Put out plates only", emoji: "🍽️", explainer: "Just place plates on the table", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom table setting approach" }
+        ],
+        timing: [
+          { id: "dinner", label: "Dinner", emoji: "🌆", explainer: "Set table for dinner", isDefault: true },
+          { id: "breakfast", label: "Breakfast", emoji: "🌅", explainer: "Set table for breakfast" },
+          { id: "both", label: "Both", emoji: "🍽️", explainer: "Set table for both breakfast and dinner" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom meal timing" }
+        ],
+        supports: [
+          { id: "picture-card", label: "Table-setting picture card", emoji: "📷", explainer: "Visual guide showing proper table setting", isDefault: true },
+          { id: "reminders", label: "Reminders tied to mealtimes", emoji: "🔔", explainer: "Notifications before meals" }
+        ],
+        smartTemplate: "🍽️ Set the {timing} table from {start_date} until {due_date}."
+      },
+      {
+        id: "do-laundry",
+        title: "Do Laundry",
+        emoji: "🧺",
+        explainer: "Learn to keep your clothes clean and fresh. Do laundry one time this week.",
+        purpose: [
+          { id: "clean-clothes", label: "Keep clothes clean", emoji: "👕", explainer: "Maintain clean wardrobe" },
+          { id: "independence", label: "Learn independence", emoji: "🎓", explainer: "Develop independent living skills", isDefault: true },
+          { id: "help-home", label: "Help at home", emoji: "🏠", explainer: "Contribute to household chores" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "full-process", label: "Step 1: Sort (light vs dark) → Step 2: Load washer → Step 3: Add detergent → Step 4: Start washer → Step 5: Move to dryer → Step 6: Fold", emoji: "🧺", explainer: "Complete laundry process" },
+          { id: "sorting-only", label: "Learn sorting only", emoji: "🧺", explainer: "Just practice separating light and dark clothes", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom laundry approach" }
+        ],
+        timing: [
+          { id: "once-week", label: "Once a week", emoji: "📅", explainer: "One load per week", isDefault: true },
+          { id: "twice-week", label: "Twice a week", emoji: "📅", explainer: "Two loads per week" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        supports: [
+          { id: "checklist", label: "Laundry steps checklist with icons", emoji: "✅", explainer: "Visual step-by-step guide with icons", isDefault: true },
+          { id: "video", label: "Video demo for washer/dryer", emoji: "📱", explainer: "Video showing how to use washing machine and dryer" }
+        ],
+        smartTemplate: "🧺 Do 1 load of laundry {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "cook",
+        title: "Cook",
+        emoji: "🍳",
+        explainer: "Learn to prepare simple meals and snacks. Try making 1 simple meal this week.",
+        purpose: [
+          { id: "new-skill", label: "Learn new skill", emoji: "🧑‍🍳", explainer: "Develop cooking abilities" },
+          { id: "healthier", label: "Eat healthier", emoji: "🥗", explainer: "Prepare nutritious meals", isDefault: true },
+          { id: "help-family", label: "Help family meals", emoji: "👪", explainer: "Contribute to family cooking" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "full-process", label: "Step 1: Wash hands → Step 2: Gather 3–4 ingredients → Step 3: Prepare (cut, mix, assemble) → Step 4: Heat/cook (if needed) → Step 5: Clean up", emoji: "🍳", explainer: "Complete cooking process" },
+          { id: "sandwich", label: "Make sandwich", emoji: "🥪", explainer: "Simple sandwich preparation", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom cooking approach" }
+        ],
+        timing: [
+          { id: "once", label: "Once", emoji: "📅", explainer: "Once per week" },
+          { id: "twice", label: "Twice", emoji: "📅", explainer: "Twice per week", isDefault: true },
+          { id: "3times", label: "3× per week", emoji: "📅", explainer: "Three times per week" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        amount: [
+          { id: "10min", label: "10 minutes per session", emoji: "⏰", explainer: "10 minute cooking sessions" },
+          { id: "20min", label: "20 minutes per session", emoji: "⏰", explainer: "20 minute cooking sessions", isDefault: true },
+          { id: "30min", label: "30 minutes per session", emoji: "⏰", explainer: "30 minute cooking sessions" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom time duration" }
+        ],
+        supports: [
+          { id: "visual-steps", label: "Visual cooking steps (wash, gather, cook, clean)", emoji: "👁️", explainer: "Picture guide for cooking process", isDefault: true },
+          { id: "checklist", label: "Shopping checklist template", emoji: "📝", explainer: "Template for ingredient shopping" }
+        ],
+        smartTemplate: "🍳 Cook {amount} {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "clean-area",
+        title: "Clean Area",
+        emoji: "🧹",
+        explainer: "Keep your personal space tidy and organized. Clean your desk for 5 minutes this week.",
+        purpose: [
+          { id: "tidy", label: "Tidy room/desk", emoji: "🧼", explainer: "Keep personal space organized", isDefault: true },
+          { id: "chores", label: "Help with chores", emoji: "🏠", explainer: "Contribute to household cleaning" },
+          { id: "stress", label: "Reduce stress", emoji: "😌", explainer: "Feel calmer in clean environment" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "full-process", label: "Pick up items → Wipe → Empty trash → Sweep/vacuum", emoji: "🧹", explainer: "Complete cleaning process" },
+          { id: "pickup-only", label: "Pick up items only", emoji: "🧹", explainer: "Just organize and put things away", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom cleaning approach" }
+        ],
+        timing: [
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true },
+          { id: "weekly", label: "Weekly", emoji: "📅", explainer: "Once per week" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        amount: [
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "10 minute cleaning sessions" },
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "15 minute cleaning sessions", isDefault: true },
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute cleaning sessions" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom time duration" }
+        ],
+        supports: [
+          { id: "checklist", label: "Cleaning checklist with icons", emoji: "✅", explainer: "Visual cleaning steps guide", isDefault: true },
+          { id: "reflection", label: "Reflection log (\"How did it feel after cleaning?\")", emoji: "📝", explainer: "Track how cleaning makes you feel" }
+        ],
+        smartTemplate: "🧹 Clean my {area} for {amount} {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "shopping-list",
+        title: "Write Shopping List",
+        emoji: "📝",
+        explainer: "Plan what you need to buy before going shopping. Write 3 items you need this week.",
+        purpose: [
+          { id: "groceries", label: "Plan groceries", emoji: "🛒", explainer: "Organize grocery shopping", isDefault: true },
+          { id: "household", label: "Buy household items", emoji: "🧼", explainer: "Plan for cleaning supplies and essentials" },
+          { id: "supplies", label: "Plan for clothes/supplies", emoji: "👕", explainer: "Organize shopping for personal items" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "full-process", label: "Step 1: Check fridge/pantry → Step 2: Write down 5–10 items → Step 3: Review with family/supporter", emoji: "📝", explainer: "Complete list-making process" },
+          { id: "three-items", label: "Write 3 items", emoji: "📝", explainer: "Simple list with just 3 needed items", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom list-making approach" }
+        ],
+        timing: [
+          { id: "weekly", label: "Weekly", emoji: "📅", explainer: "Once per week", isDefault: true },
+          { id: "biweekly", label: "Every 2 weeks", emoji: "📅", explainer: "Every two weeks" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        supports: [
+          { id: "template", label: "Printable list template with checkboxes", emoji: "📋", explainer: "Pre-made shopping list template", isDefault: true },
+          { id: "reminder", label: "Reminder → \"Make list before Sunday shopping\"", emoji: "🔔", explainer: "Notification to make list before shopping trip" }
+        ],
+        smartTemplate: "📝 Write a shopping list {timing} from {start_date} until {due_date}."
       }
     ]
   },
