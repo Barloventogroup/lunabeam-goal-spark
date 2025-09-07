@@ -23,7 +23,6 @@ export interface CategoryGoal {
   details?: GoalOption[];
   topic?: GoalOption[];
   amount?: GoalOption[];
-  duration?: GoalOption[];
   timing?: GoalOption[];
   supports: GoalOption[];
   smartTemplate: string;
@@ -232,12 +231,6 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Read for 30 minutes" },
           { id: "15min-default", label: "15 minutes", emoji: "⏰", explainer: "Read for 15 minutes", isDefault: true }
         ],
-        duration: [
-          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "For two weeks" },
-          { id: "3weeks", label: "3 weeks", emoji: "📅", explainer: "For three weeks", isDefault: true },
-          { id: "4weeks", label: "4 weeks", emoji: "📅", explainer: "For four weeks" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
-        ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
           { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
@@ -278,11 +271,6 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Write for 10 minutes" },
           { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Write for 15 minutes" },
           { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Write for 20 minutes" }
-        ],
-        duration: [
-          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "For two weeks" },
-          { id: "3weeks", label: "3 weeks", emoji: "📅", explainer: "For three weeks", isDefault: true },
-          { id: "4weeks", label: "4 weeks", emoji: "📅", explainer: "For four weeks" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
@@ -371,11 +359,6 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "read-aloud", label: "Read aloud", emoji: "🗣️", explainer: "Read notes out loud" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom review approach" }
         ],
-        duration: [
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Review for 15 minutes" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Review for 20 minutes", isDefault: true },
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Review for 30 minutes" }
-        ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
           { id: "3before-test", label: "3× before test", emoji: "📅", explainer: "Three times before the test", isDefault: true },
@@ -407,12 +390,6 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "practice-test", label: "Practice tests", emoji: "📝", explainer: "Take practice tests or quizzes" },
           { id: "group-study", label: "Group study", emoji: "👥", explainer: "Study with classmates or friends" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom study approach" }
-        ],
-        duration: [
-          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Study for 10 minutes" },
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Study for 15 minutes" },
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Study for 30 minutes", isDefault: true },
-          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "Study for 45 minutes" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
@@ -450,12 +427,6 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "mock", label: "Full Mock", emoji: "🎭", explainer: "Complete practice interview" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom interview practice" }
         ],
-        duration: [
-          { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Five minute practice session" },
-          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Ten minute practice session", isDefault: true },
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Fifteen minute practice session" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
-        ],
         supports: [
           { id: "checklist", label: "Interview checklist", emoji: "✅", explainer: "Greeting → Eye contact → Smile → Answer question → Say thank you", isDefault: true },
           { id: "roleplay", label: "Practice with parent/coach", emoji: "👥", explainer: "Role-play with someone" },
@@ -473,11 +444,6 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "first-job", label: "First job", emoji: "🎓", explainer: "Creating your very first resume" },
           { id: "internship", label: "Internship/summer job", emoji: "🔄", explainer: "Resume for internship or summer work" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom resume purpose" }
-        ],
-        duration: [
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Thirty minute session", isDefault: true },
-          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "Forty-five minute session" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         supports: [
           { id: "template", label: "Resume template", emoji: "📋", explainer: "Structured resume format", isDefault: true },
@@ -547,10 +513,6 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "5companies", label: "5 companies", emoji: "🏢", explainer: "Research five companies" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom number" }
         ],
-        duration: [
-          { id: "30min", label: "30 minutes per session", emoji: "⏰", explainer: "Thirty minutes each time", isDefault: true },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
-        ],
         supports: [
           { id: "job-links", label: "Job board links", emoji: "🔗", explainer: "Links to trusted job sites", isDefault: true },
           { id: "template", label: "Company List template", emoji: "📋", explainer: "Printable company tracking sheet" }
@@ -580,10 +542,6 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "mock-interview", label: "Mock interview", emoji: "🎤", explainer: "Practice interview with someone" },
           { id: "job-leads", label: "Job leads", emoji: "🔍", explainer: "Get information about job openings" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom assistance" }
-        ],
-        duration: [
-          { id: "15-20min", label: "15–20 minutes", emoji: "⏰", explainer: "Fifteen to twenty minute conversation", isDefault: true },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         supports: [
           { id: "templates", label: "Intro message templates", emoji: "💬", explainer: "Scripts for reaching out to people", isDefault: true },

@@ -27,7 +27,6 @@ interface WizardState {
   purpose?: GoalOption;
   details?: GoalOption;
   amount?: GoalOption;
-  duration?: GoalOption;
   supports?: GoalOption[];
   startDate?: Date;
   dueDate?: Date;
@@ -40,10 +39,9 @@ const STEPS = [
   { id: 3, title: "Why?", subtitle: "What's your main reason for this goal?" },
   { id: 4, title: "Details", subtitle: "How do you want to do this?" },
   { id: 5, title: "Amount", subtitle: "How much do you want to read?" },
-  { id: 6, title: "How Long?", subtitle: "For how many days/weeks?" },
-  { id: 7, title: "Complete By", subtitle: "When do you want to complete this goal?" },
-  { id: 8, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
-  { id: 9, title: "Confirm", subtitle: "Ready to start your goal?" }
+  { id: 6, title: "Complete By", subtitle: "When do you want to complete this goal?" },
+  { id: 7, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
+  { id: 8, title: "Confirm", subtitle: "Ready to start your goal?" }
 ];
 
 const AFFIRMATIONS = [
@@ -60,11 +58,8 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const [affirmation, setAffirmation] = useState<string>("");
   const [showConfetti, setShowConfetti] = useState(false);
   const [showAmountDialog, setShowAmountDialog] = useState(false);
-  const [showDurationDialog, setShowDurationDialog] = useState(false);
   const [customAmount, setCustomAmount] = useState("");
   const [customAmountType, setCustomAmountType] = useState<"pages" | "minutes">("minutes");
-  const [customDuration, setCustomDuration] = useState("");
-  const [customDurationType, setCustomDurationType] = useState<"weeks" | "days">("weeks");
   const [isProcessingInput, setIsProcessingInput] = useState(false);
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
   
@@ -84,7 +79,6 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
 
     const detailsPart = state.details?.label;
     const amountPart = state.amount?.label;
-    const durationPart = state.duration?.label;
     
     // Improved purpose suffix with better grammar
     const purposeSuffix = state.purpose?.label
@@ -166,14 +160,6 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     if (state.dueDate) {
       sentence += ` by ${format(state.dueDate, 'MMM d, yyyy')}`;
     }
-    
-    // Handle duration for goals that have it
-    if (state.goal?.duration && durationPart) {
-      const durationPartLower = durationPart.toLowerCase();
-      if (!durationPartLower.includes('other')) {
-        sentence += ` (${durationPartLower})`;
-      }
-    }
 
     sentence += purposeSuffix;
 
@@ -195,9 +181,8 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       case 3: return !!state.purpose;
       case 4: return !state.goal?.details || !!state.details;
       case 5: return !state.goal?.amount || !!state.amount;
-      case 6: return !state.goal?.duration || !!state.duration;
-      case 7: return !!state.dueDate && !validateDates();
-      case 8: return !!state.supports && state.supports.length > 0;
+      case 6: return !!state.dueDate && !validateDates();
+      case 7: return !!state.supports && state.supports.length > 0;
       default: return false;
     }
   };
@@ -239,9 +224,9 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
         due_date: formatDate(due),
       });
 
-      // Generate milestone steps based on the duration
+      // Generate milestone steps based on default duration
       try {
-        const durationWeeks = state.duration ? parseInt(state.duration.label.split(' ')[0]) || 2 : 2;
+        const durationWeeks = 2; // Default to 2 weeks
         const totalSessions = durationWeeks * 3; // Default to 3 sessions per week
         
         const response = await AIService.getCoachingGuidance({
@@ -249,7 +234,6 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
 
 Goal: ${state.goal.title}
 Purpose: ${state.purpose.label}
-Duration: ${state.duration?.label || '2 weeks'}
 Support: ${state.supports.map(s => s.label).join(', ')}
 
 Return a JSON array of step objects with these properties:
@@ -385,9 +369,6 @@ Example:
       if (nextStep === 5 && (!state.goal?.amount || state.goal.id !== 'read')) {
         nextStep = 6; // Skip amount step
       }
-      if (nextStep === 6 && !state.goal?.duration) {
-        nextStep = 7; // Skip duration step
-      }
       
       setState(prev => ({ ...prev, step: nextStep }));
       
@@ -432,45 +413,6 @@ Example:
     });
   };
 
-  const handleCustomDuration = () => {
-    if (!customDuration.trim()) return;
-
-    const duration = parseInt(customDuration);
-    if (isNaN(duration) || duration <= 0) {
-      toast({
-        title: "Invalid duration",
-        description: "Please enter a valid number.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const timeUnit = customDurationType === "weeks" ? "week" : "day";
-    const timeUnitPlural = customDurationType === "weeks" ? "weeks" : "days";
-    const displayLabel = duration === 1 
-      ? `1 ${timeUnit}`
-      : `${duration} ${timeUnitPlural}`;
-
-    const customDurationOption: GoalOption = {
-      id: `custom-${customDurationType}-${duration}`,
-      label: displayLabel,
-      emoji: "📅",
-      explainer: duration === 1 
-        ? `For one ${timeUnit}`
-        : `For ${duration} ${timeUnitPlural}`
-    };
-
-    setState(prev => ({ ...prev, duration: customDurationOption, step: 7 }));
-    showRandomAffirmation();
-    setShowDurationDialog(false);
-    setCustomDuration("");
-    
-    toast({
-      title: "Great choice!",
-      description: `Set to ${customDurationOption.label}.`,
-      duration: 2000,
-    });
-  };
 
   // Calculate progress percentage
   const progress = (state.step / STEPS.length) * 100;
@@ -548,7 +490,7 @@ Example:
             options={state.goal.purpose}
             onSelect={(purpose) => {
               showRandomAffirmation();
-              const nextStep = state.goal?.details ? 4 : (state.goal?.id === 'read' && state.goal?.amount ? 5 : 6);
+            const nextStep = state.goal?.id === 'read' && state.goal?.amount ? 5 : 6;
               setState(prev => ({ ...prev, purpose, step: nextStep }));
             }}
             selected={state.purpose}
@@ -569,34 +511,8 @@ Example:
           />
         )}
 
-        {/* Step 5: Amount Selection (only for read goal) */}
-        {state.step === 5 && state.goal && state.goal.id === 'read' && state.goal.amount && (
-          <OptionSelection
-            title="Amount"
-            options={state.goal.amount}
-            onSelect={(amount) => {
-              showRandomAffirmation();
-              setState(prev => ({ ...prev, amount, step: 6 }));
-            }}
-            selected={state.amount}
-          />
-        )}
-
-        {/* Step 6: Duration Selection (only if goal has duration) */}
-        {state.step === 6 && state.goal && state.goal.duration && (
-          <OptionSelection
-            title="How Long?"
-            options={state.goal.duration}
-            onSelect={(duration) => {
-              showRandomAffirmation();
-              setState(prev => ({ ...prev, duration, step: 7 }));
-            }}
-            selected={state.duration}
-          />
-        )}
-
-        {/* Step 7: Due Date Selection */}
-        {state.step === 7 && (
+        {/* Step 6: Due Date Selection */}
+        {state.step === 6 && (
           <div className="space-y-6">
             <div className="max-w-md mx-auto space-y-6">
               {/* Date Selection Cards */}
@@ -711,28 +627,28 @@ Example:
           </div>
         )}
 
-        {/* Step 8: Support Selection */}
-        {state.step === 8 && state.goal && (
+        {/* Step 7: Support Selection */}
+        {state.step === 7 && state.goal && (
           <MultiOptionSelection
             title="Support"
             options={state.goal.supports}
             onSelect={(supports) => {
               showRandomAffirmation();
-              setState(prev => ({ ...prev, supports, step: 9 }));
+              setState(prev => ({ ...prev, supports, step: 8 }));
             }}
             selected={state.supports || []}
           />
         )}
 
-        {/* Step 9: Confirmation */}
-        {state.step === 9 && (
+        {/* Step 8: Confirmation */}
+        {state.step === 8 && (
           <GoalConfirmation
             goal={buildSmartGoal()}
             startDate={state.startDate}
             dueDate={state.dueDate}
             onCreateGoal={createGoal}
             isCreating={isCreatingGoal}
-            onBack={() => setState(prev => ({ ...prev, step: 8 }))}
+            onBack={() => setState(prev => ({ ...prev, step: 7 }))}
           />
         )}
       </div>
@@ -752,47 +668,6 @@ Example:
         </div>
       </div>
 
-      {/* Custom Duration Dialog */}
-      <Dialog open={showDurationDialog} onOpenChange={setShowDurationDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Custom Duration</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <input
-                type="number"
-                placeholder="Enter duration..."
-                value={customDuration}
-                onChange={(e) => setCustomDuration(e.target.value)}
-                className="flex-1 px-3 py-2 border rounded-md"
-              />
-              <select
-                value={customDurationType}
-                onChange={(e) => setCustomDurationType(e.target.value as "weeks" | "days")}
-                className="px-3 py-2 border rounded-md"
-              >
-                <option value="weeks">Weeks</option>
-                <option value="days">Days</option>
-              </select>
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button
-                onClick={handleCustomDuration}
-                disabled={!customDuration.trim()}
-              >
-                Set Duration
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowDurationDialog(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
@@ -815,7 +690,7 @@ const CategorySelection: React.FC<{
               // Auto-select this goal with defaults and go to due date step
               if (onSelectDefault) {
                 onSelectDefault({ 
-                  step: 7, // Go to due date step
+                  step: 6, // Go to due date step
                   category: { id: 'starter', title: 'Starter Goals', emoji: '🌟', goals: [goal] },
                   goal: goal,
                   purpose: goal.purpose.find(p => p.isDefault) || goal.purpose[0],
