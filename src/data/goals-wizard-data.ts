@@ -457,30 +457,232 @@ export const GOALS_WIZARD_DATA: Category[] = [
     goals: [
       {
         id: "interview",
-        title: "Practice Interview",
+        title: "Practice for Interview",
         emoji: "🎤",
         explainer: "It's like a friendly chat where you show off why you'd be awesome at a job. Practice makes it way less scary!",
         purpose: [
           { id: "confidence", label: "Build confidence", emoji: "💪", explainer: "Feel more confident in interviews", isDefault: true },
-          { id: "prepare", label: "Prepare for interview", emoji: "📋", explainer: "Get ready for an upcoming interview" },
-          { id: "improve", label: "Improve answers", emoji: "💬", explainer: "Practice giving better responses" }
+          { id: "prepare", label: "Prepare for a specific job", emoji: "🎯", explainer: "Get ready for an upcoming interview" },
+          { id: "improve", label: "Improve answers", emoji: "🧠", explainer: "Practice giving better responses" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom interview goal" }
         ],
         details: [
-          { id: "greeting", label: "Practice greeting", emoji: "👋", explainer: "How to introduce yourself" },
+          { id: "greeting", label: "Greeting / 1 Common Question", emoji: "👋", explainer: "Practice greeting and basic questions" },
           { id: "tell-me", label: "Tell me about yourself", emoji: "🗣️", explainer: "Practice this common question", isDefault: true },
-          { id: "mock", label: "Full mock interview", emoji: "🎭", explainer: "Complete practice interview" },
+          { id: "mock", label: "Full Mock", emoji: "🎭", explainer: "Complete practice interview" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom interview practice" }
         ],
+        duration: [
+          { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Five minute practice session" },
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Ten minute practice session", isDefault: true },
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Fifteen minute practice session" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        frequency: [
+          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Once per week" },
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Twice per week" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
         timing: [
-          { id: "10min-weekly-2weeks", label: "10 min weekly for 2 weeks", emoji: "📅", explainer: "Ten minutes once a week for two weeks", isDefault: true },
-          { id: "15min-2week-3weeks", label: "15 min 2×/week for 3 weeks", emoji: "📅", explainer: "Fifteen minutes twice weekly for three weeks" }
+          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "For two weeks" },
+          { id: "3weeks", label: "3 weeks", emoji: "📅", explainer: "For three weeks" },
+          { id: "4weeks", label: "4 weeks", emoji: "📅", explainer: "For four weeks" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         supports: [
-          { id: "checklist", label: "Interview checklist", emoji: "✅", explainer: "Tips and reminders", isDefault: true },
-          { id: "roleplay", label: "Role play partner", emoji: "👥", explainer: "Practice with someone else" },
+          { id: "checklist", label: "Interview checklist", emoji: "✅", explainer: "Greeting → Eye contact → Smile → Answer question → Say thank you", isDefault: true },
+          { id: "roleplay", label: "Practice with parent/coach", emoji: "👥", explainer: "Role-play with someone" },
+          { id: "script", label: "Role-play script", emoji: "📝", explainer: "Structured practice script" },
           { id: "answers", label: "Sample answers", emoji: "💬", explainer: "Example responses to common questions" }
         ],
-        smartTemplate: "🎤 Practice '{focus}' {duration}, {frequency} for {weeks}."
+        smartTemplate: "🎤 Practice {focus} for {duration} {frequency} for {weeks}."
+      },
+      {
+        id: "resume-create",
+        title: "Create Resume",
+        emoji: "📄",
+        explainer: "A resume is like a highlight reel of yourself - showing your best skills and experiences to potential employers.",
+        purpose: [
+          { id: "first-job", label: "First job", emoji: "🎓", explainer: "Creating your very first resume" },
+          { id: "internship", label: "Internship/summer job", emoji: "🔄", explainer: "Resume for internship or summer work" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom resume purpose" }
+        ],
+        details: [
+          { id: "contact", label: "Contact info", emoji: "📞", explainer: "Name, phone, email" },
+          { id: "education", label: "Education", emoji: "🎓", explainer: "School, grade, graduation year" },
+          { id: "skills", label: "Skills", emoji: "⭐", explainer: "Teamwork, punctuality, communication" },
+          { id: "experience", label: "Experience", emoji: "💼", explainer: "Babysitting, school store, volunteering, jobs" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom resume section" }
+        ],
+        duration: [
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Thirty minute session", isDefault: true },
+          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "Forty-five minute session" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        frequency: [
+          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Once per week" },
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Twice per week" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        timing: [
+          { id: "1week", label: "1 week", emoji: "📅", explainer: "Complete in one week" },
+          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "Complete in two weeks" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom timeline" }
+        ],
+        supports: [
+          { id: "template", label: "Resume template", emoji: "📋", explainer: "Structured resume format", isDefault: true },
+          { id: "samples", label: "Sample resumes", emoji: "📄", explainer: "Examples for retail, food service, office" },
+          { id: "checklist", label: "Checklist of resume sections", emoji: "✅", explainer: "What to include in your resume" }
+        ],
+        smartTemplate: "📄 Complete {focus} resume in {duration} sessions {frequency} for {weeks}."
+      },
+      {
+        id: "resume-update",
+        title: "Update Resume",
+        emoji: "➕",
+        explainer: "Keep your resume fresh by adding new skills, jobs, or experiences you've gained since your last version.",
+        purpose: [
+          { id: "add-job", label: "Add new job/skill", emoji: "➕", explainer: "Include recent work or skills" },
+          { id: "keep-current", label: "Keep it current", emoji: "✅", explainer: "Maintain up-to-date information" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom update purpose" }
+        ],
+        details: [
+          { id: "new-job", label: "New job", emoji: "💼", explainer: "Add recent work experience" },
+          { id: "skill", label: "Skill", emoji: "⭐", explainer: "Add new skills learned", isDefault: true },
+          { id: "education", label: "Education", emoji: "🎓", explainer: "Update education information" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom update" }
+        ],
+        duration: [
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Thirty minute session", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        frequency: [
+          { id: "by-date", label: "By [date]", emoji: "📅", explainer: "Complete by specific date" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom deadline" }
+        ],
+        supports: [
+          { id: "checklist", label: "Resume update checklist", emoji: "✅", explainer: "What's new since last version?", isDefault: true }
+        ],
+        smartTemplate: "➕ Update resume with {focus} in {duration} by {deadline}."
+      },
+      {
+        id: "thank-you",
+        title: "Send Thank-You Letter",
+        emoji: "💌",
+        explainer: "A thank-you note shows appreciation and helps you stand out positively after an interview.",
+        purpose: [
+          { id: "appreciation", label: "Show appreciation", emoji: "🙏", explainer: "Express gratitude for the interview" },
+          { id: "stand-out", label: "Stand out after interview", emoji: "🎯", explainer: "Make a positive impression" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom thank-you purpose" }
+        ],
+        details: [
+          { id: "email", label: "Email", emoji: "📧", explainer: "Send electronic thank-you message", isDefault: true },
+          { id: "printed", label: "Printed", emoji: "📄", explainer: "Write and mail physical letter" },
+          { id: "three-parts", label: "Thank → Detail → Interest", emoji: "📝", explainer: "Thank them → Mention interview detail → Say you're excited" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom format" }
+        ],
+        duration: [
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Fifteen minute session", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        frequency: [
+          { id: "24hours", label: "Within 24 hours", emoji: "📅", explainer: "Send within one day of interview" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom timeline" }
+        ],
+        supports: [
+          { id: "template", label: "Thank-you templates", emoji: "📋", explainer: "Sample thank-you messages", isDefault: true },
+          { id: "examples", label: "Example letters", emoji: "📄", explainer: "Complete thank-you letter examples" }
+        ],
+        smartTemplate: "💌 Send thank-you {format} {timeline} for each interview."
+      },
+      {
+        id: "find-companies",
+        title: "Find Companies",
+        emoji: "🏢",
+        explainer: "Research companies and organizations that might be hiring or could be good places to work.",
+        purpose: [
+          { id: "see-hiring", label: "See who is hiring", emoji: "🔍", explainer: "Find companies with job openings" },
+          { id: "target-industry", label: "Target industry", emoji: "🎯", explainer: "Focus on specific field or type of work" },
+          { id: "local-jobs", label: "Local jobs", emoji: "🏠", explainer: "Find nearby employment opportunities" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom company search purpose" }
+        ],
+        details: [
+          { id: "job-board", label: "Job board", emoji: "💻", explainer: "Search online job websites" },
+          { id: "bulletin", label: "Bulletin board", emoji: "📋", explainer: "Check physical job postings" },
+          { id: "social-media", label: "Social media", emoji: "📱", explainer: "Search on social platforms" },
+          { id: "ask-friend", label: "Ask friend", emoji: "👥", explainer: "Get recommendations from contacts" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom search method" }
+        ],
+        amount: [
+          { id: "2companies", label: "2 companies", emoji: "🏢", explainer: "Research two companies", isDefault: true },
+          { id: "3companies", label: "3 companies", emoji: "🏢", explainer: "Research three companies" },
+          { id: "5companies", label: "5 companies", emoji: "🏢", explainer: "Research five companies" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom number" }
+        ],
+        duration: [
+          { id: "30min", label: "30 minutes per session", emoji: "⏰", explainer: "Thirty minutes each time", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        frequency: [
+          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Once per week" },
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Twice per week" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        timing: [
+          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "Over two weeks" },
+          { id: "3weeks", label: "3 weeks", emoji: "📅", explainer: "Over three weeks" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        supports: [
+          { id: "job-links", label: "Job board links", emoji: "🔗", explainer: "Links to trusted job sites", isDefault: true },
+          { id: "template", label: "Company List template", emoji: "📋", explainer: "Printable company tracking sheet" }
+        ],
+        smartTemplate: "🏢 Search for {amount} companies {duration} {frequency} for {weeks}."
+      },
+      {
+        id: "find-helpers",
+        title: "Find People that Can Help",
+        emoji: "🧑‍🤝‍🧑",
+        explainer: "Build your network by connecting with people who can offer advice, review your materials, or help with your job search.",
+        purpose: [
+          { id: "advice", label: "Get advice", emoji: "🤝", explainer: "Seek guidance from experienced people" },
+          { id: "job-search", label: "Help with job search", emoji: "🎯", explainer: "Get assistance finding opportunities" },
+          { id: "networking", label: "Practice networking", emoji: "📚", explainer: "Build professional relationship skills" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom networking purpose" }
+        ],
+        details: [
+          { id: "parent", label: "Parent", emoji: "👨‍👩‍👧‍👦", explainer: "Ask parent or family member for help", isDefault: true },
+          { id: "teacher", label: "Teacher", emoji: "👩‍🏫", explainer: "Reach out to teacher or counselor" },
+          { id: "job-coach", label: "Job coach", emoji: "💼", explainer: "Connect with employment specialist" },
+          { id: "friend", label: "Friend", emoji: "👥", explainer: "Ask friend or peer for assistance" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom contact" }
+        ],
+        topic: [
+          { id: "resume-review", label: "Resume review", emoji: "📄", explainer: "Have someone check your resume", isDefault: true },
+          { id: "mock-interview", label: "Mock interview", emoji: "🎤", explainer: "Practice interview with someone" },
+          { id: "job-leads", label: "Job leads", emoji: "🔍", explainer: "Get information about job openings" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom assistance" }
+        ],
+        duration: [
+          { id: "15-20min", label: "15–20 minutes", emoji: "⏰", explainer: "Fifteen to twenty minute conversation", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        frequency: [
+          { id: "one-time", label: "One-time", emoji: "🎯", explainer: "Single conversation or meeting" },
+          { id: "weekly", label: "Once per week", emoji: "📅", explainer: "Weekly check-ins" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        timing: [
+          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "Complete within two weeks" },
+          { id: "3weeks", label: "3 weeks", emoji: "📅", explainer: "Complete within three weeks" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom timeline" }
+        ],
+        supports: [
+          { id: "templates", label: "Intro message templates", emoji: "💬", explainer: "Scripts for reaching out to people", isDefault: true },
+          { id: "conversation", label: "Conversation starters", emoji: "🗣️", explainer: "Ideas for starting networking conversations" },
+          { id: "reminders", label: "Reminders", emoji: "🔔", explainer: "Notifications to follow up" }
+        ],
+        smartTemplate: "🧑‍🤝‍🧑 Ask {who} for {help} in {duration} by {timeline}."
       }
     ]
   },

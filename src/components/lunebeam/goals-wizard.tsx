@@ -366,9 +366,9 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       if (detailsPart) {
         const d = detailsPart.toLowerCase();
         if (d.includes('greeting')) {
-          sentence += "interview greetings";
+          sentence += "interview greetings and common questions";
         } else if (d.includes('tell me')) {
-          sentence += "'tell me about yourself'";
+          sentence += "answering 'Tell me about yourself'";
         } else if (d.includes('mock')) {
           sentence += "full mock interviews";
         } else if (d === 'other') {
@@ -376,6 +376,111 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
         } else {
           sentence += d;
         }
+      }
+    } else if (state.goal?.id === 'resume-create') {
+      sentence += "Create resume with ";
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('contact')) {
+          sentence += "contact information";
+        } else if (d.includes('education')) {
+          sentence += "education details";
+        } else if (d.includes('skills')) {
+          sentence += "skills section";
+        } else if (d.includes('experience')) {
+          sentence += "experience section";
+        } else {
+          sentence += d;
+        }
+      } else {
+        sentence += "all sections";
+      }
+    } else if (state.goal?.id === 'resume-update') {
+      sentence += "Update resume with ";
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('job')) {
+          sentence += "new job experience";
+        } else if (d.includes('skill')) {
+          sentence += "new skills";
+        } else if (d.includes('education')) {
+          sentence += "education updates";
+        } else {
+          sentence += d;
+        }
+      } else {
+        sentence += "new information";
+      }
+    } else if (state.goal?.id === 'thank-you') {
+      sentence += "Send thank-you ";
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('email')) {
+          sentence += "emails";
+        } else if (d.includes('printed')) {
+          sentence += "letters";
+        } else if (d.includes('three-parts')) {
+          sentence += "messages with thank, detail, and interest";
+        } else {
+          sentence += d;
+        }
+      } else {
+        sentence += "notes";
+      }
+    } else if (state.goal?.id === 'find-companies') {
+      sentence += "Research ";
+      const amount = state.amount;
+      if (amount && !amount.label.toLowerCase().includes('other')) {
+        sentence += amount.label.toLowerCase();
+      } else {
+        sentence += "companies";
+      }
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('job-board')) {
+          sentence += " using job boards";
+        } else if (d.includes('bulletin')) {
+          sentence += " using bulletin boards";
+        } else if (d.includes('social')) {
+          sentence += " using social media";
+        } else if (d.includes('friend')) {
+          sentence += " by asking friends";
+        } else {
+          sentence += ` using ${d}`;
+        }
+      }
+    } else if (state.goal?.id === 'find-helpers') {
+      sentence += "Ask ";
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('parent')) {
+          sentence += "parent";
+        } else if (d.includes('teacher')) {
+          sentence += "teacher";
+        } else if (d.includes('coach')) {
+          sentence += "job coach";
+        } else if (d.includes('friend')) {
+          sentence += "friend";
+        } else {
+          sentence += d;
+        }
+      } else {
+        sentence += "someone";
+      }
+      const helpType = state.details; // Using details for help type
+      if (helpType && !helpType.label.toLowerCase().includes('other')) {
+        const h = helpType.label.toLowerCase();
+        if (h.includes('resume')) {
+          sentence += " to review resume";
+        } else if (h.includes('interview')) {
+          sentence += " for mock interview";
+        } else if (h.includes('leads')) {
+          sentence += " for job leads";
+        } else {
+          sentence += ` for ${h}`;
+        }
+      } else {
+        sentence += " for help";
       }
     } else if (state.goal?.id === 'make-bed') {
       sentence += "Make bed";
