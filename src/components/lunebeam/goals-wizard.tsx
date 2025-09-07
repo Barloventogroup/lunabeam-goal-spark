@@ -70,29 +70,12 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   
   const { toast } = useToast();
 
-  // Load saved progress on mount only if step is 1 (fresh start)
+  // Clear any saved progress and start fresh
   useEffect(() => {
-    if (state.step === 1 && !state.category) {
-      const saved = localStorage.getItem('goals-wizard-progress');
-      if (saved) {
-        try {
-          const savedState = JSON.parse(saved);
-          if (savedState.startDate) savedState.startDate = new Date(savedState.startDate);
-          if (savedState.dueDate) savedState.dueDate = new Date(savedState.dueDate);
-          setState(savedState);
-        } catch (e) {
-          console.error('Failed to parse saved progress:', e);
-        }
-      }
-    }
+    localStorage.removeItem('goals-wizard-progress');
+    setState({ step: 1 });
   }, []);
 
-  // Save progress whenever state changes
-  useEffect(() => {
-    if (state.step > 1) {
-      localStorage.setItem('goals-wizard-progress', JSON.stringify(state));
-    }
-  }, [state]);
 
   const buildSmartGoal = () => {
     // Build a progressive SMART sentence that updates live
