@@ -59,10 +59,8 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const [state, setState] = useState<WizardState>({ step: 1 });
   const [affirmation, setAffirmation] = useState<string>("");
   const [showConfetti, setShowConfetti] = useState(false);
-  const [showCustomDialog, setShowCustomDialog] = useState(false);
   const [showAmountDialog, setShowAmountDialog] = useState(false);
   const [showDurationDialog, setShowDurationDialog] = useState(false);
-  const [customInput, setCustomInput] = useState("");
   const [customAmount, setCustomAmount] = useState("");
   const [customAmountType, setCustomAmountType] = useState<"pages" | "minutes">("minutes");
   const [customDuration, setCustomDuration] = useState("");
@@ -416,37 +414,6 @@ Example:
     }
   };
 
-  const handleCustomInput = () => {
-    if (!customInput.trim()) return;
-
-    const customOption: GoalOption = {
-      id: 'custom',
-      label: customInput,
-      emoji: '✨',
-      explainer: 'Custom option'
-    };
-
-    if (state.step === 3 && !state.purpose) {
-      const nextStep = state.goal?.details ? 4 : (state.goal?.id === 'read' && state.goal?.amount ? 5 : 6);
-      setState(prev => ({ ...prev, purpose: customOption, step: nextStep }));
-    } else if (state.step === 4 && !state.details) {
-      const nextStep = state.goal?.id === 'read' && state.goal?.amount ? 5 : 6;
-      setState(prev => ({ ...prev, details: customOption, step: nextStep }));
-    } else if (state.step === 5 && state.goal?.id === 'read' && !state.amount) {
-      setState(prev => ({ ...prev, amount: customOption, step: 6 }));
-    }
-
-    showRandomAffirmation();
-    setShowCustomDialog(false);
-    setCustomInput("");
-    
-    toast({
-      title: "Added!",
-      description: `Set to "${customInput}".`,
-      duration: 2000,
-    });
-  };
-
   const handleCustomAmount = () => {
     if (!customAmount.trim()) return;
 
@@ -527,7 +494,6 @@ Example:
 
   return (
     <div className="max-w-2xl mx-auto p-4 bg-gradient-to-br from-background via-background/95 to-background/90 min-h-screen">
-      
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
@@ -593,7 +559,6 @@ Example:
               setState(prev => ({ ...prev, purpose, step: nextStep }));
             }}
             selected={state.purpose}
-            showCustomInput={() => setShowCustomDialog(true)}
           />
         )}
 
@@ -608,7 +573,6 @@ Example:
               setState(prev => ({ ...prev, details, step: nextStep }));
             }}
             selected={state.details}
-            showCustomInput={() => setShowCustomDialog(true)}
           />
         )}
 
@@ -622,7 +586,6 @@ Example:
               setState(prev => ({ ...prev, amount, step: 6 }));
             }}
             selected={state.amount}
-            showCustomInput={() => setShowAmountDialog(true)}
           />
         )}
 
@@ -636,7 +599,6 @@ Example:
               setState(prev => ({ ...prev, duration, step: 7 }));
             }}
             selected={state.duration}
-            showCustomInput={() => setShowDurationDialog(true)}
           />
         )}
 
@@ -780,7 +742,6 @@ Example:
             onBack={() => setState(prev => ({ ...prev, step: 8 }))}
           />
         )}
-
       </div>
 
       {/* Footer with SMART goal preview and affirmation */}
@@ -797,79 +758,6 @@ Example:
           )}
         </div>
       </div>
-
-      {/* Dialogs */}
-      {/* Custom Input Dialog */}
-      <Dialog open={showCustomDialog} onOpenChange={setShowCustomDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Custom Option</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Textarea
-              placeholder="Enter your custom option..."
-              value={customInput}
-              onChange={(e) => setCustomInput(e.target.value)}
-            />
-            <div className="flex gap-2 justify-end">
-              <Button
-                onClick={handleCustomInput}
-                disabled={!customInput.trim()}
-              >
-                Add Custom Option
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowCustomDialog(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Custom Amount Dialog */}
-      <Dialog open={showAmountDialog} onOpenChange={setShowAmountDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Custom Amount</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <input
-                type="number"
-                placeholder="Enter amount..."
-                value={customAmount}
-                onChange={(e) => setCustomAmount(e.target.value)}
-                className="flex-1 px-3 py-2 border rounded-md"
-              />
-              <select
-                value={customAmountType}
-                onChange={(e) => setCustomAmountType(e.target.value as "pages" | "minutes")}
-                className="px-3 py-2 border rounded-md"
-              >
-                <option value="minutes">Minutes</option>
-                <option value="pages">Pages</option>
-              </select>
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button
-                onClick={handleCustomAmount}
-                disabled={!customAmount.trim()}
-              >
-                Set Amount
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowAmountDialog(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Custom Duration Dialog */}
       <Dialog open={showDurationDialog} onOpenChange={setShowDurationDialog}>
@@ -1021,8 +909,7 @@ const OptionSelection: React.FC<{
   options: GoalOption[];
   onSelect: (option: GoalOption) => void;
   selected?: GoalOption;
-  showCustomInput: () => void;
-}> = ({ title, options, onSelect, selected, showCustomInput }) => (
+}> = ({ title, options, onSelect, selected }) => (
   <div className="space-y-4">
     <div className="grid gap-3">
       {options.map((option) => (
@@ -1047,19 +934,6 @@ const OptionSelection: React.FC<{
           </CardContent>
         </Card>
       ))}
-      
-      {/* Custom Option */}
-      <Card 
-        className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/30 border-dashed"
-        onClick={showCustomInput}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3 justify-center text-muted-foreground">
-            <span className="text-xl">✨</span>
-            <span className="font-medium">Add custom option</span>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   </div>
 );
