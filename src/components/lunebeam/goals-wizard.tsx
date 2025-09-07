@@ -352,7 +352,18 @@ Example:
 
   const handleBack = () => {
     if (state.step > 1) {
-      setState(prev => ({ ...prev, step: prev.step - 1 }));
+      let prevStep = state.step - 1;
+
+      // Skip steps that don't apply when going backwards
+      if (prevStep === 5 && (!state.goal?.amount || state.goal?.id !== 'read')) {
+        // If amount doesn't apply, jump back to details or purpose depending on goal
+        prevStep = state.goal?.details ? 4 : 3;
+      }
+      if (prevStep === 4 && !state.goal?.details) {
+        prevStep = 3;
+      }
+
+      setState(prev => ({ ...prev, step: prevStep }));
     } else {
       onBack();
     }
@@ -366,7 +377,7 @@ Example:
       if (nextStep === 4 && !state.goal?.details) {
         nextStep = 5; // Skip details step
       }
-      if (nextStep === 5 && (!state.goal?.amount || state.goal.id !== 'read')) {
+      if (nextStep === 5 && !state.goal?.amount) {
         nextStep = 6; // Skip amount step
       }
       
@@ -490,7 +501,7 @@ Example:
             options={state.goal.purpose}
             onSelect={(purpose) => {
               showRandomAffirmation();
-            const nextStep = state.goal?.id === 'read' && state.goal?.amount ? 5 : 6;
+            const nextStep = state.goal?.amount ? 5 : 6;
               setState(prev => ({ ...prev, purpose, step: nextStep }));
             }}
             selected={state.purpose}
@@ -504,10 +515,23 @@ Example:
             options={state.goal.details}
             onSelect={(details) => {
               showRandomAffirmation();
-              const nextStep = state.goal?.id === 'read' && state.goal?.amount ? 5 : 6;
+              const nextStep = state.goal?.amount ? 5 : 6;
               setState(prev => ({ ...prev, details, step: nextStep }));
             }}
             selected={state.details}
+          />
+        )}
+
+        {/* Step 5: Amount Selection */}
+        {state.step === 5 && state.goal && state.goal.amount && (
+          <OptionSelection
+            title="Amount"
+            options={state.goal.amount}
+            onSelect={(amount) => {
+              showRandomAffirmation();
+              setState(prev => ({ ...prev, amount, step: 6 }));
+            }}
+            selected={state.amount}
           />
         )}
 
