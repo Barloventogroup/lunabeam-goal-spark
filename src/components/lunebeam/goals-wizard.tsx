@@ -338,9 +338,28 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
         sentence += "notes";
       }
     } else if (state.goal?.id === 'study') {
-      sentence += "Study";
-      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
-        sentence += ` for ${detailsPart.toLowerCase()}`;
+      sentence += "Study ";
+      if (detailsPart) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('math')) {
+          sentence += "math";
+        } else if (d.includes('english')) {
+          sentence += "English";
+        } else if (d.includes('science')) {
+          sentence += "science";
+        } else if (d.includes('history')) {
+          sentence += "history";
+        } else if (d.includes('flashcards')) {
+          sentence += "using flashcards";
+        } else if (d.includes('practice test')) {
+          sentence += "with practice tests";
+        } else if (d.includes('group')) {
+          sentence += "in a group";
+        } else if (d === 'other') {
+          sentence += "subject";
+        } else {
+          sentence += d;
+        }
       }
     } else if (state.goal?.id === 'interview') {
       sentence += "Practice ";

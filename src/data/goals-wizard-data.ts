@@ -416,11 +416,25 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "learn", label: "Learn new things", emoji: "🧠", explainer: "Explore and understand new topics" }
         ],
         details: [
-          { id: "10min", label: "10 minutes today", emoji: "⏰", explainer: "Study for 10 minutes", isDefault: true },
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Study for 15 minutes" },
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Study for 30 minutes" },
-          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "Study for 45 minutes" },
+          { id: "math", label: "Math", emoji: "🔢", explainer: "Study math concepts and problems", isDefault: true },
+          { id: "english", label: "English", emoji: "📖", explainer: "Study English language and literature" },
+          { id: "science", label: "Science", emoji: "🔬", explainer: "Study science concepts and experiments" },
+          { id: "history", label: "History", emoji: "📜", explainer: "Study historical events and concepts" },
+          { id: "flashcards", label: "Make flashcards", emoji: "🃏", explainer: "Create and review flashcards" },
+          { id: "practice-test", label: "Practice tests", emoji: "📝", explainer: "Take practice tests or quizzes" },
+          { id: "group-study", label: "Group study", emoji: "👥", explainer: "Study with classmates or friends" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom study approach" }
+        ],
+        frequency: [
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+          { id: "before-test", label: "Before each test", emoji: "📅", explainer: "Study before tests" }
+        ],
+        duration: [
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Study for 10 minutes" },
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Study for 15 minutes" },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Study for 30 minutes", isDefault: true },
+          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "Study for 45 minutes" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
