@@ -41,7 +41,7 @@ const STEPS = [
   { id: 4, title: "Details", subtitle: "How do you want to do this?" },
   { id: 5, title: "Amount", subtitle: "How much do you want to read?" },
   { id: 6, title: "Duration", subtitle: "How often?" },
-  { id: 7, title: "Complete By", subtitle: "When do you want to complete this goal?" },
+  { id: 7, title: "Goal Timeline", subtitle: "When Will You Work on This Goal?" },
   { id: 8, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
   { id: 9, title: "Confirm", subtitle: "Ready to start your goal?" }
 ];
