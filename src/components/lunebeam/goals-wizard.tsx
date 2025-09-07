@@ -1584,6 +1584,7 @@ const OptionSelection: React.FC<{
   allowFallback?: boolean;
   showCustomInput?: () => void;
 }> = ({ title, options, onSelect, selected, allowFallback, showCustomInput }) => {
+  const hasOther = options.some(o => o.id === 'other' || o.label.trim().toLowerCase() === 'other');
   return (
     <div className="space-y-3">
       {options.map((option) => (
@@ -1606,7 +1607,7 @@ const OptionSelection: React.FC<{
       ))}
 
       {/* Custom Input Option */}
-      {showCustomInput && (
+      {showCustomInput && !hasOther && (
         <Card 
           className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/30 border-dashed"
           onClick={showCustomInput}
