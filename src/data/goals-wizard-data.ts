@@ -377,11 +377,23 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "remember", label: "Remember lessons", emoji: "🧠", explainer: "Help remember what you learned" }
         ],
         details: [
-          { id: "1page", label: "1 page tonight", emoji: "📄", explainer: "Review one page of notes", isDefault: true },
+          { id: "1page", label: "1 page", emoji: "📄", explainer: "Review one page of notes", isDefault: true },
           { id: "flashcards", label: "Make flashcards", emoji: "🃏", explainer: "Create flashcards for review" },
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Review for 15 minutes" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Review for 20 minutes" },
+          { id: "highlight", label: "Highlight notes", emoji: "🖍️", explainer: "Highlight important information" },
+          { id: "read-aloud", label: "Read aloud", emoji: "🗣️", explainer: "Read notes out loud" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom review approach" }
+        ],
+        frequency: [
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+          { id: "before-test", label: "Before each test", emoji: "📅", explainer: "Review before tests" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        duration: [
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Review for 15 minutes" },
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Review for 20 minutes", isDefault: true },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Review for 30 minutes" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
