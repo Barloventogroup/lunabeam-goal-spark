@@ -20,7 +20,7 @@ export interface CategoryGoal {
   title: string;
   emoji: string;
   purpose: GoalOption[];
-  details: GoalOption[];
+  details?: GoalOption[];
   topic?: GoalOption[];
   amount?: GoalOption[];
   frequency?: GoalOption[];
@@ -493,20 +493,13 @@ export const GOALS_WIZARD_DATA: Category[] = [
       },
       {
         id: "resume-create",
-        title: "Create Resume",
+        title: "Write Resume",
         emoji: "📄",
         explainer: "A resume is like a highlight reel of yourself - showing your best skills and experiences to potential employers.",
         purpose: [
           { id: "first-job", label: "First job", emoji: "🎓", explainer: "Creating your very first resume" },
           { id: "internship", label: "Internship/summer job", emoji: "🔄", explainer: "Resume for internship or summer work" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom resume purpose" }
-        ],
-        details: [
-          { id: "contact", label: "Contact info", emoji: "📞", explainer: "Name, phone, email" },
-          { id: "education", label: "Education", emoji: "🎓", explainer: "School, grade, graduation year" },
-          { id: "skills", label: "Skills", emoji: "⭐", explainer: "Teamwork, punctuality, communication" },
-          { id: "experience", label: "Experience", emoji: "💼", explainer: "Babysitting, school store, volunteering, jobs" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom resume section" }
         ],
         duration: [
           { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Thirty minute session", isDefault: true },
