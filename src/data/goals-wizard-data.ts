@@ -72,7 +72,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "buddy", label: "Walking buddy", emoji: "👥", explainer: "Find someone to walk with" },
           { id: "log", label: "Reflection log", emoji: "📝", explainer: "Track how walking makes you feel" }
         ],
-        smartTemplate: "🚶 Walk {duration} {location}, {frequency} for {weeks}."
+        smartTemplate: "🚶 Walk {duration} from {start_date} to {due_date}."
       },
       {
         id: "stretch",
@@ -134,7 +134,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "calming-activity", label: "Calming activity", emoji: "🧘", explainer: "Relaxing routine before sleep" },
           { id: "sleep-log", label: "Sleep log", emoji: "📝", explainer: "Track your sleep patterns", isDefault: true }
         ],
-        smartTemplate: "🌙 Go to bed at {bedtime} and wake up at {waketime}, {frequency} for {weeks}."
+        smartTemplate: "🌙 Go to bed at {bedtime} and wake up at {waketime} from {start_date} to {due_date}."
       },
       {
         id: "eat-healthier",
@@ -165,7 +165,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "food-log", label: "Food log", emoji: "📊", explainer: "Track what you eat each day" },
           { id: "snack-chart", label: "Snack swap chart", emoji: "🔄", explainer: "Visual guide for healthy snack alternatives", isDefault: true }
         ],
-        smartTemplate: "🥗 Eat {focus} {frequency} for {weeks}."
+        smartTemplate: "🥗 Eat {focus} from {start_date} to {due_date}."
       },
       {
         id: "drink-water",
@@ -248,7 +248,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "suggestions", label: "List of suggested books/articles", emoji: "📚", explainer: "Get reading recommendations" },
           { id: "reminders", label: "Reminders", emoji: "🔔", explainer: "Get notifications to remind you" }
         ],
-        smartTemplate: "📖 Read {amount} {frequency} for {weeks}."
+        smartTemplate: "📖 Read {amount} from {start_date} to {due_date}."
       },
       {
         id: "write",
@@ -294,7 +294,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "templates", label: "Templates (letter, essay)", emoji: "📋", explainer: "Writing structure guides" },
           { id: "log", label: "Reflection log", emoji: "📝", explainer: "Track your writing progress" }
         ],
-        smartTemplate: "✍️ Write {amount} {frequency} for {weeks}."
+        smartTemplate: "✍️ Write {amount} from {start_date} to {due_date}."
       },
       {
         id: "plan-week",
@@ -353,7 +353,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "apps", label: "Puzzle app suggestions", emoji: "📱", explainer: "Recommended problem-solving apps" },
           { id: "log", label: "Reflection log", emoji: "📝", explainer: "Track your problem-solving progress" }
         ],
-        smartTemplate: "🧩 Solve {amount} {frequency} for {weeks}."
+        smartTemplate: "🧩 Solve {amount} from {start_date} to {due_date}."
       },
       {
         id: "review-notes",
@@ -386,7 +386,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "guide", label: "Highlighting guide", emoji: "🖍️", explainer: "Tips for effective highlighting" },
           { id: "reminders", label: "Review reminders", emoji: "🔔", explainer: "Get notifications to review" }
         ],
-        smartTemplate: "📑 Review {method} {frequency} for {period}."
+        smartTemplate: "📑 Review {method} from {start_date} to {due_date}."
       },
       {
         id: "study",
@@ -424,7 +424,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "tips", label: "Subject tips", emoji: "💡", explainer: "Study tips for specific subjects" },
           { id: "reminders", label: "Study reminders", emoji: "🔔", explainer: "Get notifications to study" }
         ],
-        smartTemplate: "📚 Study {subject} for {duration} {frequency} for {weeks}."
+        smartTemplate: "📚 Study {subject} for {duration} from {start_date} to {due_date}."
       }
     ]
   },
@@ -462,7 +462,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "script", label: "Role-play script", emoji: "📝", explainer: "Structured practice script" },
           { id: "answers", label: "Sample answers", emoji: "💬", explainer: "Example responses to common questions" }
         ],
-        smartTemplate: "🎤 Practice {focus} for {duration} {frequency} for {weeks}."
+        smartTemplate: "🎤 Practice {focus} for {duration} from {start_date} to {due_date}."
       },
       {
         id: "resume-create",
@@ -484,7 +484,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "samples", label: "Sample resumes", emoji: "📄", explainer: "Examples for retail, food service, office" },
           { id: "checklist", label: "Checklist of resume sections", emoji: "✅", explainer: "What to include in your resume" }
         ],
-        smartTemplate: "📄 Complete {focus} resume in {duration} sessions {frequency} for {weeks}."
+        smartTemplate: "📄 Complete {focus} resume by {due_date}."
       },
       {
         id: "resume-update",
@@ -555,7 +555,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "job-links", label: "Job board links", emoji: "🔗", explainer: "Links to trusted job sites", isDefault: true },
           { id: "template", label: "Company List template", emoji: "📋", explainer: "Printable company tracking sheet" }
         ],
-        smartTemplate: "🏢 Search for {amount} companies {duration} {frequency} for {weeks}."
+        smartTemplate: "🏢 Search for {amount} companies {duration} from {start_date} to {due_date}."
       },
       {
         id: "find-helpers",
@@ -624,7 +624,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "checklist", label: "Step checklist", emoji: "✅", explainer: "Visual steps to follow", isDefault: true },
           { id: "reminder", label: "Morning reminder", emoji: "🔔", explainer: "Notification to make your bed" }
         ],
-        smartTemplate: "🛏️ Make bed {level} {frequency} for {weeks}."
+        smartTemplate: "🛏️ Make bed {level} from {start_date} to {due_date}."
       }
     ]
   },
@@ -657,7 +657,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "script", label: "Script card", emoji: "📝", explainer: "Simple phrases to practice", isDefault: true },
           { id: "reminders", label: "Reminders", emoji: "🔔", explainer: "Gentle reminders to say hi" }
         ],
-        smartTemplate: "👋 Say hi {to} {frequency} for {weeks}."
+        smartTemplate: "👋 Say hi {to} from {start_date} to {due_date}."
       }
     ]
   },
@@ -690,7 +690,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "checklist", label: "Housing checklist", emoji: "✅", explainer: "What to look for in housing", isDefault: true },
           { id: "sites", label: "Safe sites list", emoji: "🔗", explainer: "Trusted housing websites" }
         ],
-        smartTemplate: "🔍 Browse {type} {duration} {frequency} for {weeks}."
+        smartTemplate: "🔍 Browse {type} {duration} from {start_date} to {due_date}."
       }
     ]
   },
@@ -757,7 +757,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "buddy", label: "Game buddy", emoji: "👥", explainer: "Someone to play with" },
           { id: "log", label: "Game log", emoji: "📝", explainer: "Track games you play", isDefault: true }
         ],
-        smartTemplate: "🎮 Play {type} {frequency} for {weeks}."
+        smartTemplate: "🎮 Play {type} from {start_date} to {due_date}."
       }
     ]
   }
