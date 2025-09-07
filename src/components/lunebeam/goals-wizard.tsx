@@ -682,13 +682,13 @@ Example:
                         )}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-muted/20" align="start">
+                    <PopoverContent className="w-auto p-0 bg-gray-100" align="start">
                       <Calendar
                         mode="single"
                         selected={state.startDate}
                         onSelect={(date) => setState(prev => ({ ...prev, startDate: date || new Date() }))}
                         initialFocus
-                        className="pointer-events-auto bg-muted/10 rounded-lg"
+                        className="pointer-events-auto bg-gray-100 rounded-lg"
                       />
                     </PopoverContent>
                   </Popover>
@@ -725,13 +725,13 @@ Example:
                         )}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-muted/20" align="start">
+                    <PopoverContent className="w-auto p-0 bg-gray-100" align="start">
                       <Calendar
                         mode="single"
                         selected={state.dueDate}
                         onSelect={(date) => setState(prev => ({ ...prev, dueDate: date }))}
                         initialFocus
-                        className="pointer-events-auto bg-muted/10 rounded-lg"
+                        className="pointer-events-auto bg-gray-100 rounded-lg"
                         disabled={(date) => {
                           if (!state.startDate) return false;
                           return date < state.startDate;
