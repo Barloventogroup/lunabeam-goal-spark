@@ -167,11 +167,16 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
         sentence += `${amountPart}`;
       }
       
-      if (detailsPart && detailsPart.toLowerCase() !== 'custom') {
-        const article = ['article', 'essay'].includes(detailsPart.toLowerCase()) ? 'an' : 'a';
-        sentence += amountPart ? ` from ${article} ${detailsPart.toLowerCase()}` : `${article} ${detailsPart.toLowerCase()}`;
-      } else if (detailsPart === 'Custom') {
-        sentence += amountPart ? '' : 'something';
+      if (detailsPart) {
+        const d = detailsPart.toLowerCase();
+        if (d === 'custom') {
+          sentence += amountPart ? '' : 'something';
+        } else if (d.includes('read something') || d === 'something') {
+          sentence += amountPart ? ' from something' : 'something';
+        } else {
+          const article = ['article', 'essay'].includes(d) ? 'an' : 'a';
+          sentence += amountPart ? ` from ${article} ${d}` : `${article} ${d}`;
+        }
       }
     } else {
       // For non-reading goals, use the original structure
