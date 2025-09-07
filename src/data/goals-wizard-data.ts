@@ -254,7 +254,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
       },
       {
         id: "write",
-        title: "Write Something",
+        title: "Write",
         emoji: "✍️",
         explainer: "Writing means putting your ideas into words. It could be journaling, doing homework, or writing a letter or story.",
         purpose: [
