@@ -48,11 +48,59 @@ export const FALLBACK_OPTION: GoalOption = {
   explainer: "Something else"
 };
 
-export const STARTER_GOALS = [
-  { id: "drink-water", title: "Drink Water", emoji: "💧" },
-  { id: "make-bed", title: "Make Bed", emoji: "🛏️" },
-  { id: "say-hi", title: "Say Hi", emoji: "👋" },
-  { id: "listen-music", title: "Listen to Music", emoji: "🎶" }
+export const STARTER_GOALS: CategoryGoal[] = [
+  {
+    id: "drink-water",
+    title: "Drink Water",
+    emoji: "💧",
+    explainer: "A simple boost for your health and energy.",
+    purpose: [
+      { id: "hydrate", label: "Stay hydrated", emoji: "💧", explainer: "Drink more water to feel better", isDefault: true }
+    ],
+    supports: [
+      { id: "bottle", label: "Keep a water bottle nearby", emoji: "🍼", explainer: "Make it easy to sip", isDefault: true }
+    ],
+    smartTemplate: "💧 Drink water regularly from {start_date} to {due_date}."
+  },
+  {
+    id: "make-bed",
+    title: "Make Bed",
+    emoji: "🛏️",
+    explainer: "Start the day with a quick win.",
+    purpose: [
+      { id: "tidy", label: "Feel tidy", emoji: "✅", explainer: "A neat space helps you focus", isDefault: true }
+    ],
+    supports: [
+      { id: "routine", label: "Morning routine checklist", emoji: "☀️", explainer: "Follow a simple morning routine", isDefault: true }
+    ],
+    smartTemplate: "🛏️ Make your bed each morning from {start_date} to {due_date}."
+  },
+  {
+    id: "say-hi",
+    title: "Say Hi",
+    emoji: "👋",
+    explainer: "Practice friendly connection in a low-pressure way.",
+    purpose: [
+      { id: "social", label: "Build social skills", emoji: "🤝", explainer: "Practice small interactions", isDefault: true }
+    ],
+    supports: [
+      { id: "reminder", label: "Small reminder", emoji: "⏰", explainer: "Prompt yourself sometime today", isDefault: true }
+    ],
+    smartTemplate: "👋 Say hi to someone new from {start_date} to {due_date}."
+  },
+  {
+    id: "listen-music",
+    title: "Listen to Music",
+    emoji: "🎶",
+    explainer: "Use music to relax or boost your mood.",
+    purpose: [
+      { id: "mood", label: "Boost mood", emoji: "😊", explainer: "Feel better with music", isDefault: true }
+    ],
+    supports: [
+      { id: "playlist", label: "Favorite playlist ready", emoji: "🎧", explainer: "Queue up songs you like", isDefault: true }
+    ],
+    smartTemplate: "🎶 Listen to music you enjoy from {start_date} to {due_date}."
+  }
 ];
 
 export interface Category {
