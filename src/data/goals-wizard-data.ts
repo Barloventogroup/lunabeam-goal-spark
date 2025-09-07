@@ -865,39 +865,6 @@ export const GOALS_WIZARD_DATA: Category[] = [
     ]
   },
   {
-    id: "housing",
-    title: "Housing",
-    emoji: "🏡",
-    goals: [
-      {
-        id: "browse",
-        title: "Browse Options",
-        emoji: "🔍",
-        explainer: "Checking out what's out there! Whether online, flyers, or visiting offices - it's all about exploring your options.",
-        purpose: [
-          { id: "move", label: "Planning to move", emoji: "📦", explainer: "Looking for a new place to live" },
-          { id: "learn", label: "Learn about housing", emoji: "📚", explainer: "Understand housing options", isDefault: true },
-          { id: "help", label: "Help family", emoji: "👨‍👩‍👧‍👦", explainer: "Research for family member" }
-        ],
-        details: [
-          { id: "apt-online", label: "Apartments online", emoji: "💻", explainer: "Look at apartment websites", isDefault: true },
-          { id: "shared-sites", label: "Shared housing sites", emoji: "🏠", explainer: "Browse roommate/shared housing" },
-          { id: "dorm-college", label: "Dorm at college", emoji: "🎓", explainer: "Look at college housing options" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom housing research" }
-        ],
-        timing: [
-          { id: "30min-weekly", label: "30 min weekly", emoji: "📅", explainer: "Thirty minutes once a week", isDefault: true },
-          { id: "45min-2week", label: "45 min 2×/week", emoji: "📅", explainer: "Forty-five minutes twice weekly" }
-        ],
-        supports: [
-          { id: "checklist", label: "Housing checklist", emoji: "✅", explainer: "What to look for in housing", isDefault: true },
-          { id: "sites", label: "Safe sites list", emoji: "🔗", explainer: "Trusted housing websites" }
-        ],
-        smartTemplate: "🔍 Browse {type} {duration} from {start_date} to {due_date}."
-      }
-    ]
-  },
-  {
     id: "postsecondary",
     title: "Postsecondary",
     emoji: "🎓",
