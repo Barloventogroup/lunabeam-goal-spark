@@ -265,7 +265,18 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     } else if (state.goal?.id === 'eat-healthier') {
       sentence += "Eat healthier";
       if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
-        sentence += ` by ${detailsPart.toLowerCase()}`;
+        const d = detailsPart.toLowerCase();
+        if (d.includes('fruit at lunch')) {
+          sentence += " by adding 1 fruit at lunch";
+        } else if (d.includes('veggies at dinner')) {
+          sentence += " by adding 2 veggies at dinner";
+        } else if (d.includes('protein per meal')) {
+          sentence += " by adding 1 protein per meal";
+        } else if (d.includes('snack swap')) {
+          sentence += " with healthy snack swaps";
+        } else {
+          sentence += ` by ${d}`;
+        }
       }
     } else if (state.goal?.id === 'drink-water') {
       sentence += "Drink water";
@@ -306,10 +317,25 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
           sentence += d;
         }
       }
-    } else if (state.goal?.id === 'review') {
-      sentence += "Review notes";
-      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
-        sentence += ` (${detailsPart.toLowerCase()})`;
+    } else if (state.goal?.id === 'review-notes') {
+      sentence += "Review ";
+      if (detailsPart) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('1 page')) {
+          sentence += "1 page of notes";
+        } else if (d.includes('flashcards')) {
+          sentence += "notes by making flashcards";
+        } else if (d.includes('highlight')) {
+          sentence += "notes by highlighting";
+        } else if (d.includes('read aloud')) {
+          sentence += "notes by reading aloud";
+        } else if (d === 'other') {
+          sentence += "notes";
+        } else {
+          sentence += `notes ${d}`;
+        }
+      } else {
+        sentence += "notes";
       }
     } else if (state.goal?.id === 'study') {
       sentence += "Study";
@@ -412,8 +438,29 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     }
 
     // Add timing information with proper grammar
-    if (frequencyPart && durationPart) {
-      // Fix singular/plural for duration
+    // Handle goals with separate frequency and duration fields (like review-notes, read, write)
+    if (state.goal && (state.goal.frequency || state.goal.duration) && frequencyPart && durationPart) {
+      // For goals with separate frequency and duration fields
+      sentence += `, ${frequencyPart.toLowerCase()}`;
+      
+      // Add duration if it's different from frequency
+      if (!frequencyPart.toLowerCase().includes('minute') && durationPart) {
+        let fixedDuration = durationPart;
+        if (durationPart.includes('1 days')) {
+          fixedDuration = durationPart.replace('1 days', '1 day');
+        } else if (durationPart.includes('1 weeks')) {
+          fixedDuration = durationPart.replace('1 weeks', '1 week');
+        }
+        
+        // Add duration as separate component
+        if (durationPart.includes('minute')) {
+          sentence += ` for ${fixedDuration.toLowerCase()}`;
+        } else {
+          sentence += ` for ${fixedDuration.toLowerCase()}`;
+        }
+      }
+    } else if (frequencyPart && durationPart) {
+      // For goals with combined timing (legacy structure)
       let fixedDuration = durationPart;
       if (durationPart.includes('1 days')) {
         fixedDuration = durationPart.replace('1 days', '1 day');
