@@ -479,15 +479,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         frequency: [
-          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Once per week" },
-          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Twice per week" },
+          { id: "1week-2weeks", label: "1×/week for 2 weeks", emoji: "📅", explainer: "Once per week for two weeks" },
+          { id: "2week-3weeks", label: "2×/week for 3 weeks", emoji: "📅", explainer: "Twice per week for three weeks" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
-        ],
-        timing: [
-          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "For two weeks" },
-          { id: "3weeks", label: "3 weeks", emoji: "📅", explainer: "For three weeks" },
-          { id: "4weeks", label: "4 weeks", emoji: "📅", explainer: "For four weeks" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         supports: [
           { id: "checklist", label: "Interview checklist", emoji: "✅", explainer: "Greeting → Eye contact → Smile → Answer question → Say thank you", isDefault: true },
@@ -520,14 +514,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         frequency: [
-          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Once per week" },
-          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Twice per week" },
+          { id: "1week-1weeks", label: "1×/week for 1 week", emoji: "📅", explainer: "Once per week for one week" },
+          { id: "2week-2weeks", label: "2×/week for 2 weeks", emoji: "📅", explainer: "Twice per week for two weeks" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
-        ],
-        timing: [
-          { id: "1week", label: "1 week", emoji: "📅", explainer: "Complete in one week" },
-          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "Complete in two weeks" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom timeline" }
         ],
         supports: [
           { id: "template", label: "Resume template", emoji: "📋", explainer: "Structured resume format", isDefault: true },
@@ -624,14 +613,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         frequency: [
-          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Once per week" },
-          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Twice per week" },
+          { id: "1week-2weeks", label: "1×/week for 2 weeks", emoji: "📅", explainer: "Once per week for two weeks" },
+          { id: "2week-3weeks", label: "2×/week for 3 weeks", emoji: "📅", explainer: "Twice per week for three weeks" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
-        ],
-        timing: [
-          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "Over two weeks" },
-          { id: "3weeks", label: "3 weeks", emoji: "📅", explainer: "Over three weeks" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         supports: [
           { id: "job-links", label: "Job board links", emoji: "🔗", explainer: "Links to trusted job sites", isDefault: true },
@@ -668,14 +652,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         frequency: [
-          { id: "one-time", label: "One-time", emoji: "🎯", explainer: "Single conversation or meeting" },
-          { id: "weekly", label: "Once per week", emoji: "📅", explainer: "Weekly check-ins" },
+          { id: "one-time-2weeks", label: "One-time for 2 weeks", emoji: "🎯", explainer: "Single conversation within two weeks" },
+          { id: "weekly-3weeks", label: "Once per week for 3 weeks", emoji: "📅", explainer: "Weekly check-ins for three weeks" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
-        ],
-        timing: [
-          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "Complete within two weeks" },
-          { id: "3weeks", label: "3 weeks", emoji: "📅", explainer: "Complete within three weeks" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom timeline" }
         ],
         supports: [
           { id: "templates", label: "Intro message templates", emoji: "💬", explainer: "Scripts for reaching out to people", isDefault: true },
