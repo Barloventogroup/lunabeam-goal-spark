@@ -158,12 +158,45 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     const amountPart = state.amount?.label;
     const frequencyPart = state.frequency?.label;
     const durationPart = state.duration?.label;
+    
+    // Improved purpose suffix with better grammar
     const purposeSuffix = state.purpose?.label
-      ? ` to ${state.purpose.label.toLowerCase().replace(/^(practice writing skills|express feelings\/journal|finish assignment)$/, (match) => {
+      ? ` to ${state.purpose.label.toLowerCase().replace(/^(practice writing skills|express feelings\/journal|finish assignment|stay on top of schoolwork|balance school, chores, fun|reduce stress|practice math\/logic|build thinking skills|solve real-life challenge|prepare for test|remember lessons|improve grades|learn new things|build confidence|prepare for interview|improve answers|tidy room|feel calm|morning routine|make friends|practice skill|for school\/work|planning to move|learn about housing|help family|for college|for training|parent request|to relax|be social|improve focus|social connection|stay hydrated|boost mood)$/, (match) => {
           switch(match) {
             case 'practice writing skills': return 'practice writing skills';
             case 'express feelings/journal': return 'express feelings and journal';
             case 'finish assignment': return 'finish an assignment';
+            case 'stay on top of schoolwork': return 'stay on top of schoolwork';
+            case 'balance school, chores, fun': return 'balance school, chores, and fun';
+            case 'reduce stress': return 'reduce stress';
+            case 'practice math/logic': return 'practice math and logic';
+            case 'build thinking skills': return 'build thinking skills';
+            case 'solve real-life challenge': return 'solve real-life challenges';
+            case 'prepare for test': return 'prepare for a test';
+            case 'remember lessons': return 'remember lessons';
+            case 'improve grades': return 'improve grades';
+            case 'learn new things': return 'learn new things';
+            case 'build confidence': return 'build confidence';
+            case 'prepare for interview': return 'prepare for an interview';
+            case 'improve answers': return 'improve answers';
+            case 'tidy room': return 'tidy room';
+            case 'feel calm': return 'feel calm';
+            case 'morning routine': return 'create a morning routine';
+            case 'make friends': return 'make friends';
+            case 'practice skill': return 'practice social skills';
+            case 'for school/work': return 'for school and work';
+            case 'planning to move': return 'plan to move';
+            case 'learn about housing': return 'learn about housing';
+            case 'help family': return 'help family';
+            case 'for college': return 'research college options';
+            case 'for training': return 'research training options';
+            case 'parent request': return 'help with research';
+            case 'to relax': return 'relax';
+            case 'be social': return 'be social';
+            case 'improve focus': return 'improve focus';
+            case 'social connection': return 'build social connections';
+            case 'stay hydrated': return 'stay hydrated';
+            case 'boost mood': return 'boost mood';
             default: return match;
           }
         })}`
@@ -174,7 +207,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
 
     let sentence = `${emoji}`;
 
-    // Handle reading goals specially for better grammar
+    // Handle different goal types with proper grammar
     if (state.goal?.id === 'read') {
       sentence += "Read ";
       
@@ -184,7 +217,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       
       if (detailsPart) {
         const d = detailsPart.toLowerCase();
-        if (d === 'custom') {
+        if (d === 'other') {
           sentence += amountPart ? '' : 'something';
         } else if (d.includes('read something') || d === 'something') {
           sentence += amountPart ? ' from something' : 'something';
@@ -194,7 +227,6 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
         }
       }
     } else if (state.goal?.id === 'write') {
-      // Special handling for writing goals
       sentence += "Write ";
       
       if (detailsPart) {
@@ -209,20 +241,177 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
           sentence += "an essay";
         } else if (d === 'story') {
           sentence += "a story";
+        } else if (d === 'other') {
+          sentence += "something";
         } else {
           sentence += `a ${d}`;
         }
       }
-    } else {
-      // For other goals, use the original structure
-      sentence += title;
-      
+    } else if (state.goal?.id === 'walk') {
+      sentence += "Walk for ";
       if (detailsPart) {
-        sentence += ` ${detailsPart}`;
+        sentence += detailsPart.toLowerCase();
+      }
+    } else if (state.goal?.id === 'stretch') {
+      sentence += "Stretch for ";
+      if (detailsPart) {
+        sentence += detailsPart.toLowerCase();
+      }
+    } else if (state.goal?.id === 'sleep') {
+      sentence += "Follow better sleep routine";
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        sentence += ` (${detailsPart.toLowerCase()})`;
+      }
+    } else if (state.goal?.id === 'eat-healthier') {
+      sentence += "Eat healthier";
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        sentence += ` by ${detailsPart.toLowerCase()}`;
+      }
+    } else if (state.goal?.id === 'drink-water') {
+      sentence += "Drink water";
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        sentence += ` (${detailsPart.toLowerCase()})`;
+      }
+    } else if (state.goal?.id === 'plan-week') {
+      sentence += "Plan ";
+      if (detailsPart) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('3 tasks')) {
+          sentence += "3 tasks for tomorrow";
+        } else if (d.includes('homework')) {
+          sentence += "homework and chores";
+        } else if (d.includes('full week')) {
+          sentence += "full week";
+        } else if (d.includes('15-20')) {
+          sentence += "for 15-20 minutes";
+        } else if (d === 'other') {
+          sentence += "week";
+        } else {
+          sentence += d;
+        }
+      }
+    } else if (state.goal?.id === 'solve-problem') {
+      sentence += "Solve ";
+      if (detailsPart) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('1 problem')) {
+          sentence += "1 problem";
+        } else if (d.includes('2 problems')) {
+          sentence += "2 problems";
+        } else if (d.includes('minutes')) {
+          sentence += `problems for ${d}`;
+        } else if (d === 'other') {
+          sentence += "problems";
+        } else {
+          sentence += d;
+        }
+      }
+    } else if (state.goal?.id === 'review') {
+      sentence += "Review notes";
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        sentence += ` (${detailsPart.toLowerCase()})`;
+      }
+    } else if (state.goal?.id === 'study') {
+      sentence += "Study";
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        sentence += ` for ${detailsPart.toLowerCase()}`;
+      }
+    } else if (state.goal?.id === 'interview') {
+      sentence += "Practice ";
+      if (detailsPart) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('greeting')) {
+          sentence += "interview greetings";
+        } else if (d.includes('tell me')) {
+          sentence += "'tell me about yourself'";
+        } else if (d.includes('mock')) {
+          sentence += "full mock interviews";
+        } else if (d === 'other') {
+          sentence += "interview skills";
+        } else {
+          sentence += d;
+        }
+      }
+    } else if (state.goal?.id === 'make-bed') {
+      sentence += "Make bed";
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        sentence += ` (${detailsPart.toLowerCase()})`;
+      }
+    } else if (state.goal?.id === 'say-hi') {
+      sentence += "Say hi";
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        sentence += ` ${detailsPart.toLowerCase()}`;
+      }
+    } else if (state.goal?.id === 'browse-housing') {
+      sentence += "Browse ";
+      if (detailsPart) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('apartments')) {
+          sentence += "apartments online";
+        } else if (d.includes('shared')) {
+          sentence += "shared housing sites";
+        } else if (d.includes('dorm')) {
+          sentence += "college dorms";
+        } else if (d === 'other') {
+          sentence += "housing options";
+        } else {
+          sentence += d;
+        }
+      }
+    } else if (state.goal?.id === 'research-education') {
+      sentence += "Research ";
+      if (detailsPart) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('2-year')) {
+          sentence += "2-year colleges";
+        } else if (d.includes('4-year')) {
+          sentence += "4-year colleges";
+        } else if (d.includes('certificate')) {
+          sentence += "certificate programs";
+        } else if (d === 'other') {
+          sentence += "education options";
+        } else {
+          sentence += d;
+        }
+      }
+    } else if (state.goal?.id === 'play-game') {
+      sentence += "Play ";
+      if (detailsPart) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('board')) {
+          sentence += "board games for 10 minutes";
+        } else if (d.includes('video')) {
+          sentence += "video games for 20 minutes";
+        } else if (d.includes('puzzle')) {
+          sentence += "puzzles for 30 minutes";
+        } else if (d === 'other') {
+          sentence += "games";
+        } else {
+          sentence += d;
+        }
+      }
+    } else if (state.goal?.id === 'listen-music') {
+      sentence += "Listen to ";
+      if (detailsPart) {
+        const d = detailsPart.toLowerCase();
+        if (d.includes('favorite')) {
+          sentence += "1 favorite song";
+        } else if (d === 'other') {
+          sentence += "music";
+        } else {
+          sentence += d;
+        }
+      }
+    } else {
+      // For any other goals, use improved structure
+      sentence += title.toLowerCase();
+      
+      if (detailsPart && !detailsPart.toLowerCase().includes('other')) {
+        sentence += ` ${detailsPart.toLowerCase()}`;
       }
     }
 
-    // Add timing information
+    // Add timing information with proper grammar
     if (frequencyPart && durationPart) {
       // Fix singular/plural for duration
       let fixedDuration = durationPart;
@@ -232,9 +421,9 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
         fixedDuration = durationPart.replace('1 weeks', '1 week');
       }
       
-      sentence += `, ${frequencyPart} for ${fixedDuration}`;
+      sentence += `, ${frequencyPart.toLowerCase()} for ${fixedDuration.toLowerCase()}`;
     } else if (frequencyPart) {
-      sentence += `, ${frequencyPart}`;
+      sentence += `, ${frequencyPart.toLowerCase()}`;
     } else if (durationPart) {
       let fixedDuration = durationPart;
       if (durationPart.includes('1 days')) {
@@ -242,7 +431,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       } else if (durationPart.includes('1 weeks')) {
         fixedDuration = durationPart.replace('1 weeks', '1 week');
       }
-      sentence += ` for ${fixedDuration}`;
+      sentence += ` for ${fixedDuration.toLowerCase()}`;
     }
 
     sentence += purposeSuffix ? `${purposeSuffix}.` : ".";
