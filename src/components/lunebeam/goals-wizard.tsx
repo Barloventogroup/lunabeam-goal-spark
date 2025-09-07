@@ -147,6 +147,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     const title = state.goal?.title ?? "";
 
     const detailsPart = state.details?.label;
+    const amountPart = state.amount?.label;
     const frequencyPart = state.frequency?.label;
     const durationPart = state.duration?.label;
     const purposeSuffix = state.purpose?.label
@@ -156,23 +157,52 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     // If nothing is chosen yet, return empty string to show helper text
     if (!title) return "";
 
-    let sentence = `${emoji}${title}`;
+    let sentence = `${emoji}`;
 
-    if (detailsPart) {
-      sentence += ` ${detailsPart}`;
+    // Handle reading goals specially for better grammar
+    if (state.goal?.id === 'read') {
+      sentence += "Read ";
+      
+      if (amountPart) {
+        sentence += `${amountPart}`;
+      }
+      
+      if (detailsPart && detailsPart.toLowerCase() !== 'custom') {
+        const article = ['article', 'essay'].includes(detailsPart.toLowerCase()) ? 'an' : 'a';
+        sentence += amountPart ? ` from ${article} ${detailsPart.toLowerCase()}` : `${article} ${detailsPart.toLowerCase()}`;
+      } else if (detailsPart === 'Custom') {
+        sentence += amountPart ? '' : 'something';
+      }
+    } else {
+      // For non-reading goals, use the original structure
+      sentence += title;
+      
+      if (detailsPart) {
+        sentence += ` ${detailsPart}`;
+      }
     }
 
-    // Add amount for reading goals
-    if (state.amount?.label && state.goal?.id === 'read') {
-      sentence += ` ${state.amount.label}`;
-    }
-
+    // Add timing information
     if (frequencyPart && durationPart) {
-      sentence += `, ${frequencyPart} for ${durationPart}`;
+      // Fix singular/plural for duration
+      let fixedDuration = durationPart;
+      if (durationPart.includes('1 days')) {
+        fixedDuration = durationPart.replace('1 days', '1 day');
+      } else if (durationPart.includes('1 weeks')) {
+        fixedDuration = durationPart.replace('1 weeks', '1 week');
+      }
+      
+      sentence += `, ${frequencyPart} for ${fixedDuration}`;
     } else if (frequencyPart) {
       sentence += `, ${frequencyPart}`;
     } else if (durationPart) {
-      sentence += ` for ${durationPart}`;
+      let fixedDuration = durationPart;
+      if (durationPart.includes('1 days')) {
+        fixedDuration = durationPart.replace('1 days', '1 day');
+      } else if (durationPart.includes('1 weeks')) {
+        fixedDuration = durationPart.replace('1 weeks', '1 week');
+      }
+      sentence += ` for ${fixedDuration}`;
     }
 
     sentence += purposeSuffix ? `${purposeSuffix}.` : ".";
