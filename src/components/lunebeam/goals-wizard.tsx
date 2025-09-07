@@ -417,8 +417,8 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
           } else if (state.step === 4 && customInput.toLowerCase().includes("don't know")) {
             customOption = {
               ...customOption,
-              label: "let's read 5 pages. You can do it!",
-              explainer: "Start with 5 pages - achievable and motivating"
+              label: "l don't worry you don't need to know know. Read something, you'll let me know what afterwards. You can do it!",
+              explainer: "Start reading anything - you'll discover what interests you"
             };
           }
         }
