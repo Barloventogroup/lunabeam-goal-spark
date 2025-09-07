@@ -686,14 +686,30 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
           )}
 
           {state.step === 8 && state.goal && (
-            <MultiOptionSelection
-              title="Support"
-              options={state.goal.supports}
-              onSelect={(supports) => {
-                setState(prev => ({ ...prev, supports }));
-              }}
-              selected={state.supports || []}
-            />
+            <div className="space-y-6">
+              <MultiOptionSelection
+                title="Support"
+                options={state.goal.supports}
+                onSelect={(supports) => {
+                  setState(prev => ({ ...prev, supports }));
+                }}
+                selected={state.supports || []}
+              />
+              
+              {/* Continue Button for Support Step */}
+              <div className="pt-4">
+                <Button 
+                  onClick={() => {
+                    showRandomAffirmation();
+                    setState(prev => ({ ...prev, step: 9 }));
+                  }}
+                  className="w-full"
+                  size="lg"
+                >
+                  Continue to Final Step
+                </Button>
+              </div>
+            </div>
           )}
 
           {state.step === 9 && (
