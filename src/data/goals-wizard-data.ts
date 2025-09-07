@@ -22,6 +22,11 @@ export interface CategoryGoal {
   purpose: GoalOption[];
   details?: GoalOption[];
   topic?: GoalOption[];
+  who?: GoalOption[];
+  how?: GoalOption[];
+  what?: GoalOption[];
+  when?: GoalOption[];
+  duration?: GoalOption[];
   amount?: GoalOption[];
   timing?: GoalOption[];
   supports: GoalOption[];
@@ -36,7 +41,585 @@ export interface Category {
   goals: CategoryGoal[];
 }
 
+export const FALLBACK_OPTION: GoalOption = {
+  id: "other",
+  label: "Other",
+  emoji: "➕",
+  explainer: "Something else"
+};
+
+export const STARTER_GOALS = [
+  { id: "drink-water", title: "Drink Water", emoji: "💧" },
+  { id: "make-bed", title: "Make Bed", emoji: "🛏️" },
+  { id: "say-hi", title: "Say Hi", emoji: "👋" },
+  { id: "listen-music", title: "Listen to Music", emoji: "🎶" }
+];
+
+export interface Category {
+  id: string;
+  title: string;
+  emoji: string;
+  goals: CategoryGoal[];
+}
+
 export const GOALS_WIZARD_DATA: Category[] = [
+  {
+    id: "education",
+    title: "Education", 
+    emoji: "📘",
+    goals: [
+      {
+        id: "read",
+        title: "Read Something",
+        emoji: "📖",
+        explainer: "Jump into a book, article, or anything that catches your eye! Reading is a superpower - it helps your brain grow and takes you places.",
+        purpose: [
+          { id: "learning", label: "Learn something new", emoji: "🧠", explainer: "Discover new information or ideas", isDefault: true },
+          { id: "class", label: "For class/school", emoji: "🎓", explainer: "Complete an assignment or study for school" },
+          { id: "fun", label: "For fun", emoji: "😊", explainer: "Enjoy reading for pleasure" },
+          { id: "work", label: "For work", emoji: "💼", explainer: "Read work-related materials" }
+        ],
+        topic: [
+          { id: "fiction", label: "Fiction book", emoji: "📚", explainer: "Read a story book", isDefault: true },
+          { id: "nonfiction", label: "Non-fiction", emoji: "📖", explainer: "Read factual/educational material" },
+          { id: "article", label: "Article/blog", emoji: "📄", explainer: "Read an article or blog post" },
+          { id: "textbook", label: "Textbook chapter", emoji: "📝", explainer: "Study academic material" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Choose your own reading material" }
+        ],
+        amount: [
+          { id: "1page", label: "1 page", emoji: "📄", explainer: "Read just one page", isDefault: true },
+          { id: "5pages", label: "5 pages", emoji: "📑", explainer: "Read five pages" },
+          { id: "10pages", label: "10 pages", emoji: "📖", explainer: "Read ten pages" },
+          { id: "1chapter", label: "1 chapter", emoji: "📚", explainer: "Read one complete chapter" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom amount" }
+        ],
+        timing: [
+          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Once per week" },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" }
+        ],
+        supports: [
+          { id: "quiet", label: "Quiet space", emoji: "🤫", explainer: "Find a peaceful reading spot", isDefault: true },
+          { id: "timer", label: "Reading timer", emoji: "⏰", explainer: "Set a timer for focused reading" },
+          { id: "bookmark", label: "Bookmark/notepad", emoji: "🔖", explainer: "Keep track of progress and notes" },
+          { id: "buddy", label: "Reading buddy", emoji: "👥", explainer: "Read with a friend or family member" }
+        ],
+        smartTemplate: "📖 Read {amount} of {topic} {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "write",
+        title: "Write",
+        emoji: "✍️",
+        explainer: "Put pen to paper (or fingers to keyboard) and let your thoughts flow! Writing helps organize your ideas and express yourself.",
+        purpose: [
+          { id: "school", label: "School assignment", emoji: "🎓", explainer: "Complete homework or class project" },
+          { id: "expression", label: "Express myself", emoji: "💭", explainer: "Share thoughts, feelings, or creativity", isDefault: true },
+          { id: "goals", label: "Plan/organize", emoji: "📝", explainer: "Write plans, lists, or organize thoughts" },
+          { id: "story", label: "Creative writing", emoji: "✨", explainer: "Write stories, poems, or fiction" }
+        ],
+        topic: [
+          { id: "journal", label: "Journal entry", emoji: "📔", explainer: "Write about your day or feelings", isDefault: true },
+          { id: "essay", label: "Essay/paragraph", emoji: "📄", explainer: "Write a structured piece" },
+          { id: "story", label: "Short story", emoji: "📖", explainer: "Create a fictional narrative" },
+          { id: "letter", label: "Letter/email", emoji: "✉️", explainer: "Write to someone" },
+          { id: "list", label: "List/plan", emoji: "📝", explainer: "Organize thoughts or tasks" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Choose your own writing topic" }
+        ],
+        amount: [
+          { id: "1sentence", label: "1 sentence", emoji: "✏️", explainer: "Write just one sentence", isDefault: true },
+          { id: "1paragraph", label: "1 paragraph", emoji: "📝", explainer: "Write one complete paragraph" },
+          { id: "1page", label: "1 page", emoji: "📄", explainer: "Write one full page" },
+          { id: "3paragraphs", label: "3 paragraphs", emoji: "📑", explainer: "Write three paragraphs" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom amount" }
+        ],
+        timing: [
+          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Once per week" },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" }
+        ],
+        supports: [
+          { id: "prompt", label: "Writing prompts", emoji: "💡", explainer: "Ideas to get you started", isDefault: true },
+          { id: "quiet", label: "Quiet space", emoji: "🤫", explainer: "Find a peaceful writing spot" },
+          { id: "timer", label: "Writing timer", emoji: "⏰", explainer: "Set focused writing time" },
+          { id: "feedback", label: "Feedback buddy", emoji: "👥", explainer: "Someone to read and respond" }
+        ],
+        smartTemplate: "✍️ Write {amount} about {topic} {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "plan-week",
+        title: "Plan Week", 
+        emoji: "📅",
+        explainer: "Take a few minutes to think ahead! Planning your week helps you feel prepared and confident about what's coming up.",
+        purpose: [
+          { id: "organized", label: "Stay organized", emoji: "📋", explainer: "Keep track of tasks and appointments", isDefault: true },
+          { id: "stress", label: "Reduce stress", emoji: "😌", explainer: "Feel more prepared and less anxious" },
+          { id: "goals", label: "Work toward goals", emoji: "🎯", explainer: "Plan time for important activities" }
+        ],
+        topic: [
+          { id: "school", label: "School schedule", emoji: "🎓", explainer: "Plan classes, homework, and projects", isDefault: true },
+          { id: "personal", label: "Personal activities", emoji: "🏠", explainer: "Plan free time and personal tasks" },
+          { id: "work", label: "Work schedule", emoji: "💼", explainer: "Plan work tasks and meetings" },
+          { id: "all", label: "Everything", emoji: "📊", explainer: "Plan all aspects of your week" }
+        ],
+        timing: [
+          { id: "sunday", label: "Sunday evening", emoji: "🌅", explainer: "Plan at the start of each week", isDefault: true },
+          { id: "friday", label: "Friday afternoon", emoji: "🌆", explainer: "Plan for the upcoming week" },
+          { id: "other", label: "Other time", emoji: "⏰", explainer: "Choose your own planning time" }
+        ],
+        supports: [
+          { id: "planner", label: "Weekly planner", emoji: "📝", explainer: "Use a physical or digital planner", isDefault: true },
+          { id: "calendar", label: "Calendar app", emoji: "📱", explainer: "Use your phone or computer calendar" },
+          { id: "checklist", label: "Planning checklist", emoji: "✅", explainer: "Step-by-step planning guide" }
+        ],
+        smartTemplate: "📅 Plan {topic} {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "solve-problem",
+        title: "Solve a Problem",
+        emoji: "🧩",
+        explainer: "Tackle something that's been bugging you! Whether big or small, working through problems step by step builds your confidence.",
+        purpose: [
+          { id: "academic", label: "Academic challenge", emoji: "🎓", explainer: "Work on a school-related problem" },
+          { id: "personal", label: "Personal issue", emoji: "🤔", explainer: "Address a personal challenge", isDefault: true },
+          { id: "creative", label: "Creative challenge", emoji: "🎨", explainer: "Solve a creative or artistic problem" },
+          { id: "technical", label: "Technical issue", emoji: "⚙️", explainer: "Fix or figure out something technical" }
+        ],
+        topic: [
+          { id: "homework", label: "Homework problem", emoji: "📚", explainer: "Work on a specific school assignment" },
+          { id: "relationship", label: "Social situation", emoji: "👥", explainer: "Navigate a relationship or social issue" },
+          { id: "organization", label: "Organization challenge", emoji: "📋", explainer: "Organize space, time, or tasks" },
+          { id: "decision", label: "Decision to make", emoji: "🤷", explainer: "Work through a choice you need to make", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Any other problem you want to tackle" }
+        ],
+        timing: [
+          { id: "1session", label: "1 session this week", emoji: "📅", explainer: "Work on it once this week", isDefault: true },
+          { id: "2sessions", label: "2 sessions this week", emoji: "📅", explainer: "Work on it twice this week" },
+          { id: "daily", label: "A little daily", emoji: "📅", explainer: "Spend a few minutes each day" }
+        ],
+        supports: [
+          { id: "steps", label: "Step-by-step guide", emoji: "📋", explainer: "Break the problem into smaller steps", isDefault: true },
+          { id: "mentor", label: "Talk to someone", emoji: "👨‍🏫", explainer: "Get advice from a trusted person" },
+          { id: "research", label: "Research resources", emoji: "🔍", explainer: "Look up information to help solve it" }
+        ],
+        smartTemplate: "🧩 Work on {topic} {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "review-notes",
+        title: "Review Notes",
+        emoji: "📝",
+        explainer: "Go back through your notes and make sure the important stuff sticks! Reviewing helps move information from short-term to long-term memory.",
+        purpose: [
+          { id: "exam", label: "Study for exam", emoji: "📊", explainer: "Prepare for an upcoming test" },
+          { id: "reinforce", label: "Reinforce learning", emoji: "🧠", explainer: "Help information stick in your memory", isDefault: true },
+          { id: "clarify", label: "Clarify concepts", emoji: "💡", explainer: "Better understand confusing topics" }
+        ],
+        topic: [
+          { id: "class", label: "Class notes", emoji: "🎓", explainer: "Review notes from specific classes", isDefault: true },
+          { id: "textbook", label: "Textbook notes", emoji: "📚", explainer: "Review notes from reading" },
+          { id: "meeting", label: "Meeting notes", emoji: "💼", explainer: "Review notes from work/group meetings" },
+          { id: "research", label: "Research notes", emoji: "🔍", explainer: "Review notes from projects or research" }
+        ],
+        timing: [
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Review notes twice per week", isDefault: true },
+          { id: "daily", label: "Daily review", emoji: "📅", explainer: "Quick daily review" },
+          { id: "before-class", label: "Before each class", emoji: "⏰", explainer: "Review before attending class" }
+        ],
+        supports: [
+          { id: "highlights", label: "Highlighting system", emoji: "🖍️", explainer: "Color-code important information", isDefault: true },
+          { id: "summaries", label: "Write summaries", emoji: "📋", explainer: "Summarize key points" },
+          { id: "flashcards", label: "Make flashcards", emoji: "🗂️", explainer: "Create cards for important facts" }
+        ],
+        smartTemplate: "📝 Review {topic} {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "study",
+        title: "Study",
+        emoji: "📚",
+        explainer: "Focused time to really dive deep into your learning! Whether it's for school, work, or personal growth - studying builds your knowledge and skills.",
+        purpose: [
+          { id: "exam", label: "Prepare for exam", emoji: "📊", explainer: "Study for an upcoming test", isDefault: true },
+          { id: "assignment", label: "Complete assignment", emoji: "📝", explainer: "Work on homework or projects" },
+          { id: "skill", label: "Learn new skill", emoji: "🎯", explainer: "Develop a new ability" },
+          { id: "interest", label: "Personal interest", emoji: "💡", explainer: "Explore something you're curious about" }
+        ],
+        topic: [
+          { id: "math", label: "Math", emoji: "🔢", explainer: "Study mathematics concepts" },
+          { id: "science", label: "Science", emoji: "🔬", explainer: "Study scientific subjects" },
+          { id: "language", label: "Language/English", emoji: "📖", explainer: "Study language arts or literature" },
+          { id: "history", label: "History/Social Studies", emoji: "🏛️", explainer: "Study historical or social topics" },
+          { id: "skill", label: "Life skill", emoji: "🛠️", explainer: "Study practical life skills", isDefault: true },
+          { id: "other", label: "Other subject", emoji: "➕", explainer: "Any other subject you want to study" }
+        ],
+        amount: [
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Short, focused study session", isDefault: true },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Medium study session" },
+          { id: "1hour", label: "1 hour", emoji: "⏰", explainer: "Longer study session" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom study duration" }
+        ],
+        timing: [
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Study three times per week", isDefault: true },
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Study every day" },
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Study twice per week" }
+        ],
+        supports: [
+          { id: "schedule", label: "Study schedule", emoji: "📅", explainer: "Plan when and what to study", isDefault: true },
+          { id: "space", label: "Quiet study space", emoji: "🤫", explainer: "Find a distraction-free area" },
+          { id: "tools", label: "Study tools", emoji: "🛠️", explainer: "Flashcards, highlighters, notes" },
+          { id: "breaks", label: "Break reminders", emoji: "☕", explainer: "Take breaks to stay focused" }
+        ],
+        smartTemplate: "📚 Study {subject} for {duration} from {start_date} to {due_date}."
+      }
+    ]
+  },
+  {
+    id: "employment",
+    title: "Employment",
+    emoji: "💼", 
+    goals: [
+      {
+        id: "interview",
+        title: "Practice for Interview",
+        emoji: "🎤",
+        explainer: "Get ready to shine! Practice makes perfect, and every bit of prep helps you feel more confident walking into that interview.",
+        purpose: [
+          { id: "job", label: "Job interview", emoji: "💼", explainer: "Prepare for employment interview", isDefault: true },
+          { id: "school", label: "School interview", emoji: "🎓", explainer: "Prepare for college or program interview" },
+          { id: "skill", label: "Build confidence", emoji: "💪", explainer: "Improve interview skills in general" }
+        ],
+        topic: [
+          { id: "questions", label: "Practice questions", emoji: "❓", explainer: "Work on common interview questions", isDefault: true },
+          { id: "handshake", label: "Handshake/greeting", emoji: "🤝", explainer: "Practice professional greetings" },
+          { id: "answers", label: "Prepare answers", emoji: "💭", explainer: "Think through responses to likely questions" },
+          { id: "outfit", label: "Choose outfit", emoji: "👔", explainer: "Plan what to wear" }
+        ],
+        timing: [
+          { id: "once", label: "Once this week", emoji: "📅", explainer: "One practice session", isDefault: true },
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Two practice sessions per week" },
+          { id: "daily", label: "Daily until interview", emoji: "📅", explainer: "Practice every day leading up" }
+        ],
+        supports: [
+          { id: "mirror", label: "Practice with mirror", emoji: "🪞", explainer: "See yourself while practicing", isDefault: true },
+          { id: "person", label: "Practice with person", emoji: "👥", explainer: "Role-play with friend or family" },
+          { id: "questions", label: "Question list", emoji: "📝", explainer: "Common interview questions to practice" }
+        ],
+        smartTemplate: "🎤 Practice {topic} {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "write-resume",
+        title: "Write Resume",
+        emoji: "📄",
+        explainer: "Tell your story on paper! Your resume is like a highlight reel of all the great things you've done and can do.",
+        purpose: [
+          { id: "first", label: "Create first resume", emoji: "✨", explainer: "Write your very first resume", isDefault: true },
+          { id: "job", label: "Apply for specific job", emoji: "🎯", explainer: "Target a particular position" },
+          { id: "practice", label: "Practice writing", emoji: "✍️", explainer: "Build resume writing skills" }
+        ],
+        timing: [
+          { id: "week", label: "Complete in 1 week", emoji: "📅", explainer: "Finish resume within a week", isDefault: true },
+          { id: "weekend", label: "This weekend", emoji: "🌟", explainer: "Work on it over the weekend" },
+          { id: "session", label: "One session", emoji: "⏰", explainer: "Complete in one sitting" }
+        ],
+        supports: [
+          { id: "template", label: "Resume template", emoji: "📝", explainer: "Use a pre-made format", isDefault: true },
+          { id: "examples", label: "Example resumes", emoji: "👀", explainer: "See how others write theirs" },
+          { id: "help", label: "Get feedback", emoji: "👥", explainer: "Have someone review your draft" }
+        ],
+        smartTemplate: "📄 Write resume from {start_date} to {due_date}."
+      },
+      {
+        id: "update-resume", 
+        title: "Update Resume",
+        emoji: "✏️",
+        explainer: "Keep your resume fresh! Add new experiences, skills, or achievements to show how awesome you're becoming.",
+        purpose: [
+          { id: "experience", label: "Add new experience", emoji: "⭐", explainer: "Include recent work or activities", isDefault: true },
+          { id: "skills", label: "Add new skills", emoji: "🎯", explainer: "Include newly learned abilities" },
+          { id: "target", label: "Target new job", emoji: "🎪", explainer: "Customize for specific opportunity" }
+        ],
+        timing: [
+          { id: "hour", label: "1 hour this week", emoji: "⏰", explainer: "Spend an hour updating", isDefault: true },
+          { id: "weekend", label: "This weekend", emoji: "🌟", explainer: "Update over the weekend" }
+        ],
+        supports: [
+          { id: "checklist", label: "Update checklist", emoji: "✅", explainer: "What to review and update", isDefault: true },
+          { id: "feedback", label: "Get feedback", emoji: "👥", explainer: "Have someone review changes" }
+        ],
+        smartTemplate: "✏️ Update resume {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "thank-you",
+        title: "Send Thank-You Letter",
+        emoji: "💌",
+        explainer: "Show your appreciation! A thank-you note after an interview or meeting shows you're thoughtful and professional.",
+        purpose: [
+          { id: "interview", label: "After interview", emoji: "🎤", explainer: "Thank interviewer for their time", isDefault: true },
+          { id: "meeting", label: "After meeting", emoji: "🤝", explainer: "Thank someone for meeting with you" },
+          { id: "help", label: "For someone's help", emoji: "🙏", explainer: "Thank someone who helped with job search" }
+        ],
+        topic: [
+          { id: "email", label: "Email", emoji: "📧", explainer: "Send digital thank-you message", isDefault: true },
+          { id: "card", label: "Handwritten card", emoji: "✍️", explainer: "Write and mail a thank-you card" },
+          { id: "note", label: "LinkedIn message", emoji: "💼", explainer: "Send professional network message" }
+        ],
+        timing: [
+          { id: "24hours", label: "Within 24 hours", emoji: "⚡", explainer: "Send soon after meeting", isDefault: true },
+          { id: "week", label: "Within a week", emoji: "📅", explainer: "Send within one week" }
+        ],
+        supports: [
+          { id: "template", label: "Thank-you templates", emoji: "📝", explainer: "Examples of what to write", isDefault: true },
+          { id: "tips", label: "Writing tips", emoji: "💡", explainer: "How to make it personal and professional" }
+        ],
+        smartTemplate: "💌 Send {type} thank-you {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "find-companies",
+        title: "Find Companies",
+        emoji: "🔍",
+        explainer: "Explore what's out there! Research companies you might want to work for - it's like window shopping for your future!",
+        purpose: [
+          { id: "job-search", label: "Job searching", emoji: "💼", explainer: "Look for potential employers", isDefault: true },
+          { id: "research", label: "Career research", emoji: "🔬", explainer: "Learn about different industries" },
+          { id: "networking", label: "Networking prep", emoji: "🤝", explainer: "Research before reaching out" }
+        ],
+        topic: [
+          { id: "local", label: "Local companies", emoji: "🏢", explainer: "Companies in your area", isDefault: true },
+          { id: "industry", label: "Specific industry", emoji: "🏭", explainer: "Companies in field you're interested in" },
+          { id: "size", label: "Company size", emoji: "📊", explainer: "Small, medium, or large companies" },
+          { id: "values", label: "Companies with your values", emoji: "💎", explainer: "Companies that match what you care about" }
+        ],
+        timing: [
+          { id: "30min", label: "30 min this week", emoji: "⏰", explainer: "Spend 30 minutes researching", isDefault: true },
+          { id: "hour", label: "1 hour this week", emoji: "⏰", explainer: "Spend an hour researching" },
+          { id: "daily", label: "15 min daily", emoji: "📅", explainer: "Research a little each day" }
+        ],
+        supports: [
+          { id: "websites", label: "Company websites", emoji: "🌐", explainer: "Visit official company sites", isDefault: true },
+          { id: "job-boards", label: "Job search sites", emoji: "📋", explainer: "Use Indeed, LinkedIn, etc." },
+          { id: "notebook", label: "Research notebook", emoji: "📝", explainer: "Keep track of interesting companies" }
+        ],
+        smartTemplate: "🔍 Research {topic} for {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "find-people",
+        title: "Find People that Can Help",
+        emoji: "👥",
+        explainer: "Build your network! Connect with people who can offer advice, information, or support in your career journey.",
+        purpose: [
+          { id: "mentorship", label: "Find a mentor", emoji: "👨‍🏫", explainer: "Someone to guide and advise you", isDefault: true },
+          { id: "information", label: "Get career info", emoji: "ℹ️", explainer: "Learn about jobs or industries" },
+          { id: "referrals", label: "Job referrals", emoji: "🤝", explainer: "Find people who might recommend you" },
+          { id: "support", label: "Career support", emoji: "💪", explainer: "Build a supportive professional network" }
+        ],
+        topic: [
+          { id: "linkedin", label: "LinkedIn connections", emoji: "💼", explainer: "Connect with professionals online", isDefault: true },
+          { id: "family", label: "Family/friends", emoji: "👨‍👩‍👧‍👦", explainer: "Ask people you know for help" },
+          { id: "school", label: "School contacts", emoji: "🎓", explainer: "Teachers, counselors, alumni" },
+          { id: "community", label: "Community groups", emoji: "🏘️", explainer: "Local organizations or clubs" }
+        ],
+        timing: [
+          { id: "1week", label: "1 person this week", emoji: "📅", explainer: "Connect with one person", isDefault: true },
+          { id: "2week", label: "2 people this week", emoji: "📅", explainer: "Reach out to two people" },
+          { id: "monthly", label: "1 person monthly", emoji: "📅", explainer: "One new connection per month" }
+        ],
+        supports: [
+          { id: "script", label: "Message templates", emoji: "📝", explainer: "Examples of what to say", isDefault: true },
+          { id: "list", label: "Contact list", emoji: "📋", explainer: "Keep track of who you've contacted" },
+          { id: "goals", label: "Networking goals", emoji: "🎯", explainer: "Clear plan for what you want to achieve" }
+        ],
+        smartTemplate: "👥 Connect with {topic} {timing} from {start_date} to {due_date}."
+      }
+    ]
+  },
+  {
+    id: "fun",
+    title: "Fun / Recreation",
+    emoji: "🎉",
+    goals: [
+      {
+        id: "play-sport-game",
+        title: "Play a Sport/Game",
+        emoji: "⚽",
+        explainer: "Get your game on! Whether it's shooting hoops, playing cards, or any activity that gets you moving and having fun.",
+        purpose: [
+          { id: "exercise", label: "Get exercise", emoji: "💪", explainer: "Stay active and healthy" },
+          { id: "fun", label: "Have fun", emoji: "😄", explainer: "Enjoy yourself and relax", isDefault: true },
+          { id: "social", label: "Spend time with others", emoji: "👥", explainer: "Connect with friends or family" },
+          { id: "skill", label: "Learn/practice skill", emoji: "🎯", explainer: "Improve at a sport or game" }
+        ],
+        topic: [
+          { id: "basketball", label: "Basketball", emoji: "🏀", explainer: "Shoot hoops or play a game" },
+          { id: "soccer", label: "Soccer/Football", emoji: "⚽", explainer: "Kick the ball around" },
+          { id: "board-game", label: "Board game", emoji: "🎲", explainer: "Play cards, chess, or other table games", isDefault: true },
+          { id: "video-game", label: "Video game", emoji: "🎮", explainer: "Play console or computer games" },
+          { id: "frisbee", label: "Frisbee/catch", emoji: "🥏", explainer: "Throw and catch with others" },
+          { id: "other", label: "Other sport/game", emoji: "🎪", explainer: "Any other sport or game you enjoy" }
+        ],
+        amount: [
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Quick game session", isDefault: true },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Half-hour of play" },
+          { id: "1hour", label: "1 hour", emoji: "⏰", explainer: "Full hour of activity" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        timing: [
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Twice per week", isDefault: true },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week" },
+          { id: "weekend", label: "Weekends", emoji: "🌟", explainer: "Play on weekends" }
+        ],
+        supports: [
+          { id: "equipment", label: "Get equipment", emoji: "🏀", explainer: "Make sure you have what you need" },
+          { id: "partner", label: "Find playing partner", emoji: "👥", explainer: "Someone to play with", isDefault: true },
+          { id: "location", label: "Find good location", emoji: "📍", explainer: "Safe, fun place to play" },
+          { id: "rules", label: "Learn rules", emoji: "📚", explainer: "Understand how to play" }
+        ],
+        smartTemplate: "⚽ Play {sport} for {duration} {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "art-craft",
+        title: "Do an Art or Craft",
+        emoji: "🎨",
+        explainer: "Get creative and make something awesome! Art and crafts are great ways to express yourself and create something you can be proud of.",
+        purpose: [
+          { id: "creative", label: "Express creativity", emoji: "✨", explainer: "Let your artistic side shine", isDefault: true },
+          { id: "relax", label: "Relax and unwind", emoji: "😌", explainer: "Enjoy peaceful, calming activity" },
+          { id: "gift", label: "Make a gift", emoji: "🎁", explainer: "Create something for someone special" },
+          { id: "decorate", label: "Decorate space", emoji: "🏠", explainer: "Make something for your room or home" }
+        ],
+        topic: [
+          { id: "drawing", label: "Drawing/sketching", emoji: "✏️", explainer: "Use pencils, pens, or markers" },
+          { id: "painting", label: "Painting", emoji: "🖌️", explainer: "Use watercolors, acrylics, or other paints" },
+          { id: "collage", label: "Collage/scrapbook", emoji: "📷", explainer: "Cut and paste images or memories" },
+          { id: "jewelry", label: "Jewelry making", emoji: "📿", explainer: "Make bracelets, necklaces, or rings", isDefault: true },
+          { id: "pottery", label: "Clay/pottery", emoji: "🏺", explainer: "Shape and create with clay" },
+          { id: "other", label: "Other craft", emoji: "🎪", explainer: "Any other art or craft project" }
+        ],
+        amount: [
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Half hour of creative time", isDefault: true },
+          { id: "1hour", label: "1 hour", emoji: "⏰", explainer: "Full hour of crafting" },
+          { id: "project", label: "Complete small project", emoji: "✅", explainer: "Finish one small creation" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom amount" }
+        ],
+        timing: [
+          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Once per week", isDefault: true },
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Twice per week" },
+          { id: "weekend", label: "Weekends", emoji: "🌟", explainer: "Creative time on weekends" }
+        ],
+        supports: [
+          { id: "supplies", label: "Get art supplies", emoji: "🖍️", explainer: "Make sure you have materials", isDefault: true },
+          { id: "space", label: "Set up workspace", emoji: "🛠️", explainer: "Create a good area for crafting" },
+          { id: "inspiration", label: "Find inspiration", emoji: "💡", explainer: "Look for ideas online or in books" },
+          { id: "share", label: "Share your work", emoji: "📸", explainer: "Show others what you create" }
+        ],
+        smartTemplate: "🎨 Do {craft} for {duration} {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "music",
+        title: "Listen to or Play Music",
+        emoji: "🎵",
+        explainer: "Fill your world with music! Whether you're jamming to your favorite songs or making your own music, it's great for your mood and soul.",
+        purpose: [
+          { id: "enjoyment", label: "Pure enjoyment", emoji: "😊", explainer: "Just because music makes you happy", isDefault: true },
+          { id: "relaxation", label: "Relax and destress", emoji: "😌", explainer: "Use music to calm down" },
+          { id: "learning", label: "Learn to play", emoji: "🎹", explainer: "Develop musical skills" },
+          { id: "social", label: "Share with others", emoji: "👥", explainer: "Enjoy music with friends or family" }
+        ],
+        topic: [
+          { id: "favorite", label: "Favorite songs/artists", emoji: "⭐", explainer: "Listen to music you already love", isDefault: true },
+          { id: "new", label: "Explore new music", emoji: "🔍", explainer: "Discover different genres or artists" },
+          { id: "instrument", label: "Play an instrument", emoji: "🎸", explainer: "Practice guitar, piano, etc." },
+          { id: "sing", label: "Singing", emoji: "🎤", explainer: "Sing along or practice vocals" },
+          { id: "create", label: "Make music", emoji: "🎼", explainer: "Write songs or create beats" }
+        ],
+        amount: [
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Quick music session", isDefault: true },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Half hour with music" },
+          { id: "1hour", label: "1 hour", emoji: "⏰", explainer: "Full hour of musical time" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        timing: [
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Music every day", isDefault: true },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week" },
+          { id: "evening", label: "Evening routine", emoji: "🌙", explainer: "Music as part of evening wind-down" }
+        ],
+        supports: [
+          { id: "playlists", label: "Create playlists", emoji: "📱", explainer: "Organize your favorite music" },
+          { id: "headphones", label: "Good headphones", emoji: "🎧", explainer: "Quality listening experience", isDefault: true },
+          { id: "streaming", label: "Music streaming app", emoji: "📱", explainer: "Access to wide variety of music" },
+          { id: "lessons", label: "Music lessons/tutorials", emoji: "📚", explainer: "Learn to play or improve skills" }
+        ],
+        smartTemplate: "🎵 {activity} {music} for {duration} {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "read-watch-fun",
+        title: "Read or Watch Something Fun",
+        emoji: "🍿",
+        explainer: "Treat yourself to some entertainment! Whether it's a good book, funny videos, or your favorite show - it's important to enjoy yourself.",
+        purpose: [
+          { id: "entertainment", label: "Pure entertainment", emoji: "😄", explainer: "Just for fun and enjoyment", isDefault: true },
+          { id: "relaxation", label: "Relax and unwind", emoji: "😌", explainer: "Chill out after a busy day" },
+          { id: "escape", label: "Mental break", emoji: "🌈", explainer: "Take a break from stress or routine" },
+          { id: "social", label: "Social activity", emoji: "👥", explainer: "Watch or discuss with others" }
+        ],
+        topic: [
+          { id: "comedy", label: "Comedy", emoji: "😂", explainer: "Funny movies, shows, or books" },
+          { id: "adventure", label: "Adventure/action", emoji: "🏃", explainer: "Exciting stories and adventures" },
+          { id: "mystery", label: "Mystery/thriller", emoji: "🔍", explainer: "Suspenseful stories that keep you guessing" },
+          { id: "romance", label: "Romance", emoji: "💕", explainer: "Love stories and romantic content" },
+          { id: "fantasy", label: "Fantasy/sci-fi", emoji: "🚀", explainer: "Magical or futuristic stories", isDefault: true },
+          { id: "other", label: "Other genre", emoji: "🎪", explainer: "Any other type of entertainment" }
+        ],
+        amount: [
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Half hour of entertainment", isDefault: true },
+          { id: "1hour", label: "1 hour", emoji: "⏰", explainer: "Full hour of fun content" },
+          { id: "episode", label: "1-2 episodes", emoji: "📺", explainer: "Watch a couple episodes" },
+          { id: "chapter", label: "Few chapters", emoji: "📖", explainer: "Read several chapters" }
+        ],
+        timing: [
+          { id: "evening", label: "Evening routine", emoji: "🌙", explainer: "End your day with entertainment" },
+          { id: "weekend", label: "Weekend treat", emoji: "🌟", explainer: "Special weekend entertainment", isDefault: true },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week" }
+        ],
+        supports: [
+          { id: "streaming", label: "Streaming services", emoji: "📱", explainer: "Netflix, YouTube, etc.", isDefault: true },
+          { id: "library", label: "Library books/movies", emoji: "📚", explainer: "Free entertainment from library" },
+          { id: "comfy", label: "Comfy setup", emoji: "🛋️", explainer: "Cozy spot for enjoying content" },
+          { id: "snacks", label: "Favorite snacks", emoji: "🍿", explainer: "Treats to enjoy while watching/reading" }
+        ],
+        smartTemplate: "🍿 Enjoy {genre} content for {duration} {timing} from {start_date} to {due_date}."
+      },
+      {
+        id: "fun-with-friends",
+        title: "Do a Fun Activity with Friends",
+        emoji: "🎉",
+        explainer: "Hang out and have a blast! Spending quality time with friends doing things you all enjoy is great for your happiness and relationships.",
+        purpose: [
+          { id: "friendship", label: "Strengthen friendships", emoji: "💕", explainer: "Build closer relationships", isDefault: true },
+          { id: "fun", label: "Have fun together", emoji: "😄", explainer: "Enjoy each other's company" },
+          { id: "stress", label: "Reduce stress", emoji: "😌", explainer: "Relax and laugh with friends" },
+          { id: "memories", label: "Make memories", emoji: "📸", explainer: "Create experiences to remember" }
+        ],
+        topic: [
+          { id: "games", label: "Play games", emoji: "🎮", explainer: "Video games, board games, sports" },
+          { id: "movie", label: "Watch movies/shows", emoji: "🎬", explainer: "Have a movie night together" },
+          { id: "outdoor", label: "Outdoor activities", emoji: "🌳", explainer: "Go to park, beach, hiking, etc." },
+          { id: "food", label: "Food activities", emoji: "🍕", explainer: "Cook together, try restaurants, picnic", isDefault: true },
+          { id: "creative", label: "Creative projects", emoji: "🎨", explainer: "Art, crafts, music together" },
+          { id: "other", label: "Other activity", emoji: "🎪", explainer: "Any other fun group activity" }
+        ],
+        timing: [
+          { id: "weekend", label: "Weekend hangout", emoji: "🌟", explainer: "Spend time on weekends", isDefault: true },
+          { id: "after-school", label: "After school/work", emoji: "🏫", explainer: "Meet up after daily responsibilities" },
+          { id: "1week", label: "Once a week", emoji: "📅", explainer: "Regular weekly friend time" }
+        ],
+        supports: [
+          { id: "planning", label: "Plan activities together", emoji: "📝", explainer: "Decide what to do as a group", isDefault: true },
+          { id: "budget", label: "Budget-friendly options", emoji: "💰", explainer: "Find affordable or free activities" },
+          { id: "scheduling", label: "Coordinate schedules", emoji: "📅", explainer: "Find times that work for everyone" },
+          { id: "backup", label: "Backup plans", emoji: "🔄", explainer: "Have alternatives if first plan doesn't work" }
+        ],
+        smartTemplate: "🎉 Do {activity} with friends {timing} from {start_date} to {due_date}."
+      }
+    ]
+  },
   {
     id: "health",
     title: "Health",
@@ -79,467 +662,120 @@ export const GOALS_WIZARD_DATA: Category[] = [
         emoji: "🧘",
         explainer: "Gentle movements to help your muscles feel loose and happy. It's like giving your body a little hug!",
         purpose: [
-          { id: "morning", label: "Morning wake-up", emoji: "🌅", explainer: "Start your day with gentle stretching" },
-          { id: "bedtime", label: "Relax before bed", emoji: "🌙", explainer: "Unwind and relax before sleep", isDefault: true },
-          { id: "exercise", label: "After exercise", emoji: "🏋️", explainer: "Cool down after physical activity" },
-          { id: "tension", label: "Reduce tension", emoji: "😌", explainer: "Release muscle tightness and stress" }
+          { id: "flexibility", label: "Improve flexibility", emoji: "🤸", explainer: "Help your body move more easily" },
+          { id: "pain", label: "Reduce aches/pain", emoji: "💆", explainer: "Ease tension and soreness", isDefault: true },
+          { id: "relaxation", label: "Relaxation", emoji: "😌", explainer: "Help your mind and body relax" },
+          { id: "morning", label: "Wake up gently", emoji: "🌅", explainer: "Start your day feeling good" }
         ],
         details: [
-          { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Quick 5-minute stretch session", isDefault: true },
-          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Moderate 10-minute stretch session" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Longer 20-minute stretch session" },
+          { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Quick gentle stretches", isDefault: true },
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "More thorough stretching session" },
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Extended stretching routine" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         timing: [
-          { id: "morning-3week", label: "Morning, 3×/week", emoji: "🌅", explainer: "Three mornings per week" },
-          { id: "afterschool-5week", label: "After school, 5×/week", emoji: "🏫", explainer: "Five times after school" },
-          { id: "bedtime-5week", label: "Before bed, 5×/week", emoji: "🌙", explainer: "Five nights before bed", isDefault: true },
-          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" }
+          { id: "morning", label: "Every morning", emoji: "🌅", explainer: "Start each day with stretches", isDefault: true },
+          { id: "evening", label: "Every evening", emoji: "🌙", explainer: "End each day with stretches" },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week" }
         ],
         supports: [
-          { id: "video", label: "Guided video", emoji: "📱", explainer: "Follow along with stretching videos", isDefault: true },
-          { id: "checklist", label: "Checklist", emoji: "✅", explainer: "Track your stretching routine" },
-          { id: "reminder", label: "Reminder", emoji: "🔔", explainer: "Get notifications to stretch" },
-          { id: "audio", label: "Calming audio", emoji: "🎵", explainer: "Relaxing sounds while stretching" }
+          { id: "video", label: "Stretching videos", emoji: "📹", explainer: "Follow along with guided routines", isDefault: true },
+          { id: "mat", label: "Yoga mat", emoji: "🧘", explainer: "Comfortable surface for stretching" },
+          { id: "reminder", label: "Daily reminder", emoji: "🔔", explainer: "Don't forget to stretch" },
+          { id: "music", label: "Relaxing music", emoji: "🎵", explainer: "Calm music to stretch to" }
         ],
-        smartTemplate: "🧘 Stretch {focus} {timing} for {weeks}."
+        smartTemplate: "🧘 Stretch for {duration} {timing} from {start_date} to {due_date}."
       },
       {
         id: "sleep",
         title: "Better Sleep",
-        emoji: "🌙",
-        explainer: "Getting consistent, quality zzz's! It's about finding a rhythm that works for you and sticking to it.",
+        emoji: "😴",
+        explainer: "Getting good rest so you wake up feeling awesome! Good sleep helps everything else in your life work better.",
         purpose: [
-          { id: "wake-on-time", label: "Wake up on time", emoji: "⏰", explainer: "Get up when you need to without oversleeping" },
-          { id: "less-tired", label: "Feel less tired", emoji: "💤", explainer: "Have more energy during the day", isDefault: true },
-          { id: "focus", label: "Focus better", emoji: "📚", explainer: "Concentrate better on tasks and school" },
-          { id: "calm", label: "Calm down at night", emoji: "😌", explainer: "Feel more relaxed in the evening" }
+          { id: "energy", label: "More energy", emoji: "⚡", explainer: "Wake up feeling more energized", isDefault: true },
+          { id: "mood", label: "Better mood", emoji: "😊", explainer: "Feel happier and more positive" },
+          { id: "focus", label: "Better focus", emoji: "🎯", explainer: "Think more clearly during the day" },
+          { id: "health", label: "Overall health", emoji: "💪", explainer: "Support your body's natural healing" }
         ],
         details: [
-          { id: "10pm-7am-30min", label: "10pm-7am, screens off 30min before", emoji: "📱", explainer: "Bedtime 10pm, wake 7am, no screens 30 min before bed", isDefault: true },
-          { id: "9pm-6am-60min", label: "9pm-6am, screens off 60min before", emoji: "📱", explainer: "Earlier bedtime with longer screen break" },
-          { id: "11pm-8am-30min", label: "11pm-8am, screens off 30min before", emoji: "📱", explainer: "Later schedule, still consistent times" },
-          { id: "custom-routine", label: "Add calming routine (read/stretch/music)", emoji: "📖", explainer: "Include relaxing activities before bed" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom sleep routine" }
+          { id: "bedtime", label: "Regular bedtime", emoji: "🕘", explainer: "Go to bed at the same time", isDefault: true },
+          { id: "routine", label: "Bedtime routine", emoji: "📚", explainer: "Do calming activities before bed" },
+          { id: "environment", label: "Better sleep space", emoji: "🛏️", explainer: "Make bedroom more comfortable" },
+          { id: "screen", label: "Less screen time", emoji: "📱", explainer: "Reduce phone/TV before bed" }
         ],
         timing: [
-          { id: "5nights", label: "5 nights/week", emoji: "📅", explainer: "Five nights per week", isDefault: true },
-          { id: "everynight", label: "Every night", emoji: "📅", explainer: "Every single night" }
+          { id: "nightly", label: "Every night", emoji: "🌙", explainer: "Work on sleep every night", isDefault: true },
+          { id: "weeknight", label: "Weeknights", emoji: "📅", explainer: "Focus on school/work nights" },
+          { id: "gradual", label: "Gradually improve", emoji: "📈", explainer: "Small changes over time" }
         ],
         supports: [
-          { id: "bedtime-alarm", label: "Bedtime alarm", emoji: "⏰", explainer: "Reminder when it's time to get ready for bed", isDefault: true },
-          { id: "calming-activity", label: "Calming activity", emoji: "🧘", explainer: "Relaxing routine before sleep" },
-          { id: "sleep-log", label: "Sleep log", emoji: "📝", explainer: "Track your sleep patterns", isDefault: true }
+          { id: "schedule", label: "Sleep schedule", emoji: "⏰", explainer: "Plan when to sleep and wake", isDefault: true },
+          { id: "routine", label: "Relaxing routine", emoji: "🛀", explainer: "Calming activities before bed" },
+          { id: "environment", label: "Sleep-friendly room", emoji: "🏠", explainer: "Dark, cool, quiet space" },
+          { id: "tracker", label: "Sleep tracker", emoji: "📱", explainer: "Monitor your sleep patterns" }
         ],
-        smartTemplate: "🌙 Go to bed at {bedtime} and wake up at {waketime} from {start_date} to {due_date}."
+        smartTemplate: "😴 Work on {focus} {timing} from {start_date} to {due_date}."
       },
       {
-        id: "eat-healthier",
-        title: "Eat Healthier",
+        id: "eat-healthy",
+        title: "Eat Healthier", 
         emoji: "🥗",
-        explainer: "Fueling your body with good stuff! Think colorful foods that make you feel energized rather than sluggish.",
+        explainer: "Fuel your body with good stuff! Small changes in what you eat can make a big difference in how you feel.",
         purpose: [
-          { id: "energy", label: "More energy", emoji: "🍎", explainer: "Feel more energetic throughout the day", isDefault: true },
-          { id: "fitness", label: "Stay fit/strong", emoji: "💪", explainer: "Support your body's strength and health" },
-          { id: "stress", label: "Reduce stress (snack swaps)", emoji: "😌", explainer: "Replace stress-eating with healthier choices" },
-          { id: "new-foods", label: "Try new foods", emoji: "🥦", explainer: "Explore different healthy options" }
+          { id: "energy", label: "More energy", emoji: "⚡", explainer: "Feel more energized throughout the day", isDefault: true },
+          { id: "health", label: "Better health", emoji: "💪", explainer: "Support your overall wellbeing" },
+          { id: "mood", label: "Better mood", emoji: "😊", explainer: "Food affects how you feel" },
+          { id: "habit", label: "Build good habits", emoji: "🎯", explainer: "Develop lasting healthy eating patterns" }
         ],
         details: [
-          { id: "1fruit-lunch", label: "1 fruit at lunch", emoji: "🍎", explainer: "Add one piece of fruit to your lunch", isDefault: true },
-          { id: "2veggie-dinner", label: "2 veggies at dinner", emoji: "🥦", explainer: "Include two vegetables with dinner" },
-          { id: "1protein-meal", label: "1 protein per meal", emoji: "🥚", explainer: "Add protein to each main meal" },
-          { id: "snack-swap", label: "Healthy snack swap", emoji: "🥨", explainer: "Replace one unhealthy snack with a healthy option" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom healthy eating approach" }
+          { id: "fruit", label: "Eat more fruit", emoji: "🍎", explainer: "Add fruits to meals or snacks", isDefault: true },
+          { id: "veggies", label: "Eat more vegetables", emoji: "🥕", explainer: "Include vegetables in your meals" },
+          { id: "water", label: "Drink more water", emoji: "💧", explainer: "Replace sugary drinks with water" },
+          { id: "breakfast", label: "Eat good breakfast", emoji: "🍳", explainer: "Start your day with nutritious food" },
+          { id: "snacks", label: "Healthier snacks", emoji: "🥜", explainer: "Choose better options between meals" }
         ],
         timing: [
-          { id: "3days", label: "3 days/week", emoji: "📅", explainer: "Three days per week" },
-          { id: "5days", label: "5 days/week", emoji: "📅", explainer: "Five days per week", isDefault: true },
-          { id: "daily", label: "Every day", emoji: "📅", explainer: "Daily" }
+          { id: "daily", label: "Every day", emoji: "📅", explainer: "Make healthy choices daily", isDefault: true },
+          { id: "meal", label: "One meal per day", emoji: "🍽️", explainer: "Focus on making one meal healthier" },
+          { id: "gradual", label: "Gradually increase", emoji: "📈", explainer: "Slowly add more healthy foods" }
         ],
         supports: [
-          { id: "shopping-list", label: "Shopping list template", emoji: "📝", explainer: "Pre-made list of healthy foods", isDefault: true },
-          { id: "food-log", label: "Food log", emoji: "📊", explainer: "Track what you eat each day" },
-          { id: "snack-chart", label: "Snack swap chart", emoji: "🔄", explainer: "Visual guide for healthy snack alternatives", isDefault: true }
+          { id: "meal-plan", label: "Simple meal ideas", emoji: "📝", explainer: "Easy healthy meal suggestions", isDefault: true },
+          { id: "shopping", label: "Healthy shopping list", emoji: "🛒", explainer: "What to buy at the store" },
+          { id: "prep", label: "Meal prep tips", emoji: "🥘", explainer: "Prepare healthy food ahead of time" },
+          { id: "reminder", label: "Healthy choice reminders", emoji: "🔔", explainer: "Prompts to make good decisions" }
         ],
-        smartTemplate: "🥗 Eat {focus} from {start_date} to {due_date}."
+        smartTemplate: "🥗 {focus} {timing} from {start_date} to {due_date}."
       },
       {
         id: "drink-water",
         title: "Drink More Water",
         emoji: "💧",
-        explainer: "H2O is your friend! Your body runs on water, so keeping it topped up helps everything work better.",
+        explainer: "Keep your body happy and hydrated! Water helps everything in your body work better, and it's the simplest healthy change you can make.",
         purpose: [
-          { id: "healthy", label: "Stay healthy", emoji: "💧", explainer: "Keep your body working properly", isDefault: true },
-          { id: "energy", label: "More energy", emoji: "⚡", explainer: "Feel more energetic and alert" },
-          { id: "focus", label: "Focus better", emoji: "🧠", explainer: "Help your brain work better" },
-          { id: "replace-soda", label: "Replace soda/juice", emoji: "😌", explainer: "Substitute sugary drinks with water" }
+          { id: "hydration", label: "Stay hydrated", emoji: "💦", explainer: "Keep your body functioning well", isDefault: true },
+          { id: "energy", label: "More energy", emoji: "⚡", explainer: "Proper hydration boosts energy" },
+          { id: "skin", label: "Better skin", emoji: "✨", explainer: "Water helps your skin look healthy" },
+          { id: "focus", label: "Better focus", emoji: "🧠", explainer: "Hydration helps brain function" }
         ],
         details: [
-          { id: "1cup-morning", label: "1 cup in morning", emoji: "🌅", explainer: "Start your day with a glass of water", isDefault: true },
-          { id: "4cups-allday", label: "4 cups all day", emoji: "📅", explainer: "Spread 4 cups throughout the day" },
-          { id: "6cups-meals", label: "6 cups with meals", emoji: "🍽️", explainer: "Drink water with breakfast, lunch, and dinner" },
-          { id: "8cups-scheduled", label: "8 cups on schedule", emoji: "⏰", explainer: "Drink water at set times throughout the day" },
-          { id: "swap-soda", label: "Swap soda/juice with water", emoji: "🔄", explainer: "Replace one sugary drink with water each day" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom hydration approach" }
+          { id: "glasses", label: "6-8 glasses daily", emoji: "🥤", explainer: "Aim for 6-8 glasses throughout the day", isDefault: true },
+          { id: "morning", label: "Glass when waking", emoji: "🌅", explainer: "Start your day with water" },
+          { id: "meals", label: "Water with meals", emoji: "🍽️", explainer: "Drink water instead of other beverages" },
+          { id: "bottle", label: "Carry water bottle", emoji: "🍼", explainer: "Keep water with you throughout the day" }
         ],
         timing: [
-          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true }
+          { id: "daily", label: "Every day", emoji: "📅", explainer: "Drink more water each day", isDefault: true },
+          { id: "hourly", label: "Every hour", emoji: "⏰", explainer: "Sip water regularly throughout the day" },
+          { id: "meals", label: "With every meal", emoji: "🍽️", explainer: "Always have water during meals" }
         ],
         supports: [
-          { id: "tracker", label: "Hydration tracker", emoji: "📊", explainer: "Track how much water you drink", isDefault: true },
-          { id: "reminder", label: "Reminder", emoji: "🔔", explainer: "Get notifications to drink water", isDefault: true },
-          { id: "bottle", label: "Water bottle with markings", emoji: "🍼", explainer: "Bottle that shows how much you've drunk" }
+          { id: "bottle", label: "Water bottle", emoji: "🍼", explainer: "Keep a bottle with you", isDefault: true },
+          { id: "tracker", label: "Water tracker app", emoji: "📱", explainer: "Track how much you drink" },
+          { id: "reminder", label: "Drinking reminders", emoji: "🔔", explainer: "Get reminded to drink water" },
+          { id: "flavor", label: "Add natural flavor", emoji: "🍋", explainer: "Lemon, cucumber, or fruit for taste" }
         ],
-        smartTemplate: "💧 Drink {amount} {timing} for {weeks}."
-      }
-    ]
-  },
-  {
-    id: "education",
-    title: "Education", 
-    emoji: "📘",
-    goals: [
-      {
-        id: "read",
-        title: "Read Something",
-        emoji: "📖",
-        explainer: "Reading means looking at words in a book, article, or online and understanding them. You can read for learning or fun.",
-        purpose: [
-          { id: "learn", label: "Learn for school", emoji: "📚", explainer: "Gain knowledge for school subjects", isDefault: true },
-          { id: "relax", label: "Relax/enjoy", emoji: "😌", explainer: "Enjoy reading for pleasure" },
-          { id: "focus", label: "Practice focus", emoji: "🧠", explainer: "Build concentration skills" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Something else" }
-        ],
-        details: [
-          { id: "textbook", label: "Textbook", emoji: "📚", explainer: "Read from a textbook" },
-          { id: "article", label: "Article", emoji: "📰", explainer: "Read an article or blog post" },
-          { id: "comic", label: "Comic", emoji: "📚", explainer: "Read a comic or graphic novel" },
-          { id: "blog", label: "Blog", emoji: "💻", explainer: "Read a blog post or online content" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Something else" }
-        ],
-        amount: [
-          { id: "5pages", label: "5 pages", emoji: "📄", explainer: "Read 5 pages" },
-          { id: "10pages", label: "10 pages", emoji: "📄", explainer: "Read 10 pages" },
-          { id: "15pages", label: "15 pages", emoji: "📄", explainer: "Read 15 pages" },
-          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Read for 10 minutes" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Read for 20 minutes" },
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Read for 30 minutes" },
-          { id: "15min-default", label: "15 minutes", emoji: "⏰", explainer: "Read for 15 minutes", isDefault: true }
-        ],
-        timing: [
-          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" },
-          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true }
-        ],
-        supports: [
-          { id: "log", label: "Reading log", emoji: "📝", explainer: "Track what you read", isDefault: true },
-          { id: "suggestions", label: "List of suggested books/articles", emoji: "📚", explainer: "Get reading recommendations" },
-          { id: "reminders", label: "Reminders", emoji: "🔔", explainer: "Get notifications to remind you" }
-        ],
-        smartTemplate: "📖 Read {amount} from {start_date} to {due_date}."
-      },
-      {
-        id: "write",
-        title: "Write",
-        emoji: "✍️",
-        explainer: "Writing means putting your ideas into words. It could be journaling, doing homework, or writing a letter or story.",
-        purpose: [
-          { id: "practice", label: "Practice writing skills", emoji: "📓", explainer: "Improve your writing abilities", isDefault: true },
-          { id: "express", label: "Express feelings/journal", emoji: "😌", explainer: "Write about your thoughts and feelings" },
-          { id: "assignment", label: "Finish assignment", emoji: "📚", explainer: "Complete school writing tasks" }
-        ],
-        details: [
-          { id: "journal", label: "Journal", emoji: "📔", explainer: "Write in a personal journal" },
-          { id: "paragraph", label: "Paragraph", emoji: "📝", explainer: "Write a paragraph" },
-          { id: "letter", label: "Letter", emoji: "✉️", explainer: "Write a letter to someone" },
-          { id: "essay", label: "Essay", emoji: "📄", explainer: "Write an essay or report" },
-          { id: "story", label: "Story", emoji: "📖", explainer: "Write a creative story" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Something else" }
-        ],
-        topic: [
-          { id: "free-choice", label: "Free choice", emoji: "🆓", explainer: "Choose your own topic", isDefault: true },
-          { id: "school-assignment", label: "School assignment", emoji: "📚", explainer: "Complete a school writing assignment" }
-        ],
-        amount: [
-          { id: "2sentences", label: "2 sentences", emoji: "✏️", explainer: "Write 2 sentences", isDefault: true },
-          { id: "paragraph", label: "1 paragraph", emoji: "📝", explainer: "Write one paragraph" },
-          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Write for 10 minutes" },
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Write for 15 minutes" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Write for 20 minutes" }
-        ],
-        timing: [
-          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" },
-          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true }
-        ],
-        supports: [
-          { id: "prompts", label: "Writing prompt list", emoji: "💡", explainer: "Ideas to help you start writing", isDefault: true },
-          { id: "templates", label: "Templates (letter, essay)", emoji: "📋", explainer: "Writing structure guides" },
-          { id: "log", label: "Reflection log", emoji: "📝", explainer: "Track your writing progress" }
-        ],
-        smartTemplate: "✍️ Write {amount} from {start_date} to {due_date}."
-      },
-      {
-        id: "plan-week",
-        title: "Plan Week",
-        emoji: "📅",
-        explainer: "Planning means writing down tasks and activities so you don't forget. It helps you organize school, chores, and free time.",
-        purpose: [
-          { id: "schoolwork", label: "Stay on top of schoolwork", emoji: "🎓", explainer: "Organize school assignments and tasks", isDefault: true },
-          { id: "balance", label: "Balance school, chores, fun", emoji: "🏠", explainer: "Organize all aspects of your week" },
-          { id: "stress", label: "Reduce stress", emoji: "😌", explainer: "Feel more organized and less worried" }
-        ],
-        details: [
-          { id: "3tasks", label: "3 tasks for tomorrow", emoji: "📋", explainer: "Plan just 3 things for the next day", isDefault: true },
-          { id: "homework-chores", label: "Homework and chores", emoji: "📚", explainer: "Plan school and home responsibilities" },
-          { id: "full-week", label: "Full week planning", emoji: "📅", explainer: "Plan the entire upcoming week" },
-          { id: "15min", label: "15-20 minutes", emoji: "⏰", explainer: "Spend 15-20 minutes planning" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom planning approach" }
-        ],
-        timing: [
-          { id: "sunday", label: "Sunday evenings", emoji: "🌅", explainer: "Plan every Sunday", isDefault: true },
-          { id: "monday", label: "Monday evenings", emoji: "🌅", explainer: "Plan every Monday" }
-        ],
-        supports: [
-          { id: "planner", label: "Printable weekly planner", emoji: "📋", explainer: "Paper planning template", isDefault: true },
-          { id: "sync", label: "Calendar sync", emoji: "📱", explainer: "Connect with digital calendar" },
-          { id: "reminders", label: "Reminders", emoji: "🔔", explainer: "Get notifications to plan" }
-        ],
-        smartTemplate: "📅 Plan {scope} every {day} for {weeks}."
-      },
-      {
-        id: "solve-problem",
-        title: "Solve a Problem",
-        emoji: "🧩",
-        explainer: "Solving problems means finding an answer to a challenge. It could be math, a puzzle, or figuring out a real-life situation.",
-        purpose: [
-          { id: "math", label: "Practice math/logic", emoji: "📚", explainer: "Work on mathematical thinking skills", isDefault: true },
-          { id: "thinking", label: "Build thinking skills", emoji: "🧠", explainer: "Develop problem-solving abilities" },
-          { id: "real-life", label: "Solve real-life challenge", emoji: "🏠", explainer: "Address everyday problems" }
-        ],
-        details: [
-          { id: "1problem", label: "1 problem", emoji: "🔢", explainer: "Solve one problem", isDefault: true },
-          { id: "2problems", label: "2 problems", emoji: "🔢", explainer: "Solve two problems" },
-          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Work for 10 minutes" },
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Work for 15 minutes" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Work for 20 minutes" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom problem-solving approach" }
-        ],
-        timing: [
-          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" },
-          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true }
-        ],
-        supports: [
-          { id: "bank", label: "Problem set bank", emoji: "🏦", explainer: "Collection of practice problems", isDefault: true },
-          { id: "apps", label: "Puzzle app suggestions", emoji: "📱", explainer: "Recommended problem-solving apps" },
-          { id: "log", label: "Reflection log", emoji: "📝", explainer: "Track your problem-solving progress" }
-        ],
-        smartTemplate: "🧩 Solve {amount} from {start_date} to {due_date}."
-      },
-      {
-        id: "review-notes",
-        title: "Review Notes",
-        emoji: "📑",
-        explainer: "Reviewing notes means looking back at what you wrote in class to help remember. You can read, highlight, or use flashcards.",
-        purpose: [
-          { id: "test", label: "Prepare for test", emoji: "📚", explainer: "Get ready for an upcoming test", isDefault: true },
-          { id: "remember", label: "Remember lessons", emoji: "🧠", explainer: "Help remember what you learned" }
-        ],
-        details: [
-          { id: "1page", label: "1 page", emoji: "📄", explainer: "Review one page of notes", isDefault: true },
-          { id: "flashcards", label: "Make flashcards", emoji: "🃏", explainer: "Create flashcards for review" },
-          { id: "highlight", label: "Highlight notes", emoji: "🖍️", explainer: "Highlight important information" },
-          { id: "read-aloud", label: "Read aloud", emoji: "🗣️", explainer: "Read notes out loud" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom review approach" }
-        ],
-        timing: [
-          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
-          { id: "3before-test", label: "3× before test", emoji: "📅", explainer: "Three times before the test", isDefault: true },
-          { id: "daily-3weeks", label: "Daily for 3 weeks", emoji: "📅", explainer: "Every day for three weeks" }
-        ],
-        supports: [
-          { id: "template", label: "Flashcard template", emoji: "🃏", explainer: "Template for making flashcards", isDefault: true },
-          { id: "guide", label: "Highlighting guide", emoji: "🖍️", explainer: "Tips for effective highlighting" },
-          { id: "reminders", label: "Review reminders", emoji: "🔔", explainer: "Get notifications to review" }
-        ],
-        smartTemplate: "📑 Review {method} from {start_date} to {due_date}."
-      },
-      {
-        id: "study",
-        title: "Study",
-        emoji: "📚",
-        explainer: "Studying means focusing on school subjects to learn and remember. You can read, review, test yourself, or study with others.",
-        purpose: [
-          { id: "test", label: "Prepare for test", emoji: "🎓", explainer: "Get ready for an upcoming test", isDefault: true },
-          { id: "grades", label: "Improve grades", emoji: "📈", explainer: "Work to get better grades" },
-          { id: "learn", label: "Learn new things", emoji: "🧠", explainer: "Explore and understand new topics" }
-        ],
-        details: [
-          { id: "math", label: "Math", emoji: "🔢", explainer: "Study math concepts and problems", isDefault: true },
-          { id: "english", label: "English", emoji: "📖", explainer: "Study English language and literature" },
-          { id: "science", label: "Science", emoji: "🔬", explainer: "Study science concepts and experiments" },
-          { id: "history", label: "History", emoji: "📜", explainer: "Study historical events and concepts" },
-          { id: "flashcards", label: "Make flashcards", emoji: "🃏", explainer: "Create and review flashcards" },
-          { id: "practice-test", label: "Practice tests", emoji: "📝", explainer: "Take practice tests or quizzes" },
-          { id: "group-study", label: "Group study", emoji: "👥", explainer: "Study with classmates or friends" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom study approach" }
-        ],
-        timing: [
-          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
-          { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
-          { id: "until-test", label: "Until test date", emoji: "📅", explainer: "Continue until your test" }
-        ],
-        supports: [
-          { id: "guide", label: "Study guide template", emoji: "📋", explainer: "Template for organizing study material", isDefault: true },
-          { id: "tips", label: "Subject tips", emoji: "💡", explainer: "Study tips for specific subjects" },
-          { id: "reminders", label: "Study reminders", emoji: "🔔", explainer: "Get notifications to study" }
-        ],
-        smartTemplate: "📚 Study {subject} for {duration} from {start_date} to {due_date}."
-      }
-    ]
-  },
-  {
-    id: "employment",
-    title: "Employment",
-    emoji: "💼", 
-    goals: [
-      {
-        id: "interview",
-        title: "Practice for Interview",
-        emoji: "🎤",
-        explainer: "It's like a friendly chat where you show off why you'd be awesome at a job. Practice makes it way less scary!",
-        purpose: [
-          { id: "confidence", label: "Build confidence", emoji: "💪", explainer: "Feel more confident in interviews", isDefault: true },
-          { id: "prepare", label: "Prepare for a specific job", emoji: "🎯", explainer: "Get ready for an upcoming interview" },
-          { id: "improve", label: "Improve answers", emoji: "🧠", explainer: "Practice giving better responses" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom interview goal" }
-        ],
-        details: [
-          { id: "greeting", label: "Greeting / 1 Common Question", emoji: "👋", explainer: "Practice greeting and basic questions" },
-          { id: "tell-me", label: "Tell me about yourself", emoji: "🗣️", explainer: "Practice this common question", isDefault: true },
-          { id: "mock", label: "Full Mock", emoji: "🎭", explainer: "Complete practice interview" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom interview practice" }
-        ],
-        supports: [
-          { id: "checklist", label: "Interview checklist", emoji: "✅", explainer: "Greeting → Eye contact → Smile → Answer question → Say thank you", isDefault: true },
-          { id: "roleplay", label: "Practice with parent/coach", emoji: "👥", explainer: "Role-play with someone" },
-          { id: "script", label: "Role-play script", emoji: "📝", explainer: "Structured practice script" },
-          { id: "answers", label: "Sample answers", emoji: "💬", explainer: "Example responses to common questions" }
-        ],
-        smartTemplate: "🎤 Practice {focus} for {duration} from {start_date} to {due_date}."
-      },
-      {
-        id: "resume-create",
-        title: "Write Resume",
-        emoji: "📄",
-        explainer: "A resume is like a highlight reel of yourself - showing your best skills and experiences to potential employers.",
-        purpose: [
-          { id: "first-job", label: "First job", emoji: "🎓", explainer: "Creating your very first resume" },
-          { id: "internship", label: "Internship/summer job", emoji: "🔄", explainer: "Resume for internship or summer work" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom resume purpose" }
-        ],
-        supports: [
-          { id: "template", label: "Resume template", emoji: "📋", explainer: "Structured resume format", isDefault: true },
-          { id: "samples", label: "Sample resumes", emoji: "📄", explainer: "Examples for retail, food service, office" },
-          { id: "checklist", label: "Checklist of resume sections", emoji: "✅", explainer: "What to include in your resume" }
-        ],
-        smartTemplate: "📄 Complete {focus} resume by {due_date}."
-      },
-      {
-        id: "resume-update",
-        title: "Update Resume",
-        emoji: "➕",
-        explainer: "Keep your resume fresh by adding new skills, jobs, or experiences you've gained since your last version.",
-        purpose: [
-          { id: "add-job", label: "Add new job/skill", emoji: "➕", explainer: "Include recent work or skills" },
-          { id: "keep-current", label: "Keep it current", emoji: "✅", explainer: "Maintain up-to-date information" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom update purpose" }
-        ],
-        supports: [
-          { id: "checklist", label: "Resume update checklist", emoji: "✅", explainer: "What's new since last version?", isDefault: true }
-        ],
-        smartTemplate: "➕ Update resume with {focus} in {duration} by {deadline}."
-      },
-      {
-        id: "thank-you",
-        title: "Send Thank-You Letter",
-        emoji: "💌",
-        explainer: "A thank-you note shows appreciation and helps you stand out positively after an interview.",
-        purpose: [
-          { id: "appreciation", label: "Show appreciation", emoji: "🙏", explainer: "Express gratitude for the interview" },
-          { id: "stand-out", label: "Stand out after interview", emoji: "🎯", explainer: "Make a positive impression" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom thank-you purpose" }
-        ],
-        details: [
-          { id: "email", label: "Email", emoji: "📧", explainer: "Send electronic thank-you message", isDefault: true },
-          { id: "printed", label: "Printed", emoji: "📄", explainer: "Write and mail physical letter" },
-          { id: "three-parts", label: "Thank → Detail → Interest", emoji: "📝", explainer: "Thank them → Mention interview detail → Say you're excited" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom format" }
-        ],
-        supports: [
-          { id: "template", label: "Thank-you templates", emoji: "📋", explainer: "Sample thank-you messages", isDefault: true },
-          { id: "examples", label: "Example letters", emoji: "📄", explainer: "Complete thank-you letter examples" }
-        ],
-        smartTemplate: "💌 Send thank-you {format} {timeline} for each interview."
-      },
-      {
-        id: "find-companies",
-        title: "Find Companies",
-        emoji: "🏢",
-        explainer: "Research companies and organizations that might be hiring or could be good places to work.",
-        purpose: [
-          { id: "see-hiring", label: "See who is hiring", emoji: "🔍", explainer: "Find companies with job openings" },
-          { id: "target-industry", label: "Target industry", emoji: "🎯", explainer: "Focus on specific field or type of work" },
-          { id: "local-jobs", label: "Local jobs", emoji: "🏠", explainer: "Find nearby employment opportunities" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom company search purpose" }
-        ],
-        details: [
-          { id: "job-board", label: "Job board", emoji: "💻", explainer: "Search online job websites" },
-          { id: "bulletin", label: "Bulletin board", emoji: "📋", explainer: "Check physical job postings" },
-          { id: "social-media", label: "Social media", emoji: "📱", explainer: "Search on social platforms" },
-          { id: "ask-friend", label: "Ask friend", emoji: "👥", explainer: "Get recommendations from contacts" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom search method" }
-        ],
-        amount: [
-          { id: "2companies", label: "2 companies", emoji: "🏢", explainer: "Research two companies", isDefault: true },
-          { id: "3companies", label: "3 companies", emoji: "🏢", explainer: "Research three companies" },
-          { id: "5companies", label: "5 companies", emoji: "🏢", explainer: "Research five companies" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom number" }
-        ],
-        supports: [
-          { id: "job-links", label: "Job board links", emoji: "🔗", explainer: "Links to trusted job sites", isDefault: true },
-          { id: "template", label: "Company List template", emoji: "📋", explainer: "Printable company tracking sheet" }
-        ],
-        smartTemplate: "🏢 Search for {amount} companies {duration} from {start_date} to {due_date}."
-      },
-      {
-        id: "find-helpers",
-        title: "Find People that Can Help",
-        emoji: "🧑‍🤝‍🧑",
-        explainer: "Build your network by connecting with people who can offer advice, review your materials, or help with your job search.",
-        purpose: [
-          { id: "advice", label: "Get advice", emoji: "🤝", explainer: "Seek guidance from experienced people" },
-          { id: "job-search", label: "Help with job search", emoji: "🎯", explainer: "Get assistance finding opportunities" },
-          { id: "networking", label: "Practice networking", emoji: "📚", explainer: "Build professional relationship skills" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom networking purpose" }
-        ],
-        details: [
-          { id: "parent", label: "Parent", emoji: "👨‍👩‍👧‍👦", explainer: "Ask parent or family member for help", isDefault: true },
-          { id: "teacher", label: "Teacher", emoji: "👩‍🏫", explainer: "Reach out to teacher or counselor" },
-          { id: "job-coach", label: "Job coach", emoji: "💼", explainer: "Connect with employment specialist" },
-          { id: "friend", label: "Friend", emoji: "👥", explainer: "Ask friend or peer for assistance" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom contact" }
-        ],
-        topic: [
-          { id: "resume-review", label: "Resume review", emoji: "📄", explainer: "Have someone check your resume", isDefault: true },
-          { id: "mock-interview", label: "Mock interview", emoji: "🎤", explainer: "Practice interview with someone" },
-          { id: "job-leads", label: "Job leads", emoji: "🔍", explainer: "Get information about job openings" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom assistance" }
-        ],
-        supports: [
-          { id: "templates", label: "Intro message templates", emoji: "💬", explainer: "Scripts for reaching out to people", isDefault: true },
-          { id: "conversation", label: "Conversation starters", emoji: "🗣️", explainer: "Ideas for starting networking conversations" },
-          { id: "reminders", label: "Reminders", emoji: "🔔", explainer: "Notifications to follow up" }
-        ],
-        smartTemplate: "🧑‍🤝‍🧑 Ask {who} for {help} in {duration} by {timeline}."
+        smartTemplate: "💧 {focus} {timing} from {start_date} to {due_date}."
       }
     ]
   },
@@ -554,313 +790,166 @@ export const GOALS_WIZARD_DATA: Category[] = [
         emoji: "🛏️",
         explainer: "Starting your day by tidying up your sleep space. Try making your bed just 1 time this week.",
         purpose: [
-          { id: "tidy", label: "Keep room tidy", emoji: "🧹", explainer: "Keep your space organized", isDefault: true },
-          { id: "calm", label: "Feel calm/organized", emoji: "😌", explainer: "Start day with accomplished feeling" },
-          { id: "routine", label: "Start morning routine", emoji: "🌅", explainer: "Make it part of your daily routine" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "routine", label: "Build morning routine", emoji: "🌅", explainer: "Start your day with a positive habit", isDefault: true },
+          { id: "tidy", label: "Keep room tidy", emoji: "✨", explainer: "Make your space feel organized" },
+          { id: "pride", label: "Feel accomplished", emoji: "😊", explainer: "Start the day with a small win" }
+        ],
+        details: [
+          { id: "pull-up", label: "Pull covers up", emoji: "🛏️", explainer: "Just pull blankets and sheets neat", isDefault: true },
+          { id: "fluff", label: "Fluff pillows too", emoji: "🛏️", explainer: "Arrange pillows nicely" },
+          { id: "smooth", label: "Smooth everything", emoji: "🛏️", explainer: "Make it look tidy and neat" }
         ],
         timing: [
-          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true },
-          { id: "3week", label: "3× per week", emoji: "📅", explainer: "Three times per week" },
-          { id: "weekends", label: "Weekends only", emoji: "📅", explainer: "Saturdays and Sundays only" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+          { id: "morning", label: "Every morning", emoji: "🌅", explainer: "Make it part of getting up", isDefault: true },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three mornings per week" },
+          { id: "weekday", label: "Weekdays only", emoji: "📚", explainer: "School/work mornings" }
         ],
         supports: [
-          { id: "checklist", label: "Bed-making checklist with pictures", emoji: "✅", explainer: "Visual steps with pictures to follow", isDefault: true },
-          { id: "reminder", label: "Reminder → \"Make bed after waking up\"", emoji: "🔔", explainer: "Notification to make your bed after waking up" }
+          { id: "reminder", label: "Morning reminder", emoji: "📱", explainer: "Get a gentle reminder", isDefault: true },
+          { id: "routine", label: "Morning routine list", emoji: "📝", explainer: "Include bed-making in your routine" }
         ],
-        smartTemplate: "🛏️ Make my bed {timing} from {start_date} until {due_date}."
+        smartTemplate: "🛏️ {focus} {timing} from {start_date} to {due_date}."
       },
       {
         id: "set-table",
         title: "Set Table",
-        emoji: "🍽️",
-        explainer: "Help prepare the table for family meals. Set the table once for dinner this week.",
+        emoji: "🍽️", 
+        explainer: "Getting the table ready for meals - it's like preparing a special space for eating together!",
         purpose: [
-          { id: "help-family", label: "Help family", emoji: "👪", explainer: "Contribute to family meals", isDefault: true },
-          { id: "responsibility", label: "Learn daily responsibility", emoji: "🎓", explainer: "Practice taking on household responsibilities" },
-          { id: "meal-prep", label: "Get ready for meals", emoji: "🎉", explainer: "Prepare for enjoyable family meals" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "help", label: "Help family", emoji: "👨‍👩‍👧‍👦", explainer: "Contribute to family meal preparation", isDefault: true },
+          { id: "responsibility", label: "Take responsibility", emoji: "🎯", explainer: "Have your own important job" },
+          { id: "routine", label: "Build routine", emoji: "🔄", explainer: "Make it part of meal time" }
+        ],
+        details: [
+          { id: "plates", label: "Just plates/napkins", emoji: "🍽️", explainer: "Set out plates and napkins", isDefault: true },
+          { id: "utensils", label: "Plates + utensils", emoji: "🍴", explainer: "Include forks, knives, spoons" },
+          { id: "full", label: "Full table setting", emoji: "🍽️", explainer: "Plates, utensils, cups, napkins" }
         ],
         timing: [
-          { id: "dinner", label: "Dinner", emoji: "🌆", explainer: "Set table for dinner", isDefault: true },
-          { id: "breakfast", label: "Breakfast", emoji: "🌅", explainer: "Set table for breakfast" },
-          { id: "both", label: "Both", emoji: "🍽️", explainer: "Set table for both breakfast and dinner" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom meal timing" }
+          { id: "dinner", label: "Before dinner", emoji: "🌆", explainer: "Set table for evening meal", isDefault: true },
+          { id: "lunch", label: "Before lunch", emoji: "☀️", explainer: "Set table for midday meal" },
+          { id: "all-meals", label: "Before each meal", emoji: "🍽️", explainer: "Set table for all meals" }
         ],
         supports: [
-          { id: "picture-card", label: "Table-setting picture card", emoji: "📷", explainer: "Visual guide showing proper table setting", isDefault: true },
-          { id: "reminders", label: "Reminders tied to mealtimes", emoji: "🔔", explainer: "Notifications before meals" }
+          { id: "checklist", label: "Table setting guide", emoji: "📝", explainer: "What goes where on the table", isDefault: true },
+          { id: "timer", label: "Meal time reminder", emoji: "⏰", explainer: "Know when to set the table" }
         ],
-        smartTemplate: "🍽️ Set the {timing} table from {start_date} until {due_date}."
+        smartTemplate: "🍽️ Set table {details} {timing} from {start_date} to {due_date}."
       },
       {
-        id: "do-laundry",
+        id: "laundry",
         title: "Do Laundry",
-        emoji: "🧺",
-        explainer: "Learn to keep your clothes clean and fresh. Do laundry one time this week.",
+        emoji: "👕",
+        explainer: "Keeping your clothes clean and fresh! Even small steps like sorting or moving clothes to the dryer help a lot.",
         purpose: [
-          { id: "clean-clothes", label: "Keep clothes clean", emoji: "👕", explainer: "Maintain clean wardrobe" },
-          { id: "independence", label: "Learn independence", emoji: "🎓", explainer: "Develop independent living skills", isDefault: true },
-          { id: "help-home", label: "Help at home", emoji: "🏠", explainer: "Contribute to household chores" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "clean-clothes", label: "Have clean clothes", emoji: "✨", explainer: "Keep your wardrobe fresh and ready", isDefault: true },
+          { id: "independence", label: "Be more independent", emoji: "💪", explainer: "Take care of your own needs" },
+          { id: "help", label: "Help family", emoji: "👨‍👩‍👧‍👦", explainer: "Contribute to household tasks" }
+        ],
+        details: [
+          { id: "sort", label: "Sort dirty clothes", emoji: "👔", explainer: "Separate lights, darks, colors", isDefault: true },
+          { id: "load", label: "Load washing machine", emoji: "🌀", explainer: "Put clothes in washer" },
+          { id: "transfer", label: "Move to dryer", emoji: "🔥", explainer: "Transfer from washer to dryer" },
+          { id: "fold", label: "Fold clean clothes", emoji: "📚", explainer: "Fold and put away clothes" }
         ],
         timing: [
-          { id: "once-week", label: "Once a week", emoji: "📅", explainer: "One load per week", isDefault: true },
-          { id: "twice-week", label: "Twice a week", emoji: "📅", explainer: "Two loads per week" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+          { id: "1week", label: "1×/week", emoji: "📅", explainer: "One laundry task per week", isDefault: true },
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Two laundry tasks per week" },
+          { id: "when-needed", label: "When needed", emoji: "⏰", explainer: "Do laundry when clothes get dirty" }
         ],
         supports: [
-          { id: "checklist", label: "Laundry steps checklist with icons", emoji: "✅", explainer: "Visual step-by-step guide with icons", isDefault: true },
-          { id: "video", label: "Video demo for washer/dryer", emoji: "📱", explainer: "Video showing how to use washing machine and dryer" }
+          { id: "instructions", label: "Simple instructions", emoji: "📝", explainer: "Step-by-step laundry guide", isDefault: true },
+          { id: "sorting", label: "Sorting system", emoji: "🗂️", explainer: "Easy way to separate clothes" },
+          { id: "timer", label: "Laundry timer", emoji: "⏰", explainer: "Remember when cycles are done" }
         ],
-        smartTemplate: "🧺 Do 1 load of laundry {timing} from {start_date} until {due_date}."
+        smartTemplate: "👕 {task} {timing} from {start_date} to {due_date}."
       },
       {
-        id: "cook",
+        id: "cook", 
         title: "Cook",
         emoji: "🍳",
-        explainer: "Learn to prepare simple meals and snacks. Try making 1 simple meal this week.",
+        explainer: "Making something delicious! Even simple cooking like making a sandwich or heating something up counts as taking care of yourself.",
         purpose: [
-          { id: "new-skill", label: "Learn new skill", emoji: "🧑‍🍳", explainer: "Develop cooking abilities" },
-          { id: "healthier", label: "Eat healthier", emoji: "🥗", explainer: "Prepare nutritious meals", isDefault: true },
-          { id: "help-family", label: "Help family meals", emoji: "👪", explainer: "Contribute to family cooking" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "eat-well", label: "Eat better", emoji: "🥗", explainer: "Prepare nutritious meals for yourself", isDefault: true },
+          { id: "independence", label: "Be more independent", emoji: "💪", explainer: "Take care of your own food needs" },
+          { id: "help", label: "Help with family meals", emoji: "👨‍👩‍👧‍👦", explainer: "Contribute to cooking for others" },
+          { id: "skill", label: "Learn cooking skills", emoji: "🎯", explainer: "Develop useful life skills" }
+        ],
+        details: [
+          { id: "sandwich", label: "Make sandwich", emoji: "🥪", explainer: "Simple sandwich or wrap", isDefault: true },
+          { id: "reheat", label: "Reheat food safely", emoji: "🔥", explainer: "Use microwave or stove to warm food" },
+          { id: "simple", label: "Simple recipe", emoji: "📝", explainer: "Follow easy cooking instructions" },
+          { id: "help", label: "Help prepare meal", emoji: "👥", explainer: "Assist with family cooking" }
         ],
         timing: [
-          { id: "once", label: "Once", emoji: "📅", explainer: "Once per week" },
-          { id: "twice", label: "Twice", emoji: "📅", explainer: "Twice per week", isDefault: true },
-          { id: "3times", label: "3× per week", emoji: "📅", explainer: "Three times per week" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" },
-          { id: "10min", label: "10 minutes per session", emoji: "⏰", explainer: "10 minute cooking sessions" },
-          { id: "20min", label: "20 minutes per session", emoji: "⏰", explainer: "20 minute cooking sessions" },
-          { id: "30min", label: "30 minutes per session", emoji: "⏰", explainer: "30 minute cooking sessions" }
+          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Cook something once per week", isDefault: true },
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Cook twice per week" },
+          { id: "daily", label: "Help daily", emoji: "📅", explainer: "Help with cooking every day" }
         ],
         supports: [
-          { id: "visual-steps", label: "Visual cooking steps (wash, gather, cook, clean)", emoji: "👁️", explainer: "Picture guide for cooking process", isDefault: true },
-          { id: "checklist", label: "Shopping checklist template", emoji: "📝", explainer: "Template for ingredient shopping" }
+          { id: "recipes", label: "Simple recipes", emoji: "📝", explainer: "Easy recipes to follow", isDefault: true },
+          { id: "safety", label: "Kitchen safety tips", emoji: "⚠️", explainer: "How to cook safely" },
+          { id: "tools", label: "Basic cooking tools", emoji: "🔪", explainer: "What you need to cook with" }
         ],
-        smartTemplate: "🍳 Cook {timing} from {start_date} until {due_date}."
+        smartTemplate: "🍳 {task} {timing} from {start_date} to {due_date}."
       },
       {
-        id: "clean-area",
+        id: "clean",
         title: "Clean Area",
         emoji: "🧹",
-        explainer: "Keep your personal space tidy and organized. Clean your desk for 5 minutes this week.",
+        explainer: "Keeping your space tidy and organized! Even cleaning one small area makes a big difference in how your space feels.",
         purpose: [
-          { id: "tidy", label: "Tidy room/desk", emoji: "🧼", explainer: "Keep personal space organized", isDefault: true },
-          { id: "chores", label: "Help with chores", emoji: "🏠", explainer: "Contribute to household cleaning" },
-          { id: "stress", label: "Reduce stress", emoji: "😌", explainer: "Feel calmer in clean environment" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "organized", label: "Stay organized", emoji: "📋", explainer: "Keep your living space in order", isDefault: true },
+          { id: "comfortable", label: "Comfortable space", emoji: "😌", explainer: "Make your area pleasant to be in" },
+          { id: "help", label: "Help family", emoji: "👨‍👩‍👧‍👦", explainer: "Contribute to household cleanliness" },
+          { id: "responsibility", label: "Take responsibility", emoji: "🎯", explainer: "Take care of your own space" }
+        ],
+        details: [
+          { id: "desk", label: "Clean desk/table", emoji: "🗃️", explainer: "Organize your work or study area", isDefault: true },
+          { id: "room", label: "Tidy bedroom", emoji: "🛏️", explainer: "Pick up clothes, organize belongings" },
+          { id: "bathroom", label: "Wipe bathroom counter", emoji: "🚿", explainer: "Clean sink and counter area" },
+          { id: "kitchen", label: "Clean kitchen area", emoji: "🍽️", explainer: "Wipe counters, put things away" }
         ],
         timing: [
-          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true },
-          { id: "weekly", label: "Weekly", emoji: "📅", explainer: "Once per week" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" },
-          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "10 minute cleaning sessions" },
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "15 minute cleaning sessions" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute cleaning sessions" }
+          { id: "daily", label: "A little daily", emoji: "📅", explainer: "Clean something small each day", isDefault: true },
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Clean twice per week" },
+          { id: "weekend", label: "Weekend cleaning", emoji: "🌟", explainer: "Do cleaning on weekends" }
         ],
         supports: [
-          { id: "checklist", label: "Cleaning checklist with icons", emoji: "✅", explainer: "Visual cleaning steps guide", isDefault: true },
-          { id: "reflection", label: "Reflection log (\"How did it feel after cleaning?\")", emoji: "📝", explainer: "Track how cleaning makes you feel" }
+          { id: "checklist", label: "Cleaning checklist", emoji: "✅", explainer: "What to clean in each area", isDefault: true },
+          { id: "supplies", label: "Cleaning supplies", emoji: "🧽", explainer: "Have the right tools for cleaning" },
+          { id: "music", label: "Cleaning playlist", emoji: "🎵", explainer: "Make cleaning more fun with music" }
         ],
-        smartTemplate: "🧹 Clean my area {timing} from {start_date} until {due_date}."
+        smartTemplate: "🧹 Clean {area} {timing} from {start_date} to {due_date}."
       },
       {
         id: "shopping-list",
         title: "Write Shopping List",
         emoji: "📝",
-        explainer: "Plan what you need to buy before going shopping. Write 3 items you need this week.",
+        explainer: "Planning what you need before you go shopping! Making a list helps you remember everything and makes shopping easier.",
         purpose: [
-          { id: "groceries", label: "Plan groceries", emoji: "🛒", explainer: "Organize grocery shopping", isDefault: true },
-          { id: "household", label: "Buy household items", emoji: "🧼", explainer: "Plan for cleaning supplies and essentials" },
-          { id: "supplies", label: "Plan for clothes/supplies", emoji: "👕", explainer: "Organize shopping for personal items" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "organized", label: "Stay organized", emoji: "📋", explainer: "Be prepared before shopping", isDefault: true },
+          { id: "help", label: "Help family", emoji: "👨‍👩‍👧‍👦", explainer: "Contribute to household planning" },
+          { id: "independence", label: "Shop independently", emoji: "💪", explainer: "Be able to shop on your own" },
+          { id: "budget", label: "Stick to budget", emoji: "💰", explainer: "Only buy what you planned" }
+        ],
+        details: [
+          { id: "groceries", label: "Grocery list", emoji: "🛒", explainer: "List food and household items", isDefault: true },
+          { id: "personal", label: "Personal items", emoji: "🧴", explainer: "List toiletries and personal needs" },
+          { id: "school", label: "School supplies", emoji: "📚", explainer: "List items needed for school" },
+          { id: "clothes", label: "Clothing needs", emoji: "👕", explainer: "List clothing items needed" }
         ],
         timing: [
-          { id: "weekly", label: "Weekly", emoji: "📅", explainer: "Once per week", isDefault: true },
-          { id: "biweekly", label: "Every 2 weeks", emoji: "📅", explainer: "Every two weeks" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+          { id: "before", label: "Before shopping", emoji: "🛒", explainer: "Make list before each shopping trip", isDefault: true },
+          { id: "weekly", label: "Weekly", emoji: "📅", explainer: "Make a list once per week" },
+          { id: "monthly", label: "Monthly", emoji: "📅", explainer: "Plan monthly shopping needs" }
         ],
         supports: [
-          { id: "template", label: "Printable list template with checkboxes", emoji: "📋", explainer: "Pre-made shopping list template", isDefault: true },
-          { id: "reminder", label: "Reminder → \"Make list before Sunday shopping\"", emoji: "🔔", explainer: "Notification to make list before shopping trip" }
+          { id: "template", label: "List template", emoji: "📝", explainer: "Format for organizing your list", isDefault: true },
+          { id: "app", label: "Shopping list app", emoji: "📱", explainer: "Digital tool for making lists" },
+          { id: "categories", label: "Organize by category", emoji: "🗂️", explainer: "Group similar items together" }
         ],
         smartTemplate: "📝 Write a shopping list {timing} from {start_date} until {due_date}."
-      }
-    ]
-  },
-  {
-    id: "social-skills",
-    title: "Social Skills",
-    emoji: "🗣️",
-    goals: [
-      {
-        id: "say-hi",
-        title: "Say Hi",
-        emoji: "👋",
-        explainer: "Making friendly connections with simple greetings. Start by saying hi once this week.",
-        purpose: [
-          { id: "friends", label: "Make friends", emoji: "🤝", explainer: "Connect with new people", isDefault: true },
-          { id: "practice", label: "Practice social skill", emoji: "🎓", explainer: "Get better at social interactions" },
-          { id: "work-school", label: "Use at work/school", emoji: "🏢", explainer: "Be friendly in professional settings" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
-        ],
-        details: [
-          { id: "friend", label: "Friend", emoji: "👥", explainer: "Say hi to a friend" },
-          { id: "classmate", label: "Classmate", emoji: "🎓", explainer: "Say hi to someone from school", isDefault: true },
-          { id: "neighbor", label: "Neighbor", emoji: "🏘️", explainer: "Greet people in your neighborhood" },
-          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Say hi to teachers or staff" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom greeting target" }
-        ],
-        amount: [
-          { id: "smile-wave-hi", label: "Smile + Wave + Say \"Hi.\"", emoji: "😊", explainer: "Complete friendly greeting" },
-          { id: "just-hi", label: "Just say \"Hi.\"", emoji: "👋", explainer: "Simple greeting", isDefault: true }
-        ],
-        timing: [
-          { id: "once", label: "Once", emoji: "📅", explainer: "Once per day or week" },
-          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true },
-          { id: "3week", label: "3× per week", emoji: "📅", explainer: "Three times per week" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
-        ],
-        supports: [
-          { id: "script", label: "Social script card (\"Hi, how are you?\"), Reminder before school", emoji: "📝", explainer: "Practice phrases and reminders", isDefault: true }
-        ],
-        smartTemplate: "👋 Say hi to {details} {timing} from {start_date} until {due_date}."
-      },
-      {
-        id: "eye-contact",
-        title: "Eye Contact (3 Seconds)",
-        emoji: "👀",
-        explainer: "Practice making eye contact to show interest and build confidence. Try looking someone in the eyes for 3 seconds once a day.",
-        purpose: [
-          { id: "interest", label: "Show interest", emoji: "🧑‍🤝‍🧑", explainer: "Demonstrate you're paying attention", isDefault: true },
-          { id: "interviews", label: "Practice for interviews", emoji: "🎓", explainer: "Prepare for job or school interviews" },
-          { id: "confidence", label: "Build confidence", emoji: "😌", explainer: "Feel more self-assured" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
-        ],
-        details: [
-          { id: "mirror", label: "Mirror", emoji: "🪞", explainer: "Practice with yourself in mirror", isDefault: true },
-          { id: "parent", label: "Parent", emoji: "👨‍👩‍👧‍👦", explainer: "Practice with parent or guardian" },
-          { id: "friend", label: "Friend", emoji: "👥", explainer: "Practice with a friend" },
-          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Practice with teacher or coach" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom practice partner" }
-        ],
-        amount: [
-          { id: "3seconds", label: "3 seconds", emoji: "⏱️", explainer: "Look for 3 seconds", isDefault: true },
-          { id: "5seconds", label: "5 seconds", emoji: "⏱️", explainer: "Look for 5 seconds" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
-        ],
-        timing: [
-          { id: "once", label: "Once", emoji: "📅", explainer: "Once per day", isDefault: true },
-          { id: "twice", label: "Twice per day", emoji: "📅", explainer: "Two times per day" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
-        ],
-        supports: [
-          { id: "practice", label: "Practice with mirror or supportive partner, Reflection log (\"How did it feel?\")", emoji: "🪞", explainer: "Practice tools and reflection", isDefault: true }
-        ],
-        smartTemplate: "👀 Practice {amount} eye contact with {details} {timing} from {start_date} until {due_date}."
-      },
-      {
-        id: "text-how-are-you",
-        title: "Text \"How are you?\"",
-        emoji: "💬",
-        explainer: "Stay connected with friends through simple text messages. Send 1 text to a friend this week.",
-        purpose: [
-          { id: "connected", label: "Stay connected", emoji: "🤝", explainer: "Keep in touch with people", isDefault: true },
-          { id: "check-friend", label: "Check on a friend", emoji: "🧑‍🤝‍🧑", explainer: "Show you care about someone" },
-          { id: "practice", label: "Practice communication", emoji: "🎓", explainer: "Get better at reaching out" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
-        ],
-        details: [
-          { id: "friend", label: "Friend", emoji: "👥", explainer: "Text a friend", isDefault: true },
-          { id: "family", label: "Family", emoji: "👨‍👩‍👧‍👦", explainer: "Text family member" },
-          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Text teacher or coach" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom text recipient" }
-        ],
-        amount: [
-          { id: "after-school", label: "After school", emoji: "🏫", explainer: "Send text after school", isDefault: true },
-          { id: "evening", label: "Evening", emoji: "🌆", explainer: "Send text in the evening" },
-          { id: "weekend", label: "Weekend", emoji: "📅", explainer: "Send text on weekends" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom timing" }
-        ],
-        timing: [
-          { id: "once", label: "Once", emoji: "📅", explainer: "Once per week" },
-          { id: "twice", label: "Twice", emoji: "📅", explainer: "Twice per week" },
-          { id: "3week", label: "3× per week", emoji: "📅", explainer: "Three times per week", isDefault: true },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
-        ],
-        supports: [
-          { id: "templates", label: "Message templates, Conversation starter list", emoji: "💬", explainer: "Sample messages and conversation ideas", isDefault: true }
-        ],
-        smartTemplate: "💬 Text 'How are you?' to {details} {amount} {timing} from {start_date} until {due_date}."
-      },
-      {
-        id: "handshake-fist-pump",
-        title: "Handshake / Fist Pump",
-        emoji: "🤝",
-        explainer: "Practice professional and friendly greetings. Practice a handshake with a family member this week.",
-        purpose: [
-          { id: "interviews", label: "Job interviews", emoji: "👔", explainer: "Prepare for professional meetings", isDefault: true },
-          { id: "friends", label: "Greeting friends", emoji: "🤝", explainer: "Show friendship and respect" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
-        ],
-        details: [
-          { id: "parent", label: "Parent", emoji: "👨‍👩‍👧‍👦", explainer: "Practice with parent or guardian" },
-          { id: "friend", label: "Friend", emoji: "👥", explainer: "Practice with a friend", isDefault: true },
-          { id: "coach", label: "Coach", emoji: "👨‍🏫", explainer: "Practice with teacher or coach" },
-          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Practice with teacher" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom practice partner" }
-        ],
-        amount: [
-          { id: "full-greeting", label: "Look person in the eye → Smile → Handshake or fist pump → Say \"Hi\"", emoji: "👀", explainer: "Complete greeting sequence" },
-          { id: "fist-pump-only", label: "Fist pump only", emoji: "👊", explainer: "Just the fist bump", isDefault: true }
-        ],
-        timing: [
-          { id: "1time", label: "Practice 1 time per session", emoji: "📅", explainer: "One practice per session" },
-          { id: "2times", label: "Practice 2 times per session", emoji: "📅", explainer: "Two practices per session" },
-          { id: "3times", label: "Practice 3 times per session", emoji: "📅", explainer: "Three practices per session", isDefault: true },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom practice amount" }
-        ],
-        supports: [
-          { id: "guide", label: "Step-by-step guide with images, Practice with parent/friend", emoji: "📋", explainer: "Visual guides and practice support", isDefault: true }
-        ],
-        smartTemplate: "🤝 Practice {amount} with {details} {timing} from {start_date} until {due_date}."
-      },
-      {
-        id: "give-compliment",
-        title: "Give a Compliment",
-        emoji: "😊",
-        explainer: "Make others feel good with genuine compliments. Try giving 1 compliment this week.",
-        purpose: [
-          { id: "friends", label: "Make friends", emoji: "🤝", explainer: "Build new friendships", isDefault: true },
-          { id: "connections", label: "Build connections", emoji: "🧑‍🤝‍🧑", explainer: "Strengthen relationships" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
-        ],
-        details: [
-          { id: "friend", label: "Friend", emoji: "👥", explainer: "Compliment a friend" },
-          { id: "classmate", label: "Classmate", emoji: "🎓", explainer: "Compliment someone from school", isDefault: true },
-          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Compliment teacher or staff" },
-          { id: "family", label: "Family", emoji: "👨‍👩‍👧‍👦", explainer: "Compliment family member" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom compliment recipient" }
-        ],
-        amount: [
-          { id: "clothes", label: "Clothes", emoji: "👕", explainer: "Compliment their outfit", isDefault: true },
-          { id: "effort", label: "Effort", emoji: "💪", explainer: "Compliment their hard work" },
-          { id: "skill", label: "Skill", emoji: "🎯", explainer: "Compliment their abilities" },
-          { id: "personality", label: "Personality", emoji: "😊", explainer: "Compliment their character" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom compliment topic" }
-        ],
-        timing: [
-          { id: "1daily", label: "1 compliment per day", emoji: "📅", explainer: "One compliment each day", isDefault: true },
-          { id: "2week", label: "2× per week", emoji: "📅", explainer: "Two compliments per week" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
-        ],
-        supports: [
-          { id: "starter-list", label: "Compliment starter list, Reflection log (\"How did they react?\")", emoji: "📝", explainer: "Compliment ideas and reflection tracking", isDefault: true }
-        ],
-        smartTemplate: "😊 Give 1 compliment about {amount} to {details} {timing} from {start_date} until {due_date}."
       }
     ]
   },
@@ -873,400 +962,330 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "research-programs",
         title: "Research Colleges/Programs",
         emoji: "📚",
-        explainer: "Exploring what you could study or train for! Look up 1 college this week.",
+        explainer: "Exploring what's out there for your future! Whether it's college, trade school, or certificate programs - discover what excites you.",
         purpose: [
-          { id: "explore", label: "Explore options", emoji: "🏫", explainer: "See what's available to study", isDefault: true },
-          { id: "compare", label: "Compare programs", emoji: "📋", explainer: "Compare different schools and programs" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "explore", label: "Explore options", emoji: "🔍", explainer: "See what different programs offer", isDefault: true },
+          { id: "decide", label: "Help decide path", emoji: "🎯", explainer: "Figure out what you want to pursue" },
+          { id: "prepare", label: "Prepare for applications", emoji: "📝", explainer: "Get ready to apply somewhere" },
+          { id: "learn", label: "Learn about requirements", emoji: "📋", explainer: "Understand what you need to get in" }
         ],
-        details: [
-          { id: "website", label: "Website", emoji: "💻", explainer: "Look up programs online", isDefault: true },
-          { id: "book", label: "Book", emoji: "📚", explainer: "Use printed guides and catalogs" },
-          { id: "counselor", label: "Counselor", emoji: "👨‍🏫", explainer: "Talk with school counselor" },
-          { id: "fair", label: "College fair", emoji: "🎪", explainer: "Visit college fair or expo" }
+        topic: [
+          { id: "community", label: "Community colleges", emoji: "🏫", explainer: "2-year colleges in your area", isDefault: true },
+          { id: "university", label: "4-year universities", emoji: "🎓", explainer: "Bachelor's degree programs" },
+          { id: "trade", label: "Trade/technical schools", emoji: "🔧", explainer: "Hands-on skill training programs" },
+          { id: "certificate", label: "Certificate programs", emoji: "📜", explainer: "Short-term specialized training" },
+          { id: "online", label: "Online programs", emoji: "💻", explainer: "Distance learning options" }
         ],
         amount: [
-          { id: "1program", label: "1 program", emoji: "🎯", explainer: "Research one program", isDefault: true },
-          { id: "2programs", label: "2 programs", emoji: "🎯", explainer: "Research two programs" },
-          { id: "3programs", label: "3 programs", emoji: "🎯", explainer: "Research three programs" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom number of programs" }
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Half hour of research", isDefault: true },
+          { id: "1hour", label: "1 hour", emoji: "⏰", explainer: "Full hour of exploration" },
+          { id: "2programs", label: "2-3 programs", emoji: "📚", explainer: "Look at a few specific programs" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom research time" }
         ],
         timing: [
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute research sessions" },
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute research sessions", isDefault: true },
-          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "45 minute research sessions" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Research once per week", isDefault: true },
+          { id: "2week", label: "2×/week", emoji: "📅", explainer: "Research twice per week" },
+          { id: "weekend", label: "Weekend sessions", emoji: "🌟", explainer: "Research on weekends" }
         ],
         supports: [
-          { id: "resources", label: "College websites, comparison worksheet, counselor notes", emoji: "💻", explainer: "Online resources and organization tools", isDefault: true }
+          { id: "websites", label: "College websites", emoji: "🌐", explainer: "Official program information", isDefault: true },
+          { id: "counselor", label: "Guidance counselor", emoji: "👨‍🏫", explainer: "Get advice from school counselor" },
+          { id: "notebook", label: "Research notebook", emoji: "📝", explainer: "Keep track of what you find" },
+          { id: "virtual", label: "Virtual tours", emoji: "📹", explainer: "Online campus and program tours" }
         ],
-        smartTemplate: "📚 Spend {timing} researching {amount} from {start_date} until {due_date}."
+        smartTemplate: "📚 Research {type} for {duration} {timing} from {start_date} to {due_date}."
       },
       {
         id: "application-materials",
         title: "Prepare Application Materials",
-        emoji: "📝",
-        explainer: "Getting your application ready for submission. Write down your name and 1 activity this week.",
+        emoji: "📄",
+        explainer: "Getting your application materials ready! This includes things like transcripts, essays, and other documents you might need.",
         purpose: [
-          { id: "apply", label: "Apply for programs", emoji: "📄", explainer: "Get ready to submit applications", isDefault: true },
-          { id: "organized", label: "Stay organized", emoji: "🎯", explainer: "Keep application materials in order" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "apply", label: "Apply to programs", emoji: "🎯", explainer: "Get ready to submit applications", isDefault: true },
+          { id: "organize", label: "Get organized", emoji: "📋", explainer: "Have everything ready ahead of time" },
+          { id: "deadlines", label: "Meet deadlines", emoji: "⏰", explainer: "Be prepared before deadlines" },
+          { id: "strong", label: "Create strong application", emoji: "⭐", explainer: "Put your best foot forward" }
         ],
-        details: [
-          { id: "personal-statement", label: "Personal statement", emoji: "📝", explainer: "Write essay about yourself", isDefault: true },
-          { id: "resume", label: "Resume", emoji: "📋", explainer: "List your experiences and activities" },
-          { id: "transcript", label: "Transcript", emoji: "📜", explainer: "Request official school records" },
-          { id: "recommendations", label: "Recommendation letters", emoji: "✉️", explainer: "Ask teachers or mentors for letters" }
-        ],
-        amount: [
-          { id: "draft", label: "Draft", emoji: "✏️", explainer: "Create first version", isDefault: true },
-          { id: "request", label: "Request", emoji: "📞", explainer: "Ask others for help or documents" },
-          { id: "collect", label: "Collect", emoji: "📂", explainer: "Gather completed materials" }
+        topic: [
+          { id: "essay", label: "Personal essay", emoji: "✍️", explainer: "Write about yourself and goals", isDefault: true },
+          { id: "transcripts", label: "Request transcripts", emoji: "📋", explainer: "Get official school records" },
+          { id: "recommendations", label: "Ask for recommendations", emoji: "👥", explainer: "Request letters from teachers/mentors" },
+          { id: "portfolio", label: "Create portfolio", emoji: "🎨", explainer: "Showcase your work and skills" },
+          { id: "forms", label: "Fill out forms", emoji: "📝", explainer: "Complete application forms" }
         ],
         timing: [
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute work sessions" },
-          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "45 minute work sessions", isDefault: true },
-          { id: "60min", label: "60 minutes", emoji: "⏰", explainer: "60 minute work sessions" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+          { id: "early", label: "Start early", emoji: "🌅", explainer: "Begin well before deadlines", isDefault: true },
+          { id: "1week", label: "1 task/week", emoji: "📅", explainer: "Work on one thing per week" },
+          { id: "2week", label: "2 tasks/week", emoji: "📅", explainer: "Complete two tasks per week" }
         ],
         supports: [
-          { id: "tools", label: "Application checklist, sample essays, transcript request guide", emoji: "✅", explainer: "Tools to help organize application process", isDefault: true }
+          { id: "checklist", label: "Application checklist", emoji: "✅", explainer: "Track what you need to complete", isDefault: true },
+          { id: "help", label: "Get help with essays", emoji: "👨‍🏫", explainer: "Work with teacher or counselor" },
+          { id: "calendar", label: "Deadline calendar", emoji: "📅", explainer: "Track important dates" },
+          { id: "examples", label: "See examples", emoji: "👀", explainer: "Look at sample essays and applications" }
         ],
-        smartTemplate: "📝 Work on {details} for {timing} from {start_date} until {due_date}."
+        smartTemplate: "📄 Work on {material} {timing} from {start_date} to {due_date}."
       },
       {
         id: "financial-aid",
         title: "Explore Financial Aid",
-        emoji: "💵",
-        explainer: "Learning about ways to help pay for your education. Look up 1 scholarship online this week.",
+        emoji: "💰",
+        explainer: "Learning about ways to help pay for education! There are lots of options like grants, scholarships, and financial aid.",
         purpose: [
-          { id: "scholarships", label: "Learn about scholarships", emoji: "💰", explainer: "Find scholarship opportunities", isDefault: true },
-          { id: "fafsa", label: "Prepare for FAFSA/loans", emoji: "🧾", explainer: "Understand financial aid process" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "afford", label: "Make education affordable", emoji: "💰", explainer: "Find ways to pay for school", isDefault: true },
+          { id: "understand", label: "Understand options", emoji: "🧠", explainer: "Learn what financial aid is available" },
+          { id: "qualify", label: "See what you qualify for", emoji: "✅", explainer: "Find aid you're eligible to receive" },
+          { id: "plan", label: "Plan financially", emoji: "📊", explainer: "Create a plan for paying for education" }
         ],
-        details: [
-          { id: "fafsa", label: "FAFSA", emoji: "📋", explainer: "Federal financial aid application" },
-          { id: "scholarship", label: "Scholarship", emoji: "🏆", explainer: "Merit or need-based awards", isDefault: true },
-          { id: "grant", label: "Grant", emoji: "💵", explainer: "Free money for education" },
-          { id: "local", label: "Local program", emoji: "🏘️", explainer: "Community-based financial help" }
-        ],
-        amount: [
-          { id: "2notes", label: "Write down 2-3 key points", emoji: "📝", explainer: "Capture important information", isDefault: true }
+        topic: [
+          { id: "fafsa", label: "FAFSA application", emoji: "📝", explainer: "Federal financial aid application", isDefault: true },
+          { id: "scholarships", label: "Scholarship search", emoji: "🏆", explainer: "Find scholarships you can apply for" },
+          { id: "grants", label: "Grant opportunities", emoji: "🎁", explainer: "Free money that doesn't need to be repaid" },
+          { id: "work-study", label: "Work-study programs", emoji: "💼", explainer: "Part-time jobs for students" },
+          { id: "state", label: "State aid programs", emoji: "🏛️", explainer: "Financial aid from your state" }
         ],
         timing: [
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute research sessions", isDefault: true },
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute research sessions" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+          { id: "early", label: "Start early", emoji: "🌅", explainer: "Begin researching as soon as possible", isDefault: true },
+          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Work on financial aid once per week" },
+          { id: "deadline", label: "Before deadlines", emoji: "⏰", explainer: "Complete before application deadlines" }
         ],
         supports: [
-          { id: "resources", label: "Financial aid guide, FAFSA worksheet, scholarship search sites", emoji: "📊", explainer: "Resources for financial planning", isDefault: true }
+          { id: "counselor", label: "Financial aid counselor", emoji: "👨‍💼", explainer: "Get help from school financial aid office", isDefault: true },
+          { id: "websites", label: "Financial aid websites", emoji: "🌐", explainer: "Use official government and school resources" },
+          { id: "calculator", label: "Cost calculator", emoji: "🧮", explainer: "Estimate costs and aid amounts" },
+          { id: "family", label: "Family planning session", emoji: "👨‍👩‍👧‍👦", explainer: "Discuss finances with family" }
         ],
-        smartTemplate: "💵 Research {details} for {timing} from {start_date} until {due_date}."
+        smartTemplate: "💰 Explore {topic} {timing} from {start_date} to {due_date}."
       },
       {
-        id: "visit-campuses",
+        id: "visit-programs",
         title: "Visit Campuses / Programs",
-        emoji: "🧑‍🤝‍🧑",
-        explainer: "Seeing schools and programs in person or online. Visit 1 campus (in person or virtual) this week.",
+        emoji: "🏫",
+        explainer: "Check out schools and programs in person (or virtually)! Visiting helps you get a real feel for what a place is like.",
         purpose: [
-          { id: "environment", label: "See environment", emoji: "👀", explainer: "Experience the campus atmosphere", isDefault: true },
-          { id: "fit", label: "Compare fit", emoji: "🎯", explainer: "See if the school feels right for you" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "experience", label: "Get real experience", emoji: "👀", explainer: "See what the place is actually like", isDefault: true },
+          { id: "decide", label: "Help make decision", emoji: "🎯", explainer: "Figure out if it's right for you" },
+          { id: "questions", label: "Ask questions", emoji: "❓", explainer: "Get answers to things you're wondering about" },
+          { id: "comfort", label: "Feel more comfortable", emoji: "😌", explainer: "Become familiar with the environment" }
         ],
-        details: [
-          { id: "virtual", label: "Virtual", emoji: "💻", explainer: "Online campus tour", isDefault: true },
-          { id: "in-person", label: "In-person", emoji: "👣", explainer: "Visit campus physically" }
-        ],
-        amount: [
-          { id: "parent", label: "Parent", emoji: "👨‍👩‍👧‍👦", explainer: "Go with parent or guardian", isDefault: true },
-          { id: "friend", label: "Friend", emoji: "👥", explainer: "Bring a friend along" },
-          { id: "coach", label: "Coach", emoji: "👨‍🏫", explainer: "Go with counselor or coach" },
-          { id: "alone", label: "Alone", emoji: "🚶", explainer: "Visit by yourself" }
+        topic: [
+          { id: "campus-tour", label: "Campus tour", emoji: "🚶", explainer: "Walk around and see the facilities", isDefault: true },
+          { id: "virtual", label: "Virtual tour", emoji: "💻", explainer: "Online campus exploration" },
+          { id: "info-session", label: "Information session", emoji: "📢", explainer: "Attend presentation about the program" },
+          { id: "classes", label: "Sit in on classes", emoji: "🎓", explainer: "Experience what classes are like" },
+          { id: "students", label: "Talk to current students", emoji: "👥", explainer: "Get student perspectives" }
         ],
         timing: [
-          { id: "1hour", label: "1 hour", emoji: "⏰", explainer: "1 hour campus visits", isDefault: true },
-          { id: "2hours", label: "2 hours", emoji: "⏰", explainer: "2 hour campus visits" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+          { id: "1month", label: "1 visit/month", emoji: "📅", explainer: "Visit one place per month", isDefault: true },
+          { id: "2month", label: "2 visits/month", emoji: "📅", explainer: "Visit two places per month" },
+          { id: "spring", label: "During spring", emoji: "🌸", explainer: "Visit when schools are in session" }
         ],
         supports: [
-          { id: "guide", label: "Campus tour guide, checklist of questions, parent/coach reminder", emoji: "🗺️", explainer: "Support for campus visits", isDefault: true }
+          { id: "schedule", label: "Schedule visits", emoji: "📅", explainer: "Plan and book tour appointments", isDefault: true },
+          { id: "questions", label: "Prepare questions", emoji: "❓", explainer: "List what you want to know" },
+          { id: "transportation", label: "Plan transportation", emoji: "🚗", explainer: "Figure out how to get there" },
+          { id: "notes", label: "Take notes", emoji: "📝", explainer: "Remember what you liked/didn't like" }
         ],
-        smartTemplate: "🧑‍🤝‍🧑 Visit campus {details} for {timing} from {start_date} until {due_date}."
+        smartTemplate: "🏫 {activity} {timing} from {start_date} to {due_date}."
       }
     ]
   },
   {
-    id: "fun",
-    title: "Fun / Recreation",
-    emoji: "🎉",
+    id: "social-skills",
+    title: "Social Skills",
+    emoji: "🗣️",
     goals: [
       {
-        id: "play-sport-game",
-        title: "Play a Sport/Game",
-        emoji: "⚽",
-        explainer: "Stay active and have fun with sports or games. Try playing for 10 minutes this week.",
+        id: "say-hi",
+        title: "Say Hi",
+        emoji: "👋",
+        explainer: "The magic word that opens doors to friendships! Just a simple 'hi' can make someone's day and yours too.",
         purpose: [
-          { id: "active", label: "Stay active", emoji: "🏃", explainer: "Get your body moving", isDefault: true },
-          { id: "fun", label: "Have fun", emoji: "😊", explainer: "Enjoy yourself and relax" },
-          { id: "friends", label: "Play with friends", emoji: "🤝", explainer: "Spend time with others" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "friends", label: "🤝 Make friends", emoji: "🤝", explainer: "Connect with people and build relationships", isDefault: true },
+          { id: "practice", label: "🎓 Practice social skill", emoji: "🎓", explainer: "Build confidence in social situations" },
+          { id: "work", label: "🏢 Use at work/school", emoji: "🏢", explainer: "Improve professional and academic interactions" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose for greeting people" }
         ],
-        details: [
-          { id: "soccer", label: "Soccer", emoji: "⚽", explainer: "Play soccer/football", isDefault: true },
-          { id: "basketball", label: "Basketball", emoji: "🏀", explainer: "Play basketball" },
-          { id: "video-game", label: "Video game", emoji: "🎮", explainer: "Play video games" },
-          { id: "board-game", label: "Board game", emoji: "🎲", explainer: "Play board games" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom sport or game" }
+        who: [
+          { id: "friend", label: "Friend", emoji: "👤", explainer: "Greet someone you already know" },
+          { id: "classmate", label: "Classmate", emoji: "🎓", explainer: "Say hi to someone from school", isDefault: true },
+          { id: "neighbor", label: "Neighbor", emoji: "🏠", explainer: "Greet people in your neighborhood" },
+          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Greet instructors or authority figures" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Anyone else you want to greet" }
         ],
-        amount: [
-          { id: "friend", label: "Friend", emoji: "👥", explainer: "Play with a friend", isDefault: true },
-          { id: "family", label: "Family", emoji: "👨‍👩‍👧‍👦", explainer: "Play with family members" },
-          { id: "alone", label: "Alone", emoji: "🚶", explainer: "Play by yourself" },
-          { id: "team", label: "Team", emoji: "👥", explainer: "Play with a team" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom playing partner" }
+        how: [
+          { id: "smile-wave-hi", label: "Smile + Wave + Say \"Hi.\"", emoji: "😊", explainer: "Complete friendly greeting", isDefault: true },
+          { id: "just-hi", label: "Just say \"Hi\"", emoji: "👋", explainer: "Simple verbal greeting" },
+          { id: "wave", label: "Just wave", emoji: "👋", explainer: "Non-verbal greeting" },
+          { id: "other", label: "Other way", emoji: "➕", explainer: "Your own greeting style" }
         ],
         timing: [
-          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "10 minute sessions" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute sessions" },
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute sessions", isDefault: true },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+          { id: "once", label: "Once", emoji: "1️⃣", explainer: "Greet someone once during the time period" },
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Say hi to someone every day", isDefault: true },
+          { id: "3week", label: "3× per week", emoji: "📅", explainer: "Greet people three times per week" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
         ],
         supports: [
-          { id: "equipment", label: "Equipment checklist, reminder to bring water/snack", emoji: "⚽", explainer: "What you need to play and stay hydrated", isDefault: true }
+          { id: "script", label: "Social script card (\"Hi, how are you?\")", emoji: "📝", explainer: "Written reminder of what to say", isDefault: true },
+          { id: "reminder", label: "Reminder before school", emoji: "🔔", explainer: "Prompt to remember to greet people" },
+          { id: "practice", label: "Practice with family", emoji: "👨‍👩‍👧‍👦", explainer: "Role-play greetings at home" },
+          { id: "reflection", label: "Reflection log", emoji: "📔", explainer: "Track how greetings go" }
         ],
-        smartTemplate: "⚽ Play {details} with {amount} for {timing} from {start_date} until {due_date}."
+        smartTemplate: "Say hi to 1 {who} every {timing}, from {start_date} until {due_date}."
       },
       {
-        id: "art-craft",
-        title: "Do an Art or Craft",
-        emoji: "🎨",
-        explainer: "Express your creativity through art and crafts. Draw or color 1 picture this week.",
+        id: "eye-contact",
+        title: "Eye Contact (3 Seconds)",
+        emoji: "👀",
+        explainer: "Looking someone in the eyes shows you're paying attention and care about what they're saying. Just 3 seconds makes a big difference!",
         purpose: [
-          { id: "creative", label: "Be creative", emoji: "🎨", explainer: "Express yourself artistically", isDefault: true },
-          { id: "relax", label: "Relax", emoji: "😌", explainer: "Unwind and destress" },
-          { id: "skill", label: "Learn new skill", emoji: "🎓", explainer: "Develop artistic abilities" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "interest", label: "🧑‍🤝‍🧑 Show interest", emoji: "🧑‍🤝‍🧑", explainer: "Demonstrate that you care about the conversation", isDefault: true },
+          { id: "interview", label: "🎓 Practice for interviews", emoji: "🎓", explainer: "Build skills for job or school interviews" },
+          { id: "confidence", label: "😌 Build confidence", emoji: "😌", explainer: "Increase self-assurance in social situations" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose for practicing eye contact" }
         ],
-        details: [
-          { id: "drawing", label: "Drawing", emoji: "✏️", explainer: "Draw pictures or sketches", isDefault: true },
-          { id: "painting", label: "Painting", emoji: "🎨", explainer: "Paint with brushes and colors" },
-          { id: "coloring", label: "Coloring", emoji: "🖍️", explainer: "Color in coloring books" },
-          { id: "building", label: "Building", emoji: "🔨", explainer: "Build crafts or models" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom art or craft activity" }
+        who: [
+          { id: "mirror", label: "Mirror", emoji: "🪞", explainer: "Practice looking at yourself", isDefault: true },
+          { id: "parent", label: "Parent", emoji: "👨‍👩‍👧‍👦", explainer: "Practice with a trusted family member" },
+          { id: "friend", label: "Friend", emoji: "👤", explainer: "Practice with someone you know well" },
+          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Make eye contact during class" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Practice with someone else" }
         ],
-        amount: [
-          { id: "paper-crayons", label: "Paper + crayons", emoji: "📄", explainer: "Basic drawing materials", isDefault: true },
-          { id: "paints", label: "Paints", emoji: "🎨", explainer: "Paint and brushes" },
-          { id: "markers", label: "Markers", emoji: "🖍️", explainer: "Colored markers" },
-          { id: "glue", label: "Glue", emoji: "🧴", explainer: "Glue and craft supplies" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom materials" }
+        duration: [
+          { id: "3sec", label: "3 seconds", emoji: "⏱️", explainer: "Look for about 3 seconds", isDefault: true },
+          { id: "5sec", label: "5 seconds", emoji: "⏱️", explainer: "Hold eye contact for 5 seconds" },
+          { id: "natural", label: "Natural length", emoji: "👁️", explainer: "As long as feels comfortable" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         timing: [
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "15 minute sessions" },
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute sessions", isDefault: true },
-          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "45 minute sessions" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
-        ],
-        supports: [
-          { id: "supplies", label: "Art supplies list, creative ideas starter sheet", emoji: "🎨", explainer: "Materials and inspiration for art projects", isDefault: true }
-        ],
-        smartTemplate: "🎨 Do {details} with {amount} for {timing} from {start_date} until {due_date}."
-      },
-      {
-        id: "music",
-        title: "Listen to or Play Music",
-        emoji: "🎵",
-        explainer: "Enjoy music through listening or playing instruments. Listen to 1 song this week.",
-        purpose: [
-          { id: "relax", label: "Relax", emoji: "🎧", explainer: "Unwind with music" },
-          { id: "practice", label: "Practice an instrument", emoji: "🎹", explainer: "Improve musical skills", isDefault: true },
-          { id: "hobby", label: "Enjoy hobbies", emoji: "🎶", explainer: "Have fun with music" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
-        ],
-        details: [
-          { id: "listen", label: "Listen", emoji: "🎧", explainer: "Listen to music", isDefault: true },
-          { id: "play-instrument", label: "Play instrument", emoji: "🎹", explainer: "Play piano, guitar, etc." },
-          { id: "sing", label: "Sing", emoji: "🎤", explainer: "Sing songs" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom music activity" }
-        ],
-        amount: [
-          { id: "after-school", label: "After school", emoji: "🏫", explainer: "Right after school" },
-          { id: "evening", label: "Evening", emoji: "🌆", explainer: "In the evening", isDefault: true },
-          { id: "weekend", label: "Weekend", emoji: "📅", explainer: "On weekends" },
+          { id: "once", label: "Once", emoji: "1️⃣", explainer: "Practice once during the time period" },
+          { id: "twice", label: "Twice per day", emoji: "2️⃣", explainer: "Practice twice each day", isDefault: true },
+          { id: "conversation", label: "During conversations", emoji: "💬", explainer: "Practice when talking with people" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom timing" }
         ],
-        timing: [
-          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "10 minute sessions" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute sessions", isDefault: true },
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute sessions" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
-        ],
         supports: [
-          { id: "music-tools", label: "Playlist template, practice schedule", emoji: "🎵", explainer: "Tools to organize your music time", isDefault: true }
+          { id: "mirror", label: "Practice with mirror or supportive partner", emoji: "🪞", explainer: "Safe environment to practice", isDefault: true },
+          { id: "log", label: "Reflection log (\"How did it feel?\")", emoji: "📔", explainer: "Track your progress and feelings" },
+          { id: "reminder", label: "Gentle reminders", emoji: "🔔", explainer: "Prompts to remember to make eye contact" },
+          { id: "breathing", label: "Calming breathing", emoji: "🫁", explainer: "Stay relaxed while practicing" }
         ],
-        smartTemplate: "🎵 {details} for {timing} {amount} from {start_date} until {due_date}."
+        smartTemplate: "Practice {duration} eye contact with a {who} {timing}, from {start_date} until {due_date}."
       },
       {
-        id: "read-watch",
-        title: "Read or Watch Something Fun",
-        emoji: "📚",
-        explainer: "Enjoy stories and entertainment through reading or watching. Read 1 short story or watch 1 show this week.",
+        id: "text-how-are-you",
+        title: "Text \"How are you?\"",
+        emoji: "📱",
+        explainer: "A simple text message that shows you care! It's an easy way to stay connected with people and let them know you're thinking of them.",
         purpose: [
-          { id: "learn", label: "Learn new things", emoji: "📖", explainer: "Discover new information", isDefault: true },
-          { id: "relax", label: "Relax and enjoy", emoji: "🎬", explainer: "Have fun and unwind" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "connected", label: "🤝 Stay connected", emoji: "🤝", explainer: "Maintain relationships with people you care about", isDefault: true },
+          { id: "check", label: "🧑‍🤝‍🧑 Check on a friend", emoji: "🧑‍🤝‍🧑", explainer: "See how someone is doing" },
+          { id: "practice", label: "🎓 Practice communication", emoji: "🎓", explainer: "Build your communication skills" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose for texting" }
         ],
-        details: [
-          { id: "read-book", label: "Read book", emoji: "📚", explainer: "Read a book" },
-          { id: "comic", label: "Comic", emoji: "📰", explainer: "Read comics or graphic novels" },
-          { id: "magazine", label: "Magazine", emoji: "📖", explainer: "Read magazines" },
-          { id: "watch-show", label: "Watch show", emoji: "📺", explainer: "Watch TV shows", isDefault: true },
-          { id: "movie", label: "Movie", emoji: "🎬", explainer: "Watch movies" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom reading or watching" }
+        who: [
+          { id: "friend", label: "Friend", emoji: "👤", explainer: "Text a friend you want to stay in touch with", isDefault: true },
+          { id: "family", label: "Family", emoji: "👨‍👩‍👧‍👦", explainer: "Check in with a family member" },
+          { id: "classmate", label: "Classmate", emoji: "🎓", explainer: "Reach out to someone from school" },
+          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Send appropriate message to instructor" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Text someone else important to you" }
         ],
-        amount: [
-          { id: "home", label: "Home", emoji: "🏠", explainer: "At home", isDefault: true },
-          { id: "library", label: "Library", emoji: "📚", explainer: "At the library" },
-          { id: "theater", label: "Theater", emoji: "🎭", explainer: "At movie theater" },
-          { id: "online", label: "Online", emoji: "💻", explainer: "Online streaming" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom location" }
+        when: [
+          { id: "after-school", label: "After school", emoji: "🏫", explainer: "Send message in the afternoon", isDefault: true },
+          { id: "evening", label: "Evening", emoji: "🌙", explainer: "Text during evening hours" },
+          { id: "weekend", label: "Weekend", emoji: "🌟", explainer: "Reach out during weekend" },
+          { id: "other", label: "Other time", emoji: "⏰", explainer: "Choose your own timing" }
         ],
         timing: [
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "15 minute sessions" },
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute sessions", isDefault: true },
-          { id: "60min", label: "60 minutes", emoji: "⏰", explainer: "60 minute sessions" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+          { id: "once", label: "Once", emoji: "1️⃣", explainer: "Send one text during the time period" },
+          { id: "twice", label: "Twice", emoji: "2️⃣", explainer: "Send two texts during the time period" },
+          { id: "3week", label: "3× per week", emoji: "📅", explainer: "Text someone three times per week", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
         ],
         supports: [
-          { id: "lists", label: "Book/movie list, reading log", emoji: "📝", explainer: "Track what you read and watch", isDefault: true }
+          { id: "templates", label: "Message templates", emoji: "📝", explainer: "Examples of what to text", isDefault: true },
+          { id: "starters", label: "Conversation starter list", emoji: "💬", explainer: "Ideas for starting conversations" },
+          { id: "responses", label: "Response ideas", emoji: "💡", explainer: "How to reply to their messages" },
+          { id: "timing", label: "Good timing reminders", emoji: "⏰", explainer: "When it's appropriate to text" }
         ],
-        smartTemplate: "📚 {details} at {amount} for {timing} from {start_date} until {due_date}."
+        smartTemplate: "Text 'How are you?' to 1 {who} every {when}, {timing}, from {start_date} until {due_date}."
       },
       {
-        id: "friends-activity",
-        title: "Do a Fun Activity with Friends",
-        emoji: "👥",
-        explainer: "Spend quality time with friends doing fun activities. Plan 1 fun hangout this week.",
+        id: "handshake-fist-pump",
+        title: "Handshake / Fist Pump",
+        emoji: "🤝",
+        explainer: "A friendly way to greet people that shows respect and friendliness! Practice makes it feel natural and confident.",
         purpose: [
-          { id: "together", label: "Spend time together", emoji: "🤝", explainer: "Enjoy each other's company", isDefault: true },
-          { id: "friendships", label: "Build friendships", emoji: "😊", explainer: "Strengthen relationships" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+          { id: "interviews", label: "👔 Job interviews", emoji: "👔", explainer: "Professional greeting for work situations", isDefault: true },
+          { id: "friends", label: "🤝 Greeting friends", emoji: "🤝", explainer: "Casual way to say hello to people you know" },
+          { id: "confidence", label: "😌 Build confidence", emoji: "😌", explainer: "Feel more self-assured in social situations" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose for practicing greetings" }
         ],
-        details: [
-          { id: "movie", label: "Movie", emoji: "🎬", explainer: "Watch movies together", isDefault: true },
-          { id: "bowling", label: "Bowling", emoji: "🎳", explainer: "Go bowling" },
-          { id: "picnic", label: "Picnic", emoji: "🧺", explainer: "Have a picnic" },
-          { id: "game-night", label: "Game night", emoji: "🎲", explainer: "Play games together" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom activity" }
+        who: [
+          { id: "parent", label: "Parent", emoji: "👨‍👩‍👧‍👦", explainer: "Practice with a family member" },
+          { id: "friend", label: "Friend", emoji: "👤", explainer: "Practice with someone you know", isDefault: true },
+          { id: "coach", label: "Coach", emoji: "🏃‍♂️", explainer: "Practice with a coach or mentor" },
+          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Practice with an instructor" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Practice with someone else" }
         ],
-        amount: [
-          { id: "friend", label: "Friend", emoji: "👤", explainer: "With one friend", isDefault: true },
-          { id: "family", label: "Family", emoji: "👨‍👩‍👧‍👦", explainer: "With family members" },
-          { id: "group", label: "Group", emoji: "👥", explainer: "With a group of friends" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom companion choice" }
+        how: [
+          { id: "full", label: "Look person in the eye → Smile → Handshake or fist pump → Say \"Hi\"", emoji: "😊", explainer: "Complete professional greeting", isDefault: true },
+          { id: "fist-only", label: "Fist pump only", emoji: "👊", explainer: "Simple fist bump greeting" },
+          { id: "handshake-only", label: "Handshake only", emoji: "🤝", explainer: "Traditional handshake" },
+          { id: "other", label: "Other way", emoji: "➕", explainer: "Your own greeting style" }
         ],
         timing: [
-          { id: "1hour", label: "1 hour", emoji: "⏰", explainer: "1 hour activities" },
-          { id: "2hours", label: "2 hours", emoji: "⏰", explainer: "2 hour activities", isDefault: true },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+          { id: "1session", label: "Practice 1", emoji: "1️⃣", explainer: "One practice attempt per session" },
+          { id: "2session", label: "Practice 2", emoji: "2️⃣", explainer: "Two practice attempts per session" },
+          { id: "3session", label: "Practice 3 times per session", emoji: "3️⃣", explainer: "Three practice attempts per session", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom number of practice attempts" }
         ],
         supports: [
-          { id: "ideas", label: "Ideas list (bowling, movies, picnic), reminder text template", emoji: "💡", explainer: "Activity suggestions and planning help", isDefault: true }
+          { id: "guide", label: "Step-by-step guide with images", emoji: "📸", explainer: "Visual instructions for proper technique", isDefault: true },
+          { id: "practice", label: "Practice with parent/friend", emoji: "👥", explainer: "Safe environment to learn" },
+          { id: "feedback", label: "Gentle feedback", emoji: "💬", explainer: "Tips for improvement" },
+          { id: "confidence", label: "Confidence building", emoji: "💪", explainer: "Encouragement and positive reinforcement" }
         ],
-        smartTemplate: "👥 Do {details} with {amount} for {timing} from {start_date} until {due_date}."
+        smartTemplate: "Practice handshake with a {who} {timing} each session, twice a week, from {start_date} until {due_date}."
+      },
+      {
+        id: "give-compliment",
+        title: "Give a Compliment",
+        emoji: "😊",
+        explainer: "Saying something nice to make someone else feel good! Compliments spread happiness and help build friendships.",
+        purpose: [
+          { id: "friends", label: "🤝 Make friends", emoji: "🤝", explainer: "Connect with people through kindness", isDefault: true },
+          { id: "connections", label: "🧑‍🤝‍🧑 Build connections", emoji: "🧑‍🤝‍🧑", explainer: "Strengthen relationships with others" },
+          { id: "kindness", label: "💕 Spread kindness", emoji: "💕", explainer: "Make the world a little brighter" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose for giving compliments" }
+        ],
+        who: [
+          { id: "friend", label: "Friend", emoji: "👤", explainer: "Compliment someone you already know" },
+          { id: "classmate", label: "Classmate", emoji: "🎓", explainer: "Say something nice to someone from school", isDefault: true },
+          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Appreciate an instructor" },
+          { id: "family", label: "Family", emoji: "👨‍👩‍👧‍👦", explainer: "Compliment a family member" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Compliment someone else" }
+        ],
+        what: [
+          { id: "clothes", label: "Clothes", emoji: "👕", explainer: "\"I like your shirt!\" or similar", isDefault: true },
+          { id: "effort", label: "Effort", emoji: "💪", explainer: "\"You worked really hard on that!\"" },
+          { id: "skill", label: "Skill", emoji: "🎯", explainer: "\"You're really good at that!\"" },
+          { id: "personality", label: "Personality", emoji: "😊", explainer: "\"You're so kind!\" or \"You're funny!\"" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Compliment something else" }
+        ],
+        timing: [
+          { id: "1day", label: "1 compliment per day", emoji: "📅", explainer: "Give one compliment each day" },
+          { id: "2week", label: "2× per week", emoji: "📅", explainer: "Give compliments twice per week", isDefault: true },
+          { id: "3week", label: "3× per week", emoji: "📅", explainer: "Give compliments three times per week" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        supports: [
+          { id: "list", label: "Compliment starter list", emoji: "📝", explainer: "Ideas for what to say", isDefault: true },
+          { id: "log", label: "Reflection log (\"How did they react?\")", emoji: "📔", explainer: "Track how compliments are received" },
+          { id: "practice", label: "Practice with family", emoji: "👨‍👩‍👧‍👦", explainer: "Try giving compliments at home first" },
+          { id: "timing", label: "Good timing tips", emoji: "⏰", explainer: "When it's appropriate to give compliments" }
+        ],
+        smartTemplate: "Give 1 compliment to a {who} {timing}, from {start_date} until {due_date}."
       }
     ]
-  }
-];
-
-// Fallback option for "I don't know"
-export const FALLBACK_OPTION: GoalOption = {
-  id: "unsure",
-  label: "I'm not sure",
-  emoji: "🤔",
-  explainer: "No worries! We've got some super gentle starter ideas that feel totally doable."
-};
-
-// Starter goals for "I'm not sure" fallback
-export const STARTER_GOALS: CategoryGoal[] = [
-  {
-    id: "drink-water",
-    title: "Drink Water",
-    emoji: "💧",
-    explainer: "Start your day by drinking a glass of water. It's simple and healthy!",
-    purpose: [
-      { id: "hydration", label: "Stay hydrated", emoji: "💧", explainer: "Keep your body healthy", isDefault: true }
-    ],
-    details: [
-      { id: "1-glass-morning", label: "1 glass in the morning", emoji: "🌅", explainer: "One glass when you wake up", isDefault: true },
-      { id: "other", label: "Other", emoji: "➕", explainer: "Custom water drinking approach" }
-    ],
-    timing: [
-      { id: "daily", label: "Daily", emoji: "📅", explainer: "Every morning", isDefault: true }
-    ],
-    supports: [
-      { id: "reminder", label: "Morning reminder", emoji: "🔔", explainer: "Get a reminder to drink water", isDefault: true }
-    ],
-    smartTemplate: "💧 Drink {amount} {timing} for {duration}."
-  },
-  {
-    id: "make-bed",
-    title: "Make Bed",
-    emoji: "🛏️",
-    explainer: "Start your day by making your bed. It takes 2 minutes and feels great!",
-    purpose: [
-      { id: "routine", label: "Morning routine", emoji: "🌅", explainer: "Start your day with accomplishment", isDefault: true }
-    ],
-    details: [
-      { id: "simple-tidy", label: "Simple tidy", emoji: "✨", explainer: "Just pull covers and fluff pillows", isDefault: true },
-      { id: "other", label: "Other", emoji: "➕", explainer: "Custom bed making style" }
-    ],
-    timing: [
-      { id: "daily", label: "Daily", emoji: "📅", explainer: "Every morning", isDefault: true }
-    ],
-    supports: [
-      { id: "reminder", label: "Morning reminder", emoji: "🔔", explainer: "Get a reminder to make your bed", isDefault: true }
-    ],
-    smartTemplate: "🛏️ Make bed {style} {timing} for {duration}."
-  },
-  {
-    id: "say-hi",
-    title: "Say Hi",
-    emoji: "👋",
-    explainer: "Greet someone new or someone you haven't talked to in a while. Small connections matter!",
-    purpose: [
-      { id: "connection", label: "Social connection", emoji: "🤝", explainer: "Build relationships with others", isDefault: true }
-    ],
-    details: [
-      { id: "one-person", label: "To 1 person", emoji: "👤", explainer: "Say hi to one person each day", isDefault: true },
-      { id: "other", label: "Other", emoji: "➕", explainer: "Custom greeting approach" }
-    ],
-    timing: [
-      { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true }
-    ],
-    supports: [
-      { id: "log", label: "Connection log", emoji: "📝", explainer: "Track the people you greet", isDefault: true }
-    ],
-    smartTemplate: "👋 Say hi {target} {timing} for {duration}."
-  },
-  {
-    id: "listen-music",
-    title: "Listen to Music",
-    emoji: "🎶",
-    explainer: "Take 5 minutes to listen to your favorite song. Music can boost your mood instantly!",
-    purpose: [
-      { id: "mood", label: "Boost mood", emoji: "😊", explainer: "Feel happier and more energized", isDefault: true }
-    ],
-    details: [
-      { id: "favorite-song", label: "1 favorite song", emoji: "🎵", explainer: "Listen to a song you love", isDefault: true },
-      { id: "other", label: "Other", emoji: "➕", explainer: "Custom music listening approach" }
-    ],
-    timing: [
-      { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true }
-    ],
-    supports: [
-      { id: "playlist", label: "Mood playlist", emoji: "🎧", explainer: "Create a playlist of uplifting songs", isDefault: true }
-    ],
-    smartTemplate: "🎶 Listen to {music} {timing} for {duration}."
   }
 ];
