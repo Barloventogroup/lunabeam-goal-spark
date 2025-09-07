@@ -11,13 +11,6 @@ import { GOALS_WIZARD_DATA, FALLBACK_OPTION, STARTER_GOALS, Category, CategoryGo
 import { useToast } from '@/hooks/use-toast';
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { 
-  AccessibilityPanel, 
-  ReEngagementPanel, 
-  useVoiceInput, 
-  useTextToSpeech, 
-  ConfettiAnimation 
-} from './accessibility-features';
 import { AIService } from '@/services/aiService';
 import { goalsService, stepsService } from '@/services/goalsService';
 import type { GoalDomain } from '@/types';
@@ -77,19 +70,7 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const [isProcessingInput, setIsProcessingInput] = useState(false);
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
   
-  // Accessibility states
-  const [isVoiceInputEnabled, setIsVoiceInputEnabled] = useState(false);
-  const [isTextToSpeechEnabled, setIsTextToSpeechEnabled] = useState(false);
-  const [isPeerModeEnabled, setIsPeerModeEnabled] = useState(false);
-  
-  // Re-engagement states
-  const [currentStreak, setCurrentStreak] = useState(3);
-  const [earnedBadges, setEarnedBadges] = useState(['🎯', '⭐']);
-  const [reminderEnabled, setReminderEnabled] = useState(true);
-  
   const { toast } = useToast();
-  const voiceInput = useVoiceInput();
-  const textToSpeech = useTextToSpeech();
 
   // Load saved progress on mount only if step is 1 (fresh start)
   useEffect(() => {
@@ -546,7 +527,6 @@ Example:
 
   return (
     <div className="max-w-2xl mx-auto p-4 bg-gradient-to-br from-background via-background/95 to-background/90 min-h-screen">
-      {showConfetti && <ConfettiAnimation />}
       
       {/* Header */}
       <div className="mb-6">
@@ -662,78 +642,113 @@ Example:
 
         {/* Step 7: Due Date Selection */}
         {state.step === 7 && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-xl font-semibold mb-2">Complete By</h2>
-              <p className="text-muted-foreground mb-4">When do you want to complete this goal?</p>
+              <p className="text-muted-foreground mb-6">When do you want to start and complete this goal?</p>
             </div>
             
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Start Date</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !state.startDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {state.startDate ? format(state.startDate, "PPP") : <span>Pick start date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={state.startDate}
-                      onSelect={(date) => setState(prev => ({ ...prev, startDate: date || new Date() }))}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+            <div className="max-w-md mx-auto space-y-6">
+              {/* Date Selection Cards */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Start Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full h-16 flex flex-col items-center justify-center gap-1 bg-muted/30 hover:bg-muted/50",
+                          !state.startDate && "text-muted-foreground"
+                        )}
+                      >
+                        {state.startDate ? (
+                          <>
+                            <span className="text-xs font-normal">
+                              {format(state.startDate, "MMM")}
+                            </span>
+                            <span className="text-lg font-semibold">
+                              {format(state.startDate, "d")}
+                            </span>
+                            <span className="text-xs font-normal">
+                              {format(state.startDate, "yyyy")}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <CalendarIcon className="h-4 w-4" />
+                            <span className="text-xs">Select date</span>
+                          </>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-muted/20" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={state.startDate}
+                        onSelect={(date) => setState(prev => ({ ...prev, startDate: date || new Date() }))}
+                        initialFocus
+                        className="pointer-events-auto bg-muted/10 rounded-lg"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
-              <div>
-                <label className="text-sm font-medium">Due Date</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !state.dueDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {state.dueDate ? format(state.dueDate, "PPP") : <span>Pick due date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={state.dueDate}
-                      onSelect={(date) => setState(prev => ({ ...prev, dueDate: date }))}
-                      initialFocus
-                      className="pointer-events-auto"
-                      disabled={(date) => {
-                        if (!state.startDate) return false;
-                        return date < state.startDate;
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Due Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full h-16 flex flex-col items-center justify-center gap-1 bg-muted/30 hover:bg-muted/50",
+                          !state.dueDate && "text-muted-foreground"
+                        )}
+                      >
+                        {state.dueDate ? (
+                          <>
+                            <span className="text-xs font-normal">
+                              {format(state.dueDate, "MMM")}
+                            </span>
+                            <span className="text-lg font-semibold">
+                              {format(state.dueDate, "d")}
+                            </span>
+                            <span className="text-xs font-normal">
+                              {format(state.dueDate, "yyyy")}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <CalendarIcon className="h-4 w-4" />
+                            <span className="text-xs">Select date</span>
+                          </>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-muted/20" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={state.dueDate}
+                        onSelect={(date) => setState(prev => ({ ...prev, dueDate: date }))}
+                        initialFocus
+                        className="pointer-events-auto bg-muted/10 rounded-lg"
+                        disabled={(date) => {
+                          if (!state.startDate) return false;
+                          return date < state.startDate;
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
 
               {validateDates() && (
-                <div className="text-red-500 text-sm text-center">
+                <div className="text-red-500 text-sm text-center p-3 bg-red-50 rounded-lg border border-red-200">
                   {validateDates()}
                 </div>
               )}
 
-              <div className="flex justify-center">
+              <div className="flex justify-center pt-4">
                 <Button 
                   onClick={handleNext}
                   disabled={!canProceed()}
@@ -771,20 +786,6 @@ Example:
           />
         )}
 
-        {/* Accessibility Panel */}
-        <AccessibilityPanel
-          isVoiceInputEnabled={isVoiceInputEnabled}
-          isTextToSpeechEnabled={isTextToSpeechEnabled}
-          isPeerModeEnabled={isPeerModeEnabled}
-        />
-
-        {/* Re-engagement Panel */}
-        <ReEngagementPanel
-          currentStreak={currentStreak}
-          earnedBadges={earnedBadges}
-          reminderEnabled={reminderEnabled}
-          onReminderToggle={setReminderEnabled}
-        />
       </div>
 
       {/* Footer with SMART goal preview and affirmation */}
