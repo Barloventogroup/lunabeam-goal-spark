@@ -58,7 +58,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
         details: [
           { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Short 5-minute walk", isDefault: true },
           { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Moderate 10-minute walk" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Longer 20-minute walk" }
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Longer 20-minute walk" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         timing: [
           { id: "1week-2weeks", label: "1×/week for 2 weeks", emoji: "📅", explainer: "Once per week for two weeks" },
@@ -88,7 +89,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
         details: [
           { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Quick 5-minute stretch session", isDefault: true },
           { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Moderate 10-minute stretch session" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Longer 20-minute stretch session" }
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Longer 20-minute stretch session" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         timing: [
           { id: "morning-3week-2weeks", label: "Morning, 3×/week for 2 weeks", emoji: "🌅", explainer: "Three mornings per week for two weeks" },
@@ -119,7 +121,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "10pm-7am-30min", label: "10pm-7am, screens off 30min before", emoji: "📱", explainer: "Bedtime 10pm, wake 7am, no screens 30 min before bed", isDefault: true },
           { id: "9pm-6am-60min", label: "9pm-6am, screens off 60min before", emoji: "📱", explainer: "Earlier bedtime with longer screen break" },
           { id: "11pm-8am-30min", label: "11pm-8am, screens off 30min before", emoji: "📱", explainer: "Later schedule, still consistent times" },
-          { id: "custom-routine", label: "Add calming routine (read/stretch/music)", emoji: "📖", explainer: "Include relaxing activities before bed" }
+          { id: "custom-routine", label: "Add calming routine (read/stretch/music)", emoji: "📖", explainer: "Include relaxing activities before bed" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom sleep routine" }
         ],
         timing: [
           { id: "5nights-2weeks", label: "5 nights/week for 2 weeks", emoji: "📅", explainer: "Five nights per week for two weeks" },
@@ -149,7 +152,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "1fruit-lunch", label: "1 fruit at lunch", emoji: "🍎", explainer: "Add one piece of fruit to your lunch", isDefault: true },
           { id: "2veggie-dinner", label: "2 veggies at dinner", emoji: "🥦", explainer: "Include two vegetables with dinner" },
           { id: "1protein-meal", label: "1 protein per meal", emoji: "🥚", explainer: "Add protein to each main meal" },
-          { id: "snack-swap", label: "Healthy snack swap", emoji: "🥨", explainer: "Replace one unhealthy snack with a healthy option" }
+          { id: "snack-swap", label: "Healthy snack swap", emoji: "🥨", explainer: "Replace one unhealthy snack with a healthy option" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom healthy eating approach" }
         ],
         timing: [
           { id: "3days-2weeks", label: "3 days/week for 2 weeks", emoji: "📅", explainer: "Three days per week for two weeks" },
@@ -180,7 +184,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "4cups-allday", label: "4 cups all day", emoji: "📅", explainer: "Spread 4 cups throughout the day" },
           { id: "6cups-meals", label: "6 cups with meals", emoji: "🍽️", explainer: "Drink water with breakfast, lunch, and dinner" },
           { id: "8cups-scheduled", label: "8 cups on schedule", emoji: "⏰", explainer: "Drink water at set times throughout the day" },
-          { id: "swap-soda", label: "Swap soda/juice with water", emoji: "🔄", explainer: "Replace one sugary drink with water each day" }
+          { id: "swap-soda", label: "Swap soda/juice with water", emoji: "🔄", explainer: "Replace one sugary drink with water each day" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom hydration approach" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
@@ -267,7 +272,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "paragraph", label: "Paragraph", emoji: "📝", explainer: "Write a paragraph" },
           { id: "letter", label: "Letter", emoji: "✉️", explainer: "Write a letter to someone" },
           { id: "essay", label: "Essay", emoji: "📄", explainer: "Write an essay or report" },
-          { id: "story", label: "Story", emoji: "📖", explainer: "Write a creative story" }
+          { id: "story", label: "Story", emoji: "📖", explainer: "Write a creative story" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Something else" }
         ],
         topic: [
           { id: "free-choice", label: "Free choice", emoji: "🆓", explainer: "Choose your own topic", isDefault: true },
@@ -316,7 +322,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "3tasks", label: "3 tasks for tomorrow", emoji: "📋", explainer: "Plan just 3 things for the next day", isDefault: true },
           { id: "homework-chores", label: "Homework and chores", emoji: "📚", explainer: "Plan school and home responsibilities" },
           { id: "full-week", label: "Full week planning", emoji: "📅", explainer: "Plan the entire upcoming week" },
-          { id: "15min", label: "15-20 minutes", emoji: "⏰", explainer: "Spend 15-20 minutes planning" }
+          { id: "15min", label: "15-20 minutes", emoji: "⏰", explainer: "Spend 15-20 minutes planning" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom planning approach" }
         ],
         timing: [
           { id: "sunday-2weeks", label: "Sunday evenings for 2 weeks", emoji: "🌅", explainer: "Plan every Sunday for two weeks" },
@@ -345,7 +352,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "2problems", label: "2 problems", emoji: "🔢", explainer: "Solve two problems" },
           { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Work for 10 minutes" },
           { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Work for 15 minutes" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Work for 20 minutes" }
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Work for 20 minutes" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom problem-solving approach" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
@@ -372,7 +380,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "1page", label: "1 page tonight", emoji: "📄", explainer: "Review one page of notes", isDefault: true },
           { id: "flashcards", label: "Make flashcards", emoji: "🃏", explainer: "Create flashcards for review" },
           { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Review for 15 minutes" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Review for 20 minutes" }
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Review for 20 minutes" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom review approach" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
@@ -400,7 +409,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "10min", label: "10 minutes today", emoji: "⏰", explainer: "Study for 10 minutes", isDefault: true },
           { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Study for 15 minutes" },
           { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Study for 30 minutes" },
-          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "Study for 45 minutes" }
+          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "Study for 45 minutes" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom study approach" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
@@ -434,7 +444,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
         details: [
           { id: "greeting", label: "Practice greeting", emoji: "👋", explainer: "How to introduce yourself" },
           { id: "tell-me", label: "Tell me about yourself", emoji: "🗣️", explainer: "Practice this common question", isDefault: true },
-          { id: "mock", label: "Full mock interview", emoji: "🎭", explainer: "Complete practice interview" }
+          { id: "mock", label: "Full mock interview", emoji: "🎭", explainer: "Complete practice interview" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom interview practice" }
         ],
         timing: [
           { id: "10min-weekly-2weeks", label: "10 min weekly for 2 weeks", emoji: "📅", explainer: "Ten minutes once a week for two weeks", isDefault: true },
@@ -467,7 +478,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
         details: [
           { id: "blanket", label: "Just blanket", emoji: "🛏️", explainer: "Simply pull up the blanket", isDefault: true },
           { id: "sheets-blanket", label: "Sheets + blanket", emoji: "🛏️", explainer: "Straighten sheets and blanket" },
-          { id: "full", label: "Full bed making", emoji: "🛏️", explainer: "Sheets, blanket, and pillows" }
+          { id: "full", label: "Full bed making", emoji: "🛏️", explainer: "Sheets, blanket, and pillows" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom bed making style" }
         ],
         timing: [
           { id: "daily-3weeks", label: "Daily for 3 weeks", emoji: "📅", explainer: "Every day for three weeks", isDefault: true },
@@ -500,7 +512,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
         details: [
           { id: "classmate", label: "To classmate", emoji: "🎓", explainer: "Say hi to someone from school", isDefault: true },
           { id: "neighbor", label: "To neighbor", emoji: "🏘️", explainer: "Greet people in your neighborhood" },
-          { id: "teacher", label: "To teacher", emoji: "👨‍🏫", explainer: "Say hi to teachers or staff" }
+          { id: "teacher", label: "To teacher", emoji: "👨‍🏫", explainer: "Say hi to teachers or staff" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom greeting approach" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks", isDefault: true },
@@ -532,7 +545,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
         details: [
           { id: "apt-online", label: "Apartments online", emoji: "💻", explainer: "Look at apartment websites", isDefault: true },
           { id: "shared-sites", label: "Shared housing sites", emoji: "🏠", explainer: "Browse roommate/shared housing" },
-          { id: "dorm-college", label: "Dorm at college", emoji: "🎓", explainer: "Look at college housing options" }
+          { id: "dorm-college", label: "Dorm at college", emoji: "🎓", explainer: "Look at college housing options" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom housing research" }
         ],
         timing: [
           { id: "30min-weekly-3weeks", label: "30 min weekly for 3 weeks", emoji: "📅", explainer: "Thirty minutes once a week for three weeks", isDefault: true },
@@ -564,7 +578,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
         details: [
           { id: "2yr-sites", label: "2-year college sites", emoji: "🏫", explainer: "Community college websites", isDefault: true },
           { id: "4yr-sites", label: "4-year college sites", emoji: "🏛️", explainer: "University websites" },
-          { id: "cert-centers", label: "Certificate centers", emoji: "📜", explainer: "Professional certification programs" }
+          { id: "cert-centers", label: "Certificate centers", emoji: "📜", explainer: "Professional certification programs" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom education research" }
         ],
         timing: [
           { id: "30min-weekly-3weeks", label: "30 min weekly for 3 weeks", emoji: "📅", explainer: "Thirty minutes once a week for three weeks", isDefault: true },
@@ -596,7 +611,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
         details: [
           { id: "10min-board", label: "10 min board game", emoji: "🎲", explainer: "Short board game session", isDefault: true },
           { id: "20min-video", label: "20 min video game", emoji: "🎮", explainer: "Video game session" },
-          { id: "30min-puzzle", label: "30 min puzzle", emoji: "🧩", explainer: "Work on a jigsaw or word puzzle" }
+          { id: "30min-puzzle", label: "30 min puzzle", emoji: "🧩", explainer: "Work on a jigsaw or word puzzle" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom game activity" }
         ],
         timing: [
           { id: "weekly-3weeks", label: "Weekly for 3 weeks", emoji: "📅", explainer: "Once a week for three weeks", isDefault: true },
@@ -632,7 +648,8 @@ export const STARTER_GOALS: CategoryGoal[] = [
       { id: "hydration", label: "Stay hydrated", emoji: "💧", explainer: "Keep your body healthy", isDefault: true }
     ],
     details: [
-      { id: "1-glass-morning", label: "1 glass in the morning", emoji: "🌅", explainer: "One glass when you wake up", isDefault: true }
+      { id: "1-glass-morning", label: "1 glass in the morning", emoji: "🌅", explainer: "One glass when you wake up", isDefault: true },
+      { id: "other", label: "Other", emoji: "➕", explainer: "Custom water drinking approach" }
     ],
     timing: [
       { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every morning for one week", isDefault: true }
@@ -651,7 +668,8 @@ export const STARTER_GOALS: CategoryGoal[] = [
       { id: "routine", label: "Morning routine", emoji: "🌅", explainer: "Start your day with accomplishment", isDefault: true }
     ],
     details: [
-      { id: "simple-tidy", label: "Simple tidy", emoji: "✨", explainer: "Just pull covers and fluff pillows", isDefault: true }
+      { id: "simple-tidy", label: "Simple tidy", emoji: "✨", explainer: "Just pull covers and fluff pillows", isDefault: true },
+      { id: "other", label: "Other", emoji: "➕", explainer: "Custom bed making style" }
     ],
     timing: [
       { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every morning for one week", isDefault: true }
@@ -670,7 +688,8 @@ export const STARTER_GOALS: CategoryGoal[] = [
       { id: "connection", label: "Social connection", emoji: "🤝", explainer: "Build relationships with others", isDefault: true }
     ],
     details: [
-      { id: "one-person", label: "To 1 person", emoji: "👤", explainer: "Say hi to one person each day", isDefault: true }
+      { id: "one-person", label: "To 1 person", emoji: "👤", explainer: "Say hi to one person each day", isDefault: true },
+      { id: "other", label: "Other", emoji: "➕", explainer: "Custom greeting approach" }
     ],
     timing: [
       { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every day for one week", isDefault: true }
@@ -689,7 +708,8 @@ export const STARTER_GOALS: CategoryGoal[] = [
       { id: "mood", label: "Boost mood", emoji: "😊", explainer: "Feel happier and more energized", isDefault: true }
     ],
     details: [
-      { id: "favorite-song", label: "1 favorite song", emoji: "🎵", explainer: "Listen to a song you love", isDefault: true }
+      { id: "favorite-song", label: "1 favorite song", emoji: "🎵", explainer: "Listen to a song you love", isDefault: true },
+      { id: "other", label: "Other", emoji: "➕", explainer: "Custom music listening approach" }
     ],
     timing: [
       { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every day for one week", isDefault: true }
