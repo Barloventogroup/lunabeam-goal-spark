@@ -763,30 +763,86 @@ export const GOALS_WIZARD_DATA: Category[] = [
     emoji: "🎓",
     goals: [
       {
-        id: "programs",
-        title: "Look for Programs",
-        emoji: "🔍",
-        explainer: "Exploring what you could study or train for! From college degrees to certificates - seeing what catches your interest.",
+        id: "research-programs",
+        title: "Research Colleges/Programs",
+        emoji: "📚",
+        explainer: "Exploring what you could study or train for! Look up 1 college this week.",
         purpose: [
-          { id: "college", label: "For college", emoji: "🎓", explainer: "Research college programs", isDefault: true },
-          { id: "training", label: "For training", emoji: "🛠️", explainer: "Look at vocational training" },
-          { id: "parent", label: "Parent request", emoji: "👨‍👩‍👧‍👦", explainer: "Researching for family" }
-        ],
-        details: [
-          { id: "2yr-sites", label: "2-year college sites", emoji: "🏫", explainer: "Community college websites", isDefault: true },
-          { id: "4yr-sites", label: "4-year college sites", emoji: "🏛️", explainer: "University websites" },
-          { id: "cert-centers", label: "Certificate centers", emoji: "📜", explainer: "Professional certification programs" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom education research" }
+          { id: "explore", label: "Explore options", emoji: "🏫", explainer: "See what's available to study", isDefault: true },
+          { id: "compare", label: "Compare programs", emoji: "📋", explainer: "Compare different schools and programs" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
         ],
         timing: [
-          { id: "30min-weekly", label: "30 min weekly", emoji: "📅", explainer: "Thirty minutes once a week", isDefault: true },
-          { id: "45min-2week", label: "45 min 2×/week", emoji: "📅", explainer: "Forty-five minutes twice weekly" }
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute research sessions" },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute research sessions", isDefault: true },
+          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "45 minute research sessions" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         supports: [
-          { id: "worksheet", label: "Research worksheet", emoji: "📝", explainer: "Template to organize your research", isDefault: true },
-          { id: "directory", label: "Program directory", emoji: "📚", explainer: "List of programs to explore" }
+          { id: "websites", label: "College websites, comparison worksheet, counselor notes", emoji: "💻", explainer: "Online resources and organization tools", isDefault: true }
         ],
-        smartTemplate: "🔍 Research {type} {duration} weekly for {weeks}."
+        smartTemplate: "📚 Spend {timing} researching colleges from {start_date} until {due_date}."
+      },
+      {
+        id: "application-materials",
+        title: "Prepare Application Materials",
+        emoji: "📝",
+        explainer: "Getting your application ready for submission. Write down your name and 1 activity this week.",
+        purpose: [
+          { id: "apply", label: "Apply for programs", emoji: "📄", explainer: "Get ready to submit applications", isDefault: true },
+          { id: "organized", label: "Stay organized", emoji: "🎯", explainer: "Keep application materials in order" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        timing: [
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute work sessions" },
+          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "45 minute work sessions", isDefault: true },
+          { id: "60min", label: "60 minutes", emoji: "⏰", explainer: "60 minute work sessions" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        supports: [
+          { id: "checklist", label: "Application checklist, sample essays, transcript request guide", emoji: "✅", explainer: "Tools to help organize application process", isDefault: true }
+        ],
+        smartTemplate: "📝 Work on application materials for {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "financial-aid",
+        title: "Explore Financial Aid",
+        emoji: "💵",
+        explainer: "Learning about ways to help pay for your education. Look up 1 scholarship online this week.",
+        purpose: [
+          { id: "scholarships", label: "Learn about scholarships", emoji: "💰", explainer: "Find scholarship opportunities", isDefault: true },
+          { id: "fafsa", label: "Prepare for FAFSA/loans", emoji: "🧾", explainer: "Understand financial aid process" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        timing: [
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute research sessions", isDefault: true },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute research sessions" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        supports: [
+          { id: "guide", label: "Financial aid guide, FAFSA worksheet, scholarship search sites", emoji: "📊", explainer: "Resources for financial planning", isDefault: true }
+        ],
+        smartTemplate: "💵 Research financial aid for {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "visit-campuses",
+        title: "Visit Campuses / Programs",
+        emoji: "🧑‍🤝‍🧑",
+        explainer: "Seeing schools and programs in person or online. Visit 1 campus (in person or virtual) this week.",
+        purpose: [
+          { id: "environment", label: "See environment", emoji: "👀", explainer: "Experience the campus atmosphere", isDefault: true },
+          { id: "fit", label: "Compare fit", emoji: "🎯", explainer: "See if the school feels right for you" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        timing: [
+          { id: "1hour", label: "1 hour", emoji: "⏰", explainer: "1 hour campus visits", isDefault: true },
+          { id: "2hours", label: "2 hours", emoji: "⏰", explainer: "2 hour campus visits" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        supports: [
+          { id: "tour-guide", label: "Campus tour guide, checklist of questions, parent/coach reminder", emoji: "🗺️", explainer: "Support for campus visits", isDefault: true }
+        ],
+        smartTemplate: "🧑‍🤝‍🧑 Visit campus for {timing} from {start_date} until {due_date}."
       }
     ]
   },
