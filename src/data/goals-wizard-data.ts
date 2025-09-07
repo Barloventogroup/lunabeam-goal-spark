@@ -310,8 +310,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         purpose: [
           { id: "schoolwork", label: "Stay on top of schoolwork", emoji: "🎓", explainer: "Organize school assignments and tasks", isDefault: true },
           { id: "balance", label: "Balance school, chores, fun", emoji: "🏠", explainer: "Organize all aspects of your week" },
-          { id: "stress", label: "Reduce stress", emoji: "😌", explainer: "Feel more organized and less worried" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own planning purpose" }
+          { id: "stress", label: "Reduce stress", emoji: "😌", explainer: "Feel more organized and less worried" }
         ],
         details: [
           { id: "3tasks", label: "3 tasks for tomorrow", emoji: "📋", explainer: "Plan just 3 things for the next day", isDefault: true },
@@ -339,8 +338,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         purpose: [
           { id: "math", label: "Practice math/logic", emoji: "📚", explainer: "Work on mathematical thinking skills", isDefault: true },
           { id: "thinking", label: "Build thinking skills", emoji: "🧠", explainer: "Develop problem-solving abilities" },
-          { id: "real-life", label: "Solve real-life challenge", emoji: "🏠", explainer: "Address everyday problems" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own problem-solving goal" }
+          { id: "real-life", label: "Solve real-life challenge", emoji: "🏠", explainer: "Address everyday problems" }
         ],
         details: [
           { id: "1problem", label: "1 problem", emoji: "🔢", explainer: "Solve one problem", isDefault: true },
@@ -368,8 +366,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         explainer: "Reviewing notes means looking back at what you wrote in class to help remember. You can read, highlight, or use flashcards.",
         purpose: [
           { id: "test", label: "Prepare for test", emoji: "📚", explainer: "Get ready for an upcoming test", isDefault: true },
-          { id: "remember", label: "Remember lessons", emoji: "🧠", explainer: "Help remember what you learned" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own review purpose" }
+          { id: "remember", label: "Remember lessons", emoji: "🧠", explainer: "Help remember what you learned" }
         ],
         details: [
           { id: "1page", label: "1 page tonight", emoji: "📄", explainer: "Review one page of notes", isDefault: true },
@@ -397,8 +394,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
         purpose: [
           { id: "test", label: "Prepare for test", emoji: "🎓", explainer: "Get ready for an upcoming test", isDefault: true },
           { id: "grades", label: "Improve grades", emoji: "📈", explainer: "Work to get better grades" },
-          { id: "learn", label: "Learn new things", emoji: "🧠", explainer: "Explore and understand new topics" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own study purpose" }
+          { id: "learn", label: "Learn new things", emoji: "🧠", explainer: "Explore and understand new topics" }
         ],
         details: [
           { id: "10min", label: "10 minutes today", emoji: "⏰", explainer: "Study for 10 minutes", isDefault: true },
