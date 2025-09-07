@@ -399,12 +399,29 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
       if (response?.guidance) {
         // Parse the AI response and update the goal
         // For now, we'll add it as a custom purpose or detail
-        const customOption: GoalOption = {
+        let customOption: GoalOption = {
           id: 'custom-' + Date.now(),
           label: customInput.slice(0, 50) + (customInput.length > 50 ? '...' : ''),
           emoji: '✨',
           explainer: response.guidance
         };
+
+        // Apply validation for "Read Something" goal
+        if (state.goal?.id === 'read') {
+          if (state.step === 3 && customInput.toLowerCase().includes("don't know")) {
+            customOption = {
+              ...customOption,
+              label: "let's read something for fun!",
+              explainer: "Reading for enjoyment and fun"
+            };
+          } else if (state.step === 4 && customInput.toLowerCase().includes("don't know")) {
+            customOption = {
+              ...customOption,
+              label: "let's read 5 pages. You can do it!",
+              explainer: "Start with 5 pages - achievable and motivating"
+            };
+          }
+        }
 
         // Determine where to add the custom input based on current step
         if (state.step === 3 && !state.purpose) {
