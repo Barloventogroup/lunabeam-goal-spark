@@ -11,6 +11,8 @@ export interface GoalFlow {
   follow_ups?: string[];
   required_inputs?: string[];
   outputs?: string[];
+  explainer?: string;
+  details?: Record<string, any>;
 }
 
 export interface CategoryGoals {
@@ -53,44 +55,97 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
   "Education": [
     {
       "goal": "Read something",
-      "options": ["Book", "Article/blog", "Magazine", "Comic/graphic novel", "Custom"],
-      "custom_inputs": ["Title", "Topic", "Source"],
-      "required_inputs": ["How much?", "Frequency", "End date"],
-      "outputs": ["Reading log", "Suggested reading list"]
+      "options": ["Learn for school", "Relax/enjoy", "Practice focus", "Custom"],
+      "custom_inputs": ["What to read", "Amount (pages/minutes)"],
+      "required_inputs": ["Format", "Amount", "Frequency", "Duration", "End date"],
+      "outputs": ["Reading log", "List of suggested books/articles", "Reading reminders"],
+      "explainer": "Reading means looking at words in a book, article, or online and understanding them. You can read for learning or fun.",
+      "details": {
+        "format_options": ["Textbook", "Article", "Comic", "Blog", "Custom"],
+        "amount_options": ["1 page", "5 pages", "10 pages", "5 minutes", "10 minutes", "15 minutes"],
+        "frequency_options": ["Daily", "3× per week"],
+        "duration_options": ["2 weeks", "3 weeks", "4 weeks"],
+        "default_suggestion": "Read 1 page today"
+      }
     },
     {
-      "goal": "Write something",
-      "options": ["Journal", "Poem", "Essay", "Letter", "Text/email", "Custom"],
-      "custom_inputs": ["Topic", "Recipient"],
-      "required_inputs": ["How much?", "Frequency", "End date"],
-      "outputs": ["Writing template", "Starter prompt"]
+      "goal": "Write something", 
+      "options": ["Practice writing skills", "Express feelings/journal", "Finish assignment", "Custom"],
+      "custom_inputs": ["Topic", "Format type"],
+      "required_inputs": ["Format", "Topic choice", "Duration", "Frequency", "End date"],
+      "outputs": ["Writing prompt list", "Templates (letter, essay)", "Reflection log"],
+      "explainer": "Writing means putting your ideas into words. It could be journaling, doing homework, or writing a letter or story.",
+      "details": {
+        "format_options": ["Journal", "Paragraph", "Letter", "Essay", "Story"],
+        "topic_options": ["Free choice", "School assignment"],
+        "duration_options": ["10 minutes", "15 minutes", "20 minutes"],
+        "frequency_options": ["Daily", "3× per week"],
+        "weeks_options": ["2 weeks", "3 weeks", "4 weeks"],
+        "default_suggestion": "Write 2 sentences today"
+      }
     },
     {
       "goal": "Plan week",
-      "options": ["Paper planner", "Digital calendar", "Visual schedule", "Custom"],
-      "custom_inputs": ["List of activities"],
-      "required_inputs": ["End date"],
-      "outputs": ["Weekly plan (printable or digital)"]
+      "options": ["Stay on top of schoolwork", "Balance school, chores, fun", "Reduce stress", "Custom"],
+      "custom_inputs": ["Planning tool preference", "Activities to include"],
+      "required_inputs": ["Tool", "Items to plan", "Frequency", "Duration", "End date"],
+      "outputs": ["Printable weekly planner", "Calendar sync", "Planning reminders"],
+      "explainer": "Planning means writing down tasks and activities so you don't forget. It helps you organize school, chores, and free time.",
+      "details": {
+        "tool_options": ["Paper planner", "Digital calendar"],
+        "items_options": ["Homework, chores, 1 fun activity"],
+        "frequency_options": ["Sunday evening", "Monday evening"],
+        "duration_options": ["15-20 minutes"],
+        "weeks_options": ["2 weeks", "3 weeks", "4 weeks"],
+        "default_suggestion": "Write 3 tasks for tomorrow"
+      }
     },
     {
       "goal": "Solve a problem",
-      "options": ["Math", "Logic puzzle", "Real-life", "Custom"],
-      "custom_inputs": ["Problem description"],
-      "required_inputs": ["End date"],
-      "outputs": ["Strategy hints", "Practice resource"]
+      "options": ["Practice math/logic", "Build thinking skills", "Solve real-life challenge", "Custom"],
+      "custom_inputs": ["Problem type", "Specific problem"],
+      "required_inputs": ["Type", "Amount", "Duration", "Frequency", "End date"],
+      "outputs": ["Problem set bank", "Puzzle app suggestions", "Reflection log"],
+      "explainer": "Solving problems means finding an answer to a challenge. It could be math, a puzzle, or figuring out a real-life situation.",
+      "details": {
+        "type_options": ["Math", "Puzzle", "Real-life"],
+        "amount_options": ["1 problem", "2 problems"],
+        "duration_options": ["10 minutes", "15 minutes", "20 minutes"],
+        "frequency_options": ["Daily", "3× per week"],
+        "weeks_options": ["2 weeks", "3 weeks", "4 weeks"],
+        "default_suggestion": "Solve 1 problem today"
+      }
     },
     {
       "goal": "Review notes",
-      "options": ["Highlight", "Flashcards", "Rewrite", "Custom"],
-      "required_inputs": ["End date"],
-      "outputs": ["Auto-generated flashcard set"]
+      "options": ["Prepare for test", "Remember lessons", "Custom"],
+      "custom_inputs": ["Subject", "Review method"],
+      "required_inputs": ["Method", "Duration", "Frequency", "End date"],
+      "outputs": ["Flashcard template", "Highlighting guide", "Review reminders"],
+      "explainer": "Reviewing notes means looking back at what you wrote in class to help remember. You can read, highlight, or use flashcards.",
+      "details": {
+        "method_options": ["Flashcards", "Rewriting", "Highlighting"],
+        "duration_options": ["15 minutes", "20 minutes"],
+        "frequency_options": ["Daily", "3× before test"],
+        "weeks_options": ["2 weeks", "3 weeks"],
+        "default_suggestion": "Review 1 page tonight"
+      }
     },
     {
       "goal": "Study",
-      "options": ["15 minutes", "30 minutes", "45 minutes", "Custom"],
-      "custom_inputs": ["Subject/topic"],
-      "required_inputs": ["Frequency", "Duration per session", "End date"],
-      "outputs": ["Study guide template"]
+      "options": ["Prepare for test", "Improve grades", "Learn new things", "Custom"],
+      "custom_inputs": ["Subject/topic", "Study method"],
+      "required_inputs": ["Subject", "Method", "Duration", "Frequency", "End date"],
+      "outputs": ["Study guide template", "Subject tips", "Study reminders"],
+      "explainer": "Studying means focusing on school subjects to learn and remember. You can read, review, test yourself, or study with others.",
+      "details": {
+        "subject_options": ["Math", "English", "Science", "Custom"],
+        "method_options": ["Flashcards", "Practice test", "Group study"],
+        "duration_options": ["15 minutes", "30 minutes", "45 minutes"],
+        "frequency_options": ["Daily", "3× per week"],
+        "duration_period_options": ["2 weeks", "3 weeks", "Until test date"],
+        "default_suggestion": "Study 10 minutes today"
+      }
     }
   ],
 

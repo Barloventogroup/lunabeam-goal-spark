@@ -201,27 +201,178 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "read",
         title: "Read Something",
         emoji: "📖",
-        explainer: "Diving into words and stories! Whether it's a book, article, or even a really good blog post.",
+        explainer: "Reading means looking at words in a book, article, or online and understanding them. You can read for learning or fun.",
         purpose: [
-          { id: "learn", label: "To learn", emoji: "🧠", explainer: "Gain new knowledge and information", isDefault: true },
-          { id: "relax", label: "To relax", emoji: "😌", explainer: "Enjoy reading for pleasure" },
-          { id: "focus", label: "Improve focus", emoji: "🎯", explainer: "Practice concentration skills" }
+          { id: "learn", label: "Learn for school", emoji: "📚", explainer: "Gain knowledge for school subjects", isDefault: true },
+          { id: "relax", label: "Relax/enjoy", emoji: "😌", explainer: "Enjoy reading for pleasure" },
+          { id: "focus", label: "Practice focus", emoji: "🧠", explainer: "Build concentration skills" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own reading purpose" }
         ],
         details: [
-          { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Read for 5 minutes", isDefault: true },
+          { id: "1page", label: "1 page", emoji: "📄", explainer: "Read 1 page", isDefault: true },
+          { id: "5pages", label: "5 pages", emoji: "📄", explainer: "Read 5 pages" },
+          { id: "10pages", label: "10 pages", emoji: "📄", explainer: "Read 10 pages" },
+          { id: "5min", label: "5 minutes", emoji: "⏰", explainer: "Read for 5 minutes" },
           { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Read for 10 minutes" },
-          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Read for 20 minutes" }
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Read for 15 minutes" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
           { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
-          { id: "5week-4weeks", label: "5×/week for 4 weeks", emoji: "📅", explainer: "Five times per week for four weeks" }
+          { id: "3week-4weeks", label: "3×/week for 4 weeks", emoji: "📅", explainer: "Three times per week for four weeks" }
         ],
         supports: [
           { id: "log", label: "Reading log", emoji: "📝", explainer: "Track what you read", isDefault: true },
+          { id: "suggestions", label: "List of suggested books/articles", emoji: "📚", explainer: "Get reading recommendations" },
           { id: "reminders", label: "Reminders", emoji: "🔔", explainer: "Get notifications to remind you" }
         ],
         smartTemplate: "📖 Read {amount} {frequency} for {weeks}."
+      },
+      {
+        id: "write",
+        title: "Write Something",
+        emoji: "✍️",
+        explainer: "Writing means putting your ideas into words. It could be journaling, doing homework, or writing a letter or story.",
+        purpose: [
+          { id: "practice", label: "Practice writing skills", emoji: "📓", explainer: "Improve your writing abilities", isDefault: true },
+          { id: "express", label: "Express feelings/journal", emoji: "😌", explainer: "Write about your thoughts and feelings" },
+          { id: "assignment", label: "Finish assignment", emoji: "📚", explainer: "Complete school writing tasks" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own writing purpose" }
+        ],
+        details: [
+          { id: "2sentences", label: "2 sentences", emoji: "✏️", explainer: "Write 2 sentences", isDefault: true },
+          { id: "paragraph", label: "1 paragraph", emoji: "📝", explainer: "Write one paragraph" },
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Write for 10 minutes" },
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Write for 15 minutes" },
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Write for 20 minutes" }
+        ],
+        timing: [
+          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
+          { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
+          { id: "3week-4weeks", label: "3×/week for 4 weeks", emoji: "📅", explainer: "Three times per week for four weeks" }
+        ],
+        supports: [
+          { id: "prompts", label: "Writing prompt list", emoji: "💡", explainer: "Ideas to help you start writing", isDefault: true },
+          { id: "templates", label: "Templates (letter, essay)", emoji: "📋", explainer: "Writing structure guides" },
+          { id: "log", label: "Reflection log", emoji: "📝", explainer: "Track your writing progress" }
+        ],
+        smartTemplate: "✍️ Write {amount} {frequency} for {weeks}."
+      },
+      {
+        id: "plan-week",
+        title: "Plan Week",
+        emoji: "📅",
+        explainer: "Planning means writing down tasks and activities so you don't forget. It helps you organize school, chores, and free time.",
+        purpose: [
+          { id: "schoolwork", label: "Stay on top of schoolwork", emoji: "🎓", explainer: "Organize school assignments and tasks", isDefault: true },
+          { id: "balance", label: "Balance school, chores, fun", emoji: "🏠", explainer: "Organize all aspects of your week" },
+          { id: "stress", label: "Reduce stress", emoji: "😌", explainer: "Feel more organized and less worried" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own planning purpose" }
+        ],
+        details: [
+          { id: "3tasks", label: "3 tasks for tomorrow", emoji: "📋", explainer: "Plan just 3 things for the next day", isDefault: true },
+          { id: "homework-chores", label: "Homework and chores", emoji: "📚", explainer: "Plan school and home responsibilities" },
+          { id: "full-week", label: "Full week planning", emoji: "📅", explainer: "Plan the entire upcoming week" },
+          { id: "15min", label: "15-20 minutes", emoji: "⏰", explainer: "Spend 15-20 minutes planning" }
+        ],
+        timing: [
+          { id: "sunday-2weeks", label: "Sunday evenings for 2 weeks", emoji: "🌅", explainer: "Plan every Sunday for two weeks" },
+          { id: "sunday-3weeks", label: "Sunday evenings for 3 weeks", emoji: "🌅", explainer: "Plan every Sunday for three weeks", isDefault: true },
+          { id: "monday-3weeks", label: "Monday evenings for 3 weeks", emoji: "🌅", explainer: "Plan every Monday for three weeks" }
+        ],
+        supports: [
+          { id: "planner", label: "Printable weekly planner", emoji: "📋", explainer: "Paper planning template", isDefault: true },
+          { id: "sync", label: "Calendar sync", emoji: "📱", explainer: "Connect with digital calendar" },
+          { id: "reminders", label: "Reminders", emoji: "🔔", explainer: "Get notifications to plan" }
+        ],
+        smartTemplate: "📅 Plan {scope} every {day} for {weeks}."
+      },
+      {
+        id: "solve-problem",
+        title: "Solve a Problem",
+        emoji: "🧩",
+        explainer: "Solving problems means finding an answer to a challenge. It could be math, a puzzle, or figuring out a real-life situation.",
+        purpose: [
+          { id: "math", label: "Practice math/logic", emoji: "📚", explainer: "Work on mathematical thinking skills", isDefault: true },
+          { id: "thinking", label: "Build thinking skills", emoji: "🧠", explainer: "Develop problem-solving abilities" },
+          { id: "real-life", label: "Solve real-life challenge", emoji: "🏠", explainer: "Address everyday problems" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own problem-solving goal" }
+        ],
+        details: [
+          { id: "1problem", label: "1 problem", emoji: "🔢", explainer: "Solve one problem", isDefault: true },
+          { id: "2problems", label: "2 problems", emoji: "🔢", explainer: "Solve two problems" },
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Work for 10 minutes" },
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Work for 15 minutes" },
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Work for 20 minutes" }
+        ],
+        timing: [
+          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
+          { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
+          { id: "3week-4weeks", label: "3×/week for 4 weeks", emoji: "📅", explainer: "Three times per week for four weeks" }
+        ],
+        supports: [
+          { id: "bank", label: "Problem set bank", emoji: "🏦", explainer: "Collection of practice problems", isDefault: true },
+          { id: "apps", label: "Puzzle app suggestions", emoji: "📱", explainer: "Recommended problem-solving apps" },
+          { id: "log", label: "Reflection log", emoji: "📝", explainer: "Track your problem-solving progress" }
+        ],
+        smartTemplate: "🧩 Solve {amount} {frequency} for {weeks}."
+      },
+      {
+        id: "review-notes",
+        title: "Review Notes",
+        emoji: "📑",
+        explainer: "Reviewing notes means looking back at what you wrote in class to help remember. You can read, highlight, or use flashcards.",
+        purpose: [
+          { id: "test", label: "Prepare for test", emoji: "📚", explainer: "Get ready for an upcoming test", isDefault: true },
+          { id: "remember", label: "Remember lessons", emoji: "🧠", explainer: "Help remember what you learned" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own review purpose" }
+        ],
+        details: [
+          { id: "1page", label: "1 page tonight", emoji: "📄", explainer: "Review one page of notes", isDefault: true },
+          { id: "flashcards", label: "Make flashcards", emoji: "🃏", explainer: "Create flashcards for review" },
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Review for 15 minutes" },
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Review for 20 minutes" }
+        ],
+        timing: [
+          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
+          { id: "3before-test", label: "3× before test", emoji: "📅", explainer: "Three times before the test", isDefault: true },
+          { id: "daily-3weeks", label: "Daily for 3 weeks", emoji: "📅", explainer: "Every day for three weeks" }
+        ],
+        supports: [
+          { id: "template", label: "Flashcard template", emoji: "🃏", explainer: "Template for making flashcards", isDefault: true },
+          { id: "guide", label: "Highlighting guide", emoji: "🖍️", explainer: "Tips for effective highlighting" },
+          { id: "reminders", label: "Review reminders", emoji: "🔔", explainer: "Get notifications to review" }
+        ],
+        smartTemplate: "📑 Review {method} {frequency} for {period}."
+      },
+      {
+        id: "study",
+        title: "Study",
+        emoji: "📚",
+        explainer: "Studying means focusing on school subjects to learn and remember. You can read, review, test yourself, or study with others.",
+        purpose: [
+          { id: "test", label: "Prepare for test", emoji: "🎓", explainer: "Get ready for an upcoming test", isDefault: true },
+          { id: "grades", label: "Improve grades", emoji: "📈", explainer: "Work to get better grades" },
+          { id: "learn", label: "Learn new things", emoji: "🧠", explainer: "Explore and understand new topics" },
+          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own study purpose" }
+        ],
+        details: [
+          { id: "10min", label: "10 minutes today", emoji: "⏰", explainer: "Study for 10 minutes", isDefault: true },
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Study for 15 minutes" },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Study for 30 minutes" },
+          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "Study for 45 minutes" }
+        ],
+        timing: [
+          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
+          { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
+          { id: "until-test", label: "Until test date", emoji: "📅", explainer: "Continue until your test" }
+        ],
+        supports: [
+          { id: "guide", label: "Study guide template", emoji: "📋", explainer: "Template for organizing study material", isDefault: true },
+          { id: "tips", label: "Subject tips", emoji: "💡", explainer: "Study tips for specific subjects" },
+          { id: "reminders", label: "Study reminders", emoji: "🔔", explainer: "Get notifications to study" }
+        ],
+        smartTemplate: "📚 Study {subject} for {duration} {frequency} for {weeks}."
       }
     ]
   },
