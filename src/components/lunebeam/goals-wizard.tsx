@@ -409,6 +409,9 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
         // Determine where to add the custom input based on current step
         if (state.step === 3 && !state.purpose) {
           setState(prev => ({ ...prev, purpose: customOption, step: 4 }));
+        } else if (state.step === 4 && !state.details) {
+          const nextStep = state.goal?.id === 'read' && state.goal?.amount ? 5 : 6;
+          setState(prev => ({ ...prev, details: customOption, step: nextStep }));
         } else if (state.step === 5 && state.goal?.id === 'read' && !state.amount) {
           setState(prev => ({ ...prev, amount: customOption, step: 6 }));
         } else if (state.step === 6 && !state.frequency) {
@@ -738,6 +741,10 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
               title="Purpose"
               options={state.goal.purpose}
               onSelect={(purpose) => {
+                if (purpose.id === 'other') {
+                  setShowCustomDialog(true);
+                  return;
+                }
                 showRandomAffirmation();
                 setState(prev => ({ ...prev, purpose, step: 4 }));
               }}
@@ -751,6 +758,10 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
               title="Details"
               options={state.goal.details}
               onSelect={(details) => {
+                if (details.id === 'other') {
+                  setShowCustomDialog(true);
+                  return;
+                }
                 showRandomAffirmation();
                 // Check if this is a reading goal and has amount options
                 const nextStep = state.goal?.id === 'read' && state.goal?.amount ? 5 : 6;
