@@ -1584,10 +1584,12 @@ const OptionSelection: React.FC<{
   allowFallback?: boolean;
   showCustomInput?: () => void;
 }> = ({ title, options, onSelect, selected, allowFallback, showCustomInput }) => {
-  const hasOther = options.some(o => o.id === 'other' || o.label.trim().toLowerCase() === 'other');
+  // Safety check: ensure options is defined and is an array
+  const safeOptions = options || [];
+  const hasOther = safeOptions.some(o => o.id === 'other' || o.label.trim().toLowerCase() === 'other');
   return (
     <div className="space-y-3">
-      {options.map((option) => (
+      {safeOptions.map((option) => (
         <Card 
           key={option.id}
           className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
@@ -1630,7 +1632,7 @@ const OptionSelection: React.FC<{
             if (title === "Timing") {
               // Use easy-start defaults if not present in options
               const defaultTiming: GoalOption =
-                options.find(o => /1×\/week/.test(o.label) && /2 weeks/.test(o.label)) || {
+                safeOptions.find(o => /1×\/week/.test(o.label) && /2 weeks/.test(o.label)) || {
                   id: "1week-2weeks",
                   label: "1×/week for 2 weeks",
                   emoji: "📅",
@@ -1642,8 +1644,10 @@ const OptionSelection: React.FC<{
             }
 
             // Otherwise, auto-select default or first option
-            const defaultOption = options.find(o => o.isDefault) || options[0];
-            onSelect(defaultOption);
+            const defaultOption = safeOptions.find(o => o.isDefault) || safeOptions[0];
+            if (defaultOption) {
+              onSelect(defaultOption);
+            }
           }}
         >
           <CardContent className="p-4">
@@ -1654,7 +1658,7 @@ const OptionSelection: React.FC<{
                 <div className="text-xs text-foreground-soft mt-1">
                   {title === "Timing" 
                     ? "Small steps count — let's start once a week." 
-                    : `We'll start small: ${(options.find(o => o.isDefault) || options[0]).label}.`}
+                    : `We'll start small: ${(safeOptions.find(o => o.isDefault) || safeOptions[0])?.label || 'something easy'}.`}
                 </div>
               </div>
             </div>
@@ -1672,6 +1676,9 @@ const MultiOptionSelection: React.FC<{
   onSelect: (options: GoalOption[]) => void;
   selected: GoalOption[];
 }> = ({ options, onSelect, selected }) => {
+  // Safety check: ensure options is defined and is an array
+  const safeOptions = options || [];
+  
   const handleToggle = (option: GoalOption) => {
     const isSelected = selected.some(s => s.id === option.id);
     if (isSelected) {
@@ -1683,12 +1690,12 @@ const MultiOptionSelection: React.FC<{
 
   return (
     <div className="space-y-3">
-      {options.map((option) => (
+      {safeOptions.map((option) => (
         <Card 
           key={option.id}
           className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
             selected.some(s => s.id === option.id)
-              ? 'border-primary bg-primary/5' 
+              ? 'border-primary bg-primary/5'
               : 'hover:border-primary/30'
           }`}
           onClick={() => handleToggle(option)}
