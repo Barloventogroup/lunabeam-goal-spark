@@ -270,16 +270,16 @@ export const ConfettiAnimation: React.FC = () => {
       setParticles(prev => 
         prev.map(particle => ({
           ...particle,
-          y: particle.y + 2,
-          rotation: particle.rotation + 2
+          y: particle.y + 4, // Increased from 2 to 4 (faster fall)
+          rotation: particle.rotation + 4 // Increased from 2 to 4 (faster rotation)
         })).filter(particle => particle.y < window.innerHeight + 20)
       );
-    }, 50);
+    }, 30); // Decreased from 50 to 30 (faster updates)
 
     const timeout = setTimeout(() => {
       clearInterval(interval);
       setParticles([]);
-    }, 3000);
+    }, 1500); // Decreased from 3000 to 1500 (shorter duration)
 
     return () => {
       clearInterval(interval);

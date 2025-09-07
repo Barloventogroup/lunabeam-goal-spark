@@ -230,9 +230,9 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
 
     setIsCreatingGoal(true);
 
-    // Show confetti animation
+    // Show confetti animation (faster)
     setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 3000);
+    setTimeout(() => setShowConfetti(false), 1500); // Reduced from 3000 to 1500
 
     try {
       const mapCategoryToDomain = (cat: string): GoalDomain => {
@@ -341,6 +341,7 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
       toast({
         title: 'Goal Created! 🎉',
         description: `Your ${state.goal.title} is ready to go!`,
+        duration: 2000, // Auto-clear after 2 seconds
       });
 
       // Clear saved progress
@@ -427,6 +428,7 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
         toast({
           title: "Got it!",
           description: "Your input has been added to your goal.",
+          duration: 2000, // Auto-clear after 2 seconds
         });
       }
     } catch (error) {
@@ -469,6 +471,7 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
     toast({
       title: "Perfect!",
       description: `Set to ${amount} ${customAmountType}.`,
+      duration: 2000, // Auto-clear after 2 seconds
     });
   };
 
@@ -500,6 +503,7 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
     toast({
       title: "Perfect!",
       description: `Set to ${duration} ${customDurationType}.`,
+      duration: 2000, // Auto-clear after 2 seconds
     });
   };
 
