@@ -33,6 +33,7 @@ interface WizardState {
   goal?: CategoryGoal;
   purpose?: GoalOption;
   details?: GoalOption;
+  amount?: GoalOption;
   frequency?: GoalOption;
   duration?: GoalOption;
   supports?: GoalOption[];
@@ -45,10 +46,11 @@ const STEPS = [
   { id: 2, title: "Pick Goal", subtitle: "What specific goal interests you?" },
   { id: 3, title: "Why?", subtitle: "What's your main reason for this goal?" },
   { id: 4, title: "Details", subtitle: "How do you want to do this?" },
-  { id: 5, title: "How Often?", subtitle: "How frequently do you want to do this?" },
-  { id: 6, title: "How Long?", subtitle: "For how many weeks?" },
-  { id: 7, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
-  { id: 8, title: "Confirm", subtitle: "Ready to start your goal?" }
+  { id: 5, title: "Amount", subtitle: "How much do you want to read?" },
+  { id: 6, title: "How Often?", subtitle: "How frequently do you want to do this?" },
+  { id: 7, title: "How Long?", subtitle: "For how many weeks?" },
+  { id: 8, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
+  { id: 9, title: "Confirm", subtitle: "Ready to start your goal?" }
 ];
 
 const AFFIRMATIONS = [
@@ -152,6 +154,11 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
 
     if (detailsPart) {
       sentence += ` ${detailsPart}`;
+    }
+
+    // Add amount for reading goals
+    if (state.amount?.label && state.goal?.id === 'read') {
+      sentence += ` ${state.amount.label}`;
     }
 
     if (frequencyPart && durationPart) {
@@ -549,36 +556,51 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
               options={state.goal.details}
               onSelect={(details) => {
                 showRandomAffirmation();
-                setState(prev => ({ ...prev, details, step: 5 }));
+                // Check if this is a reading goal and has amount options
+                const nextStep = state.goal?.id === 'read' && state.goal?.amount ? 5 : 6;
+                setState(prev => ({ ...prev, details, step: nextStep }));
               }}
               selected={state.details}
               showCustomInput={() => setShowCustomDialog(true)}
             />
           )}
 
-          {state.step === 5 && state.goal && (
+          {state.step === 5 && state.goal?.id === 'read' && state.goal.amount && (
+            <OptionSelection
+              title="Amount"
+              options={state.goal.amount}
+              onSelect={(amount) => {
+                showRandomAffirmation();
+                setState(prev => ({ ...prev, amount, step: 6 }));
+              }}
+              selected={state.amount}
+              showCustomInput={() => setShowCustomDialog(true)}
+            />
+          )}
+
+          {state.step === 6 && state.goal && (
             <FrequencySelection
               onSelect={(frequency) => {
                 showRandomAffirmation();
-                setState(prev => ({ ...prev, frequency, step: 6 }));
+                setState(prev => ({ ...prev, frequency, step: 7 }));
               }}
               selected={state.frequency}
               showCustomInput={() => setShowCustomDialog(true)}
             />
           )}
 
-          {state.step === 6 && state.goal && (
+          {state.step === 7 && state.goal && (
             <DurationSelection
               onSelect={(duration) => {
                 showRandomAffirmation();
-                setState(prev => ({ ...prev, duration, step: 7 }));
+                setState(prev => ({ ...prev, duration, step: 8 }));
               }}
               selected={state.duration}
               showCustomInput={() => setShowCustomDialog(true)}
             />
           )}
 
-          {state.step === 7 && state.goal && (
+          {state.step === 8 && state.goal && (
             <MultiOptionSelection
               title="Support"
               options={state.goal.supports}
@@ -589,7 +611,7 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
             />
           )}
 
-          {state.step === 8 && (
+          {state.step === 9 && (
             <GoalConfirmation
               smartGoal={buildSmartGoal()}
               startDate={state.startDate}
