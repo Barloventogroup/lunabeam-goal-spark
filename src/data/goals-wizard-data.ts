@@ -894,31 +894,179 @@ export const GOALS_WIZARD_DATA: Category[] = [
     emoji: "🎉",
     goals: [
       {
-        id: "play-game",
-        title: "Play Game",
-        emoji: "🎮",
-        explainer: "Fun time! Whether it's video games, board games, or puzzles - whatever helps you unwind and enjoy yourself.",
+        id: "play-sport-game",
+        title: "Play a Sport/Game",
+        emoji: "⚽",
+        explainer: "Stay active and have fun with sports or games. Try playing for 10 minutes this week.",
         purpose: [
-          { id: "relax", label: "To relax", emoji: "😌", explainer: "Unwind and have fun", isDefault: true },
-          { id: "socialize", label: "Be social", emoji: "👥", explainer: "Play games with others" },
-          { id: "focus", label: "Improve focus", emoji: "🎯", explainer: "Practice concentration" }
+          { id: "active", label: "Stay active", emoji: "🏃", explainer: "Get your body moving", isDefault: true },
+          { id: "fun", label: "Have fun", emoji: "😊", explainer: "Enjoy yourself and relax" },
+          { id: "friends", label: "Play with friends", emoji: "🤝", explainer: "Spend time with others" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
         ],
         details: [
-          { id: "10min-board", label: "10 min board game", emoji: "🎲", explainer: "Short board game session", isDefault: true },
-          { id: "20min-video", label: "20 min video game", emoji: "🎮", explainer: "Video game session" },
-          { id: "30min-puzzle", label: "30 min puzzle", emoji: "🧩", explainer: "Work on a jigsaw or word puzzle" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom game activity" }
+          { id: "soccer", label: "Soccer", emoji: "⚽", explainer: "Play soccer/football", isDefault: true },
+          { id: "basketball", label: "Basketball", emoji: "🏀", explainer: "Play basketball" },
+          { id: "video-game", label: "Video game", emoji: "🎮", explainer: "Play video games" },
+          { id: "board-game", label: "Board game", emoji: "🎲", explainer: "Play board games" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom sport or game" }
+        ],
+        amount: [
+          { id: "friend", label: "Friend", emoji: "👥", explainer: "Play with a friend", isDefault: true },
+          { id: "family", label: "Family", emoji: "👨‍👩‍👧‍👦", explainer: "Play with family members" },
+          { id: "alone", label: "Alone", emoji: "🚶", explainer: "Play by yourself" },
+          { id: "team", label: "Team", emoji: "👥", explainer: "Play with a team" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom playing partner" }
         ],
         timing: [
-          { id: "weekly-3weeks", label: "Weekly for 3 weeks", emoji: "📅", explainer: "Once a week for three weeks", isDefault: true },
-          { id: "3week-2weeks", label: "3×/week for 2 weeks", emoji: "📅", explainer: "Three times per week for two weeks" }
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "10 minute sessions" },
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute sessions" },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute sessions", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         supports: [
-          { id: "reminders", label: "Reminders", emoji: "🔔", explainer: "Reminders for game time", isDefault: true },
-          { id: "buddy", label: "Game buddy", emoji: "👥", explainer: "Someone to play with" },
-          { id: "log", label: "Game log", emoji: "📝", explainer: "Track games you play", isDefault: true }
+          { id: "equipment", label: "Equipment checklist, reminder to bring water/snack", emoji: "⚽", explainer: "What you need to play and stay hydrated", isDefault: true }
         ],
-        smartTemplate: "🎮 Play {type} from {start_date} to {due_date}."
+        smartTemplate: "⚽ Play {details} with {amount} for {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "art-craft",
+        title: "Do an Art or Craft",
+        emoji: "🎨",
+        explainer: "Express your creativity through art and crafts. Draw or color 1 picture this week.",
+        purpose: [
+          { id: "creative", label: "Be creative", emoji: "🎨", explainer: "Express yourself artistically", isDefault: true },
+          { id: "relax", label: "Relax", emoji: "😌", explainer: "Unwind and destress" },
+          { id: "skill", label: "Learn new skill", emoji: "🎓", explainer: "Develop artistic abilities" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "drawing", label: "Drawing", emoji: "✏️", explainer: "Draw pictures or sketches", isDefault: true },
+          { id: "painting", label: "Painting", emoji: "🎨", explainer: "Paint with brushes and colors" },
+          { id: "coloring", label: "Coloring", emoji: "🖍️", explainer: "Color in coloring books" },
+          { id: "building", label: "Building", emoji: "🔨", explainer: "Build crafts or models" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom art or craft activity" }
+        ],
+        amount: [
+          { id: "paper-crayons", label: "Paper + crayons", emoji: "📄", explainer: "Basic drawing materials", isDefault: true },
+          { id: "paints", label: "Paints", emoji: "🎨", explainer: "Paint and brushes" },
+          { id: "markers", label: "Markers", emoji: "🖍️", explainer: "Colored markers" },
+          { id: "glue", label: "Glue", emoji: "🧴", explainer: "Glue and craft supplies" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom materials" }
+        ],
+        timing: [
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "15 minute sessions" },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute sessions", isDefault: true },
+          { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "45 minute sessions" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        supports: [
+          { id: "supplies", label: "Art supplies list, creative ideas starter sheet", emoji: "🎨", explainer: "Materials and inspiration for art projects", isDefault: true }
+        ],
+        smartTemplate: "🎨 Do {details} with {amount} for {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "music",
+        title: "Listen to or Play Music",
+        emoji: "🎵",
+        explainer: "Enjoy music through listening or playing instruments. Listen to 1 song this week.",
+        purpose: [
+          { id: "relax", label: "Relax", emoji: "🎧", explainer: "Unwind with music" },
+          { id: "practice", label: "Practice an instrument", emoji: "🎹", explainer: "Improve musical skills", isDefault: true },
+          { id: "hobby", label: "Enjoy hobbies", emoji: "🎶", explainer: "Have fun with music" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "listen", label: "Listen", emoji: "🎧", explainer: "Listen to music", isDefault: true },
+          { id: "play-instrument", label: "Play instrument", emoji: "🎹", explainer: "Play piano, guitar, etc." },
+          { id: "sing", label: "Sing", emoji: "🎤", explainer: "Sing songs" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom music activity" }
+        ],
+        amount: [
+          { id: "after-school", label: "After school", emoji: "🏫", explainer: "Right after school" },
+          { id: "evening", label: "Evening", emoji: "🌆", explainer: "In the evening", isDefault: true },
+          { id: "weekend", label: "Weekend", emoji: "📅", explainer: "On weekends" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom timing" }
+        ],
+        timing: [
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "10 minute sessions" },
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute sessions", isDefault: true },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute sessions" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        supports: [
+          { id: "music-tools", label: "Playlist template, practice schedule", emoji: "🎵", explainer: "Tools to organize your music time", isDefault: true }
+        ],
+        smartTemplate: "🎵 {details} for {timing} {amount} from {start_date} until {due_date}."
+      },
+      {
+        id: "read-watch",
+        title: "Read or Watch Something Fun",
+        emoji: "📚",
+        explainer: "Enjoy stories and entertainment through reading or watching. Read 1 short story or watch 1 show this week.",
+        purpose: [
+          { id: "learn", label: "Learn new things", emoji: "📖", explainer: "Discover new information", isDefault: true },
+          { id: "relax", label: "Relax and enjoy", emoji: "🎬", explainer: "Have fun and unwind" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "read-book", label: "Read book", emoji: "📚", explainer: "Read a book" },
+          { id: "comic", label: "Comic", emoji: "📰", explainer: "Read comics or graphic novels" },
+          { id: "magazine", label: "Magazine", emoji: "📖", explainer: "Read magazines" },
+          { id: "watch-show", label: "Watch show", emoji: "📺", explainer: "Watch TV shows", isDefault: true },
+          { id: "movie", label: "Movie", emoji: "🎬", explainer: "Watch movies" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom reading or watching" }
+        ],
+        amount: [
+          { id: "home", label: "Home", emoji: "🏠", explainer: "At home", isDefault: true },
+          { id: "library", label: "Library", emoji: "📚", explainer: "At the library" },
+          { id: "theater", label: "Theater", emoji: "🎭", explainer: "At movie theater" },
+          { id: "online", label: "Online", emoji: "💻", explainer: "Online streaming" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom location" }
+        ],
+        timing: [
+          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "15 minute sessions" },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute sessions", isDefault: true },
+          { id: "60min", label: "60 minutes", emoji: "⏰", explainer: "60 minute sessions" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        supports: [
+          { id: "lists", label: "Book/movie list, reading log", emoji: "📝", explainer: "Track what you read and watch", isDefault: true }
+        ],
+        smartTemplate: "📚 {details} at {amount} for {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "friends-activity",
+        title: "Do a Fun Activity with Friends",
+        emoji: "👥",
+        explainer: "Spend quality time with friends doing fun activities. Plan 1 fun hangout this week.",
+        purpose: [
+          { id: "together", label: "Spend time together", emoji: "🤝", explainer: "Enjoy each other's company", isDefault: true },
+          { id: "friendships", label: "Build friendships", emoji: "😊", explainer: "Strengthen relationships" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "movie", label: "Movie", emoji: "🎬", explainer: "Watch movies together", isDefault: true },
+          { id: "bowling", label: "Bowling", emoji: "🎳", explainer: "Go bowling" },
+          { id: "picnic", label: "Picnic", emoji: "🧺", explainer: "Have a picnic" },
+          { id: "game-night", label: "Game night", emoji: "🎲", explainer: "Play games together" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom activity" }
+        ],
+        amount: [
+          { id: "friend", label: "Friend", emoji: "👤", explainer: "With one friend", isDefault: true },
+          { id: "family", label: "Family", emoji: "👨‍👩‍👧‍👦", explainer: "With family members" },
+          { id: "group", label: "Group", emoji: "👥", explainer: "With a group of friends" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom companion choice" }
+        ],
+        timing: [
+          { id: "1hour", label: "1 hour", emoji: "⏰", explainer: "1 hour activities" },
+          { id: "2hours", label: "2 hours", emoji: "⏰", explainer: "2 hour activities", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        supports: [
+          { id: "ideas", label: "Ideas list (bowling, movies, picnic), reminder text template", emoji: "💡", explainer: "Activity suggestions and planning help", isDefault: true }
+        ],
+        smartTemplate: "👥 Do {details} with {amount} for {timing} from {start_date} until {due_date}."
       }
     ]
   }
