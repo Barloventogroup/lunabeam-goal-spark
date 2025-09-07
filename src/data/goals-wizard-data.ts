@@ -256,13 +256,11 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "paragraph", label: "Paragraph", emoji: "📝", explainer: "Write a paragraph" },
           { id: "letter", label: "Letter", emoji: "✉️", explainer: "Write a letter to someone" },
           { id: "essay", label: "Essay", emoji: "📄", explainer: "Write an essay or report" },
-          { id: "story", label: "Story", emoji: "📖", explainer: "Write a creative story" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Something else" }
+          { id: "story", label: "Story", emoji: "📖", explainer: "Write a creative story" }
         ],
         topic: [
           { id: "free-choice", label: "Free choice", emoji: "🆓", explainer: "Choose your own topic", isDefault: true },
-          { id: "school-assignment", label: "School assignment", emoji: "📚", explainer: "Complete a school writing assignment" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Something else" }
+          { id: "school-assignment", label: "School assignment", emoji: "📚", explainer: "Complete a school writing assignment" }
         ],
         amount: [
           { id: "2sentences", label: "2 sentences", emoji: "✏️", explainer: "Write 2 sentences", isDefault: true },
