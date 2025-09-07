@@ -159,7 +159,14 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     const frequencyPart = state.frequency?.label;
     const durationPart = state.duration?.label;
     const purposeSuffix = state.purpose?.label
-      ? ` to ${state.purpose.label.toLowerCase()}`
+      ? ` to ${state.purpose.label.toLowerCase().replace(/^(practice writing skills|express feelings\/journal|finish assignment)$/, (match) => {
+          switch(match) {
+            case 'practice writing skills': return 'practice writing skills';
+            case 'express feelings/journal': return 'express feelings and journal';
+            case 'finish assignment': return 'finish an assignment';
+            default: return match;
+          }
+        })}`
       : "";
 
     // If nothing is chosen yet, return empty string to show helper text
@@ -186,8 +193,28 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
           sentence += amountPart ? ` from ${article} ${d}` : `${article} ${d}`;
         }
       }
+    } else if (state.goal?.id === 'write') {
+      // Special handling for writing goals
+      sentence += "Write ";
+      
+      if (detailsPart) {
+        const d = detailsPart.toLowerCase();
+        if (d === 'journal') {
+          sentence += "in a journal";
+        } else if (d === 'paragraph') {
+          sentence += "a paragraph";
+        } else if (d === 'letter') {
+          sentence += "a letter";
+        } else if (d === 'essay') {
+          sentence += "an essay";
+        } else if (d === 'story') {
+          sentence += "a story";
+        } else {
+          sentence += `a ${d}`;
+        }
+      }
     } else {
-      // For non-reading goals, use the original structure
+      // For other goals, use the original structure
       sentence += title;
       
       if (detailsPart) {
