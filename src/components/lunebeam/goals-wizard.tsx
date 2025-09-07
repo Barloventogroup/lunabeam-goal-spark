@@ -67,7 +67,10 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const [affirmation, setAffirmation] = useState<string>("");
   const [showConfetti, setShowConfetti] = useState(false);
   const [showCustomDialog, setShowCustomDialog] = useState(false);
+  const [showAmountDialog, setShowAmountDialog] = useState(false);
   const [customInput, setCustomInput] = useState("");
+  const [customAmount, setCustomAmount] = useState("");
+  const [customAmountType, setCustomAmountType] = useState<"pages" | "minutes">("minutes");
   const [isProcessingInput, setIsProcessingInput] = useState(false);
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
   
@@ -401,6 +404,37 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
     }
   };
 
+  const handleCustomAmount = () => {
+    if (!customAmount.trim()) return;
+    
+    const amount = parseInt(customAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid number.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const customAmountOption: GoalOption = {
+      id: `custom-${customAmountType}-${amount}`,
+      label: `${amount} ${customAmountType}`,
+      emoji: customAmountType === "minutes" ? "⏰" : "📄",
+      explainer: `Read for ${amount} ${customAmountType}`
+    };
+
+    setState(prev => ({ ...prev, amount: customAmountOption, step: 6 }));
+    showRandomAffirmation();
+    setShowAmountDialog(false);
+    setCustomAmount("");
+    
+    toast({
+      title: "Perfect!",
+      description: `Set to ${amount} ${customAmountType}.`,
+    });
+  };
+
   // Show resume dialog if we have saved progress
   if (state.savedProgress && state.step === 1) {
     return (
@@ -537,6 +571,53 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
             </DialogContent>
           </Dialog>
 
+          {/* Custom Amount Dialog */}
+          <Dialog open={showAmountDialog} onOpenChange={setShowAmountDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Custom Reading Amount</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Amount</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Enter number"
+                      value={customAmount}
+                      onChange={(e) => setCustomAmount(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-input rounded-md text-sm"
+                      min="1"
+                    />
+                    <select
+                      value={customAmountType}
+                      onChange={(e) => setCustomAmountType(e.target.value as "pages" | "minutes")}
+                      className="px-3 py-2 border border-input rounded-md text-sm"
+                    >
+                      <option value="minutes">minutes</option>
+                      <option value="pages">pages</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleCustomAmount}
+                    disabled={!customAmount.trim()}
+                    className="flex-1"
+                  >
+                    Set Amount
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowAmountDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           {state.step === 3 && state.goal && (
             <OptionSelection
               title="Purpose"
@@ -574,7 +655,7 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
                 setState(prev => ({ ...prev, amount, step: 6 }));
               }}
               selected={state.amount}
-              showCustomInput={() => setShowCustomDialog(true)}
+              showCustomInput={() => setShowAmountDialog(true)}
             />
           )}
 
