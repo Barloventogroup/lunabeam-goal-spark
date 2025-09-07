@@ -23,14 +23,6 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
 }) => {
   const categories = [
     {
-      id: 'health',
-      title: '💪 Health',
-      description: 'Taking care of your body and mind - the good stuff that makes you feel awesome',
-      icon: Heart,
-      color: 'bg-red-500/10 text-red-600 border-red-200',
-      examples: 'Walk, try a snack, sleep better'
-    },
-    {
       id: 'education',
       title: '🎓 Education',
       description: 'Learning new things and growing your brain power - no matter how small the step',
@@ -47,6 +39,14 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
       examples: 'Practice interview Q, update resume, send email'
     },
     {
+      id: 'health',
+      title: '💪 Health',
+      description: 'Taking care of your body and mind - the good stuff that makes you feel awesome',
+      icon: Heart,
+      color: 'bg-red-500/10 text-red-600 border-red-200',
+      examples: 'Walk, try a snack, sleep better'
+    },
+    {
       id: 'independent_living',
       title: '🏠 Independent Living',
       description: 'Everyday life stuff that makes you feel more independent and capable',
@@ -55,28 +55,20 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
       examples: 'Make bed, set table, laundry to basket'
     },
     {
-      id: 'social_skills',
-      title: '🤝 Social Skills',
-      description: 'Connecting with people in your own comfortable way - even tiny interactions count',
-      icon: Users,
-      color: 'bg-orange-500/10 text-orange-600 border-orange-200',
-      examples: 'Say "hi", eye contact 3s, text "how are you?"'
-    },
-    {
-      id: 'housing',
-      title: '🏘 Housing',
-      description: 'Exploring housing options and figuring out what works for you',
-      icon: Building,
-      color: 'bg-teal-500/10 text-teal-600 border-teal-200',
-      examples: 'Browse housing option, list wants/needs, call office'
-    },
-    {
       id: 'postsecondary',
       title: '🎓 Postsecondary',
       description: "Checking out what's next after high school - colleges, trades, certificates, whatever interests you",
       icon: BookOpen,
       color: 'bg-indigo-500/10 text-indigo-600 border-indigo-200',
       examples: 'Look at 1 program, visit disability office site, student story'
+    },
+    {
+      id: 'social_skills',
+      title: '🤝 Social Skills',
+      description: 'Connecting with people in your own comfortable way - even tiny interactions count',
+      icon: Users,
+      color: 'bg-orange-500/10 text-orange-600 border-orange-200',
+      examples: 'Say "hi", eye contact 3s, text "how are you?"'
     }
   ];
 
