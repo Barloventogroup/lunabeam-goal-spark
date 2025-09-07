@@ -27,6 +27,7 @@ interface WizardState {
   purpose?: GoalOption;
   details?: GoalOption;
   amount?: GoalOption;
+  timing?: GoalOption;
   supports?: GoalOption[];
   startDate?: Date;
   dueDate?: Date;
@@ -39,9 +40,10 @@ const STEPS = [
   { id: 3, title: "Why?", subtitle: "What's your main reason for this goal?" },
   { id: 4, title: "Details", subtitle: "How do you want to do this?" },
   { id: 5, title: "Amount", subtitle: "How much do you want to read?" },
-  { id: 6, title: "Complete By", subtitle: "When do you want to complete this goal?" },
-  { id: 7, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
-  { id: 8, title: "Confirm", subtitle: "Ready to start your goal?" }
+  { id: 6, title: "Duration", subtitle: "How often and for how long?" },
+  { id: 7, title: "Complete By", subtitle: "When do you want to complete this goal?" },
+  { id: 8, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
+  { id: 9, title: "Confirm", subtitle: "Ready to start your goal?" }
 ];
 
 const AFFIRMATIONS = [
@@ -181,8 +183,9 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       case 3: return !!state.purpose;
       case 4: return !state.goal?.details || !!state.details;
       case 5: return !state.goal?.amount || !!state.amount;
-      case 6: return !!state.dueDate && !validateDates();
-      case 7: return !!state.supports && state.supports.length > 0;
+      case 6: return !state.goal?.timing || !!state.timing;
+      case 7: return !!state.dueDate && !validateDates();
+      case 8: return !!state.supports && state.supports.length > 0;
       default: return false;
     }
   };
@@ -355,7 +358,10 @@ Example:
       let prevStep = state.step - 1;
 
       // Skip steps that don't apply when going backwards
-      if (prevStep === 5 && (!state.goal?.amount || state.goal?.id !== 'read')) {
+      if (prevStep === 6 && !state.goal?.timing) {
+        prevStep = 5; // Skip timing step backwards
+      }
+      if (prevStep === 5 && !state.goal?.amount) {
         // If amount doesn't apply, jump back to details or purpose depending on goal
         prevStep = state.goal?.details ? 4 : 3;
       }
@@ -379,6 +385,9 @@ Example:
       }
       if (nextStep === 5 && !state.goal?.amount) {
         nextStep = 6; // Skip amount step
+      }
+      if (nextStep === 6 && !state.goal?.timing) {
+        nextStep = 7; // Skip timing step
       }
       
       setState(prev => ({ ...prev, step: nextStep }));
@@ -501,7 +510,7 @@ Example:
             options={state.goal.purpose}
             onSelect={(purpose) => {
               showRandomAffirmation();
-            const nextStep = state.goal?.amount ? 5 : 6;
+            let nextStep = state.goal?.details ? 4 : (state.goal?.amount ? 5 : (state.goal?.timing ? 6 : 7));
               setState(prev => ({ ...prev, purpose, step: nextStep }));
             }}
             selected={state.purpose}
@@ -515,7 +524,7 @@ Example:
             options={state.goal.details}
             onSelect={(details) => {
               showRandomAffirmation();
-              const nextStep = state.goal?.amount ? 5 : 6;
+              let nextStep = state.goal?.amount ? 5 : (state.goal?.timing ? 6 : 7);
               setState(prev => ({ ...prev, details, step: nextStep }));
             }}
             selected={state.details}
@@ -529,14 +538,28 @@ Example:
             options={state.goal.amount}
             onSelect={(amount) => {
               showRandomAffirmation();
-              setState(prev => ({ ...prev, amount, step: 6 }));
+              let nextStep = state.goal?.timing ? 6 : 7;
+              setState(prev => ({ ...prev, amount, step: nextStep }));
             }}
             selected={state.amount}
           />
         )}
 
-        {/* Step 6: Due Date Selection */}
-        {state.step === 6 && (
+        {/* Step 6: Duration/Timing Selection */}
+        {state.step === 6 && state.goal && state.goal.timing && (
+          <OptionSelection
+            title="Duration"
+            options={state.goal.timing}
+            onSelect={(timing) => {
+              showRandomAffirmation();
+              setState(prev => ({ ...prev, timing, step: 7 }));
+            }}
+            selected={state.timing}
+          />
+        )}
+
+        {/* Step 7: Due Date Selection */}
+        {state.step === 7 && (
           <div className="space-y-6">
             <div className="max-w-md mx-auto space-y-6">
               {/* Date Selection Cards */}
@@ -651,28 +674,28 @@ Example:
           </div>
         )}
 
-        {/* Step 7: Support Selection */}
-        {state.step === 7 && state.goal && (
+        {/* Step 8: Support Selection */}
+        {state.step === 8 && state.goal && (
           <MultiOptionSelection
             title="Support"
             options={state.goal.supports}
             onSelect={(supports) => {
               showRandomAffirmation();
-              setState(prev => ({ ...prev, supports, step: 8 }));
+              setState(prev => ({ ...prev, supports, step: 9 }));
             }}
             selected={state.supports || []}
           />
         )}
 
-        {/* Step 8: Confirmation */}
-        {state.step === 8 && (
+        {/* Step 9: Confirmation */}
+        {state.step === 9 && (
           <GoalConfirmation
             goal={buildSmartGoal()}
             startDate={state.startDate}
             dueDate={state.dueDate}
             onCreateGoal={createGoal}
             isCreating={isCreatingGoal}
-            onBack={() => setState(prev => ({ ...prev, step: 7 }))}
+            onBack={() => setState(prev => ({ ...prev, step: 8 }))}
           />
         )}
       </div>
@@ -714,7 +737,7 @@ const CategorySelection: React.FC<{
               // Auto-select this goal with defaults and go to due date step
               if (onSelectDefault) {
                 onSelectDefault({ 
-                  step: 6, // Go to due date step
+                  step: 7, // Go to due date step
                   category: { id: 'starter', title: 'Starter Goals', emoji: '🌟', goals: [goal] },
                   goal: goal,
                   purpose: goal.purpose.find(p => p.isDefault) || goal.purpose[0],
