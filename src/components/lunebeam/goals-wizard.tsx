@@ -742,7 +742,7 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
                 setState(prev => ({ ...prev, purpose, step: 4 }));
               }}
               selected={state.purpose}
-              showCustomInput={() => setShowCustomDialog(true)}
+              showCustomInput={state.goal?.id !== 'read' ? () => setShowCustomDialog(true) : undefined}
             />
           )}
 

@@ -206,15 +206,13 @@ export const GOALS_WIZARD_DATA: Category[] = [
         purpose: [
           { id: "learn", label: "Learn for school", emoji: "📚", explainer: "Gain knowledge for school subjects", isDefault: true },
           { id: "relax", label: "Relax/enjoy", emoji: "😌", explainer: "Enjoy reading for pleasure" },
-          { id: "focus", label: "Practice focus", emoji: "🧠", explainer: "Build concentration skills" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own reading purpose" }
+          { id: "focus", label: "Practice focus", emoji: "🧠", explainer: "Build concentration skills" }
         ],
         details: [
           { id: "textbook", label: "Textbook", emoji: "📚", explainer: "Read from a textbook" },
           { id: "article", label: "Article", emoji: "📰", explainer: "Read an article or blog post" },
           { id: "comic", label: "Comic", emoji: "📚", explainer: "Read a comic or graphic novel" },
-          { id: "blog", label: "Blog", emoji: "💻", explainer: "Read a blog post or online content" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Choose your own reading material" }
+          { id: "blog", label: "Blog", emoji: "💻", explainer: "Read a blog post or online content" }
         ],
         amount: [
           { id: "5pages", label: "5 pages", emoji: "📄", explainer: "Read 5 pages" },

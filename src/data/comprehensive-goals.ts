@@ -55,13 +55,13 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
   "Education": [
     {
       "goal": "Read something",
-      "options": ["Learn for school", "Relax/enjoy", "Practice focus", "Custom"],
+      "options": ["Learn for school", "Relax/enjoy", "Practice focus"],
       "custom_inputs": ["What to read", "Amount"],
       "required_inputs": ["Format", "Amount", "Frequency", "Duration", "End date"],
       "outputs": ["Reading log", "List of suggested books/articles", "Reading reminders"],
       "explainer": "Reading means looking at words in a book, article, or online and understanding them. You can read for learning or fun.",
       "details": {
-        "what_to_read": ["Textbook", "Article", "Comic", "Blog", "Custom"],
+        "what_to_read": ["Textbook", "Article", "Comic", "Blog"],
         "amount": ["1 page", "5 pages", "10 pages", "5 minutes", "10 minutes", "15 minutes"],
         "frequency_options": ["Daily", "3× per week"],
         "duration_options": ["2 weeks", "3 weeks", "4 weeks"],
