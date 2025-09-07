@@ -411,13 +411,13 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
           if (state.step === 3 && customInput.toLowerCase().includes("don't know")) {
             customOption = {
               ...customOption,
-              label: "let's read something for fun!",
+              label: "read something for fun",
               explainer: "Reading for enjoyment and fun"
             };
           } else if (state.step === 4 && customInput.toLowerCase().includes("don't know")) {
             customOption = {
               ...customOption,
-              label: "l don't worry you don't need to know know. Read something, you'll let me know what afterwards. You can do it!",
+              label: "read something",
               explainer: "Start reading anything - you'll discover what interests you"
             };
           }
@@ -441,9 +441,19 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
         setShowCustomDialog(false);
         setCustomInput("");
         
+        // Show encouraging message for "I don't know" responses
+        let toastMessage = "Your input has been added to your goal.";
+        if (state.goal?.id === 'read' && customInput.toLowerCase().includes("don't know")) {
+          if (state.step === 3) {
+            toastMessage = "Let's read something for fun!";
+          } else if (state.step === 4) {
+            toastMessage = "I don't worry you don't need to know know. Read something, you'll let me know what afterwards. You can do it!";
+          }
+        }
+        
         toast({
           title: "Got it!",
-          description: "Your input has been added to your goal.",
+          description: toastMessage,
           duration: 2000, // Auto-clear after 2 seconds
         });
       }
