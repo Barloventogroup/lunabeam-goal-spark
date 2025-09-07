@@ -21,6 +21,7 @@ export interface CategoryGoal {
   emoji: string;
   purpose: GoalOption[];
   details: GoalOption[];
+  amount?: GoalOption[];
   timing: GoalOption[];
   supports: GoalOption[];
   smartTemplate: string;
@@ -214,6 +215,15 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "comic", label: "Comic", emoji: "📚", explainer: "Read a comic or graphic novel" },
           { id: "blog", label: "Blog", emoji: "💻", explainer: "Read a blog post or online content" },
           { id: "custom", label: "Custom", emoji: "✏️", explainer: "Choose your own reading material" }
+        ],
+        amount: [
+          { id: "5pages", label: "5 pages", emoji: "📄", explainer: "Read 5 pages" },
+          { id: "10pages", label: "10 pages", emoji: "📄", explainer: "Read 10 pages" },
+          { id: "15pages", label: "15 pages", emoji: "📄", explainer: "Read 15 pages" },
+          { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Read for 10 minutes" },
+          { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Read for 20 minutes" },
+          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Read for 30 minutes" },
+          { id: "15min-default", label: "15 minutes", emoji: "⏰", explainer: "Read for 15 minutes", isDefault: true }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
