@@ -772,6 +772,18 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "compare", label: "Compare programs", emoji: "📋", explainer: "Compare different schools and programs" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
         ],
+        details: [
+          { id: "website", label: "Website", emoji: "💻", explainer: "Look up programs online", isDefault: true },
+          { id: "book", label: "Book", emoji: "📚", explainer: "Use printed guides and catalogs" },
+          { id: "counselor", label: "Counselor", emoji: "👨‍🏫", explainer: "Talk with school counselor" },
+          { id: "fair", label: "College fair", emoji: "🎪", explainer: "Visit college fair or expo" }
+        ],
+        amount: [
+          { id: "1program", label: "1 program", emoji: "🎯", explainer: "Research one program", isDefault: true },
+          { id: "2programs", label: "2 programs", emoji: "🎯", explainer: "Research two programs" },
+          { id: "3programs", label: "3 programs", emoji: "🎯", explainer: "Research three programs" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom number of programs" }
+        ],
         timing: [
           { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute research sessions" },
           { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute research sessions", isDefault: true },
@@ -779,9 +791,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         supports: [
-          { id: "websites", label: "College websites, comparison worksheet, counselor notes", emoji: "💻", explainer: "Online resources and organization tools", isDefault: true }
+          { id: "resources", label: "College websites, comparison worksheet, counselor notes", emoji: "💻", explainer: "Online resources and organization tools", isDefault: true }
         ],
-        smartTemplate: "📚 Spend {timing} researching colleges from {start_date} until {due_date}."
+        smartTemplate: "📚 Spend {timing} researching {amount} from {start_date} until {due_date}."
       },
       {
         id: "application-materials",
@@ -793,6 +805,17 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "organized", label: "Stay organized", emoji: "🎯", explainer: "Keep application materials in order" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
         ],
+        details: [
+          { id: "personal-statement", label: "Personal statement", emoji: "📝", explainer: "Write essay about yourself", isDefault: true },
+          { id: "resume", label: "Resume", emoji: "📋", explainer: "List your experiences and activities" },
+          { id: "transcript", label: "Transcript", emoji: "📜", explainer: "Request official school records" },
+          { id: "recommendations", label: "Recommendation letters", emoji: "✉️", explainer: "Ask teachers or mentors for letters" }
+        ],
+        amount: [
+          { id: "draft", label: "Draft", emoji: "✏️", explainer: "Create first version", isDefault: true },
+          { id: "request", label: "Request", emoji: "📞", explainer: "Ask others for help or documents" },
+          { id: "collect", label: "Collect", emoji: "📂", explainer: "Gather completed materials" }
+        ],
         timing: [
           { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute work sessions" },
           { id: "45min", label: "45 minutes", emoji: "⏰", explainer: "45 minute work sessions", isDefault: true },
@@ -800,9 +823,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         supports: [
-          { id: "checklist", label: "Application checklist, sample essays, transcript request guide", emoji: "✅", explainer: "Tools to help organize application process", isDefault: true }
+          { id: "tools", label: "Application checklist, sample essays, transcript request guide", emoji: "✅", explainer: "Tools to help organize application process", isDefault: true }
         ],
-        smartTemplate: "📝 Work on application materials for {timing} from {start_date} until {due_date}."
+        smartTemplate: "📝 Work on {details} for {timing} from {start_date} until {due_date}."
       },
       {
         id: "financial-aid",
@@ -814,15 +837,24 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "fafsa", label: "Prepare for FAFSA/loans", emoji: "🧾", explainer: "Understand financial aid process" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
         ],
+        details: [
+          { id: "fafsa", label: "FAFSA", emoji: "📋", explainer: "Federal financial aid application" },
+          { id: "scholarship", label: "Scholarship", emoji: "🏆", explainer: "Merit or need-based awards", isDefault: true },
+          { id: "grant", label: "Grant", emoji: "💵", explainer: "Free money for education" },
+          { id: "local", label: "Local program", emoji: "🏘️", explainer: "Community-based financial help" }
+        ],
+        amount: [
+          { id: "2notes", label: "Write down 2-3 key points", emoji: "📝", explainer: "Capture important information", isDefault: true }
+        ],
         timing: [
           { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "20 minute research sessions", isDefault: true },
           { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "30 minute research sessions" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         supports: [
-          { id: "guide", label: "Financial aid guide, FAFSA worksheet, scholarship search sites", emoji: "📊", explainer: "Resources for financial planning", isDefault: true }
+          { id: "resources", label: "Financial aid guide, FAFSA worksheet, scholarship search sites", emoji: "📊", explainer: "Resources for financial planning", isDefault: true }
         ],
-        smartTemplate: "💵 Research financial aid for {timing} from {start_date} until {due_date}."
+        smartTemplate: "💵 Research {details} for {timing} from {start_date} until {due_date}."
       },
       {
         id: "visit-campuses",
@@ -834,15 +866,25 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "fit", label: "Compare fit", emoji: "🎯", explainer: "See if the school feels right for you" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
         ],
+        details: [
+          { id: "virtual", label: "Virtual", emoji: "💻", explainer: "Online campus tour", isDefault: true },
+          { id: "in-person", label: "In-person", emoji: "👣", explainer: "Visit campus physically" }
+        ],
+        amount: [
+          { id: "parent", label: "Parent", emoji: "👨‍👩‍👧‍👦", explainer: "Go with parent or guardian", isDefault: true },
+          { id: "friend", label: "Friend", emoji: "👥", explainer: "Bring a friend along" },
+          { id: "coach", label: "Coach", emoji: "👨‍🏫", explainer: "Go with counselor or coach" },
+          { id: "alone", label: "Alone", emoji: "🚶", explainer: "Visit by yourself" }
+        ],
         timing: [
           { id: "1hour", label: "1 hour", emoji: "⏰", explainer: "1 hour campus visits", isDefault: true },
           { id: "2hours", label: "2 hours", emoji: "⏰", explainer: "2 hour campus visits" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         supports: [
-          { id: "tour-guide", label: "Campus tour guide, checklist of questions, parent/coach reminder", emoji: "🗺️", explainer: "Support for campus visits", isDefault: true }
+          { id: "guide", label: "Campus tour guide, checklist of questions, parent/coach reminder", emoji: "🗺️", explainer: "Support for campus visits", isDefault: true }
         ],
-        smartTemplate: "🧑‍🤝‍🧑 Visit campus for {timing} from {start_date} until {due_date}."
+        smartTemplate: "🧑‍🤝‍🧑 Visit campus {details} for {timing} from {start_date} until {due_date}."
       }
     ]
   },
