@@ -700,27 +700,167 @@ export const GOALS_WIZARD_DATA: Category[] = [
         id: "say-hi",
         title: "Say Hi",
         emoji: "👋",
-        explainer: "Just a simple wave, smile, or quick 'hey there!' - it's all about making friendly connections.",
+        explainer: "Making friendly connections with simple greetings. Start by saying hi once this week.",
         purpose: [
-          { id: "friends", label: "Make friends", emoji: "👥", explainer: "Connect with new people" },
-          { id: "practice", label: "Practice skill", emoji: "🎯", explainer: "Get better at social interactions" },
-          { id: "school", label: "For school/work", emoji: "🏫", explainer: "Be friendly in school or work settings", isDefault: true }
+          { id: "friends", label: "Make friends", emoji: "🤝", explainer: "Connect with new people", isDefault: true },
+          { id: "practice", label: "Practice social skill", emoji: "🎓", explainer: "Get better at social interactions" },
+          { id: "work-school", label: "Use at work/school", emoji: "🏢", explainer: "Be friendly in professional settings" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
         ],
         details: [
-          { id: "classmate", label: "To classmate", emoji: "🎓", explainer: "Say hi to someone from school", isDefault: true },
-          { id: "neighbor", label: "To neighbor", emoji: "🏘️", explainer: "Greet people in your neighborhood" },
-          { id: "teacher", label: "To teacher", emoji: "👨‍🏫", explainer: "Say hi to teachers or staff" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom greeting approach" }
+          { id: "friend", label: "Friend", emoji: "👥", explainer: "Say hi to a friend" },
+          { id: "classmate", label: "Classmate", emoji: "🎓", explainer: "Say hi to someone from school", isDefault: true },
+          { id: "neighbor", label: "Neighbor", emoji: "🏘️", explainer: "Greet people in your neighborhood" },
+          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Say hi to teachers or staff" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom greeting target" }
+        ],
+        amount: [
+          { id: "smile-wave-hi", label: "Smile + Wave + Say \"Hi.\"", emoji: "😊", explainer: "Complete friendly greeting" },
+          { id: "just-hi", label: "Just say \"Hi.\"", emoji: "👋", explainer: "Simple greeting", isDefault: true }
         ],
         timing: [
+          { id: "once", label: "Once", emoji: "📅", explainer: "Once per day or week" },
           { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true },
-          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week" }
+          { id: "3week", label: "3× per week", emoji: "📅", explainer: "Three times per week" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
         ],
         supports: [
-          { id: "script", label: "Script card", emoji: "📝", explainer: "Simple phrases to practice", isDefault: true },
-          { id: "reminders", label: "Reminders", emoji: "🔔", explainer: "Gentle reminders to say hi" }
+          { id: "script", label: "Social script card (\"Hi, how are you?\"), Reminder before school", emoji: "📝", explainer: "Practice phrases and reminders", isDefault: true }
         ],
-        smartTemplate: "👋 Say hi {to} from {start_date} to {due_date}."
+        smartTemplate: "👋 Say hi to {details} {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "eye-contact",
+        title: "Eye Contact (3 Seconds)",
+        emoji: "👀",
+        explainer: "Practice making eye contact to show interest and build confidence. Try looking someone in the eyes for 3 seconds once a day.",
+        purpose: [
+          { id: "interest", label: "Show interest", emoji: "🧑‍🤝‍🧑", explainer: "Demonstrate you're paying attention", isDefault: true },
+          { id: "interviews", label: "Practice for interviews", emoji: "🎓", explainer: "Prepare for job or school interviews" },
+          { id: "confidence", label: "Build confidence", emoji: "😌", explainer: "Feel more self-assured" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "mirror", label: "Mirror", emoji: "🪞", explainer: "Practice with yourself in mirror", isDefault: true },
+          { id: "parent", label: "Parent", emoji: "👨‍👩‍👧‍👦", explainer: "Practice with parent or guardian" },
+          { id: "friend", label: "Friend", emoji: "👥", explainer: "Practice with a friend" },
+          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Practice with teacher or coach" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom practice partner" }
+        ],
+        amount: [
+          { id: "3seconds", label: "3 seconds", emoji: "⏱️", explainer: "Look for 3 seconds", isDefault: true },
+          { id: "5seconds", label: "5 seconds", emoji: "⏱️", explainer: "Look for 5 seconds" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
+        ],
+        timing: [
+          { id: "once", label: "Once", emoji: "📅", explainer: "Once per day", isDefault: true },
+          { id: "twice", label: "Twice per day", emoji: "📅", explainer: "Two times per day" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        supports: [
+          { id: "practice", label: "Practice with mirror or supportive partner, Reflection log (\"How did it feel?\")", emoji: "🪞", explainer: "Practice tools and reflection", isDefault: true }
+        ],
+        smartTemplate: "👀 Practice {amount} eye contact with {details} {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "text-how-are-you",
+        title: "Text \"How are you?\"",
+        emoji: "💬",
+        explainer: "Stay connected with friends through simple text messages. Send 1 text to a friend this week.",
+        purpose: [
+          { id: "connected", label: "Stay connected", emoji: "🤝", explainer: "Keep in touch with people", isDefault: true },
+          { id: "check-friend", label: "Check on a friend", emoji: "🧑‍🤝‍🧑", explainer: "Show you care about someone" },
+          { id: "practice", label: "Practice communication", emoji: "🎓", explainer: "Get better at reaching out" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "friend", label: "Friend", emoji: "👥", explainer: "Text a friend", isDefault: true },
+          { id: "family", label: "Family", emoji: "👨‍👩‍👧‍👦", explainer: "Text family member" },
+          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Text teacher or coach" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom text recipient" }
+        ],
+        amount: [
+          { id: "after-school", label: "After school", emoji: "🏫", explainer: "Send text after school", isDefault: true },
+          { id: "evening", label: "Evening", emoji: "🌆", explainer: "Send text in the evening" },
+          { id: "weekend", label: "Weekend", emoji: "📅", explainer: "Send text on weekends" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom timing" }
+        ],
+        timing: [
+          { id: "once", label: "Once", emoji: "📅", explainer: "Once per week" },
+          { id: "twice", label: "Twice", emoji: "📅", explainer: "Twice per week" },
+          { id: "3week", label: "3× per week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        supports: [
+          { id: "templates", label: "Message templates, Conversation starter list", emoji: "💬", explainer: "Sample messages and conversation ideas", isDefault: true }
+        ],
+        smartTemplate: "💬 Text 'How are you?' to {details} {amount} {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "handshake-fist-pump",
+        title: "Handshake / Fist Pump",
+        emoji: "🤝",
+        explainer: "Practice professional and friendly greetings. Practice a handshake with a family member this week.",
+        purpose: [
+          { id: "interviews", label: "Job interviews", emoji: "👔", explainer: "Prepare for professional meetings", isDefault: true },
+          { id: "friends", label: "Greeting friends", emoji: "🤝", explainer: "Show friendship and respect" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "parent", label: "Parent", emoji: "👨‍👩‍👧‍👦", explainer: "Practice with parent or guardian" },
+          { id: "friend", label: "Friend", emoji: "👥", explainer: "Practice with a friend", isDefault: true },
+          { id: "coach", label: "Coach", emoji: "👨‍🏫", explainer: "Practice with teacher or coach" },
+          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Practice with teacher" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom practice partner" }
+        ],
+        amount: [
+          { id: "full-greeting", label: "Look person in the eye → Smile → Handshake or fist pump → Say \"Hi\"", emoji: "👀", explainer: "Complete greeting sequence" },
+          { id: "fist-pump-only", label: "Fist pump only", emoji: "👊", explainer: "Just the fist bump", isDefault: true }
+        ],
+        timing: [
+          { id: "1time", label: "Practice 1 time per session", emoji: "📅", explainer: "One practice per session" },
+          { id: "2times", label: "Practice 2 times per session", emoji: "📅", explainer: "Two practices per session" },
+          { id: "3times", label: "Practice 3 times per session", emoji: "📅", explainer: "Three practices per session", isDefault: true },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom practice amount" }
+        ],
+        supports: [
+          { id: "guide", label: "Step-by-step guide with images, Practice with parent/friend", emoji: "📋", explainer: "Visual guides and practice support", isDefault: true }
+        ],
+        smartTemplate: "🤝 Practice {amount} with {details} {timing} from {start_date} until {due_date}."
+      },
+      {
+        id: "give-compliment",
+        title: "Give a Compliment",
+        emoji: "😊",
+        explainer: "Make others feel good with genuine compliments. Try giving 1 compliment this week.",
+        purpose: [
+          { id: "friends", label: "Make friends", emoji: "🤝", explainer: "Build new friendships", isDefault: true },
+          { id: "connections", label: "Build connections", emoji: "🧑‍🤝‍🧑", explainer: "Strengthen relationships" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom purpose" }
+        ],
+        details: [
+          { id: "friend", label: "Friend", emoji: "👥", explainer: "Compliment a friend" },
+          { id: "classmate", label: "Classmate", emoji: "🎓", explainer: "Compliment someone from school", isDefault: true },
+          { id: "teacher", label: "Teacher", emoji: "👨‍🏫", explainer: "Compliment teacher or staff" },
+          { id: "family", label: "Family", emoji: "👨‍👩‍👧‍👦", explainer: "Compliment family member" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom compliment recipient" }
+        ],
+        amount: [
+          { id: "clothes", label: "Clothes", emoji: "👕", explainer: "Compliment their outfit", isDefault: true },
+          { id: "effort", label: "Effort", emoji: "💪", explainer: "Compliment their hard work" },
+          { id: "skill", label: "Skill", emoji: "🎯", explainer: "Compliment their abilities" },
+          { id: "personality", label: "Personality", emoji: "😊", explainer: "Compliment their character" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom compliment topic" }
+        ],
+        timing: [
+          { id: "1daily", label: "1 compliment per day", emoji: "📅", explainer: "One compliment each day", isDefault: true },
+          { id: "2week", label: "2× per week", emoji: "📅", explainer: "Two compliments per week" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom frequency" }
+        ],
+        supports: [
+          { id: "starter-list", label: "Compliment starter list, Reflection log (\"How did they react?\")", emoji: "📝", explainer: "Compliment ideas and reflection tracking", isDefault: true }
+        ],
+        smartTemplate: "😊 Give 1 compliment about {amount} to {details} {timing} from {start_date} until {due_date}."
       }
     ]
   },
