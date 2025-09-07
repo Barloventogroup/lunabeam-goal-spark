@@ -541,13 +541,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "education", label: "Education", emoji: "🎓", explainer: "Update education information" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom update" }
         ],
-        duration: [
-          { id: "30min", label: "30 minutes", emoji: "⏰", explainer: "Thirty minute session", isDefault: true },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
-        ],
         frequency: [
-          { id: "by-date", label: "By [date]", emoji: "📅", explainer: "Complete by specific date" },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom deadline" }
+          { id: "30min-by-date", label: "30 minutes by [date]", emoji: "📅", explainer: "Complete in 30 minutes by specific date" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Custom timeline" }
         ],
         supports: [
           { id: "checklist", label: "Resume update checklist", emoji: "✅", explainer: "What's new since last version?", isDefault: true }
@@ -570,12 +566,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "three-parts", label: "Thank → Detail → Interest", emoji: "📝", explainer: "Thank them → Mention interview detail → Say you're excited" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom format" }
         ],
-        duration: [
-          { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Fifteen minute session", isDefault: true },
-          { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
-        ],
         frequency: [
-          { id: "24hours", label: "Within 24 hours", emoji: "📅", explainer: "Send within one day of interview" },
+          { id: "15min-24hours", label: "15 minutes within 24 hours", emoji: "📅", explainer: "Spend 15 minutes writing and send within one day" },
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom timeline" }
         ],
         supports: [
