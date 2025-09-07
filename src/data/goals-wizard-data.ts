@@ -21,8 +21,11 @@ export interface CategoryGoal {
   emoji: string;
   purpose: GoalOption[];
   details: GoalOption[];
+  topic?: GoalOption[];
   amount?: GoalOption[];
-  timing: GoalOption[];
+  frequency?: GoalOption[];
+  duration?: GoalOption[];
+  timing?: GoalOption[];
   supports: GoalOption[];
   smartTemplate: string;
   explainer: string;
@@ -246,14 +249,37 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "practice", label: "Practice writing skills", emoji: "📓", explainer: "Improve your writing abilities", isDefault: true },
           { id: "express", label: "Express feelings/journal", emoji: "😌", explainer: "Write about your thoughts and feelings" },
           { id: "assignment", label: "Finish assignment", emoji: "📚", explainer: "Complete school writing tasks" },
-          { id: "custom", label: "Custom", emoji: "✏️", explainer: "Your own writing purpose" }
+          { id: "other", label: "Other", emoji: "➕", explainer: "Something else" }
         ],
         details: [
+          { id: "journal", label: "Journal", emoji: "📔", explainer: "Write in a personal journal" },
+          { id: "paragraph", label: "Paragraph", emoji: "📝", explainer: "Write a paragraph" },
+          { id: "letter", label: "Letter", emoji: "✉️", explainer: "Write a letter to someone" },
+          { id: "essay", label: "Essay", emoji: "📄", explainer: "Write an essay or report" },
+          { id: "story", label: "Story", emoji: "📖", explainer: "Write a creative story" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Something else" }
+        ],
+        topic: [
+          { id: "free-choice", label: "Free choice", emoji: "🆓", explainer: "Choose your own topic", isDefault: true },
+          { id: "school-assignment", label: "School assignment", emoji: "📚", explainer: "Complete a school writing assignment" },
+          { id: "other", label: "Other", emoji: "➕", explainer: "Something else" }
+        ],
+        amount: [
           { id: "2sentences", label: "2 sentences", emoji: "✏️", explainer: "Write 2 sentences", isDefault: true },
           { id: "paragraph", label: "1 paragraph", emoji: "📝", explainer: "Write one paragraph" },
           { id: "10min", label: "10 minutes", emoji: "⏰", explainer: "Write for 10 minutes" },
           { id: "15min", label: "15 minutes", emoji: "⏰", explainer: "Write for 15 minutes" },
           { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Write for 20 minutes" }
+        ],
+        frequency: [
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+          { id: "5week", label: "5×/week", emoji: "📅", explainer: "Five times per week" }
+        ],
+        duration: [
+          { id: "2weeks", label: "2 weeks", emoji: "📅", explainer: "For two weeks" },
+          { id: "3weeks", label: "3 weeks", emoji: "📅", explainer: "For three weeks", isDefault: true },
+          { id: "4weeks", label: "4 weeks", emoji: "📅", explainer: "For four weeks" }
         ],
         timing: [
           { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
