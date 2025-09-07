@@ -68,9 +68,12 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const [showConfetti, setShowConfetti] = useState(false);
   const [showCustomDialog, setShowCustomDialog] = useState(false);
   const [showAmountDialog, setShowAmountDialog] = useState(false);
+  const [showDurationDialog, setShowDurationDialog] = useState(false);
   const [customInput, setCustomInput] = useState("");
   const [customAmount, setCustomAmount] = useState("");
   const [customAmountType, setCustomAmountType] = useState<"pages" | "minutes">("minutes");
+  const [customDuration, setCustomDuration] = useState("");
+  const [customDurationType, setCustomDurationType] = useState<"weeks" | "days">("weeks");
   const [isProcessingInput, setIsProcessingInput] = useState(false);
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
   
@@ -439,6 +442,37 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
     });
   };
 
+  const handleCustomDuration = () => {
+    if (!customDuration.trim()) return;
+    
+    const duration = parseInt(customDuration);
+    if (isNaN(duration) || duration <= 0) {
+      toast({
+        title: "Invalid duration",
+        description: "Please enter a valid number.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const customDurationOption: GoalOption = {
+      id: `custom-${customDurationType}-${duration}`,
+      label: `${duration} ${customDurationType}`,
+      emoji: "📅",
+      explainer: `Continue for ${duration} ${customDurationType}`
+    };
+
+    setState(prev => ({ ...prev, duration: customDurationOption, step: 8 }));
+    showRandomAffirmation();
+    setShowDurationDialog(false);
+    setCustomDuration("");
+    
+    toast({
+      title: "Perfect!",
+      description: `Set to ${duration} ${customDurationType}.`,
+    });
+  };
+
   // Show resume dialog if we have saved progress
   if (state.savedProgress && state.step === 1) {
     return (
@@ -622,6 +656,53 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
             </DialogContent>
           </Dialog>
 
+          {/* Custom Duration Dialog */}
+          <Dialog open={showDurationDialog} onOpenChange={setShowDurationDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Custom Duration</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">How long?</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Enter number"
+                      value={customDuration}
+                      onChange={(e) => setCustomDuration(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-input rounded-md text-sm"
+                      min="1"
+                    />
+                    <select
+                      value={customDurationType}
+                      onChange={(e) => setCustomDurationType(e.target.value as "weeks" | "days")}
+                      className="px-3 py-2 border border-input rounded-md text-sm"
+                    >
+                      <option value="weeks">weeks</option>
+                      <option value="days">days</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleCustomDuration}
+                    disabled={!customDuration.trim()}
+                    className="flex-1"
+                  >
+                    Set Duration
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowDurationDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           {state.step === 3 && state.goal && (
             <OptionSelection
               title="Purpose"
@@ -675,13 +756,15 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
           )}
 
           {state.step === 7 && state.goal && (
-            <DurationSelection
+            <OptionSelection
+              title="How Long?"
+              options={state.goal.timing}
               onSelect={(duration) => {
                 showRandomAffirmation();
                 setState(prev => ({ ...prev, duration, step: 8 }));
               }}
               selected={state.duration}
-              showCustomInput={() => setShowCustomDialog(true)}
+              showCustomInput={() => setShowDurationDialog(true)}
             />
           )}
 
