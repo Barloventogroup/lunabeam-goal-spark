@@ -376,11 +376,15 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
         if (state.step === 3 && !state.purpose) {
           setState(prev => ({ ...prev, purpose: customOption, step: 4 }));
         } else if (state.step === 4 && !state.details) {
-          setState(prev => ({ ...prev, details: customOption, step: 5 }));
-        } else if (state.step === 5 && !state.frequency) {
-          setState(prev => ({ ...prev, frequency: customOption, step: 6 }));
-        } else if (state.step === 6 && !state.duration) {
-          setState(prev => ({ ...prev, duration: customOption, step: 7 }));
+          // Check if this is a reading goal and has amount options
+          const nextStep = state.goal?.id === 'read' && state.goal?.amount ? 5 : 6;
+          setState(prev => ({ ...prev, details: customOption, step: nextStep }));
+        } else if (state.step === 5 && state.goal?.id === 'read' && !state.amount) {
+          setState(prev => ({ ...prev, amount: customOption, step: 6 }));
+        } else if (state.step === 6 && !state.frequency) {
+          setState(prev => ({ ...prev, frequency: customOption, step: 7 }));
+        } else if (state.step === 7 && !state.duration) {
+          setState(prev => ({ ...prev, duration: customOption, step: 8 }));
         }
 
         showRandomAffirmation();
