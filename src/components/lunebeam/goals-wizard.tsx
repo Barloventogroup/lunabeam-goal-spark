@@ -825,7 +825,8 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
 
         // Determine where to add the custom input based on current step
         if (state.step === 3 && !state.purpose) {
-          setState(prev => ({ ...prev, purpose: customOption, step: 4 }));
+          const nextStep = state.goal?.details ? 4 : (state.goal?.id === 'read' && state.goal?.amount ? 5 : 6);
+          setState(prev => ({ ...prev, purpose: customOption, step: nextStep }));
         } else if (state.step === 4 && !state.details) {
           const nextStep = state.goal?.id === 'read' && state.goal?.amount ? 5 : 6;
           setState(prev => ({ ...prev, details: customOption, step: nextStep }));
@@ -1258,21 +1259,24 @@ Return exactly ${totalSessions} milestone steps, each representing one execution
                 if (purpose.id === 'other' || purpose.id === 'unsure') {
                   if (state.goal?.id === 'read') {
                     showCustomAffirmation("Let's write something for fun!");
-                    setState(prev => ({ ...prev, purpose, step: 4 }));
+                    const nextStep = state.goal?.details ? 4 : (state.goal?.amount ? 5 : 6);
+                    setState(prev => ({ ...prev, purpose, step: nextStep }));
                     return;
                   }
                   setShowCustomDialog(true);
                   return;
                 }
                 showRandomAffirmation();
-                setState(prev => ({ ...prev, purpose, step: 4 }));
+                // Skip to appropriate step based on goal structure
+                const nextStep = state.goal?.details ? 4 : (state.goal?.id === 'read' && state.goal?.amount ? 5 : 6);
+                setState(prev => ({ ...prev, purpose, step: nextStep }));
               }}
               selected={state.purpose}
               showCustomInput={state.goal?.id !== 'read' ? () => setShowCustomDialog(true) : undefined}
             />
           )}
 
-          {state.step === 4 && state.goal && (
+          {state.step === 4 && state.goal && state.goal.details && (
             <OptionSelection
               title="Details"
               options={state.goal.details}
