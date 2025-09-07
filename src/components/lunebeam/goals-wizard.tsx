@@ -643,11 +643,6 @@ Example:
         {/* Step 7: Due Date Selection */}
         {state.step === 7 && (
           <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">Complete By</h2>
-              <p className="text-muted-foreground mb-6">When do you want to start and complete this goal?</p>
-            </div>
-            
             <div className="max-w-md mx-auto space-y-6">
               {/* Date Selection Cards */}
               <div className="grid grid-cols-2 gap-4">
