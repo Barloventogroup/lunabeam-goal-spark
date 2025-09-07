@@ -60,9 +60,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         timing: [
-          { id: "1week-2weeks", label: "1×/week for 2 weeks", emoji: "📅", explainer: "Once per week for two weeks" },
-          { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
-          { id: "5week-4weeks", label: "5×/week for 4 weeks", emoji: "📅", explainer: "Five times per week for four weeks" }
+          { id: "1week", label: "1×/week", emoji: "📅", explainer: "Once per week" },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+          { id: "5week", label: "5×/week", emoji: "📅", explainer: "Five times per week" }
         ],
         supports: [
           { id: "tracker", label: "Step tracker", emoji: "📱", explainer: "Track your steps and distance" },
@@ -91,10 +91,10 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom duration" }
         ],
         timing: [
-          { id: "morning-3week-2weeks", label: "Morning, 3×/week for 2 weeks", emoji: "🌅", explainer: "Three mornings per week for two weeks" },
-          { id: "afterschool-5week-3weeks", label: "After school, 5×/week for 3 weeks", emoji: "🏫", explainer: "Five times after school for three weeks" },
-          { id: "bedtime-5week-3weeks", label: "Before bed, 5×/week for 3 weeks", emoji: "🌙", explainer: "Five nights before bed for three weeks", isDefault: true },
-          { id: "daily-4weeks", label: "Daily for 4 weeks", emoji: "📅", explainer: "Every day for four weeks" }
+          { id: "morning-3week", label: "Morning, 3×/week", emoji: "🌅", explainer: "Three mornings per week" },
+          { id: "afterschool-5week", label: "After school, 5×/week", emoji: "🏫", explainer: "Five times after school" },
+          { id: "bedtime-5week", label: "Before bed, 5×/week", emoji: "🌙", explainer: "Five nights before bed", isDefault: true },
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" }
         ],
         supports: [
           { id: "video", label: "Guided video", emoji: "📱", explainer: "Follow along with stretching videos", isDefault: true },
@@ -123,10 +123,10 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom sleep routine" }
         ],
         timing: [
-          { id: "5nights-2weeks", label: "5 nights/week for 2 weeks", emoji: "📅", explainer: "Five nights per week for two weeks" },
-          { id: "5nights-3weeks", label: "5 nights/week for 3 weeks", emoji: "📅", explainer: "Five nights per week for three weeks", isDefault: true },
-          { id: "7nights-3weeks", label: "Every night for 3 weeks", emoji: "📅", explainer: "Every single night for three weeks" },
-          { id: "7nights-4weeks", label: "Every night for 4 weeks", emoji: "📅", explainer: "Every single night for four weeks" }
+          { id: "5nights", label: "5 nights/week", emoji: "📅", explainer: "Five nights per week" },
+          { id: "5nights-alt", label: "5 nights/week", emoji: "📅", explainer: "Five nights per week", isDefault: true },
+          { id: "everynight", label: "Every night", emoji: "📅", explainer: "Every single night" },
+          { id: "everynight-alt", label: "Every night", emoji: "📅", explainer: "Every single night" }
         ],
         supports: [
           { id: "bedtime-alarm", label: "Bedtime alarm", emoji: "⏰", explainer: "Reminder when it's time to get ready for bed", isDefault: true },
@@ -154,10 +154,10 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom healthy eating approach" }
         ],
         timing: [
-          { id: "3days-2weeks", label: "3 days/week for 2 weeks", emoji: "📅", explainer: "Three days per week for two weeks" },
-          { id: "5days-3weeks", label: "5 days/week for 3 weeks", emoji: "📅", explainer: "Five days per week for three weeks", isDefault: true },
-          { id: "daily-3weeks", label: "Every day for 3 weeks", emoji: "📅", explainer: "Daily for three weeks" },
-          { id: "daily-4weeks", label: "Every day for 4 weeks", emoji: "📅", explainer: "Daily for four weeks" }
+          { id: "3days", label: "3 days/week", emoji: "📅", explainer: "Three days per week" },
+          { id: "5days", label: "5 days/week", emoji: "📅", explainer: "Five days per week", isDefault: true },
+          { id: "daily", label: "Every day", emoji: "📅", explainer: "Daily" },
+          { id: "daily-alt", label: "Every day", emoji: "📅", explainer: "Daily" }
         ],
         supports: [
           { id: "shopping-list", label: "Shopping list template", emoji: "📝", explainer: "Pre-made list of healthy foods", isDefault: true },
@@ -186,9 +186,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom hydration approach" }
         ],
         timing: [
-          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
-          { id: "daily-3weeks", label: "Daily for 3 weeks", emoji: "📅", explainer: "Every day for three weeks", isDefault: true },
-          { id: "daily-4weeks", label: "Daily for 4 weeks", emoji: "📅", explainer: "Every day for four weeks" }
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" },
+          { id: "daily-alt", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true },
+          { id: "daily-alt2", label: "Daily", emoji: "📅", explainer: "Every day" }
         ],
         supports: [
           { id: "tracker", label: "Hydration tracker", emoji: "📊", explainer: "Track how much water you drink", isDefault: true },
@@ -232,9 +232,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "15min-default", label: "15 minutes", emoji: "⏰", explainer: "Read for 15 minutes", isDefault: true }
         ],
         timing: [
-          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
-          { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
-          { id: "3week-4weeks", label: "3×/week for 4 weeks", emoji: "📅", explainer: "Three times per week for four weeks" }
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+          { id: "3week-alt", label: "3×/week", emoji: "📅", explainer: "Three times per week" }
         ],
         supports: [
           { id: "log", label: "Reading log", emoji: "📝", explainer: "Track what you read", isDefault: true },
@@ -273,9 +273,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "20min", label: "20 minutes", emoji: "⏰", explainer: "Write for 20 minutes" }
         ],
         timing: [
-          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
-          { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
-          { id: "3week-4weeks", label: "3×/week for 4 weeks", emoji: "📅", explainer: "Three times per week for four weeks" }
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+          { id: "3week-alt", label: "3×/week", emoji: "📅", explainer: "Three times per week" }
         ],
         supports: [
           { id: "prompts", label: "Writing prompt list", emoji: "💡", explainer: "Ideas to help you start writing", isDefault: true },
@@ -302,9 +302,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom planning approach" }
         ],
         timing: [
-          { id: "sunday-2weeks", label: "Sunday evenings for 2 weeks", emoji: "🌅", explainer: "Plan every Sunday for two weeks" },
-          { id: "sunday-3weeks", label: "Sunday evenings for 3 weeks", emoji: "🌅", explainer: "Plan every Sunday for three weeks", isDefault: true },
-          { id: "monday-3weeks", label: "Monday evenings for 3 weeks", emoji: "🌅", explainer: "Plan every Monday for three weeks" }
+          { id: "sunday", label: "Sunday evenings", emoji: "🌅", explainer: "Plan every Sunday" },
+          { id: "sunday-alt", label: "Sunday evenings", emoji: "🌅", explainer: "Plan every Sunday", isDefault: true },
+          { id: "monday", label: "Monday evenings", emoji: "🌅", explainer: "Plan every Monday" }
         ],
         supports: [
           { id: "planner", label: "Printable weekly planner", emoji: "📋", explainer: "Paper planning template", isDefault: true },
@@ -332,9 +332,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom problem-solving approach" }
         ],
         timing: [
-          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks" },
-          { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks", isDefault: true },
-          { id: "3week-4weeks", label: "3×/week for 4 weeks", emoji: "📅", explainer: "Three times per week for four weeks" }
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day" },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week", isDefault: true },
+          { id: "3week-alt", label: "3×/week", emoji: "📅", explainer: "Three times per week" }
         ],
         supports: [
           { id: "bank", label: "Problem set bank", emoji: "🏦", explainer: "Collection of practice problems", isDefault: true },
@@ -574,9 +574,9 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom bed making style" }
         ],
         timing: [
-          { id: "daily-3weeks", label: "Daily for 3 weeks", emoji: "📅", explainer: "Every day for three weeks", isDefault: true },
-          { id: "3week-2weeks", label: "3×/week for 2 weeks", emoji: "📅", explainer: "Three times per week for two weeks" },
-          { id: "weekends-4weeks", label: "Weekends for 4 weeks", emoji: "📅", explainer: "Saturdays and Sundays for four weeks" }
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week" },
+          { id: "weekends", label: "Weekends", emoji: "📅", explainer: "Saturdays and Sundays" }
         ],
         supports: [
           { id: "checklist", label: "Step checklist", emoji: "✅", explainer: "Visual steps to follow", isDefault: true },
@@ -608,8 +608,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom greeting approach" }
         ],
         timing: [
-          { id: "daily-2weeks", label: "Daily for 2 weeks", emoji: "📅", explainer: "Every day for two weeks", isDefault: true },
-          { id: "3week-3weeks", label: "3×/week for 3 weeks", emoji: "📅", explainer: "Three times per week for three weeks" }
+          { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true },
+          { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three times per week" }
         ],
         supports: [
           { id: "script", label: "Script card", emoji: "📝", explainer: "Simple phrases to practice", isDefault: true },
@@ -641,8 +641,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom housing research" }
         ],
         timing: [
-          { id: "30min-weekly-3weeks", label: "30 min weekly for 3 weeks", emoji: "📅", explainer: "Thirty minutes once a week for three weeks", isDefault: true },
-          { id: "45min-2week-4weeks", label: "45 min 2×/week for 4 weeks", emoji: "📅", explainer: "Forty-five minutes twice weekly for four weeks" }
+          { id: "30min-weekly", label: "30 min weekly", emoji: "📅", explainer: "Thirty minutes once a week", isDefault: true },
+          { id: "45min-2week", label: "45 min 2×/week", emoji: "📅", explainer: "Forty-five minutes twice weekly" }
         ],
         supports: [
           { id: "checklist", label: "Housing checklist", emoji: "✅", explainer: "What to look for in housing", isDefault: true },
@@ -674,8 +674,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "other", label: "Other", emoji: "➕", explainer: "Custom education research" }
         ],
         timing: [
-          { id: "30min-weekly-3weeks", label: "30 min weekly for 3 weeks", emoji: "📅", explainer: "Thirty minutes once a week for three weeks", isDefault: true },
-          { id: "45min-2week-4weeks", label: "45 min 2×/week for 4 weeks", emoji: "📅", explainer: "Forty-five minutes twice weekly for four weeks" }
+          { id: "30min-weekly", label: "30 min weekly", emoji: "📅", explainer: "Thirty minutes once a week", isDefault: true },
+          { id: "45min-2week", label: "45 min 2×/week", emoji: "📅", explainer: "Forty-five minutes twice weekly" }
         ],
         supports: [
           { id: "worksheet", label: "Research worksheet", emoji: "📝", explainer: "Template to organize your research", isDefault: true },
@@ -744,7 +744,7 @@ export const STARTER_GOALS: CategoryGoal[] = [
       { id: "other", label: "Other", emoji: "➕", explainer: "Custom water drinking approach" }
     ],
     timing: [
-      { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every morning for one week", isDefault: true }
+      { id: "daily", label: "Daily", emoji: "📅", explainer: "Every morning", isDefault: true }
     ],
     supports: [
       { id: "reminder", label: "Morning reminder", emoji: "🔔", explainer: "Get a reminder to drink water", isDefault: true }
@@ -764,7 +764,7 @@ export const STARTER_GOALS: CategoryGoal[] = [
       { id: "other", label: "Other", emoji: "➕", explainer: "Custom bed making style" }
     ],
     timing: [
-      { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every morning for one week", isDefault: true }
+      { id: "daily", label: "Daily", emoji: "📅", explainer: "Every morning", isDefault: true }
     ],
     supports: [
       { id: "reminder", label: "Morning reminder", emoji: "🔔", explainer: "Get a reminder to make your bed", isDefault: true }
@@ -784,7 +784,7 @@ export const STARTER_GOALS: CategoryGoal[] = [
       { id: "other", label: "Other", emoji: "➕", explainer: "Custom greeting approach" }
     ],
     timing: [
-      { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every day for one week", isDefault: true }
+      { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true }
     ],
     supports: [
       { id: "log", label: "Connection log", emoji: "📝", explainer: "Track the people you greet", isDefault: true }
@@ -804,7 +804,7 @@ export const STARTER_GOALS: CategoryGoal[] = [
       { id: "other", label: "Other", emoji: "➕", explainer: "Custom music listening approach" }
     ],
     timing: [
-      { id: "daily-1week", label: "Daily for 1 week", emoji: "📅", explainer: "Every day for one week", isDefault: true }
+      { id: "daily", label: "Daily", emoji: "📅", explainer: "Every day", isDefault: true }
     ],
     supports: [
       { id: "playlist", label: "Mood playlist", emoji: "🎧", explainer: "Create a playlist of uplifting songs", isDefault: true }
