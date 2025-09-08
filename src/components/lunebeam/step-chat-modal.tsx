@@ -190,23 +190,12 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl w-[95vw] h-[80vh] sm:h-[600px] flex flex-col z-[60] p-4 sm:p-6" onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}>
         <DialogHeader className="flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2 text-base">
-              <img src={lunaIcon16} alt="Luna" className="h-4 w-4" />
-              Luna
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-6 w-6 p-0 md:hidden"
-              aria-label="Close chat"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <img src={lunaIcon16} alt="Luna" className="h-4 w-4" />
+            Luna
+          </DialogTitle>
           {step && (
-            <p className="text-xs text-muted-foreground truncate pr-8 md:pr-0">
+            <p className="text-xs text-muted-foreground truncate">
               Helping with: "{step.title}"
             </p>
           )}
