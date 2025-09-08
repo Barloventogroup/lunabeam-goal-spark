@@ -22,10 +22,11 @@ import {
 import { useStore } from '@/store/useStore';
 import { useAuth } from '../auth/auth-provider';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
+import { AchievementsView } from '../lunebeam/achievements-view';
 import { RewardsGallery, RewardsAdminList, RedemptionInbox } from '../lunebeam/reward-bank';
 import { ProfileView } from '../lunebeam/profile-view';
 
-type YouView = 'profile' | 'rewards' | 'settings' | 'profileDetail' | 'rewardBank' | 'rewardAdmin' | 'redemptionInbox';
+type YouView = 'profile' | 'rewards' | 'achievements' | 'settings' | 'profileDetail' | 'rewardBank' | 'rewardAdmin' | 'redemptionInbox';
 
 export const TabYou: React.FC = () => {
   const { profile, badges } = useStore();
@@ -38,6 +39,10 @@ export const TabYou: React.FC = () => {
 
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('profile')} />;
+  }
+
+  if (currentView === 'achievements') {
+    return <AchievementsView onBack={() => setCurrentView('profile')} />;
   }
 
   if (currentView === 'rewardBank') {
@@ -164,14 +169,14 @@ export const TabYou: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="achievements" className="mt-4">
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('rewards')}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('achievements')}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Trophy className="h-5 w-5 text-gold-500" />
                     <div>
                       <div className="font-medium">View Achievements</div>
-                      <div className="text-sm text-muted-foreground">See all your earned badges and milestones</div>
+                      <div className="text-sm text-muted-foreground">See all your completed goals and archive them</div>
                     </div>
                   </div>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
