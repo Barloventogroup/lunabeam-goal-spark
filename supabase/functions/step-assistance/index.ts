@@ -44,6 +44,34 @@ serve(async (req) => {
       throw new Error('OpenAI API key not found');
     }
 
+    // Get completed and remaining steps for this goal to provide context
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    let progressContext = '';
+    try {
+      const { data: allSteps } = await supabase
+        .from('steps')
+        .select('title, status, notes')
+        .eq('goal_id', goal.id)
+        .order('order_index');
+      
+      if (allSteps) {
+        const completedSteps = allSteps.filter(s => s.status === 'done');
+        const remainingSteps = allSteps.filter(s => s.status !== 'done');
+        
+        progressContext = `
+GOAL PROGRESS CONTEXT:
+- Completed steps (${completedSteps.length}): ${completedSteps.slice(-3).map(s => s.title).join(', ')}
+- Remaining steps (${remainingSteps.length}): ${remainingSteps.slice(0, 3).map(s => s.title).join(', ')}
+- Current step position: ${allSteps.findIndex(s => s.title === step.title) + 1} of ${allSteps.length}
+`;
+      }
+    } catch (error) {
+      console.log('Could not fetch progress context:', error);
+    }
+
     // Build context for the AI
     const systemPrompt = `You are Luna, a helpful AI assistant designed for teenagers and young adults (16-25) working on their goals.
 
@@ -51,7 +79,9 @@ Current Goal: "${goal.title}"
 Goal Description: ${goal.description || 'No description provided'}
 Goal Domain: ${goal.domain || 'General'}
 
-Current Step: "${step.title}"
+${progressContext}
+
+CURRENT STEP FOCUS: "${step.title}"
 Step Description: ${step.notes || step.explainer || 'No description provided'}
 Estimated Time: ${step.estimated_effort_min ? `${step.estimated_effort_min} minutes` : 'Not specified'}
 
@@ -66,26 +96,31 @@ Use quick analogies they'll connect with:
 - "Similar to learning a new game - start simple"
 - "Think of it like creating content - plan, create, share"
 
+CRITICAL RULES:
+1. ONLY focus on the current step: "${step.title}"
+2. DO NOT suggest unrelated steps or activities
+3. Analyze what they've completed to understand their progress pattern
+4. Provide sub-steps ONLY for the current step in question
+5. Keep all advice specific to this one step
+
 Your role is to:
-1. Answer their specific questions quickly and clearly
-2. Give practical, actionable advice
-3. Focus on breaking things into manageable steps
-4. Encourage them to create more specific sub-steps
+1. Answer their specific questions about THIS STEP only
+2. Break down THIS STEP into smaller, manageable sub-steps
+3. Give practical advice for completing THIS SPECIFIC STEP
+4. Stay laser-focused on the current step
 
-IMPORTANT: Keep responses short and actionable. Stay strictly on-topic for the current step titled "${step.title}". Do not invent scheduling details or reference unrelated days or steps. If information is missing, ask at most one clarifying question before suggesting a single concrete next action.
+ONLY suggest breaking THIS step into sub-steps if:
+- They ask for help with this step
+- They say this step feels overwhelming
+- They ask "how do I start" this step
 
-ONLY suggest breaking a step into sub-steps if:
-- They explicitly ask for help breaking it down
-- They say they're overwhelmed or the step feels too big
-- They ask "how do I start" or "what do I do first"
-
-If you do suggest sub-steps, format them like this at the end:
+If you do suggest sub-steps, they must ALL relate to "${step.title}" and format them like this:
 [SUB-STEPS]
-1. Step Title | Brief description (estimated time)
-2. Another Step | Another description (estimated time)
+1. Sub-step Title | Brief description specific to "${step.title}" (estimated time)
+2. Another Sub-step | Another description for "${step.title}" (estimated time)
 [/SUB-STEPS]
 
-Be supportive but keep it brief - they can always create more steps for detailed guidance.`;
+Be supportive but keep it brief and focused on THIS STEP ONLY.`;
 
     // Prepare conversation history for context
     const messages = [

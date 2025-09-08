@@ -198,6 +198,7 @@ Communication style:
 - Use examples from social media, gaming, streaming, school/work life
 - Reference things like TikTok trends, Discord servers, Netflix shows, part-time jobs, college stress
 - Keep it real - acknowledge that life can be messy and overwhelming
+- ANALYZE PROGRESS: Always consider what steps have been completed and what's next in your guidance
 - Celebrate small wins and progress, not just perfection
 
 Your vibe:
@@ -234,7 +235,22 @@ Be supportive and real about the challenges of being their age.`;
 
     if (currentGoals?.length > 0) {
       contextInfo += `Current Goals:
-${currentGoals.map(goal => `- ${goal.title} (${goal.status})`).join('\n')}
+${currentGoals.map(goal => {
+        let goalInfo = `- ${goal.title} (${goal.status})`;
+        if (goal.steps) {
+          const completedSteps = goal.steps.filter(step => step.status === 'done');
+          const totalSteps = goal.steps.length;
+          goalInfo += ` - Progress: ${completedSteps.length}/${totalSteps} steps completed`;
+          if (completedSteps.length > 0) {
+            goalInfo += `\n  Recently completed: ${completedSteps.slice(-3).map(s => s.title).join(', ')}`;
+          }
+          const nextSteps = goal.steps.filter(step => step.status === 'not_started').slice(0, 2);
+          if (nextSteps.length > 0) {
+            goalInfo += `\n  Up next: ${nextSteps.map(s => s.title).join(', ')}`;
+          }
+        }
+        return goalInfo;
+      }).join('\n')}
 
 `;
     }
