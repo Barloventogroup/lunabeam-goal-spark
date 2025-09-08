@@ -107,14 +107,14 @@ export const TabYou: React.FC = () => {
           </TabsList>
           
           <TabsContent value="rewards" className="space-y-3 mt-4">
-            {/* Rewards & Achievements */}
+            {/* Rewards */}
             <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('rewards')}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Award className="h-5 w-5 text-purple-500" />
                     <div>
-                      <div className="font-medium">Rewards & Achievements</div>
+                      <div className="font-medium">Rewards</div>
                       <div className="text-sm text-muted-foreground">View your badges and points</div>
                     </div>
                   </div>

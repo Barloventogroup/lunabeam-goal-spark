@@ -59,21 +59,14 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
       <div className="flex items-center gap-4 p-4 bg-card/80 backdrop-blur border-b border-gray-200">
         <BackButton onClick={onBack} />
         <div className="flex-1">
-          <h1 className="text-xl font-bold">Rewards & Achievements</h1>
-          <p className="text-sm text-muted-foreground">Your accomplishments and progress</p>
+          <h1 className="text-xl font-bold">Rewards</h1>
+          <p className="text-sm text-muted-foreground">Your LunaPoints and earned badges</p>
         </div>
       </div>
 
       <div className="p-4 space-y-6">
         {/* Overview Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card className="text-center">
-            <CardContent className="p-4">
-              <Trophy className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
-              <div className="text-2xl font-bold">{allCompletedAndArchived.length}</div>
-              <div className="text-xs text-muted-foreground">Goals Completed</div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 gap-4">
           <Card className="text-center">
             <CardContent className="p-4">
               <Star className="h-6 w-6 mx-auto mb-2 text-blue-500" />
@@ -92,118 +85,10 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
 
         {/* Detailed Sections */}
         <Tabs defaultValue="points" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="points">LunaPoints</TabsTrigger>
-            <TabsTrigger value="goals">Goals Completed</TabsTrigger>
             <TabsTrigger value="badges">Badges Earned</TabsTrigger>
           </TabsList>
-
-          {/* Goals Completed Tab */}
-          <TabsContent value="goals" className="space-y-4">
-            {/* Completed Goals Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  Completed Goals ({completedGoals.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {completedGoals.length === 0 ? (
-                  <div className="text-center py-6">
-                    <CheckCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      No completed goals yet
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {completedGoals.map((goal) => (
-                      <div 
-                        key={goal.id} 
-                        className="flex items-center gap-4 p-4 border rounded-lg bg-green-500/5"
-                      >
-                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium">{goal.title}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {goal.description || 'No description'}
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="outline" className="text-xs">
-                              {getDomainDisplayName(goal.domain || 'General')}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              Completed {new Date(goal.updated_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-green-500">100%</div>
-                          <div className="text-xs text-muted-foreground">Complete</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Archived Goals Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Archive className="h-5 w-5 text-orange-500" />
-                  Archived Goals ({archivedGoals.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {archivedGoals.length === 0 ? (
-                  <div className="text-center py-6">
-                    <Archive className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      No archived goals yet
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {archivedGoals.map((goal) => (
-                      <div 
-                        key={goal.id} 
-                        className="flex items-center gap-4 p-4 border rounded-lg bg-orange-500/5"
-                      >
-                        <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
-                          <Archive className="h-5 w-5 text-orange-500" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium">{goal.title}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {goal.description || 'No description'}
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="outline" className="text-xs">
-                              {getDomainDisplayName(goal.domain || 'General')}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              Archived {new Date(goal.updated_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-orange-500">
-                            {Math.round(goal.progress_pct)}%
-                          </div>
-                          <div className="text-xs text-muted-foreground">Archived</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           {/* Badges Earned Tab */}
           <TabsContent value="badges" className="space-y-4">
