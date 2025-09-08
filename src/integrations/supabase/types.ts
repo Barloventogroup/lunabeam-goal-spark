@@ -459,6 +459,81 @@ export type Database = {
         }
         Relationships: []
       }
+      redemptions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          fulfilled_at: string | null
+          id: string
+          notes: string | null
+          requested_at: string
+          reward_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          fulfilled_at?: string | null
+          id?: string
+          notes?: string | null
+          requested_at?: string
+          reward_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          fulfilled_at?: string | null
+          id?: string
+          notes?: string | null
+          requested_at?: string
+          reward_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rewards: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image: string | null
+          is_active: boolean
+          name: string
+          owner_id: string
+          point_cost: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          is_active?: boolean
+          name: string
+          owner_id: string
+          point_cost: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          is_active?: boolean
+          name?: string
+          owner_id?: string
+          point_cost?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       steps: {
         Row: {
           created_at: string
@@ -912,6 +987,10 @@ export type Database = {
         Returns: {
           circle_id: string
         }[]
+      }
+      process_redemption_approval: {
+        Args: { p_redemption_id: string }
+        Returns: undefined
       }
     }
     Enums: {
