@@ -37,6 +37,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [shouldHideInput, setShouldHideInput] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Generate Luna icons for different sizes (same design for all uses)
@@ -62,6 +63,13 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
       setShouldHideInput(false);
     }
   }, [isOpen, step, isInitialized]);
+
+  useEffect(() => {
+    if (isOpen && !shouldHideInput) {
+      // Delay to ensure the dialog is mounted
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [isOpen, shouldHideInput]);
 
   const initializeConversation = () => {
     const initialMessage: ChatMessage = {
@@ -170,6 +178,8 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
+    // Prevent global shortcuts (like '/') from hijacking input
+    e.stopPropagation();
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -178,7 +188,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl h-[600px] flex flex-col">
+      <DialogContent className="max-w-2xl h-[600px] flex flex-col z-[60]" onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <img src={lunaIcon16} alt="Luna" className="h-4 w-4" />
@@ -247,6 +257,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                 disabled={isLoading}
                 className="flex-1"
                 autoFocus
+                ref={inputRef}
               />
               <Button
                 onClick={sendMessage}
