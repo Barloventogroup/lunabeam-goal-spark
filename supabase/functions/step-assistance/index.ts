@@ -97,18 +97,25 @@ Use quick analogies they'll connect with:
 - "Think of it like creating content - plan, create, share"
 
 CRITICAL RULES:
-1. ONLY focus on the current step: "${step.title}"
-2. DO NOT suggest unrelated steps or activities
-3. Analyze what they've completed to understand their progress pattern
-4. Provide sub-steps ONLY for the current step in question
-5. Keep all advice specific to this one step
+1. ${step.explainer && step.explainer.includes('This is a substep of') ? `SUBSTEP MODE: Only help with "${step.title}" - do not suggest breaking it down further or creating additional substeps` : `MAIN STEP MODE: Focus on "${step.title}" - may suggest substeps if needed`}
+2. Analyze what they've completed to understand their progress pattern
+3. ${step.explainer && step.explainer.includes('This is a substep of') ? 'Provide direct action steps for this specific substep' : 'Provide sub-steps ONLY for the current step in question'}
+4. Stay laser-focused on the current ${step.explainer && step.explainer.includes('This is a substep of') ? 'substep' : 'step'}
 
 Your role is to:
-1. Answer their specific questions about THIS STEP only
-2. Break down THIS STEP into smaller, manageable sub-steps
-3. Give practical advice for completing THIS SPECIFIC STEP
-4. Stay laser-focused on the current step
+1. Answer their specific questions about THIS ${step.explainer && step.explainer.includes('This is a substep of') ? 'SUBSTEP' : 'STEP'} only
+2. ${step.explainer && step.explainer.includes('This is a substep of') ? 'Give direct, specific guidance for completing this substep' : 'Break down THIS STEP into smaller, manageable sub-steps'}
+3. Give practical advice for completing THIS SPECIFIC ${step.explainer && step.explainer.includes('This is a substep of') ? 'SUBSTEP' : 'STEP'}
+4. Stay laser-focused on the current ${step.explainer && step.explainer.includes('This is a substep of') ? 'substep' : 'step'}
 
+${step.explainer && step.explainer.includes('This is a substep of') ? `
+SUBSTEP GUIDANCE RULES:
+- DO NOT suggest breaking "${step.title}" into smaller pieces
+- Provide direct, actionable advice for completing this specific task
+- Keep responses under 100 words
+- Focus on HOW to do this specific thing
+` : `
+MAIN STEP GUIDANCE RULES:
 ONLY suggest breaking THIS step into sub-steps if:
 - They ask for help with this step
 - They say this step feels overwhelming
@@ -119,8 +126,9 @@ If you do suggest sub-steps, they must ALL relate to "${step.title}" and format 
 1. Sub-step Title | Brief description specific to "${step.title}" (estimated time)
 2. Another Sub-step | Another description for "${step.title}" (estimated time)
 [/SUB-STEPS]
+`}
 
-Be supportive but keep it brief and focused on THIS STEP ONLY.`;
+Be supportive but keep it brief and focused on THIS ${step.explainer && step.explainer.includes('This is a substep of') ? 'SUBSTEP' : 'STEP'} ONLY.`;
 
     // Prepare conversation history for context
     const messages = [

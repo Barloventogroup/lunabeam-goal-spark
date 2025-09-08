@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus } from 'lucide-react';
-import type { Step, Goal, Substep, StepStatus } from '@/types';
+import type { Step, Goal, Substep, StepStatus, StepType } from '@/types';
 import { stepsService } from '@/services/goalsService';
 import { stepValidationService } from '@/services/stepValidationService';
 import { pointsService } from '@/services/pointsService';
@@ -426,6 +426,34 @@ export const StepsList: React.FC<StepsListProps> = ({
     setHelpModalOpen(true);
   };
 
+  const handleSubstepHelp = (substep: Substep, parentStep: Step) => {
+    // Create a pseudo-step object that represents the substep for help
+    const substepAsStep: Step = {
+      id: substep.id,
+      title: substep.title,
+      notes: substep.description || '',
+      explainer: `This is a substep of "${parentStep.title}". Focus specifically on: ${substep.title}`,
+      estimated_effort_min: 15,
+      goal_id: parentStep.goal_id,
+      order_index: parentStep.order_index,
+      status: substep.completed_at ? 'done' : 'todo' as StepStatus,
+      due_date: parentStep.due_date,
+      is_required: true,
+      points: 2,
+      dependency_step_ids: [],
+      created_at: substep.created_at,
+      updated_at: substep.updated_at,
+      is_planned: substep.is_planned || false,
+      planned_week_index: null,
+      points_awarded: 0,
+      step_type: 'action' as StepType,
+      type: 'action' as StepType
+    };
+    
+    setCurrentHelpStep(substepAsStep);
+    setHelpModalOpen(true);
+  };
+
   const handleCompleteSubstep = async (substepId: string, stepId: string) => {
     try {
       await pointsService.completeSubstep(substepId);
@@ -755,27 +783,35 @@ export const StepsList: React.FC<StepsListProps> = ({
                                        </p>
                                      </div>
 
-                                      {/* Mark complete button */}
-                                      <div className="flex gap-2">
-                                        {!substep.completed_at ? (
-                                          <Button
-                                            onClick={() => handleCompleteSubstep(substep.id, mainStep.id)}
-                                            className="w-full h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
-                                            size="sm"
-                                          >
-                                            Mark Complete
-                                          </Button>
-                                        ) : (
-                                          <Button
-                                            variant="outline"
-                                            className="w-full h-8 text-xs border-green-200 text-green-700 cursor-default"
-                                            size="sm"
-                                            disabled
-                                          >
-                                            Completed
-                                          </Button>
-                                        )}
-                                      </div>
+                                       {/* Actions */}
+                                       <div className="flex flex-col gap-2">
+                                         {!substep.completed_at ? (
+                                           <>
+                                             <Button
+                                               onClick={() => handleCompleteSubstep(substep.id, mainStep.id)}
+                                               className="w-full h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+                                               size="sm"
+                                             >
+                                               Mark Complete
+                                             </Button>
+                                             <button
+                                               onClick={() => handleSubstepHelp(substep, mainStep)}
+                                               className="text-primary hover:text-primary/80 underline text-xs cursor-pointer bg-transparent border-none p-0 text-center"
+                                             >
+                                               Need help?
+                                             </button>
+                                           </>
+                                         ) : (
+                                           <Button
+                                             variant="outline"
+                                             className="w-full h-8 text-xs border-green-200 text-green-700 cursor-default"
+                                             size="sm"
+                                             disabled
+                                           >
+                                             Completed
+                                           </Button>
+                                         )}
+                                       </div>
                                     </div>
                                   ))}
                                </div>
