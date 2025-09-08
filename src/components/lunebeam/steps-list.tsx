@@ -148,8 +148,42 @@ export const StepsList: React.FC<StepsListProps> = ({
   // Rest are queued
   const queuedSteps = sortedActionableSteps.slice(4);
 
-  // Separate done steps for display
-  const doneSteps = steps.filter(s => s.status === 'done' && s.is_required);
+  // Calculate progress including substeps
+  const calculateProgress = () => {
+    const actionableSteps = steps.filter(s => (!s.type || s.type === 'action') && !s.hidden);
+    let totalCompletableItems = 0;
+    let completedItems = 0;
+
+    actionableSteps.forEach(step => {
+      const stepSubsteps = substepsMap[step.id] || [];
+      
+      if (stepSubsteps.length > 0) {
+        // If step has substeps, count each substep
+        totalCompletableItems += stepSubsteps.length;
+        completedItems += stepSubsteps.filter(sub => sub.completed_at).length;
+      } else {
+        // If no substeps, count the main step
+        totalCompletableItems += 1;
+        if (step.status === 'done') {
+          completedItems += 1;
+        }
+      }
+    });
+
+    const progressPercent = totalCompletableItems > 0 
+      ? Math.round((completedItems / totalCompletableItems) * 100) 
+      : 0;
+
+    return {
+      actionableSteps: actionableSteps.length,
+      doneSteps: steps.filter(s => s.status === 'done' && s.is_required).length,
+      totalCompletableItems,
+      completedItems,
+      progressPercent
+    };
+  };
+
+  const progressStats = calculateProgress();
 
   // Group steps with their substeps from database
   const groupedSteps: StepGroup[] = visibleSteps.map((step) => ({
@@ -162,19 +196,15 @@ export const StepsList: React.FC<StepsListProps> = ({
     subSteps: substepsMap[step.id] || []
   }));
 
-  // Calculate some useful info to show in header
-  const actionableSteps = steps.filter(s => (!s.type || s.type === 'action') && !s.hidden);
-  const progressPercent = actionableSteps.length > 0 
-    ? Math.round((doneSteps.length / actionableSteps.length) * 100) 
-    : 0;
-
-  console.log('StepsList data:', {
+  console.log('StepsList progress data:', {
     totalSteps: steps.length,
-    actionableSteps: actionableSteps.length,
-    doneSteps: doneSteps.length,
-    progressPercent,
-    actionableStepsDetails: actionableSteps.map(s => ({ id: s.id, title: s.title, status: s.status, type: s.type, hidden: s.hidden })),
-    doneStepsDetails: doneSteps.map(s => ({ id: s.id, title: s.title, status: s.status }))
+    ...progressStats,
+    substepsMapKeys: Object.keys(substepsMap),
+    substepCounts: Object.keys(substepsMap).map(stepId => ({
+      stepId,
+      count: substepsMap[stepId]?.length || 0,
+      completed: substepsMap[stepId]?.filter(s => s.completed_at).length || 0
+    }))
   });
 
   const handleMarkComplete = async (stepId: string) => {
@@ -225,6 +255,9 @@ export const StepsList: React.FC<StepsListProps> = ({
         title: "Substep completed!",
         description: "Great progress on breaking down this step.",
       });
+
+      // Trigger points refresh after substep completion
+      window.dispatchEvent(new CustomEvent('pointsUpdated'));
     } catch (error) {
       console.error('Error completing substep:', error);
       toast({
@@ -395,15 +428,15 @@ export const StepsList: React.FC<StepsListProps> = ({
           <p className="text-sm text-muted-foreground">Here's a short list of steps and things to keep in mind as you work on your goal.</p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
-              <span className="font-medium text-foreground">{doneSteps.length}</span>
+              <span className="font-medium text-foreground">{progressStats.completedItems}</span>
               <span>completed</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="font-medium text-foreground">{actionableSteps.length - doneSteps.length}</span>
+              <span className="font-medium text-foreground">{progressStats.totalCompletableItems - progressStats.completedItems}</span>
               <span>remaining</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="font-medium text-foreground">{progressPercent}%</span>
+              <span className="font-medium text-foreground">{progressStats.progressPercent}%</span>
               <span>progress</span>
             </div>
           </div>
