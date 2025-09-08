@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +21,6 @@ import {
   Star,
   Coins
 } from 'lucide-react';
-import { pointsService, type PointsSummary } from '@/services/pointsService';
 import { AIChat } from './ai-chat';
 import { FamilyCircleCard } from './family-circle-card';
 import { PersonalizedGreeting } from './personalized-greeting';
@@ -48,6 +47,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     evidence,
     familyCircles,
     justCompletedOnboarding,
+    pointsSummary,
     loadProfile,
     loadGoals,
     loadSteps,
@@ -55,12 +55,12 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     loadBadges,
     loadEvidence,
     loadFamilyCircles,
+    loadPoints,
     clearJustCompletedOnboarding,
     createFamilyCircle
   } = useStore();
   
   const { user, signOut } = useAuth();
-  const [pointsSummary, setPointsSummary] = useState<PointsSummary | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -73,16 +73,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       loadFamilyCircles();
       loadPoints();
     }
-  }, [user, loadProfile, loadGoals, loadCheckIns, loadBadges, loadEvidence, loadFamilyCircles]);
-
-  const loadPoints = async () => {
-    try {
-      const summary = await pointsService.getPointsSummary();
-      setPointsSummary(summary);
-    } catch (error) {
-      console.error('Error loading points:', error);
-    }
-  };
+  }, [user, loadProfile, loadGoals, loadCheckIns, loadBadges, loadEvidence, loadFamilyCircles, loadPoints]);
 
   // Add refresh data when tab becomes visible
   useEffect(() => {

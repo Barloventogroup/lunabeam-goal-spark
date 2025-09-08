@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,30 +6,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Trophy, Star, Award, Coins, Crown, CheckCircle, Calendar, Archive } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { PointsDisplay } from './points-display';
-import { pointsService, type PointsSummary } from '@/services/pointsService';
 
 interface RewardsScreenProps {
   onBack: () => void;
 }
 
 export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
-  const { badges, goals, loadBadges, loadGoals } = useStore();
-  const [pointsSummary, setPointsSummary] = useState<PointsSummary | null>(null);
+  const { badges, goals, pointsSummary, loadBadges, loadGoals, loadPoints } = useStore();
 
   useEffect(() => {
     loadBadges();
     loadGoals();
     loadPoints();
-  }, [loadBadges, loadGoals]);
-
-  const loadPoints = async () => {
-    try {
-      const summary = await pointsService.getPointsSummary();
-      setPointsSummary(summary);
-    } catch (error) {
-      console.error('Error loading points:', error);
-    }
-  };
+  }, [loadBadges, loadGoals, loadPoints]);
 
   const completedGoals = goals.filter(goal => goal.status === 'completed');
   const archivedGoals = goals.filter(goal => goal.status === 'archived');
