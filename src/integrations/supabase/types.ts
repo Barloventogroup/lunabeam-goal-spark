@@ -817,6 +817,21 @@ export type Database = {
         Args: { category: string }
         Returns: number
       }
+      get_invite_by_token: {
+        Args: { _token: string }
+        Returns: {
+          expires_at: string
+          id: string
+          individual_id: string
+          invitee_name: string
+          inviter_id: string
+          message: string
+          permission_level: Database["public"]["Enums"]["permission_level"]
+          role: Database["public"]["Enums"]["user_role"]
+          specific_goals: string[]
+          status: Database["public"]["Enums"]["invite_status"]
+        }[]
+      }
       get_user_member_circles: {
         Args: Record<PropertyKey, never>
         Returns: {
