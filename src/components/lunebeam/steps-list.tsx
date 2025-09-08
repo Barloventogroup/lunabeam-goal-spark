@@ -325,10 +325,24 @@ export const StepsList: React.FC<StepsListProps> = ({
       const substeps = await pointsService.getSubsteps(stepId);
       setSubstepsMap(prev => ({ ...prev, [stepId]: substeps }));
       
-      toast({
-        title: "Substep completed!",
-        description: "Great progress on breaking down this step.",
-      });
+      // Check if all substeps are now completed
+      const allCompleted = substeps.every(s => s.completed_at !== null);
+      if (allCompleted) {
+        // Auto-complete the main step
+        const step = steps.find(s => s.id === stepId);
+        if (step && step.status !== 'done') {
+          await handleMarkComplete(stepId);
+          toast({
+            title: "Step completed!",
+            description: "All substeps finished - main step marked complete!",
+          });
+        }
+      } else {
+        toast({
+          title: "Substep completed!",
+          description: "Great progress on breaking down this step.",
+        });
+      }
 
       // Trigger points refresh after substep completion
       window.dispatchEvent(new CustomEvent('pointsUpdated'));
@@ -385,13 +399,24 @@ export const StepsList: React.FC<StepsListProps> = ({
       return null; // No icon for blocked steps
     }
 
+    const stepSubsteps = substepsMap[step.id] || [];
+    const allSubstepsCompleted = areAllSubStepsCompleted(stepSubsteps);
+
     switch (step.status) {
       case 'done':
         return <CheckCircle2 className="h-5 w-5 text-green-600" />;
       case 'doing':
         return <Clock className="h-5 w-5 text-blue-600" />;
       default:
-        return null; // No icon for todo steps
+        // For steps with substeps, show different icon based on completion
+        if (stepSubsteps.length > 0) {
+          if (allSubstepsCompleted) {
+            return <CheckCircle2 className="h-5 w-5 text-amber-600" />;
+          } else {
+            return <Clock className="h-5 w-5 text-blue-600" />;
+          }
+        }
+        return null; // No icon for todo steps without substeps
     }
   };
 
