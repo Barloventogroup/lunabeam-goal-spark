@@ -225,6 +225,7 @@ export const stepsService = {
         ...stepData,
         goal_id: goalId,
         order_index: count || 0,
+        type: 'action', // ensure actionable by default
         step_type: stepData.step_type || 'habit',
         is_planned: stepData.is_planned !== undefined ? stepData.is_planned : true,
       })

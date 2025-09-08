@@ -48,8 +48,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       for (const goal of goalsData) {
         try {
           const steps = await stepsService.getSteps(goal.id);
-          // Use same logic as goal detail view - actionable steps only
-          const actionableSteps = steps.filter(s => s.type === 'action' && !s.hidden && s.status !== 'skipped');
+          // Use same logic as goal detail view - actionable steps include new schema too
+          const actionableSteps = steps.filter(s => ((!s.type || s.type === 'action') || (s.step_type && s.step_type !== 'container')) && !s.hidden && s.status !== 'skipped');
           const doneSteps = actionableSteps.filter(s => s.status === 'done');
           counts[goal.id] = {
             required: actionableSteps.length,
@@ -57,11 +57,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
           };
         } catch (error) {
           console.error(`Failed to load steps for goal ${goal.id}:`, error);
-          // Set default values if step loading fails
-          counts[goal.id] = {
-            required: 0,
-            done: 0
-          };
+          counts[goal.id] = { required: 0, done: 0 };
         }
       }
       setStepsCount(counts);
@@ -141,6 +137,20 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
     return domainMap[domain] || domain;
   };
 
+  const sanitizeDescription = (text?: string): string => {
+    if (!text) return '';
+    let out = text.trim();
+    // Remove outer parentheses around trailing "with ..."
+    out = out.replace(/\.?\s*\((with [^)]+)\)\s*$/i, '. $1');
+    // Normalize x/week to proper grammar
+    out = out.replace(/(\d+)x\/week/gi, '$1 times per week');
+    // Fix double spaces
+    out = out.replace(/\s{2,}/g, ' ');
+    // Ensure single ending period
+    out = out.replace(/\.*\s*$/, '.');
+    return out;
+  };
+
   if (loading) {
     return null; // Don't show loading state
   }
@@ -205,8 +215,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       ) : (
         <div className="space-y-4">
           {goals.map((goal) => {
-            const stepCount = stepsCount[goal.id] || { required: 0, done: 0 };
-            const progressPct = goal.progress_pct || 0;
+            const stepCount = stepsCount[goal.id] || { required: goal.progress?.actionable || 0, done: goal.progress?.done || 0 };
+            const progressPct = goal.progress_pct || (goal.progress ? goal.progress.percent : 0);
 
             return (
               <Card 
@@ -306,7 +316,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                 <CardContent onClick={() => onNavigate('goal-detail', goal.id)}>
                   {goal.description && (
                     <p className="text-body-sm text-muted-foreground mb-3 line-clamp-2">
-                      {goal.description}
+                      {sanitizeDescription(goal.description)}
                     </p>
                   )}
                   <div className="space-y-2">
