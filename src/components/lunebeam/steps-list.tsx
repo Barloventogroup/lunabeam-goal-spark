@@ -1,41 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { 
-  ChevronDown, 
-  ChevronUp, 
-  MoreHorizontal,
-  CheckCircle2,
-  Clock,
-  HelpCircle,
-  ArrowDown,
-  Calendar
-} from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import type { Goal, Step, StepStatus } from '@/types';
-import { useToast } from '@/hooks/use-toast';
-import { stepsService } from '@/services/goalsService';  
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus } from 'lucide-react';
+import type { Step, Goal, Substep } from '@/types';
+import { stepsService } from '@/services/goalsService';
 import { stepValidationService } from '@/services/stepValidationService';
+import { pointsService } from '@/services/pointsService';
 import { BlockedStepGuidance } from './blocked-step-guidance';
+import { StepChatModal } from './step-chat-modal';
+import { useToast } from '@/hooks/use-toast';
+import { useStore } from '@/store/useStore';
 
 // Utility function to format dates
 const formatDate = (dateStr: string): string => {
@@ -48,41 +24,80 @@ const formatDate = (dateStr: string): string => {
 };
 
 interface StepsListProps {
-  goal: Goal;
   steps: Step[];
-  onStepsUpdate: (steps: Step[], goal: Goal) => void;
+  goal: Goal;
+  onStepsChange?: () => void;
+  onStepsUpdate?: (updatedSteps: Step[], updatedGoal: Goal) => void;
   onOpenStepChat?: (step: Step) => void;
 }
 
-export const StepsList: React.FC<StepsListProps> = ({ 
-  goal, 
-  steps, 
+interface BlockedStepInfo {
+  canComplete: boolean;
+  reason?: string;
+  prerequisites?: string[];
+  suggestions?: string[];
+}
+
+interface StepGroup {
+  mainStep: Step;
+  subSteps: Substep[];
+}
+
+export const StepsList: React.FC<StepsListProps> = ({
+  steps,
+  goal,
+  onStepsChange,
   onStepsUpdate,
   onOpenStepChat
 }) => {
+  const [blockedModalOpen, setBlockedModalOpen] = useState(false);
+  const [currentBlockedStep, setCurrentBlockedStep] = useState<Step | null>(null);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
+  const [currentHelpStep, setCurrentHelpStep] = useState<Step | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
   const [showingQueuedSteps, setShowingQueuedSteps] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [awaitingStepUpdate, setAwaitingStepUpdate] = useState<string | null>(null);
+  const [substepsMap, setSubstepsMap] = useState<Record<string, Substep[]>>({});
   const { toast } = useToast();
 
-  // Calculate progress
-  const actionableSteps = steps.filter(s => 
-    (!s.type || s.type === 'action') && !s.hidden && s.status !== 'skipped'
-  );
-  const doneSteps = actionableSteps.filter(s => s.status === 'done');
-  const progressPercent = actionableSteps.length > 0 
-    ? Math.round((doneSteps.length / actionableSteps.length) * 100) 
-    : 0;
+  // Fetch substeps for all steps
+  useEffect(() => {
+    const fetchAllSubsteps = async () => {
+      const substepsPromises = steps.map(async (step) => {
+        try {
+          const substeps = await pointsService.getSubsteps(step.id);
+          return { stepId: step.id, substeps };
+        } catch (error) {
+          console.error(`Error fetching substeps for step ${step.id}:`, error);
+          return { stepId: step.id, substeps: [] };
+        }
+      });
 
-  // Debug logging for progress calculation
-  console.log('Progress calculation debug:', {
-    totalSteps: steps.length,
-    actionableSteps: actionableSteps.length,
-    doneSteps: doneSteps.length,
-    progressPercent,
-    actionableStepsDetails: actionableSteps.map(s => ({ id: s.id, title: s.title, status: s.status, type: s.type, hidden: s.hidden })),
-    doneStepsDetails: doneSteps.map(s => ({ id: s.id, title: s.title, status: s.status }))
-  });
+      const results = await Promise.all(substepsPromises);
+      const newSubstepsMap: Record<string, Substep[]> = {};
+      
+      results.forEach(({ stepId, substeps }) => {
+        newSubstepsMap[stepId] = substeps;
+      });
+      
+      setSubstepsMap(newSubstepsMap);
+    };
+
+    if (steps.length > 0) {
+      fetchAllSubsteps();
+    }
+  }, [steps]);
+
+  useEffect(() => {
+    if (awaitingStepUpdate) {
+      const timer = setTimeout(() => {
+        setAwaitingStepUpdate(null);
+      }, 2000); // Clear after 2 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [awaitingStepUpdate]);
 
   // Compute sorted actionable steps and split into visible + queued
   const sortedActionableSteps = steps
@@ -123,179 +138,160 @@ export const StepsList: React.FC<StepsListProps> = ({
         return aIndex > bIndex && aIndex < bIndex + 10 ? 1 : aIndex - bIndex;
       }
       
-      // Both are sub-steps - sort by order_index
-      const aIndex = a.order_index ?? Number.POSITIVE_INFINITY;
-      const bIndex = b.order_index ?? Number.POSITIVE_INFINITY;
-      if (aIndex !== bIndex) return aIndex - bIndex;
-      
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      // Neither is main step - use order_index
+      return (a.order_index ?? Number.POSITIVE_INFINITY) - (b.order_index ?? Number.POSITIVE_INFINITY);
     });
 
-  const visibleSteps = sortedActionableSteps.slice(0, 10);
-  const queuedSteps = sortedActionableSteps.slice(10);
+  // First 4 actionable steps are visible
+  const visibleSteps = sortedActionableSteps.slice(0, 4);
+  
+  // Rest are queued
+  const queuedSteps = sortedActionableSteps.slice(4);
 
-  // Group steps with their sub-steps - but only use actual substeps from the database
-  const groupedSteps = visibleSteps.map(step => ({
+  // Separate done steps for display
+  const doneSteps = steps.filter(s => s.status === 'done' && s.is_required);
+
+  // Group steps with their substeps from database
+  const groupedSteps: StepGroup[] = visibleSteps.map((step) => ({
     mainStep: step,
-    subSteps: [] as Step[] // For now, no frontend grouping - only use actual database substeps
+    subSteps: substepsMap[step.id] || []
+  }));
+  
+  const queuedGroupedSteps: StepGroup[] = queuedSteps.map((step) => ({
+    mainStep: step,
+    subSteps: substepsMap[step.id] || []
   }));
 
-  const queuedGroupedSteps = queuedSteps.map(step => ({
-    mainStep: step,
-    subSteps: [] as Step[] // For now, no frontend grouping - only use actual database substeps
-  }));
+  // Calculate some useful info to show in header
+  const actionableSteps = steps.filter(s => (!s.type || s.type === 'action') && !s.hidden);
+  const progressPercent = actionableSteps.length > 0 
+    ? Math.round((doneSteps.length / actionableSteps.length) * 100) 
+    : 0;
+
+  console.log('StepsList data:', {
+    totalSteps: steps.length,
+    actionableSteps: actionableSteps.length,
+    doneSteps: doneSteps.length,
+    progressPercent,
+    actionableStepsDetails: actionableSteps.map(s => ({ id: s.id, title: s.title, status: s.status, type: s.type, hidden: s.hidden })),
+    doneStepsDetails: doneSteps.map(s => ({ id: s.id, title: s.title, status: s.status }))
+  });
 
   const handleMarkComplete = async (stepId: string) => {
-    console.log('handleMarkComplete called for stepId:', stepId);
-    console.log('Available steps:', steps.map(s => ({ id: s.id, title: s.title, status: s.status })));
+    if (awaitingStepUpdate === stepId) return;
+    
+    setAwaitingStepUpdate(stepId);
     
     try {
-      // Validate step completion first
-      console.log('Running step validation...');
-      const validation = await stepValidationService.validateStepCompletion(stepId, steps, goal);
-      console.log('Validation result:', validation);
+      const result = await stepsService.completeStep(stepId);
+      if (onStepsChange) {
+        onStepsChange();
+      }
       
-      if (!validation.canComplete) {
-        console.log('Step blocked:', validation.reason, validation.friendlyMessage);
-        // No toast - users can see blocked steps are greyed out and get inline guidance
-        return;
-      }
-
-      console.log('Validation passed, updating step...');
-      const newStatus: StepStatus = 'done';
-      const isTemp = stepId.startsWith('step_');
-
-      let stepsAfter: Step[] = steps;
-      if (isTemp) {
-        console.log('Updating temp step locally');
-        stepsAfter = steps.map(s => s.id === stepId ? { ...s, status: newStatus } as Step : s);
-        onStepsUpdate(stepsAfter, goal);
-      } else {
-        console.log('Updating step via API');
-        const { step: updatedStep, goal: updatedGoal } = await stepsService.updateStep(stepId, {
-          status: newStatus
-        });
-        stepsAfter = steps.map(s => s.id === stepId ? updatedStep : s);
-        onStepsUpdate(stepsAfter, updatedGoal);
-        
-        // Trigger points refresh to update points display
-        if (window.dispatchEvent) {
-          window.dispatchEvent(new CustomEvent('pointsUpdated'));
-        }
-      }
-
-      // Check for unlocked dependencies
-      const unlockedSteps = checkForUnlockedSteps(stepsAfter, stepId);
-      if (unlockedSteps.length > 0) {
-        toast({
-          title: "Awesome! You unlocked the next step! 🎉",
-          description: `"${unlockedSteps[0].title}" is now ready for you.`,
-        });
-      } else {
-        toast({
-          title: "Step completed! 🌟",
-          description: "You're building great momentum. Keep it up!"
-        });
-      }
-    } catch (error) {
-      console.error('Failed to update step - Full error details:', error);
-      console.error('Error name:', error?.name);
-      console.error('Error message:', error?.message);
-      console.error('Error stack:', error?.stack);
-      
-      // Show more specific error based on what we know
-      let errorTitle = 'Oops, something hiccupped! 😅';
-      let errorDescription = 'No worries - just try marking that step complete again.';
-      
-      if (error?.message?.includes('validation')) {
-        errorTitle = 'Step validation failed';
-        errorDescription = 'There might be an issue with step dependencies. Let me know if this keeps happening!';
-      } else if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
-        errorTitle = 'Connection hiccup';
-        errorDescription = 'Check your internet connection and try again in a moment.';
-      }
+      // Refresh substeps after completing a step
+      const substeps = await pointsService.getSubsteps(stepId);
+      setSubstepsMap(prev => ({ ...prev, [stepId]: substeps }));
       
       toast({
-        title: errorTitle,
-        description: errorDescription,
-        variant: 'destructive'
+        title: "Step completed!",
+        description: `Great job! You've completed this step.`,
       });
+    } catch (error) {
+      console.error('Error completing step:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete step. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setAwaitingStepUpdate(null);
     }
-  };
-
-  // Helper function to check if all sub-steps are completed
-  const areAllSubStepsCompleted = (subSteps: Step[]): boolean => {
-    return subSteps.length === 0 || subSteps.every(subStep => subStep.status === 'done');
-  };
-
-  const checkForUnlockedSteps = (allSteps: Step[], completedStepId: string): Step[] => {
-    // For now, database steps don't have complex dependency logic
-    return [];
   };
 
   const handleNeedHelp = (step: Step) => {
-    if (onOpenStepChat) {
-      onOpenStepChat(step);
+    setCurrentHelpStep(step);
+    setHelpModalOpen(true);
+  };
+
+  const handleCompleteSubstep = async (substepId: string, stepId: string) => {
+    try {
+      await pointsService.completeSubstep(substepId);
+      
+      // Refresh substeps for this step
+      const substeps = await pointsService.getSubsteps(stepId);
+      setSubstepsMap(prev => ({ ...prev, [stepId]: substeps }));
+      
+      toast({
+        title: "Substep completed!",
+        description: "Great progress on breaking down this step.",
+      });
+    } catch (error) {
+      console.error('Error completing substep:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete substep. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  const generateSteps = async () => {
-    if (generating) return;
+  const handleStepsUpdate = async (newSteps: Step[]) => {
+    if (onStepsChange) {
+      onStepsChange();
+    }
     
-    setGenerating(true);
-    try {
-      // TODO: Implement AI step generation
-      toast({
-        description: "Step generation coming soon! For now, you can add steps manually."
-      });
-    } catch (error) {
-      console.error('Failed to generate steps:', error);
-      toast({
-        title: 'Couldn\'t generate steps',
-        description: 'Give it another try when you\'re ready',
-        variant: 'destructive'
-      });
-    } finally {
-      setGenerating(false);
+    // Refresh substeps when new steps are created via chat
+    if (currentHelpStep) {
+      const substeps = await pointsService.getSubsteps(currentHelpStep.id);
+      setSubstepsMap(prev => ({ ...prev, [currentHelpStep.id]: substeps }));
     }
   };
 
   const toggleStepExpanded = (stepId: string) => {
-    const newExpanded = new Set(expandedSteps);
-    if (newExpanded.has(stepId)) {
-      newExpanded.delete(stepId);
-    } else {
-      newExpanded.add(stepId);
-    }
-    setExpandedSteps(newExpanded);
+    setExpandedSteps(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(stepId)) {
+        newSet.delete(stepId);
+      } else {
+        newSet.add(stepId);
+      }
+      return newSet;
+    });
+  };
+
+  const areAllSubStepsCompleted = (subSteps: Substep[]): boolean => {
+    return subSteps.length === 0 || subSteps.every(subStep => subStep.completed_at !== null);
   };
 
   const isStepBlocked = (step: Step): boolean => {
-    // Check if step has incomplete dependencies
     if (step.dependency_step_ids && step.dependency_step_ids.length > 0) {
-      const incompleteDependencies = step.dependency_step_ids
-        .map(depId => steps.find(s => s.id === depId))
-        .filter(depStep => depStep && depStep.status !== 'done');
-      
-      if (incompleteDependencies.length > 0) {
-        return true;
-      }
+      return step.dependency_step_ids.some(depId => {
+        const depStep = steps.find(s => s.id === depId);
+        return depStep && depStep.status !== 'done';
+      });
     }
 
-    // Check week progression - previous weeks must be completed
-    const currentWeekMatch = step.title.match(/Week (\d+)/i);
-    if (currentWeekMatch) {
-      const currentWeek = parseInt(currentWeekMatch[1]);
-      const previousStepsIncomplete = steps.some(s => {
-        const weekMatch = s.title.match(/Week (\d+)/i);
-        if (!weekMatch) return false;
-        
-        const stepWeek = parseInt(weekMatch[1]);
-        return stepWeek < currentWeek && s.is_required && s.status !== 'done' && s.status !== 'skipped';
-      });
-      
-      if (previousStepsIncomplete) {
-        return true;
+    const weekMatch = step.title.match(/Week (\d+)/i);
+    if (weekMatch && step.is_required) {
+      const currentWeek = parseInt(weekMatch[1]);
+
+      // Check previous weeks
+      if (currentWeek > 1) {
+        // Find all steps from previous weeks that are incomplete
+        const prevWeekSteps = steps.filter(s => {
+          const prevWeekMatch = s.title.match(/Week (\d+)/i);
+          if (!prevWeekMatch) return false;
+          
+          const stepWeek = parseInt(prevWeekMatch[1]);
+          return stepWeek < currentWeek && 
+                 s.is_required && 
+                 s.status !== 'done' && 
+                 s.status !== 'skipped';
+        });
+
+        if (prevWeekSteps.length > 0) {
+          return true;
+        }
       }
 
       // Check session progression within the same week
@@ -398,35 +394,29 @@ export const StepsList: React.FC<StepsListProps> = ({
           <CardTitle className="text-lg font-semibold text-foreground">Recommended steps</CardTitle>
           <p className="text-sm text-muted-foreground">Here's a short list of steps and things to keep in mind as you work on your goal.</p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>
-              {actionableSteps.length === 0 ? 'No actionable steps' : `${doneSteps.length}/${actionableSteps.length} done`}
-            </span>
-            {actionableSteps.length > 0 && (
-              <>
-                <span>•</span>
-                <span>{progressPercent}%</span>
-              </>
-            )}
+            <div className="flex items-center gap-1">
+              <span className="font-medium text-foreground">{doneSteps.length}</span>
+              <span>completed</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="font-medium text-foreground">{actionableSteps.length - doneSteps.length}</span>
+              <span>remaining</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="font-medium text-foreground">{progressPercent}%</span>
+              <span>progress</span>
+            </div>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3">
-        {/* Progress bar */}
-        <div className="w-full bg-muted rounded-full h-2">
-          <div 
-            className="bg-primary h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-
-        {/* Steps table */}
-        <div className="border border-border rounded-lg overflow-hidden">
+      <CardContent className="space-y-4 pb-6">
+        <div className="rounded-lg border border-border overflow-hidden">
           <Table>
             <TableHeader>
-                 <TableRow className="border-b border-border">
+                <TableRow className="border-b border-border bg-muted/20">
                   <TableHead className="w-8"></TableHead>
-                  <TableHead>Step</TableHead>
+                  <TableHead>Task</TableHead>
                   <TableHead className="w-20">Due</TableHead>
                   <TableHead className="w-24">Status</TableHead>
                   <TableHead className="w-32">Action</TableHead>
@@ -471,7 +461,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                               </span>
                               {subSteps.length > 0 && (
                                 <Badge variant="secondary" className={`text-xs ${isBlocked ? 'opacity-50' : ''}`}>
-                                  {subSteps.filter(s => s.status === 'done').length}/{subSteps.length} sub-steps
+                                  {subSteps.filter(s => s.completed_at).length}/{subSteps.length} substeps
                                 </Badge>
                               )}
                             </div>
@@ -524,7 +514,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                        </TableCell>
                      </TableRow>
 
-                     {/* Expanded content row - sub-steps cards or description */}
+                     {/* Expanded content row - substeps cards or description */}
                      {isExpanded && (
                        <TableRow className="border-b border-border">
                          <TableCell></TableCell>
@@ -544,63 +534,49 @@ export const StepsList: React.FC<StepsListProps> = ({
                                  </button>
                                </div>
                                
-                               {/* Google Flights style sub-steps cards */}
+                               {/* Google Flights style substeps cards */}
                                <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
-                                  {subSteps.map((subStep) => {
-                                    const isSubStepBlocked = isStepBlocked(subStep);
-                                    return (
+                                  {subSteps.map((substep) => (
                                     <div
-                                      key={subStep.id}
+                                      key={substep.id}
                                         className={`flex-shrink-0 w-80 border rounded-lg p-4 transition-all duration-200 ${
-                                          subStep.status === 'done' 
+                                          substep.completed_at 
                                             ? 'border-green-200 bg-green-50/50' 
-                                            : isSubStepBlocked
-                                              ? 'border-border/50 bg-muted/10 opacity-40'
-                                              : 'border-border hover:border-primary/40 bg-background'
+                                            : 'border-border hover:border-primary/40 bg-background'
                                         }`}
                                     >
-                                      {/* Sub-step title */}
+                                      {/* Substep title */}
                                       <div className="flex items-center gap-2 mb-3">
                                         <h4 className={`text-sm font-medium ${
-                                          subStep.status === 'done' 
+                                          substep.completed_at 
                                             ? 'line-through text-muted-foreground' 
-                                            : isSubStepBlocked 
-                                              ? 'text-muted-foreground/70' 
-                                              : 'text-foreground'
+                                            : 'text-foreground'
                                         }`}>
-                                          {subStep.title}
+                                          {substep.title}
                                         </h4>
-                                        {subStep.status === 'done' && (
+                                        {substep.completed_at && (
                                           <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
                                         )}
                                       </div>
 
-                                     {/* Sub-step description */}
+                                     {/* Substep description */}
                                      <div className="mb-4 min-h-[60px]">
                                        <p className="text-xs text-muted-foreground leading-relaxed">
-                                         {subStep.explainer?.trim() || subStep.notes?.trim() || "Complete this sub-step to move forward."}
+                                         {substep.description || "Complete this sub-step to move forward."}
                                        </p>
                                      </div>
 
-                                     {/* Due date if present */}
-                                     {subStep.due_date && (
-                                       <div className="flex items-center gap-1 mb-3 text-xs text-muted-foreground">
-                                         <Calendar className="h-3 w-3" />
-                                         <span>Due {formatDate(subStep.due_date)}</span>
-                                       </div>
-                                     )}
-
                                       {/* Mark complete button */}
                                       <div className="flex gap-2">
-                                        {subStep.status !== 'done' && !isSubStepBlocked ? (
+                                        {!substep.completed_at ? (
                                           <Button
-                                            onClick={() => handleMarkComplete(subStep.id)}
+                                            onClick={() => handleCompleteSubstep(substep.id, mainStep.id)}
                                             className="w-full h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
                                             size="sm"
                                           >
                                             Mark Complete
                                           </Button>
-                                        ) : subStep.status === 'done' ? (
+                                        ) : (
                                           <Button
                                             variant="outline"
                                             className="w-full h-8 text-xs border-green-200 text-green-700 cursor-default"
@@ -609,77 +585,78 @@ export const StepsList: React.FC<StepsListProps> = ({
                                           >
                                             Completed
                                           </Button>
-                                        ) : (
-                                          <Button
-                                            variant="outline"
-                                            className="w-full h-8 text-xs border-muted text-muted-foreground/70 cursor-default"
-                                            size="sm"
-                                            disabled
-                                          >
-                                            Not available yet
-                                          </Button>
                                         )}
                                       </div>
                                     </div>
-                                    );
-                                  })}
+                                  ))}
                                </div>
                              </div>
                            ) : (
-                             /* Regular description for steps without sub-steps */
                              <div className="p-4">
-                               <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                                 {(mainStep.explainer?.trim() || mainStep.notes?.trim() || "We're here to support you! If you need more details about this step, just tap \"Need More Help\" and we'll provide personalized guidance to help you succeed.")}
-                                 {"\n\n"}
-                                 <button
-                                   onClick={() => handleNeedHelp(mainStep)}
-                                   className="text-primary hover:text-primary/80 underline text-sm cursor-pointer bg-transparent border-none p-0"
-                                 >
-                                   Need more help?
-                                 </button>
+                               <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap mb-3">
+                                 {(mainStep.explainer?.trim() || mainStep.notes?.trim() || "Click 'Need more help?' to break this step down further.")}
                                </p>
+                               <button
+                                 onClick={() => handleNeedHelp(mainStep)}
+                                 className="text-primary hover:text-primary/80 underline text-sm cursor-pointer bg-transparent border-none p-0"
+                               >
+                                 Need more help?
+                               </button>
                              </div>
                            )}
                          </TableCell>
                        </TableRow>
                      )}
-                  </React.Fragment>
+                   </React.Fragment>
                 );
               })}
             </TableBody>
           </Table>
         </div>
 
-        {/* Show more steps */}
         {queuedSteps.length > 0 && !showingQueuedSteps && (
-          <div className="pt-2 border-t">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="w-full text-muted-foreground"
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
               onClick={() => setShowingQueuedSteps(true)}
+              className="text-sm text-muted-foreground border-muted hover:bg-muted/20"
             >
-              Show next steps ({queuedSteps.length})
-              <ChevronDown className="h-4 w-4 ml-1" />
+              Show {queuedSteps.length} more upcoming steps
             </Button>
           </div>
         )}
 
-        {/* Show fewer steps */}
         {showingQueuedSteps && (
-          <div className="pt-2 border-t">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="w-full text-muted-foreground"
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
               onClick={() => setShowingQueuedSteps(false)}
+              className="text-sm text-muted-foreground border-muted hover:bg-muted/20"
             >
               Show fewer steps
-              <ChevronUp className="h-4 w-4 ml-1" />
             </Button>
           </div>
         )}
+
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={() => handleNeedHelp({ id: 'new', title: 'Add New Step', goal_id: goal.id } as Step)}
+            className="flex items-center gap-2 text-sm border border-primary/30 text-primary hover:bg-primary/10 px-3 py-2 rounded-md transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add step
+          </button>
+        </div>
       </CardContent>
+
+      {/* Modals */}
+      <StepChatModal
+        isOpen={helpModalOpen}
+        onClose={() => setHelpModalOpen(false)}
+        step={currentHelpStep}
+        goal={goal}
+        onStepsUpdate={handleStepsUpdate}
+      />
     </Card>
   );
 };
