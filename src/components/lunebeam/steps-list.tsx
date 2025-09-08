@@ -389,6 +389,13 @@ export const StepsList: React.FC<StepsListProps> = ({
       });
       setSubstepsMap(newSubstepsMap);
 
+      // Auto-collapse the step in the UI upon completion
+      setExpandedSteps(prev => {
+        const next = new Set(prev);
+        next.delete(stepId);
+        return next;
+      });
+
       toast({
         title: "Step completed!",
         description: `Great job! You've completed this step.`,
@@ -663,24 +670,29 @@ export const StepsList: React.FC<StepsListProps> = ({
                           {getStepIcon(mainStep)}
                         </TableCell>
 
-                       <TableCell className="p-2">
-                         <div className="flex items-center gap-2">
-                           {!isStepDone(mainStep) && !isBlocked && (
-                             <Button
-                               onClick={() => handleMarkComplete(mainStep.id)}
-                               disabled={subSteps.length > 0 && !allSubStepsCompleted}
-                               className="h-7 px-3 text-xs rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors disabled:opacity-50"
-                               variant="outline"
-                               size="sm"
-                             >
-                               Mark Complete
-                             </Button>
-                           )}
-                           {isBlocked && (
-                             <span className="text-xs text-muted-foreground/70 px-2">Not available yet</span>
-                           )}
-                         </div>
-                       </TableCell>
+                         <TableCell className="p-2">
+                           <div className="flex items-center gap-2">
+                             {!isStepDone(mainStep) && !isBlocked && (
+                               <Button
+                                 onClick={() => {
+                                   if (subSteps.length > 0 && !allSubStepsCompleted) {
+                                     const proceed = window.confirm('Some substeps are not complete. Mark this step complete anyway?');
+                                     if (!proceed) return;
+                                   }
+                                   handleMarkComplete(mainStep.id);
+                                 }}
+                                 className="h-7 px-3 text-xs rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors"
+                                 variant="outline"
+                                 size="sm"
+                               >
+                                 Mark Complete
+                               </Button>
+                             )}
+                             {isBlocked && (
+                               <span className="text-xs text-muted-foreground/70 px-2">Not available yet</span>
+                             )}
+                           </div>
+                         </TableCell>
                      </TableRow>
 
                      {/* Expanded content row - substeps cards or description */}
