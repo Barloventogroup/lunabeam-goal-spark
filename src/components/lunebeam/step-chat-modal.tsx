@@ -191,7 +191,9 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
       <DialogContent className="max-w-2xl w-[95vw] h-[80vh] sm:h-[600px] flex flex-col z-[60] p-4 sm:p-6" onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}>
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base font-normal">
-            <img src={lunaIcon16} alt="Luna" className="h-4 w-4" />
+            <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+              <span className="text-white text-xs font-normal">L</span>
+            </div>
             Luna
           </DialogTitle>
           {step && (
