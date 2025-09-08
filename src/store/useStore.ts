@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { FamilyCircle, CircleMembership, CircleInvite, WeeklyCheckin, SelectedGoal, Profile, Consent, CheckInEntry, Evidence, Badge, Goal, Step } from '@/types';
 import { database } from '../services/database';
 import { goalsService, stepsService } from '../services/goalsService';
+import { pointsService, type PointsSummary } from '../services/pointsService';
 
 interface AppState {
   // Core data
@@ -23,6 +24,9 @@ interface AppState {
   // Family Circle data
   familyCircles: FamilyCircle[];
   
+  // Points data
+  pointsSummary: PointsSummary | null;
+  
   // UI state
   currentGoal: Goal | null;
   currentStep: number;
@@ -38,6 +42,7 @@ interface AppState {
   loadGoals: () => Promise<void>;
   loadSteps: (goalId: string) => Promise<void>;
   setCurrentGoal: (goalId: string | null) => void;
+  loadPoints: () => Promise<void>;
   
   // Legacy actions (for backwards compatibility)
   addGoal: (goal: Omit<SelectedGoal, 'id' | 'created_at'>) => Promise<void>;
@@ -125,6 +130,7 @@ export const useStore = create<AppState>()(
       badges: [],
       
       familyCircles: [],
+      pointsSummary: null,
       currentGoal: null,
       currentStep: 0,
       
@@ -173,6 +179,15 @@ export const useStore = create<AppState>()(
       setCurrentGoal: (goalId) => {
         const goal = goalId ? get().goals.find(g => g.id === goalId) || null : null;
         set({ currentGoal: goal });
+      },
+
+      loadPoints: async () => {
+        try {
+          const pointsSummary = await pointsService.getPointsSummary();
+          set({ pointsSummary });
+        } catch (error) {
+          console.error('Failed to load points:', error);
+        }
       },
 
       // Legacy actions

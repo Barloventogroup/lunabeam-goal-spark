@@ -5,18 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Trophy, Star, Award, Coins, Crown, CheckCircle, Calendar, Archive } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { PointsDisplay } from './points-display';
 
 interface RewardsScreenProps {
   onBack: () => void;
 }
 
 export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
-  const { badges, goals, loadBadges, loadGoals } = useStore();
+  const { badges, goals, pointsSummary, loadBadges, loadGoals, loadPoints } = useStore();
 
   useEffect(() => {
     loadBadges();
     loadGoals();
-  }, [loadBadges, loadGoals]);
+    loadPoints();
+  }, [loadBadges, loadGoals, loadPoints]);
 
   const mockPoints = 247;
   const completedGoals = goals.filter(goal => goal.status === 'completed');
@@ -80,11 +82,11 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
         </div>
 
         {/* Detailed Sections */}
-        <Tabs defaultValue="goals" className="w-full">
+        <Tabs defaultValue="points" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="points">Points</TabsTrigger>
             <TabsTrigger value="goals">Goals Completed</TabsTrigger>
             <TabsTrigger value="badges">Badges Earned</TabsTrigger>
-            <TabsTrigger value="points">Points</TabsTrigger>
           </TabsList>
 
           {/* Goals Completed Tab */}
@@ -248,94 +250,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
 
           {/* Points Tab */}
           <TabsContent value="points" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Coins className="h-5 w-5 text-green-500" />
-                  Points Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-6">
-                  <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center mx-auto mb-4">
-                    <Coins className="h-10 w-10 text-white" />
-                  </div>
-                  <div className="text-4xl font-bold mb-2">{mockPoints}</div>
-                  <div className="text-muted-foreground mb-6">Total Points Earned</div>
-                  
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div className="p-3 rounded-lg bg-muted/30">
-                      <div className="text-xl font-bold">{allCompletedAndArchived.length * 50}</div>
-                      <div className="text-xs text-muted-foreground">From Goals</div>
-                    </div>
-                    <div className="p-3 rounded-lg bg-muted/30">
-                      <div className="text-xl font-bold">{allBadges.length * 25}</div>
-                      <div className="text-xs text-muted-foreground">From Badges</div>
-                    </div>
-                    <div className="p-3 rounded-lg bg-muted/30">
-                      <div className="text-xl font-bold">{mockPoints - (allCompletedAndArchived.length * 50) - (allBadges.length * 25)}</div>
-                      <div className="text-xs text-muted-foreground">From Activities</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Points History */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Points Activity</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center">
-                      <Trophy className="h-4 w-4 text-green-500" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Goal Completed</div>
-                      <div className="text-sm text-muted-foreground">Reading Challenge</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium text-green-500">+50</div>
-                    <div className="text-xs text-muted-foreground">2 days ago</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
-                      <Star className="h-4 w-4 text-blue-500" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Badge Earned</div>
-                      <div className="text-sm text-muted-foreground">First Steps</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium text-green-500">+25</div>
-                    <div className="text-xs text-muted-foreground">1 week ago</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
-                      <CheckCircle className="h-4 w-4 text-purple-500" />
-                    </div>
-                    <div>
-                      <div className="font-medium">Daily Check-in</div>
-                      <div className="text-sm text-muted-foreground">7 day streak bonus</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium text-green-500">+10</div>
-                    <div className="text-xs text-muted-foreground">1 week ago</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <PointsDisplay />
           </TabsContent>
         </Tabs>
       </div>

@@ -7,6 +7,7 @@ import { Badge } from '../ui/badge';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
 import { GoalsWizard } from '../lunebeam/goals-wizard';
+import { PointsDisplay } from '../lunebeam/points-display';
 import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { useStore } from '../../store/useStore';
 import type { Goal } from '../../types';
@@ -31,8 +32,10 @@ export const TabHome: React.FC<TabHomeProps> = ({
     loadProfile,
     goals,
     badges,
+    pointsSummary,
     loadGoals,
-    loadBadges
+    loadBadges,
+    loadPoints
   } = useStore();
 
   useEffect(() => {
@@ -40,13 +43,15 @@ export const TabHome: React.FC<TabHomeProps> = ({
     loadProfile();
     loadGoals();
     loadBadges();
-  }, [loadProfile, loadGoals, loadBadges]);
+    loadPoints();
+  }, [loadProfile, loadGoals, loadBadges, loadPoints]);
 
   // Refresh data when component becomes visible
   useEffect(() => {
     const interval = setInterval(() => {
       console.log('TabHome: Periodic refresh');
       loadGoals();
+      loadPoints();
     }, 30000); // Refresh every 30 seconds
 
     return () => clearInterval(interval);
@@ -181,11 +186,11 @@ export const TabHome: React.FC<TabHomeProps> = ({
                     <div className="text-2xl font-bold">{badges.length || 0}</div>
                     <div className="text-xs text-muted-foreground">Badges Earned</div>
                   </div>
-                  <div className="text-center p-4 rounded-lg bg-muted/30">
-                    <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
-                    <div className="text-2xl font-bold">{mockPoints}</div>
-                    <div className="text-xs text-muted-foreground">Points</div>
-                  </div>
+                   <div className="text-center p-4 rounded-lg bg-muted/30">
+                     <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
+                     <div className="text-2xl font-bold">{pointsSummary?.totalPoints || 0}</div>
+                     <div className="text-xs text-muted-foreground">Points</div>
+                   </div>
                 </div>
               </CardContent>
             </Card>
