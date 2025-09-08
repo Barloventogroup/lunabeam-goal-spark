@@ -89,11 +89,12 @@ export const TabYou: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Tabs for Rewards and Achievements */}
+        {/* Tabs for Rewards, Achievements, and More */}
         <Tabs defaultValue="rewards" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="rewards">Rewards</TabsTrigger>
             <TabsTrigger value="achievements">Achievements</TabsTrigger>
+            <TabsTrigger value="more">More</TabsTrigger>
           </TabsList>
           
           <TabsContent value="rewards" className="space-y-3 mt-4">
@@ -178,57 +179,56 @@ export const TabYou: React.FC = () => {
               </CardContent>
             </Card>
           </TabsContent>
+          
+          <TabsContent value="more" className="space-y-3 mt-4">
+            {/* Settings & Privacy */}
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Settings className="h-5 w-5 text-gray-500" />
+                    <div>
+                      <div className="font-medium">Settings & Privacy</div>
+                      <div className="text-sm text-muted-foreground">Notifications, privacy, and preferences</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Help & Support */}
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <HelpCircle className="h-5 w-5 text-green-500" />
+                    <div>
+                      <div className="font-medium">Help & Support</div>
+                      <div className="text-sm text-muted-foreground">FAQ, support, and app information</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Sign Out */}
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleLogout}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <LogOut className="h-5 w-5 text-red-500" />
+                    <div>
+                      <div className="font-medium text-red-600">Sign Out</div>
+                      <div className="text-sm text-muted-foreground">Sign out of your account</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
-
-        {/* Other Options */}
-        <div className="space-y-3 mt-6">
-          {/* Settings & Privacy */}
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Settings className="h-5 w-5 text-gray-500" />
-                  <div>
-                    <div className="font-medium">Settings & Privacy</div>
-                    <div className="text-sm text-muted-foreground">Notifications, privacy, and preferences</div>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Help & Support */}
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <HelpCircle className="h-5 w-5 text-green-500" />
-                  <div>
-                    <div className="font-medium">Help & Support</div>
-                    <div className="text-sm text-muted-foreground">FAQ, support, and app information</div>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Sign Out */}
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleLogout}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <LogOut className="h-5 w-5 text-red-500" />
-                  <div>
-                    <div className="font-medium text-red-600">Sign Out</div>
-                    <div className="text-sm text-muted-foreground">Sign out of your account</div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
