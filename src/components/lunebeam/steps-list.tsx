@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus } from 'lucide-react';
-import type { Step, Goal, Substep } from '@/types';
+import type { Step, Goal, Substep, StepStatus } from '@/types';
 import { stepsService } from '@/services/goalsService';
 import { stepValidationService } from '@/services/stepValidationService';
 import { pointsService } from '@/services/pointsService';
@@ -58,6 +58,7 @@ export const StepsList: React.FC<StepsListProps> = ({
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
   const [showingQueuedSteps, setShowingQueuedSteps] = useState(false);
   const [awaitingStepUpdate, setAwaitingStepUpdate] = useState<string | null>(null);
+  const [optimisticDone, setOptimisticDone] = useState<Set<string>>(new Set());
   const [substepsMap, setSubstepsMap] = useState<Record<string, Substep[]>>({});
   const { toast } = useToast();
 
@@ -348,46 +349,67 @@ export const StepsList: React.FC<StepsListProps> = ({
 
   const handleMarkComplete = async (stepId: string) => {
     if (awaitingStepUpdate === stepId) return;
+
+    console.log('[StepsList] handleMarkComplete START', {
+      stepId,
+      beforeStatus: steps.find(s => s.id === stepId)?.status
+    });
     
     setAwaitingStepUpdate(stepId);
+    // Optimistic UI: mark as done immediately
+    setOptimisticDone(prev => {
+      const next = new Set(prev);
+      next.add(stepId);
+      console.log('[StepsList] optimisticDone -> add', stepId, 'size:', next.size);
+      return next;
+    });
     
     try {
       const result = await stepsService.completeStep(stepId);
-      
-      // Force refresh of substeps data
-      const fetchAllSubsteps = async () => {
-        const substepsPromises = steps.map(async (step) => {
-          try {
-            const substeps = await pointsService.getSubsteps(step.id);
-            return { stepId: step.id, substeps };
-          } catch (error) {
-            console.error(`Error fetching substeps for step ${step.id}:`, error);
-            return { stepId: step.id, substeps: [] };
-          }
-        });
+      console.log('[StepsList] completeStep RESULT', result);
 
-        const results = await Promise.all(substepsPromises);
-        const newSubstepsMap: Record<string, Substep[]> = {};
-        
-        results.forEach(({ stepId, substeps }) => {
-          newSubstepsMap[stepId] = substeps;
-        });
-        
-        setSubstepsMap(newSubstepsMap);
-      };
-      
-      await fetchAllSubsteps();
-      
-      if (onStepsChange) {
+      // Build updated steps for immediate parent update if supported
+      const updatedSteps = steps.map(s =>
+        s.id === stepId ? { ...s, status: 'done' as StepStatus, updated_at: new Date().toISOString() } : s
+      );
+      if (onStepsUpdate) {
+        console.log('[StepsList] calling onStepsUpdate');
+        onStepsUpdate(updatedSteps, result.goal);
+      } else if (onStepsChange) {
+        console.log('[StepsList] calling onStepsChange');
         onStepsChange();
       }
       
+      // Force refresh of substeps data
+      const substepsPromises = steps.map(async (step) => {
+        try {
+          const substeps = await pointsService.getSubsteps(step.id);
+          return { stepId: step.id, substeps };
+        } catch (error) {
+          console.error(`Error fetching substeps for step ${step.id}:`, error);
+          return { stepId: step.id, substeps: [] };
+        }
+      });
+      const results = await Promise.all(substepsPromises);
+      const newSubstepsMap: Record<string, Substep[]> = {};
+      results.forEach(({ stepId, substeps }) => {
+        newSubstepsMap[stepId] = substeps;
+      });
+      setSubstepsMap(newSubstepsMap);
+
       toast({
         title: "Step completed!",
         description: `Great job! You've completed this step.`,
       });
     } catch (error) {
       console.error('Error completing step:', error);
+      // Revert optimistic state on failure
+      setOptimisticDone(prev => {
+        const next = new Set(prev);
+        next.delete(stepId);
+        console.log('[StepsList] optimisticDone -> revert', stepId, 'size:', next.size);
+        return next;
+      });
       toast({
         title: "Error",
         description: "Failed to complete step. Please try again.",
@@ -395,6 +417,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       });
     } finally {
       setAwaitingStepUpdate(null);
+      console.log('[StepsList] handleMarkComplete END', { stepId });
     }
   };
 
@@ -470,7 +493,6 @@ export const StepsList: React.FC<StepsListProps> = ({
     return subSteps.length === 0 || subSteps.every(subStep => subStep.completed_at !== null);
   };
 
-
   const getBlockedStepInfo = async (step: Step) => {
     try {
       const validation = await stepValidationService.validateStepCompletion(step.id, steps, goal);
@@ -478,6 +500,11 @@ export const StepsList: React.FC<StepsListProps> = ({
     } catch (error) {
       return { canComplete: true };
     }
+  };
+
+  // Optimistic status helper - treats steps marked locally as done as done for UI
+  const isStepDone = (step: Step): boolean => {
+    return optimisticDone.has(step.id) || step.status === 'done';
   };
 
   const getStepIcon = (step: Step) => {
@@ -488,7 +515,8 @@ export const StepsList: React.FC<StepsListProps> = ({
     const stepSubsteps = substepsMap[step.id] || [];
     const allSubstepsCompleted = areAllSubStepsCompleted(stepSubsteps);
 
-    switch (step.status) {
+    const status = isStepDone(step) ? 'done' : step.status;
+    switch (status) {
       case 'done':
         return <CheckCircle2 className="h-5 w-5 text-green-600" />;
       case 'doing':
@@ -608,7 +636,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <span className={`text-sm font-medium ${
-                                mainStep.status === 'done' 
+                                isStepDone(mainStep)
                                   ? 'line-through text-muted-foreground' 
                                   : isBlocked 
                                     ? 'text-muted-foreground/70' 
@@ -653,7 +681,7 @@ export const StepsList: React.FC<StepsListProps> = ({
 
                        <TableCell className="p-2">
                          <div className="flex items-center gap-2">
-                           {mainStep.status !== 'done' && !isBlocked && (
+                           {!isStepDone(mainStep) && !isBlocked && (
                              <Button
                                onClick={() => handleMarkComplete(mainStep.id)}
                                disabled={subSteps.length > 0 && !allSubStepsCompleted}
