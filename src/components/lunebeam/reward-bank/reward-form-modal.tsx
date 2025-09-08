@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Smile } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -213,24 +215,133 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
                     <Smile className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-2 bg-card border border-input shadow-lg z-50" align="end">
-                  <div className="grid grid-cols-8 gap-1 max-w-64">
-                    {['🎁', '🏆', '🍕', '🍔', '🍟', '🍿', '🍭', '🍪',
-                      '🎮', '📱', '💻', '🎧', '📚', '🎨', '⚽', '🏀',
-                      '🎯', '🎪', '🎭', '🎨', '🎸', '🎤', '🎬', '📷',
-                      '⭐', '🌟', '✨', '💎', '👑', '🏅', '🎖️', '🏵️',
-                      '❤️', '💚', '💙', '💜', '🧡', '💛', '🖤', '🤍',
-                      '😊', '😍', '🤩', '😎', '🥳', '🎉', '🔥', '💪'].map(emoji => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, image: emoji }))}
-                        className="p-1 text-lg hover:bg-muted rounded transition-colors"
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
+                <PopoverContent className="w-80 p-0 bg-card border border-input shadow-lg z-50" align="end">
+                  <Tabs defaultValue="popular" className="w-full">
+                    <TabsList className="grid w-full grid-cols-5 rounded-none border-b">
+                      <TabsTrigger value="popular" className="text-xs">🎁</TabsTrigger>
+                      <TabsTrigger value="food" className="text-xs">🍕</TabsTrigger>
+                      <TabsTrigger value="activities" className="text-xs">🎮</TabsTrigger>
+                      <TabsTrigger value="objects" className="text-xs">📱</TabsTrigger>
+                      <TabsTrigger value="symbols" className="text-xs">⭐</TabsTrigger>
+                    </TabsList>
+                    
+                    <ScrollArea className="h-48">
+                      <TabsContent value="popular" className="p-2 m-0">
+                        <div className="grid grid-cols-8 gap-1">
+                          {['🎁', '🏆', '🥇', '🏅', '🎖️', '👑', '💎', '⭐',
+                            '🌟', '✨', '🎉', '🎊', '🔥', '💪', '😊', '😍',
+                            '🤩', '😎', '🥳', '💯', '👍', '👏', '🙌', '❤️',
+                            '💚', '💙', '💜', '🧡', '💛', '🖤', '🤍', '🎯'].map(emoji => (
+                            <button
+                              key={emoji}
+                              type="button"
+                              onClick={() => setFormData(prev => ({ ...prev, image: emoji }))}
+                              className="p-1 text-lg hover:bg-muted rounded transition-colors"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="food" className="p-2 m-0">
+                        <div className="grid grid-cols-8 gap-1">
+                          {['🍎', '🍊', '🍌', '🍇', '🍓', '🍈', '🍉', '🍑',
+                            '🍒', '🥝', '🍍', '🥭', '🍅', '🥑', '🌶️', '🌽',
+                            '🥕', '🧄', '🧅', '🥔', '🍠', '🥐', '🍞', '🥖',
+                            '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓',
+                            '🍖', '🍗', '🥩', '🍔', '🍟', '🍕', '🌭', '🥪',
+                            '🌮', '🌯', '🥙', '🧆', '🥘', '🍝', '🍜', '🍲',
+                            '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚',
+                            '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨',
+                            '🍦', '🥧', '🧁', '🎂', '🍰', '🍪', '🍫', '🍬',
+                            '🍭', '🍮', '🍯', '🍼', '🥛', '☕', '🍵', '🧃',
+                            '🥤', '🧋', '🍶', '🍾', '🥂', '🍻', '🍺', '🍷'].map(emoji => (
+                            <button
+                              key={emoji}
+                              type="button"
+                              onClick={() => setFormData(prev => ({ ...prev, image: emoji }))}
+                              className="p-1 text-lg hover:bg-muted rounded transition-colors"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="activities" className="p-2 m-0">
+                        <div className="grid grid-cols-8 gap-1">
+                          {['🎮', '🕹️', '🎲', '🧩', '🃏', '🎴', '🀄', '🎯',
+                            '🎱', '🎳', '🎪', '🎭', '🎨', '🎬', '🎤', '🎧',
+                            '🎼', '🎵', '🎶', '🥁', '🎸', '🎺', '🎷', '🎻',
+                            '🪕', '📚', '📖', '✏️', '✒️', '🖊️', '🖋️', '🖌️',
+                            '🖍️', '📝', '💻', '📱', '⌚', '📷', '📹', '🎥',
+                            '📽️', '🔍', '🔎', '💡', '🔦', '🏮', '🎆', '🎇',
+                            '🌠', '✨', '🎈', '🎀', '🎗️', '🎟️', '🎫', '🏆',
+                            '🏅', '🥇', '🥈', '🥉', '⚽', '🏀', '🏈', '⚾',
+                            '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓',
+                            '🏸', '🏒', '🏑', '🥍', '🏏', '🪃', '🥅', '⛳'].map(emoji => (
+                            <button
+                              key={emoji}
+                              type="button"
+                              onClick={() => setFormData(prev => ({ ...prev, image: emoji }))}
+                              className="p-1 text-lg hover:bg-muted rounded transition-colors"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="objects" className="p-2 m-0">
+                        <div className="grid grid-cols-8 gap-1">
+                          {['📱', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '💽',
+                            '💾', '💿', '📀', '📼', '📷', '📸', '📹', '📽️',
+                            '🎥', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️',
+                            '🎚️', '🎛️', '🧭', '⏰', '⏲️', '⏱️', '⏰', '🕰️',
+                            '💰', '💴', '💵', '💶', '💷', '💸', '💳', '🧾',
+                            '💎', '⚖️', '🧰', '🔧', '🔨', '⚒️', '🛠️', '⛏️',
+                            '🔩', '⚙️', '🧱', '⛓️', '🧲', '🔫', '💣', '🧨',
+                            '🪓', '🔪', '🗡️', '⚔️', '🛡️', '🚬', '⚰️', '🪦',
+                            '⚱️', '🏺', '🔮', '📿', '🧿', '💈', '⚗️', '🔭',
+                            '🔬', '🕳️', '🩹', '🩺', '💊', '💉', '🩸', '🧬'].map(emoji => (
+                            <button
+                              key={emoji}
+                              type="button"
+                              onClick={() => setFormData(prev => ({ ...prev, image: emoji }))}
+                              className="p-1 text-lg hover:bg-muted rounded transition-colors"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="symbols" className="p-2 m-0">
+                        <div className="grid grid-cols-8 gap-1">
+                          {['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+                            '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
+                            '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️',
+                            '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈',
+                            '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐',
+                            '♑', '♒', '♓', '🆔', '⚛️', '🉑', '☢️', '☣️',
+                            '📴', '📳', '🈶', '🈚', '🈸', '🈺', '🈷️', '✴️',
+                            '🆚', '💮', '🉐', '㊙️', '㊗️', '🈴', '🈵', '🈹',
+                            '🈲', '🅰️', '🅱️', '🆎', '🆑', '🅾️', '🆘', '❌',
+                            '⭕', '🛑', '⛔', '📛', '🚫', '💯', '💢', '♨️'].map(emoji => (
+                            <button
+                              key={emoji}
+                              type="button"
+                              onClick={() => setFormData(prev => ({ ...prev, image: emoji }))}
+                              className="p-1 text-lg hover:bg-muted rounded transition-colors"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </TabsContent>
+                    </ScrollArea>
+                  </Tabs>
                 </PopoverContent>
               </Popover>
             </div>
