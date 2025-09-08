@@ -242,14 +242,15 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
               <Input
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 placeholder="Ask Luna for help breaking down this step..."
-                disabled={isLoading || shouldHideInput}
+                disabled={isLoading}
                 className="flex-1"
+                autoFocus
               />
               <Button
                 onClick={sendMessage}
-                disabled={isLoading || !inputValue.trim() || shouldHideInput}
+                disabled={isLoading || !inputValue.trim()}
                 size="sm"
               >
                 <Send className="h-3 w-3" />
