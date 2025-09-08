@@ -178,9 +178,9 @@ What's on your mind?`;
   return (
     <Card className="flex flex-col max-h-[70vh] overflow-hidden">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
-            <Bot className="w-4 h-4 text-white" />
+        <CardTitle className="text-lg flex items-center gap-2 font-normal">
+          <div className="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center">
+            <Bot className="w-4 h-4 text-blue-800" />
           </div>
           Lune
           {context === 'onboarding' && (
@@ -195,8 +195,8 @@ What's on your mind?`;
             {messages.map((message) => (
               <div key={message.id} className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : ''}`}>
                 {message.sender === 'lune' && (
-                  <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <Bot className="w-4 h-4 text-white" />
+                  <div className="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <Bot className="w-4 h-4 text-blue-800" />
                   </div>
                 )}
                 <div className={`max-w-[80%] ${message.sender === 'user' ? 'order-first' : ''}`}>
@@ -235,8 +235,8 @@ What's on your mind?`;
             
             {isLoading && (
               <div className="flex gap-3">
-                <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                  <Bot className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <Bot className="w-4 h-4 text-blue-800" />
                 </div>
                 <div className="bg-muted rounded-lg p-3 max-w-[80%]">
                   <div className="flex space-x-1">

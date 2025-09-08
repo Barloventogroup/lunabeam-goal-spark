@@ -190,7 +190,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl w-[95vw] h-[80vh] sm:h-[600px] flex flex-col z-[60] p-4 sm:p-6" onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}>
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-base">
+          <DialogTitle className="flex items-center gap-2 text-base font-normal">
             <img src={lunaIcon16} alt="Luna" className="h-4 w-4" />
             Luna
           </DialogTitle>
@@ -212,7 +212,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                   }`}
                 >
                   {message.role === 'assistant' && (
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                     <div className="w-6 h-6 rounded-full bg-blue-200 flex items-center justify-center flex-shrink-0">
                       <img src={lunaIcon16} alt="Luna" className="h-3 w-3" />
                     </div>
                   )}
@@ -235,7 +235,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
               ))}
               {isLoading && (
                 <div className="flex gap-3 justify-start">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-blue-200 flex items-center justify-center flex-shrink-0">
                     <img src={lunaIcon16} alt="Luna" className="h-3 w-3" />
                   </div>
                   <div className="bg-muted p-2 rounded-lg">
