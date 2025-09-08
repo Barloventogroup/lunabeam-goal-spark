@@ -581,6 +581,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_points: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       weekly_checkins: {
         Row: {
           circle_id: string
@@ -633,6 +660,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_step_points: {
+        Args: { _category: string; _step_notes?: string; _step_title: string }
+        Returns: number
+      }
       check_user_permission: {
         Args: { _action: string; _goal_id?: string; _individual_id: string }
         Returns: boolean
