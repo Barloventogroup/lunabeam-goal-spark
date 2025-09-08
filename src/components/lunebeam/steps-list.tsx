@@ -623,10 +623,10 @@ export const StepsList: React.FC<StepsListProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-4 pb-6">
-        <div className="rounded-lg border border-border overflow-hidden">
+        <div className="rounded-lg border border-gray-200 overflow-hidden">
           <Table>
             <TableHeader>
-                <TableRow className="border-b border-border bg-muted/20">
+                <TableRow className="border-b border-gray-200 bg-muted/20">
                   <TableHead className="w-8"></TableHead>
                   <TableHead>Task</TableHead>
                   <TableHead className="w-20">Due</TableHead>
@@ -645,7 +645,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                 return (
                   <React.Fragment key={mainStep.id}>
                      {/* Main step row */}
-                     <TableRow className={`border-b border-border ${isBlocked ? 'opacity-40 bg-muted/20' : 'hover:bg-muted/50'}`}>
+                     <TableRow className={`border-b border-gray-200 ${isBlocked ? 'opacity-40 bg-muted/20' : 'hover:bg-muted/50'}`}>
                        <TableCell className="p-2 w-8">
                          {(subSteps.length > 0 || mainStep.explainer || mainStep.notes) && (
                            <Button 
@@ -733,13 +733,13 @@ export const StepsList: React.FC<StepsListProps> = ({
 
                      {/* Expanded content row - substeps cards or description */}
                      {isExpanded && (
-                       <TableRow className="border-b border-border">
+                       <TableRow className="border-b border-gray-200">
                          <TableCell></TableCell>
                          <TableCell colSpan={4} className="p-0 bg-muted/20">
                            {subSteps.length > 0 ? (
                              <div className="p-4">
                                {/* Main step description section */}
-                               <div className="mb-6 pb-4 border-b border-border">
+                               <div className="mb-6 pb-4 border-b border-gray-200">
                                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap mb-3">
                                    {(mainStep.explainer?.trim() || mainStep.notes?.trim() || "Here are the sub-steps to complete this main step.")}
                                  </p>
@@ -756,11 +756,11 @@ export const StepsList: React.FC<StepsListProps> = ({
                                   {subSteps.map((substep) => (
                                     <div
                                       key={substep.id}
-                                        className={`flex-shrink-0 w-80 border rounded-lg p-4 transition-all duration-200 ${
-                                          substep.completed_at 
-                                            ? 'border-green-200 bg-green-50/50' 
-                                            : 'border-border hover:border-primary/40 bg-background'
-                                        }`}
+                                         className={`flex-shrink-0 w-80 border border-gray-200 rounded-lg p-4 transition-all duration-200 ${
+                                           substep.completed_at 
+                                             ? 'border-green-200 bg-green-50/50' 
+                                             : 'bg-background hover:border-gray-300'
+                                         }`}
                                     >
                                       {/* Substep title */}
                                       <div className="flex items-center gap-2 mb-3">
