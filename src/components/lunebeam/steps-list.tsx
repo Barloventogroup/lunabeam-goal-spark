@@ -353,13 +353,34 @@ export const StepsList: React.FC<StepsListProps> = ({
     
     try {
       const result = await stepsService.completeStep(stepId);
+      
+      // Force refresh of substeps data
+      const fetchAllSubsteps = async () => {
+        const substepsPromises = steps.map(async (step) => {
+          try {
+            const substeps = await pointsService.getSubsteps(step.id);
+            return { stepId: step.id, substeps };
+          } catch (error) {
+            console.error(`Error fetching substeps for step ${step.id}:`, error);
+            return { stepId: step.id, substeps: [] };
+          }
+        });
+
+        const results = await Promise.all(substepsPromises);
+        const newSubstepsMap: Record<string, Substep[]> = {};
+        
+        results.forEach(({ stepId, substeps }) => {
+          newSubstepsMap[stepId] = substeps;
+        });
+        
+        setSubstepsMap(newSubstepsMap);
+      };
+      
+      await fetchAllSubsteps();
+      
       if (onStepsChange) {
         onStepsChange();
       }
-      
-      // Refresh substeps after completing a step
-      const substeps = await pointsService.getSubsteps(stepId);
-      setSubstepsMap(prev => ({ ...prev, [stepId]: substeps }));
       
       toast({
         title: "Step completed!",
