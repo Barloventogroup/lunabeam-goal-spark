@@ -189,17 +189,6 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
             />
           </div>
 
-          {/* Image/Emoji */}
-          <div className="space-y-2">
-            <Label htmlFor="image">Image/Emoji (Optional)</Label>
-            <Input
-              id="image"
-              value={formData.image}
-              onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-              placeholder="🍔 or image URL"
-            />
-          </div>
-
           {/* Active Toggle */}
           <div className="flex items-center justify-between">
             <Label htmlFor="active">Active</Label>
