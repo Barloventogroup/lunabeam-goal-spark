@@ -14,14 +14,17 @@ import {
   Trophy,
   Star,
   Coins,
-  LogOut
+  LogOut,
+  Gift,
+  Inbox
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '../auth/auth-provider';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
+import { RewardsGallery, RewardsAdminList, RedemptionInbox } from '../lunebeam/reward-bank';
 import { ProfileView } from '../lunebeam/profile-view';
 
-type YouView = 'profile' | 'rewards' | 'settings' | 'profileDetail';
+type YouView = 'profile' | 'rewards' | 'settings' | 'profileDetail' | 'rewardBank' | 'rewardAdmin' | 'redemptionInbox';
 
 export const TabYou: React.FC = () => {
   const { profile, badges } = useStore();
@@ -34,6 +37,18 @@ export const TabYou: React.FC = () => {
 
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('profile')} />;
+  }
+
+  if (currentView === 'rewardBank') {
+    return <RewardsGallery onBack={() => setCurrentView('profile')} />;
+  }
+
+  if (currentView === 'rewardAdmin') {
+    return <RewardsAdminList onBack={() => setCurrentView('profile')} />;
+  }
+
+  if (currentView === 'redemptionInbox') {
+    return <RedemptionInbox onBack={() => setCurrentView('profile')} />;
   }
 
   if (currentView === 'profileDetail') {
@@ -84,6 +99,54 @@ export const TabYou: React.FC = () => {
                   <div>
                     <div className="font-medium">Rewards & Achievements</div>
                     <div className="text-sm text-muted-foreground">View your badges and points</div>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Reward Bank */}
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('rewardBank')}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Gift className="h-5 w-5 text-purple-500" />
+                  <div>
+                    <div className="font-medium">Reward Bank</div>
+                    <div className="text-sm text-muted-foreground">Redeem your points</div>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Supporter Options */}
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('rewardAdmin')}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Settings className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <div className="font-medium">Manage Rewards</div>
+                    <div className="text-sm text-muted-foreground">Supporter controls</div>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Redemption Inbox */}
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('redemptionInbox')}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Inbox className="h-5 w-5 text-green-500" />
+                  <div>
+                    <div className="font-medium">Redemption Inbox</div>
+                    <div className="text-sm text-muted-foreground">Approve redemptions</div>
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
