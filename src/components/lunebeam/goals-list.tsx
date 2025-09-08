@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2 } from 'lucide-react';
@@ -196,48 +197,36 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
         </Button>
       </div>
 
-      {/* Tab Buttons */}
-      <div className="flex gap-1 bg-muted p-1 rounded-lg">
-        <Button
-          variant={activeTab === 'active' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('active')}
-          className="flex-1 text-sm"
-        >
-          Active
-        </Button>
-        <Button
-          variant={activeTab === 'completed' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('completed')}
-          className="flex-1 text-sm"
-        >
-          Completed
-        </Button>
-      </div>
-
-      {goals.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-8">
-            <h3>
-              {activeTab === 'completed' ? 'No completed goals yet' : 'No active goals yet'}
-            </h3>
-            <p className="text-body-sm text-muted-foreground mb-4">
-              {activeTab === 'completed' 
-                ? 'Complete some goals to see them here!'
-                : 'Create your first goal to get started on your journey!'
-              }
-            </p>
-            {activeTab === 'active' && (
-              <Button onClick={() => onNavigate('create-goal')} variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Goal
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
+      {/* Tab Navigation */}
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as GoalsTab)} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="active">Active</TabsTrigger>
+          <TabsTrigger value="completed">Completed</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value={activeTab} className="mt-4">
+          {goals.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-8">
+                <h3>
+                  {activeTab === 'completed' ? 'No completed goals yet' : 'No active goals yet'}
+                </h3>
+                <p className="text-body-sm text-muted-foreground mb-4">
+                  {activeTab === 'completed' 
+                    ? 'Complete some goals to see them here!'
+                    : 'Create your first goal to get started on your journey!'
+                  }
+                </p>
+                {activeTab === 'active' && (
+                  <Button onClick={() => onNavigate('create-goal')} variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Your First Goal
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
           {goals.map((goal) => {
             const stepCount = stepsCount[goal.id] || { required: goal.progress?.actionable || 0, done: goal.progress?.done || 0 };
             const progressPct = goal.progress_pct || (goal.progress ? goal.progress.percent : 0);
@@ -363,8 +352,10 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
               </Card>
             );
           })}
-        </div>
-      )}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
