@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, User, Loader2 } from 'lucide-react';
+import { Send, User, Loader2, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getLunaIcon } from '@/utils/iconGenerator';
 import type { Step, Goal } from '@/types';
@@ -188,14 +188,25 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl h-[600px] flex flex-col z-[60]" onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <img src={lunaIcon16} alt="Luna" className="h-4 w-4" />
-            Luna
-          </DialogTitle>
+      <DialogContent className="max-w-2xl w-[95vw] h-[80vh] sm:h-[600px] flex flex-col z-[60] p-4 sm:p-6" onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}>
+        <DialogHeader className="flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <img src={lunaIcon16} alt="Luna" className="h-4 w-4" />
+              Luna
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-6 w-6 p-0 md:hidden"
+              aria-label="Close chat"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
           {step && (
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground truncate pr-8 md:pr-0">
               Helping with: "{step.title}"
             </p>
           )}
@@ -247,15 +258,15 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
             </div>
           </ScrollArea>
 
-          <div className="border-t pt-4 mt-4 flex-shrink-0">
-            <div className="flex gap-2">
+          <div className="border-t pt-3 mt-4 flex-shrink-0">
+            <div className="flex gap-2 items-end">
               <Input
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyPress}
-                placeholder="Ask Luna for help breaking down this step..."
+                placeholder="Ask Luna for help..."
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 text-sm"
                 autoFocus
                 ref={inputRef}
               />
@@ -263,8 +274,10 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                 onClick={sendMessage}
                 disabled={isLoading || !inputValue.trim()}
                 size="sm"
+                className="px-3 py-2 h-9 w-auto min-w-[40px] flex-shrink-0"
               >
-                <Send className="h-3 w-3" />
+                <Send className="h-4 w-4" />
+                <span className="sr-only">Send message</span>
               </Button>
             </div>
             {shouldHideInput && (
