@@ -77,7 +77,7 @@ export function TabInvitations() {
           <div className="flex items-center gap-3">
             <Avatar className="w-10 h-10">
               <AvatarImage src={invitation.avatarUrl} />
-              <AvatarFallback className="bg-primary/10 text-primary font-medium">
+              <AvatarFallback className="bg-primary/10 text-primary font-normal">
                 {invitation.name.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
@@ -180,7 +180,7 @@ export function TabInvitations() {
                 <div className="flex items-center gap-4">
                   <Avatar className="w-16 h-16">
                     <AvatarImage src={selectedInvitation.avatarUrl} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
+                    <AvatarFallback className="bg-primary/10 text-primary font-normal text-lg">
                       {selectedInvitation.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
