@@ -196,7 +196,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-foreground rounded-full"></div>
-            <h1 className="text-xl font-semibold text-foreground">lunebeam</h1>
+            <h1 className="text-xl font-bold text-foreground">lunebeam</h1>
           </div>
           <Button 
             variant="ghost" 
