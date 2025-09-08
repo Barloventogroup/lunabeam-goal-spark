@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
-  ArrowLeft, 
+   
   Plus, 
   Calendar, 
   Target, 
@@ -207,7 +208,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => onNavigate('goals-list')}>
-            <ArrowLeft className="h-4 w-4" />
+            <BackButton onClick={() => onNavigate('goals')} />
           </Button>
           <h2 className="text-2xl font-bold">Loading...</h2>
         </div>
@@ -224,7 +225,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
       {/* Header */}
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" onClick={() => onNavigate('goals-list')}>
-          <ArrowLeft className="h-4 w-4" />
+          <BackButton onClick={() => onNavigate('goals')} />
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{goal.title}</h1>

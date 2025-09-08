@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -662,9 +663,7 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
             {/* Navigation */}
             <div className="pt-6 mt-auto space-y-2">
               {currentStep > 1 && (
-                <Button variant="ghost" onClick={handleBack} className="w-full text-white" style={{ backgroundColor: '#87CEEB' }}>
-                  Back
-                </Button>
+                <BackButton variant="text" onClick={handleBack} className="w-full" />
               )}
               
               <Button 

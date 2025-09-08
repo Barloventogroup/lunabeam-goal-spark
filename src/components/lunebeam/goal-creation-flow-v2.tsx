@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -218,9 +219,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
           />
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleBack} className="flex-1">
-            Back
-          </Button>
+          <BackButton variant="text" onClick={handleBack} className="flex-1" />
           <Button 
             onClick={handleNext} 
             className="flex-1"
@@ -335,9 +334,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
         </div>
         
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleBack} className="flex-1">
-            Back
-          </Button>
+          <BackButton variant="text" onClick={handleBack} className="flex-1" />
           <Button variant="outline" onClick={handleExit} size="icon">
             <X className="h-4 w-4" />
           </Button>
@@ -409,9 +406,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
         </div>
         
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleBack} className="flex-1">
-            Back
-          </Button>
+          <BackButton variant="text" onClick={handleBack} className="flex-1" />
           <Button 
             onClick={handleSaveGoal} 
             className="flex-1"

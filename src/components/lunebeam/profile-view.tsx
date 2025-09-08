@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -179,14 +180,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
       {/* Header */}
       <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={onBack}
-            className="p-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          <BackButton onClick={onBack} />
           <div>
             <h1 className="text-xl font-bold">Profile</h1>
             <p className="text-sm text-muted-foreground">Personal information and settings</p>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import { 
   GraduationCap, 
   Briefcase, 
@@ -9,7 +10,6 @@ import {
   Users,
   Building,
   BookOpen,
-  ArrowLeft
 } from 'lucide-react';
 
 interface GoalCategoriesProps {
@@ -77,14 +77,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
       <div className="max-w-md mx-auto py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onBack}
-            className="p-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          <BackButton onClick={onBack} />
           <div className="flex-1">
             <h1>What do you want to work on?</h1>
             <p className="text-foreground-soft">Pick what feels right today</p>

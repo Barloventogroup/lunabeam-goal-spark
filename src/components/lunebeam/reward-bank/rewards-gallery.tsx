@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import { BackButton } from '@/components/ui/back-button';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -78,9 +79,7 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={onBack} className="text-foreground hover:bg-muted">
-              ← Back
-            </Button>
+            <BackButton variant="minimal" onClick={onBack} />
             <h1 className="text-2xl font-bold text-foreground">Reward Gallery</h1>
           </div>
           <div className="bg-muted/50 backdrop-blur rounded-lg px-4 py-2">

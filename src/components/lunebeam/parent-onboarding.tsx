@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -244,9 +245,7 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-foreground-soft">{currentStep}/{totalSteps}</span>
             {currentStep > 1 && (
-              <Button variant="ghost" size="sm" onClick={handleBack}>
-                ← Back
-              </Button>
+                <BackButton variant="minimal" onClick={handleBack} />
             )}
           </div>
           <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
@@ -609,9 +608,7 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
             {/* Navigation */}
             <div className="flex justify-between items-center pt-6">
               {currentStep > 1 && currentStep < 9 && (
-                <Button variant="ghost" onClick={handleBack}>
-                  ← Back
-                </Button>
+                <BackButton variant="minimal" onClick={handleBack} />
               )}
               <div className="flex gap-2 ml-auto">
                 {currentStep < 9 && (

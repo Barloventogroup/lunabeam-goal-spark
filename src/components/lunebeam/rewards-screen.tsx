@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Trophy, Star, Award, Coins, Crown, CheckCircle, Calendar, Archive } from 'lucide-react';
@@ -56,9 +57,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
     <div className="min-h-screen bg-gradient-soft">
       {/* Header */}
       <div className="flex items-center gap-4 p-4 bg-card/80 backdrop-blur border-b border-gray-200">
-        <Button variant="ghost" size="sm" onClick={onBack} className="p-2">
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+        <BackButton onClick={onBack} />
         <div className="flex-1">
           <h1 className="text-xl font-bold">Rewards & Achievements</h1>
           <p className="text-sm text-muted-foreground">Your accomplishments and progress</p>

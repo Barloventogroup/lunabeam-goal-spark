@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { BackButton } from '@/components/ui/back-button';
 import { getGoalsForCategory, normalizeCategoryName, GoalFlow } from '@/data/comprehensive-goals';
 import { GoalWizardSplit } from './goal-wizard-split';
 import { DateRange } from 'react-day-picker';
@@ -40,14 +41,7 @@ export const ComprehensiveGoalEngine: React.FC<ComprehensiveGoalEngineProps> = (
         <div className="max-w-md mx-auto py-6 space-y-6">
           {/* Header */}
           <div className="flex items-center gap-4 mb-6">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={onBack}
-              className="p-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+          <BackButton onClick={onBack} />
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-foreground">{categoryDisplayName} Goals</h1>
               <p className="text-foreground-soft">What would you like to work on?</p>

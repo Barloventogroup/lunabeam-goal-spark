@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import { BackButton } from '@/components/ui/back-button';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Archive, ArchiveRestore } from "lucide-react";
@@ -77,9 +78,7 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) =>
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={onBack} className="text-foreground hover:bg-muted">
-              ← Back
-            </Button>
+            <BackButton variant="minimal" onClick={onBack} />
             <h1 className="text-2xl font-bold text-foreground">Reward Bank</h1>
           </div>
           <Button 
