@@ -700,21 +700,6 @@ Example:
         )}
       </div>
 
-      {/* Footer with SMART goal preview and affirmation */}
-      <div className="mt-8 p-4 bg-muted/30 rounded-lg border border-muted">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-2">Your SMART Goal:</p>
-          <p className="font-medium text-primary">
-            {buildSmartGoal() || "Choose your category to get started! ✨"}
-          </p>
-          {affirmation && (
-            <p className="text-sm text-green-600 mt-2 animate-fade-in">
-              {affirmation}
-            </p>
-          )}
-        </div>
-      </div>
-
     </div>
   );
 };
