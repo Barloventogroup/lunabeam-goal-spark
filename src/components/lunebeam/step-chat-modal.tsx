@@ -237,27 +237,30 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
             </div>
           </ScrollArea>
 
-          {!shouldHideInput && (
-            <div className="border-t pt-4 mt-4">
-              <div className="flex gap-2">
-                <Input
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask Luna for help breaking down this step..."
-                  disabled={isLoading}
-                  className="flex-1"
-                />
-                <Button
-                  onClick={sendMessage}
-                  disabled={isLoading || !inputValue.trim()}
-                  size="sm"
-                >
-                  <Send className="h-3 w-3" />
-                </Button>
-              </div>
+          <div className="border-t pt-4 mt-4 flex-shrink-0">
+            <div className="flex gap-2">
+              <Input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask Luna for help breaking down this step..."
+                disabled={isLoading || shouldHideInput}
+                className="flex-1"
+              />
+              <Button
+                onClick={sendMessage}
+                disabled={isLoading || !inputValue.trim() || shouldHideInput}
+                size="sm"
+              >
+                <Send className="h-3 w-3" />
+              </Button>
             </div>
-          )}
+            {shouldHideInput && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Chat session completed. Close this window to return to your steps.
+              </p>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
