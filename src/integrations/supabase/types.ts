@@ -777,6 +777,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_supporter_invite_secure: {
+        Args: { _invite_token: string }
+        Returns: Json
+      }
       calculate_step_points: {
         Args: { goal_domain?: string; step_notes?: string; step_title: string }
         Returns: number

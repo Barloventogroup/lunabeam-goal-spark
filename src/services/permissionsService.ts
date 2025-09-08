@@ -134,15 +134,19 @@ export class PermissionsService {
     return data;
   }
 
-  // Accept supporter invite
+  // Accept supporter invite using secure function
   static async acceptSupporterInvite(inviteToken: string): Promise<void> {
-    const { error } = await supabase
-      .from('supporter_invites')
-      .update({ status: 'accepted' })
-      .eq('invite_token', inviteToken)
-      .eq('status', 'pending');
+    const { data, error } = await supabase.rpc('accept_supporter_invite_secure', {
+      _invite_token: inviteToken
+    });
     
     if (error) throw error;
+    
+    // Type the response and check if the function returned an error
+    const response = data as { success: boolean; error?: string; message?: string };
+    if (!response?.success) {
+      throw new Error(response?.error || 'Failed to accept invite');
+    }
   }
 
   // Create account claim for on-behalf account creation
