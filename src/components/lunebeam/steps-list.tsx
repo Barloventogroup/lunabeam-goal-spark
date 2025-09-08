@@ -33,8 +33,9 @@ import {
 } from "@/components/ui/collapsible";
 import type { Goal, Step, StepStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { stepsService } from '@/services/goalsService';
+import { stepsService } from '@/services/goalsService';  
 import { stepValidationService } from '@/services/stepValidationService';
+import { BlockedStepGuidance } from './blocked-step-guidance';
 
 // Utility function to format dates
 const formatDate = (dateStr: string): string => {
@@ -184,26 +185,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       
       if (!validation.canComplete) {
         console.log('Step blocked:', validation.reason, validation.friendlyMessage);
-        const suggestions = validation.blockedBy 
-          ? stepValidationService.getNextStepSuggestions(validation.blockedBy)
-          : [];
-        
-        toast({
-          title: 'Hold on a moment! 🤔',
-          description: validation.friendlyMessage || validation.reason || 'This step cannot be completed yet.',
-          variant: 'destructive',
-        });
-        
-        // Show suggestions if available
-        if (suggestions.length > 0) {
-          setTimeout(() => {
-            toast({
-              title: 'Here\'s what to do next:',
-              description: suggestions.join(' • '),
-              duration: 8000,
-            });
-          }, 2000);
-        }
+        // No toast - users can see blocked steps are greyed out and get inline guidance
         return;
       }
 
@@ -343,6 +325,15 @@ export const StepsList: React.FC<StepsListProps> = ({
     return false;
   };
 
+  const getBlockedStepInfo = async (step: Step) => {
+    try {
+      const validation = await stepValidationService.validateStepCompletion(step.id, steps, goal);
+      return validation;
+    } catch (error) {
+      return { canComplete: true };
+    }
+  };
+
   const getStepIcon = (step: Step) => {
     if (isStepBlocked(step)) {
       return null; // No icon for blocked steps
@@ -448,14 +439,14 @@ export const StepsList: React.FC<StepsListProps> = ({
                 return (
                   <React.Fragment key={mainStep.id}>
                      {/* Main step row */}
-                     <TableRow className={`border-b border-border ${isBlocked ? 'opacity-60' : 'hover:bg-muted/50'} cursor-pointer`}>
+                     <TableRow className={`border-b border-border ${isBlocked ? 'opacity-40 bg-muted/20' : 'hover:bg-muted/50'}`}>
                        <TableCell className="p-2 w-8">
                          {(subSteps.length > 0 || mainStep.explainer || mainStep.notes) && (
                            <Button 
                              variant="ghost" 
                              size="sm"
                              onClick={() => toggleStepExpanded(mainStep.id)}
-                             className="text-muted-foreground hover:text-foreground p-1 h-auto"
+                             className={`p-1 h-auto ${isBlocked ? 'text-muted-foreground/50 hover:text-muted-foreground/70' : 'text-muted-foreground hover:text-foreground'}`}
                            >
                              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                            </Button>
@@ -465,22 +456,27 @@ export const StepsList: React.FC<StepsListProps> = ({
                         <TableCell className="p-2">
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <span className={`text-sm font-medium ${mainStep.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                              <span className={`text-sm font-medium ${
+                                mainStep.status === 'done' 
+                                  ? 'line-through text-muted-foreground' 
+                                  : isBlocked 
+                                    ? 'text-muted-foreground/70' 
+                                    : 'text-foreground'
+                              }`}>
                                 {mainStep.title.replace(/^Day\s+\d+:\s*/i, '')}
                               </span>
-                              {isBlocked && (
-                                <Badge variant="outline" className="text-xs">
-                                  Blocked
-                                </Badge>
-                              )}
                               {subSteps.length > 0 && (
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge variant="secondary" className={`text-xs ${isBlocked ? 'opacity-50' : ''}`}>
                                   {subSteps.filter(s => s.status === 'done').length}/{subSteps.length} sub-steps
                                 </Badge>
                               )}
                             </div>
 
-                            {precursorText && (
+                            {isBlocked && (
+                              <BlockedStepGuidance step={mainStep} />
+                            )}
+
+                            {precursorText && !isBlocked && (
                               <div className="flex items-center gap-1 text-xs text-amber-600">
                                 <ArrowDown className="h-3 w-3" />
                                 {precursorText}
@@ -506,16 +502,19 @@ export const StepsList: React.FC<StepsListProps> = ({
 
                        <TableCell className="p-2">
                          <div className="flex items-center gap-2">
-                           {mainStep.status !== 'done' && (
+                           {mainStep.status !== 'done' && !isBlocked && (
                              <Button
-                               onClick={() => !isBlocked && handleMarkComplete(mainStep.id)}
-                               disabled={isBlocked || (subSteps.length > 0 && !allSubStepsCompleted)}
+                               onClick={() => handleMarkComplete(mainStep.id)}
+                               disabled={subSteps.length > 0 && !allSubStepsCompleted}
                                className="h-7 px-3 text-xs rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors disabled:opacity-50"
                                variant="outline"
                                size="sm"
                              >
                                Mark Complete
                              </Button>
+                           )}
+                           {isBlocked && (
+                             <span className="text-xs text-muted-foreground/70 px-2">Not available yet</span>
                            )}
                          </div>
                        </TableCell>
@@ -543,26 +542,34 @@ export const StepsList: React.FC<StepsListProps> = ({
                                
                                {/* Google Flights style sub-steps cards */}
                                <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
-                                 {subSteps.map((subStep) => (
-                                   <div
-                                     key={subStep.id}
-                                       className={`flex-shrink-0 w-80 border rounded-lg p-4 bg-background transition-all duration-200 ${
-                                         subStep.status === 'done' 
-                                           ? 'border-green-200 bg-green-50/50' 
-                                           : 'border-border hover:border-primary/40'
-                                       }`}
-                                   >
-                                     {/* Sub-step title */}
-                                     <div className="flex items-center gap-2 mb-3">
-                                       <h4 className={`text-sm font-medium ${
-                                         subStep.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'
-                                       }`}>
-                                         {subStep.title}
-                                       </h4>
-                                       {subStep.status === 'done' && (
-                                         <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-                                       )}
-                                     </div>
+                                  {subSteps.map((subStep) => {
+                                    const isSubStepBlocked = isStepBlocked(subStep);
+                                    return (
+                                    <div
+                                      key={subStep.id}
+                                        className={`flex-shrink-0 w-80 border rounded-lg p-4 transition-all duration-200 ${
+                                          subStep.status === 'done' 
+                                            ? 'border-green-200 bg-green-50/50' 
+                                            : isSubStepBlocked
+                                              ? 'border-border/50 bg-muted/10 opacity-40'
+                                              : 'border-border hover:border-primary/40 bg-background'
+                                        }`}
+                                    >
+                                      {/* Sub-step title */}
+                                      <div className="flex items-center gap-2 mb-3">
+                                        <h4 className={`text-sm font-medium ${
+                                          subStep.status === 'done' 
+                                            ? 'line-through text-muted-foreground' 
+                                            : isSubStepBlocked 
+                                              ? 'text-muted-foreground/70' 
+                                              : 'text-foreground'
+                                        }`}>
+                                          {subStep.title}
+                                        </h4>
+                                        {subStep.status === 'done' && (
+                                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                        )}
+                                      </div>
 
                                      {/* Sub-step description */}
                                      <div className="mb-4 min-h-[60px]">
@@ -579,29 +586,39 @@ export const StepsList: React.FC<StepsListProps> = ({
                                        </div>
                                      )}
 
-                                     {/* Mark complete button */}
-                                     <div className="flex gap-2">
-                                       {subStep.status !== 'done' ? (
-                                         <Button
-                                           onClick={() => handleMarkComplete(subStep.id)}
-                                           className="w-full h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
-                                           size="sm"
-                                         >
-                                           Mark Complete
-                                         </Button>
-                                       ) : (
-                                         <Button
-                                           variant="outline"
-                                           className="w-full h-8 text-xs border-green-200 text-green-700 cursor-default"
-                                           size="sm"
-                                           disabled
-                                         >
-                                           Completed
-                                         </Button>
-                                       )}
-                                     </div>
-                                   </div>
-                                 ))}
+                                      {/* Mark complete button */}
+                                      <div className="flex gap-2">
+                                        {subStep.status !== 'done' && !isSubStepBlocked ? (
+                                          <Button
+                                            onClick={() => handleMarkComplete(subStep.id)}
+                                            className="w-full h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+                                            size="sm"
+                                          >
+                                            Mark Complete
+                                          </Button>
+                                        ) : subStep.status === 'done' ? (
+                                          <Button
+                                            variant="outline"
+                                            className="w-full h-8 text-xs border-green-200 text-green-700 cursor-default"
+                                            size="sm"
+                                            disabled
+                                          >
+                                            Completed
+                                          </Button>
+                                        ) : (
+                                          <Button
+                                            variant="outline"
+                                            className="w-full h-8 text-xs border-muted text-muted-foreground/70 cursor-default"
+                                            size="sm"
+                                            disabled
+                                          >
+                                            Not available yet
+                                          </Button>
+                                        )}
+                                      </div>
+                                    </div>
+                                    );
+                                  })}
                                </div>
                              </div>
                            ) : (
