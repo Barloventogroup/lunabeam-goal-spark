@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import data from '@emoji-mart/data';
-import Picker from '@emoji-mart/react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -215,17 +213,24 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
                     <Smile className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-card border border-input shadow-lg z-50" align="end">
-                  <Picker
-                    data={data}
-                    onEmojiSelect={(emoji: any) => {
-                      setFormData(prev => ({ ...prev, image: emoji.native }));
-                    }}
-                    theme="light"
-                    set="native"
-                    previewPosition="none"
-                    skinTonePosition="none"
-                  />
+                <PopoverContent className="w-auto p-2 bg-card border border-input shadow-lg z-50" align="end">
+                  <div className="grid grid-cols-8 gap-1 max-w-64">
+                    {['🎁', '🏆', '🍕', '🍔', '🍟', '🍿', '🍭', '🍪',
+                      '🎮', '📱', '💻', '🎧', '📚', '🎨', '⚽', '🏀',
+                      '🎯', '🎪', '🎭', '🎨', '🎸', '🎤', '🎬', '📷',
+                      '⭐', '🌟', '✨', '💎', '👑', '🏅', '🎖️', '🏵️',
+                      '❤️', '💚', '💙', '💜', '🧡', '💛', '🖤', '🤍',
+                      '😊', '😍', '🤩', '😎', '🥳', '🎉', '🔥', '💪'].map(emoji => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, image: emoji }))}
+                        className="p-1 text-lg hover:bg-muted rounded transition-colors"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
                 </PopoverContent>
               </Popover>
             </div>
