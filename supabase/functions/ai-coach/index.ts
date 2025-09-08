@@ -94,45 +94,63 @@ Please respond warmly and ask the next helpful question to learn about them.`;
       });
     }
 
-    // Handle step generation requests
-    if (mode === 'assist' && question && question.includes('Generate') && question.includes('milestone steps')) {
-      const stepSystemPrompt = `You are an AI step generator that creates specific, actionable milestone steps for goals.
+    // Handle step generation requests for any goal
+    if (mode === 'assist' && question && (question.includes('Generate') && (question.includes('milestone steps') || question.includes('steps for')))) {
+      const stepSystemPrompt = `You are an expert AI that creates specific, actionable steps for any goal.
 
-Your job: Generate concrete, goal-specific milestone steps that are directly related to achieving the goal.
+Your job: Generate 4-6 concrete, goal-specific steps that directly help achieve the stated goal.
 
-Rules for step generation:
-- Make steps SPECIFIC to the goal (e.g., for "Drink Water" don't say "Plan first step", say "Drink your first glass of water today")
-- Each step should be a concrete action someone can complete
-- Steps should build toward the goal progressively
-- Use the session format: "Session X: [specific action]"
-- Include practical details and time estimates when helpful
-- Make it feel achievable and motivating
+CRITICAL RULES:
+- Make steps HIGHLY SPECIFIC to the actual goal (never use generic steps like "Break it down" or "Plan first step")
+- Each step should be a concrete action someone can immediately take
+- Steps should be practical and achievable 
+- Use clear, motivating language that relates to the specific goal
+- Include brief explanations of WHY each step matters
+- Order steps logically (setup → action → tracking/maintenance)
 
-For hydration/water goals, focus on:
-- Setting up tracking systems
-- Building drinking habits
-- Timing throughout the day
-- Making water more appealing
+EXAMPLES:
 
-For sleep goals, focus on:
-- Bedtime routines
-- Environmental preparation
-- Consistency building
+For "Learn Guitar":
+- "Choose your first song" (not "Break it down")
+- "Set up practice space with guitar stand" 
+- "Learn 3 basic chords: G, C, D"
+- "Practice chord transitions 10 min daily"
+- "Record yourself playing to track progress"
 
-For exercise goals, focus on:
-- Progressive movement building
-- Habit formation
-- Tracking progress
+For "Save Money":
+- "Set specific savings target amount"
+- "Open a separate savings account" 
+- "Track expenses for one week"
+- "Set up automatic transfer to savings"
+- "Find one subscription to cancel"
+
+For "Get Organized":
+- "Pick one room/area to focus on first"
+- "Get storage containers and labels"
+- "Sort items: keep, donate, trash"
+- "Create homes for frequently used items"
+- "Set 10-minute daily tidying routine"
+
+For "Drink Water":
+- "Set daily water goal (8 glasses)"
+- "Choose a water bottle to use consistently"
+- "Set phone reminders every 2 hours"
+- "Start each day with one full glass"
+- "Track intake with simple tally marks"
+
+AVOID generic steps like:
+- "Break it down"
+- "Plan first step" 
+- "Take first action"
+- "Check your progress"
 
 Return a JSON array of step objects with:
-- title: "Session X: [specific actionable step]"
-- notes: Brief explanation of why this step matters
-- points: 1-3 based on difficulty
-- estimated_effort_min: Time in minutes`;
+- title: "[specific actionable step related to the goal]"
+- notes: Brief explanation of why this step helps achieve the goal
+- points: 2-3 (most steps are worth 2-3 points)
+- estimated_effort_min: Realistic time estimate in minutes`;
 
-      const stepUserPrompt = question;
-
-      console.log('Making OpenAI request for step generation');
+      console.log('Making OpenAI request for goal-specific step generation');
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -144,9 +162,9 @@ Return a JSON array of step objects with:
           model: 'gpt-4o-mini',
           messages: [
             { role: 'system', content: stepSystemPrompt },
-            { role: 'user', content: stepUserPrompt }
+            { role: 'user', content: question }
           ],
-          max_tokens: 800,
+          max_tokens: 1000,
           temperature: 0.7,
         }),
       });
@@ -160,7 +178,7 @@ Return a JSON array of step objects with:
       const data = await response.json();
       const guidance = data.choices[0].message.content;
 
-      console.log('Generated step guidance successfully');
+      console.log('Generated goal-specific steps successfully');
 
       return new Response(JSON.stringify({ 
         guidance,

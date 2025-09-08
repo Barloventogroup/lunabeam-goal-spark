@@ -1,6 +1,6 @@
 import type { Goal, Step, StepMetadata } from '@/types';
 
-// Simple rules-based step generation for common goals
+// AI-powered step generation for all goals
 export const stepsGenerator = {
   async generateSteps(goal: Goal): Promise<Step[]> {
     // 1) Try to generate milestone steps from SMART-like description
@@ -9,7 +9,17 @@ export const stepsGenerator = {
       return milestone;
     }
 
-    // 2) Fallback to rules-based base steps
+    // 2) Use AI to generate goal-specific steps
+    try {
+      const aiSteps = await generateAISteps(goal);
+      if (aiSteps.length > 0) {
+        return aiSteps;
+      }
+    } catch (error) {
+      console.error('AI step generation failed, falling back to rules:', error);
+    }
+
+    // 3) Fallback to rules-based base steps only if AI fails
     const baseSteps = getBaseStepsForGoal(goal);
     
     return baseSteps.map((stepData, index) => ({
@@ -32,6 +42,80 @@ export const stepsGenerator = {
     }));
   }
 };
+
+async function generateAISteps(goal: Goal): Promise<Step[]> {
+  const { supabase } = await import('@/integrations/supabase/client');
+  
+  const prompt = `Generate 4-6 specific steps for this goal:
+
+Goal: ${goal.title}
+Description: ${goal.description || 'No description provided'}
+Domain: ${goal.domain || 'general'}
+
+Return a JSON array of step objects with these properties:
+- title: string (specific actionable step, NOT generic like "Break it down")
+- notes: string (brief explanation of why this step helps)
+- points: number (2-3 based on difficulty)
+- estimated_effort_min: number (realistic time in minutes)
+
+Make each step directly related to achieving "${goal.title}". Be specific and practical.`;
+
+  const { data, error } = await supabase.functions.invoke('ai-coach', {
+    body: {
+      question: prompt,
+      mode: 'assist'
+    }
+  });
+
+  if (error) {
+    console.error('AI step generation error:', error);
+    return [];
+  }
+
+  try {
+    // Try to parse JSON from the AI response
+    const responseText = data.guidance || data.response_text || '';
+    
+    // Look for JSON array in the response
+    const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      console.warn('No JSON array found in AI response');
+      return [];
+    }
+
+    const stepsData = JSON.parse(jsonMatch[0]);
+    
+    return stepsData.map((stepData: any, index: number) => ({
+      id: `ai_step_${Date.now()}_${index}`,
+      goal_id: goal.id,
+      title: stepData.title,
+      notes: stepData.notes,
+      explainer: stepData.notes,
+      order_index: index,
+      estimated_effort_min: stepData.estimated_effort_min || 5,
+      due_date: undefined,
+      status: 'todo' as const,
+      type: 'action' as const,
+      is_required: true,
+      hidden: false,
+      blocked: false,
+      isBlocking: false,
+      points: stepData.points || 2,
+      dependency_step_ids: [],
+      precursors: [],
+      dependencies: [],
+      supportingLinks: [],
+      aiGenerated: true,
+      userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+      metadata: { version: 1, source: 'ai', scoreEase: 2, scoreImpact: 4 },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
+  } catch (parseError) {
+    console.error('Failed to parse AI step response:', parseError);
+    return [];
+  }
+}
 
 function generateMilestoneSteps(goal: Goal): Step[] {
   const desc = (goal.description || '').toLowerCase();
