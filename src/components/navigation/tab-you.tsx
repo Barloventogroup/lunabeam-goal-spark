@@ -75,7 +75,7 @@ export const TabYou: React.FC = () => {
                   className="w-16 h-16 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xl font-bold">
+                <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xl font-normal">
                   {profile?.first_name?.charAt(0) || 'U'}
                 </div>
               )}

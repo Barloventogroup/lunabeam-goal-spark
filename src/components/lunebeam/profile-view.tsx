@@ -208,7 +208,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                     className="w-20 h-20 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center text-white text-2xl font-bold">
+                  <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center text-white text-2xl font-normal">
                     {profile?.first_name?.charAt(0) || 'U'}
                   </div>
                 )}
