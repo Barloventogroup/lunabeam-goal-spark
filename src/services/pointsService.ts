@@ -124,7 +124,8 @@ export const pointsService = {
       };
     });
 
-    const totalPoints = categoryBreakdown.reduce((sum, cat) => sum + cat.points, 0);
+    // Net available points should include ALL categories (including negatives like redemptions)
+    const totalPoints = userPoints.reduce((sum, p) => sum + p.total_points, 0);
 
     return {
       totalPoints,
