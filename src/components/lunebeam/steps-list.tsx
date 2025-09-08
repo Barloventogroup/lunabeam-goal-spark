@@ -187,6 +187,25 @@ export const StepsList: React.FC<StepsListProps> = ({
 
   // Define isStepBlocked before using it
   const isStepBlocked = (step: Step): boolean => {
+    // Strict sequential gating: only allow the earliest incomplete required step
+    const currentIdx = sortedActionableSteps.findIndex(s => s.id === step.id);
+    if (currentIdx > -1) {
+      for (let i = 0; i < currentIdx; i++) {
+        const prev = sortedActionableSteps[i];
+        const required = prev.is_required !== false; // default to required
+        if (!required) continue;
+        // Skip non-action/hidden items just in case
+        if ((prev.type && prev.type !== 'action') || prev.hidden) continue;
+        const prevSubs = substepsMap[prev.id] || [];
+        const prevComplete = prevSubs.length > 0
+          ? prevSubs.every(sub => sub.completed_at)
+          : prev.status === 'done' || prev.status === 'skipped';
+        if (!prevComplete) {
+          return true; // Block until previous required step is complete
+        }
+      }
+    }
+
     // Check explicit dependencies first
     if (step.dependency_step_ids && step.dependency_step_ids.length > 0) {
       return step.dependency_step_ids.some(depId => {
@@ -205,7 +224,6 @@ export const StepsList: React.FC<StepsListProps> = ({
         const allPrevWeekSteps = steps.filter(s => {
           const prevWeekMatch = s.title.match(/Week (\d+)/i);
           if (!prevWeekMatch) return false;
-          
           const stepWeek = parseInt(prevWeekMatch[1]);
           return stepWeek < currentWeek && s.is_required;
         });
@@ -215,14 +233,12 @@ export const StepsList: React.FC<StepsListProps> = ({
           if (s.status === 'done' || s.status === 'skipped') {
             return false; // This step is complete
           }
-          
           // For steps with substeps, check if all substeps are complete
           const stepSubsteps = substepsMap[s.id] || [];
           if (stepSubsteps.length > 0) {
             const allSubstepsComplete = stepSubsteps.every(sub => sub.completed_at !== null);
             return !allSubstepsComplete; // Incomplete if any substep is not done
           }
-          
           return true; // Step without substeps that's not marked done
         });
 
@@ -237,16 +253,12 @@ export const StepsList: React.FC<StepsListProps> = ({
       const currentSessionMatch = step.title.match(/Session (\d+)/i);
       if (currentSessionMatch) {
         const currentSession = parseInt(currentSessionMatch[1]);
-        
         const currentWeekSteps = steps.filter(s => {
           const weekMatch = s.title.match(/Week (\d+)/i);
           const sessionMatch = s.title.match(/Session (\d+)/i);
-          
           if (!weekMatch || !sessionMatch) return false;
-          
           const stepWeek = parseInt(weekMatch[1]);
           const stepSession = parseInt(sessionMatch[1]);
-          
           return stepWeek === currentWeek && 
                  stepSession < currentSession && 
                  s.is_required;
@@ -257,14 +269,12 @@ export const StepsList: React.FC<StepsListProps> = ({
           if (s.status === 'done' || s.status === 'skipped') {
             return false;
           }
-          
           // For steps with substeps, check if all substeps are complete
           const stepSubsteps = substepsMap[s.id] || [];
           if (stepSubsteps.length > 0) {
             const allSubstepsComplete = stepSubsteps.every(sub => sub.completed_at !== null);
             return !allSubstepsComplete;
           }
-          
           return true;
         });
 
@@ -292,13 +302,11 @@ export const StepsList: React.FC<StepsListProps> = ({
           if (s.status === 'done' || s.status === 'skipped') {
             return false;
           }
-          
           const stepSubsteps = substepsMap[s.id] || [];
           if (stepSubsteps.length > 0) {
             const allSubstepsComplete = stepSubsteps.every(sub => sub.completed_at !== null);
             return !allSubstepsComplete;
           }
-          
           return true;
         });
 
