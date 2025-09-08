@@ -373,7 +373,7 @@ export type Database = {
         Row: {
           awarded_at: string
           category: string
-          goal_id: string
+          goal_id: string | null
           id: string
           points_awarded: number
           step_id: string | null
@@ -384,7 +384,7 @@ export type Database = {
         Insert: {
           awarded_at?: string
           category: string
-          goal_id: string
+          goal_id?: string | null
           id?: string
           points_awarded: number
           step_id?: string | null
@@ -395,7 +395,7 @@ export type Database = {
         Update: {
           awarded_at?: string
           category?: string
-          goal_id?: string
+          goal_id?: string | null
           id?: string
           points_awarded?: number
           step_id?: string | null
