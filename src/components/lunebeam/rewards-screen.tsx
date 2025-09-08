@@ -6,25 +6,36 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Trophy, Star, Award, Coins, Crown, CheckCircle, Calendar, Archive } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { PointsDisplay } from './points-display';
+import { pointsService, type PointsSummary } from '@/services/pointsService';
 
 interface RewardsScreenProps {
   onBack: () => void;
 }
 
 export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
-  const { badges, goals, pointsSummary, loadBadges, loadGoals, loadPoints } = useStore();
+  const { badges, goals, loadBadges, loadGoals } = useStore();
+  const [pointsSummary, setPointsSummary] = useState<PointsSummary | null>(null);
 
   useEffect(() => {
     loadBadges();
     loadGoals();
     loadPoints();
-  }, [loadBadges, loadGoals, loadPoints]);
+  }, [loadBadges, loadGoals]);
 
-  const mockPoints = 247;
+  const loadPoints = async () => {
+    try {
+      const summary = await pointsService.getPointsSummary();
+      setPointsSummary(summary);
+    } catch (error) {
+      console.error('Error loading points:', error);
+    }
+  };
+
   const completedGoals = goals.filter(goal => goal.status === 'completed');
   const archivedGoals = goals.filter(goal => goal.status === 'archived');
   const allCompletedAndArchived = [...completedGoals, ...archivedGoals];
   const allBadges = badges;
+  const totalPoints = pointsSummary?.totalPoints || 0;
 
   const getBadgeIcon = (type: string) => {
     switch (type) {
@@ -75,7 +86,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
           <Card className="text-center">
             <CardContent className="p-4">
               <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
-              <div className="text-2xl font-bold">{mockPoints}</div>
+              <div className="text-2xl font-bold">{totalPoints}</div>
               <div className="text-xs text-muted-foreground">Points</div>
             </CardContent>
           </Card>

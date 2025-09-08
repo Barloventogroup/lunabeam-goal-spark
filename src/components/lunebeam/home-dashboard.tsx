@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,7 @@ import {
   Star,
   Coins
 } from 'lucide-react';
+import { pointsService, type PointsSummary } from '@/services/pointsService';
 import { AIChat } from './ai-chat';
 import { FamilyCircleCard } from './family-circle-card';
 import { PersonalizedGreeting } from './personalized-greeting';
@@ -59,6 +60,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   } = useStore();
   
   const { user, signOut } = useAuth();
+  const [pointsSummary, setPointsSummary] = useState<PointsSummary | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -69,8 +71,18 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       loadBadges();
       loadEvidence();
       loadFamilyCircles();
+      loadPoints();
     }
   }, [user, loadProfile, loadGoals, loadCheckIns, loadBadges, loadEvidence, loadFamilyCircles]);
+
+  const loadPoints = async () => {
+    try {
+      const summary = await pointsService.getPointsSummary();
+      setPointsSummary(summary);
+    } catch (error) {
+      console.error('Error loading points:', error);
+    }
+  };
 
   // Add refresh data when tab becomes visible
   useEffect(() => {
@@ -101,19 +113,11 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     return earnedDate >= weekAgo;
   });
 
-  // Calculate stats for consistency with rewards screen
+  // Calculate stats
   const completedGoals = goals.filter(goal => goal.status === 'completed');
   const archivedGoals = goals.filter(goal => goal.status === 'archived');
   const allCompletedAndArchived = [...completedGoals, ...archivedGoals];
-  const mockPoints = 247; // Matching rewards screen
-
-  // Debug logging
-  console.log('HomeDashboard Debug:', {
-    badges: badges,
-    badgesLength: badges.length,
-    mockPoints: mockPoints,
-    allCompletedAndArchived: allCompletedAndArchived.length
-  });
+  const totalPoints = pointsSummary?.totalPoints || 0;
 
   // Calculate progress
   const getGoalProgress = () => {
@@ -326,7 +330,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           <Card className="text-center">
             <CardContent className="p-4">
               <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
-              <div className="text-2xl font-bold">{mockPoints || 247}</div>
+              <div className="text-2xl font-bold">{totalPoints}</div>
               <div className="text-xs text-muted-foreground">Points</div>
             </CardContent>
           </Card>
@@ -360,19 +364,15 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                 <h3 className="font-semibold text-foreground">Rewards</h3>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
-              {/* Debug: Force render to see if this section is being reached */}
-              <div style={{background: 'red', padding: '10px', color: 'white'}}>
-                DEBUG: badges={badges.length}, points={mockPoints}
-              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 rounded-lg bg-muted/30">
                   <Star className="h-6 w-6 mx-auto mb-2 text-blue-500" />
-                  <div className="text-2xl font-bold">{badges.length || 0}</div>
+                  <div className="text-2xl font-bold">{badges.length}</div>
                   <div className="text-xs text-muted-foreground">Badges Earned</div>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-muted/30">
                   <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
-                  <div className="text-2xl font-bold">{mockPoints || 247}</div>
+                  <div className="text-2xl font-bold">{totalPoints}</div>
                   <div className="text-xs text-muted-foreground">Points</div>
                 </div>
               </div>
