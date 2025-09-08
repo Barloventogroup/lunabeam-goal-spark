@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Smile } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
@@ -192,12 +196,39 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
           {/* Image/Emoji */}
           <div className="space-y-2">
             <Label htmlFor="image">Image/Emoji (Optional)</Label>
-            <Input
-              id="image"
-              value={formData.image}
-              onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-              placeholder="🍔 or image URL"
-            />
+            <div className="flex gap-2">
+              <Input
+                id="image"
+                value={formData.image}
+                onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
+                placeholder="🍔 or image URL"
+                className="flex-1"
+              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="px-3"
+                    type="button"
+                  >
+                    <Smile className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-card border border-input shadow-lg z-50" align="end">
+                  <Picker
+                    data={data}
+                    onEmojiSelect={(emoji: any) => {
+                      setFormData(prev => ({ ...prev, image: emoji.native }));
+                    }}
+                    theme="light"
+                    set="native"
+                    previewPosition="none"
+                    skinTonePosition="none"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
 
           {/* Active Toggle */}
