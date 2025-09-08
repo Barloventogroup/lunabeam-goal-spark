@@ -103,7 +103,7 @@ export const TabYou: React.FC = () => {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="rewards">Rewards</TabsTrigger>
             <TabsTrigger value="achievements">Achievements</TabsTrigger>
-            <TabsTrigger value="more">More</TabsTrigger>
+            <TabsTrigger value="more">Account</TabsTrigger>
           </TabsList>
           
           <TabsContent value="rewards" className="space-y-3 mt-4">
