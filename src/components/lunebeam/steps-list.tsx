@@ -34,6 +34,7 @@ import {
 import type { Goal, Step, StepStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { stepsService } from '@/services/goalsService';
+import { stepValidationService } from '@/services/stepValidationService';
 
 // Utility function to format dates
 const formatDate = (dateStr: string): string => {
@@ -173,6 +174,33 @@ export const StepsList: React.FC<StepsListProps> = ({
 
   const handleMarkComplete = async (stepId: string) => {
     try {
+      // Validate step completion first
+      const validation = await stepValidationService.validateStepCompletion(stepId, steps, goal);
+      
+      if (!validation.canComplete) {
+        const suggestions = validation.blockedBy 
+          ? stepValidationService.getNextStepSuggestions(validation.blockedBy)
+          : [];
+        
+        toast({
+          title: 'Hold on a moment! 🤔',
+          description: validation.friendlyMessage || validation.reason || 'This step cannot be completed yet.',
+          variant: 'destructive',
+        });
+        
+        // Show suggestions if available
+        if (suggestions.length > 0) {
+          setTimeout(() => {
+            toast({
+              title: 'Here\'s what to do next:',
+              description: suggestions.join(' • '),
+              duration: 8000,
+            });
+          }, 2000);
+        }
+        return;
+      }
+
       const newStatus: StepStatus = 'done';
       const isTemp = stepId.startsWith('step_');
 
@@ -192,19 +220,20 @@ export const StepsList: React.FC<StepsListProps> = ({
       const unlockedSteps = checkForUnlockedSteps(stepsAfter, stepId);
       if (unlockedSteps.length > 0) {
         toast({
-          title: "Nice! Next step is ready.",
-          description: `${unlockedSteps[0].title} is now available.`,
+          title: "Awesome! You unlocked the next step! 🎉",
+          description: `"${unlockedSteps[0].title}" is now ready for you.`,
         });
       } else {
         toast({
-          description: "Step done! You're making great progress 🎉"
+          title: "Step completed! 🌟",
+          description: "You're building great momentum. Keep it up!"
         });
       }
     } catch (error) {
       console.error('Failed to update step:', error);
       toast({
-        title: 'Something got stuck',
-        description: 'Mind trying that step update again?',
+        title: 'Oops, something hiccupped! 😅',
+        description: 'No worries - just try marking that step complete again.',
         variant: 'destructive'
       });
     }
@@ -258,7 +287,34 @@ export const StepsList: React.FC<StepsListProps> = ({
   };
 
   const isStepBlocked = (step: Step): boolean => {
-    // For database steps, we don't have complex precursor logic yet
+    // Check if step has incomplete dependencies
+    if (step.dependency_step_ids && step.dependency_step_ids.length > 0) {
+      const incompleteDependencies = step.dependency_step_ids
+        .map(depId => steps.find(s => s.id === depId))
+        .filter(depStep => depStep && depStep.status !== 'done');
+      
+      if (incompleteDependencies.length > 0) {
+        return true;
+      }
+    }
+
+    // Check week progression
+    const currentWeekMatch = step.title.match(/Week (\d+)/i);
+    if (currentWeekMatch) {
+      const currentWeek = parseInt(currentWeekMatch[1]);
+      const previousStepsIncomplete = steps.some(s => {
+        const weekMatch = s.title.match(/Week (\d+)/i);
+        if (!weekMatch) return false;
+        
+        const stepWeek = parseInt(weekMatch[1]);
+        return stepWeek < currentWeek && s.is_required && s.status !== 'done' && s.status !== 'skipped';
+      });
+      
+      if (previousStepsIncomplete) {
+        return true;
+      }
+    }
+
     return false;
   };
 
