@@ -207,6 +207,17 @@ export const StepsList: React.FC<StepsListProps> = ({
     }))
   });
 
+  // Debug week progression
+  const weekSteps = steps.filter(s => s.title.match(/Week (\d+)/i));
+  console.log('Week progression debug:', {
+    weekSteps: weekSteps.map(s => ({
+      title: s.title,
+      status: s.status,
+      isBlocked: isStepBlocked(s),
+      week: s.title.match(/Week (\d+)/i)?.[1]
+    }))
+  });
+
   const handleMarkComplete = async (stepId: string) => {
     if (awaitingStepUpdate === stepId) return;
     
@@ -297,20 +308,21 @@ export const StepsList: React.FC<StepsListProps> = ({
   };
 
   const isStepBlocked = (step: Step): boolean => {
+    // Check explicit dependencies first
     if (step.dependency_step_ids && step.dependency_step_ids.length > 0) {
       return step.dependency_step_ids.some(depId => {
         const depStep = steps.find(s => s.id === depId);
-        return depStep && depStep.status !== 'done';
+        return depStep && depStep.status !== 'done' && depStep.status !== 'skipped';
       });
     }
 
+    // Check week-based progression
     const weekMatch = step.title.match(/Week (\d+)/i);
-    if (weekMatch && step.is_required) {
+    if (weekMatch) {
       const currentWeek = parseInt(weekMatch[1]);
 
-      // Check previous weeks
+      // For Week 2+, check if previous weeks are complete
       if (currentWeek > 1) {
-        // Find all steps from previous weeks that are incomplete
         const prevWeekSteps = steps.filter(s => {
           const prevWeekMatch = s.title.match(/Week (\d+)/i);
           if (!prevWeekMatch) return false;
@@ -332,7 +344,6 @@ export const StepsList: React.FC<StepsListProps> = ({
       if (currentSessionMatch) {
         const currentSession = parseInt(currentSessionMatch[1]);
         
-        // Find previous sessions in the same week that are incomplete
         const currentWeekSteps = steps.filter(s => {
           const weekMatch = s.title.match(/Week (\d+)/i);
           const sessionMatch = s.title.match(/Session (\d+)/i);
