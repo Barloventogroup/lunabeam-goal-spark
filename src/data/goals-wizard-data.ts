@@ -113,7 +113,7 @@ export interface Category {
 export const GOALS_WIZARD_DATA: Category[] = [
   {
     id: "education",
-    title: "Education", 
+    title: "Education (High School / Academic Readiness)", 
     emoji: "📘",
     goals: [
       {
@@ -670,7 +670,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
   },
   {
     id: "health",
-    title: "Health",
+    title: "Health & Well-Being",
     emoji: "🌱",
     goals: [
       {
@@ -1003,7 +1003,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
   },
   {
     id: "postsecondary",
-    title: "Postsecondary",
+    title: "Postsecondary / Learning (After High School)",
     emoji: "🎓",
     goals: [
       {

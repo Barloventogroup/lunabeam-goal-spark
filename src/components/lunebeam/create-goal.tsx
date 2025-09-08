@@ -88,7 +88,7 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
     { value: 'school', label: 'School' },
     { value: 'work', label: 'Work' },
     { value: 'life', label: 'Life' },
-    { value: 'health', label: 'Health' },
+    { value: 'health', label: 'Health & Well-Being' },
     { value: 'other', label: 'Other' }
   ];
 

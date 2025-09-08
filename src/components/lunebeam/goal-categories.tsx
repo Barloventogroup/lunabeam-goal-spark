@@ -24,7 +24,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
   const categories = [
     {
       id: 'education',
-      title: '🎓 Education',
+      title: '🎓 Education (High School / Academic Readiness)',
       description: 'Learning new things and growing your brain power - no matter how small the step',
       icon: GraduationCap,
       color: 'bg-blue-500/10 text-blue-600 border-blue-200',
@@ -40,7 +40,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     },
     {
       id: 'health',
-      title: '💪 Health',
+      title: '💪 Health & Well-Being',
       description: 'Taking care of your body and mind - the good stuff that makes you feel awesome',
       icon: Heart,
       color: 'bg-red-500/10 text-red-600 border-red-200',
@@ -56,7 +56,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     },
     {
       id: 'postsecondary',
-      title: '🎓 Postsecondary',
+      title: '🎓 Postsecondary / Learning (After High School)',
       description: "Checking out what's next after high school - colleges, trades, certificates, whatever interests you",
       icon: BookOpen,
       color: 'bg-indigo-500/10 text-indigo-600 border-indigo-200',

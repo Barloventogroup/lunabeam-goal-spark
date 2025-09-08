@@ -61,13 +61,13 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
   const { toast } = useToast();
 
   const categoryNames = {
-    health: 'Health',
-    education: 'Education',
+    health: 'Health & Well-Being',
+    education: 'Education (High School / Academic Readiness)',
     employment: 'Employment', 
     independent_living: 'Independent Living',
     social_skills: 'Social Skills',
     housing: 'Housing',
-    postsecondary: 'Postsecondary'
+    postsecondary: 'Postsecondary / Learning (After High School)'
   };
 
   useEffect(() => {
