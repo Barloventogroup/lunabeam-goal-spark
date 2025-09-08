@@ -14,12 +14,21 @@ serve(async (req) => {
   }
 
   try {
-    const { step, goal, userMessage, conversationHistory } = await req.json();
+    console.log('Raw request received');
+    const requestBody = await req.json();
+    console.log('Request body parsed:', JSON.stringify(requestBody, null, 2));
+    
+    const { step, goal, userMessage, conversationHistory } = requestBody;
+    
+    if (!step || !goal || !userMessage) {
+      console.error('Missing required fields:', { step: !!step, goal: !!goal, userMessage: !!userMessage });
+      throw new Error('Missing required fields: step, goal, or userMessage');
+    }
     
     console.log('Step assistance request:', { 
-      stepId: step.id, 
-      goalId: goal.id, 
-      userMessage: userMessage.substring(0, 100) 
+      stepId: step?.id, 
+      goalId: goal?.id, 
+      userMessage: userMessage?.substring(0, 100) 
     });
 
     // Count assistant responses in conversation history
@@ -153,9 +162,14 @@ Be supportive but keep it brief - they can always create more steps for detailed
 
   } catch (error) {
     console.error('Error in step-assistance function:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error message:', error.message);
+    console.error('Error name:', error.name);
+    
     return new Response(JSON.stringify({ 
       error: 'An error occurred while processing your request',
-      details: error.message 
+      details: error.message,
+      errorName: error.name
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
