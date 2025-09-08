@@ -73,6 +73,23 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
     setState({ step: 1 });
   }, []);
 
+  const sanitizeGoalDescription = (text: string): string => {
+    if (!text) return '';
+    let out = text.trim();
+    
+    // Fix frequency patterns
+    out = out.replace(/(\d+)x\/week/gi, '$1 times per week');
+    
+    // Fix double parentheses in support sections
+    out = out.replace(/\.\s*\(with\s+([^,]+),\s*([^)]+)\s*\(([^)]+)\)\)/gi, '. With $1, $2 ($3)');
+    out = out.replace(/\s*\(with\s+([^)]+)\)/gi, ' with $1');
+    
+    // Clean up extra spaces
+    out = out.replace(/\s{2,}/g, ' ');
+    
+    return out;
+  };
+
 
   const buildSmartGoal = () => {
     // Build a progressive SMART sentence that updates live
@@ -230,9 +247,12 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       const due = state.dueDate;
 
       // Create the goal
+      const rawDescription = buildSmartGoal();
+      const sanitizedDescription = sanitizeGoalDescription(rawDescription);
+      
       const goal = await goalsService.createGoal({
         title: state.goal.title,
-        description: buildSmartGoal(),
+        description: sanitizedDescription,
         domain: mapCategoryToDomain(state.category.title),
         priority: 'medium',
         start_date: formatDate(startDate),

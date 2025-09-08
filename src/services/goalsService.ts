@@ -2,6 +2,23 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Goal, Step, GoalDomain, GoalPriority, GoalStatus, StepStatus } from '@/types';
 import { pointsService } from './pointsService';
 
+const sanitizeDescription = (text?: string): string => {
+  if (!text) return '';
+  let out = text.trim();
+  
+  // Fix frequency patterns
+  out = out.replace(/(\d+)x\/week/gi, '$1 times per week');
+  
+  // Fix double parentheses in support sections
+  out = out.replace(/\.\s*\(with\s+([^,]+),\s*([^)]+)\s*\(([^)]+)\)\)/gi, '. With $1, $2 ($3)');
+  out = out.replace(/\s*\(with\s+([^)]+)\)/gi, ' with $1');
+  
+  // Clean up extra spaces
+  out = out.replace(/\s{2,}/g, ' ');
+  
+  return out;
+};
+
 // Goals API
 export const goalsService = {
   // Get goals with optional filters
@@ -110,6 +127,7 @@ export const goalsService = {
       .from('goals')
       .insert({
         ...goalData,
+        description: sanitizeDescription(goalData.description),
         owner_id: user.data.user.id,
         priority: goalData.priority || 'medium',
         // Points system fields
@@ -167,7 +185,10 @@ export const goalsService = {
   async updateGoal(id: string, updates: Partial<Goal>): Promise<Goal> {
     const { data, error } = await supabase
       .from('goals')
-      .update(updates)
+      .update({
+        ...updates,
+        description: updates.description ? sanitizeDescription(updates.description) : updates.description,
+      })
       .eq('id', id)
       .select()
       .single();
