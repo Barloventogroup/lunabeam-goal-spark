@@ -173,11 +173,17 @@ export const StepsList: React.FC<StepsListProps> = ({
   }, [] as Array<{ mainStep: Step; subSteps: Step[] }>);
 
   const handleMarkComplete = async (stepId: string) => {
+    console.log('handleMarkComplete called for stepId:', stepId);
+    console.log('Available steps:', steps.map(s => ({ id: s.id, title: s.title, status: s.status })));
+    
     try {
       // Validate step completion first
+      console.log('Running step validation...');
       const validation = await stepValidationService.validateStepCompletion(stepId, steps, goal);
+      console.log('Validation result:', validation);
       
       if (!validation.canComplete) {
+        console.log('Step blocked:', validation.reason, validation.friendlyMessage);
         const suggestions = validation.blockedBy 
           ? stepValidationService.getNextStepSuggestions(validation.blockedBy)
           : [];
@@ -201,14 +207,17 @@ export const StepsList: React.FC<StepsListProps> = ({
         return;
       }
 
+      console.log('Validation passed, updating step...');
       const newStatus: StepStatus = 'done';
       const isTemp = stepId.startsWith('step_');
 
       let stepsAfter: Step[] = steps;
       if (isTemp) {
+        console.log('Updating temp step locally');
         stepsAfter = steps.map(s => s.id === stepId ? { ...s, status: newStatus } as Step : s);
         onStepsUpdate(stepsAfter, goal);
       } else {
+        console.log('Updating step via API');
         const { step: updatedStep, goal: updatedGoal } = await stepsService.updateStep(stepId, {
           status: newStatus
         });
@@ -230,10 +239,26 @@ export const StepsList: React.FC<StepsListProps> = ({
         });
       }
     } catch (error) {
-      console.error('Failed to update step:', error);
+      console.error('Failed to update step - Full error details:', error);
+      console.error('Error name:', error?.name);
+      console.error('Error message:', error?.message);
+      console.error('Error stack:', error?.stack);
+      
+      // Show more specific error based on what we know
+      let errorTitle = 'Oops, something hiccupped! 😅';
+      let errorDescription = 'No worries - just try marking that step complete again.';
+      
+      if (error?.message?.includes('validation')) {
+        errorTitle = 'Step validation failed';
+        errorDescription = 'There might be an issue with step dependencies. Let me know if this keeps happening!';
+      } else if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
+        errorTitle = 'Connection hiccup';
+        errorDescription = 'Check your internet connection and try again in a moment.';
+      }
+      
       toast({
-        title: 'Oops, something hiccupped! 😅',
-        description: 'No worries - just try marking that step complete again.',
+        title: errorTitle,
+        description: errorDescription,
         variant: 'destructive'
       });
     }
