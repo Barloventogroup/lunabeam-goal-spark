@@ -95,7 +95,11 @@ export const TabYou: React.FC = () => {
         </Card>
 
         {/* Tabs for Rewards, Achievements, and More */}
-        <Tabs defaultValue="rewards" className="w-full">
+        <Tabs defaultValue="rewards" className="w-full" onValueChange={(value) => {
+          if (value === 'achievements') {
+            setCurrentView('achievements');
+          }
+        }}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="rewards">Rewards</TabsTrigger>
             <TabsTrigger value="achievements">Achievements</TabsTrigger>
@@ -169,20 +173,10 @@ export const TabYou: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="achievements" className="mt-4">
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('achievements')}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Trophy className="h-5 w-5 text-gold-500" />
-                    <div>
-                      <div className="font-medium">View Achievements</div>
-                      <div className="text-sm text-muted-foreground">See all your completed goals and archive them</div>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </CardContent>
-            </Card>
+            {/* This tab content is handled by onValueChange - users are directly navigated to achievements view */}
+            <div className="text-center py-8">
+              <p className="text-sm text-muted-foreground">Loading achievements...</p>
+            </div>
           </TabsContent>
           
           <TabsContent value="more" className="space-y-3 mt-4">
