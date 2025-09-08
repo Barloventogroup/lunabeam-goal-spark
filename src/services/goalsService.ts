@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Goal, Step, GoalDomain, GoalPriority, GoalStatus, StepStatus } from '@/types';
+import { pointsService } from './pointsService';
 
 // Goals API
 export const goalsService = {
@@ -52,7 +53,7 @@ export const goalsService = {
     return data as Goal;
   },
 
-  // Create goal
+  // Create goal with TPP calculation
   async createGoal(goalData: {
     title: string;
     description?: string;
@@ -60,16 +61,101 @@ export const goalsService = {
     priority?: GoalPriority;
     start_date?: string;
     due_date?: string;
+    frequency_per_week?: number;
+    duration_weeks?: number;
+    step_type?: string;
+    planned_milestones_count?: number;
   }): Promise<Goal> {
     const user = await supabase.auth.getUser();
     if (!user.data.user) throw new Error('User not authenticated');
+
+    // Parse goal for TPP calculation if not provided
+    const parsedGoal = pointsService.parseGoalForTPP(
+      goalData.title, 
+      goalData.description || ''
+    );
+
+    const frequencyPerWeek = goalData.frequency_per_week || parsedGoal.frequencyPerWeek;
+    const durationWeeks = goalData.duration_weeks || parsedGoal.durationWeeks;
+    const stepType = goalData.step_type || parsedGoal.stepType;
+    const plannedMilestonesCount = goalData.planned_milestones_count || parsedGoal.milestonesCount;
+
+    // Calculate duration weeks from dates if not provided
+    let calculatedDurationWeeks = durationWeeks;
+    if (goalData.start_date && goalData.due_date && !goalData.duration_weeks) {
+      const startDate = new Date(goalData.start_date);
+      const endDate = new Date(goalData.due_date);
+      const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+      calculatedDurationWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+    }
+
+    // Map domain to category for TPP calculation
+    const category = pointsService.mapDomainToCategory(goalData.domain || 'general');
+    
+    // Calculate TPP
+    const totalPossiblePoints = await pointsService.calculateTotalPossiblePoints(
+      category,
+      frequencyPerWeek,
+      calculatedDurationWeeks,
+      plannedMilestonesCount,
+      0, // scaffold count - will be updated when substeps are added
+      stepType
+    );
+
+    const plannedStepsCount = frequencyPerWeek * calculatedDurationWeeks;
+    const basePointsPerStep = pointsService.calculateStepPoints(goalData.domain || 'general', stepType);
+    const goalCompletionBonus = pointsService.getGoalCompletionBonus(category);
 
     const { data, error } = await supabase
       .from('goals')
       .insert({
         ...goalData,
         owner_id: user.data.user.id,
+        priority: goalData.priority || 'medium',
+        // Points system fields
+        frequency_per_week: frequencyPerWeek,
+        duration_weeks: calculatedDurationWeeks,
+        planned_steps_count: plannedStepsCount,
+        planned_milestones_count: plannedMilestonesCount,
+        planned_scaffold_count: 0,
+        base_points_per_planned_step: basePointsPerStep,
+        base_points_per_milestone: stepType === 'milestone' ? basePointsPerStep : 0,
+        substep_points: 2,
+        goal_completion_bonus: goalCompletionBonus,
+        total_possible_points: totalPossiblePoints,
+        earned_points: 0
       })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as Goal;
+  },
+
+  // Update goal TPP when scaffolding changes
+  async updateGoalTPP(goalId: string, scaffoldDelta: number = 0): Promise<Goal> {
+    const goal = await this.getGoal(goalId);
+    if (!goal) throw new Error('Goal not found');
+
+    const newScaffoldCount = (goal.planned_scaffold_count || 0) + scaffoldDelta;
+    const category = pointsService.mapDomainToCategory(goal.domain || 'general');
+    
+    const newTPP = await pointsService.calculateTotalPossiblePoints(
+      category,
+      goal.frequency_per_week || 1,
+      goal.duration_weeks || 4,
+      goal.planned_milestones_count || 0,
+      newScaffoldCount,
+      'habit' // Default step type
+    );
+
+    const { data, error } = await supabase
+      .from('goals')
+      .update({
+        planned_scaffold_count: newScaffoldCount,
+        total_possible_points: newTPP
+      })
+      .eq('id', goalId)
       .select()
       .single();
 
@@ -115,7 +201,7 @@ export const stepsService = {
     return (data || []) as Step[];
   },
 
-  // Create step (with auto-scheduling)
+  // Create step (with auto-scheduling and step_type support)
   async createStep(goalId: string, stepData: {
     title: string;
     is_required?: boolean;
@@ -123,6 +209,9 @@ export const stepsService = {
     points?: number;
     notes?: string;
     estimated_effort_min?: number;
+    step_type?: string;
+    is_planned?: boolean;
+    planned_week_index?: number;
   }): Promise<{ step: Step; goal: Goal }> {
     // Get the next order index
     const { count } = await supabase
@@ -136,6 +225,8 @@ export const stepsService = {
         ...stepData,
         goal_id: goalId,
         order_index: count || 0,
+        step_type: stepData.step_type || 'habit',
+        is_planned: stepData.is_planned !== undefined ? stepData.is_planned : true,
       })
       .select()
       .single();

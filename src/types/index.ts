@@ -69,6 +69,19 @@ export interface Goal {
   created_at: string;
   updated_at: string;
   progress?: GoalProgress;
+  
+  // New fields for points system
+  frequency_per_week?: number;
+  duration_weeks?: number;
+  planned_steps_count?: number;
+  planned_milestones_count?: number;
+  planned_scaffold_count?: number;
+  base_points_per_planned_step?: number;
+  base_points_per_milestone?: number;
+  substep_points?: number;
+  goal_completion_bonus?: number;
+  total_possible_points?: number;
+  earned_points?: number;
 }
 
 export interface StepFeedback {
@@ -97,19 +110,56 @@ export interface Step {
   status: StepStatus;
   type: StepType;
   is_required: boolean;
-  hidden: boolean;
-  blocked: boolean;
-  isBlocking: boolean;
   points?: number;
   dependency_step_ids: string[];
-  precursors: string[];
-  dependencies: string[];
-  supportingLinks: string[];
-  aiGenerated: boolean;
-  userFeedback: StepFeedback;
-  metadata: StepMetadata;
   created_at: string;
   updated_at: string;
+  
+  // New fields for points system
+  step_type?: string;
+  is_planned?: boolean;
+  planned_week_index?: number;
+  points_awarded?: number;
+  
+  // Legacy fields (kept for backwards compatibility)
+  hidden?: boolean;
+  blocked?: boolean;
+  isBlocking?: boolean;
+  precursors?: string[];
+  dependencies?: string[];
+  supportingLinks?: string[];
+  aiGenerated?: boolean;
+  userFeedback?: StepFeedback;
+  metadata?: StepMetadata;
+  
+  // UI state (not persisted)
+  canComplete?: boolean;
+  showNotes?: boolean;
+  showOptions?: boolean;
+}
+
+export interface Substep {
+  id: string;
+  step_id: string;
+  title: string;
+  description?: string;
+  is_planned: boolean;
+  completed_at?: string;
+  points_awarded: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PointsLogEntry {
+  id: string;
+  user_id: string;
+  goal_id: string;
+  step_id?: string;
+  substep_id?: string;
+  category: string;
+  step_type: string;
+  points_awarded: number;
+  awarded_at: string;
 }
 
 // Legacy types (kept for backwards compatibility during transition)

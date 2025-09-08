@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { Substep, PointsLogEntry } from '@/types';
 
 export interface UserPoints {
   id: string;
@@ -33,7 +34,71 @@ const CATEGORY_CONFIG = {
   general: { displayName: 'General', emoji: '⭐' }
 };
 
+// Step type mappings for each category
+const STEP_TYPE_CONFIGS = {
+  education: {
+    habit: 5, action: 5, milestone: 20, scaffolding: 2,
+    goal_completion_bonus: 10
+  },
+  independent_living: {
+    habit: 5, self_check: 5, practice: 10, skill: 10, safety: 10, money: 10,
+    milestone: 20, independent: 20, scaffolding: 2,
+    goal_completion_bonus: 15
+  },
+  postsecondary: {
+    exploration: 5, preparation: 15, milestone: 25, high_stakes: 25,
+    scaffolding: 2, goal_completion_bonus: 20
+  },
+  recreation_fun: {
+    solo: 5, group: 10, milestone: 20, leadership: 20, streak: 20,
+    scaffolding: 2, goal_completion_bonus: 10
+  },
+  social_skills: {
+    basic: 5, applied: 15, milestone: 25, leadership: 25, advanced: 25,
+    scaffolding: 2, goal_completion_bonus: 20
+  },
+  employment: {
+    exploration: 5, prep: 5, experience: 15, milestone: 30, high_stakes: 30,
+    scaffolding: 2, goal_completion_bonus: 25
+  },
+  self_advocacy: {
+    basic: 5, applied: 15, milestone: 30, leadership: 30,
+    scaffolding: 2, goal_completion_bonus: 20
+  },
+  health: {
+    habit: 5, log: 5, supported: 10, milestone: 20, streak: 20,
+    scaffolding: 2, goal_completion_bonus: 15
+  },
+  general: {
+    habit: 5, action: 5, milestone: 10, scaffolding: 2,
+    goal_completion_bonus: 10
+  }
+};
+
 export const pointsService = {
+  // Calculate Total Possible Points for a goal
+  async calculateTotalPossiblePoints(
+    category: string,
+    frequencyPerWeek: number,
+    durationWeeks: number,
+    plannedMilestonesCount: number = 0,
+    plannedScaffoldCount: number = 0,
+    stepType: string = 'habit'
+  ): Promise<number> {
+    const { data, error } = await supabase
+      .rpc('calculate_total_possible_points', {
+        p_category: category,
+        p_frequency_per_week: frequencyPerWeek,
+        p_duration_weeks: durationWeeks,
+        p_planned_milestones_count: plannedMilestonesCount,
+        p_planned_scaffold_count: plannedScaffoldCount,
+        p_step_type: stepType
+      });
+
+    if (error) throw error;
+    return data || 0;
+  },
+
   // Get all points for the current user
   async getUserPoints(): Promise<UserPoints[]> {
     const { data, error } = await supabase
@@ -79,98 +144,129 @@ export const pointsService = {
     return data?.total_points || 0;
   },
 
-  // Calculate what points a step would earn (for preview)
-  calculateStepPoints(goalDomain: string, stepTitle: string, stepNotes: string = ''): number {
-    const category = this.mapDomainToCategory(goalDomain);
-    const titleLower = stepTitle.toLowerCase();
-    const notesLower = stepNotes.toLowerCase();
-    const combinedText = `${titleLower} ${notesLower}`;
+  // Get points log for a user
+  async getPointsLog(userId?: string): Promise<PointsLogEntry[]> {
+    const query = supabase
+      .from('points_log')
+      .select('*')
+      .order('awarded_at', { ascending: false });
 
-    let points = 5; // Default points
-
-    switch (category) {
-      case 'independent_living':
-        if (/(?:daily|chore|hygiene|clean|brush|shower|bath|wash)/.test(combinedText)) {
-          points = 5;
-        } else if (/(?:safety|cook|money|budget|finance|bank|shop|grocery)/.test(combinedText)) {
-          points = 10;
-        } else if (/(?:travel|alone|independent|weekly budget|milestone|major)/.test(combinedText)) {
-          points = 20;
-        }
-        break;
-
-      case 'education':
-        if (/(?:homework|study|class|participation|complete|assignment)/.test(combinedText)) {
-          points = 5;
-        } else if (/(?:project|test prep|group work|finish|research)/.test(combinedText)) {
-          points = 10;
-        } else if (/(?:exam|pass|term|present|milestone|graduate)/.test(combinedText)) {
-          points = 20;
-        }
-        break;
-
-      case 'postsecondary':
-        if (/(?:study|homework|practice|quiz|session)/.test(combinedText)) {
-          points = 5;
-        } else if (/(?:campus|visit|group project|test prep)/.test(combinedText)) {
-          points = 15;
-        } else if (/(?:application|submit|certificate|earn)/.test(combinedText)) {
-          points = 25;
-        }
-        break;
-
-      case 'recreation_fun':
-        if (/(?:solo|hobby|art|game|draw|paint|music)/.test(combinedText)) {
-          points = 5;
-        } else if (/(?:group|friend|invite|social|recreation)/.test(combinedText)) {
-          points = 10;
-        } else if (/(?:lead|leading|organize|4-week|streak|event)/.test(combinedText)) {
-          points = 20;
-        }
-        break;
-
-      case 'social_skills':
-        if (/(?:greet|introduction|role-play|hello|short)/.test(combinedText)) {
-          points = 5;
-        } else if (/(?:group conversation|join|activity|participate)/.test(combinedText)) {
-          points = 15;
-        } else if (/(?:lead|leading|presentation|present|10.*interaction)/.test(combinedText)) {
-          points = 25;
-        }
-        break;
-
-      case 'employment':
-        if (/(?:career|interest|assessment|resume|draft)/.test(combinedText)) {
-          points = 5;
-        } else if (/(?:job shadow|mock interview|volunteer)/.test(combinedText)) {
-          points = 15;
-        } else if (/(?:job application|interview|workday|first day)/.test(combinedText)) {
-          points = 30;
-        }
-        break;
-
-      case 'self_advocacy':
-        if (/(?:ask|help|choice|decide|making choice)/.test(combinedText)) {
-          points = 5;
-        } else if (/(?:meeting|planning|participate|disclosure|practice)/.test(combinedText)) {
-          points = 15;
-        } else if (/(?:lead meeting|advocacy|independent|community)/.test(combinedText)) {
-          points = 30;
-        }
-        break;
-
-      case 'health':
-        if (/(?:log|exercise|meal|sleep|mindfulness|track)/.test(combinedText)) {
-          points = 5;
-        } else if (/(?:therapy|wellness|group|counseling|attend)/.test(combinedText)) {
-          points = 10;
-        } else if (/(?:30-day|streak|medical plan|maintain)/.test(combinedText)) {
-          points = 20;
-        }
-        break;
+    if (userId) {
+      query.eq('user_id', userId);
     }
 
-    return points;
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Substeps management
+  async getSubsteps(stepId: string): Promise<Substep[]> {
+    const { data, error } = await supabase
+      .from('substeps')
+      .select('*')
+      .eq('step_id', stepId)
+      .order('created_at');
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async createSubstep(stepId: string, title: string, description?: string, isPlanned: boolean = false): Promise<Substep> {
+    const { data, error } = await supabase
+      .from('substeps')
+      .insert({
+        step_id: stepId,
+        title,
+        description,
+        is_planned: isPlanned
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async completeSubstep(substepId: string): Promise<Substep> {
+    const { data, error } = await supabase
+      .from('substeps')
+      .update({ 
+        completed_at: new Date().toISOString(),
+        points_awarded: 2 // Scaffolding substeps always worth 2 points
+      })
+      .eq('id', substepId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Award points and log (done via trigger)
+    return data;
+  },
+
+  async deleteSubstep(substepId: string): Promise<void> {
+    const { error } = await supabase
+      .from('substeps')
+      .delete()
+      .eq('id', substepId);
+
+    if (error) throw error;
+  },
+
+  // Calculate what points a step would earn (for preview)
+  calculateStepPoints(goalDomain: string, stepType: string = 'habit', stepTitle: string = '', stepNotes: string = ''): number {
+    const category = this.mapDomainToCategory(goalDomain);
+    const config = STEP_TYPE_CONFIGS[category] || STEP_TYPE_CONFIGS.general;
+    
+    // Try to get specific step type points, fall back to habit/action
+    return config[stepType] || config.habit || config.action || 5;
+  },
+
+  // Get goal completion bonus for a category
+  getGoalCompletionBonus(category: string): number {
+    const config = STEP_TYPE_CONFIGS[category] || STEP_TYPE_CONFIGS.general;
+    return config.goal_completion_bonus || 10;
+  },
+
+  // Parse goal parameters for TPP calculation
+  parseGoalForTPP(goalTitle: string, goalDescription: string = ''): {
+    frequencyPerWeek: number;
+    durationWeeks: number;
+    stepType: string;
+    milestonesCount: number;
+  } {
+    const text = (goalTitle + ' ' + goalDescription).toLowerCase();
+    
+    // Extract frequency (times per week)
+    let frequencyPerWeek = 1; // default
+    const freqMatch = text.match(/(\d+)\s*(?:x|times?)\s*(?:per\s+)?week/i);
+    if (freqMatch) {
+      frequencyPerWeek = parseInt(freqMatch[1], 10);
+    }
+
+    // Extract duration (in weeks)
+    let durationWeeks = 4; // default
+    const weekMatch = text.match(/(?:for\s+)?(\d+)\s*weeks?/i);
+    if (weekMatch) {
+      durationWeeks = parseInt(weekMatch[1], 10);
+    }
+
+    // Determine primary step type based on content
+    let stepType = 'habit';
+    if (text.includes('application') || text.includes('interview') || text.includes('submit')) {
+      stepType = 'milestone';
+    } else if (text.includes('practice') || text.includes('prep') || text.includes('visit')) {
+      stepType = 'preparation';
+    }
+
+    // Count milestones
+    let milestonesCount = 0;
+    if (text.includes('application') || text.includes('certificate') || text.includes('graduate')) {
+      milestonesCount = 1;
+    }
+
+    return { frequencyPerWeek, durationWeeks, stepType, milestonesCount };
   },
 
   // Map goal domain to category

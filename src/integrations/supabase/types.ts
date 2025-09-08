@@ -287,52 +287,121 @@ export type Database = {
       }
       goals: {
         Row: {
+          base_points_per_milestone: number | null
+          base_points_per_planned_step: number | null
           created_at: string
           description: string | null
           domain: string | null
           due_date: string | null
+          duration_weeks: number | null
+          earned_points: number | null
+          frequency_per_week: number | null
+          goal_completion_bonus: number | null
           id: string
           owner_id: string
+          planned_milestones_count: number | null
+          planned_scaffold_count: number | null
+          planned_steps_count: number | null
           priority: string
           progress_pct: number
           start_date: string | null
           status: string
           streak_count: number | null
+          substep_points: number | null
           tags: string[] | null
           title: string
+          total_possible_points: number | null
           updated_at: string
         }
         Insert: {
+          base_points_per_milestone?: number | null
+          base_points_per_planned_step?: number | null
           created_at?: string
           description?: string | null
           domain?: string | null
           due_date?: string | null
+          duration_weeks?: number | null
+          earned_points?: number | null
+          frequency_per_week?: number | null
+          goal_completion_bonus?: number | null
           id?: string
           owner_id: string
+          planned_milestones_count?: number | null
+          planned_scaffold_count?: number | null
+          planned_steps_count?: number | null
           priority?: string
           progress_pct?: number
           start_date?: string | null
           status?: string
           streak_count?: number | null
+          substep_points?: number | null
           tags?: string[] | null
           title: string
+          total_possible_points?: number | null
           updated_at?: string
         }
         Update: {
+          base_points_per_milestone?: number | null
+          base_points_per_planned_step?: number | null
           created_at?: string
           description?: string | null
           domain?: string | null
           due_date?: string | null
+          duration_weeks?: number | null
+          earned_points?: number | null
+          frequency_per_week?: number | null
+          goal_completion_bonus?: number | null
           id?: string
           owner_id?: string
+          planned_milestones_count?: number | null
+          planned_scaffold_count?: number | null
+          planned_steps_count?: number | null
           priority?: string
           progress_pct?: number
           start_date?: string | null
           status?: string
           streak_count?: number | null
+          substep_points?: number | null
           tags?: string[] | null
           title?: string
+          total_possible_points?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      points_log: {
+        Row: {
+          awarded_at: string
+          category: string
+          goal_id: string
+          id: string
+          points_awarded: number
+          step_id: string | null
+          step_type: string
+          substep_id: string | null
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          category: string
+          goal_id: string
+          id?: string
+          points_awarded: number
+          step_id?: string | null
+          step_type: string
+          substep_id?: string | null
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          category?: string
+          goal_id?: string
+          id?: string
+          points_awarded?: number
+          step_id?: string | null
+          step_type?: string
+          substep_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -399,11 +468,15 @@ export type Database = {
           explainer: string | null
           goal_id: string
           id: string
+          is_planned: boolean | null
           is_required: boolean
           notes: string | null
           order_index: number
+          planned_week_index: number | null
           points: number | null
+          points_awarded: number | null
           status: string
+          step_type: string | null
           title: string
           updated_at: string
         }
@@ -415,11 +488,15 @@ export type Database = {
           explainer?: string | null
           goal_id: string
           id?: string
+          is_planned?: boolean | null
           is_required?: boolean
           notes?: string | null
           order_index?: number
+          planned_week_index?: number | null
           points?: number | null
+          points_awarded?: number | null
           status?: string
+          step_type?: string | null
           title: string
           updated_at?: string
         }
@@ -431,11 +508,15 @@ export type Database = {
           explainer?: string | null
           goal_id?: string
           id?: string
+          is_planned?: boolean | null
           is_required?: boolean
           notes?: string | null
           order_index?: number
+          planned_week_index?: number | null
           points?: number | null
+          points_awarded?: number | null
           status?: string
+          step_type?: string | null
           title?: string
           updated_at?: string
         }
@@ -448,6 +529,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      substeps: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_planned: boolean | null
+          points_awarded: number | null
+          step_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_planned?: boolean | null
+          points_awarded?: number | null
+          step_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_planned?: boolean | null
+          points_awarded?: number | null
+          step_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       supporter_consents: {
         Row: {
@@ -664,6 +781,26 @@ export type Database = {
         Args: { goal_domain?: string; step_notes?: string; step_title: string }
         Returns: number
       }
+      calculate_step_points_v2: {
+        Args: {
+          category: string
+          step_notes?: string
+          step_title?: string
+          step_type?: string
+        }
+        Returns: number
+      }
+      calculate_total_possible_points: {
+        Args: {
+          p_category: string
+          p_duration_weeks: number
+          p_frequency_per_week: number
+          p_planned_milestones_count?: number
+          p_planned_scaffold_count?: number
+          p_step_type?: string
+        }
+        Returns: number
+      }
       check_user_permission: {
         Args: { _action: string; _goal_id?: string; _individual_id: string }
         Returns: boolean
@@ -671,6 +808,10 @@ export type Database = {
       claim_account: {
         Args: { _claim_token: string; _passcode: string }
         Returns: Json
+      }
+      get_goal_completion_bonus: {
+        Args: { category: string }
+        Returns: number
       }
       get_user_member_circles: {
         Args: Record<PropertyKey, never>
