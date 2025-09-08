@@ -144,7 +144,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border border-input shadow-lg z-50">
                 {Object.entries(REWARD_CATEGORIES).map(([key, config]) => (
                   <SelectItem key={key} value={key}>
                     {config.label} ({getSuggestedRange(key as any)})
