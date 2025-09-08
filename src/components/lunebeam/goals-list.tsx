@@ -74,6 +74,13 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   };
 
   useEffect(() => {
+    // One-time sanitizer for existing descriptions
+    const flag = localStorage.getItem('desc_sanitized_v1');
+    if (!flag) {
+      goalsService.sanitizeExistingGoalDescriptions().finally(() => {
+        localStorage.setItem('desc_sanitized_v1', '1');
+      });
+    }
     loadGoals();
   }, [activeTab, refreshTrigger]); // Reload when tab changes or refresh is triggered
 

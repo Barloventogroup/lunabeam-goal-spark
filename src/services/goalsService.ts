@@ -8,13 +8,19 @@ const sanitizeDescription = (text?: string): string => {
   
   // Fix frequency patterns
   out = out.replace(/(\d+)x\/week/gi, '$1 times per week');
+  out = out.replace(/Daily for (\d+)x\/week/gi, '$1 times per week');
+  out = out.replace(/Daily for (\d+) times per week/gi, '$1 times per week');
   
-  // Fix double parentheses in support sections
-  out = out.replace(/\.\s*\(with\s+([^,]+),\s*([^)]+)\s*\(([^)]+)\)\)/gi, '. With $1, $2 ($3)');
-  out = out.replace(/\s*\(with\s+([^)]+)\)/gi, ' with $1');
+  // Fix double parentheses and support sections
+  out = out.replace(/\(\s*\(([^)]+)\)\s*\)/g, '($1)');
+  out = out.replace(/\.?\s*\(with\s+([^)]+)\)\s*$/i, '. with $1');
+  out = out.replace(/Templates? \(letter,\s*essay\)/gi, 'templates for letters and essays');
+  out = out.replace(/with\s+Reflection log/gi, 'with a reflection log');
+  out = out.replace(/finish assignment/gi, 'finish the assignment');
   
-  // Clean up extra spaces
-  out = out.replace(/\s{2,}/g, ' ');
+  // Cleanup spacing and periods
+  out = out.replace(/\s{2,}/g, ' ').replace(/\s*\.\s*\./g, '.');
+  if (!/\.$/.test(out)) out += '.';
   
   return out;
 };
@@ -197,6 +203,25 @@ export const goalsService = {
     return data as Goal;
   },
 
+  // One-time sanitizer to fix existing descriptions in DB for the current user
+  async sanitizeExistingGoalDescriptions(): Promise<void> {
+    const user = await supabase.auth.getUser();
+    const userId = user.data.user?.id;
+    if (!userId) return;
+
+    const { data: goals, error } = await supabase
+      .from('goals')
+      .select('id, description')
+      .eq('owner_id', userId);
+    if (error || !goals) return;
+
+    for (const g of goals) {
+      const sanitized = sanitizeDescription(g.description || '');
+      if ((g.description || '') !== sanitized) {
+        await supabase.from('goals').update({ description: sanitized }).eq('id', g.id);
+      }
+    }
+  },
   // Soft delete goal (archive)
   async deleteGoal(id: string): Promise<void> {
     const { error } = await supabase
