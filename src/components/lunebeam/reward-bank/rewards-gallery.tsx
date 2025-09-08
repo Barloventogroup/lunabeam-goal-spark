@@ -66,25 +66,25 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-primary flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-primary p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={onBack} className="text-white hover:bg-white/10">
+            <Button variant="ghost" onClick={onBack} className="text-foreground hover:bg-muted">
               ← Back
             </Button>
-            <h1 className="text-2xl font-bold text-white">Reward Gallery</h1>
+            <h1 className="text-2xl font-bold text-foreground">Reward Gallery</h1>
           </div>
-          <div className="bg-white/10 backdrop-blur rounded-lg px-4 py-2">
-            <span className="text-white font-medium">{userPoints} points</span>
+          <div className="bg-muted/50 backdrop-blur rounded-lg px-4 py-2">
+            <span className="text-foreground font-medium">{userPoints} points</span>
           </div>
         </div>
 
@@ -96,7 +96,7 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
             const pointsNeeded = Math.max(0, reward.point_cost - userPoints);
 
             return (
-              <Card key={reward.id} className="bg-white/95 backdrop-blur hover:bg-white transition-all duration-200">
+              <Card key={reward.id} className="bg-card backdrop-blur hover:bg-card/80 transition-all duration-200 border-border">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
@@ -167,11 +167,28 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
 
         {rewards.length === 0 && (
           <div className="text-center py-12">
-            <Gift className="w-16 h-16 text-white/50 mx-auto mb-4" />
-            <div className="text-white/80 mb-2">No rewards available</div>
-            <div className="text-white/60 text-sm">
+            <Gift className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <div className="text-foreground mb-2">No rewards available</div>
+            <div className="text-muted-foreground text-sm mb-4">
               Ask your supporter to add some rewards for you to redeem!
             </div>
+            <Button 
+              onClick={() => {
+                // Navigate back to the You tab, then to reward admin
+                onBack(); 
+                // Small delay to ensure navigation happens
+                setTimeout(() => {
+                  const rewardAdminElement = document.querySelector('[data-reward-admin]');
+                  if (rewardAdminElement) {
+                    (rewardAdminElement as HTMLElement).click();
+                  }
+                }, 100);
+              }}
+              variant="outline"
+              className="mt-4"
+            >
+              Set Up Rewards
+            </Button>
           </div>
         )}
       </div>

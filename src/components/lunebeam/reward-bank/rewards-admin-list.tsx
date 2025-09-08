@@ -65,26 +65,26 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) =>
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-primary flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-primary p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={onBack} className="text-white hover:bg-white/10">
+            <Button variant="ghost" onClick={onBack} className="text-foreground hover:bg-muted">
               ← Back
             </Button>
-            <h1 className="text-2xl font-bold text-white">Reward Bank</h1>
+            <h1 className="text-2xl font-bold text-foreground">Reward Bank</h1>
           </div>
           <Button 
             onClick={() => setShowForm(true)}
-            className="bg-white text-primary hover:bg-white/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Reward
@@ -94,7 +94,7 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) =>
         {/* Rewards Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {rewards.map((reward) => (
-            <Card key={reward.id} className={`bg-white/95 backdrop-blur ${!reward.is_active ? 'opacity-60' : ''}`}>
+            <Card key={reward.id} className={`bg-card backdrop-blur border-border ${!reward.is_active ? 'opacity-60' : ''}`}>
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -151,10 +151,10 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) =>
 
         {rewards.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-white/80 mb-4">No rewards created yet</div>
+            <div className="text-foreground mb-4">No rewards created yet</div>
             <Button 
               onClick={() => setShowForm(true)}
-              className="bg-white text-primary hover:bg-white/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <Plus className="w-4 h-4 mr-2" />
               Create Your First Reward

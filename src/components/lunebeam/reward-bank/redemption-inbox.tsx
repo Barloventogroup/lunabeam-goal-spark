@@ -109,18 +109,18 @@ export const RedemptionInbox: React.FC<RedemptionInboxProps> = ({ onBack }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-primary p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={onBack} className="text-white hover:bg-white/10">
+            <Button variant="ghost" onClick={onBack} className="text-foreground hover:bg-muted">
               ← Back
             </Button>
-            <h1 className="text-2xl font-bold text-white">Redemption Inbox</h1>
+            <h1 className="text-2xl font-bold text-foreground">Redemption Inbox</h1>
           </div>
-          <div className="bg-white/10 backdrop-blur rounded-lg px-4 py-2">
-            <span className="text-white font-medium">{pendingRedemptions.length} pending</span>
+          <div className="bg-muted/50 backdrop-blur rounded-lg px-4 py-2">
+            <span className="text-foreground font-medium">{pendingRedemptions.length} pending</span>
           </div>
         </div>
 
@@ -128,7 +128,7 @@ export const RedemptionInbox: React.FC<RedemptionInboxProps> = ({ onBack }) => {
           {/* Pending Requests */}
           {pendingRedemptions.length > 0 && (
             <section>
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5" />
                 Pending Requests ({pendingRedemptions.length})
               </h2>
@@ -208,7 +208,7 @@ export const RedemptionInbox: React.FC<RedemptionInboxProps> = ({ onBack }) => {
           {/* Approved - Ready to Fulfill */}
           {approvedRedemptions.length > 0 && (
             <section>
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Package className="w-5 h-5" />
                 Ready to Fulfill ({approvedRedemptions.length})
               </h2>
@@ -260,7 +260,7 @@ export const RedemptionInbox: React.FC<RedemptionInboxProps> = ({ onBack }) => {
           {/* Completed */}
           {completedRedemptions.length > 0 && (
             <section>
-              <h2 className="text-lg font-semibold text-white mb-4">
+              <h2 className="text-lg font-semibold text-foreground mb-4">
                 Recent History ({completedRedemptions.length})
               </h2>
               <div className="space-y-3">
@@ -301,9 +301,9 @@ export const RedemptionInbox: React.FC<RedemptionInboxProps> = ({ onBack }) => {
           {/* Empty State */}
           {redemptions.length === 0 && (
             <div className="text-center py-12">
-              <Package className="w-16 h-16 text-white/50 mx-auto mb-4" />
-              <div className="text-white/80 mb-2">No redemption requests yet</div>
-              <div className="text-white/60 text-sm">
+              <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <div className="text-foreground mb-2">No redemption requests yet</div>
+              <div className="text-muted-foreground text-sm">
                 Requests will appear here when users redeem rewards
               </div>
             </div>

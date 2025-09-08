@@ -123,7 +123,7 @@ export const TabYou: React.FC = () => {
           </Card>
 
           {/* Supporter Options */}
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('rewardAdmin')}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('rewardAdmin')} data-reward-admin>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
