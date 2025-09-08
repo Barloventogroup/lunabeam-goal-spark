@@ -661,7 +661,7 @@ export type Database = {
     }
     Functions: {
       calculate_step_points: {
-        Args: { _category: string; _step_notes?: string; _step_title: string }
+        Args: { goal_domain?: string; step_notes?: string; step_title: string }
         Returns: number
       }
       check_user_permission: {
