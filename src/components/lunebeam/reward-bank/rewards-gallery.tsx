@@ -145,7 +145,7 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
                         Redeem Now 🎉
                       </Button>
                     ) : (
-                      <div className="text-center">
+                      <div className="text-center space-y-3">
                         <Button 
                           disabled 
                           variant="outline" 
@@ -153,9 +153,11 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
                         >
                           Need {pointsNeeded} more points
                         </Button>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Keep going! 💪
-                        </p>
+                        <div className="flex items-center justify-center min-h-[2rem]">
+                          <p className="text-sm text-muted-foreground font-medium">
+                            Keep going! 💪
+                          </p>
+                        </div>
                       </div>
                     )}
                   </div>
