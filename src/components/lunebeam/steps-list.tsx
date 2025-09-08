@@ -305,7 +305,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       }
     }
 
-    // Check week progression
+    // Check week progression - previous weeks must be completed
     const currentWeekMatch = step.title.match(/Week (\d+)/i);
     if (currentWeekMatch) {
       const currentWeek = parseInt(currentWeekMatch[1]);
@@ -319,6 +319,33 @@ export const StepsList: React.FC<StepsListProps> = ({
       
       if (previousStepsIncomplete) {
         return true;
+      }
+
+      // Check session progression within the same week
+      const currentSessionMatch = step.title.match(/Session (\d+)/i);
+      if (currentSessionMatch) {
+        const currentSession = parseInt(currentSessionMatch[1]);
+        
+        // Find previous sessions in the same week that are incomplete
+        const currentWeekSteps = steps.filter(s => {
+          const weekMatch = s.title.match(/Week (\d+)/i);
+          const sessionMatch = s.title.match(/Session (\d+)/i);
+          
+          if (!weekMatch || !sessionMatch) return false;
+          
+          const stepWeek = parseInt(weekMatch[1]);
+          const stepSession = parseInt(sessionMatch[1]);
+          
+          return stepWeek === currentWeek && 
+                 stepSession < currentSession && 
+                 s.is_required && 
+                 s.status !== 'done' && 
+                 s.status !== 'skipped';
+        });
+
+        if (currentWeekSteps.length > 0) {
+          return true;
+        }
       }
     }
 
