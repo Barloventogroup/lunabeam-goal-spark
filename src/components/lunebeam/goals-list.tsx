@@ -74,14 +74,11 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   };
 
   useEffect(() => {
-    // One-time sanitizer for existing descriptions
-    const flag = localStorage.getItem('desc_sanitized_v1');
-    if (!flag) {
-      goalsService.sanitizeExistingGoalDescriptions().finally(() => {
-        localStorage.setItem('desc_sanitized_v1', '1');
-      });
-    }
-    loadGoals();
+    // Force sanitization of existing descriptions - remove the localStorage check
+    goalsService.sanitizeExistingGoalDescriptions().then(() => {
+      // Reload goals after sanitization to show updated descriptions
+      loadGoals();
+    });
   }, [activeTab, refreshTrigger]); // Reload when tab changes or refresh is triggered
 
   const getPriorityColor = (priority: string) => {

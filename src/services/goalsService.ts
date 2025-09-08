@@ -6,22 +6,31 @@ const sanitizeDescription = (text?: string): string => {
   if (!text) return '';
   let out = text.trim();
   
+  console.log(`Sanitizing: "${out}"`);
+  
   // Fix frequency patterns
   out = out.replace(/(\d+)x\/week/gi, '$1 times per week');
   out = out.replace(/Daily for (\d+)x\/week/gi, '$1 times per week');
   out = out.replace(/Daily for (\d+) times per week/gi, '$1 times per week');
   
+  // Fix specific problematic patterns
+  out = out.replace(/to finish assignment/gi, 'to finish the assignment');
+  out = out.replace(/Templates? \(letter,?\s*essay\)/gi, 'templates for letters and essays');
+  out = out.replace(/with Reflection log/gi, 'with a reflection log');
+  
   // Fix double parentheses and support sections
   out = out.replace(/\(\s*\(([^)]+)\)\s*\)/g, '($1)');
-  out = out.replace(/\.?\s*\(with\s+([^)]+)\)\s*$/i, '. with $1');
-  out = out.replace(/Templates? \(letter,\s*essay\)/gi, 'templates for letters and essays');
-  out = out.replace(/with\s+Reflection log/gi, 'with a reflection log');
-  out = out.replace(/finish assignment/gi, 'finish the assignment');
+  out = out.replace(/\.\s*\(with\s+([^)]+)\)\s*$/i, '. With $1');
+  out = out.replace(/\s*\(with\s+([^)]+)\)/gi, '. With $1');
   
   // Cleanup spacing and periods
-  out = out.replace(/\s{2,}/g, ' ').replace(/\s*\.\s*\./g, '.');
+  out = out.replace(/\s{2,}/g, ' ');
+  out = out.replace(/\s*\.\s*\./g, '.');
+  out = out.replace(/\.\s*With/g, ', with');
+  
   if (!/\.$/.test(out)) out += '.';
   
+  console.log(`Result: "${out}"`);
   return out;
 };
 
@@ -205,6 +214,7 @@ export const goalsService = {
 
   // One-time sanitizer to fix existing descriptions in DB for the current user
   async sanitizeExistingGoalDescriptions(): Promise<void> {
+    console.log('Starting sanitization of existing goal descriptions...');
     const user = await supabase.auth.getUser();
     const userId = user.data.user?.id;
     if (!userId) return;
@@ -213,14 +223,34 @@ export const goalsService = {
       .from('goals')
       .select('id, description')
       .eq('owner_id', userId);
-    if (error || !goals) return;
+    if (error || !goals) {
+      console.error('Failed to fetch goals for sanitization:', error);
+      return;
+    }
 
+    console.log(`Found ${goals.length} goals to check for sanitization`);
+    
     for (const g of goals) {
-      const sanitized = sanitizeDescription(g.description || '');
-      if ((g.description || '') !== sanitized) {
-        await supabase.from('goals').update({ description: sanitized }).eq('id', g.id);
+      const original = g.description || '';
+      const sanitized = sanitizeDescription(original);
+      if (original !== sanitized) {
+        console.log(`Updating goal ${g.id}:`);
+        console.log(`  FROM: "${original}"`);
+        console.log(`  TO: "${sanitized}"`);
+        
+        const { error: updateError } = await supabase
+          .from('goals')
+          .update({ description: sanitized })
+          .eq('id', g.id);
+          
+        if (updateError) {
+          console.error(`Failed to update goal ${g.id}:`, updateError);
+        } else {
+          console.log(`Successfully updated goal ${g.id}`);
+        }
       }
     }
+    console.log('Sanitization complete');
   },
   // Soft delete goal (archive)
   async deleteGoal(id: string): Promise<void> {
