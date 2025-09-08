@@ -195,25 +195,40 @@ export const StepsList: React.FC<StepsListProps> = ({
       });
     }
 
-    // Check week-based progression
+    // Enhanced week-based progression logic
     const weekMatch = step.title.match(/Week (\d+)/i);
     if (weekMatch) {
       const currentWeek = parseInt(weekMatch[1]);
 
-      // For Week 2+, check if previous weeks are complete
+      // For Week 2+, check if ALL Week 1 steps are complete (including substeps)
       if (currentWeek > 1) {
-        const prevWeekSteps = steps.filter(s => {
+        const allPrevWeekSteps = steps.filter(s => {
           const prevWeekMatch = s.title.match(/Week (\d+)/i);
           if (!prevWeekMatch) return false;
           
           const stepWeek = parseInt(prevWeekMatch[1]);
-          return stepWeek < currentWeek && 
-                 s.is_required && 
-                 s.status !== 'done' && 
-                 s.status !== 'skipped';
+          return stepWeek < currentWeek && s.is_required;
         });
 
-        if (prevWeekSteps.length > 0) {
+        // Check if any previous week step is incomplete
+        const incompleteSteps = allPrevWeekSteps.filter(s => {
+          if (s.status === 'done' || s.status === 'skipped') {
+            return false; // This step is complete
+          }
+          
+          // For steps with substeps, check if all substeps are complete
+          const stepSubsteps = substepsMap[s.id] || [];
+          if (stepSubsteps.length > 0) {
+            const allSubstepsComplete = stepSubsteps.every(sub => sub.completed_at !== null);
+            return !allSubstepsComplete; // Incomplete if any substep is not done
+          }
+          
+          return true; // Step without substeps that's not marked done
+        });
+
+        if (incompleteSteps.length > 0) {
+          console.log(`Step ${step.title} blocked by incomplete previous week steps:`, 
+            incompleteSteps.map(s => s.title));
           return true;
         }
       }
@@ -234,12 +249,62 @@ export const StepsList: React.FC<StepsListProps> = ({
           
           return stepWeek === currentWeek && 
                  stepSession < currentSession && 
-                 s.is_required && 
-                 s.status !== 'done' && 
-                 s.status !== 'skipped';
+                 s.is_required;
         });
 
-        if (currentWeekSteps.length > 0) {
+        // Check if any previous session in the same week is incomplete
+        const incompleteSessionSteps = currentWeekSteps.filter(s => {
+          if (s.status === 'done' || s.status === 'skipped') {
+            return false;
+          }
+          
+          // For steps with substeps, check if all substeps are complete
+          const stepSubsteps = substepsMap[s.id] || [];
+          if (stepSubsteps.length > 0) {
+            const allSubstepsComplete = stepSubsteps.every(sub => sub.completed_at !== null);
+            return !allSubstepsComplete;
+          }
+          
+          return true;
+        });
+
+        if (incompleteSessionSteps.length > 0) {
+          console.log(`Step ${step.title} blocked by incomplete previous session steps:`, 
+            incompleteSessionSteps.map(s => s.title));
+          return true;
+        }
+      }
+    }
+
+    // Special handling for non-week steps that might be part of a progression
+    // Check if this step comes after Week 1 steps but Week 1 isn't complete
+    const stepIndex = steps.findIndex(s => s.id === step.id);
+    if (stepIndex > 0) {
+      // Find any previous week 1 steps that are incomplete
+      const previousSteps = steps.slice(0, stepIndex);
+      const week1Steps = previousSteps.filter(s => {
+        const weekMatch = s.title.match(/Week 1/i);
+        return weekMatch && s.is_required;
+      });
+
+      if (week1Steps.length > 0) {
+        const incompleteWeek1Steps = week1Steps.filter(s => {
+          if (s.status === 'done' || s.status === 'skipped') {
+            return false;
+          }
+          
+          const stepSubsteps = substepsMap[s.id] || [];
+          if (stepSubsteps.length > 0) {
+            const allSubstepsComplete = stepSubsteps.every(sub => sub.completed_at !== null);
+            return !allSubstepsComplete;
+          }
+          
+          return true;
+        });
+
+        if (incompleteWeek1Steps.length > 0) {
+          console.log(`Step ${step.title} blocked by incomplete Week 1 steps:`, 
+            incompleteWeek1Steps.map(s => s.title));
           return true;
         }
       }
