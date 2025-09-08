@@ -122,6 +122,16 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
     });
   };
 
+  const getDomainDisplayName = (domain: string): string => {
+    const domainMap: Record<string, string> = {
+      'school': 'Education (High School / Academic Readiness)',
+      'work': 'Employment',
+      'health': 'Health & Well-Being',
+      'life': 'Life Skills'
+    };
+    return domainMap[domain] || domain;
+  };
+
   if (loading) {
     return null; // Don't show loading state
   }
@@ -206,7 +216,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                           {goal.status === 'active' ? 'In Progress' : goal.status}
                         </Badge>
                         {goal.domain && (
-                          <Badge variant="category">{goal.domain}</Badge>
+                          <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>
                         )}
                       </div>
                       {goal.due_date && (

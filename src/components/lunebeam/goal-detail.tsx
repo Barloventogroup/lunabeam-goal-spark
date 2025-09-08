@@ -179,6 +179,16 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
     return new Date(dateStr).toLocaleDateString();
   };
 
+  const getDomainDisplayName = (domain: string): string => {
+    const domainMap: Record<string, string> = {
+      'school': 'Education (High School / Academic Readiness)',
+      'work': 'Employment',
+      'health': 'Health & Well-Being',
+      'life': 'Life Skills'
+    };
+    return domainMap[domain] || domain;
+  };
+
   const getStepIcon = (step: Step) => {
     switch (step.status) {
       case 'done':
@@ -223,7 +233,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
               {goal.status === 'active' ? 'In Progress' : goal.status}
             </Badge>
             {goal.domain && (
-              <Badge variant="outline">{goal.domain}</Badge>
+              <Badge variant="outline">{getDomainDisplayName(goal.domain)}</Badge>
             )}
             {goal.due_date && (
               <Badge variant="outline" className="flex items-center gap-1">

@@ -42,6 +42,16 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
     }
   };
 
+  const getDomainDisplayName = (domain: string): string => {
+    const domainMap: Record<string, string> = {
+      'school': 'Education (High School / Academic Readiness)',
+      'work': 'Employment',
+      'health': 'Health & Well-Being',
+      'life': 'Life Skills'
+    };
+    return domainMap[domain] || domain;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-soft">
       {/* Header */}
@@ -124,7 +134,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
                           </p>
                           <div className="flex items-center gap-2 mt-2">
                             <Badge variant="outline" className="text-xs">
-                              {goal.domain || 'General'}
+                              {getDomainDisplayName(goal.domain || 'General')}
                             </Badge>
                             <span className="text-xs text-muted-foreground">
                               Completed {new Date(goal.updated_at).toLocaleDateString()}
@@ -175,7 +185,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
                           </p>
                           <div className="flex items-center gap-2 mt-2">
                             <Badge variant="outline" className="text-xs">
-                              {goal.domain || 'General'}
+                              {getDomainDisplayName(goal.domain || 'General')}
                             </Badge>
                             <span className="text-xs text-muted-foreground">
                               Archived {new Date(goal.updated_at).toLocaleDateString()}

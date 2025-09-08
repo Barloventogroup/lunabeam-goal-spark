@@ -199,6 +199,16 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     });
   };
 
+  const getDomainDisplayName = (domain: string): string => {
+    const domainMap: Record<string, string> = {
+      'school': 'Education (High School / Academic Readiness)',
+      'work': 'Employment',
+      'health': 'Health & Well-Being',
+      'life': 'Life Skills'
+    };
+    return domainMap[domain] || domain;
+  };
+
   if (loading || !goal) {
     return (
       <div className="space-y-6">
@@ -228,7 +238,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               </Badge>
               {goal.domain && (
                 <Badge variant="outline" className="capitalize">
-                  {goal.domain}
+                  {getDomainDisplayName(goal.domain)}
                 </Badge>
               )}
               {goal.due_date && (
