@@ -31,27 +31,10 @@ serve(async (req) => {
       userMessage: userMessage?.substring(0, 100) 
     });
 
-    // Count assistant responses in conversation history
-    const assistantResponseCount = conversationHistory.filter(msg => msg.role === 'assistant').length;
-    
-    // Limit chat to 3 responses, then redirect to steps view
-    if (assistantResponseCount >= 3) {
-      return new Response(JSON.stringify({
-        response: `Perfect! Tuesday and Wednesday sound like great days to start. 
-
-You're all set up now! Here's what happens next:
-
-**What I do:** I'll keep all your new sub-steps organized and ready for you. Each one will have its own detailed guidance when you need it.
-
-**What you do:** Tackle your sub-steps one by one! Start with "Choose Your 2 Days" - you've already done that (Tuesday & Wednesday), so mark it complete and move to the next one.
-
-Remember, each sub-step unlocks more personalized help when you need it. You've got a solid plan now - time to put it into action! 🌙✨`,
-        suggestedSteps: [],
-        shouldRedirect: true
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    // Count assistant responses in conversation history (ignore system and error messages)
+    const assistantResponseCount = Array.isArray(conversationHistory)
+      ? conversationHistory.filter((msg: any) => msg.role === 'assistant' && !(typeof msg.id === 'string' && msg.id.startsWith('error-'))).length
+      : 0;
 
     // Check for similar steps in prior weeks that have substeps
     const inheritedSubsteps = await checkForSimilarPriorSteps(step, goal);
@@ -89,7 +72,7 @@ Your role is to:
 3. Focus on breaking things into manageable steps
 4. Encourage them to create more specific sub-steps
 
-IMPORTANT: Keep responses short and actionable. If they need extensive help, suggest they create additional sub-steps instead of long explanations.
+IMPORTANT: Keep responses short and actionable. Stay strictly on-topic for the current step titled "${step.title}". Do not invent scheduling details or reference unrelated days or steps. If information is missing, ask at most one clarifying question before suggesting a single concrete next action.
 
 ONLY suggest breaking a step into sub-steps if:
 - They explicitly ask for help breaking it down
@@ -209,29 +192,29 @@ async function createSubSteps(subSteps: any[], parentStep: any, goal: any) {
 
   console.log(`Creating ${subSteps.length} sub-steps for step ${parentStep.id}`);
 
-  // First, shift existing steps to make room for new sub-steps
-  const baseOrderIndex = parentStep.order_index || 0;
-  const { error: shiftError } = await supabase
-    .from('steps')
-    .update({ 
-      order_index: supabase.raw(`order_index + ${subSteps.length}`)
-    })
-    .eq('goal_id', goal.id)
-    .gt('order_index', baseOrderIndex);
-
-  if (shiftError) {
-    console.error('Error shifting existing steps:', shiftError);
-  } else {
-    console.log(`Shifted ${subSteps.length} positions for existing steps after index ${baseOrderIndex}`);
+  // Determine starting order index by appending to the end (avoid raw SQL increments)
+  let startOrder = 0;
+  try {
+    const { data: lastStep } = await supabase
+      .from('steps')
+      .select('order_index')
+      .eq('goal_id', goal.id)
+      .order('order_index', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    startOrder = (lastStep?.order_index ?? 0) + 1;
+  } catch (_e) {
+    startOrder = (parentStep.order_index || 0) + 1;
   }
 
   const createdSteps = [];
   
-  for (const subStep of subSteps) {
+  for (const [index, subStep] of subSteps.entries()) {
     try {
+      const toInsert = { ...subStep, order_index: startOrder + index };
       const { data, error } = await supabase
         .from('steps')
-        .insert(subStep)
+        .insert(toInsert)
         .select()
         .single();
 
