@@ -94,6 +94,84 @@ Please respond warmly and ask the next helpful question to learn about them.`;
       });
     }
 
+    // Handle step generation requests
+    if (mode === 'assist' && question && question.includes('Generate') && question.includes('milestone steps')) {
+      const stepSystemPrompt = `You are an AI step generator that creates specific, actionable milestone steps for goals.
+
+Your job: Generate concrete, goal-specific milestone steps that are directly related to achieving the goal.
+
+Rules for step generation:
+- Make steps SPECIFIC to the goal (e.g., for "Drink Water" don't say "Plan first step", say "Drink your first glass of water today")
+- Each step should be a concrete action someone can complete
+- Steps should build toward the goal progressively
+- Use the session format: "Session X: [specific action]"
+- Include practical details and time estimates when helpful
+- Make it feel achievable and motivating
+
+For hydration/water goals, focus on:
+- Setting up tracking systems
+- Building drinking habits
+- Timing throughout the day
+- Making water more appealing
+
+For sleep goals, focus on:
+- Bedtime routines
+- Environmental preparation
+- Consistency building
+
+For exercise goals, focus on:
+- Progressive movement building
+- Habit formation
+- Tracking progress
+
+Return a JSON array of step objects with:
+- title: "Session X: [specific actionable step]"
+- notes: Brief explanation of why this step matters
+- points: 1-3 based on difficulty
+- estimated_effort_min: Time in minutes`;
+
+      const stepUserPrompt = question;
+
+      console.log('Making OpenAI request for step generation');
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: stepSystemPrompt },
+            { role: 'user', content: stepUserPrompt }
+          ],
+          max_tokens: 800,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('OpenAI API error:', errorData);
+        throw new Error(`OpenAI API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const guidance = data.choices[0].message.content;
+
+      console.log('Generated step guidance successfully');
+
+      return new Response(JSON.stringify({ 
+        guidance,
+        response_text: guidance,
+        mode: 'assist',
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // For other modes, use the original structured approach
     const globalSystemPrompt = `You are Lune, a supportive AI guide for teenagers and young adults aged 16-25.
 

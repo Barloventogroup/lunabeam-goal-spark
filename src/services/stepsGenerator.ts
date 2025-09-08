@@ -426,6 +426,164 @@ function getBaseStepsForGoal(goal: Goal): BaseStepData[] {
     ];
   }
   
+  // Water/hydration goals
+  if (title.includes('water') || title.includes('drink') || title.includes('hydrat')) {
+    return [
+      {
+        title: "Set daily water goal",
+        explainer: "Decide how many glasses (or ounces) you'll drink per day. Why: A clear target makes it easier to track progress and know when you've succeeded for the day.",
+        isBlocking: true,
+        precursors: [],
+        dependencies: ["choose_container"],
+        estimated_effort_min: 2,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 4 }
+      },
+      {
+        title: "Choose your water container",
+        explainer: "Pick a water bottle or cup you'll use consistently. Why: Using the same container helps you learn exactly how much water you're drinking and makes tracking easier.",
+        isBlocking: false,
+        precursors: ["set_goal"],
+        dependencies: ["set_reminders"],
+        estimated_effort_min: 3,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 3 }
+      },
+      {
+        title: "Set drinking reminders",
+        explainer: "Add phone alerts every 2-3 hours to remind you to drink water. Why: Regular reminders help you build the habit before you feel thirsty, since thirst means you're already dehydrated.",
+        isBlocking: false,
+        precursors: ["choose_container"],
+        dependencies: ["morning_water"],
+        estimated_effort_min: 5,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 5 }
+      },
+      {
+        title: "Start with morning water",
+        explainer: "Drink one full glass right when you wake up. Why: Starting your day with water rehydrates you after sleeping and creates an easy early win toward your daily goal.",
+        isBlocking: false,
+        precursors: ["set_reminders"],
+        dependencies: ["track_intake"],
+        estimated_effort_min: 1,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 4 }
+      },
+      {
+        title: "Track your intake",
+        explainer: "Mark down each glass or use a tracking app. Why: Tracking shows you're making progress and helps identify patterns, like times when you forget to drink water.",
+        isBlocking: false,
+        precursors: ["morning_water"],
+        dependencies: [],
+        estimated_effort_min: 2,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 4 }
+      },
+      {
+        title: "Flavor your water",
+        explainer: "Add lemon, mint, or other natural flavors if plain water is boring. Why: Making water taste better increases the likelihood you'll want to drink more throughout the day.",
+        isBlocking: false,
+        precursors: [],
+        dependencies: [],
+        estimated_effort_min: 3,
+        is_required: false,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 2 }
+      },
+      {
+        title: "Link water to habits",
+        explainer: "Drink water before meals, after bathroom breaks, or during specific activities. Why: Connecting water to existing habits makes drinking automatic rather than something you have to remember.",
+        isBlocking: false,
+        precursors: ["track_intake"],
+        dependencies: [],
+        estimated_effort_min: 4,
+        is_required: false,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 3 }
+      }
+    ];
+  }
+  
+  // Sleep goals
+  if (title.includes('sleep') || title.includes('bedtime') || title.includes('wake')) {
+    return [
+      {
+        title: "Set consistent bedtime",
+        explainer: "Choose a bedtime and stick to it every night, even weekends. Why: Consistent sleep timing helps regulate your body's internal clock, making it easier to fall asleep and wake up naturally.",
+        isBlocking: true,
+        precursors: [],
+        dependencies: ["create_routine"],
+        estimated_effort_min: 2,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 5 }
+      },
+      {
+        title: "Create bedtime routine",
+        explainer: "Plan 30-60 minutes of relaxing activities before bed. Why: A consistent routine signals to your brain that it's time to wind down, making it easier to fall asleep.",
+        isBlocking: false,
+        precursors: ["set_bedtime"],
+        dependencies: ["screen_cutoff"],
+        estimated_effort_min: 5,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 4 }
+      },
+      {
+        title: "Set screen cutoff time",
+        explainer: "Stop using phones, tablets, and TV 30-60 minutes before bed. Why: Blue light from screens can disrupt your body's production of melatonin, the hormone that makes you feel sleepy.",
+        isBlocking: false,
+        precursors: ["create_routine"],
+        dependencies: ["prepare_environment"],
+        estimated_effort_min: 1,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 3, scoreImpact: 4 }
+      },
+      {
+        title: "Prepare sleep environment",
+        explainer: "Make your room cool, dark, and quiet. Why: The right environment makes it easier for your body to fall into deep sleep and stay asleep through the night.",
+        isBlocking: false,
+        precursors: ["screen_cutoff"],
+        dependencies: [],
+        estimated_effort_min: 5,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 2, scoreImpact: 4 }
+      },
+      {
+        title: "Set wake-up alarm",
+        explainer: "Choose a consistent wake time and set a gentle alarm. Why: Waking up at the same time daily helps maintain your sleep rhythm and makes bedtime feel more natural.",
+        isBlocking: false,
+        precursors: ["set_bedtime"],
+        dependencies: [],
+        estimated_effort_min: 2,
+        is_required: true,
+        supportingLinks: [],
+        userFeedback: { tooBig: false, confusing: false, notRelevant: false, needsMoreSteps: false },
+        metadata: { version: 1, source: 'rules', scoreEase: 1, scoreImpact: 4 }
+      }
+    ];
+  }
+  
+  // Default generic steps
+  
   // Default generic steps
   return [
     {
