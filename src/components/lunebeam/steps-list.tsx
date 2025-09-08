@@ -74,6 +74,16 @@ export const StepsList: React.FC<StepsListProps> = ({
     ? Math.round((doneSteps.length / actionableSteps.length) * 100) 
     : 0;
 
+  // Debug logging for progress calculation
+  console.log('Progress calculation debug:', {
+    totalSteps: steps.length,
+    actionableSteps: actionableSteps.length,
+    doneSteps: doneSteps.length,
+    progressPercent,
+    actionableStepsDetails: actionableSteps.map(s => ({ id: s.id, title: s.title, status: s.status, type: s.type, hidden: s.hidden })),
+    doneStepsDetails: doneSteps.map(s => ({ id: s.id, title: s.title, status: s.status }))
+  });
+
   // Compute sorted actionable steps and split into visible + queued
   const sortedActionableSteps = steps
     .filter(s => (!s.type || s.type === 'action') && !s.hidden)

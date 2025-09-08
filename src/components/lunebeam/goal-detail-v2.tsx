@@ -50,8 +50,15 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   }, [goalId]);
 
   const calculateProgress = (goalSteps: Step[]): GoalProgress => {
-    const actionableSteps = goalSteps.filter(s => s.type === 'action' && !s.hidden && s.status !== 'skipped');
+    const actionableSteps = goalSteps.filter(s => (!s.type || s.type === 'action') && !s.hidden && s.status !== 'skipped');
     const doneSteps = actionableSteps.filter(s => s.status === 'done');
+    
+    console.log('Goal progress calculation debug:', {
+      totalSteps: goalSteps.length,
+      actionableSteps: actionableSteps.length,
+      doneSteps: doneSteps.length,
+      actionableStepsDetails: actionableSteps.map(s => ({ id: s.id, title: s.title, status: s.status, type: s.type, hidden: s.hidden }))
+    });
     
     return {
       done: doneSteps.length,
