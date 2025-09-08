@@ -114,7 +114,7 @@ export interface Category {
 export const GOALS_WIZARD_DATA: Category[] = [
   {
     id: "education",
-    title: "Education (High School / Academic Readiness)", 
+    title: "Education - High School / Academic Readiness", 
     emoji: "📘",
     description: "Learning new things and growing your brain power - no matter how small the step",
     goals: [
@@ -1009,7 +1009,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
   },
   {
     id: "postsecondary",
-    title: "Postsecondary / Learning (After High School)",
+    title: "Postsecondary - Learning After High School",
     emoji: "🎓",
     description: "Checking out what's next after high school - colleges, trades, certificates, whatever interests you",
     goals: [

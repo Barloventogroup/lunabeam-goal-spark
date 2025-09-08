@@ -46,14 +46,23 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       // Load step counts for each goal
       const counts: Record<string, { required: number; done: number }> = {};
       for (const goal of goalsData) {
-        const steps = await stepsService.getSteps(goal.id);
-        // Use same logic as goal detail view - actionable steps only
-        const actionableSteps = steps.filter(s => s.type === 'action' && !s.hidden && s.status !== 'skipped');
-        const doneSteps = actionableSteps.filter(s => s.status === 'done');
-        counts[goal.id] = {
-          required: actionableSteps.length,
-          done: doneSteps.length
-        };
+        try {
+          const steps = await stepsService.getSteps(goal.id);
+          // Use same logic as goal detail view - actionable steps only
+          const actionableSteps = steps.filter(s => s.type === 'action' && !s.hidden && s.status !== 'skipped');
+          const doneSteps = actionableSteps.filter(s => s.status === 'done');
+          counts[goal.id] = {
+            required: actionableSteps.length,
+            done: doneSteps.length
+          };
+        } catch (error) {
+          console.error(`Failed to load steps for goal ${goal.id}:`, error);
+          // Set default values if step loading fails
+          counts[goal.id] = {
+            required: 0,
+            done: 0
+          };
+        }
       }
       setStepsCount(counts);
     } catch (error) {
@@ -124,7 +133,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
 
   const getDomainDisplayName = (domain: string): string => {
     const domainMap: Record<string, string> = {
-      'school': 'Education (High School / Academic Readiness)',
+      'school': 'Education - High School / Academic Readiness',
       'work': 'Employment',
       'health': 'Health & Well-Being',
       'life': 'Life Skills'

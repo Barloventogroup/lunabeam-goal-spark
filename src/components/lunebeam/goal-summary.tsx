@@ -63,7 +63,7 @@ export const GoalSummary: React.FC<GoalSummaryProps> = ({
   const { toast } = useToast();
 
   const categoryNames = {
-    education: 'Education (High School / Academic Readiness)',
+    education: 'Education - High School / Academic Readiness',
     employment: 'Employment', 
     independent_living: 'Independent Living',
     health: 'Health & Well-Being',

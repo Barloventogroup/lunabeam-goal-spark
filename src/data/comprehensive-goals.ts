@@ -342,12 +342,12 @@ export const getGoalsForCategory = (category: string): GoalFlow[] => {
 export const normalizeCategoryName = (category: string): string => {
   const mapping: Record<string, string> = {
     'health': 'Health & Well-Being',
-    'education': 'Education (High School / Academic Readiness)', 
+    'education': 'Education - High School / Academic Readiness', 
     'employment': 'Employment',
     'independent_living': 'Independent Living',
     'social_skills': 'Social Skills',
     'housing': 'Housing',
-    'postsecondary': 'Postsecondary / Learning (After High School)'
+    'postsecondary': 'Postsecondary - Learning After High School'
   };
   return mapping[category] || category;
 };

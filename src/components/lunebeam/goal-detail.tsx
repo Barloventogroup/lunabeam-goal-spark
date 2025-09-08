@@ -181,7 +181,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
 
   const getDomainDisplayName = (domain: string): string => {
     const domainMap: Record<string, string> = {
-      'school': 'Education (High School / Academic Readiness)',
+      'school': 'Education - High School / Academic Readiness',
       'work': 'Employment',
       'health': 'Health & Well-Being',
       'life': 'Life Skills'

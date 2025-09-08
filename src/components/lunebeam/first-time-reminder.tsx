@@ -85,7 +85,7 @@ export const FirstTimeReminder: React.FC<FirstTimeReminderProps> = ({ onNavigate
                     <p className="font-medium text-foreground">Popular categories:</p>
                     <div className="space-y-0.5">
                       <p className="text-muted-foreground">🌱 Health & Well-Being (Walk, Sleep, Eat Better)</p>
-                      <p className="text-muted-foreground">📘 Education (High School / Academic Readiness) (Reading, Learning)</p>
+                      <p className="text-muted-foreground">📘 Education - High School / Academic Readiness (Reading, Learning)</p>
                       <p className="text-muted-foreground">🗣️ Social Skills (Say Hi, Make Friends)</p>
                     </div>
                   </div>
