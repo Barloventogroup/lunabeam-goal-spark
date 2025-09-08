@@ -738,7 +738,7 @@ const CategorySelection: React.FC<{
               if (onSelectDefault) {
                 onSelectDefault({ 
                   step: 7, // Go to due date step
-                  category: { id: 'starter', title: 'Starter Goals', emoji: '🌟', goals: [goal] },
+                  category: { id: 'starter', title: 'Starter Goals', emoji: '🌟', description: 'Simple goals to get you started', goals: [goal] },
                   goal: goal,
                   purpose: goal.purpose.find(p => p.isDefault) || goal.purpose[0],
                   details: goal.details?.find(d => d.isDefault) || goal.details?.[0],
@@ -777,7 +777,7 @@ const CategorySelection: React.FC<{
                 <span className="text-2xl">{category.emoji}</span>
                 <div>
                   <h4 className="font-medium">{category.title}</h4>
-                  <p className="text-sm text-muted-foreground">{category.goals.length} goals available</p>
+                  <p className="text-sm text-muted-foreground">{category.description}</p>
                 </div>
               </div>
             </CardContent>

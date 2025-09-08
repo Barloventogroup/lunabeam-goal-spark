@@ -107,6 +107,7 @@ export interface Category {
   id: string;
   title: string;
   emoji: string;
+  description: string;
   goals: CategoryGoal[];
 }
 
@@ -115,6 +116,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
     id: "education",
     title: "Education (High School / Academic Readiness)", 
     emoji: "📘",
+    description: "Learning new things and growing your brain power - no matter how small the step",
     goals: [
       {
         id: "read",
@@ -322,7 +324,8 @@ export const GOALS_WIZARD_DATA: Category[] = [
   {
     id: "employment",
     title: "Employment",
-    emoji: "💼", 
+    emoji: "💼",
+    description: "Building work skills and confidence - one small step toward your future",
     goals: [
       {
         id: "interview",
@@ -482,6 +485,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
     id: "fun",
     title: "Fun / Recreation",
     emoji: "🎉",
+    description: "Enjoying life and having fun - because happiness matters too",
     goals: [
       {
         id: "play-sport-game",
@@ -672,6 +676,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
     id: "health",
     title: "Health & Well-Being",
     emoji: "🌱",
+    description: "Taking care of your body and mind - the good stuff that makes you feel awesome",
     goals: [
       {
         id: "walk",
@@ -831,6 +836,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
     id: "independent-living",
     title: "Independent Living",
     emoji: "🏠",
+    description: "Everyday life stuff that makes you feel more independent and capable",
     goals: [
       {
         id: "make-bed",
@@ -1005,6 +1011,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
     id: "postsecondary",
     title: "Postsecondary / Learning (After High School)",
     emoji: "🎓",
+    description: "Checking out what's next after high school - colleges, trades, certificates, whatever interests you",
     goals: [
       {
         id: "research-programs",
@@ -1142,6 +1149,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
     id: "social-skills",
     title: "Social Skills",
     emoji: "🗣️",
+    description: "Connecting with people in your own comfortable way - even tiny interactions count",
     goals: [
       {
         id: "say-hi",
