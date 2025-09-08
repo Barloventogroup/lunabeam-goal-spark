@@ -81,12 +81,24 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       if (!document.hidden && user) {
         console.log('Tab became visible - refreshing goals data');
         loadGoals();
+        loadPoints(); // Also refresh points when tab becomes visible
       }
     };
 
+    // Listen for immediate points updates from step completions
+    const handlePointsUpdated = () => {
+      console.log('Dashboard: Points updated event received, refreshing...');
+      loadPoints();
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [user, loadGoals]);
+    window.addEventListener('pointsUpdated', handlePointsUpdated);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pointsUpdated', handlePointsUpdated);
+    };
+  }, [user, loadGoals, loadPoints]);
 
   const activeGoal = getActiveGoal();
   const activeGoalSteps = activeGoal ? steps[activeGoal.id] || [] : [];

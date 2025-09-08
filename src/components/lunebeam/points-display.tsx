@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { pointsService, type PointsSummary } from '@/services/pointsService';
+import { useStore } from '@/store/useStore';
 import { Zap, Trophy, Target } from 'lucide-react';
 
 interface PointsDisplayProps {
@@ -9,25 +9,32 @@ interface PointsDisplayProps {
 }
 
 export const PointsDisplay: React.FC<PointsDisplayProps> = ({ compact = false }) => {
-  const [pointsSummary, setPointsSummary] = useState<PointsSummary | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { pointsSummary, loadPoints } = useStore();
 
   useEffect(() => {
+    // Load points when component mounts
     loadPoints();
-  }, []);
+    
+    // Set up periodic refresh to catch new point awards
+    const interval = setInterval(() => {
+      loadPoints();
+    }, 10000); // Refresh every 10 seconds
+    
+    // Listen for immediate points updates
+    const handlePointsUpdated = () => {
+      console.log('Points updated event received, refreshing...');
+      loadPoints();
+    };
+    
+    window.addEventListener('pointsUpdated', handlePointsUpdated);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('pointsUpdated', handlePointsUpdated);
+    };
+  }, [loadPoints]);
 
-  const loadPoints = async () => {
-    try {
-      const summary = await pointsService.getPointsSummary();
-      setPointsSummary(summary);
-    } catch (error) {
-      console.error('Error loading points:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (!pointsSummary) {
     return (
       <Card className={compact ? "w-full" : ""}>
         <CardContent className="p-4">
@@ -40,9 +47,6 @@ export const PointsDisplay: React.FC<PointsDisplayProps> = ({ compact = false })
     );
   }
 
-  if (!pointsSummary) {
-    return null;
-  }
 
   if (compact) {
     return (

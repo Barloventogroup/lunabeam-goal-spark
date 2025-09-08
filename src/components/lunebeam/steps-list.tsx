@@ -134,54 +134,16 @@ export const StepsList: React.FC<StepsListProps> = ({
   const visibleSteps = sortedActionableSteps.slice(0, 10);
   const queuedSteps = sortedActionableSteps.slice(10);
 
-  // Group steps with their sub-steps
-  const groupedSteps = visibleSteps.reduce((acc, step) => {
-    const isMainStep = step.title.includes('Week ') && step.title.includes('Session');
-    
-    if (isMainStep) {
-      acc.push({
-        mainStep: step,
-        subSteps: []
-      });
-    } else {
-      // This is a sub-step, find its parent main step
-      const lastGroup = acc[acc.length - 1];
-      if (lastGroup) {
-        lastGroup.subSteps.push(step);
-      } else {
-        // No main step found, treat as standalone
-        acc.push({
-          mainStep: step,
-          subSteps: []
-        });
-      }
-    }
-    
-    return acc;
-  }, [] as Array<{ mainStep: Step; subSteps: Step[] }>);
+  // Group steps with their sub-steps - but only use actual substeps from the database
+  const groupedSteps = visibleSteps.map(step => ({
+    mainStep: step,
+    subSteps: [] as Step[] // For now, no frontend grouping - only use actual database substeps
+  }));
 
-  const queuedGroupedSteps = queuedSteps.reduce((acc, step) => {
-    const isMainStep = step.title.includes('Week ') && step.title.includes('Session');
-    
-    if (isMainStep) {
-      acc.push({
-        mainStep: step,
-        subSteps: []
-      });
-    } else {
-      const lastGroup = acc[acc.length - 1];
-      if (lastGroup) {
-        lastGroup.subSteps.push(step);
-      } else {
-        acc.push({
-          mainStep: step,
-          subSteps: []
-        });
-      }
-    }
-    
-    return acc;
-  }, [] as Array<{ mainStep: Step; subSteps: Step[] }>);
+  const queuedGroupedSteps = queuedSteps.map(step => ({
+    mainStep: step,
+    subSteps: [] as Step[] // For now, no frontend grouping - only use actual database substeps
+  }));
 
   const handleMarkComplete = async (stepId: string) => {
     console.log('handleMarkComplete called for stepId:', stepId);
@@ -215,6 +177,11 @@ export const StepsList: React.FC<StepsListProps> = ({
         });
         stepsAfter = steps.map(s => s.id === stepId ? updatedStep : s);
         onStepsUpdate(stepsAfter, updatedGoal);
+        
+        // Trigger points refresh to update points display
+        if (window.dispatchEvent) {
+          window.dispatchEvent(new CustomEvent('pointsUpdated'));
+        }
       }
 
       // Check for unlocked dependencies
