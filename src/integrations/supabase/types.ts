@@ -827,6 +827,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_invite_by_token: {
+        Args: { _token: string }
+        Returns: Json
+      }
       accept_supporter_invite_secure: {
         Args: { _invite_token: string }
         Returns: Json
