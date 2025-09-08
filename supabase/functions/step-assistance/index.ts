@@ -172,15 +172,12 @@ function parseSubSteps(response: string, parentStep: any, goal: any): any[] {
     if (!match) return null;
 
     const [, title, description, timeStr] = match;
-    const estimatedTime = timeStr ? parseInt(timeStr) : undefined;
 
     return {
       title: title.trim(),
-      notes: description.trim(),
-      estimated_effort_min: estimatedTime,
-      goal_id: goal.id,
-      is_required: true,
-      order_index: (parentStep.order_index || 0) + index + 1
+      description: description.trim(),
+      step_id: parentStep.id,
+      is_planned: false
     };
   }).filter(Boolean);
 }
@@ -190,47 +187,31 @@ async function createSubSteps(subSteps: any[], parentStep: any, goal: any) {
   const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  console.log(`Creating ${subSteps.length} sub-steps for step ${parentStep.id}`);
+  console.log(`Creating ${subSteps.length} substeps for step ${parentStep.id}`);
 
-  // Determine starting order index by appending to the end (avoid raw SQL increments)
-  let startOrder = 0;
-  try {
-    const { data: lastStep } = await supabase
-      .from('steps')
-      .select('order_index')
-      .eq('goal_id', goal.id)
-      .order('order_index', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    startOrder = (lastStep?.order_index ?? 0) + 1;
-  } catch (_e) {
-    startOrder = (parentStep.order_index || 0) + 1;
-  }
-
-  const createdSteps = [];
+  const createdSubsteps = [];
   
-  for (const [index, subStep] of subSteps.entries()) {
+  for (const subStep of subSteps) {
     try {
-      const toInsert = { ...subStep, order_index: startOrder + index };
       const { data, error } = await supabase
-        .from('steps')
-        .insert(toInsert)
+        .from('substeps')
+        .insert(subStep)
         .select()
         .single();
 
       if (error) {
-        console.error('Error creating sub-step:', error);
+        console.error('Error creating substep:', error);
         continue;
       }
 
-      createdSteps.push(data);
-      console.log('Created sub-step:', data.title);
+      createdSubsteps.push(data);
+      console.log('Created substep:', data.title);
     } catch (error) {
-      console.error('Error inserting sub-step:', error);
+      console.error('Error inserting substep:', error);
     }
   }
 
-  return createdSteps;
+  return createdSubsteps;
 }
 
 async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<any[]> {
