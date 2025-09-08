@@ -58,7 +58,6 @@ export const StepsList: React.FC<StepsListProps> = ({
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
   const [showingQueuedSteps, setShowingQueuedSteps] = useState(false);
   const [awaitingStepUpdate, setAwaitingStepUpdate] = useState<string | null>(null);
-  const [optimisticDone, setOptimisticDone] = useState<Set<string>>(new Set());
   const [substepsMap, setSubstepsMap] = useState<Record<string, Substep[]>>({});
   const { toast } = useToast();
 
@@ -356,13 +355,6 @@ export const StepsList: React.FC<StepsListProps> = ({
     });
     
     setAwaitingStepUpdate(stepId);
-    // Optimistic UI: mark as done immediately
-    setOptimisticDone(prev => {
-      const next = new Set(prev);
-      next.add(stepId);
-      console.log('[StepsList] optimisticDone -> add', stepId, 'size:', next.size);
-      return next;
-    });
     
     try {
       const result = await stepsService.completeStep(stepId);
@@ -403,13 +395,6 @@ export const StepsList: React.FC<StepsListProps> = ({
       });
     } catch (error) {
       console.error('Error completing step:', error);
-      // Revert optimistic state on failure
-      setOptimisticDone(prev => {
-        const next = new Set(prev);
-        next.delete(stepId);
-        console.log('[StepsList] optimisticDone -> revert', stepId, 'size:', next.size);
-        return next;
-      });
       toast({
         title: "Error",
         description: "Failed to complete step. Please try again.",
@@ -502,9 +487,8 @@ export const StepsList: React.FC<StepsListProps> = ({
     }
   };
 
-  // Optimistic status helper - treats steps marked locally as done as done for UI
   const isStepDone = (step: Step): boolean => {
-    return optimisticDone.has(step.id) || step.status === 'done';
+    return step.status === 'done';
   };
 
   const getStepIcon = (step: Step) => {
