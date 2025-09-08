@@ -209,6 +209,40 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     return domainMap[domain] || domain;
   };
 
+  const sanitizeDescription = (text?: string): string => {
+    if (!text) return '';
+    let out = text.trim();
+    
+    // Fix frequency patterns
+    out = out.replace(/(\d+)x\/week/gi, '$1 times per week');
+    out = out.replace(/Daily for (\d+) times per week/gi, '$1 times per week');
+    out = out.replace(/Daily for (\d+)x\/week/gi, '$1 times per week');
+    
+    // Fix double parentheses and nested structures
+    out = out.replace(/\(\s*\([^)]+\)\s*\)/g, (match) => {
+      const inner = match.replace(/^\(\s*\(/, '(').replace(/\)\s*\)$/, ')');
+      return inner;
+    });
+    
+    // Remove outer parentheses around trailing "with ..." clauses
+    out = out.replace(/\.?\s*\((with [^)]+)\)\s*$/i, '. $1');
+    
+    // Fix awkward "to relax/enjoy" patterns
+    out = out.replace(/to relax\/enjoy/gi, 'to relax and enjoy');
+    
+    // Fix standalone "with" clauses at the end
+    out = out.replace(/\.\s*with\s+([A-Z])/g, ' with $1');
+    
+    // Fix double spaces and ensure proper spacing
+    out = out.replace(/\s{2,}/g, ' ');
+    out = out.replace(/\s*\.\s*\./g, '.');
+    
+    // Ensure single ending period
+    out = out.replace(/\.+\s*$/, '.');
+    
+    return out;
+  };
+
   if (loading || !goal) {
     return (
       <div className="space-y-6">
@@ -315,7 +349,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       {goal.description && (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-muted-foreground">{goal.description}</p>
+            <p className="text-muted-foreground">{sanitizeDescription(goal.description)}</p>
           </CardContent>
         </Card>
       )}

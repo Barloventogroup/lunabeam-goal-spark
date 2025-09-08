@@ -524,7 +524,7 @@ Sound good?`,
                   <SelectContent>
                     <SelectItem value="once">Once</SelectItem>
                     <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="3x/week">3x/week</SelectItem>
+                    <SelectItem value="3times">3 times per week</SelectItem>
                     <SelectItem value="weekly">Weekly</SelectItem>
                     <SelectItem value="custom">Custom...</SelectItem>
                   </SelectContent>

@@ -158,6 +158,18 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
       }
     }
 
+    // Add timing if specified 
+    if (state.timing?.label) {
+      const timing = state.timing.label.toLowerCase();
+      if (timing.includes('daily')) {
+        sentence += ' daily';
+      } else if (timing.includes('week')) {
+        sentence += ` ${timing.replace('×', ' times')}`;
+      } else {
+        sentence += ` ${timing}`;
+      }
+    }
+
     // Handle due date if set
     if (state.dueDate) {
       sentence += ` by ${format(state.dueDate, 'MMM d, yyyy')}`;

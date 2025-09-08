@@ -140,14 +140,34 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   const sanitizeDescription = (text?: string): string => {
     if (!text) return '';
     let out = text.trim();
-    // Remove outer parentheses around trailing "with ..."
-    out = out.replace(/\.?\s*\((with [^)]+)\)\s*$/i, '. $1');
-    // Normalize x/week to proper grammar
+    
+    // Fix frequency patterns
     out = out.replace(/(\d+)x\/week/gi, '$1 times per week');
-    // Fix double spaces
+    out = out.replace(/Daily for (\d+) times per week/gi, '$1 times per week');
+    out = out.replace(/Daily for (\d+)x\/week/gi, '$1 times per week');
+    
+    // Fix double parentheses and nested structures
+    out = out.replace(/\(\s*\([^)]+\)\s*\)/g, (match) => {
+      const inner = match.replace(/^\(\s*\(/, '(').replace(/\)\s*\)$/, ')');
+      return inner;
+    });
+    
+    // Remove outer parentheses around trailing "with ..." clauses
+    out = out.replace(/\.?\s*\((with [^)]+)\)\s*$/i, '. $1');
+    
+    // Fix awkward "to relax/enjoy" patterns
+    out = out.replace(/to relax\/enjoy/gi, 'to relax and enjoy');
+    
+    // Fix standalone "with" clauses at the end
+    out = out.replace(/\.\s*with\s+([A-Z])/g, ' with $1');
+    
+    // Fix double spaces and ensure proper spacing
     out = out.replace(/\s{2,}/g, ' ');
+    out = out.replace(/\s*\.\s*\./g, '.');
+    
     // Ensure single ending period
-    out = out.replace(/\.*\s*$/, '.');
+    out = out.replace(/\.+\s*$/, '.');
+    
     return out;
   };
 
