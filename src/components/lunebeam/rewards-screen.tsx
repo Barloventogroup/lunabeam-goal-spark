@@ -55,7 +55,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-gradient-soft">
       {/* Header */}
-      <div className="flex items-center gap-4 p-4 bg-card/80 backdrop-blur border-b">
+      <div className="flex items-center gap-4 p-4 bg-card/80 backdrop-blur border-b border-gray-200">
         <Button variant="ghost" size="sm" onClick={onBack} className="p-2">
           <ArrowLeft className="h-4 w-4" />
         </Button>

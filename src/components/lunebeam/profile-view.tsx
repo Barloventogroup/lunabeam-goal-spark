@@ -177,7 +177,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-gradient-soft">
       {/* Header */}
-      <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b">
+      <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
         <div className="flex items-center gap-3">
           <Button 
             variant="ghost" 
