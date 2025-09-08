@@ -76,7 +76,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
             <CardContent className="p-4">
               <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
               <div className="text-2xl font-bold">{totalPoints}</div>
-              <div className="text-xs text-muted-foreground">Points</div>
+              <div className="text-xs text-muted-foreground">LunaPoints</div>
             </CardContent>
           </Card>
         </div>
@@ -84,7 +84,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
         {/* Detailed Sections */}
         <Tabs defaultValue="points" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="points">Points</TabsTrigger>
+            <TabsTrigger value="points">LunaPoints</TabsTrigger>
             <TabsTrigger value="goals">Goals Completed</TabsTrigger>
             <TabsTrigger value="badges">Badges Earned</TabsTrigger>
           </TabsList>
@@ -248,7 +248,7 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
             </Card>
           </TabsContent>
 
-          {/* Points Tab */}
+          {/* LunaPoints Tab */}
           <TabsContent value="points" className="space-y-4">
             <PointsDisplay />
           </TabsContent>

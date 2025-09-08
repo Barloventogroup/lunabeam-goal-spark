@@ -51,7 +51,7 @@ export const PointsDisplay: React.FC<PointsDisplayProps> = ({ compact = false })
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-primary" />
-              <span className="font-semibold">Points</span>
+              <span className="font-semibold">LunaPoints</span>
             </div>
             <Badge variant="secondary" className="text-lg font-bold">
               {pointsSummary.totalPoints}
@@ -68,7 +68,7 @@ export const PointsDisplay: React.FC<PointsDisplayProps> = ({ compact = false })
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2">
             <Trophy className="h-5 w-5 text-primary" />
-            Total Points
+            Total LunaPoints
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -83,7 +83,7 @@ export const PointsDisplay: React.FC<PointsDisplayProps> = ({ compact = false })
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" />
-              Points by Category
+              LunaPoints by Category
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">

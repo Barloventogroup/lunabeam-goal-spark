@@ -322,7 +322,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
             <CardContent className="p-4">
               <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
               <div className="text-2xl font-bold">{totalPoints}</div>
-              <div className="text-xs text-muted-foreground">Points</div>
+              <div className="text-xs text-muted-foreground">LunaPoints</div>
             </CardContent>
           </Card>
         </div>
@@ -364,7 +364,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                 <div className="text-center p-4 rounded-lg bg-muted/30">
                   <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
                   <div className="text-2xl font-bold">{totalPoints}</div>
-                  <div className="text-xs text-muted-foreground">Points</div>
+                  <div className="text-xs text-muted-foreground">LunaPoints</div>
                 </div>
               </div>
             </CardContent>
