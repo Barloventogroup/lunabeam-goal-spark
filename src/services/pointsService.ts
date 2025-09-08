@@ -23,12 +23,13 @@ export interface PointsSummary {
 
 const CATEGORY_CONFIG = {
   independent_living: { displayName: 'Independent Living', emoji: '🏠' },
-  postsecondary_learning: { displayName: 'Postsecondary / Learning', emoji: '🎓' },
+  education: { displayName: 'Education', emoji: '📘' },
+  postsecondary: { displayName: 'Postsecondary', emoji: '🎓' },
   recreation_fun: { displayName: 'Recreation / Fun', emoji: '🎉' },
   social_skills: { displayName: 'Social Skills', emoji: '🗣️' },
   employment: { displayName: 'Employment', emoji: '💼' },
-  self_advocacy_life_skills: { displayName: 'Self-Advocacy & Life Skills', emoji: '🧑‍🤝‍🧑' },
-  health_wellbeing: { displayName: 'Health & Well-Being', emoji: '❤️' },
+  self_advocacy: { displayName: 'Self-Advocacy', emoji: '🧑‍🤝‍🧑' },
+  health: { displayName: 'Health', emoji: '❤️' },
   general: { displayName: 'General', emoji: '⭐' }
 };
 
@@ -98,62 +99,72 @@ export const pointsService = {
         }
         break;
 
-      case 'postsecondary_learning':
-        if (/(?:study|homework|practice|quiz|read|review)/.test(combinedText)) {
+      case 'education':
+        if (/(?:homework|study|class|participation|complete|assignment)/.test(combinedText)) {
           points = 5;
-        } else if (/(?:campus|visit|group project|test prep|project|research)/.test(combinedText)) {
+        } else if (/(?:project|test prep|group work|finish|research)/.test(combinedText)) {
+          points = 10;
+        } else if (/(?:exam|pass|term|present|milestone|graduate)/.test(combinedText)) {
+          points = 20;
+        }
+        break;
+
+      case 'postsecondary':
+        if (/(?:study|homework|practice|quiz|session)/.test(combinedText)) {
+          points = 5;
+        } else if (/(?:campus|visit|group project|test prep)/.test(combinedText)) {
           points = 15;
-        } else if (/(?:application|submit|certificate|earn|graduate|degree|diploma)/.test(combinedText)) {
+        } else if (/(?:application|submit|certificate|earn)/.test(combinedText)) {
           points = 25;
         }
         break;
 
       case 'recreation_fun':
-        if (/(?:solo|hobby|art|game|draw|paint|music|read)/.test(combinedText)) {
+        if (/(?:solo|hobby|art|game|draw|paint|music)/.test(combinedText)) {
           points = 5;
-        } else if (/(?:group|friend|invite|social|party|event)/.test(combinedText)) {
+        } else if (/(?:group|friend|invite|social|recreation)/.test(combinedText)) {
           points = 10;
-        } else if (/(?:lead|leading|organize|4-week|streak|maintain)/.test(combinedText)) {
+        } else if (/(?:lead|leading|organize|4-week|streak|event)/.test(combinedText)) {
           points = 20;
         }
         break;
 
       case 'social_skills':
-        if (/(?:greet|introduction|role-play|hello|meet|conversation)/.test(combinedText)) {
+        if (/(?:greet|introduction|role-play|hello|short)/.test(combinedText)) {
           points = 5;
-        } else if (/(?:group conversation|join|activity|participate|team)/.test(combinedText)) {
+        } else if (/(?:group conversation|join|activity|participate)/.test(combinedText)) {
           points = 15;
-        } else if (/(?:lead|leading|presentation|present|10|interactions|speech)/.test(combinedText)) {
+        } else if (/(?:lead|leading|presentation|present|10.*interaction)/.test(combinedText)) {
           points = 25;
         }
         break;
 
       case 'employment':
-        if (/(?:career|interest|assessment|resume|draft|cv)/.test(combinedText)) {
+        if (/(?:career|interest|assessment|resume|draft)/.test(combinedText)) {
           points = 5;
-        } else if (/(?:job shadow|mock interview|volunteer|practice|network)/.test(combinedText)) {
+        } else if (/(?:job shadow|mock interview|volunteer)/.test(combinedText)) {
           points = 15;
-        } else if (/(?:job application|interview|workday|first day|hired|start work)/.test(combinedText)) {
+        } else if (/(?:job application|interview|workday|first day)/.test(combinedText)) {
           points = 30;
         }
         break;
 
-      case 'self_advocacy_life_skills':
-        if (/(?:ask|help|choice|decide|request|support)/.test(combinedText)) {
+      case 'self_advocacy':
+        if (/(?:ask|help|choice|decide|making choice)/.test(combinedText)) {
           points = 5;
-        } else if (/(?:meeting|planning|participate|disclosure|practice|plan)/.test(combinedText)) {
+        } else if (/(?:meeting|planning|participate|disclosure|practice)/.test(combinedText)) {
           points = 15;
-        } else if (/(?:lead meeting|advocacy|independent|community|advocate)/.test(combinedText)) {
+        } else if (/(?:lead meeting|advocacy|independent|community)/.test(combinedText)) {
           points = 30;
         }
         break;
 
-      case 'health_wellbeing':
-        if (/(?:log|exercise|meal|sleep|mindfulness|track|journal)/.test(combinedText)) {
+      case 'health':
+        if (/(?:log|exercise|meal|sleep|mindfulness|track)/.test(combinedText)) {
           points = 5;
-        } else if (/(?:therapy|wellness|group|counseling|support group)/.test(combinedText)) {
+        } else if (/(?:therapy|wellness|group|counseling|attend)/.test(combinedText)) {
           points = 10;
-        } else if (/(?:30-day|streak|medical plan|maintain|health plan)/.test(combinedText)) {
+        } else if (/(?:30-day|streak|medical plan|maintain)/.test(combinedText)) {
           points = 20;
         }
         break;
@@ -166,12 +177,13 @@ export const pointsService = {
   mapDomainToCategory(domain: string): string {
     const mapping: Record<string, string> = {
       'independent-living': 'independent_living',
-      'postsecondary': 'postsecondary_learning',
+      'education': 'education',
+      'postsecondary': 'postsecondary',
       'recreation': 'recreation_fun',
       'social': 'social_skills',
       'employment': 'employment',
-      'self-advocacy': 'self_advocacy_life_skills',
-      'health': 'health_wellbeing'
+      'self-advocacy': 'self_advocacy',
+      'health': 'health'
     };
     return mapping[domain] || 'general';
   },
