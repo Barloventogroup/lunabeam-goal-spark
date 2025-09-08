@@ -185,6 +185,69 @@ export const StepsList: React.FC<StepsListProps> = ({
 
   const progressStats = calculateProgress();
 
+  // Define isStepBlocked before using it
+  const isStepBlocked = (step: Step): boolean => {
+    // Check explicit dependencies first
+    if (step.dependency_step_ids && step.dependency_step_ids.length > 0) {
+      return step.dependency_step_ids.some(depId => {
+        const depStep = steps.find(s => s.id === depId);
+        return depStep && depStep.status !== 'done' && depStep.status !== 'skipped';
+      });
+    }
+
+    // Check week-based progression
+    const weekMatch = step.title.match(/Week (\d+)/i);
+    if (weekMatch) {
+      const currentWeek = parseInt(weekMatch[1]);
+
+      // For Week 2+, check if previous weeks are complete
+      if (currentWeek > 1) {
+        const prevWeekSteps = steps.filter(s => {
+          const prevWeekMatch = s.title.match(/Week (\d+)/i);
+          if (!prevWeekMatch) return false;
+          
+          const stepWeek = parseInt(prevWeekMatch[1]);
+          return stepWeek < currentWeek && 
+                 s.is_required && 
+                 s.status !== 'done' && 
+                 s.status !== 'skipped';
+        });
+
+        if (prevWeekSteps.length > 0) {
+          return true;
+        }
+      }
+
+      // Check session progression within the same week
+      const currentSessionMatch = step.title.match(/Session (\d+)/i);
+      if (currentSessionMatch) {
+        const currentSession = parseInt(currentSessionMatch[1]);
+        
+        const currentWeekSteps = steps.filter(s => {
+          const weekMatch = s.title.match(/Week (\d+)/i);
+          const sessionMatch = s.title.match(/Session (\d+)/i);
+          
+          if (!weekMatch || !sessionMatch) return false;
+          
+          const stepWeek = parseInt(weekMatch[1]);
+          const stepSession = parseInt(sessionMatch[1]);
+          
+          return stepWeek === currentWeek && 
+                 stepSession < currentSession && 
+                 s.is_required && 
+                 s.status !== 'done' && 
+                 s.status !== 'skipped';
+        });
+
+        if (currentWeekSteps.length > 0) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
   // Group steps with their substeps from database
   const groupedSteps: StepGroup[] = visibleSteps.map((step) => ({
     mainStep: step,
@@ -307,67 +370,6 @@ export const StepsList: React.FC<StepsListProps> = ({
     return subSteps.length === 0 || subSteps.every(subStep => subStep.completed_at !== null);
   };
 
-  const isStepBlocked = (step: Step): boolean => {
-    // Check explicit dependencies first
-    if (step.dependency_step_ids && step.dependency_step_ids.length > 0) {
-      return step.dependency_step_ids.some(depId => {
-        const depStep = steps.find(s => s.id === depId);
-        return depStep && depStep.status !== 'done' && depStep.status !== 'skipped';
-      });
-    }
-
-    // Check week-based progression
-    const weekMatch = step.title.match(/Week (\d+)/i);
-    if (weekMatch) {
-      const currentWeek = parseInt(weekMatch[1]);
-
-      // For Week 2+, check if previous weeks are complete
-      if (currentWeek > 1) {
-        const prevWeekSteps = steps.filter(s => {
-          const prevWeekMatch = s.title.match(/Week (\d+)/i);
-          if (!prevWeekMatch) return false;
-          
-          const stepWeek = parseInt(prevWeekMatch[1]);
-          return stepWeek < currentWeek && 
-                 s.is_required && 
-                 s.status !== 'done' && 
-                 s.status !== 'skipped';
-        });
-
-        if (prevWeekSteps.length > 0) {
-          return true;
-        }
-      }
-
-      // Check session progression within the same week
-      const currentSessionMatch = step.title.match(/Session (\d+)/i);
-      if (currentSessionMatch) {
-        const currentSession = parseInt(currentSessionMatch[1]);
-        
-        const currentWeekSteps = steps.filter(s => {
-          const weekMatch = s.title.match(/Week (\d+)/i);
-          const sessionMatch = s.title.match(/Session (\d+)/i);
-          
-          if (!weekMatch || !sessionMatch) return false;
-          
-          const stepWeek = parseInt(weekMatch[1]);
-          const stepSession = parseInt(sessionMatch[1]);
-          
-          return stepWeek === currentWeek && 
-                 stepSession < currentSession && 
-                 s.is_required && 
-                 s.status !== 'done' && 
-                 s.status !== 'skipped';
-        });
-
-        if (currentWeekSteps.length > 0) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  };
 
   const getBlockedStepInfo = async (step: Step) => {
     try {
