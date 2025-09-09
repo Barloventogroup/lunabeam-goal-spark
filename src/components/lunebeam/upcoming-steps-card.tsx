@@ -57,9 +57,8 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
               {onViewStep && (
                 <Button 
                   size="sm" 
-                  variant="outline"
                   onClick={() => onViewStep(step.id, goal.id)}
-                  className="ml-2"
+                  className="bg-blue-600 hover:bg-blue-700 text-white ml-2"
                 >
                   View
                 </Button>

@@ -31,47 +31,44 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
     return (
       <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
         <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-              <Clock className="h-4 w-4 text-primary-foreground" />
-            </div>
-            
-            <div className="flex-1 space-y-3">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-foreground">Today's Focus</h3>
-                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                    {estimatedTime}
-                  </span>
-                </div>
-                
-                <p className="text-sm text-muted-foreground mb-2">
-                  From "{goal.title}"
-                </p>
-                
-                <p className="font-medium text-foreground text-sm">
-                  {step.title}
-                </p>
-                
-                {step.explainer && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {step.explainer}
-                  </p>
-                )}
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <Clock className="h-4 w-4 text-primary-foreground" />
               </div>
               
-              <div className="flex gap-2 flex-wrap">
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={onViewStep}
-                  className="ml-auto"
-                >
-                  View
-                </Button>
+              <div className="flex-1 space-y-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-foreground">Today's Focus</h3>
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                      {estimatedTime}
+                    </span>
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground mb-2">
+                    From "{goal.title}"
+                  </p>
+                  
+                  <p className="font-medium text-foreground text-sm">
+                    {step.title}
+                  </p>
+                  
+                  {step.explainer && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {step.explainer}
+                    </p>
+                  )}
+                </div>
               </div>
+              
+              <Button 
+                size="sm" 
+                onClick={onViewStep}
+                className="bg-blue-600 hover:bg-blue-700 text-white ml-2"
+              >
+                View
+              </Button>
             </div>
-          </div>
         </CardContent>
       </Card>
     );

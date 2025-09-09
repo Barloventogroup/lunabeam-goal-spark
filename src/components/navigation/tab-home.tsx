@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, CheckCircle, Plus, Award, ChevronRight, Star, Coins } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Card, CardContent } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { parseISO, isToday } from 'date-fns';
 
@@ -200,49 +200,54 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
 
 
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold">Your Goals</h3>
-              <Button onClick={() => setCurrentView('add-goal')} size="sm" className="rounded-full w-8 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" aria-label="Add Goal">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            {activeGoals.length > 0 ? <div className="space-y-3">
-                {activeGoals.slice(0, 3).map(goal => <Card key={goal.id} className="cursor-pointer hover:shadow-card transition-all duration-200 shadow-soft">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1" onClick={() => onNavigateToGoals(goal.id)}>
-                          <h4 className="text-sm font-bold mb-1">{goal.title}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {Math.round(goal.progress_pct || 0)}% complete
-                          </p>
-                        </div>
-                         <div className="flex gap-2">
-                           <Button 
-                             size="sm" 
-                             variant="checkin" 
-                             onClick={() => {
-                               setSelectedGoal(goal);
-                               setShowCheckinModal(true);
-                             }}
-                           >
-                             Check In
-                           </Button>
-                           <Button variant="default" size="sm" onClick={() => onNavigateToGoals(goal.id)}>
-                             View
-                           </Button>
-                         </div>
+          <Card className="bg-gradient-to-r from-muted/5 to-accent/5 border-muted">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-foreground">
+                <span>Your Goals</span>
+                <Button onClick={() => setCurrentView('add-goal')} size="sm" className="rounded-full w-8 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" aria-label="Add Goal">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {activeGoals.length > 0 ? (
+                <>
+                  {activeGoals.slice(0, 3).map(goal => (
+                    <div key={goal.id} className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
+                      <div className="flex-1" onClick={() => onNavigateToGoals(goal.id)}>
+                        <h4 className="text-sm font-medium mb-1">{goal.title}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {Math.round(goal.progress_pct || 0)}% complete
+                        </p>
                       </div>
-                    </CardContent>
-                  </Card>)}
-                
-                {/* Show More button as a card when there are more than 3 goals */}
-                {activeGoals.length > 3 && (
-                  <Card 
-                    className="cursor-pointer hover:bg-muted/50 transition-colors border-dashed"
-                    onClick={() => onNavigateToGoals()}
-                  >
-                    <CardContent className="p-4">
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="checkin" 
+                          onClick={() => {
+                            setSelectedGoal(goal);
+                            setShowCheckinModal(true);
+                          }}
+                        >
+                          Check In
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          onClick={() => onNavigateToGoals(goal.id)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          View
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Show More button when there are more than 3 goals */}
+                  {activeGoals.length > 3 && (
+                    <div 
+                      className="cursor-pointer hover:bg-muted/50 transition-colors border-dashed border p-3 rounded-lg"
+                      onClick={() => onNavigateToGoals()}
+                    >
                       <div className="flex items-center justify-end text-right w-full">
                         <div className="text-muted-foreground flex items-center gap-2">
                           <p className="text-sm font-medium">
@@ -251,15 +256,14 @@ export const TabHome: React.FC<TabHomeProps> = ({
                           <ChevronRight className="h-4 w-4" />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div> : <Card className="shadow-soft">
-                <CardContent className="p-6 text-center text-muted-foreground">
-                  No active goals yet
-                </CardContent>
-              </Card>}
-          </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">No active goals yet</p>
+              )}
+            </CardContent>
+          </Card>
 
           {/* LunaPoints */}
           <div className="space-y-3">
