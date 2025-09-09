@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreVertical, Edit } from 'lucide-react';
+import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreHorizontal, Edit } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -737,7 +737,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                                       size="sm" 
                                       className="h-7 w-7 p-0 hover:bg-muted"
                                     >
-                                      <MoreVertical className="h-4 w-4" />
+                                      <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end" className="bg-background border border-border shadow-lg z-50">
