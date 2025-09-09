@@ -21,12 +21,13 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { stepsService } from '@/services/goalsService';
-import type { Step } from '@/types';
+import type { Step, Goal } from '@/types';
 
 interface StepEditModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   step: Step;
+  goal: Goal;
   onStepUpdate?: (updatedStep: Step) => void;
 }
 
@@ -34,6 +35,7 @@ export const StepEditModal: React.FC<StepEditModalProps> = ({
   isOpen,
   onOpenChange,
   step,
+  goal,
   onStepUpdate
 }) => {
   const [title, setTitle] = useState(step.title);
@@ -51,6 +53,35 @@ export const StepEditModal: React.FC<StepEditModalProps> = ({
         variant: "destructive",
       });
       return;
+    }
+
+    // Validate due date against goal's due date
+    if (dueDate && goal.due_date) {
+      const goalDueDate = new Date(goal.due_date);
+      if (dueDate > goalDueDate) {
+        toast({
+          title: "Invalid due date",
+          description: `Step due date cannot be after goal due date (${format(goalDueDate, 'PPP')}).`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Validate due date is not in the past (unless step is already overdue)
+    if (dueDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      dueDate.setHours(0, 0, 0, 0);
+      
+      if (dueDate < today && (!step.due_date || new Date(step.due_date) >= today)) {
+        toast({
+          title: "Invalid due date",
+          description: "Step due date cannot be in the past.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -138,6 +169,20 @@ export const StepEditModal: React.FC<StepEditModalProps> = ({
                   onSelect={setDueDate}
                   initialFocus
                   className="p-3 pointer-events-auto"
+                  disabled={(date) => {
+                    // Disable past dates (unless step is already overdue)
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const checkDate = new Date(date);
+                    checkDate.setHours(0, 0, 0, 0);
+                    
+                    const isPastDate = checkDate < today && (!step.due_date || new Date(step.due_date) >= today);
+                    
+                    // Disable dates after goal due date
+                    const isAfterGoalDueDate = goal.due_date && checkDate > new Date(goal.due_date);
+                    
+                    return isPastDate || !!isAfterGoalDueDate;
+                  }}
                 />
                 {dueDate && (
                   <div className="p-3 border-t border-border">

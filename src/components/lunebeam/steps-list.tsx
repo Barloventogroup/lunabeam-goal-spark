@@ -931,6 +931,7 @@ export const StepsList: React.FC<StepsListProps> = ({
           isOpen={showEditModal}
           onOpenChange={setShowEditModal}
           step={currentEditStep}
+          goal={goal}
           onStepUpdate={handleStepUpdate}
         />
       )}

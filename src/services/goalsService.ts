@@ -289,6 +289,18 @@ export const stepsService = {
     is_planned?: boolean;
     planned_week_index?: number;
   }): Promise<{ step: Step; goal: Goal }> {
+    // Validate due date against goal's due date
+    if (stepData.due_date) {
+      const goal = await goalsService.getGoal(goalId);
+      if (goal?.due_date) {
+        const stepDueDate = new Date(stepData.due_date);
+        const goalDueDate = new Date(goal.due_date);
+        if (stepDueDate > goalDueDate) {
+          throw new Error(`Step due date cannot be after goal due date (${goalDueDate.toLocaleDateString()}).`);
+        }
+      }
+    }
+
     // Get the next order index
     const { count } = await supabase
       .from('steps')
@@ -346,6 +358,25 @@ export const stepsService = {
 
   // Update step
   async updateStep(stepId: string, updates: Partial<Step>): Promise<{ step: Step; goal: Goal }> {
+    // Validate due date against goal's due date if updating due_date
+    if (updates.due_date) {
+      const { data: stepData, error: stepError } = await supabase
+        .from('steps')
+        .select('goal_id')
+        .eq('id', stepId)
+        .single();
+      
+      if (stepError) throw stepError;
+      
+      const goal = await goalsService.getGoal(stepData.goal_id);
+      if (goal?.due_date) {
+        const stepDueDate = new Date(updates.due_date);
+        const goalDueDate = new Date(goal.due_date);
+        if (stepDueDate > goalDueDate) {
+          throw new Error(`Step due date cannot be after goal due date (${goalDueDate.toLocaleDateString()}).`);
+        }
+      }
+    }
     const { data: updatedStep, error: stepError } = await supabase
       .from('steps')
       .update(updates)
