@@ -1,10 +1,11 @@
 import * as React from "react"
-import { format, addDays, startOfDay, isSameDay } from "date-fns"
+import { format, addDays, startOfDay, isSameDay, parse, isValid } from "date-fns"
 import { Calendar as CalendarIcon, ArrowRight } from "lucide-react"
 import { DateRange } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Calendar } from "@/components/ui/calendar"
 import {
   Popover,
@@ -35,6 +36,14 @@ export function AirlineDatePicker({
 }: AirlineDatePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const [focusedInput, setFocusedInput] = React.useState<'start' | 'end'>('start')
+  const [startInputValue, setStartInputValue] = React.useState("")
+  const [endInputValue, setEndInputValue] = React.useState("")
+
+  // Update input values when dateRange changes
+  React.useEffect(() => {
+    setStartInputValue(dateRange?.from ? format(dateRange.from, "MMM dd, yyyy") : "")
+    setEndInputValue(dateRange?.to ? format(dateRange.to, "MMM dd, yyyy") : "")
+  }, [dateRange])
 
   const handleDateSelect = (newDateRange: DateRange | undefined) => {
     if (!newDateRange) {
@@ -85,6 +94,67 @@ export function AirlineDatePicker({
     onDateRangeChange(newDateRange)
   }
 
+  const parseDate = (value: string): Date | null => {
+    if (!value.trim()) return null
+    
+    // Try multiple date formats
+    const formats = [
+      "MMM dd, yyyy",
+      "MM/dd/yyyy", 
+      "MM-dd-yyyy",
+      "yyyy-MM-dd",
+      "dd/MM/yyyy",
+      "dd-MM-yyyy"
+    ]
+    
+    for (const formatStr of formats) {
+      try {
+        const parsed = parse(value, formatStr, new Date())
+        if (isValid(parsed)) return parsed
+      } catch (e) {
+        continue
+      }
+    }
+    
+    return null
+  }
+
+  const handleStartInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setStartInputValue(value)
+    
+    const parsedDate = parseDate(value)
+    if (parsedDate) {
+      onDateRangeChange({
+        from: parsedDate,
+        to: dateRange?.to
+      })
+    } else if (!value.trim()) {
+      onDateRangeChange({
+        from: undefined,
+        to: dateRange?.to
+      })
+    }
+  }
+
+  const handleEndInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setEndInputValue(value)
+    
+    const parsedDate = parseDate(value)
+    if (parsedDate) {
+      onDateRangeChange({
+        from: dateRange?.from,
+        to: parsedDate
+      })
+    } else if (!value.trim()) {
+      onDateRangeChange({
+        from: dateRange?.from,
+        to: undefined
+      })
+    }
+  }
+
   const formatDateDisplay = (date: Date | undefined) => {
     if (!date) return null
     return format(date, "MMM dd, yyyy")
@@ -97,58 +167,68 @@ export function AirlineDatePicker({
         <PopoverTrigger asChild>
           <div className="grid grid-cols-2 gap-2">
             {/* Start Date */}
-            <Button
-              variant="outline"
-              className={cn(
-                "h-14 justify-start text-left font-normal relative overflow-hidden",
-                !dateRange?.from && "text-muted-foreground",
-                focusedInput === 'start' && isOpen && "ring-2 ring-primary"
-              )}
-              disabled={disabled}
-              onClick={() => {
-                setFocusedInput('start')
-                setIsOpen(true)
-              }}
-            >
-              <div className="flex flex-col items-start w-full">
-                <span className="text-xs text-muted-foreground font-medium mb-1">
-                  {placeholder.start}
-                </span>
-                <div className="flex items-center">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm">
-                    {formatDateDisplay(dateRange?.from) || "Select date"}
-                  </span>
-                </div>
+            <div className="relative">
+              <label className="text-xs text-muted-foreground font-medium block mb-1">
+                {placeholder.start}
+              </label>
+              <div className="flex">
+                <Input
+                  value={startInputValue}
+                  onChange={handleStartInputChange}
+                  placeholder="Select date"
+                  className={cn(
+                    "h-12 pr-10",
+                    focusedInput === 'start' && isOpen && "ring-2 ring-primary"
+                  )}
+                  disabled={disabled}
+                  onFocus={() => setFocusedInput('start')}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-7 h-8 w-8 p-0"
+                  onClick={() => {
+                    setFocusedInput('start')
+                    setIsOpen(true)
+                  }}
+                  disabled={disabled}
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                </Button>
               </div>
-            </Button>
+            </div>
 
             {/* End Date */}
-            <Button
-              variant="outline"
-              className={cn(
-                "h-14 justify-start text-left font-normal relative overflow-hidden",
-                !dateRange?.to && "text-muted-foreground",
-                focusedInput === 'end' && isOpen && "ring-2 ring-primary"
-              )}
-              disabled={disabled}
-              onClick={() => {
-                setFocusedInput('end')
-                setIsOpen(true)
-              }}
-            >
-              <div className="flex flex-col items-start w-full">
-                <span className="text-xs text-muted-foreground font-medium mb-1">
-                  {placeholder.end}
-                </span>
-                <div className="flex items-center">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  <span className="text-sm">
-                    {formatDateDisplay(dateRange?.to) || "Select date"}
-                  </span>
-                </div>
+            <div className="relative">
+              <label className="text-xs text-muted-foreground font-medium block mb-1">
+                {placeholder.end}
+              </label>
+              <div className="flex">
+                <Input
+                  value={endInputValue}
+                  onChange={handleEndInputChange}
+                  placeholder="Select date"
+                  className={cn(
+                    "h-12 pr-10",
+                    focusedInput === 'end' && isOpen && "ring-2 ring-primary"
+                  )}
+                  disabled={disabled}
+                  onFocus={() => setFocusedInput('end')}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-7 h-8 w-8 p-0"
+                  onClick={() => {
+                    setFocusedInput('end')
+                    setIsOpen(true)
+                  }}
+                  disabled={disabled}
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                </Button>
               </div>
-            </Button>
+            </div>
           </div>
         </PopoverTrigger>
         
