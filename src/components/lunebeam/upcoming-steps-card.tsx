@@ -14,9 +14,6 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
   upcomingSteps,
   onViewStep
 }) => {
-  if (upcomingSteps.length === 0) {
-    return null;
-  }
 
   return (
     <Card className="bg-gradient-to-r from-muted/5 to-accent/5 border-muted">
@@ -27,46 +24,50 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {upcomingSteps.map(({step, goal, dueDate}, index) => {
-          const estimatedTime = step.estimated_effort_min 
-            ? `${step.estimated_effort_min} min`
-            : '5–7 min';
+        {upcomingSteps.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No upcoming steps scheduled.</p>
+        ) : (
+          upcomingSteps.map(({step, goal, dueDate}, index) => {
+            const estimatedTime = step.estimated_effort_min 
+              ? `${step.estimated_effort_min} min`
+              : '5–7 min';
 
-          return (
-            <div key={step.id} className="flex items-start justify-between p-3 bg-background rounded-lg border border-border">
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-medium text-foreground text-sm">
-                    {step.title}
-                  </h4>
-                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                    {estimatedTime}
-                  </span>
+            return (
+              <div key={step.id} className="flex items-start justify-between p-3 bg-background rounded-lg border border-border">
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium text-foreground text-sm">
+                      {step.title}
+                    </h4>
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                      {estimatedTime}
+                    </span>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground">
+                    From "{goal.title}"
+                  </p>
+                  
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Due {format(dueDate, 'MMM d, yyyy')}
+                  </p>
                 </div>
                 
-                <p className="text-xs text-muted-foreground">
-                  From "{goal.title}"
-                </p>
-                
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Due {format(dueDate, 'MMM d, yyyy')}
-                </p>
+                {onViewStep && (
+                  <Button 
+                    size="sm" 
+                    variant="ghost"
+                    onClick={() => onViewStep(step.id, goal.id)}
+                    className="ml-2 h-8 w-8 p-0"
+                  >
+                    <ArrowRight className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
-              
-              {onViewStep && (
-                <Button 
-                  size="sm" 
-                  variant="ghost"
-                  onClick={() => onViewStep(step.id, goal.id)}
-                  className="ml-2 h-8 w-8 p-0"
-                >
-                  <ArrowRight className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </CardContent>
     </Card>
   );

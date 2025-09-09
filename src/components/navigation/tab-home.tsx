@@ -80,10 +80,22 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const getTodaysStepsAndNext = () => {
     const todaysSteps: Array<{ step: any; goal: Goal }> = [];
     const upcomingSteps: Array<{ step: any; goal: Goal; dueDate: Date }> = [];
-    const allStepsDebug: Array<{ goalTitle: string; goalStatus: string; stepTitle: string; stepStatus: string; dueDate: string | null }> = [];
+    const allStepsDebug: Array<{ goalTitle: string; goalStatus: string; stepTitle: string; stepStatus: string; dueDate: any }> = [];
+
+    const normalizeDueDate = (raw: any): Date | null => {
+      if (!raw) return null;
+      try {
+        if (raw instanceof Date) return raw as Date;
+        if (typeof raw === 'string') return parseISO(raw as string);
+        const d = new Date(raw);
+        return d;
+      } catch {
+        return null;
+      }
+    };
 
     goals.forEach((goal) => {
-      // Include more goal statuses
+      // Include active/planned/paused goals
       if (goal.status === 'active' || goal.status === 'planned' || goal.status === 'paused') {
         const goalSteps = steps[goal.id] || [];
         goalSteps.forEach((step) => {
@@ -95,17 +107,15 @@ export const TabHome: React.FC<TabHomeProps> = ({
             dueDate: step.due_date
           });
 
-          // Include more step statuses and be more lenient with due dates
-          if (step.due_date && (step.status === 'todo' || step.status === 'doing' || !step.status)) {
-            try {
-              const dueDate = parseISO(step.due_date);
+          // Exclude completed or skipped steps; include others with a due date
+          if (step.status !== 'done' && step.status !== 'skipped') {
+            const dueDate = normalizeDueDate(step.due_date);
+            if (dueDate && !isNaN(dueDate.getTime())) {
               if (isToday(dueDate)) {
                 todaysSteps.push({ step, goal });
               } else if (dueDate >= new Date()) {
                 upcomingSteps.push({ step, goal, dueDate });
               }
-            } catch (e) {
-              console.warn('TabHome: invalid due_date for step', step.id, step.due_date);
             }
           }
         });
