@@ -146,7 +146,7 @@ export function AirlineDatePicker({
           </div>
         </PopoverTrigger>
         
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0 bg-background border border-border" align="start">
           <div className="flex">
             {/* Calendar */}
             <div className="p-4">
