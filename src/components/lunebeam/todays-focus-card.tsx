@@ -145,9 +145,9 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
             <div className="space-y-2">
               {upcomingSteps.map(({step, goal, dueDate}) => (
                 <div key={step.id} className="text-sm p-2 rounded-md bg-white/80 shadow-sm">
-                  <p className="font-medium text-foreground text-sm">
+                  <h4 className="font-medium text-foreground text-sm">
                     {cleanStepTitle(step.title)}
-                  </p>
+                  </h4>
                   <p className="text-muted-foreground">
                     Goal: {goal.title} • Due {format(dueDate, 'MMM d')}
                   </p>
