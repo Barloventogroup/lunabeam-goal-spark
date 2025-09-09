@@ -49,7 +49,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                   From "{goal.title}"
                 </p>
                 
-                <p className="font-medium text-foreground">
+                <p className="font-medium text-foreground text-sm">
                   {step.title}
                 </p>
                 
@@ -65,9 +65,9 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                   size="sm" 
                   variant="outline"
                   onClick={onViewStep}
+                  className="ml-auto"
                 >
-                  View Details
-                  <ArrowRight className="h-3 w-3 ml-1" />
+                  View
                 </Button>
               </div>
             </div>

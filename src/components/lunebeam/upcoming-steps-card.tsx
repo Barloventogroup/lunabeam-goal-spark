@@ -33,38 +33,38 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
               : '5–7 min';
 
             return (
-              <div key={step.id} className="flex items-start justify-between p-3 bg-background rounded-lg border border-border">
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-medium text-foreground">
-                      {step.title}
-                    </h4>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                      {estimatedTime}
-                    </span>
-                  </div>
-                  
-                  <p className="text-sm text-muted-foreground">
-                    From "{goal.title}"
-                  </p>
-                  
-                  <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    Due {format(dueDate, 'MMM d, yyyy')}
-                  </p>
+            <div key={step.id} className="flex items-start justify-between p-3 bg-background rounded-lg border border-border">
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-medium text-foreground text-sm">
+                    {step.title}
+                  </h4>
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                    {estimatedTime}
+                  </span>
                 </div>
                 
-                {onViewStep && (
-                  <Button 
-                    size="sm" 
-                    variant="ghost"
-                    onClick={() => onViewStep(step.id, goal.id)}
-                    className="ml-2 h-8 w-8 p-0"
-                  >
-                    <ArrowRight className="h-3 w-3" />
-                  </Button>
-                )}
+                <p className="text-xs text-muted-foreground">
+                  From "{goal.title}"
+                </p>
+                
+                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Due {format(dueDate, 'MMM d, yyyy')}
+                </p>
               </div>
+              
+              {onViewStep && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => onViewStep(step.id, goal.id)}
+                  className="ml-2"
+                >
+                  View
+                </Button>
+              )}
+            </div>
             );
           })
         )}
