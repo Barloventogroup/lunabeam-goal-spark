@@ -16,7 +16,6 @@ import {
   MessageSquare, 
   Edit3,
   Share2,
-  QrCode,
   Search,
   MoreHorizontal,
   Check,
@@ -71,7 +70,6 @@ const mockInvitations: Invitation[] = [
 
 export const TabFriends: React.FC = () => {
   const { familyCircles, loadFamilyCircles } = useStore();
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [mainTab, setMainTab] = useState('support-network');
@@ -232,21 +230,20 @@ export const TabFriends: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button 
-                    onClick={() => setShowInviteModal(true)}
-                    variant="outline" 
-                    className="w-full justify-start gap-3"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    Send Invitation Link
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start gap-3"
-                  >
-                    <QrCode className="h-4 w-4" />
-                    Show QR Code
-                  </Button>
+                  {primaryCircle && (
+                    <FamilyInviteModal 
+                      circle={primaryCircle}
+                      trigger={
+                        <Button 
+                          variant="outline" 
+                          className="w-full justify-start gap-3"
+                        >
+                          <UserPlus className="h-4 w-4" />
+                          Send Invitation Link
+                        </Button>
+                      }
+                    />
+                  )}
                 </CardContent>
               </Card>
 
@@ -374,10 +371,6 @@ export const TabFriends: React.FC = () => {
         </Dialog>
       )}
 
-      {/* Invite Modal */}
-      {showInviteModal && primaryCircle && (
-        <FamilyInviteModal circle={primaryCircle} />
-      )}
     </>
   );
 };
