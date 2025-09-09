@@ -848,7 +848,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "tidy", label: "Keep room tidy", emoji: "✨", explainer: "Make your space feel organized" },
           { id: "pride", label: "Feel accomplished", emoji: "😊", explainer: "Start the day with a small win" }
         ],
-        details: [],
+        
         timing: [
           { id: "morning", label: "Every morning", emoji: "🌅", explainer: "Make it part of getting up", isDefault: true },
           { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three mornings per week" },

@@ -244,7 +244,7 @@ const getDynamicSubtitle = (step: number, goalId?: string): string => {
       case 1: return !!state.category;
       case 2: return !!state.goal;
       case 3: return !!state.purpose;
-      case 4: return !state.goal?.details || !!state.details;
+      case 4: return (!state.goal?.details || state.goal.details.length === 0) || !!state.details;
       case 5: return !state.goal?.amount || !!state.amount;
       case 6: return !state.goal?.timing || !!state.timing;
       case 7: return !!state.dueDate && !validateDates();
@@ -429,9 +429,9 @@ Example:
       }
       if (prevStep === 5 && !state.goal?.amount) {
         // If amount doesn't apply, jump back to details or purpose depending on goal
-        prevStep = state.goal?.details ? 4 : 3;
+        prevStep = (state.goal?.details && state.goal.details.length > 0) ? 4 : 3;
       }
-      if (prevStep === 4 && !state.goal?.details) {
+      if (prevStep === 4 && (!state.goal?.details || state.goal.details.length === 0)) {
         prevStep = 3;
       }
 
@@ -446,7 +446,7 @@ Example:
       let nextStep = state.step + 1;
       
       // Skip steps that don't apply to this goal
-      if (nextStep === 4 && !state.goal?.details) {
+      if (nextStep === 4 && (!state.goal?.details || state.goal.details.length === 0)) {
         nextStep = 5; // Skip details step
       }
       if (nextStep === 5 && !state.goal?.amount) {
