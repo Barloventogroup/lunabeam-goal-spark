@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { AirlineDatePicker } from '@/components/ui/airline-date-picker';
 import { ArrowLeft, X, Sparkles, Mic, Volume2, Users, MessageSquare, Send, CalendarIcon } from 'lucide-react';
 import { GOALS_WIZARD_DATA, FALLBACK_OPTION, STARTER_GOALS, Category, CategoryGoal, GoalOption } from '@/data/goals-wizard-data';
 import { useToast } from '@/hooks/use-toast';
@@ -623,101 +624,30 @@ Example:
           />
         )}
 
-        {/* Step 7: Due Date Selection */}
+        {/* Step 7: Goal Timeline Selection */}
         {state.step === 7 && (
           <div className="space-y-6">
             <div className="max-w-md mx-auto space-y-6">
-              {/* Date Selection Cards */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">Start Date</label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full h-16 flex flex-col items-center justify-center gap-1 bg-muted/30 hover:bg-muted/50",
-                          !state.startDate && "text-muted-foreground"
-                        )}
-                      >
-                        {state.startDate ? (
-                          <>
-                            <span className="text-xs font-normal">
-                              {format(state.startDate, "MMM")}
-                            </span>
-                            <span className="text-lg font-semibold">
-                              {format(state.startDate, "d")}
-                            </span>
-                            <span className="text-xs font-normal">
-                              {format(state.startDate, "yyyy")}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <CalendarIcon className="h-4 w-4" />
-                            <span className="text-xs">Select date</span>
-                          </>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-gray-100" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={state.startDate}
-                        onSelect={(date) => setState(prev => ({ ...prev, startDate: date || new Date() }))}
-                        initialFocus
-                        className="pointer-events-auto bg-gray-100 rounded-lg"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">Due Date</label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full h-16 flex flex-col items-center justify-center gap-1 bg-muted/30 hover:bg-muted/50",
-                          !state.dueDate && "text-muted-foreground"
-                        )}
-                      >
-                        {state.dueDate ? (
-                          <>
-                            <span className="text-xs font-normal">
-                              {format(state.dueDate, "MMM")}
-                            </span>
-                            <span className="text-lg font-semibold">
-                              {format(state.dueDate, "d")}
-                            </span>
-                            <span className="text-xs font-normal">
-                              {format(state.dueDate, "yyyy")}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <CalendarIcon className="h-4 w-4" />
-                            <span className="text-xs">Select date</span>
-                          </>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-gray-100" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={state.dueDate}
-                        onSelect={(date) => setState(prev => ({ ...prev, dueDate: date }))}
-                        initialFocus
-                        className="pointer-events-auto bg-gray-100 rounded-lg"
-                        disabled={(date) => {
-                          if (!state.startDate) return false;
-                          return date < state.startDate;
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+              <div className="space-y-4">
+                <label className="text-sm font-medium text-muted-foreground">Select your goal timeline</label>
+                <AirlineDatePicker
+                  dateRange={{
+                    from: state.startDate,
+                    to: state.dueDate
+                  }}
+                  onDateRangeChange={(dateRange) => {
+                    setState(prev => ({
+                      ...prev,
+                      startDate: dateRange?.from || new Date(),
+                      dueDate: dateRange?.to || undefined
+                    }));
+                  }}
+                  placeholder={{
+                    start: "Start date",
+                    end: "End date"
+                  }}
+                  className="w-full"
+                />
               </div>
 
               {validateDates() && (
