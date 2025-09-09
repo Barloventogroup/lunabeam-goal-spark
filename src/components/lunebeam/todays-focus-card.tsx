@@ -63,29 +63,11 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
               <div className="flex gap-2 flex-wrap">
                 <Button 
                   size="sm" 
-                  onClick={onCompleteStep}
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                  Complete
-                </Button>
-                
-                <Button 
-                  size="sm" 
                   variant="outline"
                   onClick={onViewStep}
                 >
                   View Details
                   <ArrowRight className="h-3 w-3 ml-1" />
-                </Button>
-                
-                <Button 
-                  size="sm" 
-                  variant="ghost"
-                  onClick={onNeedHelp}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Need help?
                 </Button>
               </div>
             </div>

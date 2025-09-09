@@ -198,16 +198,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
             onViewStep={handleViewUpcomingStep}
           />
 
-          {/* Checked In Today */}
-          {activeGoals.length > 0 && <Card className="bg-green-50 shadow-soft">
-              <CardContent className="flex items-center gap-3 p-4">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-                <div>
-                  <h3 className="font-semibold text-green-800">Checked In Today</h3>
-                  <p className="text-sm text-green-700">Great job staying on track!</p>
-                </div>
-              </CardContent>
-            </Card>}
 
 
           <div>
