@@ -64,6 +64,7 @@ export const GoalEditModal: React.FC<GoalEditModalProps> = ({
         description: "Goal updated successfully!"
       });
 
+      // Pass the complete updated goal object to parent
       onGoalUpdate?.(updatedGoal);
       onOpenChange(false);
     } catch (error) {

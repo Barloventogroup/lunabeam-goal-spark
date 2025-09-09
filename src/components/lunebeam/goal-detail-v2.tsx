@@ -163,7 +163,10 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   };
 
   const handleGoalUpdate = (updatedGoal: Goal) => {
-    setGoal(updatedGoal);
+    setGoal({
+      ...updatedGoal,
+      progress: goal?.progress // Preserve existing progress data
+    });
   };
 
   const handleDeleteGoal = async () => {
@@ -213,7 +216,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       'health': 'Health & Well-Being',
       'life': 'Life Skills'
     };
-    return domainMap[domain] || domain;
+    // Don't show unknown domains or "other"
+    return domainMap[domain] || '';
   };
 
   const sanitizeDescription = (text?: string): string => {
@@ -273,7 +277,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               <Badge variant={getStatusColor(goal.status)}>
                 {goal.status === 'active' ? 'In Progress' : goal.status}
               </Badge>
-              {goal.domain && (
+              {goal.domain && getDomainDisplayName(goal.domain) && (
                 <Badge variant="outline" className="capitalize">
                   {getDomainDisplayName(goal.domain)}
                 </Badge>
@@ -356,7 +360,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       {goal.description && (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-muted-foreground">{sanitizeDescription(goal.description)}</p>
+            <p className="text-muted-foreground capitalize">{sanitizeDescription(goal.description)}</p>
           </CardContent>
         </Card>
       )}
