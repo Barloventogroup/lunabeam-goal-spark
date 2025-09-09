@@ -45,12 +45,38 @@ export const TabHome: React.FC<TabHomeProps> = ({
     loadSteps
   } = useStore();
 
+  // Add effect to listen for tab visibility changes and refresh data
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('TabHome: Tab became visible, refreshing data');
+        loadGoals();
+        loadPoints();
+        // Refresh steps for active goals
+        goals.forEach(goal => {
+          if (goal.status === 'active' || goal.status === 'planned') {
+            loadSteps(goal.id);
+          }
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [loadGoals, loadPoints, loadSteps, goals]);
+
   useEffect(() => {
     console.log('TabHome mounted - loading data');
     loadProfile();
     loadGoals();
     loadPoints();
-  }, [loadProfile, loadGoals, loadPoints]);
+    // Load steps for all active goals to ensure dashboard has fresh data
+    goals.forEach(goal => {
+      if (goal.status === 'active' || goal.status === 'planned') {
+        loadSteps(goal.id);
+      }
+    });
+  }, [loadProfile, loadGoals, loadPoints, loadSteps]);
 
   // Refresh data when component becomes visible
   useEffect(() => {
@@ -58,10 +84,16 @@ export const TabHome: React.FC<TabHomeProps> = ({
       console.log('TabHome: Periodic refresh');
       loadGoals();
       loadPoints();
+      // Also refresh steps for active goals
+      goals.forEach(goal => {
+        if (goal.status === 'active' || goal.status === 'planned') {
+          loadSteps(goal.id);
+        }
+      });
     }, 30000); // Refresh every 30 seconds
 
     return () => clearInterval(interval);
-  }, [loadGoals]);
+  }, [loadGoals, loadSteps, goals]);
 
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('dashboard')} />;
