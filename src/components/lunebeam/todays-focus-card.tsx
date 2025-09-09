@@ -29,7 +29,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
   onViewUpcomingStep
 }) => {
   const renderStepCard = (step: Step, goal: Goal, dueDate?: Date, isOverdue = false) => (
-    <div className={`flex items-center justify-between p-3 bg-background rounded-lg border ${isOverdue ? 'border-red-500' : 'border-border'}`}>
+    <div className={`flex items-center justify-between p-3 bg-background rounded-lg ${isOverdue ? 'border-2 border-red-500' : 'border border-border'}`}>
       <div className="flex-1 space-y-1">
         <div className="flex items-center gap-2">
           <div className="flex-1">
@@ -144,7 +144,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
             <h5 className="text-lg font-bold text-foreground">Coming Up</h5>
             <div className="space-y-2">
               {upcomingSteps.map(({step, goal, dueDate}) => (
-                <div key={step.id} className="text-sm p-2 rounded-md bg-muted/30">
+                <div key={step.id} className="text-sm p-2 rounded-md bg-muted/30 border border-white">
                   <p className="font-medium text-foreground">
                     {cleanStepTitle(step.title)}
                   </p>
