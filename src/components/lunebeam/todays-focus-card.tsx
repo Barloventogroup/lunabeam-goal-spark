@@ -36,38 +36,42 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                 <Clock className="h-4 w-4 text-primary-foreground" />
               </div>
               
-              <div className="flex-1 space-y-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-foreground">Today's Focus</h3>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                      {estimatedTime}
-                    </span>
+              <div className="flex-1">
+                <div className="mb-3">
+                  <h3 className="font-semibold text-foreground mb-1">Today's Focus</h3>
+                </div>
+                
+                <div className="flex items-start justify-between p-3 bg-background rounded-lg border border-border">
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-foreground text-sm">
+                        {step.title}
+                      </p>
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                        {estimatedTime}
+                      </span>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground">
+                      From "{goal.title}"
+                    </p>
+                    
+                    {step.explainer && (
+                      <p className="text-sm text-muted-foreground">
+                        {step.explainer}
+                      </p>
+                    )}
                   </div>
                   
-                  <p className="text-sm text-muted-foreground mb-2">
-                    From "{goal.title}"
-                  </p>
-                  
-                  <p className="font-medium text-foreground text-sm">
-                    {step.title}
-                  </p>
-                  
-                  {step.explainer && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {step.explainer}
-                    </p>
-                  )}
+                  <Button 
+                    size="sm" 
+                    onClick={onViewStep}
+                    className="bg-blue-600 hover:bg-blue-700 text-white ml-2"
+                  >
+                    View
+                  </Button>
                 </div>
               </div>
-              
-              <Button 
-                size="sm" 
-                onClick={onViewStep}
-                className="bg-blue-600 hover:bg-blue-700 text-white ml-2"
-              >
-                View
-              </Button>
             </div>
         </CardContent>
       </Card>
