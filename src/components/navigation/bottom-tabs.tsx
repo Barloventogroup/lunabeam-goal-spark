@@ -110,7 +110,13 @@ export const BottomTabs: React.FC = () => {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    // Clear selected goal when clicking Goals tab directly
+                    if (tab.id === 'goals') {
+                      setSelectedGoalId(null);
+                    }
+                  }}
                   className={`flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 rounded-lg transition-colors ${
                     isActive 
                       ? 'text-primary bg-primary/10' 
