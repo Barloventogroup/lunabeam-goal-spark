@@ -84,36 +84,6 @@ export function AirlineDatePicker({
     return format(date, "MMM dd, yyyy")
   }
 
-  const quickOptions = [
-    {
-      label: "Today",
-      getValue: () => ({
-        from: startOfDay(new Date()),
-        to: startOfDay(new Date())
-      })
-    },
-    {
-      label: "This week",
-      getValue: () => ({
-        from: startOfDay(new Date()),
-        to: startOfDay(addDays(new Date(), 6))
-      })
-    },
-    {
-      label: "Next week",
-      getValue: () => ({
-        from: startOfDay(addDays(new Date(), 7)),
-        to: startOfDay(addDays(new Date(), 13))
-      })
-    },
-    {
-      label: "This month",
-      getValue: () => ({
-        from: startOfDay(new Date()),
-        to: startOfDay(addDays(new Date(), 30))
-      })
-    }
-  ]
 
   return (
     <div className={cn("grid gap-2", className)}>
@@ -178,26 +148,6 @@ export function AirlineDatePicker({
         
         <PopoverContent className="w-auto p-0" align="start">
           <div className="flex">
-            {/* Quick Options Sidebar */}
-            <div className="border-r p-4 space-y-2 min-w-[140px]">
-              <p className="text-sm font-medium text-muted-foreground mb-3">Quick select</p>
-              {quickOptions.map((option, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start text-xs h-8"
-                  onClick={() => {
-                    const range = option.getValue()
-                    onDateRangeChange(range)
-                    setIsOpen(false)
-                  }}
-                >
-                  {option.label}
-                </Button>
-              ))}
-            </div>
-
             {/* Calendar */}
             <div className="p-4">
               <div className="mb-4 flex items-center justify-center gap-2 text-sm">
