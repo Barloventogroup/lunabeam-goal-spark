@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { AirlineDatePicker } from '@/components/ui/airline-date-picker';
-import { ArrowLeft, X, Sparkles, Mic, Volume2, Users, MessageSquare, Send, CalendarIcon } from 'lucide-react';
+import { ArrowLeft, X, Sparkles, Mic, Volume2, Users, MessageSquare, Send, CalendarIcon, AlertTriangle } from 'lucide-react';
 import { GOALS_WIZARD_DATA, FALLBACK_OPTION, STARTER_GOALS, Category, CategoryGoal, GoalOption } from '@/data/goals-wizard-data';
 import { useToast } from '@/hooks/use-toast';
 import { format } from "date-fns";
@@ -238,6 +238,44 @@ const getDynamicSubtitle = (step: number, goalId?: string): string => {
     return null;
   };
 
+  // Derive weekly frequency from selected timing option (if available)
+  const getWeeklyFrequency = (): number | null => {
+    const label = state.timing?.label?.toLowerCase() || '';
+    if (!label) return null;
+
+    const match = label.match(/(\d+)\s*[×x]\s*\/\s*week/);
+    if (match) return parseInt(match[1], 10);
+
+    if (label.includes('every day') || label.includes('daily') || label.includes('every morning')) return 7;
+    if (label.includes('weekdays')) return 5;
+
+    return null;
+  };
+
+  // Minimum end date needed to satisfy a weekly cadence (needs at least one full week)
+  const getMinRequiredEndDate = (): Date | null => {
+    const start = state.startDate;
+    const freq = getWeeklyFrequency();
+    if (!start || !freq) return null;
+
+    // Require at least a full 7-day window for any per-week cadence
+    const min = new Date(start);
+    min.setHours(0, 0, 0, 0);
+    min.setDate(min.getDate() + 6); // inclusive of start day
+    return min;
+  };
+
+  const getDateAdvice = (): string | null => {
+    if (!state.startDate || !state.dueDate) return null;
+
+    const minEnd = getMinRequiredEndDate();
+    if (minEnd && state.dueDate < minEnd) {
+      const label = state.timing?.label || '';
+      return `Heads up! With "${label}", you'll need at least a full week. Try setting your end date to ${format(minEnd, 'MMM d, yyyy')} or later so you have enough time.`;
+    }
+
+    return null;
+  };
   const canProceed = () => {
     // Basic validation for each step
     switch (state.step) {
@@ -655,6 +693,14 @@ Example:
                   {validateDates()}
                 </div>
               )}
+
+              {getDateAdvice() && (
+                <div className="mt-3 text-destructive text-sm text-center p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+                  <AlertTriangle className="inline-block mr-2 h-4 w-4 align-[-2px]" />
+                  {getDateAdvice()}
+                </div>
+              )}
+
 
               <div className="flex justify-center pt-4">
                 <Button 
