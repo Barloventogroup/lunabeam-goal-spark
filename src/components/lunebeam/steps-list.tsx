@@ -523,8 +523,16 @@ export const StepsList: React.FC<StepsListProps> = ({
   };
 
   const handleStepUpdate = async (updatedStep: Step) => {
-    // Refresh the steps list
-    if (onStepsChange) {
+    // Update local state immediately for better UX
+    const updatedSteps = steps.map(s =>
+      s.id === updatedStep.id ? updatedStep : s
+    );
+    
+    // If onStepsUpdate is available, use it for immediate update
+    if (onStepsUpdate) {
+      onStepsUpdate(updatedSteps, goal);
+    } else if (onStepsChange) {
+      // Fallback to refresh
       onStepsChange();
     }
   };
