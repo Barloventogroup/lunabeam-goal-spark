@@ -40,7 +40,7 @@ const STEPS = [
   { id: 2, title: "Pick Goal", subtitle: "What specific goal interests you?" },
   { id: 3, title: "Why?", subtitle: "What's your main reason for this goal?" },
   { id: 4, title: "Details", subtitle: "How do you want to do this?" },
-  { id: 5, title: "Amount", subtitle: "How much do you want to read?" },
+  { id: 5, title: "Amount", subtitle: "How much do you want to do?" },
   { id: 6, title: "Duration", subtitle: "How often?" },
   { id: 7, title: "Goal Timeline", subtitle: "When Will You Work on This Goal?" },
   { id: 8, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
@@ -67,6 +67,38 @@ export const GoalsWizard: React.FC<GoalsWizardProps> = ({ onComplete, onBack }) 
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
   
   const { toast } = useToast();
+
+// Function to get dynamic subtitle based on goal type
+const getDynamicSubtitle = (step: number, goalId?: string): string => {
+  const defaultStep = STEPS[step - 1];
+  if (!defaultStep) return "";
+  
+  // Special handling for Amount step (step 5)
+  if (step === 5 && goalId) {
+    switch (goalId) {
+      case 'read':
+        return "How much do you want to read?";
+      case 'exercise':
+        return "How much do you want to exercise?";
+      case 'practice':
+        return "How much do you want to practice?";
+      case 'write':
+        return "How much do you want to write?";
+      case 'study':
+        return "How much do you want to study?";
+      case 'meditate':
+        return "How long do you want to meditate?";
+      case 'sleep':
+        return "How many hours do you want to sleep?";
+      case 'water':
+        return "How much water do you want to drink?";
+      default:
+        return "How much do you want to do?";
+    }
+  }
+  
+  return defaultStep.subtitle;
+};
 
   // Clear any saved progress and start fresh
   useEffect(() => {
@@ -507,7 +539,7 @@ Example:
             {STEPS[state.step - 1]?.title}
           </h1>
           <p className="text-muted-foreground">
-            {STEPS[state.step - 1]?.subtitle}
+            {getDynamicSubtitle(state.step, state.goal?.id)}
           </p>
         </div>
       </div>
