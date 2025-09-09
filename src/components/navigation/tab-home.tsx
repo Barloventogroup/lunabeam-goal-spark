@@ -219,11 +219,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
           <Card className="bg-gradient-to-r from-muted/5 to-accent/5 border-muted">
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center justify-between text-foreground">
-                <span>Your Goals</span>
-                <Button onClick={() => setCurrentView('add-goal')} size="sm" className="rounded-full w-8 h-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" aria-label="Add Goal">
-                  <Plus className="h-4 w-4" />
-                </Button>
+              <CardTitle className="text-foreground">
+                Your Goals
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
