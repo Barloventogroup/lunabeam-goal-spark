@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { ProgressRing } from '@/components/ui/progress-ring';
 import { 
   Target, 
@@ -43,7 +43,6 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     steps,
     getActiveGoal, 
     getRecentCheckIns, 
-    badges, 
     evidence,
     familyCircles,
     justCompletedOnboarding,
@@ -52,7 +51,6 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     loadGoals,
     loadSteps,
     loadCheckIns,
-    loadBadges,
     loadEvidence,
     loadFamilyCircles,
     loadPoints,
@@ -68,12 +66,11 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       loadProfile();
       loadGoals();
       loadCheckIns();
-      loadBadges();
       loadEvidence();
       loadFamilyCircles();
       loadPoints();
     }
-  }, [user, loadProfile, loadGoals, loadCheckIns, loadBadges, loadEvidence, loadFamilyCircles, loadPoints]);
+  }, [user, loadProfile, loadGoals, loadCheckIns, loadEvidence, loadFamilyCircles, loadPoints]);
 
   // Add refresh data when tab becomes visible
   useEffect(() => {
@@ -110,11 +107,6 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     }
   }, [activeGoal?.id, loadSteps]);
   const recentCheckIns = activeGoal ? getRecentCheckIns(activeGoal.id) : [];
-  const thisWeekBadges = badges.filter(badge => {
-    const earnedDate = new Date(badge.earned_at);
-    const weekAgo = addDays(new Date(), -7);
-    return earnedDate >= weekAgo;
-  });
 
   // Calculate stats
   const completedGoals = goals.filter(goal => goal.status === 'completed');
@@ -315,19 +307,12 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <Card className="text-center">
             <CardContent className="p-4">
               <Trophy className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
               <div className="text-2xl font-bold">{allCompletedAndArchived.length || 0}</div>
               <div className="text-xs text-muted-foreground">Goals Completed</div>
-            </CardContent>
-          </Card>
-          <Card className="text-center">
-            <CardContent className="p-4">
-              <Star className="h-6 w-6 mx-auto mb-2 text-blue-500" />
-              <div className="text-2xl font-bold">{badges.length || 0}</div>
-              <div className="text-xs text-muted-foreground">Badges Earned</div>
             </CardContent>
           </Card>
           <Card className="text-center">
@@ -357,27 +342,17 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
             </CardContent>
           </Card>
 
-          {/* Rewards */}
+          {/* LunaPoints */}
           <Card 
             className="cursor-pointer hover:bg-muted/50 transition-colors"
-            onClick={() => onNavigate('badges')}
+            onClick={() => onNavigate('rewards')}
           >
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-foreground">Rewards</h3>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 rounded-lg bg-muted/30">
-                  <Star className="h-6 w-6 mx-auto mb-2 text-blue-500" />
-                  <div className="text-2xl font-bold">{badges.length}</div>
-                  <div className="text-xs text-muted-foreground">Badges Earned</div>
-                </div>
-                <div className="text-center p-4 rounded-lg bg-muted/30">
-                  <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
-                  <div className="text-2xl font-bold">{totalPoints}</div>
-                  <div className="text-xs text-muted-foreground">LunaPoints</div>
-                </div>
+            <CardContent className="p-6 text-center space-y-3">
+              <Coins className="h-12 w-12 mx-auto text-green-500" />
+              <div>
+                <div className="text-2xl font-bold">{totalPoints}</div>
+                <p className="font-semibold text-foreground">LunaPoints</p>
+                <p className="text-sm text-muted-foreground">View your points</p>
               </div>
             </CardContent>
           </Card>

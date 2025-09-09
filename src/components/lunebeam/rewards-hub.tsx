@@ -43,8 +43,8 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
               <div className="flex items-center gap-3">
                 <Award className="h-5 w-5 text-purple-500" />
                 <div>
-                  <div className="font-medium">Rewards</div>
-                  <div className="text-sm text-muted-foreground">View your badges and points</div>
+                  <div className="font-medium">LunaPoints</div>
+                  <div className="text-sm text-muted-foreground">View your points</div>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
