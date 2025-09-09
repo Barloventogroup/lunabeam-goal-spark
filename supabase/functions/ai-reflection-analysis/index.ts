@@ -82,7 +82,7 @@ Be specific and encouraging.`;
         userPrompt = `Look at this reflection: "${reflection}" and give supportive feedback.`;
     }
 
-    console.log('Making OpenAI request for reflection analysis');
+    console.log('Making OpenAI request for reflection analysis', { analysisType, hasReflection: !!reflection });
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

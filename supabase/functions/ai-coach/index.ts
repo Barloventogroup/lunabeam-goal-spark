@@ -26,7 +26,7 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log(`AI Coach request - Mode: ${mode}, Question: ${question}`);
+    console.log(`AI Coach request - Mode: ${mode}, Has question: ${!!question}`);
 
     // For onboarding, use a simpler conversational approach
     if (mode === 'onboarding') {
