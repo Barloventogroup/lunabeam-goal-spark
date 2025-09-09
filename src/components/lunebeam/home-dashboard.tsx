@@ -140,9 +140,10 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const nextCheckIn = getNextCheckInDate();
   const isCheckInDue = nextCheckIn ? isToday(nextCheckIn) || nextCheckIn < new Date() : true;
   
-  // Find today's due step
-  const getTodaysDueStep = () => {
+  // Find today's due step and next upcoming steps
+  const getTodaysStepsAndNext = () => {
     const todaysSteps: Array<{step: any, goal: Goal}> = [];
+    const upcomingSteps: Array<{step: any, goal: Goal, dueDate: Date}> = [];
     
     goals.forEach(goal => {
       if (goal.status === 'active' || goal.status === 'planned') {
@@ -153,6 +154,8 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
               const dueDate = parseISO(step.due_date);
               if (isToday(dueDate)) {
                 todaysSteps.push({ step, goal });
+              } else if (dueDate > new Date()) {
+                upcomingSteps.push({ step, goal, dueDate });
               }
             } catch (error) {
               console.warn('Invalid due_date format for step:', step.id, step.due_date);
@@ -162,11 +165,17 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       }
     });
     
-    // Return the first due step found (could be enhanced to prioritize by goal priority, etc.)
-    return todaysSteps[0] || null;
+    // Sort upcoming steps by due date
+    upcomingSteps.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
+    
+    return {
+      todaysSteps,
+      upcomingSteps: upcomingSteps.slice(0, 3) // Show up to 3 upcoming steps
+    };
   };
 
-  const todaysDueItem = getTodaysDueStep();
+  const { todaysSteps, upcomingSteps } = getTodaysStepsAndNext();
+  const todaysDueItem = todaysSteps[0] || null;
   
   const hasActiveOrPlannedGoals = goals.some(goal => goal.status === 'active' || goal.status === 'planned');
   const isFirstTimeUser = justCompletedOnboarding && !hasActiveOrPlannedGoals;
@@ -259,16 +268,15 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           )}
         </div>
 
-        {/* Today's Focus Card */}
-        {todaysDueItem && (
-          <TodaysFocusCard
-            step={todaysDueItem.step}
-            goal={todaysDueItem.goal}
-            onCompleteStep={handleCompleteStep}
-            onViewStep={handleViewStep}
-            onNeedHelp={handleNeedHelp}
-          />
-        )}
+        {/* Today's Focus Card - Always show */}
+        <TodaysFocusCard
+          step={todaysDueItem?.step}
+          goal={todaysDueItem?.goal}
+          upcomingSteps={upcomingSteps}
+          onCompleteStep={handleCompleteStep}
+          onViewStep={handleViewStep}
+          onNeedHelp={handleNeedHelp}
+        />
 
         {/* Checked In Today */}
         {!isFirstTimeUser && recentCheckIns.some(checkIn => isToday(new Date(checkIn.date))) && (
