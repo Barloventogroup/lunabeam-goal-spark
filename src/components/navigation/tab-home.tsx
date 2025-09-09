@@ -281,41 +281,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
             </CardContent>
           </Card>
 
-          {/* LunaPoints */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold">LunaPoints</h3>
-
-            {/* Points card */}
-            <Card className="shadow-soft">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Coins className="h-8 w-8 text-green-500" />
-                    <div>
-                      <div className="text-2xl font-bold">{pointsSummary?.totalPoints || 0}</div>
-                      <p className="text-sm text-muted-foreground">Points available</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      onClick={() => setCurrentView('reward-bank')}
-                      className="bg-green-500 hover:bg-green-600 text-white"
-                    >
-                      Redeem
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="default"
-                      onClick={() => setCurrentView('rewards')}
-                    >
-                      View
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
         </div>
       </div>
