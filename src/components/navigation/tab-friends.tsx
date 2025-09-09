@@ -22,7 +22,7 @@ import {
   X
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import { FamilyInviteModal } from '../lunebeam/family-invite-modal';
+import { SimpleInviteModal } from '../lunebeam/simple-invite-modal';
 
 // Mock invitation data
 interface Invitation {
@@ -69,29 +69,16 @@ const mockInvitations: Invitation[] = [
 ];
 
 export const TabFriends: React.FC = () => {
-  const { familyCircles, loadFamilyCircles, createFamilyCircle } = useStore();
+  const { familyCircles, loadFamilyCircles } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [mainTab, setMainTab] = useState('support-network');
   const [invitationTab, setInvitationTab] = useState('received');
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
-  const [isCreatingCircle, setIsCreatingCircle] = useState(false);
 
   useEffect(() => {
     loadFamilyCircles();
   }, [loadFamilyCircles]);
-
-  const handleCreateFamilyCircle = async () => {
-    setIsCreatingCircle(true);
-    try {
-      await createFamilyCircle("My Family Circle");
-      await loadFamilyCircles();
-    } catch (error) {
-      console.error('Failed to create family circle:', error);
-    } finally {
-      setIsCreatingCircle(false);
-    }
-  };
 
   const primaryCircle = familyCircles[0]; // For MVP, focus on first circle
 
@@ -243,29 +230,17 @@ export const TabFriends: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {primaryCircle ? (
-                    <FamilyInviteModal 
-                      circle={primaryCircle}
-                      trigger={
-                        <Button 
-                          variant="outline" 
-                          className="w-full justify-start gap-3"
-                        >
-                          <UserPlus className="h-4 w-4" />
-                          Send Invitation Link
-                        </Button>
-                      }
-                    />
-                  ) : (
-                    <Button 
-                      onClick={handleCreateFamilyCircle}
-                      variant="outline" 
-                      disabled={isCreatingCircle}
-                    >
-                      <UserPlus className="h-4 w-4" />
-                      {isCreatingCircle ? "Creating..." : "Create Family Circle First"}
-                    </Button>
-                  )}
+                  <SimpleInviteModal 
+                    trigger={
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start gap-3"
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        Send Invitation Link
+                      </Button>
+                    }
+                  />
                 </CardContent>
               </Card>
 
