@@ -723,9 +723,11 @@ export const StepsList: React.FC<StepsListProps> = ({
                          )}
                        </TableCell>
 
-                        <TableCell className="p-2 text-center">
-                          {getStepIcon(mainStep)}
-                        </TableCell>
+                         <TableCell className="p-2 text-center">
+                           <div className="flex justify-center">
+                             {getStepIcon(mainStep)}
+                           </div>
+                         </TableCell>
 
                           <TableCell className="p-2">
                             <div className="flex items-center justify-center gap-2">
