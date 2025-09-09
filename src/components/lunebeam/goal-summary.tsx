@@ -166,8 +166,9 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
           case 'education': return 'school';
           case 'employment': return 'work';
           case 'health': return 'health';
-          case 'independent_living':
-          case 'social_skills':
+          case 'independent_living': return 'life';
+          case 'social_skills': return 'social_skills';
+          case 'fun_recreation': return 'fun_recreation';
           default: return 'life';
         }
       };

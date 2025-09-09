@@ -2,6 +2,18 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Goal, Step, GoalDomain, GoalPriority, GoalStatus, StepStatus } from '@/types';
 import { pointsService } from './pointsService';
 import { validateGoalFrequencyWithDueDate } from '@/utils/goalValidationUtils';
+import { fixGoalDomains } from '@/utils/goalMigrationUtils';
+
+// Make migration available globally for admin use
+declare global {
+  interface Window {
+    fixGoalDomains: () => Promise<void>;
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.fixGoalDomains = fixGoalDomains;
+}
 
 const sanitizeDescription = (text?: string): string => {
   if (!text) return '';
@@ -263,8 +275,12 @@ export const goalsService = {
 
     if (error) throw error;
   },
-};
 
+  // Admin utility to fix goal domains
+  async fixGoalDomains(): Promise<void> {
+    return fixGoalDomains();
+  }
+};
 // Steps API
 export const stepsService = {
   // Get steps for a goal
@@ -278,8 +294,6 @@ export const stepsService = {
     if (error) throw error;
     return (data || []) as Step[];
   },
-
-  // Create step (with auto-scheduling and step_type support)
   async createStep(goalId: string, stepData: {
     title: string;
     is_required?: boolean;

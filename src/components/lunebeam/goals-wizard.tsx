@@ -501,9 +501,10 @@ Example:
     if (t.includes('employment')) return 'work';
     if (t.includes('health')) return 'health';
     if (t.includes('independent living')) return 'life';
-    if (t.includes('social')) return 'life'; // treat Social Skills under life domain for now
+    if (t.includes('social')) return 'social_skills'; // Social Skills as separate domain
     if (t.includes('postsecondary')) return 'school'; // aligns with education domain in legacy UI
-    if (t.includes('fun') || t.includes('recreation')) return 'life';
+    if (t.includes('fun') || t.includes('recreation')) return 'fun_recreation'; // Fun/Recreation as separate domain
+    return 'life'; // default fallback
     return 'life'; // Never use 'other' so users don't see "General"
   };
 
