@@ -5,10 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AirlineDatePicker } from '@/components/ui/airline-date-picker';
 import { ArrowLeft, Target, Flag, Calendar, Hash } from 'lucide-react';
 import { goalsService } from '@/services/goalsService';
 import type { GoalDomain, GoalPriority } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
 
 interface CreateGoalProps {
   onNavigate: (view: string, goalId?: string) => void;
@@ -20,10 +23,9 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
     description: '',
     domain: '' as GoalDomain | '',
     priority: 'medium' as GoalPriority,
-    start_date: '',
-    due_date: '',
     tags: ''
   });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -56,8 +58,8 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
         description: formData.description.trim() || undefined,
         domain: formData.domain || undefined,
         priority: formData.priority,
-        start_date: formData.start_date || undefined,
-        due_date: formData.due_date || undefined,
+        start_date: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+        due_date: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
       };
 
       const goal = await goalsService.createGoal(goalData);
@@ -183,28 +185,20 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            {/* Dates Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="start_date">Start Date</Label>
-                <Input
-                  id="start_date"
-                  type="date"
-                  value={formData.start_date}
-                  onChange={(e) => handleChange('start_date', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="due_date">Due Date</Label>
-                <Input
-                  id="due_date"
-                  type="date"
-                  value={formData.due_date}
-                  onChange={(e) => handleChange('due_date', e.target.value)}
-                  min={formData.start_date || undefined}
-                />
-              </div>
+            {/* Timeline */}
+            <div className="space-y-2">
+              <Label>Timeline</Label>
+              <AirlineDatePicker
+                dateRange={dateRange}
+                onDateRangeChange={setDateRange}
+                placeholder={{
+                  start: "Start date",
+                  end: "Due date"
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Select when you want to start and complete this goal
+              </p>
             </div>
 
             {/* Actions */}
