@@ -3,13 +3,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus } from 'lucide-react';
+import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreVertical, Edit } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Step, Goal, Substep, StepStatus, StepType } from '@/types';
 import { stepsService } from '@/services/goalsService';
 import { stepValidationService } from '@/services/stepValidationService';
 import { pointsService } from '@/services/pointsService';
 import { BlockedStepGuidance } from './blocked-step-guidance';
 import { StepChatModal } from './step-chat-modal';
+import { StepEditModal } from './step-edit-modal';
 import { useToast } from '@/hooks/use-toast';
 import { useStore } from '@/store/useStore';
 
@@ -59,6 +66,8 @@ export const StepsList: React.FC<StepsListProps> = ({
   const [showingQueuedSteps, setShowingQueuedSteps] = useState(false);
   const [awaitingStepUpdate, setAwaitingStepUpdate] = useState<string | null>(null);
   const [substepsMap, setSubstepsMap] = useState<Record<string, Substep[]>>({});
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
   const { toast } = useToast();
 
   // Fetch substeps for all steps
@@ -505,6 +514,18 @@ export const StepsList: React.FC<StepsListProps> = ({
     }
   };
 
+  const handleEditStep = (step: Step) => {
+    setCurrentEditStep(step);
+    setShowEditModal(true);
+  };
+
+  const handleStepUpdate = async (updatedStep: Step) => {
+    // Refresh the steps list
+    if (onStepsChange) {
+      onStepsChange();
+    }
+  };
+
   const toggleStepExpanded = (stepId: string) => {
     setExpandedSteps(prev => {
       const newSet = new Set(prev);
@@ -706,29 +727,42 @@ export const StepsList: React.FC<StepsListProps> = ({
                           {getStepIcon(mainStep)}
                         </TableCell>
 
-                         <TableCell className="p-2">
-                           <div className="flex items-center gap-2">
-                             {!isStepDone(mainStep) && !isBlocked && (
-                               <Button
-                                 onClick={() => {
-                                   if (subSteps.length > 0 && !allSubStepsCompleted) {
-                                     const proceed = window.confirm('Some substeps are not complete. Mark this step complete anyway?');
-                                     if (!proceed) return;
-                                   }
-                                   handleMarkComplete(mainStep.id);
-                                 }}
-                                 className="h-7 px-3 text-xs rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors"
-                                 variant="outline"
-                                 size="sm"
-                               >
-                                 Mark Complete
-                               </Button>
-                             )}
-                             {isBlocked && (
-                               <span className="text-xs text-muted-foreground/70 px-2">Not available yet</span>
-                             )}
-                           </div>
-                         </TableCell>
+                          <TableCell className="p-2">
+                            <div className="flex items-center gap-2">
+                              {!isStepDone(mainStep) && !isBlocked && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      className="h-7 w-7 p-0 hover:bg-muted"
+                                    >
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="bg-background border border-border shadow-lg z-50">
+                                    <DropdownMenuItem onClick={() => {
+                                      if (subSteps.length > 0 && !allSubStepsCompleted) {
+                                        const proceed = window.confirm('Some substeps are not complete. Mark this step complete anyway?');
+                                        if (!proceed) return;
+                                      }
+                                      handleMarkComplete(mainStep.id);
+                                    }}>
+                                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                                      Mark Complete
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleEditStep(mainStep)}>
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
+                              {isBlocked && (
+                                <span className="text-xs text-muted-foreground/70 px-2">Not available yet</span>
+                              )}
+                            </div>
+                          </TableCell>
                      </TableRow>
 
                      {/* Expanded content row - substeps cards or description */}
@@ -882,6 +916,15 @@ export const StepsList: React.FC<StepsListProps> = ({
         goal={goal}
         onStepsUpdate={handleStepsUpdate}
       />
+      
+      {currentEditStep && (
+        <StepEditModal
+          isOpen={showEditModal}
+          onOpenChange={setShowEditModal}
+          step={currentEditStep}
+          onStepUpdate={handleStepUpdate}
+        />
+      )}
     </Card>
   );
 };
