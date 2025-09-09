@@ -901,57 +901,6 @@ export type Database = {
         }
         Relationships: []
       }
-      supporter_invite_safe_metadata: {
-        Row: {
-          created_at: string | null
-          expires_at: string | null
-          id: string | null
-          individual_id: string | null
-          invite_token_hidden: string | null
-          invitee_name: string | null
-          inviter_id: string | null
-          masked_email: string | null
-          message: string | null
-          permission_level:
-            | Database["public"]["Enums"]["permission_level"]
-            | null
-          role: Database["public"]["Enums"]["user_role"] | null
-          status: Database["public"]["Enums"]["invite_status"] | null
-        }
-        Insert: {
-          created_at?: string | null
-          expires_at?: string | null
-          id?: string | null
-          individual_id?: string | null
-          invite_token_hidden?: never
-          invitee_name?: string | null
-          inviter_id?: string | null
-          masked_email?: never
-          message?: string | null
-          permission_level?:
-            | Database["public"]["Enums"]["permission_level"]
-            | null
-          role?: Database["public"]["Enums"]["user_role"] | null
-          status?: Database["public"]["Enums"]["invite_status"] | null
-        }
-        Update: {
-          created_at?: string | null
-          expires_at?: string | null
-          id?: string | null
-          individual_id?: string | null
-          invite_token_hidden?: never
-          invitee_name?: string | null
-          inviter_id?: string | null
-          masked_email?: never
-          message?: string | null
-          permission_level?:
-            | Database["public"]["Enums"]["permission_level"]
-            | null
-          role?: Database["public"]["Enums"]["user_role"] | null
-          status?: Database["public"]["Enums"]["invite_status"] | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       accept_invite_by_token: {
