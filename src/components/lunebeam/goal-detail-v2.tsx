@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2 } from 'lucide-react';
+import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit } from 'lucide-react';
 import { BackButton } from '@/components/ui/back-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -301,6 +301,10 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-background border border-input shadow-lg z-50">
+              <DropdownMenuItem onClick={() => {/* TODO: Open edit modal */}}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {/* TODO: Open check-in modal */}}>
                 <CheckCircle2 className="h-4 w-4 mr-2" />
                 Check In
