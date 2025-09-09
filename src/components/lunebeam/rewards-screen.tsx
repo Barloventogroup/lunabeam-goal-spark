@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
 import { Coins } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { getDomainDisplayName } from '@/utils/domainUtils';
 import { PointsDisplay } from './points-display';
 
 interface RewardsScreenProps {
@@ -19,16 +20,6 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
   }, [loadGoals, loadPoints]);
 
   const totalPoints = pointsSummary?.totalPoints || 0;
-
-  const getDomainDisplayName = (domain: string): string => {
-    const domainMap: Record<string, string> = {
-      'school': 'Education - High School / Academic Readiness',
-      'work': 'Employment',
-      'health': 'Health & Well-Being',
-      'life': 'Life Skills'
-    };
-    return domainMap[domain] || domain;
-  };
 
   return (
     <div className="min-h-screen bg-gradient-soft">

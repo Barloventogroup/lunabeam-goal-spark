@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { goalsService, stepsService } from '@/services/goalsService';
+import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal, Step } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -178,16 +179,6 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return null;
     return new Date(dateStr).toLocaleDateString();
-  };
-
-  const getDomainDisplayName = (domain: string): string => {
-    const domainMap: Record<string, string> = {
-      'school': 'Education - High School / Academic Readiness',
-      'work': 'Employment',
-      'health': 'Health & Well-Being',
-      'life': 'Life Skills'
-    };
-    return domainMap[domain] || domain;
   };
 
   const getStepIcon = (step: Step) => {

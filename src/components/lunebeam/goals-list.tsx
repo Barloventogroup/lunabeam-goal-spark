@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { goalsService, stepsService } from '@/services/goalsService';
+import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal, Step } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -135,16 +136,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       day: 'numeric',
       year: 'numeric'
     });
-  };
-
-  const getDomainDisplayName = (domain: string): string => {
-    const domainMap: Record<string, string> = {
-      'school': 'Education - High School / Academic Readiness',
-      'work': 'Employment',
-      'health': 'Health & Well-Being',
-      'life': 'Life Skills'
-    };
-    return domainMap[domain] || domain;
   };
 
   const sanitizeDescription = (text?: string): string => {

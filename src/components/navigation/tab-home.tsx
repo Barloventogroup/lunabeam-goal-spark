@@ -16,6 +16,7 @@ import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
 import { useStore } from '../../store/useStore';
 import { goalsService, stepsService } from '../../services/goalsService';
+import { normalizeDomainForDisplay } from '../../utils/domainUtils';
 import type { Goal } from '../../types';
 
 interface TabHomeProps {
@@ -292,7 +293,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                             {goal.title}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {goal.domain}
+                            {normalizeDomainForDisplay(goal.domain) || 'General'}
                           </p>
                         </div>
                       </div>

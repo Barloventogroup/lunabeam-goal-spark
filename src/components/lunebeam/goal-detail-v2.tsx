@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { goalsService, stepsService } from '@/services/goalsService';
+import { getDomainDisplayName } from '@/utils/domainUtils';
 import { StepsList } from './steps-list';
 import { StepsChat } from './steps-chat';
 import { StepChatModal } from './step-chat-modal';
@@ -208,17 +209,6 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       day: 'numeric',
       year: 'numeric'
     });
-  };
-
-  const getDomainDisplayName = (domain: string): string => {
-    const domainMap: Record<string, string> = {
-      'school': 'Education - High School / Academic Readiness',
-      'work': 'Employment',
-      'health': 'Health & Well-Being',
-      'life': 'Life Skills'
-    };
-    // Don't show unknown domains or "other"
-    return domainMap[domain] || '';
   };
 
   const sanitizeDescription = (text?: string): string => {

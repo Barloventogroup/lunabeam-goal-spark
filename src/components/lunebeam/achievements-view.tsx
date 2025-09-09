@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { goalsService } from '@/services/goalsService';
+import { getDomainDisplayName } from '@/utils/domainUtils';
 import { toast } from '@/hooks/use-toast';
 import {
   DropdownMenu,
@@ -36,16 +37,6 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ onBack }) =>
 
   const completedGoals = goals.filter(goal => goal.status === 'completed');
   const archivedGoals = goals.filter(goal => goal.status === 'archived');
-
-  const getDomainDisplayName = (domain: string): string => {
-    const domainMap: Record<string, string> = {
-      'school': 'Education - High School / Academic Readiness',
-      'work': 'Employment',
-      'health': 'Health & Well-Being',
-      'life': 'Life Skills'
-    };
-    return domainMap[domain] || domain;
-  };
 
   const handleArchiveGoal = async (goalId: string) => {
     setIsArchiving(goalId);
