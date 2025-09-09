@@ -80,12 +80,23 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const getTodaysStepsAndNext = () => {
     const todaysSteps: Array<{ step: any; goal: Goal }> = [];
     const upcomingSteps: Array<{ step: any; goal: Goal; dueDate: Date }> = [];
+    const allStepsDebug: Array<{ goalTitle: string; goalStatus: string; stepTitle: string; stepStatus: string; dueDate: string | null }> = [];
 
     goals.forEach((goal) => {
-      if (goal.status === 'active' || goal.status === 'planned') {
+      // Include more goal statuses
+      if (goal.status === 'active' || goal.status === 'planned' || goal.status === 'paused') {
         const goalSteps = steps[goal.id] || [];
         goalSteps.forEach((step) => {
-          if (step.due_date && step.status === 'todo') {
+          allStepsDebug.push({
+            goalTitle: goal.title,
+            goalStatus: goal.status,
+            stepTitle: step.title,
+            stepStatus: step.status,
+            dueDate: step.due_date
+          });
+
+          // Include more step statuses and be more lenient with due dates
+          if (step.due_date && (step.status === 'todo' || step.status === 'doing' || !step.status)) {
             try {
               const dueDate = parseISO(step.due_date);
               if (isToday(dueDate)) {
@@ -101,6 +112,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
       }
     });
 
+    console.log('All steps debug:', allStepsDebug);
     upcomingSteps.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
     return { todaysSteps, upcomingSteps: upcomingSteps.slice(0, 3) };
   };
