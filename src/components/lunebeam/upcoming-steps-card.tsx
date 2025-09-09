@@ -30,12 +30,8 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
           <p className="text-sm text-muted-foreground">No upcoming steps scheduled.</p>
         ) : (
           upcomingSteps.map(({step, goal, dueDate}, index) => {
-            const estimatedTime = step.estimated_effort_min 
-              ? `${step.estimated_effort_min} min`
-              : '5–7 min';
-
             return (
-            <div key={step.id} className="flex items-start justify-between p-3 bg-background rounded-lg border border-border">
+            <div key={step.id} className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
@@ -43,13 +39,10 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
                       {step.title}
                     </h4>
                   </div>
-                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                    {estimatedTime}
-                  </span>
                 </div>
                 
                 <p className="text-xs text-muted-foreground">
-                  From "{goal.title}"
+                  Goal: {goal.title}
                 </p>
                 
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
