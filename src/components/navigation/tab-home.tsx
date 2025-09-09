@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { CircularProgress } from '../ui/circular-progress';
 
-import { parseISO, isToday, isBefore } from 'date-fns';
+import { parseISO, isToday } from 'date-fns';
 
 import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { RewardsGallery } from '../lunebeam/reward-bank';
@@ -146,14 +146,10 @@ export const TabHome: React.FC<TabHomeProps> = ({
           if (step.status !== 'done' && step.status !== 'skipped') {
             const dueDate = normalizeDueDate(step.due_date);
             if (dueDate && !isNaN(dueDate.getTime())) {
-              const today = new Date();
-              today.setHours(0, 0, 0, 0); // Start of today
-              
-              // Include steps due today OR overdue (past due)
-              if (isToday(dueDate) || isBefore(dueDate, today)) {
+              if (isToday(dueDate)) {
                 todaysSteps.push({ step, goal });
               } else {
-                // Only future steps go to upcoming
+                // Include both future steps and overdue steps (not today)
                 upcomingSteps.push({ step, goal, dueDate });
               }
             }
