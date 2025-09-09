@@ -817,46 +817,8 @@ const CategorySelection: React.FC<{
   onSelectDefault?: (state: WizardState) => void;
 }> = ({ onSelectCategory, onSelectDefault }) => (
   <div className="space-y-6">
-    {/* Starter Goals - Quick Start Section */}
+    {/* Categories */}
     <div>
-      <h3 className="text-lg font-semibold mb-3 text-center">🚀 Quick Start</h3>
-      <div className="grid gap-3">
-        {STARTER_GOALS.map((goal) => (
-          <Card 
-            key={goal.id}
-            className="cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:border-primary/30"
-            onClick={() => {
-              // Auto-select this goal with defaults and go to due date step
-              if (onSelectDefault) {
-                onSelectDefault({ 
-                  step: 7, // Go to due date step
-                  category: { id: 'starter', title: 'Starter Goals', emoji: '🌟', description: 'Simple goals to get you started', goals: [goal] },
-                  goal: goal,
-                  purpose: goal.purpose.find(p => p.isDefault) || goal.purpose[0],
-                  details: goal.details?.find(d => d.isDefault) || goal.details?.[0],
-                  supports: [], // Let user choose supports
-                  savedProgress: null
-                });
-              }
-            }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{goal.emoji}</span>
-                <div>
-                  <h4 className="font-medium">{goal.title}</h4>
-                  <p className="text-sm text-muted-foreground">{goal.explainer}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-
-    {/* Regular Categories */}
-    <div>
-      <h3 className="text-lg font-semibold mb-3 text-center">🎯 All Categories</h3>
       <div className="grid gap-3">
         {GOALS_WIZARD_DATA.map((category) => (
           <Card 
