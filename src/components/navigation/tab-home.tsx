@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, CheckCircle, Plus, Award, ChevronRight, Star, Coins, User } from 'lucide-react';
+import { CheckCircle, Plus, Award, ChevronRight, Star, Coins } from 'lucide-react';
 import { Button } from '../ui/button';
+import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { parseISO, isToday } from 'date-fns';
@@ -171,24 +172,12 @@ export const TabHome: React.FC<TabHomeProps> = ({
               <span className="text-sm font-medium">{pointsSummary?.totalPoints || 0}</span>
             </div>
             
-            {/* User Icon */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 rounded-full"
-            >
-              <User className="h-4 w-4" />
-            </Button>
-            
-            {/* Chat Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onOpenChat}
-              className="h-8 w-8 p-0"
-            >
-              <MessageCircle className="h-4 w-4" />
-            </Button>
+            {/* User Avatar */}
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-blue-500 text-white text-sm font-medium">
+                {profile?.first_name?.charAt(0)?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
           </div>
         </div>
 
