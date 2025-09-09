@@ -848,11 +848,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
           { id: "tidy", label: "Keep room tidy", emoji: "✨", explainer: "Make your space feel organized" },
           { id: "pride", label: "Feel accomplished", emoji: "😊", explainer: "Start the day with a small win" }
         ],
-        details: [
-          { id: "pull-up", label: "Pull covers up", emoji: "🛏️", explainer: "Just pull blankets and sheets neat", isDefault: true },
-          { id: "fluff", label: "Fluff pillows too", emoji: "🛏️", explainer: "Arrange pillows nicely" },
-          { id: "smooth", label: "Smooth everything", emoji: "🛏️", explainer: "Make it look tidy and neat" }
-        ],
+        details: [],
         timing: [
           { id: "morning", label: "Every morning", emoji: "🌅", explainer: "Make it part of getting up", isDefault: true },
           { id: "3week", label: "3×/week", emoji: "📅", explainer: "Three mornings per week" },
