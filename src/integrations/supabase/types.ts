@@ -231,6 +231,30 @@ export type Database = {
           },
         ]
       }
+      claim_attempt_log: {
+        Row: {
+          attempted_at: string | null
+          claim_token: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          attempted_at?: string | null
+          claim_token: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          attempted_at?: string | null
+          claim_token?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       evidence: {
         Row: {
           description: string | null
