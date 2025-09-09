@@ -122,7 +122,7 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border border-border z-50">
                 <SelectItem value="friend">Friend</SelectItem>
                 <SelectItem value="family">Family Member</SelectItem>
                 <SelectItem value="coach">Coach/Mentor</SelectItem>
