@@ -88,7 +88,7 @@ export function validateGoalFrequencyWithDueDate(
     if (availableWeeks < minRequiredWeeks) {
       return {
         isValid: false,
-        error: `Goal requires ${frequency.frequency} sessions per week but only ${availableWeeks} week(s) available. Need at least ${minRequiredWeeks} week(s).`,
+        error: `Hey! Your goal needs ${frequency.frequency} sessions per week, but you only have ${availableWeeks} week(s) until your deadline. That's not enough time to build this habit properly.`,
         minRequiredWeeks
       };
     }
@@ -97,7 +97,7 @@ export function validateGoalFrequencyWithDueDate(
     if (frequency.frequency > 7) {
       return {
         isValid: false,
-        error: `Cannot complete ${frequency.frequency} sessions per week (max 7 per week).`
+        error: `Whoa! ${frequency.frequency} sessions per week means more than once per day. That might be too much! Try aiming for 7 or fewer sessions per week.`
       };
     }
   } else if (frequency.period === 'day') {
@@ -108,7 +108,7 @@ export function validateGoalFrequencyWithDueDate(
     if (totalDays < requiredDays) {
       return {
         isValid: false,
-        error: `Goal requires ${frequency.frequency} sessions per day but only ${totalDays} day(s) available.`
+        error: `Your goal needs ${frequency.frequency} sessions per day, but you only have ${totalDays} day(s) until your deadline. You'll need more time to complete this goal!`
       };
     }
   }

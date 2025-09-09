@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, CalendarIcon, X } from 'lucide-react';
+import { Calendar, CalendarIcon, X, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   Dialog,
@@ -42,7 +42,33 @@ export const GoalEditModal: React.FC<GoalEditModalProps> = ({
     goal.due_date ? new Date(goal.due_date) : undefined
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Check validation whenever title or due date changes
+  React.useEffect(() => {
+    if (dueDate) {
+      const validation = validateGoalFrequencyWithDueDate(
+        title,
+        goal.description,
+        goal.start_date,
+        dueDate.toISOString()
+      );
+      
+      if (!validation.isValid) {
+        const minDate = getMinRequiredDate(title, goal.description, goal.start_date);
+        const suggestion = minDate 
+          ? `Try setting your end date to ${format(minDate, "MMMM d, yyyy")} or later.`
+          : "Consider adjusting your goal frequency or choosing a later date.";
+        
+        setValidationError(`${validation.error} ${suggestion}`);
+      } else {
+        setValidationError(null);
+      }
+    } else {
+      setValidationError(null);
+    }
+  }, [title, dueDate, goal.description, goal.start_date]);
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -54,25 +80,7 @@ export const GoalEditModal: React.FC<GoalEditModalProps> = ({
       return;
     }
 
-    // Validate frequency against due date
-    if (dueDate) {
-      const validation = validateGoalFrequencyWithDueDate(
-        title,
-        goal.description,
-        goal.start_date,
-        dueDate.toISOString()
-      );
-      
-      if (!validation.isValid) {
-        toast({
-          title: "Invalid due date",
-          description: validation.error,
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
+    // Don't prevent saving if there's a validation error - let user decide
     setIsLoading(true);
     try {
       const updatedGoal = await goalsService.updateGoal(goal.id, {
@@ -138,7 +146,8 @@ export const GoalEditModal: React.FC<GoalEditModalProps> = ({
                   variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal bg-background border-border",
-                    !dueDate && "text-muted-foreground"
+                    !dueDate && "text-muted-foreground",
+                    validationError && "border-destructive"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
@@ -153,19 +162,13 @@ export const GoalEditModal: React.FC<GoalEditModalProps> = ({
                   initialFocus
                   className="p-3 pointer-events-auto"
                   disabled={(date) => {
-                    // Disable past dates
+                    // Only disable past dates
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
                     const checkDate = new Date(date);
                     checkDate.setHours(0, 0, 0, 0);
                     
-                    if (checkDate < today) return true;
-                    
-                    // Disable dates that don't allow enough time for the goal frequency
-                    const minRequiredDate = getMinRequiredDate(title, goal.description, goal.start_date);
-                    if (minRequiredDate && checkDate < minRequiredDate) return true;
-                    
-                    return false;
+                    return checkDate < today;
                   }}
                 />
                 {dueDate && (
@@ -183,6 +186,15 @@ export const GoalEditModal: React.FC<GoalEditModalProps> = ({
                 )}
               </PopoverContent>
             </Popover>
+            
+            {validationError && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-destructive leading-relaxed">
+                  {validationError}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
