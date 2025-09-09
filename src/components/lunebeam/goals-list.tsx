@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2 } from 'lucide-react';
+import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { goalsService, stepsService } from '@/services/goalsService';
 import type { Goal, Step } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -23,7 +23,10 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   const [stepsCount, setStepsCount] = useState<Record<string, { required: number; done: number }>>({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<GoalsTab>('active');
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
+
+  const GOALS_PER_PAGE = 10;
 
   const loadGoals = async () => {
     try {
@@ -75,6 +78,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   };
 
   useEffect(() => {
+    // Reset to first page when tab changes
+    setCurrentPage(1);
     // Force sanitization of existing descriptions - remove the localStorage check
     goalsService.sanitizeExistingGoalDescriptions().then(() => {
       // Reload goals after sanitization to show updated descriptions
@@ -176,6 +181,18 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
     return out;
   };
 
+  // Calculate pagination
+  const totalPages = Math.ceil(goals.length / GOALS_PER_PAGE);
+  const startIndex = (currentPage - 1) * GOALS_PER_PAGE;
+  const endIndex = startIndex + GOALS_PER_PAGE;
+  const currentGoals = goals.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when changing pages
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (loading) {
     return null; // Don't show loading state
   }
@@ -226,133 +243,181 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
-          {goals.map((goal) => {
-            const stepCount = stepsCount[goal.id] || { required: goal.progress?.actionable || 0, done: goal.progress?.done || 0 };
-            const progressPct = goal.progress_pct || (goal.progress ? goal.progress.percent : 0);
+            <>
+              <div className="space-y-4">
+                {currentGoals.map((goal) => {
+                  const stepCount = stepsCount[goal.id] || { required: goal.progress?.actionable || 0, done: goal.progress?.done || 0 };
+                  const progressPct = goal.progress_pct || (goal.progress ? goal.progress.percent : 0);
 
-            return (
-              <Card 
-                key={goal.id} 
-                className="cursor-pointer hover:shadow-md transition-shadow"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div 
-                      className="flex-1 cursor-pointer"
-                      onClick={() => onNavigate('goal-detail', goal.id)}
+                  return (
+                    <Card 
+                      key={goal.id} 
+                      className="cursor-pointer hover:shadow-md transition-shadow"
                     >
-                      <h4 className="mb-2">{goal.title}</h4>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant={getStatusColor(goal.status)}>
-                          {goal.status === 'active' ? 'In Progress' : goal.status}
-                        </Badge>
-                        {goal.domain && (
-                          <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>
-                        )}
-                      </div>
-                      {goal.due_date && (
-                        <div className="flex items-center gap-1 text-body-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          Due {formatDate(goal.due_date)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <div className="text-right">
-                        <div className="text-3xl font-bold text-primary">
-                          {Math.round(progressPct)}%
-                        </div>
-                        <div className="text-caption">
-                          {stepCount.done} of {stepCount.required} steps done
-                        </div>
-                      </div>
-                      
-                      {/* Goal Menu */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 bg-transparent hover:bg-gray-100"
-                            onClick={(e) => e.stopPropagation()}
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start">
+                          <div 
+                            className="flex-1 cursor-pointer"
+                            onClick={() => onNavigate('goal-detail', goal.id)}
                           >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40 bg-background border shadow-lg z-50">
-                          <DropdownMenuItem onClick={() => {/* TODO: Open check-in modal */}}>
-                            <CheckCircle2 className="h-4 w-4 mr-2" />
-                            Check In
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {/* TODO: Add buddy functionality */}}>
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            Add Buddy
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {/* TODO: Share functionality */}}>
-                            <Share2 className="h-4 w-4 mr-2" />
-                            Share
-                          </DropdownMenuItem>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem 
-                                className="text-destructive focus:text-destructive cursor-pointer"
-                                onSelect={(e) => e.preventDefault()}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Archive Goal
-                              </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Archive this goal?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  "{goal.title}" will be moved to your archive. You can always restore it later if needed.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Keep Goal</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleDeleteGoal(goal.id, goal.title)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            <h4 className="mb-2">{goal.title}</h4>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant={getStatusColor(goal.status)}>
+                                {goal.status === 'active' ? 'In Progress' : goal.status}
+                              </Badge>
+                              {goal.domain && (
+                                <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>
+                              )}
+                            </div>
+                            {goal.due_date && (
+                              <div className="flex items-center gap-1 text-body-sm text-muted-foreground">
+                                <Calendar className="h-4 w-4" />
+                                Due {formatDate(goal.due_date)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <div className="text-right">
+                              <div className="text-3xl font-bold text-primary">
+                                {Math.round(progressPct)}%
+                              </div>
+                              <div className="text-caption">
+                                {stepCount.done} of {stepCount.required} steps done
+                              </div>
+                            </div>
+                            
+                            {/* Goal Menu */}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-8 w-8 p-0 bg-transparent hover:bg-gray-100"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  Archive Goal
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-40 bg-background border shadow-lg z-50">
+                                <DropdownMenuItem onClick={() => {/* TODO: Open check-in modal */}}>
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                  Check In
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {/* TODO: Add buddy functionality */}}>
+                                  <UserPlus className="h-4 w-4 mr-2" />
+                                  Add Buddy
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {/* TODO: Share functionality */}}>
+                                  <Share2 className="h-4 w-4 mr-2" />
+                                  Share
+                                </DropdownMenuItem>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem 
+                                      className="text-destructive focus:text-destructive cursor-pointer"
+                                      onSelect={(e) => e.preventDefault()}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Archive Goal
+                                    </DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Archive this goal?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        "{goal.title}" will be moved to your archive. You can always restore it later if needed.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Keep Goal</AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        onClick={() => handleDeleteGoal(goal.id, goal.title)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Archive Goal
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent onClick={() => onNavigate('goal-detail', goal.id)}>
+                        {goal.description && (
+                          <p className="text-body-sm text-muted-foreground mb-3 line-clamp-2">
+                            {sanitizeDescription(goal.description)}
+                          </p>
+                        )}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center text-body-sm">
+                            <span>Progress</span>
+                            <span>{stepCount.done}/{stepCount.required} steps</span>
+                          </div>
+                          <Progress value={progressPct} className="h-2" />
+                        </div>
+                        {goal.tags?.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-3">
+                            {goal.tags.map((tag, index) => (
+                              <Badge key={index} variant="outline" className="text-caption">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-6 px-2">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {startIndex + 1}-{Math.min(endIndex, goals.length)} of {goals.length} goals
                   </div>
-                </CardHeader>
-                <CardContent onClick={() => onNavigate('goal-detail', goal.id)}>
-                  {goal.description && (
-                    <p className="text-body-sm text-muted-foreground mb-3 line-clamp-2">
-                      {sanitizeDescription(goal.description)}
-                    </p>
-                  )}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-body-sm">
-                      <span>Progress</span>
-                      <span>{stepCount.done}/{stepCount.required} steps</span>
-                    </div>
-                    <Progress value={progressPct} className="h-2" />
-                  </div>
-                  {goal.tags?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-3">
-                      {goal.tags.map((tag, index) => (
-                        <Badge key={index} variant="outline" className="text-caption">
-                          {tag}
-                        </Badge>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="flex items-center gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {page}
+                        </Button>
                       ))}
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-            </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="flex items-center gap-1"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
       </Tabs>
