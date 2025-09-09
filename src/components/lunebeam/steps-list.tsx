@@ -651,8 +651,8 @@ export const StepsList: React.FC<StepsListProps> = ({
                   <TableHead className="w-8"></TableHead>
                   <TableHead>Task</TableHead>
                   <TableHead className="w-20">Due</TableHead>
-                  <TableHead className="w-24">Status</TableHead>
-                  <TableHead className="w-32">Action</TableHead>
+                  <TableHead className="w-24 text-center">Status</TableHead>
+                  <TableHead className="w-32 text-center">Action</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
