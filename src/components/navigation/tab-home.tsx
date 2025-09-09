@@ -236,6 +236,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                           value={goal.progress_pct || 0} 
                           size={36}
                           strokeWidth={3}
+                          color="#2393CC"
                         />
                         <div className="flex-1">
                           <p className="text-sm font-medium mb-0.5">
