@@ -144,7 +144,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
             <h5 className="text-lg font-bold text-foreground">Coming Up</h5>
             <div className="space-y-2">
               {upcomingSteps.map(({step, goal, dueDate}) => (
-                <div key={step.id} className="text-sm p-2 rounded-md bg-muted/30 border border-white">
+                <div key={step.id} className="text-sm p-2 rounded-md bg-white/80 shadow-sm">
                   <p className="font-medium text-foreground">
                     {cleanStepTitle(step.title)}
                   </p>
