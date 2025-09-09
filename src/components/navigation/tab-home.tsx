@@ -3,7 +3,7 @@ import { CheckCircle, Plus, Award, ChevronRight, Star, Coins } from 'lucide-reac
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Progress } from '../ui/progress';
+import { CircularProgress } from '../ui/circular-progress';
 import { parseISO, isToday } from 'date-fns';
 
 import { RewardsScreen } from '../lunebeam/rewards-screen';
@@ -228,11 +228,18 @@ export const TabHome: React.FC<TabHomeProps> = ({
                 <>
                   {activeGoals.slice(0, 3).map(goal => (
                     <div key={goal.id} className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
-                      <div className="flex-1" onClick={() => onNavigateToGoals(goal.id)}>
-                        <h4 className="text-sm font-medium mb-1">{goal.title}</h4>
-                        <p className="text-xs text-muted-foreground">
-                          {Math.round(goal.progress_pct || 0)}% complete
-                        </p>
+                      <div className="flex items-center gap-3 flex-1">
+                        <CircularProgress 
+                          value={goal.progress_pct || 0} 
+                          size={36}
+                          strokeWidth={3}
+                        />
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium mb-0.5">{goal.title}</h4>
+                          <p className="text-xs text-muted-foreground">
+                            {goal.domain}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <Button 
