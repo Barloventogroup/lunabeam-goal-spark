@@ -21,6 +21,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { goalsService } from '@/services/goalsService';
+import { validateGoalFrequencyWithDueDate, getMinRequiredDate } from '@/utils/goalValidationUtils';
 import type { Goal } from '@/types';
 
 interface GoalEditModalProps {
@@ -51,6 +52,25 @@ export const GoalEditModal: React.FC<GoalEditModalProps> = ({
         variant: "destructive",
       });
       return;
+    }
+
+    // Validate frequency against due date
+    if (dueDate) {
+      const validation = validateGoalFrequencyWithDueDate(
+        title,
+        goal.description,
+        goal.start_date,
+        dueDate.toISOString()
+      );
+      
+      if (!validation.isValid) {
+        toast({
+          title: "Invalid due date",
+          description: validation.error,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -132,6 +152,21 @@ export const GoalEditModal: React.FC<GoalEditModalProps> = ({
                   onSelect={setDueDate}
                   initialFocus
                   className="p-3 pointer-events-auto"
+                  disabled={(date) => {
+                    // Disable past dates
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const checkDate = new Date(date);
+                    checkDate.setHours(0, 0, 0, 0);
+                    
+                    if (checkDate < today) return true;
+                    
+                    // Disable dates that don't allow enough time for the goal frequency
+                    const minRequiredDate = getMinRequiredDate(title, goal.description, goal.start_date);
+                    if (minRequiredDate && checkDate < minRequiredDate) return true;
+                    
+                    return false;
+                  }}
                 />
                 {dueDate && (
                   <div className="p-3 border-t border-border">

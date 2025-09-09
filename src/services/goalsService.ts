@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Goal, Step, GoalDomain, GoalPriority, GoalStatus, StepStatus } from '@/types';
 import { pointsService } from './pointsService';
+import { validateGoalFrequencyWithDueDate } from '@/utils/goalValidationUtils';
 
 const sanitizeDescription = (text?: string): string => {
   if (!text) return '';
@@ -101,6 +102,20 @@ export const goalsService = {
     const user = await supabase.auth.getUser();
     if (!user.data.user) throw new Error('User not authenticated');
 
+    // Validate frequency against due date
+    if (goalData.due_date) {
+      const validation = validateGoalFrequencyWithDueDate(
+        goalData.title,
+        goalData.description,
+        goalData.start_date,
+        goalData.due_date
+      );
+      
+      if (!validation.isValid) {
+        throw new Error(validation.error || 'Invalid due date for goal frequency');
+      }
+    }
+
     // Parse goal for TPP calculation if not provided
     const parsedGoal = pointsService.parseGoalForTPP(
       goalData.title, 
@@ -198,6 +213,29 @@ export const goalsService = {
 
   // Update goal
   async updateGoal(id: string, updates: Partial<Goal>): Promise<Goal> {
+    // Validate frequency against due date if due_date is being updated
+    if (updates.due_date || updates.title) {
+      // Get current goal data to access all fields
+      const { data: currentGoal, error: fetchError } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      const validation = validateGoalFrequencyWithDueDate(
+        updates.title || currentGoal.title,
+        updates.description || currentGoal.description,
+        updates.start_date || currentGoal.start_date,
+        updates.due_date || currentGoal.due_date
+      );
+      
+      if (!validation.isValid) {
+        throw new Error(validation.error || 'Invalid due date for goal frequency');
+      }
+    }
+
     const { data, error } = await supabase
       .from('goals')
       .update({
