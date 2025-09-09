@@ -117,7 +117,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
             if (dueDate && !isNaN(dueDate.getTime())) {
               if (isToday(dueDate)) {
                 todaysSteps.push({ step, goal });
-              } else if (dueDate >= new Date()) {
+              } else {
+                // Include both future steps and overdue steps (not today)
                 upcomingSteps.push({ step, goal, dueDate });
               }
             }
