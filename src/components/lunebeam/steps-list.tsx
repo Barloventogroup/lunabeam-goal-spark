@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreHorizontal, Edit } from 'lucide-react';
+import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreHorizontal, Edit, Hourglass } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +21,7 @@ import { StepEditModal } from './step-edit-modal';
 import { useToast } from '@/hooks/use-toast';
 import { useStore } from '@/store/useStore';
 import { cleanStepTitle } from '@/utils/stepUtils';
+import { parseISO, isBefore } from 'date-fns';
 
 // Utility function to format dates
 const formatDate = (dateStr: string): string => {
@@ -564,6 +565,16 @@ export const StepsList: React.FC<StepsListProps> = ({
 
     const stepSubsteps = substepsMap[step.id] || [];
     const allSubstepsCompleted = areAllSubStepsCompleted(stepSubsteps);
+
+    // Check if step is overdue
+    const isOverdue = step.due_date && 
+                     step.status !== 'done' && 
+                     step.status !== 'skipped' && 
+                     isBefore(parseISO(step.due_date), new Date().setHours(0, 0, 0, 0));
+
+    if (isOverdue) {
+      return <Hourglass className="h-5 w-5 text-red-600" />;
+    }
 
     const status = isStepDone(step) ? 'done' : step.status;
     switch (status) {
