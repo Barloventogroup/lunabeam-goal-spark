@@ -1,9 +1,17 @@
 import * as React from "react"
 import { format, parse, isValid } from "date-fns"
+import { Calendar as CalendarIcon } from "lucide-react"
 import { DateRange } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 interface AirlineDatePickerProps {
   dateRange?: DateRange
@@ -28,6 +36,8 @@ export function AirlineDatePicker({
 }: AirlineDatePickerProps) {
   const [startInputValue, setStartInputValue] = React.useState("")
   const [endInputValue, setEndInputValue] = React.useState("")
+  const [isStartOpen, setIsStartOpen] = React.useState(false)
+  const [isEndOpen, setIsEndOpen] = React.useState(false)
 
   // Update input values when dateRange changes
   React.useEffect(() => {
@@ -96,6 +106,26 @@ export function AirlineDatePicker({
     }
   }
 
+  const handleStartDateSelect = (date: Date | undefined) => {
+    if (date) {
+      onDateRangeChange({
+        from: date,
+        to: dateRange?.to
+      })
+      setIsStartOpen(false)
+    }
+  }
+
+  const handleEndDateSelect = (date: Date | undefined) => {
+    if (date) {
+      onDateRangeChange({
+        from: dateRange?.from,
+        to: date
+      })
+      setIsEndOpen(false)
+    }
+  }
+
   return (
     <div className={cn("grid grid-cols-2 gap-2", className)}>
       {/* Start Date */}
@@ -103,13 +133,36 @@ export function AirlineDatePicker({
         <label className="text-xs text-muted-foreground font-medium">
           {placeholder.start}
         </label>
-        <Input
-          value={startInputValue}
-          onChange={handleStartInputChange}
-          placeholder="Select date"
-          className="h-12"
-          disabled={disabled}
-        />
+        <div className="relative">
+          <Input
+            value={startInputValue}
+            onChange={handleStartInputChange}
+            placeholder="Select date"
+            className="h-12 pr-10"
+            disabled={disabled}
+          />
+          <Popover open={isStartOpen} onOpenChange={setIsStartOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1 h-10 w-8 p-0"
+                disabled={disabled}
+              >
+                <CalendarIcon className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-background border border-border" align="start">
+              <Calendar
+                mode="single"
+                selected={dateRange?.from}
+                onSelect={handleStartDateSelect}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {/* End Date */}
@@ -117,13 +170,36 @@ export function AirlineDatePicker({
         <label className="text-xs text-muted-foreground font-medium">
           {placeholder.end}
         </label>
-        <Input
-          value={endInputValue}
-          onChange={handleEndInputChange}
-          placeholder="Select date"
-          className="h-12"
-          disabled={disabled}
-        />
+        <div className="relative">
+          <Input
+            value={endInputValue}
+            onChange={handleEndInputChange}
+            placeholder="Select date"
+            className="h-12 pr-10"
+            disabled={disabled}
+          />
+          <Popover open={isEndOpen} onOpenChange={setIsEndOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1 h-10 w-8 p-0"
+                disabled={disabled}
+              >
+                <CalendarIcon className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-background border border-border" align="start">
+              <Calendar
+                mode="single"
+                selected={dateRange?.to}
+                onSelect={handleEndDateSelect}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
     </div>
   )
