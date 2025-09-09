@@ -11,7 +11,7 @@ import { AirlineDatePicker } from '@/components/ui/airline-date-picker';
 import { ArrowLeft, X, Sparkles, Mic, Volume2, Users, MessageSquare, Send, CalendarIcon, AlertTriangle } from 'lucide-react';
 import { GOALS_WIZARD_DATA, FALLBACK_OPTION, STARTER_GOALS, Category, CategoryGoal, GoalOption } from '@/data/goals-wizard-data';
 import { useToast } from '@/hooks/use-toast';
-import { format } from "date-fns";
+import { format, addDays, getDay, nextSaturday, nextSunday, isAfter, isBefore } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AIService } from '@/services/aiService';
 import { goalsService, stepsService } from '@/services/goalsService';
@@ -246,7 +246,48 @@ const getDynamicSubtitle = (step: number, goalId?: string): string => {
     if (state.startDate && state.dueDate && state.startDate > state.dueDate) {
       return "Start date cannot be after due date";
     }
+
+    // Check for weekend-specific goals
+    const weekendValidationError = validateWeekendTiming();
+    if (weekendValidationError) {
+      return weekendValidationError;
+    }
     
+    return null;
+  };
+
+  const validateWeekendTiming = (): string | null => {
+    if (!state.timing || !state.startDate || !state.dueDate) {
+      return null;
+    }
+
+    const timingLabel = state.timing.label?.toLowerCase() || '';
+    const isWeekendGoal = timingLabel.includes('weekend') || timingLabel.includes('weekends');
+    
+    if (!isWeekendGoal) {
+      return null;
+    }
+
+    // Check if the date range includes at least one full weekend
+    const startDay = getDay(state.startDate); // 0 = Sunday, 6 = Saturday
+    const endDay = getDay(state.dueDate);
+    
+    // Find the next Saturday and Sunday from the start date
+    const nextSat = startDay === 6 ? state.startDate : nextSaturday(state.startDate);
+    const nextSun = startDay === 0 ? state.startDate : nextSunday(state.startDate);
+    
+    // Check if we have at least one complete weekend (both Saturday and Sunday) within the date range
+    const hasCompleteSaturday = !isAfter(nextSat, state.dueDate);
+    const hasCompleteSunday = !isAfter(nextSun, state.dueDate);
+    
+    if (!hasCompleteSaturday || !hasCompleteSunday) {
+      // Find the next viable weekend
+      const viableWeekendStart = nextSaturday(state.startDate);
+      const viableWeekendEnd = nextSunday(viableWeekendStart);
+      
+      return `This goal is set for weekends, but your dates (${format(state.startDate, 'MMM d')} - ${format(state.dueDate, 'MMM d')}) don't include a full weekend. Try setting your end date to ${format(viableWeekendEnd, 'MMM d, yyyy')} or later to include the weekend of ${format(viableWeekendStart, 'MMM d')}-${format(viableWeekendEnd, 'MMM d')}.`;
+    }
+
     return null;
   };
 
