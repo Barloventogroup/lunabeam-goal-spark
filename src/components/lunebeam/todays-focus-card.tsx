@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, CheckCircle2, ArrowRight, Calendar } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 import type { Step, Goal } from '@/types';
-import { InlineEdit } from '../ui/inline-edit';
+
 
 interface TodaysFocusCardProps {
   step?: Step;
@@ -13,7 +13,7 @@ interface TodaysFocusCardProps {
   onCompleteStep?: () => void;
   onViewStep?: () => void;
   onNeedHelp?: () => void;
-  onUpdateStepTitle?: (stepId: string, newTitle: string) => Promise<void>;
+  
 }
 
 export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
@@ -22,8 +22,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
   upcomingSteps = [],
   onCompleteStep,
   onViewStep,
-  onNeedHelp,
-  onUpdateStepTitle
+  onNeedHelp
 }) => {
   // If there's a step due today
   if (step && goal) {
@@ -48,18 +47,9 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <div className="flex-1">
-                        {onUpdateStepTitle ? (
-                          <InlineEdit
-                            value={step.title}
-                            onSave={(newTitle) => onUpdateStepTitle(step.id, newTitle)}
-                            className="font-medium text-foreground text-sm"
-                            placeholder="Step name"
-                          />
-                        ) : (
-                          <p className="font-medium text-foreground text-sm">
-                            {step.title}
-                          </p>
-                        )}
+                        <p className="font-medium text-foreground text-sm">
+                          {step.title}
+                        </p>
                       </div>
                       <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
                         {estimatedTime}

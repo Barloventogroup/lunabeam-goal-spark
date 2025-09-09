@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { CircularProgress } from '../ui/circular-progress';
-import { InlineEdit } from '../ui/inline-edit';
+
 import { parseISO, isToday } from 'date-fns';
 
 import { RewardsScreen } from '../lunebeam/rewards-screen';
@@ -78,24 +78,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
   // Active goals from store
   const activeGoals = goals.filter(goal => goal.status === 'active' || goal.status === 'planned');
   const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'there';
-  const handleUpdateStepTitle = async (stepId: string, newTitle: string) => {
-    try {
-      await stepsService.updateStep(stepId, { title: newTitle });
-      // Don't reload all steps, let the parent component handle refresh
-      // await loadSteps();
-    } catch (error) {
-      console.error('Failed to update step title:', error);
-    }
-  };
-
-  const handleUpdateGoalTitle = async (goalId: string, newTitle: string) => {
-    try {
-      await goalsService.updateGoal(goalId, { title: newTitle });
-      await loadGoals(); // Refresh goals data
-    } catch (error) {
-      console.error('Failed to update goal title:', error);
-    }
-  };
   const mockPoints = 247; // Placeholder points to match Rewards screen
 
   // Compute today's due step and next upcoming steps
@@ -225,14 +207,12 @@ export const TabHome: React.FC<TabHomeProps> = ({
             upcomingSteps={upcomingSteps}
             onViewStep={handleViewStep}
             onNeedHelp={onOpenChat}
-            onUpdateStepTitle={handleUpdateStepTitle}
           />
 
           {/* Upcoming Steps Card */}
           <UpcomingStepsCard
             upcomingSteps={upcomingSteps}
             onViewStep={handleViewUpcomingStep}
-            onUpdateStepTitle={handleUpdateStepTitle}
           />
 
 
@@ -258,12 +238,9 @@ export const TabHome: React.FC<TabHomeProps> = ({
                           strokeWidth={3}
                         />
                         <div className="flex-1">
-                          <InlineEdit
-                            value={goal.title}
-                            onSave={(newTitle) => handleUpdateGoalTitle(goal.id, newTitle)}
-                            className="text-sm font-medium mb-0.5"
-                            placeholder="Goal name"
-                          />
+                          <p className="text-sm font-medium mb-0.5">
+                            {goal.title}
+                          </p>
                           <p className="text-xs text-muted-foreground">
                             {goal.domain}
                           </p>
