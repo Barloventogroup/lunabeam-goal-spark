@@ -728,7 +728,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                         </TableCell>
 
                           <TableCell className="p-2">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-center gap-2">
                               {!isStepDone(mainStep) && !isBlocked && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
