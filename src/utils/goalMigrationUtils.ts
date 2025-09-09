@@ -52,10 +52,10 @@ const getCorrectDomainForGoal = (title: string): GoalDomain => {
   // Fun/Recreation goals
   if (titleLower.includes('art') || titleLower.includes('craft') || 
       titleLower.includes('sport') || titleLower.includes('game') || 
-      titleLower.includes('music') || titleLower.includes('movie') || 
-      titleLower.includes('watch') || titleLower.includes('build') || 
-      titleLower.includes('photo') || titleLower.includes('video') ||
-      titleLower.includes('fun activity')) {
+      titleLower.includes('music') || titleLower.includes('listen') ||
+      titleLower.includes('movie') || titleLower.includes('watch') || 
+      titleLower.includes('build') || titleLower.includes('photo') || 
+      titleLower.includes('video') || titleLower.includes('fun activity')) {
     return 'fun_recreation';
   }
   

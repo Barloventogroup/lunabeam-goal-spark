@@ -173,6 +173,15 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
         }
       };
 
+      const mapStarterGoalToDomain = (goalTitle: string): GoalDomain => {
+        const titleLower = goalTitle.toLowerCase();
+        if (titleLower.includes('water')) return 'health';
+        if (titleLower.includes('bed')) return 'life';
+        if (titleLower.includes('hi')) return 'social_skills';
+        if (titleLower.includes('music')) return 'fun_recreation';
+        return 'life';
+      };
+
       const formatDate = (d: Date) => d.toISOString().slice(0, 10);
       const due = new Date(startDate);
       due.setDate(due.getDate() + 6);
@@ -185,7 +194,7 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
       const createdGoal = await goalsService.createGoal({
         title: wizardGoal?.goal || extractedGoal?.title || 'Goal',
         description: wizardGoal?.smartGoal || extractedGoal?.description || 'Generated goal',
-        domain: mapCategoryToDomain(goal.category),
+        domain: goal.category === 'starter' ? mapStarterGoalToDomain(wizardGoal?.goal || extractedGoal?.title || '') : mapCategoryToDomain(goal.category),
         priority: 'medium',
         start_date: formatDate(startDate),
         due_date: formatDate(due),

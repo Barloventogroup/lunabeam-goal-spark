@@ -378,7 +378,7 @@ const getDynamicSubtitle = (step: number, goalId?: string): string => {
       const goal = await goalsService.createGoal({
         title: state.goal.title,
         description: sanitizedDescription,
-        domain: mapCategoryToDomain(state.category.title),
+        domain: state.category.id === 'starter' ? mapStarterGoalToDomain(state.goal.id) : mapCategoryToDomain(state.category.title),
         priority: 'medium',
         start_date: formatDate(startDate),
         due_date: formatDate(due),
@@ -505,7 +505,16 @@ Example:
     if (t.includes('postsecondary')) return 'school'; // aligns with education domain in legacy UI
     if (t.includes('fun') || t.includes('recreation')) return 'fun_recreation'; // Fun/Recreation as separate domain
     return 'life'; // default fallback
-    return 'life'; // Never use 'other' so users don't see "General"
+  };
+
+  const mapStarterGoalToDomain = (goalId: string): GoalDomain => {
+    switch (goalId) {
+      case 'drink-water': return 'health';
+      case 'make-bed': return 'life';
+      case 'say-hi': return 'social_skills';
+      case 'listen-music': return 'fun_recreation';
+      default: return 'life';
+    }
   };
 
   const showRandomAffirmation = () => {
