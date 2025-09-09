@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, CheckCircle, Plus, Award, ChevronRight, Star, Coins } from 'lucide-react';
+import { MessageCircle, CheckCircle, Plus, Award, ChevronRight, Star, Coins, User } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Progress } from '../ui/progress';
@@ -164,7 +164,32 @@ export const TabHome: React.FC<TabHomeProps> = ({
           }} />
           </div>
           
-          
+          <div className="flex items-center gap-3">
+            {/* LunaPoints Display */}
+            <div className="flex items-center gap-1 bg-muted px-3 py-1.5 rounded-full">
+              <Coins className="h-4 w-4 text-yellow-600" />
+              <span className="text-sm font-medium">{pointsSummary?.totalPoints || 0}</span>
+            </div>
+            
+            {/* User Icon */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 rounded-full"
+            >
+              <User className="h-4 w-4" />
+            </Button>
+            
+            {/* Chat Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onOpenChat}
+              className="h-8 w-8 p-0"
+            >
+              <MessageCircle className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="p-4 space-y-6">
