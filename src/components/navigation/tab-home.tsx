@@ -111,9 +111,10 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'there';
   const mockPoints = 247; // Placeholder points to match Rewards screen
 
-  // Compute today's due step and next upcoming steps
+  // Compute today's due step, overdue steps and next upcoming steps
   const getTodaysStepsAndNext = () => {
     const todaysSteps: Array<{ step: any; goal: Goal }> = [];
+    const overdueSteps: Array<{ step: any; goal: Goal; dueDate: Date }> = [];
     const upcomingSteps: Array<{ step: any; goal: Goal; dueDate: Date }> = [];
     const allStepsDebug: Array<{ goalTitle: string; goalStatus: string; stepTitle: string; stepStatus: string; dueDate: any }> = [];
 
@@ -128,6 +129,9 @@ export const TabHome: React.FC<TabHomeProps> = ({
         return null;
       }
     };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
 
     goals.forEach((goal) => {
       // Include active/planned/paused goals
@@ -146,10 +150,16 @@ export const TabHome: React.FC<TabHomeProps> = ({
           if (step.status !== 'done' && step.status !== 'skipped') {
             const dueDate = normalizeDueDate(step.due_date);
             if (dueDate && !isNaN(dueDate.getTime())) {
+              const dueDateStart = new Date(dueDate);
+              dueDateStart.setHours(0, 0, 0, 0);
+              
               if (isToday(dueDate)) {
                 todaysSteps.push({ step, goal });
+              } else if (dueDateStart < today) {
+                // Overdue steps
+                overdueSteps.push({ step, goal, dueDate });
               } else {
-                // Include both future steps and overdue steps (not today)
+                // Future steps
                 upcomingSteps.push({ step, goal, dueDate });
               }
             }
@@ -159,18 +169,31 @@ export const TabHome: React.FC<TabHomeProps> = ({
     });
 
     console.log('All steps debug:', allStepsDebug);
+    overdueSteps.sort((a, b) => b.dueDate.getTime() - a.dueDate.getTime()); // Most recent overdue first
     upcomingSteps.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
-    return { todaysSteps, upcomingSteps: upcomingSteps.slice(0, 3) };
+    return { 
+      todaysSteps, 
+      overdueSteps: overdueSteps.slice(0, 3),
+      upcomingSteps: upcomingSteps.slice(0, 3) 
+    };
   };
 
-  const { todaysSteps, upcomingSteps } = getTodaysStepsAndNext();
+  const { todaysSteps, overdueSteps, upcomingSteps } = getTodaysStepsAndNext();
   const todaysDueItem = todaysSteps[0] || null;
   
   console.log('TabHome debug:', { 
     goalsCount: goals.length, 
     stepsCount: Object.keys(steps).length,
     todaysStepsCount: todaysSteps.length,
+    overdueStepsCount: overdueSteps.length,
     upcomingStepsCount: upcomingSteps.length,
+    overdueSteps: overdueSteps.map(item => ({
+      stepTitle: item.step.title,
+      stepStatus: item.step.status,
+      dueDate: item.step.due_date,
+      goalTitle: item.goal.title,
+      goalStatus: item.goal.status
+    })),
     upcomingSteps: upcomingSteps.map(item => ({
       stepTitle: item.step.title,
       stepStatus: item.step.status,
@@ -236,6 +259,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
           <TodaysFocusCard
             step={todaysDueItem?.step}
             goal={todaysDueItem?.goal}
+            overdueSteps={overdueSteps}
             upcomingSteps={upcomingSteps}
             onViewStep={handleViewStep}
             onNeedHelp={onOpenChat}
