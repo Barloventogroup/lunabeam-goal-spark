@@ -42,6 +42,12 @@ export function AirlineDatePicker({
       return
     }
 
+    // If focusing on start and user clicks the same start date that's already selected, deselect it
+    if (focusedInput === 'start' && newDateRange.from && dateRange?.from && isSameDay(newDateRange.from, dateRange.from) && !dateRange?.to) {
+      onDateRangeChange(undefined)
+      return
+    }
+
     // If we have a start date but no end date, and user clicks same date, set it as end date
     if (newDateRange.from && !newDateRange.to && dateRange?.from && isSameDay(newDateRange.from, dateRange.from)) {
       onDateRangeChange({
