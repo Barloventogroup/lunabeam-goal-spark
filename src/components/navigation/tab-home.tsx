@@ -107,6 +107,20 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
   const { todaysSteps, upcomingSteps } = getTodaysStepsAndNext();
   const todaysDueItem = todaysSteps[0] || null;
+  
+  console.log('TabHome debug:', { 
+    goalsCount: goals.length, 
+    stepsCount: Object.keys(steps).length,
+    todaysStepsCount: todaysSteps.length,
+    upcomingStepsCount: upcomingSteps.length,
+    upcomingSteps: upcomingSteps.map(item => ({
+      stepTitle: item.step.title,
+      stepStatus: item.step.status,
+      dueDate: item.step.due_date,
+      goalTitle: item.goal.title,
+      goalStatus: item.goal.status
+    }))
+  });
 
   const handleViewStep = () => {
     if (todaysDueItem) {
