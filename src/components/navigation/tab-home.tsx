@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Plus, Award, ChevronRight, Star, Coins } from 'lucide-react';
+import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -219,7 +219,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
           <Card className="bg-gradient-to-r from-muted/5 to-accent/5 border-muted">
             <CardHeader className="pb-3">
-              <CardTitle className="text-foreground">
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Target className="h-5 w-5" />
                 Your Goals
               </CardTitle>
             </CardHeader>
