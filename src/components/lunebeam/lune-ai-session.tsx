@@ -145,31 +145,39 @@ Sound good?`,
   };
 
   const handleComprehensiveGoalSelect = (goalData: any) => {
-    // Create a detailed goal title with options and inputs
-    let goalTitle = goalData.goal;
+    // Ensure we have clean goal data to prevent mixing
+    const cleanGoalData = {
+      goal: goalData.goal || '',
+      selectedOption: goalData.selectedOption || '',
+      customInputs: goalData.customInputs || {},
+      followUps: goalData.followUps || {}
+    };
     
-    if (goalData.selectedOption) {
-      goalTitle += ` - ${goalData.selectedOption}`;
+    // Create a detailed goal title with options and inputs
+    let goalTitle = cleanGoalData.goal;
+    
+    if (cleanGoalData.selectedOption) {
+      goalTitle += ` - ${cleanGoalData.selectedOption}`;
     }
     
     // Add custom inputs to the title
-    const customInputValues = Object.values(goalData.customInputs || {}).filter(Boolean);
+    const customInputValues = Object.values(cleanGoalData.customInputs).filter(Boolean);
     if (customInputValues.length > 0) {
       goalTitle += ` (${customInputValues.join(', ')})`;
     }
     
     // Add follow-ups to the title  
-    const followUpValues = Object.values(goalData.followUps || {}).filter(Boolean);
+    const followUpValues = Object.values(cleanGoalData.followUps).filter(Boolean);
     if (followUpValues.length > 0) {
       goalTitle += ` • ${followUpValues.join(' • ')}`;
     }
 
-    setComprehensiveGoalData(goalData);
+    setComprehensiveGoalData(cleanGoalData);
     setIsCustomGoal(false);
 
     const convertedGoal = {
       title: goalTitle,
-      description: `A ${category} goal: ${goalData.goal}`,
+      description: `A ${category} goal: ${cleanGoalData.goal}`,
       category: category,
       steps: [
         'Start with a small step',

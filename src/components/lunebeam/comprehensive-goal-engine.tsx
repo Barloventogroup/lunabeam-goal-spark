@@ -27,6 +27,11 @@ export const ComprehensiveGoalEngine: React.FC<ComprehensiveGoalEngineProps> = (
 }) => {
   const [selectedGoal, setSelectedGoal] = useState<GoalFlow | null>(null);
 
+  // Reset selected goal when category changes to prevent mixing
+  React.useEffect(() => {
+    setSelectedGoal(null);
+  }, [category]);
+
   const goals = getGoalsForCategory(category);
   const categoryDisplayName = normalizeCategoryName(category);
 
