@@ -391,7 +391,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                     </CardHeader>
                     <CardContent onClick={() => onNavigate('goal-detail', goal.id)}>
                       {goal.description && (
-                        <p className="text-body-sm text-muted-foreground mb-3 line-clamp-2">
+                        <p className="text-body-sm text-muted-foreground mb-3 line-clamp-2 capitalize">
                           {sanitizeDescription(goal.description)}
                         </p>
                       )}

@@ -270,7 +270,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
       {goal.description && (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-muted-foreground">{goal.description}</p>
+            <p className="text-muted-foreground capitalize">{goal.description}</p>
           </CardContent>
         </Card>
       )}
