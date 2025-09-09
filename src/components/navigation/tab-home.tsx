@@ -14,6 +14,7 @@ import { GoalsWizard } from '../lunebeam/goals-wizard';
 import { PointsDisplay } from '../lunebeam/points-display';
 import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
+import { UpcomingStepsCard } from '../lunebeam/upcoming-steps-card';
 import { useStore } from '../../store/useStore';
 import { goalsService, stepsService } from '../../services/goalsService';
 import type { Goal } from '../../types';
@@ -163,8 +164,24 @@ export const TabHome: React.FC<TabHomeProps> = ({
     });
 
     console.log('All steps debug:', allStepsDebug);
-    upcomingSteps.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
-    return { todaysSteps, upcomingSteps: upcomingSteps.slice(0, 3) };
+    
+    // Sort upcoming steps - overdue first, then by due date
+    upcomingSteps.sort((a, b) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const aIsOverdue = isBefore(a.dueDate, today);
+      const bIsOverdue = isBefore(b.dueDate, today);
+      
+      // Overdue steps first
+      if (aIsOverdue && !bIsOverdue) return -1;
+      if (!aIsOverdue && bIsOverdue) return 1;
+      
+      // Then sort by due date
+      return a.dueDate.getTime() - b.dueDate.getTime();
+    });
+    
+    return { todaysSteps, upcomingSteps: upcomingSteps.slice(0, 5) };
   };
 
   const { todaysSteps, upcomingSteps } = getTodaysStepsAndNext();
@@ -244,6 +261,12 @@ export const TabHome: React.FC<TabHomeProps> = ({
             onViewStep={handleViewStep}
             onNeedHelp={onOpenChat}
             onViewUpcomingStep={handleViewUpcomingStep}
+          />
+
+          {/* Upcoming Steps Card */}
+          <UpcomingStepsCard
+            upcomingSteps={upcomingSteps}
+            onViewStep={handleViewUpcomingStep}
           />
 
 

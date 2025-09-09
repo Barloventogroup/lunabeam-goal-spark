@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, ArrowRight, Clock } from 'lucide-react';
+import { Calendar, ArrowRight, Clock, AlertTriangle } from 'lucide-react';
 import { format, isBefore } from 'date-fns';
 import type { Step, Goal } from '@/types';
 import { cleanStepTitle } from '@/utils/stepUtils';
@@ -23,7 +23,7 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-foreground">
           <Calendar className="h-5 w-5 text-muted-foreground" />
-          Upcoming Steps
+          Coming Up
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -36,7 +36,9 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
                             isBefore(dueDate, new Date().setHours(0, 0, 0, 0));
             
             return (
-            <div key={step.id} className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
+            <div key={step.id} className={`flex items-center justify-between p-3 bg-background rounded-lg border ${
+              isOverdue ? 'border-red-200 bg-red-50' : 'border-border'
+            }`}>
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
@@ -44,6 +46,12 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
                       {cleanStepTitle(step.title)}
                     </h4>
                   </div>
+                  {isOverdue && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-md">
+                      <AlertTriangle className="h-3 w-3" />
+                      OVERDUE
+                    </span>
+                  )}
                 </div>
                 
                 <p className="text-xs text-muted-foreground">
