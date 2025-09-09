@@ -3,7 +3,7 @@ import { MessageCircle, CheckCircle, Plus, Award, ChevronRight, Star, Coins } fr
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Progress } from '../ui/progress';
-import { Badge } from '../ui/badge';
+
 import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
 import { GoalsWizard } from '../lunebeam/goals-wizard';
@@ -31,10 +31,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
     profile,
     loadProfile,
     goals,
-    badges,
     pointsSummary,
     loadGoals,
-    loadBadges,
     loadPoints
   } = useStore();
 
@@ -42,9 +40,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
     console.log('TabHome mounted - loading data');
     loadProfile();
     loadGoals();
-    loadBadges();
     loadPoints();
-  }, [loadProfile, loadGoals, loadBadges, loadPoints]);
+  }, [loadProfile, loadGoals, loadPoints]);
 
   // Refresh data when component becomes visible
   useEffect(() => {
@@ -173,45 +170,23 @@ export const TabHome: React.FC<TabHomeProps> = ({
               </Card>}
           </div>
 
-          {/* Rewards/Badges */}
+          {/* LunaPoints */}
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold">Rewards</h3>
+            <h3 className="text-lg font-semibold">LunaPoints</h3>
 
-            {/* Stats inside Rewards card */}
-            <Card className="shadow-soft">
-              <CardContent className="p-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center p-4 rounded-lg bg-muted/30">
-                    <Star className="h-6 w-6 mx-auto mb-2 text-blue-500" />
-                    <div className="text-2xl font-bold">{badges.length || 0}</div>
-                    <div className="text-xs text-muted-foreground">Badges Earned</div>
-                  </div>
-                   <div className="text-center p-4 rounded-lg bg-muted/30">
-                     <Coins className="h-6 w-6 mx-auto mb-2 text-green-500" />
-                     <div className="text-2xl font-bold">{pointsSummary?.totalPoints || 0}</div>
-                     <div className="text-xs text-muted-foreground">LunaPoints</div>
-                   </div>
+            {/* Points card */}
+            <Card 
+              className="shadow-soft cursor-pointer hover:shadow-card transition-all duration-200"
+              onClick={() => setCurrentView('rewards')}
+            >
+              <CardContent className="p-6 text-center space-y-3">
+                <Coins className="h-12 w-12 mx-auto text-green-500" />
+                <div>
+                  <div className="text-3xl font-bold">{pointsSummary?.totalPoints || 0}</div>
+                  <p className="text-sm text-muted-foreground">Points available</p>
                 </div>
               </CardContent>
             </Card>
-
-            {badges.length > 0 && (
-              <div className="grid grid-cols-2 gap-3">
-                {badges.slice(0, 4).map((b) => (
-                  <Card key={b.id} className="bg-card/60 shadow-soft">
-                    <CardContent className="p-4 text-center space-y-2">
-                      <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mx-auto">
-                        <Award className="h-6 w-6 text-accent-foreground" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{b.title}</p>
-                        <p className="text-sm text-muted-foreground">{b.type}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
           </div>
 
         </div>
