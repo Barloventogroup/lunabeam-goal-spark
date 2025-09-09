@@ -199,9 +199,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
                     </Button>
                     <Button 
                       size="sm" 
-                      variant="outline"
+                      variant="default"
                       onClick={() => setCurrentView('rewards')}
-                      className="border-blue-500 text-blue-600 hover:bg-blue-50"
                     >
                       View
                     </Button>
