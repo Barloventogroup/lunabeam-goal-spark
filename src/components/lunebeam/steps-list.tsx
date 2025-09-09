@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CircularProgress } from '@/components/ui/circular-progress';
 import type { Step, Goal, Substep, StepStatus, StepType } from '@/types';
 import { stepsService } from '@/services/goalsService';
 import { stepValidationService } from '@/services/stepValidationService';
@@ -628,15 +629,19 @@ export const StepsList: React.FC<StepsListProps> = ({
           <p className="text-sm text-muted-foreground">Here's a short list of steps and things to keep in mind as you work on your goal.</p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
-              <span className="font-medium text-foreground">{progressStats.completedItems}</span>
+              <span className="font-medium" style={{ color: '#2393CC' }}>{progressStats.completedItems}</span>
               <span>completed</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="font-medium text-foreground">{progressStats.totalCompletableItems - progressStats.completedItems}</span>
+              <span className="font-medium text-amber-600">{progressStats.totalCompletableItems - progressStats.completedItems}</span>
               <span>remaining</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="font-medium text-foreground">{progressStats.progressPercent}%</span>
+              <CircularProgress 
+                value={progressStats.progressPercent} 
+                size={24}
+                strokeWidth={2}
+              />
               <span>progress</span>
             </div>
           </div>
