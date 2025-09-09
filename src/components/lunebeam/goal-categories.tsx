@@ -23,12 +23,20 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
 }) => {
   const categories = [
     {
+      id: 'health',
+      title: '💪 Health & Well Being',
+      description: 'Taking care of your body and mind - the good stuff that makes you feel awesome',
+      icon: Heart,
+      color: 'bg-red-500/10 text-red-600 border-red-200',
+      examples: 'Walk, Stretch, Better Sleep, Eat Healthier, Drink More Water'
+    },
+    {
       id: 'education',
       title: '🎓 Education - High School / Academic Readiness',
       description: 'Learning new things and growing your brain power - no matter how small the step',
       icon: GraduationCap,
       color: 'bg-blue-500/10 text-blue-600 border-blue-200',
-      examples: 'Read 1 page, write 1 sentence, review schedule'
+      examples: 'Read Something, Write Something, Plan Week, Solve a Problem, Review Notes, Study'
     },
     {
       id: 'employment',
@@ -36,15 +44,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
       description: 'Building work skills and confidence - one small step toward your future',
       icon: Briefcase,
       color: 'bg-green-500/10 text-green-600 border-green-200',
-      examples: 'Practice interview Q, update resume, send email'
-    },
-    {
-      id: 'health',
-      title: '💪 Health & Well-Being',
-      description: 'Taking care of your body and mind - the good stuff that makes you feel awesome',
-      icon: Heart,
-      color: 'bg-red-500/10 text-red-600 border-red-200',
-      examples: 'Walk, try a snack, sleep better'
+      examples: 'Practice for Interview, Create Resume, Update Resume, Send Thank-You Letter, Find Companies, Find People that Can Help'
     },
     {
       id: 'independent_living',
@@ -52,15 +52,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
       description: 'Everyday life stuff that makes you feel more independent and capable',
       icon: Home,
       color: 'bg-purple-500/10 text-purple-600 border-purple-200',
-      examples: 'Make bed, set table, laundry to basket'
-    },
-    {
-      id: 'postsecondary',
-      title: '🎓 Postsecondary - Learning After High School',
-      description: "Checking out what's next after high school - colleges, trades, certificates, whatever interests you",
-      icon: BookOpen,
-      color: 'bg-indigo-500/10 text-indigo-600 border-indigo-200',
-      examples: 'Look at 1 program, visit disability office site, student story'
+      examples: 'Make Bed, Set Table, Do Laundry, Cook, Clean Area, Write Shopping List'
     },
     {
       id: 'social_skills',
@@ -68,15 +60,23 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
       description: 'Connecting with people in your own comfortable way - even tiny interactions count',
       icon: Users,
       color: 'bg-orange-500/10 text-orange-600 border-orange-200',
-      examples: 'Say "hi", eye contact 3s, text "how are you?"'
+      examples: 'Say Hi, Eye Contact (3 Seconds), Text "How are you?", Handshake / Fist Pump, Give a Compliment'
+    },
+    {
+      id: 'postsecondary',
+      title: '🎓 Postsecondary - Learning After High School',
+      description: "Checking out what's next after high school - colleges, trades, certificates, whatever interests you",
+      icon: BookOpen,
+      color: 'bg-indigo-500/10 text-indigo-600 border-indigo-200',
+      examples: 'Research Colleges/Programs, Prepare Application Materials, Explore Financial Aid, Visit Campuses / Programs, Look for Programs, Visit Disability Office Website, Plan Campus Visit, Review Supports'
     },
     {
       id: 'fun_recreation',
-      title: '🎉 Fun/Recreation',
+      title: '🎉 Fun / Recreation',
       description: 'Enjoying hobbies and fun activities that bring you joy and relaxation',
       icon: Building,
       color: 'bg-pink-500/10 text-pink-600 border-pink-200',
-      examples: 'Play game, watch movie, listen to music'
+      examples: 'Play a Sport/Game, Do an Art or Craft, Listen to or Play Music, Read or Watch Something Fun, Do a Fun Activity with Friends, Play a Game, Make Art, Watch a Movie or Show, Build Something, Do a Sport, Take a Photo or Video'
     },
   ];
 

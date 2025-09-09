@@ -3,7 +3,7 @@ export const getDomainDisplayName = (domain: string): string => {
     // Legacy domain mappings (these are the current values in database)
     'school': 'Education - High School / Academic Readiness',
     'work': 'Employment', 
-    'health': 'Health & Well-Being',
+    'health': 'Health & Well Being',
     'life': 'Independent Living',
     
     // New category mappings from goal-categories.tsx
@@ -12,7 +12,7 @@ export const getDomainDisplayName = (domain: string): string => {
     'independent_living': 'Independent Living', 
     'social_skills': 'Social Skills',
     'postsecondary': 'Postsecondary - Learning After High School',
-    'fun_recreation': 'Fun/Recreation',
+    'fun_recreation': 'Fun / Recreation',
     
     // Handle the default case
     'general': 'General'
