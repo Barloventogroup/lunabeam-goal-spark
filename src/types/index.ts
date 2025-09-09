@@ -41,7 +41,7 @@ export interface Consent {
 }
 
 // Goals & Steps Types (New MVP Model)
-export type GoalDomain = 'school' | 'work' | 'life' | 'health' | 'education' | 'employment' | 'independent_living' | 'social_skills' | 'postsecondary' | 'other';
+export type GoalDomain = 'school' | 'work' | 'life' | 'health' | 'education' | 'employment' | 'independent_living' | 'social_skills' | 'postsecondary' | 'fun_recreation' | 'other';
 export type GoalPriority = 'low' | 'medium' | 'high';
 export type GoalStatus = 'planned' | 'active' | 'paused' | 'completed' | 'archived';
 export type StepStatus = 'todo' | 'doing' | 'done' | 'skipped';

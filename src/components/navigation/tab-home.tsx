@@ -293,7 +293,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                             {goal.title}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {normalizeDomainForDisplay(goal.domain) || 'General'}
+                            {normalizeDomainForDisplay(goal.domain)}
                           </p>
                         </div>
                       </div>

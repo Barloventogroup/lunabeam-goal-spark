@@ -69,7 +69,15 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
       icon: Users,
       color: 'bg-orange-500/10 text-orange-600 border-orange-200',
       examples: 'Say "hi", eye contact 3s, text "how are you?"'
-    }
+    },
+    {
+      id: 'fun_recreation',
+      title: '🎉 Fun/Recreation',
+      description: 'Enjoying hobbies and fun activities that bring you joy and relaxation',
+      icon: Building,
+      color: 'bg-pink-500/10 text-pink-600 border-pink-200',
+      examples: 'Play game, watch movie, listen to music'
+    },
   ];
 
   return (

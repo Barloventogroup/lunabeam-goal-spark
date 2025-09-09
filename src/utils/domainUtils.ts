@@ -11,16 +11,17 @@ export const getDomainDisplayName = (domain: string): string => {
     'employment': 'Employment',
     'independent_living': 'Independent Living',
     'social_skills': 'Social Skills',
-    'postsecondary': 'Postsecondary - Learning After High School'
+    'postsecondary': 'Postsecondary - Learning After High School',
+    'fun_recreation': 'Fun/Recreation'
   };
   
-  return domainMap[domain] || '';
+  return domainMap[domain] || 'General';
 };
 
 export const normalizeDomainForDisplay = (domain: string | undefined): string => {
-  if (!domain) return '';
+  if (!domain) return 'General';
   
   const displayName = getDomainDisplayName(domain);
-  // Don't show 'other' or empty domains
-  return domain === 'other' ? '' : displayName;
+  // Always show a category, default to General
+  return displayName;
 };
