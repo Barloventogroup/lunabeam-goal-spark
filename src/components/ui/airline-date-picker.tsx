@@ -92,7 +92,7 @@ export function AirlineDatePicker({
           <div className="grid grid-cols-2 gap-2">
             {/* Start Date */}
             <Button
-              variant="default"
+              variant="outline"
               className={cn(
                 "h-14 justify-start text-left font-normal relative overflow-hidden",
                 !dateRange?.from && "text-muted-foreground",
@@ -119,7 +119,7 @@ export function AirlineDatePicker({
 
             {/* End Date */}
             <Button
-              variant="default"
+              variant="outline"
               className={cn(
                 "h-14 justify-start text-left font-normal relative overflow-hidden",
                 !dateRange?.to && "text-muted-foreground",
