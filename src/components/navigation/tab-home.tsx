@@ -5,6 +5,7 @@ import { Card, CardContent } from '../ui/card';
 import { Progress } from '../ui/progress';
 
 import { RewardsScreen } from '../lunebeam/rewards-screen';
+import { RewardsGallery } from '../lunebeam/reward-bank';
 import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
 import { GoalsWizard } from '../lunebeam/goals-wizard';
 import { PointsDisplay } from '../lunebeam/points-display';
@@ -17,7 +18,7 @@ interface TabHomeProps {
   onNavigateToGoals: (goalId?: string) => void;
 }
 
-type HomeView = 'dashboard' | 'rewards' | 'checkin' | 'add-goal';
+type HomeView = 'dashboard' | 'rewards' | 'checkin' | 'add-goal' | 'reward-bank';
 
 export const TabHome: React.FC<TabHomeProps> = ({
   onOpenChat,
@@ -56,6 +57,9 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('dashboard')} />;
+  }
+  if (currentView === 'reward-bank') {
+    return <RewardsGallery onBack={() => setCurrentView('dashboard')} />;
   }
   if (currentView === 'add-goal') {
     return <div className="min-h-screen">
@@ -175,15 +179,33 @@ export const TabHome: React.FC<TabHomeProps> = ({
             <h3 className="text-lg font-semibold">LunaPoints</h3>
 
             {/* Points card */}
-            <Card 
-              className="shadow-soft cursor-pointer hover:shadow-card transition-all duration-200"
-              onClick={() => setCurrentView('rewards')}
-            >
-              <CardContent className="p-6 text-center space-y-3">
-                <Coins className="h-12 w-12 mx-auto text-green-500" />
-                <div>
-                  <div className="text-3xl font-bold">{pointsSummary?.totalPoints || 0}</div>
-                  <p className="text-sm text-muted-foreground">Points available</p>
+            <Card className="shadow-soft">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Coins className="h-8 w-8 text-green-500" />
+                    <div>
+                      <div className="text-2xl font-bold">{pointsSummary?.totalPoints || 0}</div>
+                      <p className="text-sm text-muted-foreground">Points available</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      onClick={() => setCurrentView('reward-bank')}
+                      className="bg-green-500 hover:bg-green-600 text-white"
+                    >
+                      Redeem
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => setCurrentView('rewards')}
+                      className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                    >
+                      View
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
