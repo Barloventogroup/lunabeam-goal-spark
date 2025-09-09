@@ -884,6 +884,23 @@ export type Database = {
       }
     }
     Views: {
+      my_received_invites: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string | null
+          invitee_name: string | null
+          inviter_name: string | null
+          masked_email: string | null
+          message: string | null
+          permission_level:
+            | Database["public"]["Enums"]["permission_level"]
+            | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          status: Database["public"]["Enums"]["invite_status"] | null
+        }
+        Relationships: []
+      }
       supporter_invite_safe_metadata: {
         Row: {
           created_at: string | null
@@ -993,6 +1010,35 @@ export type Database = {
           permission_level: Database["public"]["Enums"]["permission_level"]
           role: Database["public"]["Enums"]["user_role"]
           specific_goals: string[]
+          status: Database["public"]["Enums"]["invite_status"]
+        }[]
+      }
+      get_my_invite_by_token: {
+        Args: { _token: string }
+        Returns: {
+          expires_at: string
+          id: string
+          invitee_name: string
+          inviter_name: string
+          masked_email: string
+          message: string
+          permission_level: Database["public"]["Enums"]["permission_level"]
+          role: Database["public"]["Enums"]["user_role"]
+          status: Database["public"]["Enums"]["invite_status"]
+        }[]
+      }
+      get_my_received_invites: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          invitee_name: string
+          inviter_name: string
+          masked_email: string
+          message: string
+          permission_level: Database["public"]["Enums"]["permission_level"]
+          role: Database["public"]["Enums"]["user_role"]
           status: Database["public"]["Enums"]["invite_status"]
         }[]
       }
