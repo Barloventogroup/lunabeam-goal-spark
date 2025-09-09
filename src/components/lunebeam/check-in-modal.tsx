@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Calendar, AlertCircle, CheckCircle2 } from 'lucide-react';
 import type { CheckInPrompt, CheckInResponse, CheckInFeedback } from '@/services/checkInService';
 import { useToast } from '@/hooks/use-toast';
+import { cleanStepTitle } from '@/utils/stepUtils';
 
 interface CheckInModalProps {
   prompt: CheckInPrompt | null;
@@ -124,7 +125,7 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="font-medium text-foreground">{prompt.step.title}</h3>
+                        <h3 className="font-medium text-foreground">{cleanStepTitle(prompt.step.title)}</h3>
                         <p className="text-sm text-muted-foreground mt-1">
                           {prompt.goal.title}
                         </p>

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, ArrowRight, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Step, Goal } from '@/types';
+import { cleanStepTitle } from '@/utils/stepUtils';
 
 
 interface UpcomingStepsCardProps {
@@ -36,7 +37,7 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
                     <h4 className="font-medium text-foreground text-sm">
-                      {step.title}
+                      {cleanStepTitle(step.title)}
                     </h4>
                   </div>
                 </div>

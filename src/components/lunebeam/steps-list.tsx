@@ -20,6 +20,7 @@ import { StepChatModal } from './step-chat-modal';
 import { StepEditModal } from './step-edit-modal';
 import { useToast } from '@/hooks/use-toast';
 import { useStore } from '@/store/useStore';
+import { cleanStepTitle } from '@/utils/stepUtils';
 
 // Utility function to format dates
 const formatDate = (dateStr: string): string => {
@@ -677,7 +678,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                                     ? 'text-muted-foreground/70' 
                                     : 'text-foreground'
                               }`}>
-                                {mainStep.title.replace(/^Day\s+\d+:\s*/i, '')}
+                                {cleanStepTitle(mainStep.title)}
                               </span>
                               {subSteps.length > 0 && (
                                 <Badge variant="secondary" className={`text-xs ${isBlocked ? 'opacity-50' : ''}`}>
@@ -792,7 +793,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                                             ? 'line-through text-muted-foreground' 
                                             : 'text-foreground'
                                         }`}>
-                                          {substep.title}
+                                           {cleanStepTitle(substep.title)}
                                         </h4>
                                         {substep.completed_at && (
                                           <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />

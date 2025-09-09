@@ -7,6 +7,7 @@ import { Send, User, Loader2, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getLunaIcon } from '@/utils/iconGenerator';
 import type { Step, Goal } from '@/types';
+import { cleanStepTitle } from '@/utils/stepUtils';
 import { useToast } from '@/hooks/use-toast';
 
 interface StepChatModalProps {
@@ -198,7 +199,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
           </DialogTitle>
           {step && (
             <p className="text-xs text-muted-foreground truncate">
-              Helping with: "{step.title}"
+              Helping with: "{cleanStepTitle(step.title)}"
             </p>
           )}
         </DialogHeader>

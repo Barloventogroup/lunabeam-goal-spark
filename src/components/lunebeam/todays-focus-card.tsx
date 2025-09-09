@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, CheckCircle2, ArrowRight, Calendar } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 import type { Step, Goal } from '@/types';
+import { cleanStepTitle } from '@/utils/stepUtils';
 
 
 interface TodaysFocusCardProps {
@@ -40,7 +41,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
               <div className="flex items-center gap-2">
                 <div className="flex-1">
                   <h4 className="font-medium text-foreground text-sm">
-                    {step.title}
+                    {cleanStepTitle(step.title)}
                   </h4>
                 </div>
               </div>
@@ -92,7 +93,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
             {upcomingSteps.map(({step, goal, dueDate}, index) => (
               <div key={step.id} className="text-sm">
                 <p className="font-medium text-foreground">
-                  {step.title}
+                  {cleanStepTitle(step.title)}
                 </p>
                 <p className="text-muted-foreground">
                   Goal: {goal.title} • Due {format(dueDate, 'MMM d')}
