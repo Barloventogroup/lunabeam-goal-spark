@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from '@/hooks/use-toast';
 import { PermissionsService, type Supporter, type PermissionLevel, type UserRole } from '@/services/permissionsService';
 import { useAuth } from '@/components/auth/auth-provider';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SupporterManagementProps {
   individualId: string;
@@ -52,7 +53,7 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
     if (!user) return;
 
     try {
-      await PermissionsService.createSupporterInvite({
+      const inviteResponse = await PermissionsService.createSupporterInvite({
         individual_id: individualId,
         inviter_id: user.id,
         invitee_email: inviteForm.email,
@@ -64,10 +65,38 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days
       });
 
-      toast({
-        title: "Invite Sent",
-        description: `Invitation sent to ${inviteForm.email}`
-      });
+      // Send email invitation
+      try {
+        const siteUrl = window.location.origin;
+        const inviteLink = `${siteUrl}/invitations?token=${inviteResponse.invite_token}`;
+        
+        const { data: currentUser } = await supabase.auth.getUser();
+        const inviterName = currentUser?.user?.user_metadata?.full_name || 'Someone';
+
+        await supabase.functions.invoke('send-invitation-email', {
+          body: {
+            type: 'supporter',
+            inviteeName: inviteForm.name || 'Friend',
+            inviteeEmail: inviteForm.email,
+            inviterName,
+            message: inviteForm.message || undefined,
+            inviteLink,
+            roleName: inviteForm.role
+          }
+        });
+
+        toast({
+          title: "Invite Sent",
+          description: `Email invitation sent to ${inviteForm.email}`
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        toast({
+          title: "Invitation Created",
+          description: "Invitation created but email could not be sent. Share the link manually.",
+          variant: "default"
+        });
+      }
 
       setShowInviteDialog(false);
       setInviteForm({

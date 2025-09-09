@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Copy, Mail, MessageSquare, Users, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { database } from "@/services/database";
+import { supabase } from "@/integrations/supabase/client";
 import type { ShareScope, FamilyCircle } from "@/types";
 
 interface FamilyInviteModalProps {
@@ -112,6 +113,37 @@ export function FamilyInviteModal({ circle, trigger }: FamilyInviteModalProps) {
         status: 'pending',
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
       });
+
+      // Send email invitation if email delivery is selected and we have an email
+      if (deliveryMethod === 'email' && inviteeContact.includes('@')) {
+        try {
+          const siteUrl = window.location.origin;
+          const inviteLink = `${siteUrl}/invitations?token=${invite.magic_token}`;
+          
+          const { data: currentUser } = await supabase.auth.getUser();
+          const inviterName = currentUser?.user?.user_metadata?.full_name || 'Someone';
+
+          await supabase.functions.invoke('send-invitation-email', {
+            body: {
+              type: 'family_circle',
+              inviteeName: inviteeName || 'Friend',
+              inviteeEmail: inviteeContact,
+              inviterName,
+              message: message.trim() || undefined,
+              inviteLink,
+              circeName: circle.name
+            }
+          });
+        } catch (emailError) {
+          console.error('Email sending failed:', emailError);
+          toast({
+            title: "Invitation created",
+            description: "Invitation created but email could not be sent. You can share the magic link manually.",
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
 
       toast({
         title: "Invite sent!",
