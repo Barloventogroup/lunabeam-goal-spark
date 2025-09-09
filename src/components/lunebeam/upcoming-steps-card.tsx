@@ -58,7 +58,10 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
                 <Button 
                   size="sm" 
                   onClick={() => onViewStep(step.id, goal.id)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white ml-2"
+                  className="ml-2"
+                  style={{ backgroundColor: '#2393CC', color: 'white' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1e7bb8'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2393CC'}
                 >
                   View
                 </Button>

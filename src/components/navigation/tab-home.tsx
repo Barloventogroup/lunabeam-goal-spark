@@ -234,7 +234,9 @@ export const TabHome: React.FC<TabHomeProps> = ({
                         <Button 
                           size="sm" 
                           onClick={() => onNavigateToGoals(goal.id)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          style={{ backgroundColor: '#2393CC', color: 'white' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1e7bb8'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2393CC'}
                         >
                           View
                         </Button>
