@@ -36,12 +36,34 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
     try {
       const siteUrl = window.location.origin;
       const inviteLink = `${siteUrl}/auth?invited=true`;
-      
+
       const { data: currentUser } = await supabase.auth.getUser();
-      const inviterName = currentUser?.user?.user_metadata?.full_name || 
-                         currentUser?.user?.user_metadata?.name || 
-                         currentUser?.user?.email?.split('@')[0] || 
-                         'A friend';
+
+      // Build inviter name from profile first, then user metadata, then email prefix
+      let inviterName = '';
+      try {
+        const userId = currentUser?.user?.id;
+        if (userId) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name')
+            .eq('id', userId)
+            .single();
+          if (profile) {
+            const full = `${profile.first_name ?? ''}`.trim();
+            if (full) inviterName = full;
+          }
+        }
+      } catch (_e) {
+        // non-blocking; fall back to auth metadata below
+      }
+
+      if (!inviterName) {
+        inviterName = currentUser?.user?.user_metadata?.full_name ||
+                      currentUser?.user?.user_metadata?.name ||
+                      currentUser?.user?.email?.split('@')[0] ||
+                      'A friend';
+      }
 
       await supabase.functions.invoke('send-invitation-email', {
         body: {
@@ -66,11 +88,11 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
       setRole('friend');
       setMessage('');
       setIsOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending invite:', error);
       toast({
         title: "Failed to send invitation",
-        description: "Please try again later",
+        description: error?.message || "Please try again later",
         variant: "destructive",
       });
     } finally {
@@ -138,7 +160,7 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
             <Label htmlFor="message">Personal message (optional)</Label>
             <Textarea
               id="message"
-              placeholder="Come join me on LuneBeam to track goals together!"
+              placeholder="Come join me on Lunabeam to track goals together!"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={3}
