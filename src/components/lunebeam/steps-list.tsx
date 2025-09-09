@@ -627,24 +627,6 @@ export const StepsList: React.FC<StepsListProps> = ({
         <div className="space-y-2">
           <CardTitle className="text-lg font-semibold text-foreground">Recommended steps</CardTitle>
           <p className="text-sm text-muted-foreground">Here's a short list of steps and things to keep in mind as you work on your goal.</p>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <span className="font-medium" style={{ color: '#2393CC' }}>{progressStats.completedItems}</span>
-              <span>completed</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-amber-600">{progressStats.totalCompletableItems - progressStats.completedItems}</span>
-              <span>remaining</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <CircularProgress 
-                value={progressStats.progressPercent} 
-                size={24}
-                strokeWidth={2}
-              />
-              <span>progress</span>
-            </div>
-          </div>
         </div>
       </CardHeader>
 

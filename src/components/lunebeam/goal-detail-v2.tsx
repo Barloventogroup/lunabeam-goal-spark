@@ -29,6 +29,7 @@ import { StepsChat } from './steps-chat';
 import { StepChatModal } from './step-chat-modal';
 import { ProgressBar } from './progress-bar';
 import { GoalEditModal } from './goal-edit-modal';
+import { CircularProgress } from '@/components/ui/circular-progress';
 import { stepsGenerator } from '@/services/stepsGenerator';
 import type { Goal, Step, GoalProgress } from '@/types';
 
@@ -294,12 +295,19 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
         <div className="flex items-center gap-2">
           {goal.progress && (
-            <div className="text-right">
-              <div className="text-2xl font-bold text-primary">
-                {goal.progress.percent}%
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {goal.progress.done}/{goal.progress.actionable} done
+            <div className="flex items-center gap-3">
+              <CircularProgress 
+                value={goal.progress.percent || 0} 
+                size={36}
+                strokeWidth={3}
+              />
+              <div className="text-right">
+                <div className="text-2xl font-bold text-primary">
+                  {goal.progress.percent}%
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {goal.progress.done}/{goal.progress.actionable} done
+                </div>
               </div>
             </div>
           )}
