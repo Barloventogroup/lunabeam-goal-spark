@@ -442,13 +442,16 @@ Example:
   };
 
   const mapCategoryToDomain = (categoryTitle: string): GoalDomain => {
-    switch (categoryTitle.toLowerCase()) {
-      case 'health': return 'health';
-      case 'school': return 'school';
-      case 'work': return 'work';
-      case 'life': return 'life';
-      default: return 'other';
-    }
+    const t = (categoryTitle || '').toLowerCase();
+    // Map new wizard category titles to legacy goal domains used in the DB/UI
+    if (t.includes('education')) return 'school';
+    if (t.includes('employment')) return 'work';
+    if (t.includes('health')) return 'health';
+    if (t.includes('independent living')) return 'life';
+    if (t.includes('social')) return 'life'; // treat Social Skills under life domain for now
+    if (t.includes('postsecondary')) return 'school'; // aligns with education domain in legacy UI
+    if (t.includes('fun') || t.includes('recreation')) return 'life';
+    return 'life'; // Never use 'other' so users don't see "General"
   };
 
   const showRandomAffirmation = () => {

@@ -224,7 +224,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
             <Badge variant={getStatusColor(goal.status)}>
               {goal.status === 'active' ? 'In Progress' : goal.status}
             </Badge>
-            {goal.domain && (
+            {goal.domain && getDomainDisplayName(goal.domain) !== 'General' && (
               <Badge variant="outline">{getDomainDisplayName(goal.domain)}</Badge>
             )}
             {goal.due_date && (
