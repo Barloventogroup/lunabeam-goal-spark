@@ -28,9 +28,11 @@ import { NotificationSystem } from './notification-system';
 import { StepsList } from './steps-list';
 import { StepsChat } from './steps-chat';
 import { ProgressBar } from './progress-bar';
+import { TodaysFocusCard } from './todays-focus-card';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/components/auth/auth-provider';
-import { format, addDays, isToday } from 'date-fns';
+import { format, addDays, isToday, parseISO } from 'date-fns';
+import type { Goal } from '@/types';
 
 interface HomeDashboardProps {
   onNavigate: (view: string, data?: any) => void;
@@ -138,6 +140,34 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const nextCheckIn = getNextCheckInDate();
   const isCheckInDue = nextCheckIn ? isToday(nextCheckIn) || nextCheckIn < new Date() : true;
   
+  // Find today's due step
+  const getTodaysDueStep = () => {
+    const todaysSteps: Array<{step: any, goal: Goal}> = [];
+    
+    goals.forEach(goal => {
+      if (goal.status === 'active' || goal.status === 'planned') {
+        const goalSteps = steps[goal.id] || [];
+        goalSteps.forEach(step => {
+          if (step.due_date && step.status === 'todo') {
+            try {
+              const dueDate = parseISO(step.due_date);
+              if (isToday(dueDate)) {
+                todaysSteps.push({ step, goal });
+              }
+            } catch (error) {
+              console.warn('Invalid due_date format for step:', step.id, step.due_date);
+            }
+          }
+        });
+      }
+    });
+    
+    // Return the first due step found (could be enhanced to prioritize by goal priority, etc.)
+    return todaysSteps[0] || null;
+  };
+
+  const todaysDueItem = getTodaysDueStep();
+  
   const hasActiveOrPlannedGoals = goals.some(goal => goal.status === 'active' || goal.status === 'planned');
   const isFirstTimeUser = justCompletedOnboarding && !hasActiveOrPlannedGoals;
   const hasProgressToShow = activeGoal && ((activeGoal.progress_pct || 0) > 0 || activeGoalSteps.length > 0);
@@ -177,8 +207,21 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     onNavigate('goal-wizard');
   };
 
-  const handleTodaysSteps = () => {
-    onNavigate('weekly');
+  const handleNeedHelp = () => {
+    onNavigate('ai-chat');
+  };
+
+  const handleCompleteStep = () => {
+    if (todaysDueItem) {
+      // Navigate to step completion flow or show completion modal
+      onNavigate('step-complete', todaysDueItem.step.id);
+    }
+  };
+
+  const handleViewStep = () => {
+    if (todaysDueItem) {
+      onNavigate('goal-detail', todaysDueItem.goal.id);
+    }
   };
 
   return (
@@ -215,6 +258,17 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
             </p>
           )}
         </div>
+
+        {/* Today's Focus Card */}
+        {todaysDueItem && (
+          <TodaysFocusCard
+            step={todaysDueItem.step}
+            goal={todaysDueItem.goal}
+            onCompleteStep={handleCompleteStep}
+            onViewStep={handleViewStep}
+            onNeedHelp={handleNeedHelp}
+          />
+        )}
 
         {/* Checked In Today */}
         {!isFirstTimeUser && recentCheckIns.some(checkIn => isToday(new Date(checkIn.date))) && (
@@ -362,7 +416,6 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           <PersonalizedGreeting 
             onResumeGoal={handleResumeGoal}
             onNewGoal={handleNewGoal}
-            onTodaysSteps={handleTodaysSteps}
           />
         )}
         
