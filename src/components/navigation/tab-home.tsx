@@ -14,7 +14,6 @@ import { GoalsWizard } from '../lunebeam/goals-wizard';
 import { PointsDisplay } from '../lunebeam/points-display';
 import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
-import { UpcomingStepsCard } from '../lunebeam/upcoming-steps-card';
 import { useStore } from '../../store/useStore';
 import { goalsService, stepsService } from '../../services/goalsService';
 import type { Goal } from '../../types';
@@ -240,12 +239,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
             upcomingSteps={upcomingSteps}
             onViewStep={handleViewStep}
             onNeedHelp={onOpenChat}
-          />
-
-          {/* Upcoming Steps Card */}
-          <UpcomingStepsCard
-            upcomingSteps={upcomingSteps}
-            onViewStep={handleViewUpcomingStep}
+            onViewUpcomingStep={handleViewUpcomingStep}
           />
 
 

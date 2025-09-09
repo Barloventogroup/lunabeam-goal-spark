@@ -14,7 +14,7 @@ interface TodaysFocusCardProps {
   onCompleteStep?: () => void;
   onViewStep?: () => void;
   onNeedHelp?: () => void;
-  
+  onViewUpcomingStep?: (stepId: string, goalId: string) => void;
 }
 
 export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
@@ -23,7 +23,8 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
   upcomingSteps = [],
   onCompleteStep,
   onViewStep,
-  onNeedHelp
+  onNeedHelp,
+  onViewUpcomingStep
 }) => {
   // If there's a step due today
   if (step && goal) {
@@ -91,7 +92,11 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
           <div className="space-y-2">
             <p className="text-sm font-medium text-foreground">Coming up:</p>
             {upcomingSteps.map(({step, goal, dueDate}, index) => (
-              <div key={step.id} className="text-sm">
+              <div 
+                key={step.id} 
+                className="text-sm cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors"
+                onClick={() => onViewUpcomingStep?.(step.id, goal.id)}
+              >
                 <p className="font-medium text-foreground">
                   {cleanStepTitle(step.title)}
                 </p>
