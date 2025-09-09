@@ -7,6 +7,7 @@ interface CircularProgressProps {
   strokeWidth?: number;
   className?: string;
   showPercentage?: boolean;
+  color?: string; // Custom color override
 }
 
 export const CircularProgress: React.FC<CircularProgressProps> = ({
@@ -14,7 +15,8 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
   size = 40,
   strokeWidth = 3,
   className,
-  showPercentage = false
+  showPercentage = false,
+  color
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -44,7 +46,7 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="currentColor"
+          stroke={color || "currentColor"}
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={strokeDasharray}
@@ -52,9 +54,11 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
           strokeLinecap="round"
           className={cn(
             "transition-all duration-300 ease-in-out",
-            value < 30 ? "text-orange-500" :
-            value < 70 ? "text-blue-500" :
-            "text-green-500"
+            !color && (
+              value < 30 ? "text-orange-500" :
+              value < 70 ? "text-blue-500" :
+              "text-green-500"
+            )
           )}
         />
       </svg>

@@ -300,6 +300,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 value={goal.progress.percent || 0} 
                 size={36}
                 strokeWidth={3}
+                color="#2393CC"
               />
               <div className="text-right">
                 <div className="text-2xl font-bold text-primary">
