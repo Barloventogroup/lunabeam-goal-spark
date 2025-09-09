@@ -319,7 +319,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                             <Badge variant={getStatusColor(goal.status)}>
                               {goal.status === 'active' ? 'In Progress' : goal.status}
                             </Badge>
-                            {goal.domain && (
+                            {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && (
                               <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>
                             )}
                           </div>
