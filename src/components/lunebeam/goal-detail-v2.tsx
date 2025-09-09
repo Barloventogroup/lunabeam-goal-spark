@@ -28,6 +28,7 @@ import { StepsList } from './steps-list';
 import { StepsChat } from './steps-chat';
 import { StepChatModal } from './step-chat-modal';
 import { ProgressBar } from './progress-bar';
+import { GoalEditModal } from './goal-edit-modal';
 import { stepsGenerator } from '@/services/stepsGenerator';
 import type { Goal, Step, GoalProgress } from '@/types';
 
@@ -42,6 +43,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const [loading, setLoading] = useState(true);
   const [showChat, setShowChat] = useState(false);
   const [showStepChat, setShowStepChat] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedStep, setSelectedStep] = useState<Step | null>(null);
   const [chatStep, setChatStep] = useState<Step | undefined>(undefined);
   const { toast } = useToast();
@@ -158,6 +160,10 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     } catch (error) {
       console.error('Failed to reload steps:', error);
     }
+  };
+
+  const handleGoalUpdate = (updatedGoal: Goal) => {
+    setGoal(updatedGoal);
   };
 
   const handleDeleteGoal = async () => {
@@ -301,7 +307,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-background border border-input shadow-lg z-50">
-              <DropdownMenuItem onClick={() => {/* TODO: Open edit modal */}}>
+              <DropdownMenuItem onClick={() => setShowEditModal(true)}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </DropdownMenuItem>
@@ -392,6 +398,14 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         step={chatStep}
         isOpen={showChat}
         onClose={() => setShowChat(false)}
+      />
+
+      {/* Goal Edit Modal */}
+      <GoalEditModal
+        isOpen={showEditModal}
+        onOpenChange={setShowEditModal}
+        goal={goal}
+        onGoalUpdate={handleGoalUpdate}
       />
     </div>
   );
