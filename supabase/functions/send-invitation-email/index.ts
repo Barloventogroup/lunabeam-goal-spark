@@ -58,12 +58,12 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       `;
     } else {
-      subject = `You're invited to be a supporter on LuneBeam!`;
+      subject = `You're invited to join Lunabeam!`;
       htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Supporter Invitation</h2>
           <p>Hi ${inviteeName},</p>
-          <p><strong>${inviterName}</strong> has invited you to be a supporter${roleName ? ` as a ${roleName}` : ''} on LuneBeam!</p>
+          <p><strong>${inviterName}</strong> has invited you to join them on Lunabeam${roleName ? ` as a ${roleName}` : ''}!</p>
           ${message ? `<div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;"><p><em>"${message}"</em></p></div>` : ''}
           <p>As a supporter, you'll be able to help track progress and provide encouragement on their goals.</p>
           <p>Click the link below to accept the invitation:</p>
@@ -71,13 +71,13 @@ const handler = async (req: Request): Promise<Response> => {
           <p>Or copy and paste this link in your browser:</p>
           <p style="background: #f8f9fa; padding: 10px; border-radius: 3px; font-family: monospace; word-break: break-all;">${inviteLink}</p>
           <hr style="margin: 30px 0;">
-          <p style="color: #666; font-size: 14px;">This invitation was sent by ${inviterName} through LuneBeam. If you didn't expect this invitation, you can safely ignore this email.</p>
+          <p style="color: #666; font-size: 14px;">This invitation was sent by ${inviterName} through Lunabeam. If you didn't expect this invitation, you can safely ignore this email.</p>
         </div>
       `;
     }
 
     const emailResponse = await resend.emails.send({
-      from: "LuneBeam <noreply@resend.dev>",
+      from: "Lunabeam <onboarding@resend.dev>",
       to: [inviteeEmail],
       subject: subject,
       html: htmlContent,

@@ -38,7 +38,10 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
       const inviteLink = `${siteUrl}/auth?invited=true`;
       
       const { data: currentUser } = await supabase.auth.getUser();
-      const inviterName = currentUser?.user?.user_metadata?.full_name || 'Someone';
+      const inviterName = currentUser?.user?.user_metadata?.full_name || 
+                         currentUser?.user?.user_metadata?.name || 
+                         currentUser?.user?.email?.split('@')[0] || 
+                         'A friend';
 
       await supabase.functions.invoke('send-invitation-email', {
         body: {
