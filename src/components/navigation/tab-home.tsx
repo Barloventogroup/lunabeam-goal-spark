@@ -289,7 +289,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                           color="#2393CC"
                         />
                         <div className="flex-1">
-                          <p className="text-sm font-medium mb-0.5">
+                          <p className="text-sm font-medium mb-0.5 capitalize">
                             {goal.title}
                           </p>
                           <p className="text-xs text-muted-foreground">

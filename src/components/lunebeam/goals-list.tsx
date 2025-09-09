@@ -305,7 +305,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                           className="flex-1 cursor-pointer"
                           onClick={() => onNavigate('goal-detail', goal.id)}
                         >
-                          <h4 className="mb-2">{goal.title}</h4>
+                          <h4 className="mb-2 capitalize">{goal.title}</h4>
                           <div className="flex items-center gap-2 mb-2">
                             <Badge variant={getStatusColor(goal.status)}>
                               {goal.status === 'active' ? 'In Progress' : goal.status}

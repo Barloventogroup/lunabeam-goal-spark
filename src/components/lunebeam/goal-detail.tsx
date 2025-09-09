@@ -219,7 +219,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
           <BackButton onClick={() => onNavigate('goals')} />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">{goal.title}</h1>
+          <h1 className="text-2xl font-bold capitalize">{goal.title}</h1>
           <div className="flex items-center gap-2 mt-1">
             <Badge variant={getStatusColor(goal.status)}>
               {goal.status === 'active' ? 'In Progress' : goal.status}
