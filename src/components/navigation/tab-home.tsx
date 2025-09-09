@@ -3,6 +3,7 @@ import { MessageCircle, CheckCircle, Plus, Award, ChevronRight, Star, Coins } fr
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Progress } from '../ui/progress';
+import { parseISO, isToday } from 'date-fns';
 
 import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { RewardsGallery } from '../lunebeam/reward-bank';
@@ -10,6 +11,7 @@ import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
 import { GoalsWizard } from '../lunebeam/goals-wizard';
 import { PointsDisplay } from '../lunebeam/points-display';
 import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
+import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
 import { useStore } from '../../store/useStore';
 import type { Goal } from '../../types';
 
@@ -32,6 +34,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
     profile,
     loadProfile,
     goals,
+    steps,
     pointsSummary,
     loadGoals,
     loadPoints
@@ -72,6 +75,44 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'there';
   const mockPoints = 247; // Placeholder points to match Rewards screen
 
+  // Compute today's due step and next upcoming steps
+  const getTodaysStepsAndNext = () => {
+    const todaysSteps: Array<{ step: any; goal: Goal }> = [];
+    const upcomingSteps: Array<{ step: any; goal: Goal; dueDate: Date }> = [];
+
+    goals.forEach((goal) => {
+      if (goal.status === 'active' || goal.status === 'planned') {
+        const goalSteps = steps[goal.id] || [];
+        goalSteps.forEach((step) => {
+          if (step.due_date && step.status === 'todo') {
+            try {
+              const dueDate = parseISO(step.due_date);
+              if (isToday(dueDate)) {
+                todaysSteps.push({ step, goal });
+              } else if (dueDate > new Date()) {
+                upcomingSteps.push({ step, goal, dueDate });
+              }
+            } catch (e) {
+              console.warn('TabHome: invalid due_date for step', step.id, step.due_date);
+            }
+          }
+        });
+      }
+    });
+
+    upcomingSteps.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
+    return { todaysSteps, upcomingSteps: upcomingSteps.slice(0, 3) };
+  };
+
+  const { todaysSteps, upcomingSteps } = getTodaysStepsAndNext();
+  const todaysDueItem = todaysSteps[0] || null;
+
+  const handleViewStep = () => {
+    if (todaysDueItem) {
+      onNavigateToGoals(todaysDueItem.goal.id);
+    }
+  };
+
   return <>
       <div className="min-h-screen bg-gradient-soft">
         {/* Header */}
@@ -100,6 +141,15 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {activeGoals.length === 0 && (
             <FirstTimeReminder onNavigateToGoals={() => setCurrentView('add-goal')} />
           )}
+
+          {/* Today's Focus Card - Always show */}
+          <TodaysFocusCard
+            step={todaysDueItem?.step}
+            goal={todaysDueItem?.goal}
+            upcomingSteps={upcomingSteps}
+            onViewStep={handleViewStep}
+            onNeedHelp={onOpenChat}
+          />
 
           {/* Checked In Today */}
           {activeGoals.length > 0 && <Card className="bg-green-50 shadow-soft">
