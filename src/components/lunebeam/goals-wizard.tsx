@@ -232,9 +232,21 @@ const getDynamicSubtitle = (step: number, goalId?: string): string => {
   };
 
   const validateDates = (): string | null => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of today
+    
+    if (state.startDate && state.startDate < today) {
+      return "Start date cannot be in the past";
+    }
+    
+    if (state.dueDate && state.dueDate < today) {
+      return "Due date cannot be in the past";
+    }
+    
     if (state.startDate && state.dueDate && state.startDate > state.dueDate) {
       return "Start date cannot be after due date";
     }
+    
     return null;
   };
 

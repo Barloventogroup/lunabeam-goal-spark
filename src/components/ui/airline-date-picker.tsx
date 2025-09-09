@@ -39,6 +39,10 @@ export function AirlineDatePicker({
   const [isStartOpen, setIsStartOpen] = React.useState(false)
   const [isEndOpen, setIsEndOpen] = React.useState(false)
 
+  // Get today's date for comparison
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   // Update input values when dateRange changes
   React.useEffect(() => {
     setStartInputValue(dateRange?.from ? format(dateRange.from, "MMM dd, yyyy") : "")
@@ -159,6 +163,7 @@ export function AirlineDatePicker({
                 onSelect={handleStartDateSelect}
                 initialFocus
                 className="pointer-events-auto"
+                disabled={(date) => date < today}
               />
             </PopoverContent>
           </Popover>
@@ -196,6 +201,7 @@ export function AirlineDatePicker({
                 onSelect={handleEndDateSelect}
                 initialFocus
                 className="pointer-events-auto"
+                disabled={(date) => date < today}
               />
             </PopoverContent>
           </Popover>
