@@ -24,11 +24,10 @@ export const BackButton = React.forwardRef<HTMLButtonElement, BackButtonProps>(
             size={size}
             onClick={onClick}
             disabled={disabled}
-            className={cn(baseClasses, "px-3", className)}
+            className={cn(baseClasses, "px-2", className)}
             {...props}
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
           </Button>
         )
       
@@ -43,7 +42,7 @@ export const BackButton = React.forwardRef<HTMLButtonElement, BackButtonProps>(
             className={cn(baseClasses, "px-2 hover:bg-muted", className)}
             {...props}
           >
-            ← Back
+            <ArrowLeft className="h-4 w-4" />
           </Button>
         )
       

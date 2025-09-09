@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Target, Users, User, MessageCircle } from 'lucide-react';
+import { Home, Target, Users, User, MessageCircle, ArrowLeft } from 'lucide-react';
 import { TabHome } from './tab-home';
 import { TabGoals } from './tab-goals';
 import { TabFriends } from './tab-friends';
@@ -75,9 +75,9 @@ export const BottomTabs: React.FC = () => {
         <div className="flex items-center justify-between p-4 border-b bg-card/80 backdrop-blur">
           <button 
             onClick={() => setShowChat(false)}
-            className="text-primary hover:text-primary/80 text-sm font-medium"
+            className="text-primary hover:text-primary/80 p-2 rounded-md hover:bg-muted transition-colors"
           >
-            ← Back
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-primary" />
