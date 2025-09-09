@@ -4,15 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Calendar, ArrowRight, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Step, Goal } from '@/types';
+import { InlineEdit } from '../ui/inline-edit';
 
 interface UpcomingStepsCardProps {
   upcomingSteps: Array<{step: Step, goal: Goal, dueDate: Date}>;
   onViewStep?: (stepId: string, goalId: string) => void;
+  onUpdateStepTitle?: (stepId: string, newTitle: string) => Promise<void>;
 }
 
 export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
   upcomingSteps,
-  onViewStep
+  onViewStep,
+  onUpdateStepTitle
 }) => {
 
   return (
@@ -36,9 +39,20 @@ export const UpcomingStepsCard: React.FC<UpcomingStepsCardProps> = ({
             <div key={step.id} className="flex items-start justify-between p-3 bg-background rounded-lg border border-border">
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-medium text-foreground text-sm">
-                    {step.title}
-                  </h4>
+                  <div className="flex-1">
+                    {onUpdateStepTitle ? (
+                      <InlineEdit
+                        value={step.title}
+                        onSave={(newTitle) => onUpdateStepTitle(step.id, newTitle)}
+                        className="font-medium text-foreground text-sm"
+                        placeholder="Step name"
+                      />
+                    ) : (
+                      <h4 className="font-medium text-foreground text-sm">
+                        {step.title}
+                      </h4>
+                    )}
+                  </div>
                   <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
                     {estimatedTime}
                   </span>

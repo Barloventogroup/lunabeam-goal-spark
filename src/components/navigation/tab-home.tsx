@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { CircularProgress } from '../ui/circular-progress';
+import { InlineEdit } from '../ui/inline-edit';
 import { parseISO, isToday } from 'date-fns';
 
 import { RewardsScreen } from '../lunebeam/rewards-screen';
@@ -15,6 +16,7 @@ import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
 import { UpcomingStepsCard } from '../lunebeam/upcoming-steps-card';
 import { useStore } from '../../store/useStore';
+import { goalsService, stepsService } from '../../services/goalsService';
 import type { Goal } from '../../types';
 
 interface TabHomeProps {
@@ -39,7 +41,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
     steps,
     pointsSummary,
     loadGoals,
-    loadPoints
+    loadPoints,
+    loadSteps
   } = useStore();
 
   useEffect(() => {
@@ -73,8 +76,26 @@ export const TabHome: React.FC<TabHomeProps> = ({
   }
 
   // Active goals from store
-  const activeGoals = goals.filter(g => g.status === 'active' || g.status === 'planned');
+  const activeGoals = goals.filter(goal => goal.status === 'active' || goal.status === 'planned');
   const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'there';
+  const handleUpdateStepTitle = async (stepId: string, newTitle: string) => {
+    try {
+      await stepsService.updateStep(stepId, { title: newTitle });
+      // Don't reload all steps, let the parent component handle refresh
+      // await loadSteps();
+    } catch (error) {
+      console.error('Failed to update step title:', error);
+    }
+  };
+
+  const handleUpdateGoalTitle = async (goalId: string, newTitle: string) => {
+    try {
+      await goalsService.updateGoal(goalId, { title: newTitle });
+      await loadGoals(); // Refresh goals data
+    } catch (error) {
+      console.error('Failed to update goal title:', error);
+    }
+  };
   const mockPoints = 247; // Placeholder points to match Rewards screen
 
   // Compute today's due step and next upcoming steps
@@ -185,7 +206,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {/* Welcome Message */}
           <div>
             <h2 className="text-2xl font-bold mb-1">
-              {activeGoals.length === 0 ? `Welcome ${displayName}!` : `Welcome back, ${displayName}!!`}
+              {activeGoals.length === 0 ? `Welcome ${displayName}!` : `Welcome back, ${displayName}!`}
             </h2>
             {activeGoals.length === 0 ? <p className="text-muted-foreground">
                 👋 Hey {displayName}! Welcome aboard. Let's kick things off by setting your very first goal (see that big plus sign in the blue circle — that is where you start). And remember, big or small, every step counts.
@@ -204,12 +225,14 @@ export const TabHome: React.FC<TabHomeProps> = ({
             upcomingSteps={upcomingSteps}
             onViewStep={handleViewStep}
             onNeedHelp={onOpenChat}
+            onUpdateStepTitle={handleUpdateStepTitle}
           />
 
           {/* Upcoming Steps Card */}
           <UpcomingStepsCard
             upcomingSteps={upcomingSteps}
             onViewStep={handleViewUpcomingStep}
+            onUpdateStepTitle={handleUpdateStepTitle}
           />
 
 
@@ -235,7 +258,12 @@ export const TabHome: React.FC<TabHomeProps> = ({
                           strokeWidth={3}
                         />
                         <div className="flex-1">
-                          <h4 className="text-sm font-medium mb-0.5">{goal.title}</h4>
+                          <InlineEdit
+                            value={goal.title}
+                            onSave={(newTitle) => handleUpdateGoalTitle(goal.id, newTitle)}
+                            className="text-sm font-medium mb-0.5"
+                            placeholder="Goal name"
+                          />
                           <p className="text-xs text-muted-foreground">
                             {goal.domain}
                           </p>
