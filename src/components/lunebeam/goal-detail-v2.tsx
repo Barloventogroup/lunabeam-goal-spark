@@ -365,19 +365,6 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </Card>
       )}
 
-
-      {/* Progress Bar */}
-      {goal.progress && goal.progress.actionable > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <ProgressBar 
-              progress={goal.progress}
-              size="lg"
-            />
-          </CardContent>
-        </Card>
-      )}
-
       {/* Steps */}
       <StepsList 
         goal={goal}
