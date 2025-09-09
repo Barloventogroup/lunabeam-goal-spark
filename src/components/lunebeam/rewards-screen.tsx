@@ -37,7 +37,6 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
         <BackButton onClick={onBack} />
         <div className="flex-1">
           <h1 className="text-xl font-bold">LunaPoints</h1>
-          <p className="text-sm text-muted-foreground">Your earned points</p>
         </div>
       </div>
 
