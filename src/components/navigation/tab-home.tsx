@@ -89,7 +89,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
               const dueDate = parseISO(step.due_date);
               if (isToday(dueDate)) {
                 todaysSteps.push({ step, goal });
-              } else if (dueDate > new Date()) {
+              } else if (dueDate >= new Date()) {
                 upcomingSteps.push({ step, goal, dueDate });
               }
             } catch (e) {

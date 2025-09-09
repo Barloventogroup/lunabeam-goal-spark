@@ -111,7 +111,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                 Nothing due today 🎉
               </p>
               
-              {upcomingSteps.length > 0 ? (
+              {upcomingSteps.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-foreground">Coming up:</p>
                   {upcomingSteps.map(({step, goal, dueDate}, index) => (
@@ -125,23 +125,9 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No upcoming steps scheduled. Consider adding some goals!
-                </p>
               )}
             </div>
             
-            {onNeedHelp && (
-              <Button 
-                size="sm" 
-                variant="ghost"
-                onClick={onNeedHelp}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Need help planning?
-              </Button>
-            )}
           </div>
         </div>
       </CardContent>
