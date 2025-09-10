@@ -12,6 +12,7 @@ import { DateRange } from 'react-day-picker';
 interface GoalWizardSplitProps {
   goal: GoalFlow;
   onComplete: (data: {
+    goalName?: string;
     goal: string;
     selectedOption?: string;
     customInputs?: Record<string, string>;
@@ -24,6 +25,7 @@ interface GoalWizardSplitProps {
 }
 
 interface WizardData {
+  goalName?: string;
   selectedOption?: string;
   customValue?: string;
   customInputs: Record<string, string>;
@@ -51,6 +53,9 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
 
   // Build steps array based on goal structure
   const steps = [];
+  
+  // Always add name step as first step
+  steps.push({ type: 'goal_name', title: 'Name your goal', data: 'goalName', required: false });
   
   if (goal.options) {
     steps.push({ type: 'options', title: 'Choose an option', data: goal.options });
@@ -221,6 +226,7 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
     } else {
       // Complete the wizard
       onComplete({
+        goalName: wizardData.goalName,
         goal: goal.goal,
         selectedOption: wizardData.selectedOption,
         customInputs: wizardData.customInputs,
@@ -250,6 +256,8 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
     if (!currentStepData) return false;
     
     switch (currentStepData.type) {
+      case 'goal_name':
+        return true; // Goal name is always optional
       case 'options':
         return wizardData.selectedOption !== undefined && !showCustomInput;
       case 'date_range':
@@ -386,6 +394,26 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
         {/* Bottom Section - Options and Inputs (2/3 of screen) */}
         <div className="h-2/3 p-4 overflow-y-auto">
           <div className="max-w-md mx-auto space-y-4">
+            
+            {/* Goal Name Step */}
+            {currentStepData.type === 'goal_name' && (
+              <div className="space-y-4">
+                <div className="text-center space-y-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                  </div>
+                  <p className="text-base font-medium text-foreground">
+                    How would you like to name this goal? Don't worry if you are not sure now you can change it later.
+                  </p>
+                </div>
+                <Input
+                  placeholder={`Default: "${goal.goal}"`}
+                  value={wizardData.goalName || ''}
+                  onChange={(e) => setWizardData(prev => ({ ...prev, goalName: e.target.value }))}
+                  className="text-center"
+                />
+              </div>
+            )}
             
             {/* Options Step */}
             {currentStepData.type === 'options' && (

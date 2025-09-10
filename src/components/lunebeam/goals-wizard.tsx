@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { BackButton } from '@/components/ui/back-button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -24,6 +25,7 @@ interface GoalsWizardProps {
 
 interface WizardState {
   step: number;
+  goalName?: string;
   category?: Category;
   goal?: CategoryGoal;
   purpose?: GoalOption;
@@ -37,15 +39,16 @@ interface WizardState {
 }
 
 const STEPS = [
-  { id: 1, title: "Choose Category", subtitle: "What area would you like to work on?" },
-  { id: 2, title: "Pick Goal", subtitle: "What specific goal interests you?" },
-  { id: 3, title: "Why?", subtitle: "What's your main reason for this goal?" },
-  { id: 4, title: "Details", subtitle: "How do you want to do this?" },
-  { id: 5, title: "Amount", subtitle: "How much do you want to do?" },
-  { id: 6, title: "Duration", subtitle: "How often?" },
-  { id: 7, title: "Goal Timeline", subtitle: "When Will You Work on This Goal?" },
-  { id: 8, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
-  { id: 9, title: "Confirm", subtitle: "Ready to start your goal?" }
+  { id: 1, title: "Name Your Goal", subtitle: "How would you like to name this goal? Don't worry if you are not sure now you can change it later" },
+  { id: 2, title: "Choose Category", subtitle: "What area would you like to work on?" },
+  { id: 3, title: "Pick Goal", subtitle: "What specific goal interests you?" },
+  { id: 4, title: "Why?", subtitle: "What's your main reason for this goal?" },
+  { id: 5, title: "Details", subtitle: "How do you want to do this?" },
+  { id: 6, title: "Amount", subtitle: "How much do you want to do?" },
+  { id: 7, title: "Duration", subtitle: "How often?" },
+  { id: 8, title: "Goal Timeline", subtitle: "When Will You Work on This Goal?" },
+  { id: 9, title: "Support", subtitle: "What would help you stick with it? (You can pick several!)" },
+  { id: 10, title: "Confirm", subtitle: "Ready to start your goal?" }
 ];
 
 const AFFIRMATIONS = [
@@ -74,8 +77,8 @@ const getDynamicSubtitle = (step: number, goalId?: string): string => {
   const defaultStep = STEPS[step - 1];
   if (!defaultStep) return "";
   
-  // Special handling for Amount step (step 5)
-  if (step === 5 && goalId) {
+  // Special handling for Amount step (step 6, was step 5)
+  if (step === 6 && goalId) {
     switch (goalId) {
       case 'read':
         return "How much do you want to read?";
@@ -332,14 +335,15 @@ const getDynamicSubtitle = (step: number, goalId?: string): string => {
   const canProceed = () => {
     // Basic validation for each step
     switch (state.step) {
-      case 1: return !!state.category;
-      case 2: return !!state.goal;
-      case 3: return !!state.purpose;
-      case 4: return (!state.goal?.details || state.goal.details.length === 0) || !!state.details;
-      case 5: return !state.goal?.amount || !!state.amount;
-      case 6: return !state.goal?.timing || !!state.timing;
-      case 7: return !!state.dueDate && !validateDates();
-      case 8: return !!state.supports && state.supports.length > 0;
+      case 1: return true; // Goal name is optional
+      case 2: return !!state.category;
+      case 3: return !!state.goal;
+      case 4: return !!state.purpose;
+      case 5: return (!state.goal?.details || state.goal.details.length === 0) || !!state.details;
+      case 6: return !state.goal?.amount || !!state.amount;
+      case 7: return !state.goal?.timing || !!state.timing;
+      case 8: return !!state.dueDate && !validateDates();
+      case 9: return !!state.supports && state.supports.length > 0;
       default: return false;
     }
   };
@@ -376,7 +380,7 @@ const getDynamicSubtitle = (step: number, goalId?: string): string => {
       const sanitizedDescription = sanitizeGoalDescription(rawDescription);
       
       const goal = await goalsService.createGoal({
-        title: state.goal.title,
+        title: state.goalName || state.goal.title,
         description: sanitizedDescription,
         domain: state.category.id === 'starter' ? mapStarterGoalToDomain(state.goal.id) : mapCategoryToDomain(state.category.title),
         priority: 'medium',
@@ -651,11 +655,43 @@ Example:
 
       {/* Main Content */}
       <div className="space-y-6">
-        {/* Step 1: Category Selection */}
+        {/* Step 1: Goal Name Input */}
         {state.step === 1 && (
+          <Card>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Name Your Goal</h3>
+                  <p className="text-muted-foreground mb-6">
+                    How would you like to name this goal? Don't worry if you are not sure now you can change it later.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <Input
+                    placeholder="Enter a custom name for your goal (optional)"
+                    value={state.goalName || ''}
+                    onChange={(e) => setState(prev => ({ ...prev, goalName: e.target.value }))}
+                    className="text-center text-lg"
+                  />
+                  <div className="flex gap-3">
+                    <Button onClick={() => setState(prev => ({ ...prev, step: 2 }))} className="flex-1">
+                      Continue
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 2: Category Selection */}
+        {state.step === 2 && (
           <CategorySelection
             onSelectCategory={(category) => {
-              setState(prev => ({ ...prev, category, step: 2 }));
+              setState(prev => ({ ...prev, category, step: 3 }));
             }}
             onSelectDefault={(defaultState) => {
               setState(defaultState);
@@ -663,73 +699,73 @@ Example:
           />
         )}
 
-        {/* Step 2: Goal Selection */}
-        {state.step === 2 && state.category && (
+        {/* Step 3: Goal Selection */}
+        {state.step === 3 && state.category && (
           <GoalSelection
             category={state.category}
             onSelectGoal={(goal) => {
-              setState(prev => ({ ...prev, goal, step: 3 }));
+              setState(prev => ({ ...prev, goal, step: 4 }));
             }}
           />
         )}
 
-        {/* Step 3: Purpose Selection */}
-        {state.step === 3 && state.goal && (
+        {/* Step 4: Purpose Selection */}
+        {state.step === 4 && state.goal && (
           <OptionSelection
             title="Why?"
             options={state.goal.purpose}
             onSelect={(purpose) => {
               showRandomAffirmation();
-            let nextStep = state.goal?.details ? 4 : (state.goal?.amount ? 5 : (state.goal?.timing ? 6 : 7));
+            let nextStep = state.goal?.details ? 5 : (state.goal?.amount ? 6 : (state.goal?.timing ? 7 : 8));
               setState(prev => ({ ...prev, purpose, step: nextStep }));
             }}
             selected={state.purpose}
           />
         )}
 
-        {/* Step 4: Details Selection (only if goal has details) */}
-        {state.step === 4 && state.goal && state.goal.details && (
+        {/* Step 5: Details Selection (only if goal has details) */}
+        {state.step === 5 && state.goal && state.goal.details && (
           <OptionSelection
             title="Details"
             options={state.goal.details}
             onSelect={(details) => {
               showRandomAffirmation();
-              let nextStep = state.goal?.amount ? 5 : (state.goal?.timing ? 6 : 7);
+              let nextStep = state.goal?.amount ? 6 : (state.goal?.timing ? 7 : 8);
               setState(prev => ({ ...prev, details, step: nextStep }));
             }}
             selected={state.details}
           />
         )}
 
-        {/* Step 5: Amount Selection */}
-        {state.step === 5 && state.goal && state.goal.amount && (
+        {/* Step 6: Amount Selection */}
+        {state.step === 6 && state.goal && state.goal.amount && (
           <OptionSelection
             title="Amount"
             options={state.goal.amount}
             onSelect={(amount) => {
               showRandomAffirmation();
-              let nextStep = state.goal?.timing ? 6 : 7;
+              let nextStep = state.goal?.timing ? 7 : 8;
               setState(prev => ({ ...prev, amount, step: nextStep }));
             }}
             selected={state.amount}
           />
         )}
 
-        {/* Step 6: Duration/Timing Selection */}
-        {state.step === 6 && state.goal && state.goal.timing && (
+        {/* Step 7: Duration/Timing Selection */}
+        {state.step === 7 && state.goal && state.goal.timing && (
           <OptionSelection
             title="Duration"
             options={state.goal.timing}
             onSelect={(timing) => {
               showRandomAffirmation();
-              setState(prev => ({ ...prev, timing, step: 7 }));
+              setState(prev => ({ ...prev, timing, step: 8 }));
             }}
             selected={state.timing}
           />
         )}
 
-        {/* Step 7: Goal Timeline Selection */}
-        {state.step === 7 && (
+        {/* Step 8: Goal Timeline Selection */}
+        {state.step === 8 && (
           <div className="space-y-6">
             <div className="max-w-md mx-auto space-y-6">
               <div className="space-y-4">
@@ -781,28 +817,28 @@ Example:
           </div>
         )}
 
-        {/* Step 8: Support Selection */}
-        {state.step === 8 && state.goal && (
+        {/* Step 9: Support Selection */}
+        {state.step === 9 && state.goal && (
           <MultiOptionSelection
             title="Support"
             options={state.goal.supports}
             onSelect={(supports) => {
               showRandomAffirmation();
-              setState(prev => ({ ...prev, supports, step: 9 }));
+              setState(prev => ({ ...prev, supports, step: 10 }));
             }}
             selected={state.supports || []}
           />
         )}
 
-        {/* Step 9: Confirmation */}
-        {state.step === 9 && (
+        {/* Step 10: Confirmation */}
+        {state.step === 10 && (
           <GoalConfirmation
             goal={buildSmartGoal()}
             startDate={state.startDate}
             dueDate={state.dueDate}
             onCreateGoal={createGoal}
             isCreating={isCreatingGoal}
-            onBack={() => setState(prev => ({ ...prev, step: 8 }))}
+            onBack={() => setState(prev => ({ ...prev, step: 9 }))}
           />
         )}
       </div>
