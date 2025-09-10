@@ -185,7 +185,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     }
   ],
 
-  "Social Skills": [
+  "Social / Self-Advocacy": [
     {
       "goal": "Say Hi",
       "options": ["Family", "Friend", "Teacher", "Store clerk", "Custom"],
@@ -356,7 +356,7 @@ export const normalizeCategoryName = (category: string): string => {
     'education': 'Education - High School / Academic Readiness', 
     'employment': 'Employment',
     'independent_living': 'Independent Living',
-    'social_skills': 'Social Skills',
+    'social_skills': 'Social / Self-Advocacy',
     'postsecondary': 'Postsecondary - Learning After High School',
     'fun_recreation': 'Fun / Recreation'
   };

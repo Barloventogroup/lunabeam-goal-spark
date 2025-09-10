@@ -56,7 +56,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     },
     {
       id: 'social_skills',
-      title: '🤝 Social Skills',
+      title: '🤝 Social / Self-Advocacy',
       description: 'Connecting with people in your own comfortable way - even tiny interactions count',
       icon: Users,
       color: 'bg-orange-500/10 text-orange-600 border-orange-200',

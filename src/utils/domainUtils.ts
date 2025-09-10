@@ -10,7 +10,7 @@ export const getDomainDisplayName = (domain: string): string => {
     'education': 'Education - High School / Academic Readiness',
     'employment': 'Employment',
     'independent_living': 'Independent Living', 
-    'social_skills': 'Social Skills',
+    'social_skills': 'Social / Self-Advocacy',
     'postsecondary': 'Postsecondary - Learning After High School',
     'fun_recreation': 'Fun / Recreation',
     
