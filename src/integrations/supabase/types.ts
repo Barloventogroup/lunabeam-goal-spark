@@ -884,23 +884,7 @@ export type Database = {
       }
     }
     Views: {
-      my_received_invites: {
-        Row: {
-          created_at: string | null
-          expires_at: string | null
-          id: string | null
-          invitee_name: string | null
-          inviter_name: string | null
-          masked_email: string | null
-          message: string | null
-          permission_level:
-            | Database["public"]["Enums"]["permission_level"]
-            | null
-          role: Database["public"]["Enums"]["user_role"] | null
-          status: Database["public"]["Enums"]["invite_status"] | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       accept_invite_by_token: {
