@@ -188,7 +188,7 @@ export function WeeklyCheckinModal({
         <div className="flex justify-center pt-4">
           <Button 
             onClick={handleSaveCheckin}
-            disabled={isLoading || !checkinText.trim() || starRating === 0}
+            disabled={isLoading || !checkinText.trim()}
             variant="checkin"
             className="w-full max-w-md text-base relative overflow-hidden"
             size="sm"
