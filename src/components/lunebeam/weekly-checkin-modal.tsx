@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -185,28 +185,13 @@ export function WeeklyCheckinModal({
           />
         </div>
         
-        <div className="flex justify-center pt-4">
-          <Button 
-            onClick={handleSaveCheckin}
-            disabled={isLoading || !checkinText.trim()}
-            variant="checkin"
-            className="w-full max-w-md text-base relative overflow-hidden"
-            size="sm"
-          >
-            {isLoading ? "Saving..." : "Check in"}
-            {/* Confetti animation overlay */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="confetti-container opacity-0 transition-opacity duration-300"></div>
-            </div>
-          </Button>
-        </div>
       </CardContent>
     </Card>
   );
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg grid grid-rows-[auto,1fr,auto] max-h-[85vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Star className="h-5 w-5 text-yellow-500" />
@@ -214,9 +199,26 @@ export function WeeklyCheckinModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {renderCheckinForm()}
+        <div className="min-h-0 overflow-y-auto pr-1">
+          <div className="space-y-6">
+            {renderCheckinForm()}
+          </div>
         </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" size="sm">Cancel</Button>
+          </DialogClose>
+          <Button 
+            onClick={handleSaveCheckin}
+            disabled={isLoading || !checkinText.trim()}
+            variant="checkin"
+            className="text-base"
+            size="sm"
+          >
+            {isLoading ? "Saving..." : "Check in"}
+          </Button>
+        </DialogFooter>
 
         {/* Confetti Animation */}
         {showConfetti && (
