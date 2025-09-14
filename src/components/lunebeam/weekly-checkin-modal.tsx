@@ -61,6 +61,9 @@ export function WeeklyCheckinModal({
 }: WeeklyCheckinModalProps) {
   const [checkinText, setCheckinText] = useState('');
   const [mood, setMood] = useState<'proud' | 'happy' | 'accomplished' | 'relieved'>('proud');
+  const [starRating, setStarRating] = useState(0);
+  const [mainTakeaway, setMainTakeaway] = useState('');
+  const [nextTimeStrategy, setNextTimeStrategy] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const { toast } = useToast();
@@ -89,6 +92,9 @@ export function WeeklyCheckinModal({
         onOpenChange(false);
         setCheckinText('');
         setMood('proud');
+        setStarRating(0);
+        setMainTakeaway('');
+        setNextTimeStrategy('');
         setShowConfetti(false);
       }, 2000);
     } catch (error) {
@@ -121,6 +127,28 @@ export function WeeklyCheckinModal({
         </div>
 
         <div className="space-y-3">
+          <Label>How was it?</Label>
+          <div className="flex items-center justify-center gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setStarRating(star)}
+                className="transition-colors hover:scale-110 transform duration-150"
+              >
+                <Star
+                  className={`h-8 w-8 ${
+                    star <= starRating
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-300 hover:text-yellow-300"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3">
           <Label>How do you feel?</Label>
           <Select value={mood} onValueChange={(value: 'proud' | 'happy' | 'accomplished' | 'relieved') => setMood(value)}>
             <SelectTrigger className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
@@ -134,11 +162,33 @@ export function WeeklyCheckinModal({
             </SelectContent>
           </Select>
         </div>
+
+        <div className="space-y-3">
+          <Label htmlFor="main-takeaway">So what's your main takeaway?</Label>
+          <Textarea
+            id="main-takeaway"
+            placeholder="What did you learn or discover?"
+            value={mainTakeaway}
+            onChange={(e) => setMainTakeaway(e.target.value)}
+            className="min-h-[80px]"
+          />
+        </div>
+
+        <div className="space-y-3">
+          <Label htmlFor="next-time-strategy">Now what's one thing you'll try next time (or where else could this help)?</Label>
+          <Textarea
+            id="next-time-strategy"
+            placeholder="Your strategy for next time..."
+            value={nextTimeStrategy}
+            onChange={(e) => setNextTimeStrategy(e.target.value)}
+            className="min-h-[80px]"
+          />
+        </div>
         
         <div className="flex justify-center pt-4">
           <Button 
             onClick={handleSaveCheckin}
-            disabled={isLoading || !checkinText.trim()}
+            disabled={isLoading || !checkinText.trim() || starRating === 0}
             variant="checkin"
             className="w-full max-w-md text-base relative overflow-hidden"
             size="sm"
