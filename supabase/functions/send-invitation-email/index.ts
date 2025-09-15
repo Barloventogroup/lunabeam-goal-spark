@@ -8,6 +8,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "onboarding@resend.dev";
+const FROM_NAME = Deno.env.get("RESEND_FROM_NAME") || "Lunabeam Invitations";
+
 interface InvitationEmailRequest {
   type: 'family_circle' | 'supporter';
   inviteeName: string;
@@ -93,7 +96,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const { data: sent, error: resendError } = await resend.emails.send({
-      from: `Lunabeam Invitations <onboarding@resend.dev>`,
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: [inviteeName ? `${inviteeName} <${inviteeEmail.trim()}>` : inviteeEmail.trim()],
       subject: subject,
       html: htmlContent,
