@@ -11,6 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { PermissionsService, type Supporter, type PermissionLevel, type UserRole } from '@/services/permissionsService';
 import { useAuth } from '@/components/auth/auth-provider';
 import { supabase } from '@/integrations/supabase/client';
+import { SITE_URL } from '@/services/config';
 
 interface SupporterManagementProps {
   individualId: string;
@@ -52,6 +53,18 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
   const handleInviteSupporter = async () => {
     if (!user) return;
 
+    // Basic email validation
+    const email = inviteForm.email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Invalid email",
+        description: "Enter a valid email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const inviteResponse = await PermissionsService.createSupporterInvite({
         individual_id: individualId,
@@ -67,23 +80,26 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
 
       // Send email invitation
       try {
-        const siteUrl = window.location.origin;
-        const inviteLink = `${siteUrl}/invitations?token=${inviteResponse.invite_token}`;
+        const baseUrl = SITE_URL || window.location.origin;
+        const inviteLink = `${baseUrl}/invitations?token=${inviteResponse.invite_token}`;
         
         const { data: currentUser } = await supabase.auth.getUser();
         const inviterName = currentUser?.user?.user_metadata?.full_name || 'Someone';
 
-        await supabase.functions.invoke('send-invitation-email', {
+        const { data, error } = await supabase.functions.invoke('send-invitation-email', {
           body: {
             type: 'supporter',
             inviteeName: inviteForm.name || 'Friend',
-            inviteeEmail: inviteForm.email,
+            inviteeEmail: email,
             inviterName,
             message: inviteForm.message || undefined,
             inviteLink,
             roleName: inviteForm.role
           }
         });
+
+        if (error) throw error;
+        if (data && !data.success) throw new Error(data.error || 'Failed to send invitation');
 
         toast({
           title: "Invite Sent",

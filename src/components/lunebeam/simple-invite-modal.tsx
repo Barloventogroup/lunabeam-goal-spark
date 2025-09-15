@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { SITE_URL } from "@/services/config";
 
 interface SimpleInviteModalProps {
   trigger?: React.ReactNode;
@@ -45,8 +46,8 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
 
     setIsLoading(true);
     try {
-      const siteUrl = window.location.origin;
-      const inviteLink = `${siteUrl}/auth?invited=true`;
+      const baseUrl = SITE_URL || window.location.origin;
+      const inviteLink = `${baseUrl}/auth?invited=true`;
 
       const { data: currentUser } = await supabase.auth.getUser();
 

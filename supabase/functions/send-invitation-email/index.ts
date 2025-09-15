@@ -92,16 +92,24 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     }
 
-    const emailResponse = await resend.emails.send({
-      from: `${inviterName} via Lunabeam <onboarding@resend.dev>`,
-      to: [inviteeEmail],
+    const { data: sent, error: resendError } = await resend.emails.send({
+      from: `Lunabeam Invitations <onboarding@resend.dev>`,
+      to: [inviteeName ? `${inviteeName} <${inviteeEmail.trim()}>` : inviteeEmail.trim()],
       subject: subject,
       html: htmlContent,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    if (resendError) {
+      console.error("Resend error:", resendError);
+      return new Response(
+        JSON.stringify({ success: false, error: resendError.message || 'Failed to send via Resend' }),
+        { status: resendError.statusCode || 502, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
-    return new Response(JSON.stringify({ success: true, emailId: emailResponse.data?.id }), {
+    console.log("Email sent successfully:", sent);
+
+    return new Response(JSON.stringify({ success: true, emailId: sent?.id }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
