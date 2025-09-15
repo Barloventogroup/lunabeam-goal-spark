@@ -33,6 +33,37 @@ const formatDate = (dateStr: string): string => {
   });
 };
 
+// Normalize substep titles for deduping (case/spacing-insensitive)
+const normalizeSubstepTitle = (title?: string) => {
+  const base = cleanStepTitle(title || '');
+  return base.toLowerCase().replace(/\s+/g, ' ').trim();
+};
+
+// Deduplicate substeps by normalized title, preferring completed and earliest created
+const dedupeSubsteps = (subs: Substep[]): Substep[] => {
+  const byKey = new Map<string, Substep>();
+  for (const s of subs) {
+    const key = normalizeSubstepTitle(s.title);
+    const existing = byKey.get(key);
+    if (!existing) {
+      byKey.set(key, s);
+      continue;
+    }
+    const existingCompleted = !!existing.completed_at;
+    const currentCompleted = !!s.completed_at;
+    if (currentCompleted && !existingCompleted) {
+      byKey.set(key, s);
+      continue;
+    }
+    if (currentCompleted === existingCompleted) {
+      const existingCreated = new Date((existing as any).created_at || 0).getTime();
+      const currentCreated = new Date((s as any).created_at || 0).getTime();
+      if (currentCreated < existingCreated) byKey.set(key, s);
+    }
+  }
+  return Array.from(byKey.values());
+};
+
 interface StepsListProps {
   steps: Step[];
   goal: Goal;
@@ -90,7 +121,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       const newSubstepsMap: Record<string, Substep[]> = {};
       
       results.forEach(({ stepId, substeps }) => {
-        newSubstepsMap[stepId] = substeps;
+        newSubstepsMap[stepId] = dedupeSubsteps(substeps);
       });
       
       setSubstepsMap(newSubstepsMap);
@@ -405,7 +436,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       const results = await Promise.all(substepsPromises);
       const newSubstepsMap: Record<string, Substep[]> = {};
       results.forEach(({ stepId, substeps }) => {
-        newSubstepsMap[stepId] = substeps;
+        newSubstepsMap[stepId] = dedupeSubsteps(substeps);
       });
       setSubstepsMap(newSubstepsMap);
 
@@ -471,7 +502,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       await pointsService.completeSubstep(substepId);
       
       // Refresh substeps for this step
-      const substeps = await pointsService.getSubsteps(stepId);
+      const substeps = dedupeSubsteps(await pointsService.getSubsteps(stepId));
       setSubstepsMap(prev => ({ ...prev, [stepId]: substeps }));
       
       // Check if all substeps are now completed
@@ -512,7 +543,7 @@ export const StepsList: React.FC<StepsListProps> = ({
     
     // Refresh substeps when new steps are created via chat
     if (currentHelpStep) {
-      const substeps = await pointsService.getSubsteps(currentHelpStep.id);
+      const substeps = dedupeSubsteps(await pointsService.getSubsteps(currentHelpStep.id));
       setSubstepsMap(prev => ({ ...prev, [currentHelpStep.id]: substeps }));
     }
   };
