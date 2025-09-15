@@ -126,6 +126,15 @@ If you do suggest sub-steps, they must ALL relate to "${step.title}" and format 
 1. Sub-step Title | Brief description specific to "${step.title}" (estimated time)
 2. Another Sub-step | Another description for "${step.title}" (estimated time)
 [/SUB-STEPS]
+
+DE-DUPLICATION RULES (critical):
+- Do NOT include two sub-steps that achieve the same objective with different wording.
+- Merge near-duplicates into a single, clear action.
+- Examples of duplicates to avoid (pick only ONE phrasing):
+  • "Choose a Simple Recipe" vs "Pick a Simple Recipe"
+  • "Follow the Steps" vs "Follow the Recipe Step-by-Step"
+- Each title must represent a distinct action with a unique outcome.
+- Prefer concise, action-first titles; put nuance in the description.
 `}
 
 Be supportive but keep it brief and focused on THIS ${step.explainer && step.explainer.includes('This is a substep of') ? 'SUBSTEP' : 'STEP'} ONLY.`;
@@ -163,7 +172,7 @@ Be supportive but keep it brief and focused on THIS ${step.explainer && step.exp
     const assistantResponse = data.choices[0].message.content;
 
     // Parse potential sub-steps from the response
-    const suggestedSteps = parseSubSteps(assistantResponse, step, goal);
+    const suggestedSteps = dedupeSubSteps(parseSubSteps(assistantResponse, step, goal));
 
     // Combine AI suggested steps with inherited substeps from similar prior weeks
     let allSteps = [...suggestedSteps];
@@ -202,6 +211,71 @@ Be supportive but keep it brief and focused on THIS ${step.explainer && step.exp
     });
   }
 });
+
+// Similarity helpers to prevent duplicate/near-duplicate substeps
+function normalize(s: string): string {
+  return (s || '')
+    .toLowerCase()
+    .replace(/[—–-]/g, ' ')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeSemantic(s: string): string {
+  let t = normalize(s);
+  // Phrase-level unifications for common duplicates
+  t = t.replace(/\bfollow the recipe step by step\b/g, 'follow recipe step');
+  t = t.replace(/\bfollow the steps?\b/g, 'follow recipe step');
+  t = t.replace(/\bgather ingredients\s*(and|\&)\s*tools\b/g, 'gather ingredients tools');
+  t = t.replace(/\bplate(\s*(and|\&)\s*|\s*)clean up\b/g, 'plate clean');
+  t = t.replace(/\bchoose\b/g, 'pick');
+  t = t.replace(/\bselect\b/g, 'pick');
+  t = t.replace(/\bsimple recipe\b/g, 'recipe');
+  return t;
+}
+
+const STOPWORDS = new Set([
+  'the','a','an','and','or','of','to','for','with','on','in','at','by','your','you','do','it','this','that','like','min','minutes'
+]);
+
+function tokenize(s: string): Set<string> {
+  const t = normalizeSemantic(s);
+  return new Set(
+    t.split(' ')
+     .filter(Boolean)
+     .filter(w => !STOPWORDS.has(w))
+  );
+}
+
+function jaccard(a: Set<string>, b: Set<string>): number {
+  const inter = new Set([...a].filter(x => b.has(x)));
+  const union = new Set([...a, ...b]);
+  if (union.size === 0) return 0;
+  return inter.size / union.size;
+}
+
+function isNearDuplicate(a: any, b: any): boolean {
+  const aTitle = normalizeSemantic(a.title || '');
+  const bTitle = normalizeSemantic(b.title || '');
+  if (aTitle === bTitle) return true;
+  const aT = tokenize(a.title || '');
+  const bT = tokenize(b.title || '');
+  if (jaccard(aT, bT) >= 0.8) return true;
+  const aAll = tokenize(`${a.title || ''} ${a.description || ''}`);
+  const bAll = tokenize(`${b.title || ''} ${b.description || ''}`);
+  return jaccard(aAll, bAll) >= 0.75;
+}
+
+function dedupeSubSteps(list: any[]): any[] {
+  const kept: any[] = [];
+  for (const item of list) {
+    const dup = kept.some(k => isNearDuplicate(k, item));
+    if (!dup) kept.push(item);
+  }
+  return kept;
+}
 
 function parseSubSteps(response: string, parentStep: any, goal: any): any[] {
   const subStepsMatch = response.match(/\[SUB-STEPS\]([\s\S]*?)\[\/SUB-STEPS\]/);
