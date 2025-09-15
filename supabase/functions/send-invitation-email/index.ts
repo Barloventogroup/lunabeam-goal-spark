@@ -38,6 +38,22 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Sending invitation email:', { type, inviteeName, inviteeEmail, inviterName });
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(inviteeEmail)) {
+      console.error('Invalid email format:', inviteeEmail);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Invalid email format: ${inviteeEmail}. Please provide a valid email address.` 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
     let subject: string;
     let htmlContent: string;
 

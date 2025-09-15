@@ -76,7 +76,7 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
                       'A friend';
       }
 
-      await supabase.functions.invoke('send-invitation-email', {
+      const { data, error } = await supabase.functions.invoke('send-invitation-email', {
         body: {
           type: 'supporter',
           inviteeName: inviteeName || 'Friend',
@@ -87,6 +87,15 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
           roleName: role
         }
       });
+
+      if (error) {
+        throw error;
+      }
+
+      // Check if the function returned an error in the response
+      if (data && !data.success) {
+        throw new Error(data.error || 'Failed to send invitation');
+      }
 
       toast({
         title: "Invitation sent!",
