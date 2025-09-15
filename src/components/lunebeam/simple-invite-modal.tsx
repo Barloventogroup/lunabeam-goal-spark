@@ -32,6 +32,17 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(inviteeEmail.trim())) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address (e.g. friend@example.com)",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const siteUrl = window.location.origin;
