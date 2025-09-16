@@ -291,10 +291,18 @@ export const useStore = create<AppState>()(
           const profile = await database.getProfile();
           console.log('Store: Profile from DB:', profile);
           
-          // Do NOT carry over local state across accounts when DB has no profile
-          const mergedProfile = profile ?? null;
-          console.log('Store: Merged profile:', mergedProfile);
-          set({ profile: mergedProfile });
+          // If no profile in DB but we have local data, sync it
+          if (!profile) {
+            const localProfile = get().profile;
+            if (localProfile?.first_name && localProfile.first_name !== 'User') {
+              console.log('Store: Syncing local profile to DB:', localProfile);
+              await database.saveProfile(localProfile);
+              set({ profile: localProfile });
+              return;
+            }
+          }
+          
+          set({ profile: profile });
         } catch (error) {
           console.error('Store: Failed to load profile:', error);
         }
