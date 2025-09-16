@@ -19,12 +19,10 @@ export const database = {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .single();
+      .maybeSingle();
     
-    if (error) {
-      if (error.code === 'PGRST116') return null; // No profile found
-      throw error;
-    }
+    if (error) throw error;
+    if (!data) return null;
     
     return {
       first_name: data.first_name,

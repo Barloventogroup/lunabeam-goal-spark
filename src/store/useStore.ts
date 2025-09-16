@@ -4,6 +4,7 @@ import type { FamilyCircle, CircleMembership, CircleInvite, WeeklyCheckin, Selec
 import { database } from '../services/database';
 import { goalsService, stepsService } from '../services/goalsService';
 import { pointsService, type PointsSummary } from '../services/pointsService';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AppState {
   // Core data
@@ -291,18 +292,41 @@ export const useStore = create<AppState>()(
           const profile = await database.getProfile();
           console.log('Store: Profile from DB:', profile);
           
-          // If no profile in DB but we have local data, sync it
           if (!profile) {
             const localProfile = get().profile;
-            if (localProfile?.first_name && localProfile.first_name !== 'User') {
+
+            // If we already have a meaningful local profile, sync it to DB
+            if (localProfile?.first_name && localProfile.first_name.trim() !== '' && localProfile.first_name !== 'User') {
               console.log('Store: Syncing local profile to DB:', localProfile);
               await database.saveProfile(localProfile);
               set({ profile: localProfile });
               return;
             }
+
+            // Otherwise, create a minimal profile using auth user info
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              const metaFirst = (user.user_metadata?.first_name || '').toString().trim();
+              const emailLocal = (user.email || '').split('@')[0] || '';
+              const firstName = metaFirst || emailLocal || 'User';
+
+              const minimalProfile = {
+                first_name: firstName,
+                strengths: [],
+                interests: [],
+                challenges: [],
+                comm_pref: 'text' as const,
+                onboarding_complete: false,
+              };
+
+              console.log('Store: Creating minimal profile from auth:', minimalProfile);
+              await database.saveProfile(minimalProfile);
+              set({ profile: minimalProfile });
+              return;
+            }
           }
           
-          set({ profile: profile });
+          set({ profile });
         } catch (error) {
           console.error('Store: Failed to load profile:', error);
         }
