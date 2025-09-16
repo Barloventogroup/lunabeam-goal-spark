@@ -85,14 +85,12 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
         },
         mode: 'no-cors',
         body: JSON.stringify({
-          type: 'supporter',
+          secret: "LUNA2025",
+          email: inviteeEmail,
           inviteeName: inviteeName || 'Friend',
-          inviteeEmail: inviteeEmail,
-          inviterName,
+          role: role,
           message: message || undefined,
-          inviteLink,
-          roleName: role,
-          timestamp: new Date().toISOString()
+          inviterName
         })
       });
 
