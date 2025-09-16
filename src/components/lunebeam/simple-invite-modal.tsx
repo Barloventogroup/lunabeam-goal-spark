@@ -77,26 +77,24 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
                       'A friend';
       }
 
-      const { data, error } = await supabase.functions.invoke('send-invitation-email', {
-        body: {
+      // Send to Make.com webhook
+      const webhookResponse = await fetch('https://hook.us2.make.com/ibqi89r02525kqw8kqs4v1qh1winb398', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'no-cors',
+        body: JSON.stringify({
           type: 'supporter',
           inviteeName: inviteeName || 'Friend',
           inviteeEmail: inviteeEmail,
           inviterName,
           message: message || undefined,
           inviteLink,
-          roleName: role
-        }
+          roleName: role,
+          timestamp: new Date().toISOString()
+        })
       });
-
-      if (error) {
-        throw error;
-      }
-
-      // Check if the function returned an error in the response
-      if (data && !data.success) {
-        throw new Error(data.error || 'Failed to send invitation');
-      }
 
       toast({
         title: "Invitation sent!",
