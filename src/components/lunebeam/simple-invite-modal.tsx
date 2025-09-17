@@ -61,8 +61,8 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
             .select('first_name')
             .eq('user_id', userId)
             .maybeSingle();
-          if (error) console.warn('profiles lookup failed', error);
           
+          if (profile) {
             const full = `${profile.first_name ?? ''}`.trim();
             if (full) inviterName = full;
           }
