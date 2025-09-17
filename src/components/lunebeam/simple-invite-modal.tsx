@@ -59,9 +59,10 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
           const { data: profile } = await supabase
             .from('profiles')
             .select('first_name')
-            .eq('id', userId)
-            .single();
-          if (profile) {
+            .eq('user_id', userId)
+            .maybeSingle();
+          if (error) console.warn('profiles lookup failed', error);
+          
             const full = `${profile.first_name ?? ''}`.trim();
             if (full) inviterName = full;
           }
