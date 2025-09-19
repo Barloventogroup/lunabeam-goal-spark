@@ -28,6 +28,7 @@ interface ParentOnboardingData {
 
 interface ParentOnboardingProps {
   onComplete: () => void;
+  adminData?: { name?: string; role?: string };
 }
 
 const PRONOUNS_OPTIONS = [
@@ -53,7 +54,7 @@ const SUGGESTIONS = [
   'Join a club', 'Cook a new dish', 'Short daily walk', 'Visit the library'
 ];
 
-export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
+export function ParentOnboarding({ onComplete, adminData }: ParentOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<ParentOnboardingData>({
     preferredName: '',
@@ -504,10 +505,15 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
                   <span className="text-white text-xl">🎉</span>
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Perfect! We're all set.</h2>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Hello {adminData?.name || 'Admin'}!
+                  </h2>
+                  <p className="text-foreground-soft leading-relaxed mb-4">
+                    You're now the Admin for {data.preferredName || 'their'} account.
+                    This means you can set up goals, cheer on progress, and invite family or helpers to be part of their team.
+                  </p>
                   <p className="text-foreground-soft leading-relaxed">
-                    I'll use what you've shared to suggest goals that fit {data.preferredName || 'them'}. 
-                    You can always update their profile later.
+                    ✨ Let's start by creating their first goal together.
                   </p>
                 </div>
               </div>
