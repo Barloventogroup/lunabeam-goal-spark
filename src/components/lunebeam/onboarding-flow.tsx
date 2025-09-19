@@ -70,14 +70,14 @@ export function OnboardingFlow() {
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-4">
+            <RadioGroup value={roleData.role} onValueChange={(value) => handleRoleSelection(value as 'parent' | 'individual')}>
               <div className="space-y-3">
                 <div 
                   className="w-full p-4 rounded-lg border-2 border-primary bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors"
                   onClick={() => handleRoleSelection('parent')}
                 >
                   <div className="flex items-center space-x-3">
-                    <RadioGroupItem value="parent" id="parent" checked />
+                    <RadioGroupItem value="parent" id="parent" />
                     <div className="flex-1">
                       <Label htmlFor="parent" className="text-sm font-medium cursor-pointer">
                         I am a parent/caregiver signing up on behalf of someone else
@@ -106,13 +106,13 @@ export function OnboardingFlow() {
                   </div>
                 </div>
               </div>
+            </RadioGroup>
               
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                <div className="flex items-start space-x-2">
-                  <div className="text-blue-600 mt-0.5">💡</div>
-                  <div>
-                    <p className="text-xs text-blue-800 font-medium">Admin = person who manages the account and can invite others</p>
-                  </div>
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+              <div className="flex items-start space-x-2">
+                <div className="text-blue-600 mt-0.5">💡</div>
+                <div>
+                  <p className="text-xs text-blue-800 font-medium">Admin = person who manages the account and can invite others</p>
                 </div>
               </div>
             </div>
