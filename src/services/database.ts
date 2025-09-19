@@ -16,9 +16,13 @@ type DbWeeklyCheckin = Database['public']['Tables']['weekly_checkins']['Row'];
 export const database = {
   // Profile operations
   async getProfile(): Promise<Profile | null> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
+      .eq('user_id', user.id)
       .maybeSingle();
     
     if (error) throw error;
