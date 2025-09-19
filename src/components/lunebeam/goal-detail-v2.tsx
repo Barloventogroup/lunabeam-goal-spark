@@ -30,6 +30,7 @@ import { StepsChat } from './steps-chat';
 import { StepChatModal } from './step-chat-modal';
 import { ProgressBar } from './progress-bar';
 import { GoalEditModal } from './goal-edit-modal';
+import { StepRationalizationModal } from './step-rationalization-modal';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { stepsGenerator } from '@/services/stepsGenerator';
 import type { Goal, Step, GoalProgress } from '@/types';
@@ -46,6 +47,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const [showChat, setShowChat] = useState(false);
   const [showStepChat, setShowStepChat] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showRationalizationModal, setShowRationalizationModal] = useState(false);
   const [selectedStep, setSelectedStep] = useState<Step | null>(null);
   const [chatStep, setChatStep] = useState<Step | undefined>(undefined);
   const { toast } = useToast();
@@ -314,6 +316,10 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowRationalizationModal(true)}>
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Merge Duplicate Steps
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {/* TODO: Open check-in modal */}}>
                 <CheckCircle2 className="h-4 w-4 mr-2" />
                 Check In
@@ -396,6 +402,16 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         onOpenChange={setShowEditModal}
         goal={goal}
         onGoalUpdate={handleGoalUpdate}
+      />
+
+      {/* Step Rationalization Modal */}
+      <StepRationalizationModal
+        isOpen={showRationalizationModal}
+        onClose={() => setShowRationalizationModal(false)}
+        goalId={goalId}
+        onComplete={() => {
+          loadGoalData();
+        }}
       />
     </div>
   );
