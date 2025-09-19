@@ -475,15 +475,11 @@ Example:
       // Clear saved progress
       localStorage.removeItem('goals-wizard-progress');
       
-      // Reset state
-      setState({ 
-        step: 1,
-        startDate: new Date()
-      });
-      
+      // Trigger success UI then hand control back to parent
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
       
+      // Navigate away (parent will unmount this wizard)
       onComplete();
       
     } catch (error) {
