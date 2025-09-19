@@ -352,7 +352,13 @@ export const useStore = create<AppState>()(
           
           console.log('Store: Setting profile from DB:', profile);
           console.log('Store: DB profile onboarding_complete:', profile.onboarding_complete);
-          set({ profile });
+          const local = get().profile;
+          const mergedProfile = {
+            ...profile,
+            onboarding_complete: Boolean(profile.onboarding_complete || local?.onboarding_complete || get().justCompletedOnboarding)
+          } as Profile;
+          console.log('Store: Merged profile onboarding_complete:', mergedProfile.onboarding_complete);
+          set({ profile: mergedProfile });
         } catch (error) {
           console.error('Store: Failed to load profile:', error);
           // For new users who might have auth issues, create a basic profile to allow onboarding
@@ -362,7 +368,7 @@ export const useStore = create<AppState>()(
             interests: [],
             challenges: [],
             comm_pref: 'text' as const,
-            onboarding_complete: false,
+            onboarding_complete: Boolean(get().profile?.onboarding_complete || get().justCompletedOnboarding),
           };
           console.log('Store: Setting fallback profile due to error:', basicProfile);
           console.log('Store: Fallback profile onboarding_complete:', basicProfile.onboarding_complete);
