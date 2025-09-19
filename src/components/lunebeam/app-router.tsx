@@ -13,7 +13,20 @@ const AppRouter: React.FC = () => {
       console.log('AppRouter: Loading profile...');
       try {
         await loadProfile();
-        console.log('AppRouter: Profile loaded:', useStore.getState().profile);
+        const currentProfile = useStore.getState().profile;
+        console.log('AppRouter: Profile loaded:', currentProfile);
+        
+        // For new users, ensure we have a valid profile before proceeding
+        if (!currentProfile) {
+          console.log('AppRouter: No profile after load attempt, creating minimal profile...');
+          // This should have been handled in loadProfile, but let's ensure it worked
+          setTimeout(() => {
+            const retryProfile = useStore.getState().profile;
+            console.log('AppRouter: Profile after retry:', retryProfile);
+            setProfileLoaded(true);
+          }, 500);
+          return;
+        }
       } catch (error) {
         console.error('AppRouter: Failed to load profile:', error);
       } finally {

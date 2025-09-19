@@ -24,14 +24,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('AuthProvider: Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
         // Load user profile when signed in
         if (event === 'SIGNED_IN' && session?.user) {
+          console.log('AuthProvider: User signed in, loading profile...');
           setTimeout(() => {
-            loadProfile();
+            loadProfile().then(() => {
+              console.log('AuthProvider: Profile loaded after sign in');
+            }).catch((error) => {
+              console.error('AuthProvider: Failed to load profile after sign in:', error);
+            });
           }, 0);
         }
       }
@@ -39,14 +45,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('AuthProvider: Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
       
       // Load profile if user is already signed in
       if (session?.user) {
+        console.log('AuthProvider: Existing session found, loading profile...');
         setTimeout(() => {
-          loadProfile();
+          loadProfile().then(() => {
+            console.log('AuthProvider: Profile loaded for existing session');
+          }).catch((error) => {
+            console.error('AuthProvider: Failed to load profile for existing session:', error);
+          });
         }, 0);
       }
     });

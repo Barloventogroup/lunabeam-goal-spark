@@ -293,6 +293,7 @@ export const useStore = create<AppState>()(
           console.log('Store: Profile from DB:', profile);
           
           if (!profile) {
+            console.log('Store: No profile found in DB, creating for new user...');
             const localProfile = get().profile;
 
             // If we already have a meaningful local profile, sync it to DB
@@ -304,7 +305,12 @@ export const useStore = create<AppState>()(
             }
 
             // Otherwise, create a minimal profile using auth user info
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError) {
+              console.error('Store: Failed to get user info:', userError);
+              throw userError;
+            }
+            
             if (user) {
               const metaFirst = (user.user_metadata?.first_name || '').toString().trim();
               const emailLocal = (user.email || '').split('@')[0] || '';
@@ -320,15 +326,40 @@ export const useStore = create<AppState>()(
               };
 
               console.log('Store: Creating minimal profile from auth:', minimalProfile);
-              await database.saveProfile(minimalProfile);
-              set({ profile: minimalProfile });
-              return;
+              console.log('Store: User info:', { id: user.id, email: user.email, metadata: user.user_metadata });
+              
+              try {
+                await database.saveProfile(minimalProfile);
+                console.log('Store: Successfully saved minimal profile to DB');
+                set({ profile: minimalProfile });
+                return;
+              } catch (saveError) {
+                console.error('Store: Failed to save minimal profile to DB:', saveError);
+                // Set profile in state even if DB save fails, so onboarding can proceed
+                set({ profile: minimalProfile });
+                return;
+              }
+            } else {
+              console.error('Store: No authenticated user found');
+              throw new Error('No authenticated user found');
             }
           }
           
+          console.log('Store: Setting profile from DB:', profile);
           set({ profile });
         } catch (error) {
           console.error('Store: Failed to load profile:', error);
+          // For new users who might have auth issues, create a basic profile to allow onboarding
+          const basicProfile = {
+            first_name: 'User',
+            strengths: [],
+            interests: [],
+            challenges: [],
+            comm_pref: 'text' as const,
+            onboarding_complete: false,
+          };
+          console.log('Store: Setting fallback profile due to error:', basicProfile);
+          set({ profile: basicProfile });
         }
       },
       
