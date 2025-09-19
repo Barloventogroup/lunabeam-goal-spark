@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_action_log: {
+        Row: {
+          action_type: string
+          admin_user_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          individual_id: string
+          target_goal_id: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_user_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          individual_id: string
+          target_goal_id?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_user_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          individual_id?: string
+          target_goal_id?: string | null
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           description: string
@@ -775,6 +808,7 @@ export type Database = {
           id: string
           individual_id: string
           invited_by: string | null
+          is_admin: boolean
           is_provisioner: boolean
           permission_level: Database["public"]["Enums"]["permission_level"]
           role: Database["public"]["Enums"]["user_role"]
@@ -787,6 +821,7 @@ export type Database = {
           id?: string
           individual_id: string
           invited_by?: string | null
+          is_admin?: boolean
           is_provisioner?: boolean
           permission_level?: Database["public"]["Enums"]["permission_level"]
           role?: Database["public"]["Enums"]["user_role"]
@@ -799,11 +834,45 @@ export type Database = {
           id?: string
           individual_id?: string
           invited_by?: string | null
+          is_admin?: boolean
           is_provisioner?: boolean
           permission_level?: Database["public"]["Enums"]["permission_level"]
           role?: Database["public"]["Enums"]["user_role"]
           specific_goals?: string[] | null
           supporter_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_consents: {
+        Row: {
+          admin_id: string
+          consent_type: string
+          created_at: string
+          expires_at: string | null
+          granted: boolean
+          id: string
+          individual_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_id: string
+          consent_type: string
+          created_at?: string
+          expires_at?: string | null
+          granted?: boolean
+          id?: string
+          individual_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          consent_type?: string
+          created_at?: string
+          expires_at?: string | null
+          granted?: boolean
+          id?: string
+          individual_id?: string
           updated_at?: string
         }
         Relationships: []
@@ -923,6 +992,15 @@ export type Database = {
         Args: { _action: string; _goal_id?: string; _individual_id: string }
         Returns: boolean
       }
+      check_user_permission_v2: {
+        Args: {
+          _action: string
+          _goal_id?: string
+          _individual_id: string
+          _scope?: string
+        }
+        Returns: boolean
+      }
       claim_account: {
         Args: { _claim_token: string; _passcode: string }
         Returns: Json
@@ -1011,7 +1089,9 @@ export type Database = {
       account_status: "active" | "pending_user_consent" | "user_claimed"
       invite_status: "pending" | "accepted" | "declined" | "expired"
       permission_level: "viewer" | "collaborator" | "admin"
+      permission_level_fixed: "viewer" | "collaborator"
       user_role: "individual" | "supporter" | "friend" | "provider" | "admin"
+      user_role_fixed: "individual" | "supporter" | "friend" | "provider"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1142,7 +1222,9 @@ export const Constants = {
       account_status: ["active", "pending_user_consent", "user_claimed"],
       invite_status: ["pending", "accepted", "declined", "expired"],
       permission_level: ["viewer", "collaborator", "admin"],
+      permission_level_fixed: ["viewer", "collaborator"],
       user_role: ["individual", "supporter", "friend", "provider", "admin"],
+      user_role_fixed: ["individual", "supporter", "friend", "provider"],
     },
   },
 } as const

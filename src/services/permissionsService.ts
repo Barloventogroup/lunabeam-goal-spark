@@ -1,8 +1,19 @@
 import { supabase } from '@/integrations/supabase/client';
 
-export type PermissionLevel = 'viewer' | 'collaborator' | 'admin';
-export type UserRole = 'individual' | 'supporter' | 'friend' | 'provider' | 'admin';
+export type PermissionLevel = 'viewer' | 'collaborator';
+export type UserRole = 'individual' | 'supporter' | 'friend' | 'provider';
 export type AccountStatus = 'active' | 'pending_user_consent' | 'user_claimed';
+
+export interface UserConsent {
+  id: string;
+  individual_id: string;
+  admin_id: string;
+  consent_type: string;
+  granted: boolean;
+  expires_at?: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface Supporter {
   id: string;
@@ -11,10 +22,22 @@ export interface Supporter {
   role: UserRole;
   permission_level: PermissionLevel;
   specific_goals: string[];
+  is_admin: boolean;
   is_provisioner: boolean;
   invited_by?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface AdminActionLog {
+  id: string;
+  admin_user_id: string;
+  individual_id: string;
+  action_type: string;
+  target_user_id?: string;
+  target_goal_id?: string;
+  details?: any; // Changed from Record<string, any> to any for compatibility
+  created_at: string;
 }
 
 export interface AccountClaim {
@@ -50,13 +73,15 @@ export class PermissionsService {
   static async checkPermission(
     individualId: string, 
     action: string, 
-    goalId?: string
+    goalId?: string,
+    scope?: string
   ): Promise<boolean> {
     try {
-      const { data, error } = await supabase.rpc('check_user_permission', {
+      const { data, error } = await supabase.rpc('check_user_permission_v2', {
         _individual_id: individualId,
         _action: action,
-        _goal_id: goalId
+        _goal_id: goalId,
+        _scope: scope
       });
       
       if (error) throw error;
@@ -67,7 +92,7 @@ export class PermissionsService {
     }
   }
 
-  // Get user's supporters
+  // Get user's supporters - with type assertion to handle DB migration period
   static async getSupporters(individualId: string): Promise<Supporter[]> {
     const { data, error } = await supabase
       .from('supporters')
@@ -75,25 +100,41 @@ export class PermissionsService {
       .eq('individual_id', individualId);
     
     if (error) throw error;
-    return data || [];
+    return (data || []).map(supporter => ({
+      ...supporter,
+      // Handle migration period where old data might still have 'admin' values
+      role: (supporter.role as any) === 'admin' ? 'supporter' as UserRole : supporter.role as UserRole,
+      permission_level: (supporter.permission_level as any) === 'admin' ? 'collaborator' as PermissionLevel : supporter.permission_level as PermissionLevel,
+      is_admin: supporter.is_admin || (supporter.role as any) === 'admin' || (supporter.permission_level as any) === 'admin'
+    })) as Supporter[];
   }
 
-  // Add a supporter
+  // Add a supporter - with type compatibility handling
   static async addSupporter(supporter: Omit<Supporter, 'id' | 'created_at' | 'updated_at'>): Promise<Supporter> {
     const { data, error } = await supabase
       .from('supporters')
-      .insert(supporter)
+      .insert({
+        ...supporter,
+        // Clean input during migration period
+        role: supporter.role,
+        permission_level: supporter.permission_level
+      })
       .select()
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      role: (data.role as any) === 'admin' ? 'supporter' as UserRole : data.role as UserRole,
+      permission_level: (data.permission_level as any) === 'admin' ? 'collaborator' as PermissionLevel : data.permission_level as PermissionLevel,
+      is_admin: data.is_admin || (data.role as any) === 'admin' || (data.permission_level as any) === 'admin'
+    } as Supporter;
   }
 
-  // Update supporter permissions
+  // Update supporter permissions - with type compatibility
   static async updateSupporterPermissions(
     supporterId: string, 
-    updates: Partial<Pick<Supporter, 'permission_level' | 'specific_goals'>>
+    updates: Partial<Pick<Supporter, 'permission_level' | 'specific_goals' | 'is_admin'>>
   ): Promise<Supporter> {
     const { data, error } = await supabase
       .from('supporters')
@@ -103,7 +144,12 @@ export class PermissionsService {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      role: data.role === 'admin' ? 'supporter' : data.role,
+      permission_level: data.permission_level === 'admin' ? 'collaborator' : data.permission_level,
+      is_admin: data.is_admin || data.role === 'admin' || data.permission_level === 'admin'
+    } as Supporter;
   }
 
   // Remove supporter
@@ -116,7 +162,7 @@ export class PermissionsService {
     if (error) throw error;
   }
 
-  // Create supporter invite
+  // Create supporter invite - with type compatibility
   static async createSupporterInvite(invite: Omit<SupporterInvite, 'id' | 'created_at' | 'status' | 'invite_token'>): Promise<SupporterInvite> {
     const inviteToken = crypto.randomUUID();
     
@@ -124,6 +170,8 @@ export class PermissionsService {
       .from('supporter_invites')
       .insert({
         ...invite,
+        role: invite.role,
+        permission_level: invite.permission_level,
         invite_token: inviteToken,
         status: 'pending'
       })
@@ -131,7 +179,11 @@ export class PermissionsService {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      role: data.role as UserRole,
+      permission_level: data.permission_level as PermissionLevel
+    } as SupporterInvite;
   }
 
   // Accept supporter invite using secure function
@@ -232,5 +284,125 @@ export class PermissionsService {
     
     if (error) return 'active';
     return data?.account_status || 'active';
+  }
+
+  // User consent management
+  static async grantConsent(
+    individualId: string,
+    adminId: string,
+    consentType: string,
+    expiresAt?: string
+  ): Promise<UserConsent> {
+    const { data, error } = await supabase
+      .from('user_consents')
+      .upsert({
+        individual_id: individualId,
+        admin_id: adminId,
+        consent_type: consentType,
+        granted: true,
+        expires_at: expiresAt
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  static async revokeConsent(
+    individualId: string,
+    adminId: string,
+    consentType: string
+  ): Promise<void> {
+    const { error } = await supabase
+      .from('user_consents')
+      .update({ granted: false })
+      .eq('individual_id', individualId)
+      .eq('admin_id', adminId)
+      .eq('consent_type', consentType);
+    
+    if (error) throw error;
+  }
+
+  static async getConsents(individualId: string): Promise<UserConsent[]> {
+    const { data, error } = await supabase
+      .from('user_consents')
+      .select('*')
+      .eq('individual_id', individualId);
+    
+    if (error) throw error;
+    return data || [];
+  }
+
+  // Admin action logging
+  static async logAdminAction(
+    individualId: string,
+    actionType: string,
+    targetUserId?: string,
+    targetGoalId?: string,
+    details?: Record<string, any>
+  ): Promise<void> {
+    const { error } = await supabase
+      .from('admin_action_log')
+      .insert({
+        admin_user_id: (await supabase.auth.getUser()).data.user?.id,
+        individual_id: individualId,
+        action_type: actionType,
+        target_user_id: targetUserId,
+        target_goal_id: targetGoalId,
+        details
+      });
+    
+    if (error) throw error;
+  }
+
+  static async getAdminActionLogs(individualId: string): Promise<AdminActionLog[]> {
+    const { data, error } = await supabase
+      .from('admin_action_log')
+      .select('*')
+      .eq('individual_id', individualId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return (data || []).map(log => ({
+      ...log,
+      details: log.details || {}
+    })) as AdminActionLog[];
+  }
+
+  // Check if user is admin for individual
+  static async isAdmin(individualId: string, userId?: string): Promise<boolean> {
+    const currentUserId = userId || (await supabase.auth.getUser()).data.user?.id;
+    if (!currentUserId) return false;
+
+    // User is admin of themselves
+    if (currentUserId === individualId) return true;
+
+    const { data, error } = await supabase
+      .from('supporters')
+      .select('is_admin')
+      .eq('individual_id', individualId)
+      .eq('supporter_id', currentUserId)
+      .single();
+    
+    if (error) return false;
+    return data?.is_admin || false;
+  }
+
+  // Get all admins for an individual - with type compatibility
+  static async getAdmins(individualId: string): Promise<Supporter[]> {
+    const { data, error } = await supabase
+      .from('supporters')
+      .select('*')
+      .eq('individual_id', individualId)
+      .eq('is_admin', true);
+    
+    if (error) throw error;
+    return (data || []).map(supporter => ({
+      ...supporter,
+      role: supporter.role === 'admin' ? 'supporter' : supporter.role,
+      permission_level: supporter.permission_level === 'admin' ? 'collaborator' : supporter.permission_level,
+      is_admin: true
+    })) as Supporter[];
   }
 }

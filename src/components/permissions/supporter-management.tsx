@@ -132,9 +132,9 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
     }
   };
 
-  const handleUpdatePermissions = async (supporterId: string, permission_level: PermissionLevel) => {
+  const handleUpdatePermissions = async (supporterId: string, updates: Partial<Pick<Supporter, 'permission_level' | 'is_admin'>>) => {
     try {
-      await PermissionsService.updateSupporterPermissions(supporterId, { permission_level });
+      await PermissionsService.updateSupporterPermissions(supporterId, updates);
       await loadSupporters();
       
       toast({
@@ -175,7 +175,6 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
       case 'supporter': return 'bg-blue-100 text-blue-800';
       case 'friend': return 'bg-green-100 text-green-800';
       case 'provider': return 'bg-purple-100 text-purple-800';
-      case 'admin': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -184,9 +183,12 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
     switch (level) {
       case 'viewer': return 'bg-gray-100 text-gray-800';
       case 'collaborator': return 'bg-orange-100 text-orange-800';
-      case 'admin': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getAdminBadge = () => {
+    return 'bg-yellow-100 text-yellow-800 border-yellow-200';
   };
 
   if (loading) {
@@ -261,7 +263,6 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
                   <SelectContent>
                     <SelectItem value="viewer">Viewer - Can only see goals and progress</SelectItem>
                     <SelectItem value="collaborator">Collaborator - Can suggest/edit steps and mark progress</SelectItem>
-                    <SelectItem value="admin">Admin - Full access to create/edit/delete goals</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -306,6 +307,11 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
                     <Badge className={getPermissionColor(supporter.permission_level)}>
                       {supporter.permission_level}
                     </Badge>
+                    {supporter.is_admin && (
+                      <Badge className={getAdminBadge()}>
+                        👑 Admin
+                      </Badge>
+                    )}
                     {supporter.is_provisioner && (
                       <Badge variant="outline" className="border-yellow-200 text-yellow-800">
                         Provisioner
@@ -319,7 +325,7 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
                 <div className="flex items-center space-x-2">
                   <Select
                     value={supporter.permission_level}
-                    onValueChange={(value: PermissionLevel) => handleUpdatePermissions(supporter.id, value)}
+                    onValueChange={(value: PermissionLevel) => handleUpdatePermissions(supporter.id, { permission_level: value })}
                   >
                     <SelectTrigger className="w-40">
                       <SelectValue />
@@ -327,6 +333,17 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
                     <SelectContent>
                       <SelectItem value="viewer">Viewer</SelectItem>
                       <SelectItem value="collaborator">Collaborator</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={supporter.is_admin ? 'admin' : 'user'}
+                    onValueChange={(value: string) => handleUpdatePermissions(supporter.id, { is_admin: value === 'admin' })}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
