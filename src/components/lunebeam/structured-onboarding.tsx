@@ -13,7 +13,6 @@ import { AIService } from '@/services/aiService';
 
 interface OnboardingData {
   role: 'individual' | 'parent' | '';
-  individualEmail?: string;
   invitePending?: boolean;
   name: string;
   pronouns: string;
@@ -37,7 +36,7 @@ interface OnboardingData {
 
 interface StructuredOnboardingProps {
   onComplete: () => void;
-  roleData?: { role: 'parent' | 'individual'; individualEmail?: string };
+  roleData?: { role: 'parent' | 'individual'; isAdmin?: boolean };
 }
 
 const SUPERPOWERS = [
@@ -65,7 +64,6 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<OnboardingData>({
     role: roleData?.role || 'individual',
-    individualEmail: roleData?.individualEmail || '',
     invitePending: false,
     name: '',
     pronouns: '',

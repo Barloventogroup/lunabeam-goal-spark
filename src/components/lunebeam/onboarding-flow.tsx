@@ -8,12 +8,14 @@ import { Label } from '@/components/ui/label';
 
 export function OnboardingFlow() {
   const navigate = useNavigate();
-  const [roleData, setRoleData] = useState<{ role: 'parent' | 'individual' | ''; individualEmail?: string }>({ role: '' });
+  const [roleData, setRoleData] = useState<{ role: 'parent' | 'individual' | ''; isAdmin?: boolean }>({ role: '' });
   const [showRoleSelection, setShowRoleSelection] = useState(true);
   const [showInterstitial, setShowInterstitial] = useState(false);
 
   const handleRoleSelection = (role: 'parent' | 'individual') => {
-    setRoleData({ role });
+    // Automatically assign Admin role to parents/caregivers
+    const isAdmin = role === 'parent';
+    setRoleData({ role, isAdmin });
     setShowInterstitial(true);
   };
 
@@ -28,17 +30,29 @@ export function OnboardingFlow() {
 
   // Show interstitial screen
   if (showInterstitial) {
+    const isParent = roleData.role === 'parent';
     return (
       <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
-        <div className="max-w-md mx-auto text-center">
-          <h1 className="text-xl font-medium text-black mb-8">
-            The next questions will help me suggest goals and personalize your experience. Ready?
-          </h1>
+        <div className="max-w-md mx-auto text-center space-y-6">
+          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto">
+            <span className="text-white text-xl">{isParent ? '👨‍👩‍👧‍👦' : '🙋‍♂️'}</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-medium text-black mb-4">
+              {isParent ? 'Perfect! You\'ll be set as the Admin.' : 'Great! Let\'s personalize your experience.'}
+            </h1>
+            <p className="text-sm text-foreground-soft">
+              {isParent 
+                ? 'As the parent or caregiver, you will be set as the Admin. You can later invite coaches, therapists, or family members to join the team.' 
+                : 'The next questions will help me suggest goals and personalize your experience. Ready?'
+              }
+            </p>
+          </div>
           <Button
             onClick={handleInterstitialNext}
             className="w-full"
           >
-            Next
+            Continue
           </Button>
         </div>
       </div>
@@ -52,27 +66,54 @@ export function OnboardingFlow() {
           <CardHeader className="text-left">
             <CardTitle className="text-2xl">Welcome to lunabeam!</CardTitle>
             <p className="text-black">
-              Before we start, I need to know who's creating this account.
+              Who are you creating this account for?
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
-              <Label className="text-base font-semibold text-left">Who is the main user for lunabeam?</Label>
               <div className="space-y-3">
-                <button
-                  onClick={() => handleRoleSelection('individual')}
-                  className="w-full p-4 rounded-full hover:opacity-80 transition-colors text-center"
-                  style={{ backgroundColor: '#E0E0E0' }}
-                >
-                  <div className="text-sm text-black">I'm creating this account for myself</div>
-                </button>
-                <button
+                <div 
+                  className="w-full p-4 rounded-lg border-2 border-primary bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors"
                   onClick={() => handleRoleSelection('parent')}
-                  className="w-full p-4 rounded-full hover:opacity-80 transition-colors text-center"
-                  style={{ backgroundColor: '#E0E0E0' }}
                 >
-                  <div className="text-sm text-black">I'm creating this account on someone else's behalf.</div>
-                </button>
+                  <div className="flex items-center space-x-3">
+                    <RadioGroupItem value="parent" id="parent" checked />
+                    <div className="flex-1">
+                      <Label htmlFor="parent" className="text-sm font-medium cursor-pointer">
+                        I am a parent/caregiver signing up on behalf of someone else
+                      </Label>
+                      <p className="text-xs text-foreground-soft mt-1">
+                        You'll manage the account and can invite others to join the team
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div 
+                  className="w-full p-4 rounded-lg border border-border cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => handleRoleSelection('individual')}
+                >
+                  <div className="flex items-center space-x-3">
+                    <RadioGroupItem value="individual" id="individual" />
+                    <div className="flex-1">
+                      <Label htmlFor="individual" className="text-sm font-medium cursor-pointer">
+                        I am signing up for myself
+                      </Label>
+                      <p className="text-xs text-foreground-soft mt-1">
+                        You'll have full control of your own account
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                <div className="flex items-start space-x-2">
+                  <div className="text-blue-600 mt-0.5">💡</div>
+                  <div>
+                    <p className="text-xs text-blue-800 font-medium">Admin = person who manages the account and can invite others</p>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -81,5 +122,5 @@ export function OnboardingFlow() {
     );
   }
 
-  return <OnboardingConversation roleData={roleData as { role: 'parent' | 'individual'; individualEmail?: string }} onComplete={handleOnboardingComplete} />;
+  return <OnboardingConversation roleData={roleData as { role: 'parent' | 'individual'; isAdmin?: boolean }} onComplete={handleOnboardingComplete} />;
 }
