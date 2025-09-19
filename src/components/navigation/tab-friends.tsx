@@ -72,6 +72,7 @@ export const TabFriends: React.FC = () => {
   const { familyCircles, loadFamilyCircles } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [showAdminsOnly, setShowAdminsOnly] = useState(false);
   const [mainTab, setMainTab] = useState('support-network');
   const [invitationTab, setInvitationTab] = useState('received');
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
@@ -83,37 +84,43 @@ export const TabFriends: React.FC = () => {
   const primaryCircle = familyCircles[0]; // For MVP, focus on first circle
 
   const mockMembers = [
-    { id: '1', name: 'Oli', role: 'admin', permission: 'admin', category: 'family', avatar: 'O', isOwner: true },
-    { id: '2', name: 'Mom', role: 'supporter', permission: 'collaborator', category: 'family', avatar: 'M', isOwner: false },
-    { id: '3', name: 'Sarah (Coach)', role: 'supporter', permission: 'viewer', category: 'providers', avatar: 'S', isOwner: false },
-    { id: '4', name: 'Alex', role: 'friend', permission: 'viewer', category: 'friends', avatar: 'A', isOwner: false },
-    { id: '5', name: 'Dr. Smith', role: 'provider', permission: 'collaborator', category: 'providers', avatar: 'D', isOwner: false },
+    { id: '1', name: 'Oli', role: 'friend', isAdmin: true, category: 'friends', avatar: 'O', isOwner: true },
+    { id: '2', name: 'Mom', role: 'supporter', isAdmin: false, category: 'family', avatar: 'M', isOwner: false },
+    { id: '3', name: 'Sarah (Coach)', role: 'supporter', isAdmin: true, category: 'providers', avatar: 'S', isOwner: false },
+    { id: '4', name: 'Alex', role: 'friend', isAdmin: false, category: 'friends', avatar: 'A', isOwner: false },
+    { id: '5', name: 'Dr. Smith', role: 'provider', isAdmin: false, category: 'providers', avatar: 'D', isOwner: false },
   ];
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'admin': return <Crown className="h-4 w-4 text-yellow-500" />;
-      case 'supporter': return <Users className="h-4 w-4 text-purple-500" />;
-      case 'friend': return <MessageSquare className="h-4 w-4 text-blue-500" />;
-      case 'provider': return <Edit3 className="h-4 w-4 text-green-500" />;
-      default: return <Users className="h-4 w-4" />;
+      case 'supporter': return <Users className="h-3 w-3" />;
+      case 'friend': return <MessageSquare className="h-3 w-3" />;
+      case 'provider': return <Edit3 className="h-3 w-3" />;
+      default: return <Users className="h-3 w-3" />;
     }
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-yellow-500/10 text-yellow-700 border-yellow-200';
-      case 'supporter': return 'bg-purple-500/10 text-purple-700 border-purple-200';
-      case 'friend': return 'bg-blue-500/10 text-blue-700 border-blue-200';
-      case 'provider': return 'bg-green-500/10 text-green-700 border-green-200';
-      default: return 'bg-gray-500/10 text-gray-700 border-gray-200';
+      case 'supporter': return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'friend': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'provider': return 'bg-green-50 text-green-700 border-green-200';
+      default: return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
   const filteredMembers = mockMembers.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = activeFilter === 'all' || member.category === activeFilter;
-    return matchesSearch && matchesFilter;
+    const matchesAdminFilter = !showAdminsOnly || member.isAdmin;
+    return matchesSearch && matchesFilter && matchesAdminFilter;
+  }).sort((a, b) => {
+    // Sort: Owner (You) first, then other admins, then regular members
+    if (a.isOwner) return -1;
+    if (b.isOwner) return 1;
+    if (a.isAdmin && !b.isAdmin) return -1;
+    if (b.isAdmin && !a.isAdmin) return 1;
+    return a.name.localeCompare(b.name);
   });
 
   const receivedInvitations = mockInvitations.filter(inv => inv.type === 'received');
@@ -152,15 +159,29 @@ export const TabFriends: React.FC = () => {
 
             {/* Support Network Tab */}
             <TabsContent value="support-network" className="space-y-6">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search within your support network..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+              {/* Search and Admin Filter */}
+              <div className="flex gap-4 items-center">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search within your support network..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="admin-filter"
+                    checked={showAdminsOnly}
+                    onChange={(e) => setShowAdminsOnly(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <label htmlFor="admin-filter" className="text-sm font-medium">
+                    Admins only
+                  </label>
+                </div>
               </div>
 
               {/* Filter Tabs and Friends Table */}
@@ -179,12 +200,16 @@ export const TabFriends: React.FC = () => {
                         <TableRow>
                           <TableHead>Name</TableHead>
                           <TableHead>Role</TableHead>
+                          <TableHead>Permissions</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {filteredMembers.map((member) => (
-                          <TableRow key={member.id}>
+                          <TableRow 
+                            key={member.id}
+                            className={member.isOwner ? "bg-muted/30" : ""}
+                          >
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <Avatar className="w-8 h-8">
@@ -194,15 +219,27 @@ export const TabFriends: React.FC = () => {
                                 </Avatar>
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium">{member.name}</span>
-                                  {member.isOwner && <Crown className="h-4 w-4 text-yellow-500" />}
+                                  {member.isOwner && (
+                                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                      You
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline" className={getRoleColor(member.role)}>
+                              <Badge variant="outline" className={`text-xs ${getRoleColor(member.role)}`}>
                                 {getRoleIcon(member.role)}
-                                {member.role}
+                                <span className="ml-1 capitalize">{member.role}</span>
                               </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {member.isAdmin && (
+                                <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                                  <Crown className="h-3 w-3 mr-1" />
+                                  Admin
+                                </Badge>
+                              )}
                             </TableCell>
                             <TableCell className="text-right">
                               {!member.isOwner && (
