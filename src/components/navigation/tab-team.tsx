@@ -28,6 +28,7 @@ export const TabTeam: React.FC = () => {
   const primaryCircle = familyCircles[0]; // For MVP, focus on first circle
 
   const mockMembers = [
+    { id: '1', name: 'You', role: 'admin', permission: 'admin', avatar: 'Y', isOwner: true },
     { id: '2', name: 'Mom', role: 'supporter', permission: 'collaborator', avatar: 'M', isOwner: false },
     { id: '3', name: 'Sarah (Coach)', role: 'supporter', permission: 'viewer', avatar: 'S', isOwner: false },
   ];
@@ -102,9 +103,11 @@ export const TabTeam: React.FC = () => {
                       {member.role}
                     </Badge>
                   </div>
-                  <Button variant="ghost" size="sm">
-                    <Settings className="h-4 w-4" />
-                  </Button>
+                  {!member.isOwner && (
+                    <Button variant="ghost" size="sm">
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </CardContent>
