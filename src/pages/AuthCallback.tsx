@@ -17,7 +17,16 @@ export default function AuthCallback() {
     (async () => {
       try {
         const url = new URL(window.location.href);
+        const errorDesc = url.searchParams.get('error_description') || url.searchParams.get('error');
         const code = url.searchParams.get('code');
+        const token_hash = url.searchParams.get('token_hash');
+        const type = url.searchParams.get('type'); // signup | recovery | invite | email_change
+
+        if (errorDesc) {
+          setStatus('error');
+          setMsg(errorDesc);
+          return;
+        }
 
         if (code) {
           // New-style PKCE callback: exchange ?code= for a session (email confirm, magic link, etc.)
@@ -29,10 +38,25 @@ export default function AuthCallback() {
           return;
         }
 
+        if (token_hash && type) {
+          // Token-hash callback (signup, invite, email change, recovery)
+          const { error } = await supabase.auth.verifyOtp({ token_hash, type: type as any });
+          if (error) throw error;
+          if (type === 'recovery') {
+            setStatus('ready');
+            setMsg('You are signed in for password recovery.');
+            return;
+          }
+          try { localStorage.removeItem('lunebeam-store'); } catch {}
+          setStatus('success');
+          setMsg('Email confirmed! Redirecting…');
+          return;
+        }
+
         // Old-style hash callback: #access_token=...&type=recovery
         const hash = window.location.hash || '';
         const hashParams = getHashParams(hash);
-        const type = hashParams['type'];
+        const legacyType = hashParams['type'];
 
         if (hash && (hashParams['access_token'] || hashParams['refresh_token'])) {
           // Supabase v1 hash tokens — set them as session
@@ -41,7 +65,7 @@ export default function AuthCallback() {
             refresh_token: hashParams['refresh_token']
           });
           if (error) throw error;
-          if (type === 'recovery') {
+          if (legacyType === 'recovery') {
             setStatus('ready');
             setMsg('You are signed in for password recovery.');
             return;
@@ -53,28 +77,23 @@ export default function AuthCallback() {
           }
         }
 
-        // Fallback: try auth state event (older flows)
-        const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-          if (event === 'PASSWORD_RECOVERY') {
-            setStatus('ready');
-            setMsg('You are signed in for password recovery.');
-          }
-        });
-        // Give it a moment; if nothing, assume error
-        setTimeout(() => {
-          if (status === 'loading') {
-            setStatus('error');
-            setMsg('No valid recovery token found. Request a new reset link.');
-          }
-        }, 1200);
+        // If already signed in (e.g., provider callback), proceed
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          try { localStorage.removeItem('lunebeam-store'); } catch {}
+          setStatus('success');
+          setMsg('Signed in! Redirecting…');
+          return;
+        }
 
-        return () => { sub.subscription.unsubscribe(); };
+        setStatus('error');
+        setMsg('Invalid or expired link. Please request a new one.');
       } catch (e: any) {
         setStatus('error');
         setMsg(e?.message || 'Something went wrong.');
       }
     })();
-  }, [status]);
+  }, []);
 
   // Redirects based on intent with delay for success
   useEffect(() => {
