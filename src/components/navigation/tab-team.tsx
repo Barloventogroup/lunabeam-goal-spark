@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { FamilyInviteModal } from '../lunebeam/family-invite-modal';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export const TabTeam: React.FC = () => {
   const { familyCircles, loadFamilyCircles } = useStore();
@@ -27,11 +28,8 @@ export const TabTeam: React.FC = () => {
   const primaryCircle = familyCircles[0]; // For MVP, focus on first circle
 
   const mockMembers = [
-    { id: '1', name: 'You', role: 'admin', permission: 'admin', avatar: '👤', isOwner: true },
-    { id: '2', name: 'Mom', role: 'supporter', permission: 'collaborator', avatar: '👩', isOwner: false },
-    { id: '3', name: 'Sarah (Coach)', role: 'supporter', permission: 'viewer', avatar: '👩‍🏫', isOwner: false },
-    { id: '4', name: 'Alex', role: 'friend', permission: 'viewer', avatar: '👨', isOwner: false },
-    { id: '5', name: 'Dr. Smith', role: 'provider', permission: 'collaborator', avatar: '👨‍⚕️', isOwner: false },
+    { id: '2', name: 'Mom', role: 'supporter', permission: 'collaborator', avatar: 'M', isOwner: false },
+    { id: '3', name: 'Sarah (Coach)', role: 'supporter', permission: 'viewer', avatar: 'S', isOwner: false },
   ];
 
   const getRoleIcon = (role: string) => {
@@ -89,9 +87,11 @@ export const TabTeam: React.FC = () => {
             <CardContent className="space-y-4">
               {mockMembers.map((member) => (
                 <div key={member.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50">
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg">
-                    {member.avatar}
-                  </div>
+                  <Avatar className="w-10 h-10">
+                    <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                      {member.avatar}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{member.name}</span>
@@ -102,11 +102,9 @@ export const TabTeam: React.FC = () => {
                       {member.role}
                     </Badge>
                   </div>
-                  {!member.isOwner && (
-                    <Button variant="ghost" size="sm">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <Button variant="ghost" size="sm">
+                    <Settings className="h-4 w-4" />
+                  </Button>
                 </div>
               ))}
             </CardContent>

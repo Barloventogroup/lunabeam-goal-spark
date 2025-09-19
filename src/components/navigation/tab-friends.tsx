@@ -40,7 +40,7 @@ const mockInvitations: Invitation[] = [
   {
     id: '1',
     name: 'Emma Rodriguez',
-    avatar: '👩‍🦱',
+    avatar: 'E',
     message: 'Hey! I saw your fitness goals and would love to connect. Let\'s motivate each other!',
     goal: 'Complete Marathon Training',
     mutualFriends: 3,
@@ -50,7 +50,7 @@ const mockInvitations: Invitation[] = [
   {
     id: '2',
     name: 'Alex Chen',
-    avatar: '👨‍💻',
+    avatar: 'A',
     message: 'Hi there! I\'m also working on coding goals. Would be great to share progress!',
     goal: 'Learn React Development',
     mutualFriends: 1,
@@ -60,7 +60,7 @@ const mockInvitations: Invitation[] = [
   {
     id: '3',
     name: 'Sarah Williams',
-    avatar: '👩‍🎨',
+    avatar: 'S',
     message: 'Invitation sent',
     mutualFriends: 0,
     sentTime: '3 days ago',
@@ -83,11 +83,10 @@ export const TabFriends: React.FC = () => {
   const primaryCircle = familyCircles[0]; // For MVP, focus on first circle
 
   const mockMembers = [
-    { id: '1', name: 'You', role: 'admin', permission: 'admin', category: 'family', avatar: '👤', isOwner: true },
-    { id: '2', name: 'Mom', role: 'supporter', permission: 'collaborator', category: 'family', avatar: '👩', isOwner: false },
-    { id: '3', name: 'Sarah (Coach)', role: 'supporter', permission: 'viewer', category: 'providers', avatar: '👩‍🏫', isOwner: false },
-    { id: '4', name: 'Alex', role: 'friend', permission: 'viewer', category: 'friends', avatar: '👨', isOwner: false },
-    { id: '5', name: 'Dr. Smith', role: 'provider', permission: 'collaborator', category: 'providers', avatar: '👨‍⚕️', isOwner: false },
+    { id: '2', name: 'Mom', role: 'supporter', permission: 'collaborator', category: 'family', avatar: 'M', isOwner: false },
+    { id: '3', name: 'Sarah (Coach)', role: 'supporter', permission: 'viewer', category: 'providers', avatar: 'S', isOwner: false },
+    { id: '4', name: 'Alex', role: 'friend', permission: 'viewer', category: 'friends', avatar: 'A', isOwner: false },
+    { id: '5', name: 'Dr. Smith', role: 'provider', permission: 'collaborator', category: 'providers', avatar: 'D', isOwner: false },
   ];
 
   const getRoleIcon = (role: string) => {
@@ -187,9 +186,11 @@ export const TabFriends: React.FC = () => {
                           <TableRow key={member.id}>
                             <TableCell>
                               <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm">
-                                  {member.avatar}
-                                </div>
+                                <Avatar className="w-8 h-8">
+                                  <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
+                                    {member.avatar}
+                                  </AvatarFallback>
+                                </Avatar>
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium">{member.name}</span>
                                   {member.isOwner && <Crown className="h-4 w-4 text-yellow-500" />}
@@ -203,11 +204,9 @@ export const TabFriends: React.FC = () => {
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right">
-                              {!member.isOwner && (
-                                <Button variant="ghost" size="sm">
-                                  <Settings className="h-4 w-4" />
-                                </Button>
-                              )}
+                              <Button variant="ghost" size="sm">
+                                <Settings className="h-4 w-4" />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -263,9 +262,11 @@ export const TabFriends: React.FC = () => {
                       {receivedInvitations.map((invitation) => (
                         <div key={invitation.id} className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                              {invitation.avatar}
-                            </div>
+                            <Avatar className="w-10 h-10">
+                              <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                                {invitation.avatar}
+                              </AvatarFallback>
+                            </Avatar>
                             <div>
                               <p className="font-medium">{invitation.name}</p>
                               <p className="text-sm text-muted-foreground">{invitation.sentTime}</p>
@@ -286,9 +287,11 @@ export const TabFriends: React.FC = () => {
                       {sentInvitations.map((invitation) => (
                         <div key={invitation.id} className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                              {invitation.avatar}
-                            </div>
+                            <Avatar className="w-10 h-10">
+                              <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                                {invitation.avatar}
+                              </AvatarFallback>
+                            </Avatar>
                             <div>
                               <p className="font-medium">{invitation.name}</p>
                               <p className="text-sm text-muted-foreground">{invitation.sentTime}</p>
@@ -318,7 +321,7 @@ export const TabFriends: React.FC = () => {
               {/* Profile */}
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16">
-                  <AvatarFallback className="text-2xl">
+                  <AvatarFallback className="bg-primary/10 text-primary font-medium text-2xl">
                     {selectedInvitation.avatar}
                   </AvatarFallback>
                 </Avatar>
