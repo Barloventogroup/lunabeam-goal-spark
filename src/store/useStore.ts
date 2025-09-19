@@ -352,10 +352,10 @@ export const useStore = create<AppState>()(
           
           console.log('Store: Setting profile from DB:', profile);
           console.log('Store: DB profile onboarding_complete:', profile.onboarding_complete);
-          const local = get().profile;
+          // Use database value as source of truth for onboarding status
           const mergedProfile = {
             ...profile,
-            onboarding_complete: Boolean(profile.onboarding_complete || local?.onboarding_complete || get().justCompletedOnboarding)
+            onboarding_complete: Boolean(profile.onboarding_complete)
           } as Profile;
           console.log('Store: Merged profile onboarding_complete:', mergedProfile.onboarding_complete);
           set({ profile: mergedProfile });
