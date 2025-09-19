@@ -71,8 +71,6 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
     sharingSupport: 'private'
   });
   const [customPronouns, setCustomPronouns] = useState('');
-  const [showProfile, setShowProfile] = useState(false);
-  const [generatedProfile, setGeneratedProfile] = useState('');
   const { completeOnboarding, setProfile } = useStore();
 
   const totalSteps = 9;
@@ -104,15 +102,12 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      generateProfile();
+      handleComplete();
     }
   };
 
   const handleBack = () => {
-    if (showProfile) {
-      setShowProfile(false);
-      setCurrentStep(totalSteps);
-    } else if (currentStep > 1) {
+    if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -130,41 +125,6 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
     return array;
   };
 
-  const generateProfile = () => {
-    const name = data.preferredName || 'The person you are helping';
-    const pronoun = getDisplayPronouns();
-    const possessive = getPossessivePronouns();
-    
-    let summary = `${name} `;
-    
-    if (data.strengths.length > 0) {
-      summary += `shines at being ${data.strengths.slice(0, 3).join(', ')}. `;
-    }
-    
-    if (data.interests.length > 0) {
-      summary += `${pronoun === 'they' ? 'They are' : `${pronoun} is`} drawn to ${data.interests.slice(0, 3).join(', ')}. `;
-    }
-    
-    if (data.age && data.age !== 'Prefer not to say') {
-      summary += `At ${data.age}, `;
-    } else {
-      summary += `${pronoun === 'they' ? 'They' : pronoun} `;
-    }
-    
-    summary += `${pronoun === 'they' ? 'prefer' : 'prefers'} ${data.workStyle.environment} spaces and ${data.workStyle.activity} activities. `;
-    
-    if (data.nextTwoWeeks) {
-      summary += `${possessive} next small step: ${data.nextTwoWeeks}. `;
-    }
-    
-    const sharing = data.sharingSupport === 'private' ? 'keeping things private' : 
-                   data.sharingSupport === 'summary' ? 'sharing summaries with supporters' : 
-                   'sharing details with supporters';
-    summary += `${pronoun === 'they' ? 'They prefer' : `${pronoun} prefers`} ${sharing}.`;
-    
-    setGeneratedProfile(summary);
-    setShowProfile(true);
-  };
 
   const handleComplete = async () => {
     const localProfile = {
@@ -189,53 +149,6 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
     }
   };
 
-  if (showProfile) {
-    return (
-      <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
-        <Card className="w-full max-w-md shadow-card border-0">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-xl">✨</span>
-            </div>
-            <CardTitle className="text-2xl">Starter Profile Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-card-soft rounded-lg p-4">
-              <p className="text-foreground-soft leading-relaxed">{generatedProfile}</p>
-            </div>
-            
-            {(data.strengths.length > 0 || data.interests.length > 0) && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Tags:</p>
-                <div className="flex flex-wrap gap-1">
-                  {data.strengths.map(strength => (
-                    <Badge key={strength} variant="secondary" className="text-xs">{strength}</Badge>
-                  ))}
-                  {data.interests.map(interest => (
-                    <Badge key={interest} variant="outline" className="text-xs">{interest}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="text-center space-y-3">
-              <p className="text-sm text-foreground-soft">
-                This helps me suggest goals that fit. You can change it anytime.
-              </p>
-              <div className="space-y-2">
-                <Button onClick={handleComplete} className="w-full">
-                  Let's go 🚀
-                </Button>
-                <Button variant="outline" onClick={handleBack} className="w-full">
-                  Skip for now
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-soft p-4">
@@ -584,23 +497,18 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
               </div>
             )}
 
-            {/* Step 9: Review */}
+            {/* Step 9: Final Step */}
             {currentStep === 9 && (
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-4">Ready to create their profile?</h2>
-                  <div className="bg-card-soft rounded-lg p-4 text-left">
-                    <div className="space-y-2 text-sm">
-                      <p><strong>Name:</strong> {data.preferredName || 'Not provided'}</p>
-                      <p><strong>Pronouns:</strong> {data.pronouns === 'Custom' ? customPronouns : data.pronouns || 'Not selected'}</p>
-                      <p><strong>Age:</strong> {data.age || 'Not provided'}</p>
-                      <p><strong>Strengths:</strong> {data.strengths.join(', ') || 'None selected'}</p>
-                      <p><strong>Interests:</strong> {data.interests.join(', ') || 'None selected'}</p>
-                      {data.nextTwoWeeks && (
-                        <p><strong>Next step:</strong> {data.nextTwoWeeks}</p>
-                      )}
-                    </div>
-                  </div>
+              <div className="space-y-6 text-center">
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white text-xl">🎉</span>
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">Perfect! We're all set.</h2>
+                  <p className="text-foreground-soft leading-relaxed">
+                    I'll use what you've shared to suggest goals that fit {data.preferredName || 'them'}. 
+                    You can always update their profile later.
+                  </p>
                 </div>
               </div>
             )}
@@ -617,7 +525,7 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
                   </Button>
                 )}
                 <Button onClick={handleNext}>
-                  {currentStep === 9 ? 'Create Profile' : 'Next'}
+                  {currentStep === 9 ? 'Get Started' : 'Next'}
                 </Button>
               </div>
             </div>
