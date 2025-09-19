@@ -83,7 +83,7 @@ export const TabFriends: React.FC = () => {
   const primaryCircle = familyCircles[0]; // For MVP, focus on first circle
 
   const mockMembers = [
-    { id: '1', name: 'You', role: 'admin', permission: 'admin', category: 'family', avatar: 'Y', isOwner: true },
+    { id: '1', name: 'Oli', role: 'admin', permission: 'admin', category: 'family', avatar: 'O', isOwner: true },
     { id: '2', name: 'Mom', role: 'supporter', permission: 'collaborator', category: 'family', avatar: 'M', isOwner: false },
     { id: '3', name: 'Sarah (Coach)', role: 'supporter', permission: 'viewer', category: 'providers', avatar: 'S', isOwner: false },
     { id: '4', name: 'Alex', role: 'friend', permission: 'viewer', category: 'friends', avatar: 'A', isOwner: false },
