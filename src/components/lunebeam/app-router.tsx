@@ -4,7 +4,7 @@ import { OnboardingFlow } from './onboarding-flow';
 import { BottomTabs } from '../navigation/bottom-tabs';
 
 const AppRouter: React.FC = () => {
-  const { isOnboardingComplete, profile, loadProfile } = useStore();
+  const { isOnboardingComplete, profile, loadProfile, justCompletedOnboarding, clearJustCompletedOnboarding } = useStore();
   const [profileLoaded, setProfileLoaded] = React.useState(false);
 
   // Load profile on component mount
@@ -39,10 +39,20 @@ const AppRouter: React.FC = () => {
     loadUserProfile();
   }, [loadProfile]);
 
+  // Clear the justCompletedOnboarding flag shortly after landing in app
+  React.useEffect(() => {
+    if (justCompletedOnboarding) {
+      const t = setTimeout(() => {
+        try { clearJustCompletedOnboarding(); } catch {}
+      }, 1000);
+      return () => clearTimeout(t);
+    }
+  }, [justCompletedOnboarding, clearJustCompletedOnboarding]);
   console.log('AppRouter render:', {
     profileLoaded,
     profile,
-    onboardingComplete: isOnboardingComplete()
+    onboardingComplete: isOnboardingComplete(),
+    justCompletedOnboarding,
   });
 
   // Show loading until profile is checked
@@ -56,7 +66,7 @@ const AppRouter: React.FC = () => {
   }
 
   // Show onboarding if not completed
-  if (!isOnboardingComplete()) {
+  if (!isOnboardingComplete() && !justCompletedOnboarding) {
     console.log('AppRouter: Showing onboarding flow - profile onboarding_complete:', profile?.onboarding_complete);
     return <OnboardingFlow />;
   }
