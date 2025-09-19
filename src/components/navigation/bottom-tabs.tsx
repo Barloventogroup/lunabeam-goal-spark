@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Home, Target, Users, User, MessageCircle, ArrowLeft } from 'lucide-react';
 import { TabHome } from './tab-home';
 import { TabGoals } from './tab-goals';
-import { TabFriends } from './tab-friends';
+import { TabTeam } from './tab-team';
 import { TabYou } from './tab-you';
 import { AIChat } from '../lunebeam/ai-chat';
 import { useStore } from '@/store/useStore';
@@ -60,7 +60,7 @@ export const BottomTabs: React.FC = () => {
       case 'goals':
         return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} />;
       case 'team':
-        return <TabFriends />;
+        return <TabTeam />;
       case 'you':
         return <TabYou />;
       default:
