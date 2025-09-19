@@ -342,6 +342,66 @@ export type Database = {
         }
         Relationships: []
       }
+      goal_proposals: {
+        Row: {
+          admin_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          category: string | null
+          created_at: string
+          description: string | null
+          frequency_per_week: number | null
+          id: string
+          individual_id: string
+          outcome: string | null
+          proposer_id: string
+          rationale: string | null
+          status: string
+          timeline_end: string | null
+          timeline_start: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          frequency_per_week?: number | null
+          id?: string
+          individual_id: string
+          outcome?: string | null
+          proposer_id: string
+          rationale?: string | null
+          status?: string
+          timeline_end?: string | null
+          timeline_start?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          frequency_per_week?: number | null
+          id?: string
+          individual_id?: string
+          outcome?: string | null
+          proposer_id?: string
+          rationale?: string | null
+          status?: string
+          timeline_end?: string | null
+          timeline_start?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           base_points_per_milestone: number | null
@@ -423,6 +483,39 @@ export type Database = {
           title?: string
           total_possible_points?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          message: string
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message: string
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message?: string
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }

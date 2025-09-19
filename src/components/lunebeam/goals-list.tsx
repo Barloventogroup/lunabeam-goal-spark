@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import { goalsService, stepsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal, Step } from '@/types';
@@ -281,10 +281,15 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                   }
                 </p>
                 {activeTab === 'active' && (
-                  <Button onClick={() => onNavigate('create-goal')} variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Your First Goal
-                  </Button>
+                  <div className="space-y-2">
+                    <Button onClick={() => onNavigate('create-goal')} variant="outline">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Goal
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Or suggest a goal for someone you support
+                    </p>
+                  </div>
                 )}
               </CardContent>
             </Card>

@@ -5,8 +5,10 @@ import { LuneAISession } from '../lunebeam/lune-ai-session';
 import { GoalSummary } from '../lunebeam/goal-summary';
 import { GoalCategories } from '../lunebeam/goal-categories';
 import { GoalsWizard } from '../lunebeam/goals-wizard';
+import { GoalCreationWizard } from '../lunebeam/goal-creation-wizard';
+import { GoalProposalsView } from '../lunebeam/goal-proposals-view';
 
-type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wizard';
+type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wizard' | 'create-wizard' | 'proposals';
 
 interface TabGoalsProps {
   onWizardStateChange?: (isWizardActive: boolean) => void;
@@ -37,8 +39,12 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
         onWizardStateChange?.(false);
         break;
       case 'create-goal':
-        setCurrentView('wizard');
+        setCurrentView('create-wizard');
         onWizardStateChange?.(true);
+        break;
+      case 'view-proposals':
+        setCurrentView('proposals');
+        onWizardStateChange?.(false);
         break;
       case 'goals-list':
       default:
@@ -113,6 +119,22 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
               setCurrentView('list');
               onWizardStateChange?.(false);
             }}
+          />
+        );
+      case 'create-wizard':
+        return (
+          <GoalCreationWizard 
+            onComplete={handleWizardGoalCreated}
+            onCancel={() => {
+              setCurrentView('list');
+              onWizardStateChange?.(false);
+            }}
+          />
+        );
+      case 'proposals':
+        return (
+          <GoalProposalsView 
+            onBack={() => setCurrentView('list')}
           />
         );
       case 'list':
