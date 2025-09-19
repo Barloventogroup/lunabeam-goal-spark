@@ -15,6 +15,7 @@ const AppRouter: React.FC = () => {
         await loadProfile();
         const currentProfile = useStore.getState().profile;
         console.log('AppRouter: Profile loaded:', currentProfile);
+        console.log('AppRouter: Profile onboarding_complete:', currentProfile?.onboarding_complete);
         
         // For new users, ensure we have a valid profile before proceeding
         if (!currentProfile) {
@@ -23,6 +24,7 @@ const AppRouter: React.FC = () => {
           setTimeout(() => {
             const retryProfile = useStore.getState().profile;
             console.log('AppRouter: Profile after retry:', retryProfile);
+            console.log('AppRouter: Retry profile onboarding_complete:', retryProfile?.onboarding_complete);
             setProfileLoaded(true);
           }, 500);
           return;
@@ -55,7 +57,7 @@ const AppRouter: React.FC = () => {
 
   // Show onboarding if not completed
   if (!isOnboardingComplete()) {
-    console.log('AppRouter: Showing onboarding flow');
+    console.log('AppRouter: Showing onboarding flow - profile onboarding_complete:', profile?.onboarding_complete);
     return <OnboardingFlow />;
   }
 

@@ -269,6 +269,8 @@ export const useStore = create<AppState>()(
       // Computed helper for onboarding status
       isOnboardingComplete: () => {
         const profile = get().profile;
+        console.log('Store: isOnboardingComplete check - profile:', profile);
+        console.log('Store: isOnboardingComplete check - onboarding_complete:', profile?.onboarding_complete);
         return profile?.onboarding_complete || false;
       },
       
@@ -327,16 +329,19 @@ export const useStore = create<AppState>()(
 
               console.log('Store: Creating minimal profile from auth:', minimalProfile);
               console.log('Store: User info:', { id: user.id, email: user.email, metadata: user.user_metadata });
+              console.log('Store: minimalProfile.onboarding_complete is:', minimalProfile.onboarding_complete);
               
               try {
                 await database.saveProfile(minimalProfile);
                 console.log('Store: Successfully saved minimal profile to DB');
                 set({ profile: minimalProfile });
+                console.log('Store: Set profile in state, onboarding_complete:', minimalProfile.onboarding_complete);
                 return;
               } catch (saveError) {
                 console.error('Store: Failed to save minimal profile to DB:', saveError);
                 // Set profile in state even if DB save fails, so onboarding can proceed
                 set({ profile: minimalProfile });
+                console.log('Store: Set fallback profile in state, onboarding_complete:', minimalProfile.onboarding_complete);
                 return;
               }
             } else {
@@ -346,6 +351,7 @@ export const useStore = create<AppState>()(
           }
           
           console.log('Store: Setting profile from DB:', profile);
+          console.log('Store: DB profile onboarding_complete:', profile.onboarding_complete);
           set({ profile });
         } catch (error) {
           console.error('Store: Failed to load profile:', error);
@@ -359,6 +365,7 @@ export const useStore = create<AppState>()(
             onboarding_complete: false,
           };
           console.log('Store: Setting fallback profile due to error:', basicProfile);
+          console.log('Store: Fallback profile onboarding_complete:', basicProfile.onboarding_complete);
           set({ profile: basicProfile });
         }
       },
