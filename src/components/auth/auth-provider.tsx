@@ -25,12 +25,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('AuthProvider: Auth state change:', event, session?.user?.email);
+        if (event === 'SIGNED_OUT') {
+          try {
+            localStorage.removeItem('lunebeam-store');
+            console.log('AuthProvider: Cleared persisted store on sign out');
+          } catch (e) {
+            console.warn('AuthProvider: Failed to clear persisted store on sign out');
+          }
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
         // Load user profile when signed in
         if (event === 'SIGNED_IN' && session?.user) {
+          try {
+            localStorage.removeItem('lunebeam-store');
+            console.log('AuthProvider: Cleared persisted store on sign in');
+          } catch (e) {
+            console.warn('AuthProvider: Failed to clear persisted store on sign in');
+          }
           console.log('AuthProvider: User signed in, loading profile...');
           setTimeout(() => {
             loadProfile().then(() => {

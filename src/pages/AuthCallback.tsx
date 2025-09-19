@@ -23,6 +23,7 @@ export default function AuthCallback() {
           // New-style PKCE callback: exchange ?code= for a session (email confirm, magic link, etc.)
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
+          try { localStorage.removeItem('lunebeam-store'); } catch {}
           setStatus('success');
           setMsg('Email confirmed! Redirecting…');
           return;
@@ -45,6 +46,7 @@ export default function AuthCallback() {
             setMsg('You are signed in for password recovery.');
             return;
           } else {
+            try { localStorage.removeItem('lunebeam-store'); } catch {}
             setStatus('success');
             setMsg('Email confirmed! Redirecting…');
             return;
