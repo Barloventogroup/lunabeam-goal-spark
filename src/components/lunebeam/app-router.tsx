@@ -4,7 +4,7 @@ import { OnboardingFlow } from './onboarding-flow';
 import { BottomTabs } from '../navigation/bottom-tabs';
 
 const AppRouter: React.FC = () => {
-  const { isOnboardingComplete, profile, loadProfile, justCompletedOnboarding, clearJustCompletedOnboarding } = useStore();
+  const { isOnboardingComplete, profile, loadProfile } = useStore();
   const [profileLoaded, setProfileLoaded] = React.useState(false);
 
   // Load profile on component mount
@@ -15,7 +15,6 @@ const AppRouter: React.FC = () => {
         await loadProfile();
         const currentProfile = useStore.getState().profile;
         console.log('AppRouter: Profile loaded:', currentProfile);
-        console.log('AppRouter: Profile onboarding_complete:', currentProfile?.onboarding_complete);
         
         // For new users, ensure we have a valid profile before proceeding
         if (!currentProfile) {
@@ -24,7 +23,6 @@ const AppRouter: React.FC = () => {
           setTimeout(() => {
             const retryProfile = useStore.getState().profile;
             console.log('AppRouter: Profile after retry:', retryProfile);
-            console.log('AppRouter: Retry profile onboarding_complete:', retryProfile?.onboarding_complete);
             setProfileLoaded(true);
           }, 500);
           return;
@@ -39,20 +37,10 @@ const AppRouter: React.FC = () => {
     loadUserProfile();
   }, [loadProfile]);
 
-  // Clear the justCompletedOnboarding flag shortly after landing in app
-  React.useEffect(() => {
-    if (justCompletedOnboarding) {
-      const t = setTimeout(() => {
-        try { clearJustCompletedOnboarding(); } catch {}
-      }, 1000);
-      return () => clearTimeout(t);
-    }
-  }, [justCompletedOnboarding, clearJustCompletedOnboarding]);
   console.log('AppRouter render:', {
     profileLoaded,
     profile,
-    onboardingComplete: isOnboardingComplete(),
-    justCompletedOnboarding,
+    onboardingComplete: isOnboardingComplete()
   });
 
   // Show loading until profile is checked
@@ -66,8 +54,8 @@ const AppRouter: React.FC = () => {
   }
 
   // Show onboarding if not completed
-  if (!isOnboardingComplete() && !justCompletedOnboarding) {
-    console.log('AppRouter: Showing onboarding flow - profile onboarding_complete:', profile?.onboarding_complete);
+  if (!isOnboardingComplete()) {
+    console.log('AppRouter: Showing onboarding flow');
     return <OnboardingFlow />;
   }
 

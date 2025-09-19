@@ -27,12 +27,8 @@ export const TabTeam: React.FC = () => {
 
   const primaryCircle = familyCircles[0]; // For MVP, focus on first circle
 
-  const { profile } = useStore();
-  const userName = profile?.first_name || 'You';
-  const userAvatar = userName.charAt(0).toUpperCase();
-  
   const mockMembers = [
-    { id: '1', name: userName, role: 'admin', permission: 'admin', avatar: userAvatar, isOwner: true },
+    { id: '1', name: 'Oli', role: 'admin', permission: 'admin', avatar: 'O', isOwner: true },
     { id: '2', name: 'Mom', role: 'supporter', permission: 'collaborator', avatar: 'M', isOwner: false },
     { id: '3', name: 'Sarah (Coach)', role: 'supporter', permission: 'viewer', avatar: 'S', isOwner: false },
   ];
