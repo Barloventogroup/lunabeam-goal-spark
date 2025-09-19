@@ -27,27 +27,29 @@ export const TabTeam: React.FC = () => {
   const primaryCircle = familyCircles[0]; // For MVP, focus on first circle
 
   const mockMembers = [
-    { id: '1', name: 'You', role: 'Admin', avatar: '👤', isOwner: true },
-    { id: '2', name: 'Mom', role: 'Parent Guide', avatar: '👩', isOwner: false },
-    { id: '3', name: 'Sarah (Coach)', role: 'Coach', avatar: '👩‍🏫', isOwner: false },
+    { id: '1', name: 'You', role: 'admin', permission: 'admin', avatar: '👤', isOwner: true },
+    { id: '2', name: 'Mom', role: 'supporter', permission: 'collaborator', avatar: '👩', isOwner: false },
+    { id: '3', name: 'Sarah (Coach)', role: 'supporter', permission: 'viewer', avatar: '👩‍🏫', isOwner: false },
+    { id: '4', name: 'Alex', role: 'friend', permission: 'viewer', avatar: '👨', isOwner: false },
+    { id: '5', name: 'Dr. Smith', role: 'provider', permission: 'collaborator', avatar: '👨‍⚕️', isOwner: false },
   ];
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'Admin': return <Crown className="h-4 w-4 text-yellow-500" />;
-      case 'Edit': return <Edit3 className="h-4 w-4 text-green-500" />;
-      case 'Comment': return <MessageSquare className="h-4 w-4 text-blue-500" />;
-      case 'View': return <Eye className="h-4 w-4 text-gray-500" />;
+      case 'admin': return <Crown className="h-4 w-4 text-yellow-500" />;
+      case 'supporter': return <Users className="h-4 w-4 text-purple-500" />;
+      case 'friend': return <MessageSquare className="h-4 w-4 text-blue-500" />;
+      case 'provider': return <Edit3 className="h-4 w-4 text-green-500" />;
       default: return <Users className="h-4 w-4" />;
     }
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'Admin': return 'bg-yellow-500/10 text-yellow-700 border-yellow-200';
-      case 'Parent Guide': return 'bg-purple-500/10 text-purple-700 border-purple-200';
-      case 'Coach': return 'bg-green-500/10 text-green-700 border-green-200';
-      case 'Cheerleader': return 'bg-blue-500/10 text-blue-700 border-blue-200';
+      case 'admin': return 'bg-yellow-500/10 text-yellow-700 border-yellow-200';
+      case 'supporter': return 'bg-purple-500/10 text-purple-700 border-purple-200';
+      case 'friend': return 'bg-blue-500/10 text-blue-700 border-blue-200';
+      case 'provider': return 'bg-green-500/10 text-green-700 border-green-200';
       default: return 'bg-gray-500/10 text-gray-700 border-gray-200';
     }
   };
@@ -147,28 +149,30 @@ export const TabTeam: React.FC = () => {
                 <Crown className="h-4 w-4 text-yellow-500" />
                 <div>
                   <div className="font-medium">Admin</div>
-                  <div className="text-muted-foreground">Full access, invite/remove members</div>
+                  <div className="text-muted-foreground">Full access to create/edit/delete goals</div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Edit3 className="h-4 w-4 text-green-500" />
                 <div>
-                  <div className="font-medium">Parent Guide</div>
-                  <div className="text-muted-foreground">Can edit goals and add comments</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <MessageSquare className="h-4 w-4 text-blue-500" />
-                <div>
-                  <div className="font-medium">Coach</div>
-                  <div className="text-muted-foreground">Can comment and provide guidance</div>
+                  <div className="font-medium">Collaborator</div>
+                  <div className="text-muted-foreground">Can suggest/edit steps and mark progress</div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Eye className="h-4 w-4 text-gray-500" />
                 <div>
-                  <div className="font-medium">Cheerleader</div>
-                  <div className="text-muted-foreground">Can view progress and celebrate wins</div>
+                  <div className="font-medium">Viewer</div>
+                  <div className="text-muted-foreground">Can only see goals and progress</div>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t">
+                <div className="text-xs font-medium text-muted-foreground mb-2">ROLE TYPES:</div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div><span className="font-medium">Supporter:</span> Family/Coach</div>
+                  <div><span className="font-medium">Friend:</span> Peer support</div>
+                  <div><span className="font-medium">Provider:</span> Professional</div>
+                  <div><span className="font-medium">Admin:</span> Full access</div>
                 </div>
               </div>
             </CardContent>

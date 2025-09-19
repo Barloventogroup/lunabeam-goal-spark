@@ -83,30 +83,29 @@ export const TabFriends: React.FC = () => {
   const primaryCircle = familyCircles[0]; // For MVP, focus on first circle
 
   const mockMembers = [
-    { id: '1', name: 'You', role: 'Admin', category: 'family', avatar: '👤', isOwner: true },
-    { id: '2', name: 'Mom', role: 'Parent Guide', category: 'family', avatar: '👩', isOwner: false },
-    { id: '3', name: 'Sarah (Coach)', role: 'Coach', category: 'providers', avatar: '👩‍🏫', isOwner: false },
-    { id: '4', name: 'Alex', role: 'Friend', category: 'friends', avatar: '👨', isOwner: false },
-    { id: '5', name: 'Dr. Smith', role: 'Therapist', category: 'providers', avatar: '👨‍⚕️', isOwner: false },
+    { id: '1', name: 'You', role: 'admin', permission: 'admin', category: 'family', avatar: '👤', isOwner: true },
+    { id: '2', name: 'Mom', role: 'supporter', permission: 'collaborator', category: 'family', avatar: '👩', isOwner: false },
+    { id: '3', name: 'Sarah (Coach)', role: 'supporter', permission: 'viewer', category: 'providers', avatar: '👩‍🏫', isOwner: false },
+    { id: '4', name: 'Alex', role: 'friend', permission: 'viewer', category: 'friends', avatar: '👨', isOwner: false },
+    { id: '5', name: 'Dr. Smith', role: 'provider', permission: 'collaborator', category: 'providers', avatar: '👨‍⚕️', isOwner: false },
   ];
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'Admin': return <Crown className="h-4 w-4 text-yellow-500" />;
-      case 'Edit': return <Edit3 className="h-4 w-4 text-green-500" />;
-      case 'Comment': return <MessageSquare className="h-4 w-4 text-blue-500" />;
-      case 'View': return <Eye className="h-4 w-4 text-gray-500" />;
+      case 'admin': return <Crown className="h-4 w-4 text-yellow-500" />;
+      case 'supporter': return <Users className="h-4 w-4 text-purple-500" />;
+      case 'friend': return <MessageSquare className="h-4 w-4 text-blue-500" />;
+      case 'provider': return <Edit3 className="h-4 w-4 text-green-500" />;
       default: return <Users className="h-4 w-4" />;
     }
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'Admin': return 'bg-yellow-500/10 text-yellow-700 border-yellow-200';
-      case 'Parent Guide': return 'bg-purple-500/10 text-purple-700 border-purple-200';
-      case 'Coach': return 'bg-green-500/10 text-green-700 border-green-200';
-      case 'Friend': return 'bg-blue-500/10 text-blue-700 border-blue-200';
-      case 'Therapist': return 'bg-red-500/10 text-red-700 border-red-200';
+      case 'admin': return 'bg-yellow-500/10 text-yellow-700 border-yellow-200';
+      case 'supporter': return 'bg-purple-500/10 text-purple-700 border-purple-200';
+      case 'friend': return 'bg-blue-500/10 text-blue-700 border-blue-200';
+      case 'provider': return 'bg-green-500/10 text-green-700 border-green-200';
       default: return 'bg-gray-500/10 text-gray-700 border-gray-200';
     }
   };
