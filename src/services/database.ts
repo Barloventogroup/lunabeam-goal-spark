@@ -48,7 +48,7 @@ export const database = {
         challenges: profile.challenges,
         comm_pref: profile.comm_pref,
         onboarding_complete: profile.onboarding_complete ?? false
-      });
+      }, { onConflict: 'user_id' });
     
     if (error) throw error;
   },
