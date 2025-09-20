@@ -308,6 +308,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
                       isBefore(date, minDate) || (maxDate && isAfter(date, maxDate))
                     }
                     initialFocus
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
