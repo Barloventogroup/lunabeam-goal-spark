@@ -299,7 +299,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
                     {selectedDate ? format(selectedDate, 'MMM dd, yyyy') : 'Pick date'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 pointer-events-auto">
+                <PopoverContent className="w-auto p-0 bg-white dark:bg-gray-800 border shadow-lg pointer-events-auto">
                   <Calendar
                     mode="single"
                     selected={selectedDate}

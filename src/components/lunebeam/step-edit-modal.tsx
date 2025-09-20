@@ -162,7 +162,7 @@ export const StepEditModal: React.FC<StepEditModalProps> = ({
                   {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-background border-border pointer-events-auto" align="start">
+              <PopoverContent className="w-auto p-0 bg-white dark:bg-gray-800 border shadow-lg pointer-events-auto" align="start">
                 <CalendarComponent
                   mode="single"
                   selected={dueDate}
