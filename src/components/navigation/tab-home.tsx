@@ -35,6 +35,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const [currentView, setCurrentView] = useState<HomeView>('dashboard');
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [goalsLoaded, setGoalsLoaded] = useState(false);
 
   const { user } = useAuth();
   const {
@@ -69,17 +71,27 @@ export const TabHome: React.FC<TabHomeProps> = ({
   }, [loadGoals, loadPoints, loadSteps, goals]);
 
   useEffect(() => {
-    console.log('TabHome mounted - loading data');
-    loadProfile();
-    loadGoals();
-    loadPoints();
-    // Load steps for all active goals to ensure dashboard has fresh data
+    let isMounted = true;
+    (async () => {
+      console.log('TabHome mounted - loading data');
+      await Promise.allSettled([loadProfile(), loadGoals(), loadPoints()]);
+      if (!isMounted) return;
+      setProfileLoaded(true);
+      setGoalsLoaded(true);
+      // Steps will be loaded once goals are available in a separate effect
+    })();
+    return () => { isMounted = false; };
+  }, [loadProfile, loadGoals, loadPoints]);
+
+  // After goals load, fetch steps for active/planned goals to avoid UI flash and ensure freshness
+  useEffect(() => {
+    if (!goalsLoaded) return;
     goals.forEach(goal => {
       if (goal.status === 'active' || goal.status === 'planned') {
         loadSteps(goal.id);
       }
     });
-  }, [loadProfile, loadGoals, loadPoints, loadSteps]);
+  }, [goalsLoaded, goals, loadSteps]);
 
   // Refresh data when component becomes visible
   useEffect(() => {
@@ -112,6 +124,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
   // Active goals from store
   const activeGoals = goals.filter(goal => goal.status === 'active' || goal.status === 'planned');
+  const isFirstTime = goalsLoaded && activeGoals.length === 0;
   
   // Determine the correct name to display in greeting (synchronously to avoid flash)
   const getDisplayName = () => {
@@ -272,7 +285,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
           </div>
 
           {/* First Time User Reminder */}
-          {activeGoals.length === 0 && (
+          {isFirstTime && (
             <FirstTimeReminder onNavigateToGoals={() => setCurrentView('add-goal')} />
           )}
 
