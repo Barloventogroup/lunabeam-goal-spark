@@ -9,8 +9,10 @@ import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useStore } from '@/store/useStore';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ParentOnboardingData {
+  adminName: string; // Admin's own name
   preferredName: string;
   pronouns: string;
   age: string;
@@ -56,6 +58,7 @@ const SUGGESTIONS = [
 export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<ParentOnboardingData>({
+    adminName: '',
     preferredName: '',
     pronouns: '',
     age: '',
@@ -75,7 +78,7 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
   const [generatedProfile, setGeneratedProfile] = useState('');
   const { completeOnboarding, setProfile } = useStore();
 
-  const totalSteps = 8;
+  const totalSteps = 9;
 
   // Get pronouns for display
   const getDisplayPronouns = () => {
@@ -177,6 +180,18 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
     };
 
     try {
+      // Save admin's name to auth metadata first
+      if (data.adminName.trim()) {
+        try {
+          await supabase.auth.updateUser({
+            data: { first_name: data.adminName.trim() }
+          });
+          console.log('Admin name saved to auth metadata:', data.adminName);
+        } catch (metaError) {
+          console.warn('Failed to save admin name to metadata:', metaError);
+        }
+      }
+
       // Update local store first to ensure UI reflects the change immediately
       useStore.setState({ profile: localProfile });
       
@@ -275,8 +290,35 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
         <Card className="shadow-card border-0">
           <CardContent className="p-6">
             
-            {/* Step 1: Introduction */}
+            {/* Step 1: Admin Name */}
             {currentStep === 1 && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-white text-xl">👋</span>
+                  </div>
+                  <h2 className="text-xl font-semibold mb-4">What should I call you?</h2>
+                  <p className="text-foreground-soft leading-relaxed mb-6">
+                    First, let me know your name so I can greet you properly!
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="adminName" className="text-sm font-medium">Your name</Label>
+                    <Input
+                      id="adminName"
+                      placeholder="Enter your name"
+                      value={data.adminName}
+                      onChange={(e) => setData(prev => ({ ...prev, adminName: e.target.value }))}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Introduction */}
+            {currentStep === 2 && (
               <div className="space-y-6 text-center">
                 <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-white text-xl">👨‍👩‍👧‍👦</span>
@@ -290,8 +332,8 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
               </div>
             )}
 
-            {/* Step 2: Name and Pronouns */}
-            {currentStep === 2 && (
+            {/* Step 3: Name and Pronouns */}
+            {currentStep === 3 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-2">What should we call them?</h2>
@@ -340,8 +382,8 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
               </div>
             )}
 
-            {/* Step 3: Age */}
-            {currentStep === 3 && (
+            {/* Step 4: Age */}
+            {currentStep === 4 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-4">How old are they?</h2>
@@ -361,8 +403,8 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
               </div>
             )}
 
-            {/* Step 4: Strengths */}
-            {currentStep === 4 && (
+            {/* Step 5: Strengths */}
+            {currentStep === 5 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-2">What are 2–3 things they're great at?</h2>
@@ -386,8 +428,8 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
               </div>
             )}
 
-            {/* Step 5: Interests */}
-            {currentStep === 5 && (
+            {/* Step 6: Interests */}
+            {currentStep === 6 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-2">Pick a few interests to explore</h2>
@@ -414,8 +456,8 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
               </div>
             )}
 
-            {/* Step 6: Work Style */}
-            {currentStep === 6 && (
+            {/* Step 7: Work Style */}
+            {currentStep === 7 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-4">How do they usually like to do things?</h2>
@@ -533,8 +575,8 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
               </div>
             )}
 
-            {/* Step 7: Next Two Weeks */}
-            {currentStep === 7 && (
+            {/* Step 8: Next Two Weeks */}
+            {currentStep === 8 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-2">One small thing they might try in the next two weeks</h2>
@@ -565,8 +607,8 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
               </div>
             )}
 
-            {/* Step 8: Sharing and Support */}
-            {currentStep === 8 && (
+            {/* Step 9: Sharing and Support */}
+            {currentStep === 9 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-4">Sharing and support</h2>
