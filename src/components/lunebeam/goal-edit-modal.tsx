@@ -154,7 +154,7 @@ export const GoalEditModal: React.FC<GoalEditModalProps> = ({
                   {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-background border-border" align="start">
+              <PopoverContent className="w-auto p-0 bg-background border-border pointer-events-auto" align="start">
                 <CalendarComponent
                   mode="single"
                   selected={dueDate}

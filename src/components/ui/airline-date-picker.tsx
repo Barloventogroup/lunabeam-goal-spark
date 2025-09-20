@@ -156,7 +156,7 @@ export function AirlineDatePicker({
                 <CalendarIcon className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-background border border-border" align="start">
+            <PopoverContent className="w-auto p-0 bg-background border border-border pointer-events-auto" align="start">
               <Calendar
                 mode="single"
                 selected={dateRange?.from}
@@ -194,7 +194,7 @@ export function AirlineDatePicker({
                 <CalendarIcon className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-background border border-border" align="start">
+            <PopoverContent className="w-auto p-0 bg-background border border-border pointer-events-auto" align="start">
               <Calendar
                 mode="single"
                 selected={dateRange?.to}
