@@ -167,8 +167,8 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
           case 'employment': return 'work';
           case 'health': return 'health';
           case 'independent_living': return 'life';
-          case 'social_skills': return 'social_skills';
-          case 'fun_recreation': return 'fun_recreation';
+          case 'social_skills': return 'life'; // Map social skills to life domain
+          case 'fun_recreation': return 'life'; // Map fun/recreation to life domain
           default: return 'life';
         }
       };
@@ -177,8 +177,8 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
         const titleLower = goalTitle.toLowerCase();
         if (titleLower.includes('water')) return 'health';
         if (titleLower.includes('bed')) return 'life';
-        if (titleLower.includes('hi')) return 'social_skills';
-        if (titleLower.includes('music')) return 'fun_recreation';
+        if (titleLower.includes('hi')) return 'life'; // Map social to life domain
+        if (titleLower.includes('music')) return 'life'; // Map recreation to life domain
         return 'life';
       };
 

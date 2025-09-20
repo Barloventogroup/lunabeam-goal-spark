@@ -505,9 +505,9 @@ Example:
     if (t.includes('employment')) return 'work';
     if (t.includes('health')) return 'health';
     if (t.includes('independent living')) return 'life';
-    if (t.includes('social')) return 'social_skills'; // Social Skills as separate domain
+    if (t.includes('social')) return 'life'; // Map social skills to life domain
     if (t.includes('postsecondary')) return 'school'; // aligns with education domain in legacy UI
-    if (t.includes('fun') || t.includes('recreation')) return 'fun_recreation'; // Fun/Recreation as separate domain
+    if (t.includes('fun') || t.includes('recreation')) return 'life'; // Map fun/recreation to life domain
     return 'life'; // default fallback
   };
 
@@ -515,8 +515,8 @@ Example:
     switch (goalId) {
       case 'drink-water': return 'health';
       case 'make-bed': return 'life';
-      case 'say-hi': return 'social_skills';
-      case 'listen-music': return 'fun_recreation';
+      case 'say-hi': return 'life'; // Map social goals to life domain
+      case 'listen-music': return 'life'; // Map recreation goals to life domain
       default: return 'life';
     }
   };
