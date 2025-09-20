@@ -16,6 +16,7 @@ import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
 import { useStore } from '../../store/useStore';
 import { supabase } from '../../integrations/supabase/client';
+import { useAuth } from '../auth/auth-provider';
 import { goalsService, stepsService } from '../../services/goalsService';
 import { normalizeDomainForDisplay } from '../../utils/domainUtils';
 import type { Goal } from '../../types';
@@ -35,6 +36,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
 
+  const { user } = useAuth();
   const {
     profile,
     loadProfile,
@@ -111,27 +113,21 @@ export const TabHome: React.FC<TabHomeProps> = ({
   // Active goals from store
   const activeGoals = goals.filter(goal => goal.status === 'active' || goal.status === 'planned');
   
-  // Determine the correct name to display in greeting
-  const getDisplayName = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.user_metadata?.first_name) {
-        // Admin's name from auth metadata
-        return user.user_metadata.first_name.charAt(0).toUpperCase() + user.user_metadata.first_name.slice(1);
-      }
-      // Fallback to profile name (individual's name)
-      return profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'there';
-    } catch {
-      return profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'there';
+  // Determine the correct name to display in greeting (synchronously to avoid flash)
+  const getDisplayName = () => {
+    // If user has first_name in metadata, use it (admin's name)
+    if (user?.user_metadata?.first_name) {
+      const adminName = user.user_metadata.first_name.toString().trim();
+      return adminName.charAt(0).toUpperCase() + adminName.slice(1);
     }
+    // Fallback to profile name (individual's name)
+    if (profile?.first_name) {
+      return profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1);
+    }
+    return 'there';
   };
   
-  const [displayName, setDisplayName] = React.useState(profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'there');
-  
-  React.useEffect(() => {
-    getDisplayName().then(setDisplayName);
-  }, [profile]);
-  
+  const displayName = getDisplayName();
   const mockPoints = 247; // Placeholder points to match Rewards screen
 
   // Compute today's due step, overdue steps and next upcoming steps
