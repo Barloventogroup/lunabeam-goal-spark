@@ -75,7 +75,7 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
   const [generatedProfile, setGeneratedProfile] = useState('');
   const { completeOnboarding, setProfile } = useStore();
 
-  const totalSteps = 9;
+  const totalSteps = 8;
 
   // Get pronouns for display
   const getDisplayPronouns = () => {
@@ -584,40 +584,20 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
               </div>
             )}
 
-            {/* Step 9: Review */}
-            {currentStep === 9 && (
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-4">Ready to create their profile?</h2>
-                  <div className="bg-card-soft rounded-lg p-4 text-left">
-                    <div className="space-y-2 text-sm">
-                      <p><strong>Name:</strong> {data.preferredName || 'Not provided'}</p>
-                      <p><strong>Pronouns:</strong> {data.pronouns === 'Custom' ? customPronouns : data.pronouns || 'Not selected'}</p>
-                      <p><strong>Age:</strong> {data.age || 'Not provided'}</p>
-                      <p><strong>Strengths:</strong> {data.strengths.join(', ') || 'None selected'}</p>
-                      <p><strong>Interests:</strong> {data.interests.join(', ') || 'None selected'}</p>
-                      {data.nextTwoWeeks && (
-                        <p><strong>Next step:</strong> {data.nextTwoWeeks}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Navigation */}
             <div className="flex justify-between items-center pt-6">
-              {currentStep > 1 && currentStep < 9 && (
+              {currentStep > 1 && (
                 <BackButton variant="minimal" onClick={handleBack} />
               )}
               <div className="flex gap-2 ml-auto">
-                {currentStep < 9 && (
+                {currentStep < totalSteps && (
                   <Button variant="outline" onClick={handleSkip}>
                     Skip
                   </Button>
                 )}
                 <Button onClick={handleNext}>
-                  {currentStep === 9 ? 'Create Profile' : 'Next'}
+                  {currentStep === totalSteps ? 'Create Profile' : 'Next'}
                 </Button>
               </div>
             </div>
