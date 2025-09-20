@@ -39,7 +39,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
         onWizardStateChange?.(false);
         break;
       case 'create-goal':
-        setCurrentView('create-wizard');
+        setCurrentView('wizard');
         onWizardStateChange?.(true);
         break;
       case 'view-proposals':
