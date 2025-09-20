@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { AirlineDatePicker } from '@/components/ui/airline-date-picker';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { ArrowLeft, X, Sparkles, Mic, Volume2, Users, MessageSquare, Send, CalendarIcon, AlertTriangle } from 'lucide-react';
 import { GOALS_WIZARD_DATA, FALLBACK_OPTION, STARTER_GOALS, Category, CategoryGoal, GoalOption } from '@/data/goals-wizard-data';
 import { useToast } from '@/hooks/use-toast';
@@ -770,7 +771,7 @@ Example:
             <div className="max-w-md mx-auto space-y-6">
               <div className="space-y-4">
                 <label className="text-sm font-medium text-muted-foreground">Select your goal timeline</label>
-                <AirlineDatePicker
+                <DateRangePicker
                   dateRange={{
                     from: state.startDate,
                     to: state.dueDate
@@ -778,14 +779,11 @@ Example:
                   onDateRangeChange={(dateRange) => {
                     setState(prev => ({
                       ...prev,
-                      startDate: dateRange?.from || new Date(),
-                      dueDate: dateRange?.to || undefined
+                      startDate: dateRange?.from,
+                      dueDate: dateRange?.to
                     }));
                   }}
-                  placeholder={{
-                    start: "Start date",
-                    end: "End date"
-                  }}
+                  placeholder="Pick start and end dates"
                   className="w-full"
                 />
               </div>
