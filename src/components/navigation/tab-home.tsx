@@ -262,11 +262,13 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {/* Welcome Message */}
           <div>
             <h2 className="text-2xl font-bold mb-1">
-              {activeGoals.length === 0 ? `Welcome ${displayName}!` : `Welcome back, ${displayName}!`}
+              {activeGoals.length === 0 ? `Welcome! 💜` : `Welcome back, ${displayName}!`}
             </h2>
-            {activeGoals.length === 0 ? <p className="text-muted-foreground">
-                👋 Hey {displayName}! Welcome aboard. Let's kick things off by setting your very first goal (see that big plus sign in the blue circle — that is where you start). And remember, big or small, every step counts.
-              </p> : <p className="text-muted-foreground">Let's keep moving forward, one step at a time.</p>}
+            {activeGoals.length === 0 ? <div className="text-muted-foreground space-y-2">
+                <p>You've created this account to support someone important in your life. As the Admin, you can help set goals, follow progress, and invite others such as friends, providers, or coaches to be part of the team.</p>
+                <p>This space is here to make collaboration easy and encouraging. Together we'll turn small steps into big milestones.</p>
+                <p>✨ Let's get started by setting up the first goal.</p>
+              </div> : <p className="text-muted-foreground">Let's keep moving forward, one step at a time.</p>}
           </div>
 
           {/* First Time User Reminder */}
