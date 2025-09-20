@@ -177,15 +177,36 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
     };
 
     try {
+      // Update local store first to ensure UI reflects the change immediately
+      useStore.setState({ profile: localProfile });
+      
       // Try to persist to Supabase via store actions
       await setProfile({ ...localProfile, onboarding_complete: true });
       await completeOnboarding();
-    } catch (error) {
-      console.warn('Falling back to local profile only (no auth?):', error);
-    } finally {
-      // Ensure app state reflects completion no matter what
-      useStore.setState({ profile: localProfile });
+      
+      console.log('Profile created successfully, navigating to dashboard');
       onComplete();
+    } catch (error) {
+      console.error('Profile creation failed:', error);
+      
+      // For 409 errors (conflict), it might mean the profile already exists
+      // Try to just update the onboarding completion status
+      if (error?.message?.includes('409') || error?.code === '23505') {
+        try {
+          await completeOnboarding();
+          console.log('Onboarding marked complete despite profile conflict, navigating to dashboard');
+          onComplete();
+        } catch (completionError) {
+          console.error('Even completion failed:', completionError);
+          // Ensure local state is set even if DB operations fail
+          useStore.setState({ profile: localProfile });
+          onComplete();
+        }
+      } else {
+        // For other errors, still proceed but log the issue
+        console.warn('Profile save failed but proceeding with local state:', error);
+        onComplete();
+      }
     }
   };
 
