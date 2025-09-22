@@ -992,7 +992,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             key={context.id}
             variant={data.supportContext === context.id ? 'default' : 'outline'}
             className="w-full h-auto p-4 justify-start"
-            onClick={() => updateData({ supportContext: context.id })}
+            onClick={() => {
+              updateData({ supportContext: context.id });
+              // Navigate to final confirmation step
+              setCurrentStep(isSupporter ? 8 : 7);
+            }}
           >
             <div className="text-left">
               <div className="font-semibold">{context.label}</div>
@@ -1074,53 +1078,100 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="h-8 w-8 text-green-600" />
           </div>
-          <CardTitle className="text-2xl">
-            {isProposal ? 'Review & Submit Proposal' : 'Review & Create Goal'}
-          </CardTitle>
+          <CardTitle className="text-2xl">Confirm</CardTitle>
           <p className="text-muted-foreground">
             {isProposal 
               ? `This will be sent to ${data.supportedPersonName}'s admins for approval`
-              : 'Everything looks good! Ready to start?'
+              : 'Ready to start your goal?'
             }
           </p>
         </CardHeader>
         
-        <CardContent className="space-y-4">
-          <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Goal:</span>
-              <span className="text-sm text-right flex-1 ml-4">{data.goalTitle}</span>
-            </div>
-            
-            {data.category && (
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">Category:</span>
-                <Badge variant="secondary">
-                  {categories.find(c => c.id === data.category)?.emoji} {categories.find(c => c.id === data.category)?.title}
-                </Badge>
+        <CardContent className="space-y-6">
+          {/* Goal Preview Card */}
+          <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
+            <div className="space-y-3">
+              <div className="flex justify-between items-start">
+                <span className="text-sm font-medium text-foreground">Goal:</span>
+                <span className="text-sm text-right flex-1 ml-4 font-semibold">{data.goalTitle}</span>
               </div>
-            )}
-            
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Frequency:</span>
-              <span className="text-sm">{data.frequency} times per week</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Start:</span>
-              <span className="text-sm">{format(data.startDate, 'MMM d, yyyy')}</span>
-            </div>
-            
-            {data.endDate && (
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">End:</span>
-                <span className="text-sm">{format(data.endDate, 'MMM d, yyyy')}</span>
+              
+              {data.category && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-foreground">Category:</span>
+                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                    {categories.find(c => c.id === data.category)?.emoji} {categories.find(c => c.id === data.category)?.title}
+                  </Badge>
+                </div>
+              )}
+              
+              {data.goalType && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-foreground">Type:</span>
+                  <span className="text-sm text-primary font-medium">
+                    {goalTypes.find(t => t.id === data.goalType)?.label}
+                  </span>
+                </div>
+              )}
+              
+              {data.experienceLevel && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-foreground">Level:</span>
+                  <span className="text-sm text-primary font-medium">
+                    {experienceLevels.find(e => e.id === data.experienceLevel)?.label}
+                  </span>
+                </div>
+              )}
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-foreground">Schedule:</span>
+                <span className="text-sm text-primary font-medium">
+                  {data.frequency} times per week
+                  {data.timeOfDay && data.timeOfDay !== 'custom' && (
+                    <span>, {timesOfDay.find(t => t.id === data.timeOfDay)?.label.toLowerCase()}</span>
+                  )}
+                  {data.timeOfDay === 'custom' && data.customTime && (
+                    <span>, at {data.customTime}</span>
+                  )}
+                </span>
               </div>
-            )}
-            
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Support:</span>
-              <span className="text-sm">{supportContexts.find(s => s.id === data.supportContext)?.label}</span>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-foreground">Timeline:</span>
+                <span className="text-sm text-primary font-medium">
+                  {format(data.startDate, 'MMM d')}
+                  {data.endDate && ` - ${format(data.endDate, 'MMM d, yyyy')}`}
+                  {!data.endDate && ' (ongoing)'}
+                </span>
+              </div>
+              
+              {data.supportContext && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-foreground">Support:</span>
+                  <span className="text-sm text-primary font-medium">
+                    {supportContexts.find(s => s.id === data.supportContext)?.label}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* First Micro-steps Preview */}
+          <div className="space-y-3">
+            <h4 className="font-semibold text-foreground">First steps to get started:</h4>
+            <div className="space-y-2">
+              {[
+                `Set up your ${data.goalTitle.toLowerCase()} space`,
+                `Plan your first session`,
+                `Track your progress`
+              ].map((step, index) => (
+                <div key={index} className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg">
+                  <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-medium text-primary">{index + 1}</span>
+                  </div>
+                  <span className="text-sm text-foreground">{step}</span>
+                </div>
+              ))}
             </div>
           </div>
           
@@ -1132,25 +1183,35 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>
           )}
           
-          <Button 
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-full h-12 text-lg font-semibold"
-          >
-            {loading ? (
-              'Creating...'
-            ) : isProposal ? (
-              <>
-                <Sparkles className="h-5 w-5 mr-2" />
-                Submit Proposal
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-5 w-5 mr-2" />
-                Create Goal
-              </>
-            )}
-          </Button>
+          {/* Actions */}
+          <div className="flex gap-3 pt-4">
+            <Button 
+              variant="outline"
+              onClick={() => setCurrentStep(isSupporter ? 6 : 5)} // Go back to previous step
+              className="flex-1"
+            >
+              Edit
+            </Button>
+            <Button 
+              onClick={handleSubmit}
+              disabled={loading}
+              className="flex-1 h-12 text-lg font-semibold"
+            >
+              {loading ? (
+                'Creating...'
+              ) : isProposal ? (
+                <>
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Confirm Proposal
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Confirm Goal
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
