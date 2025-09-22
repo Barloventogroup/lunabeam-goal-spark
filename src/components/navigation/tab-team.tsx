@@ -550,6 +550,60 @@ export const TabTeam: React.FC = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Individuals you support (provisioned) */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Individuals you support
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {supporters.filter(s => 'memberType' in s && s.memberType === 'individual').length === 0 ? (
+                <p className="text-muted-foreground">No individuals yet</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {supporters.filter(s => 'memberType' in s && s.memberType === 'individual').map((member) => {
+                      const name = member.profile?.first_name || 'Unknown Individual';
+                      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                      return (
+                        <TableRow key={`individual-row-${member.individual_id}`}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar className="w-8 h-8">
+                                <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">{initials}</AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">{name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge('supporter', undefined, (member as any).displayStatus)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') && (
+                              <Button size="sm" variant="ghost" onClick={handleInvite}>
+                                <Mail className="h-4 w-4 mr-2" /> Invite
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+
         </div>
       </div>
 
