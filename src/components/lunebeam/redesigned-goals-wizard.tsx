@@ -496,12 +496,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const mapCategoryToDomain = (categoryId?: string) => {
     const mapping: Record<string, GoalDomain> = {
       'health': 'health',
-      'education': 'education',
-      'employment': 'employment',
-      'independent_living': 'independent_living',
-      'social_skills': 'social_skills',
-      'postsecondary': 'postsecondary',
-      'fun_recreation': 'fun_recreation'
+      'education': 'school', // Map education to school
+      'employment': 'work', // Map employment to work 
+      'independent_living': 'life', // Map independent_living to life
+      'social_skills': 'other', // Map social_skills to other since it's not in constraint
+      'postsecondary': 'education', // Map postsecondary to education
+      'fun_recreation': 'other' // Map fun_recreation to other since it's not in constraint
     };
     return mapping[categoryId || ''] || 'other' as GoalDomain;
   };
