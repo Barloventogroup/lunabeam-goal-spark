@@ -47,7 +47,7 @@ interface RedesignedGoalsWizardProps {
   isSupporter?: boolean;
 }
 
-// Category definitions with icons and explanations
+// Category definitions with icons, explanations, and detailed examples
 const categories = [
   {
     id: 'health',
@@ -55,7 +55,15 @@ const categories = [
     icon: Heart,
     emoji: '🌱',
     description: 'Build healthy habits for mind and body',
-    examples: 'Exercise, sleep better, eat well, manage stress'
+    examples: 'Exercise, sleep better, eat well, manage stress',
+    detailedExamples: [
+      'Walk daily for 30 minutes',
+      'Stretch every morning',
+      'Sleep 8 hours per night',
+      'Drink more water',
+      'Practice meditation',
+      'Eat healthy meals'
+    ]
   },
   {
     id: 'education',
@@ -63,7 +71,15 @@ const categories = [
     icon: GraduationCap,
     emoji: '📘',
     description: 'Academic skills and school success',
-    examples: 'Study habits, homework, test prep, reading'
+    examples: 'Study habits, homework, test prep, reading',
+    detailedExamples: [
+      'Complete homework daily',
+      'Study for 1 hour each evening',
+      'Read 30 minutes before bed',
+      'Take organized notes',
+      'Practice math problems',
+      'Prepare for upcoming tests'
+    ]
   },
   {
     id: 'employment',
@@ -71,7 +87,15 @@ const categories = [
     icon: Briefcase,
     emoji: '💼',
     description: 'Job skills and career preparation',
-    examples: 'Resume, interviews, work skills, networking'
+    examples: 'Resume, interviews, work skills, networking',
+    detailedExamples: [
+      'Update resume weekly',
+      'Practice interview skills',
+      'Learn new software',
+      'Network with professionals',
+      'Apply for jobs daily',
+      'Develop work portfolio'
+    ]
   },
   {
     id: 'independent_living',
@@ -79,7 +103,15 @@ const categories = [
     icon: Home,
     emoji: '🏠',
     description: 'Life skills for independence',
-    examples: 'Cooking, cleaning, budgeting, transportation'
+    examples: 'Cooking, cleaning, budgeting, transportation',
+    detailedExamples: [
+      'Cook a meal from scratch',
+      'Clean room weekly',
+      'Track monthly budget',
+      'Learn public transportation',
+      'Do laundry independently',
+      'Grocery shopping'
+    ]
   },
   {
     id: 'social_skills',
@@ -87,7 +119,15 @@ const categories = [
     icon: MessageSquare,
     emoji: '🗣️',
     description: 'Communication and relationships',
-    examples: 'Making friends, speaking up, teamwork'
+    examples: 'Making friends, speaking up, teamwork',
+    detailedExamples: [
+      'Start conversations with peers',
+      'Practice speaking up in meetings',
+      'Join a social group',
+      'Express needs clearly',
+      'Work on team projects',
+      'Build friendships'
+    ]
   },
   {
     id: 'postsecondary',
@@ -95,7 +135,15 @@ const categories = [
     icon: Building,
     emoji: '🎓',
     description: 'College, trade school, or training prep',
-    examples: 'College apps, study skills, career planning'
+    examples: 'College apps, study skills, career planning',
+    detailedExamples: [
+      'Research college programs',
+      'Complete application essays',
+      'Visit campus tours',
+      'Apply for scholarships',
+      'Develop study strategies',
+      'Plan career path'
+    ]
   },
   {
     id: 'fun_recreation',
@@ -103,7 +151,15 @@ const categories = [
     icon: PartyPopper,
     emoji: '🎉',
     description: 'Hobbies, interests, and enjoyment',
-    examples: 'Sports, music, art, games, social activities'
+    examples: 'Sports, music, art, games, social activities',
+    detailedExamples: [
+      'Play guitar for 30 minutes',
+      'Paint or draw weekly',
+      'Join a sports team',
+      'Play board games with friends',
+      'Learn a new hobby',
+      'Attend social events'
+    ]
   }
 ];
 
@@ -211,6 +267,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [canAssignDirectly, setCanAssignDirectly] = useState(false);
   const [loading, setLoading] = useState(false);
   const [categoryPageIndex, setCategoryPageIndex] = useState(0);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [datePickerType, setDatePickerType] = useState<'start' | 'end'>('start');
   
@@ -342,11 +399,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   
   const handleCategorySelect = (categoryId: string) => {
-    updateData({ category: categoryId });
-    setShowCategoryDialog(false);
-    // Auto-classify if they typed something
-    if (!data.goalTitle.includes(categories.find(c => c.id === categoryId)?.title || '')) {
-      // Could trigger AI classification here if needed
+    if (expandedCategory === categoryId) {
+      // If clicking the same category, either select it or collapse
+      if (data.category === categoryId) {
+        setExpandedCategory(null);
+      } else {
+        updateData({ category: categoryId });
+        setExpandedCategory(null);
+      }
+    } else {
+      // Expand the category to show details
+      setExpandedCategory(categoryId);
     }
   };
   
@@ -568,7 +631,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     key={category.id}
                     className={cn(
                       "cursor-pointer hover:shadow-md transition-all border-2",
-                      data.category === category.id ? "border-primary bg-primary/5" : "border-border"
+                      data.category === category.id ? "border-primary bg-primary/5" : 
+                      expandedCategory === category.id ? "border-primary/50 bg-primary/2" : "border-border"
                     )}
                     onClick={() => handleCategorySelect(category.id)}
                   >
@@ -581,10 +645,57 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           <h3 className="font-semibold text-sm truncate">{category.title}</h3>
                           <p className="text-xs text-muted-foreground line-clamp-2">{category.description}</p>
                         </div>
-                        {data.category === category.id && (
-                          <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                        )}
+                        <div className="flex items-center gap-2">
+                          {data.category === category.id && (
+                            <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                          )}
+                          {expandedCategory === category.id ? (
+                            <ChevronRight className="h-4 w-4 text-primary rotate-90 transition-transform" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform" />
+                          )}
+                        </div>
                       </div>
+                      
+                      {/* Expanded Details */}
+                      {expandedCategory === category.id && (
+                        <div className="mt-3 pt-3 border-t border-border animate-fade-in">
+                          <p className="text-xs font-medium text-foreground mb-2">Goal ideas:</p>
+                          <div className="grid grid-cols-1 gap-1">
+                            {category.detailedExamples.map((example, index) => (
+                              <div
+                                key={index}
+                                className="text-xs text-muted-foreground p-2 bg-muted/30 rounded cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateData({ 
+                                    goalTitle: example,
+                                    category: category.id 
+                                  });
+                                  setExpandedCategory(null);
+                                }}
+                              >
+                                • {example}
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <div className="flex gap-2 mt-3">
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="flex-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateData({ category: category.id });
+                                setExpandedCategory(null);
+                              }}
+                            >
+                              Choose this category
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ));
