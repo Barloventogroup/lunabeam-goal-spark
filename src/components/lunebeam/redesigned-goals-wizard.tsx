@@ -1251,7 +1251,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="flex-1">
             <h1 className="text-xl font-bold">Goals Wizard</h1>
             <p className="text-sm text-muted-foreground">
-              Step {currentStep + 1} of {maxStep}
+              Step {isSupporter ? currentStep + 1 : currentStep} of {maxStep}
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={onCancel}>
