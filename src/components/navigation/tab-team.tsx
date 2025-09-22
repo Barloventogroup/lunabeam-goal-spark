@@ -103,6 +103,7 @@ export const TabTeam: React.FC = () => {
     
     console.log('TabTeam: Loading community data for user:', user.id);
     setLoading(true);
+    
     try {
       // Load supporters of the current user (people who support me)
       console.log('TabTeam: Fetching my supporters...');
@@ -201,7 +202,7 @@ export const TabTeam: React.FC = () => {
               is_provisioner: individual.is_provisioner,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
-              profile: { first_name: 'Unknown Individual' },
+              profile: { first_name: 'Loading...' }, // Will be fetched below
               memberType: 'individual' as const,
               displayStatus,
             } as SupporterWithProfile & { displayStatus: string });
@@ -258,7 +259,28 @@ export const TabTeam: React.FC = () => {
         }
       } else {
         console.log('TabTeam: No created profiles found (empty result)');
-      }
+      
+      // Fetch actual profile data for individuals I support
+      const individualsWithNames = await Promise.all(
+        allMembers.filter(m => m.memberType === 'individual').map(async (member) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, avatar_url')
+            .eq('user_id', member.individual_id)
+            .single();
+          
+          return {
+            ...member,
+            profile: profile || { first_name: 'User' }
+          };
+        })
+      );
+      
+      // Replace individuals in allMembers with ones that have proper profile data
+      const finalMembers = [
+        ...allMembers.filter(m => m.memberType === 'supporter'),
+        ...individualsWithNames
+      ];
 
       // Merge provisioned individuals from account claims as a fallback source
       if (provisionedList && provisionedList.length > 0) {
@@ -288,8 +310,30 @@ export const TabTeam: React.FC = () => {
         }
       }
       
-      console.log('TabTeam: All community members:', allMembers);
-      setSupporters(allMembers);
+      // Fetch actual profile data for individuals I support
+      const individualsWithNames = await Promise.all(
+        allMembers.filter(m => m.memberType === 'individual').map(async (member) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, avatar_url')
+            .eq('user_id', member.individual_id)
+            .single();
+          
+          return {
+            ...member,
+            profile: profile || { first_name: 'User' }
+          };
+        })
+      );
+      
+      // Replace individuals in allMembers with ones that have proper profile data
+      const finalMembers = [
+        ...allMembers.filter(m => m.memberType === 'supporter'),
+        ...individualsWithNames
+      ];
+      
+      console.log('TabTeam: All community members:', finalMembers);
+      setSupporters(finalMembers);
 
       // Keep pending invites list for the table (for invite rows)
       setPendingInvites((invitesData || []).filter((invite: any) => invite.status === 'pending'));
@@ -717,7 +761,7 @@ export const TabTeam: React.FC = () => {
                     {supporters
                       .filter(s => 'memberType' in s && s.memberType === 'individual')
                       .map((member) => {
-                      const name = member.profile?.first_name || 'Unknown Individual';
+                      const name = member.profile?.first_name || 'User';
                       const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
                       return (
                         <TableRow key={`individual-row-${member.individual_id}`}>
