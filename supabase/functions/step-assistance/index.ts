@@ -444,4 +444,5 @@ async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<a
   } catch (error) {
     console.error('Error in checkForSimilarPriorSteps:', error);
     return [];
+  }
 }
