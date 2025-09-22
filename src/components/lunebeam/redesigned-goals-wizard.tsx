@@ -540,7 +540,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="space-y-1">
             <Label>Categories</Label>
             <p className="text-xs text-muted-foreground">
-              Not sure? You can use categories. Categories help organize your goals.
+              Not sure? You can use categories for additional inspiration and to help you organize your goals.
             </p>
           </div>
           
