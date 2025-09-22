@@ -1018,8 +1018,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         return null;
     }
   };
-  const maxStep = isSupporter ? 8 : 7;
-  const isLastStep = currentStep === maxStep - 1;
+  const lastStepIndex = isSupporter ? 8 : 7;
+  const totalSteps = isSupporter ? 9 : 7;
+  const currentStepDisplay = isSupporter ? currentStep + 1 : currentStep;
+  const isLastStep = currentStep === lastStepIndex;
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       <div className="max-w-md mx-auto py-6 space-y-6">
         {/* Header */}
@@ -1030,7 +1032,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="flex-1">
             <h1 className="text-xl font-bold">Goals Wizard</h1>
             <p className="text-sm text-muted-foreground">
-              Step {isSupporter ? currentStep + 1 : currentStep} of {maxStep}
+              Step {currentStepDisplay} of {totalSteps}
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={onCancel}>
@@ -1041,7 +1043,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         {/* Progress Bar */}
         <div className="w-full bg-muted rounded-full h-2">
           <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{
-          width: `${(currentStep + 1) / maxStep * 100}%`
+          width: `${(currentStepDisplay) / totalSteps * 100}%`
         }} />
         </div>
         
