@@ -258,7 +258,10 @@ export const TabHome: React.FC<TabHomeProps> = ({
           
           <div className="flex items-center gap-3">
             {/* LunaPoints Display */}
-            <div className="flex items-center gap-1 bg-muted px-3 py-1.5 rounded-full">
+            <div 
+              className="flex items-center gap-1 bg-muted px-3 py-1.5 rounded-full cursor-pointer hover:bg-muted/80 transition-colors"
+              onClick={() => setCurrentView('rewards')}
+            >
               <Coins className="h-4 w-4 text-yellow-600" />
               <span className="text-sm font-medium">{pointsSummary?.totalPoints || 0}</span>
             </div>
