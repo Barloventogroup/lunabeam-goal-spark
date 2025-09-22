@@ -106,14 +106,14 @@ const handler = async (req: Request): Promise<Response> => {
     // Update profile to reflect claimed status
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .upsert({
-        user_id: userId,
+      .update({
         first_name: firstName,
         onboarding_complete: false,
         comm_pref: 'text',
         account_status: 'user_claimed',
         claimed_at: new Date().toISOString()
-      });
+      })
+      .eq('user_id', userId);
 
     if (profileError) {
       console.error('Failed to update profile:', profileError);
@@ -130,18 +130,27 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Failed to remove provisioner flag:', provisionerError);
     }
 
-    // Generate session for the user
-    const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'magiclink',
-      email: userEmail
+    // Create a session for the user
+    const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.admin.createUser({
+      email: userEmail,
+      password: userPassword,
+      email_confirm: true
     });
 
-    if (sessionError || !sessionData) {
-      console.error('Failed to generate session:', sessionError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Failed to create user session' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (sessionError) {
+      console.error('Failed to create session:', sessionError);
+    }
+
+    // Generate access token for immediate login
+    const { data: tokenData, error: tokenError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'signup',
+      email: userEmail,
+      password: userPassword
+    });
+
+    if (tokenError || !tokenData) {
+      console.error('Failed to generate login token:', tokenError);
+      // Don't fail the entire process, just don't provide session URL
     }
 
     console.log('Successfully claimed account for:', firstName);
@@ -151,7 +160,9 @@ const handler = async (req: Request): Promise<Response> => {
         success: true,
         firstName: firstName,
         userId: userId,
-        sessionUrl: sessionData.properties?.action_link
+        email: userEmail,
+        password: userPassword,
+        sessionUrl: tokenData?.properties?.action_link
       }),
       { 
         status: 200, 

@@ -68,8 +68,32 @@ export function ClaimAccount() {
 
       if (data.success) {
         toast.success(`Welcome ${data.firstName}! Your account has been claimed.`);
-        // Use the session URL if provided, otherwise redirect to home
-        if (data.sessionUrl) {
+        
+        // If we have email and password, sign in directly
+        if (data.email && data.password) {
+          try {
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+              email: data.email,
+              password: data.password
+            });
+            
+            if (signInError) {
+              console.error('Sign in error:', signInError);
+              // Fallback to session URL if available
+              if (data.sessionUrl) {
+                window.location.href = data.sessionUrl;
+              } else {
+                window.location.href = '/';
+              }
+            } else {
+              // Successful sign in, redirect to dashboard
+              window.location.href = '/';
+            }
+          } catch (error) {
+            console.error('Sign in attempt failed:', error);
+            window.location.href = '/';
+          }
+        } else if (data.sessionUrl) {
           window.location.href = data.sessionUrl;
         } else {
           window.location.href = '/';
