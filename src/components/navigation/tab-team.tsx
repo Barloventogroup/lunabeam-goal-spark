@@ -457,36 +457,57 @@ export const TabTeam: React.FC = () => {
   };
 
   const sendInvitationEmail = async (individualId: string, individualName: string, email: string) => {
+    console.group('📧 Sending Invitation Email');
+    console.log('Parameters:', { individualId, individualName, email, currentUserId: user?.id });
+    
     try {
       // Create a proper supporter invite record first
-      const inviteResponse = await PermissionsService.createSupporterInvite({
+      console.log('Step 1: Creating supporter invite...');
+      const inviteData = {
         individual_id: individualId,
         inviter_id: user?.id || '',
         invitee_email: email,
         invitee_name: individualName,
-        role: 'supporter',
-        permission_level: 'viewer',
-        specific_goals: [],
+        role: 'supporter' as const,
+        permission_level: 'viewer' as const,
+        specific_goals: [] as never[],
         message: '',
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-      });
+      };
+      
+      console.log('Invite data being sent:', inviteData);
+      const inviteResponse = await PermissionsService.createSupporterInvite(inviteData);
+      console.log('✅ Invite created:', inviteResponse);
       
       const inviteLink = `${window.location.origin}/invitations?token=${inviteResponse.invite_token}`;
+      console.log('Step 2: Generated invite link:', inviteLink);
       
       // Call the send-invitation-email edge function
+      console.log('Step 3: Sending email via edge function...');
+      const emailPayload = {
+        type: 'supporter',
+        inviteeName: individualName,
+        inviteeEmail: email,
+        inviterName: user?.user_metadata?.first_name || 'Your supporter',
+        inviteLink: inviteLink,
+        roleName: 'supporter',
+        message: `You have been set up as an individual on Lunabeam. Please use this invitation to claim your account and start tracking your goals!`
+      };
+      console.log('Email payload:', emailPayload);
+      
       const { data, error } = await supabase.functions.invoke('send-invitation-email', {
-        body: {
-          type: 'supporter',
-          inviteeName: individualName,
-          inviteeEmail: email,
-          inviterName: user?.user_metadata?.first_name || 'Your supporter',
-          inviteLink: inviteLink,
-          roleName: 'supporter',
-          message: `You have been set up as an individual on Lunabeam. Please use this invitation to claim your account and start tracking your goals!`
-        }
+        body: emailPayload
       });
 
-      if (error) throw error;
+      console.log('Edge function response:', { data, error });
+
+      if (error) {
+        console.error('❌ Edge function error:', error);
+        throw error;
+      }
+
+      console.log('✅ Email sent successfully');
+      console.groupEnd();
 
       toast({
         title: "Invitation Sent",
@@ -495,10 +516,12 @@ export const TabTeam: React.FC = () => {
       
       loadCommunityData(); // Refresh data
     } catch (error) {
-      console.error('Error sending invitation email:', error);
+      console.error('❌ Full error in sendInvitationEmail:', error);
+      console.groupEnd();
+      
       toast({
         title: "Error",
-        description: "Failed to send invitation email. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to send invitation email. Please try again.",
         variant: "destructive"
       });
     }
