@@ -394,7 +394,18 @@ export const useStore = create<AppState>()(
 
           // If it's an auth-related error, don't override state with a fallback profile.
           if (isAuthError) {
-            console.log('Store: Auth error detected while loading profile. Skipping fallback to avoid onboarding loop.');
+            console.log('Store: Auth error detected while loading profile. Initiating safe sign-out.');
+            try {
+              await supabase.auth.signOut();
+            } catch (e) {
+              console.warn('Store: Sign out failed (ignored):', e);
+            }
+            try {
+              localStorage.removeItem('lunebeam-store');
+              localStorage.setItem('force-logout', 'true');
+            } catch (e) {
+              console.warn('Store: Failed to update localStorage during auth error');
+            }
             return;
           }
 
