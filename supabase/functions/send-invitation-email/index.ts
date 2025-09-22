@@ -8,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "onboarding@resend.dev";
+const FROM_EMAIL = "onboarding@resend.dev"; // Use verified Resend domain
 const FROM_NAME = Deno.env.get("RESEND_FROM_NAME") || "Lunabeam Invitations";
 
 interface InvitationEmailRequest {
