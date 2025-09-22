@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useStore } from '@/store/useStore';
 import { AIService } from '@/services/aiService';
+import { X } from 'lucide-react';
 
 interface OnboardingData {
   role: 'individual' | 'parent' | '';
@@ -37,6 +38,7 @@ interface OnboardingData {
 interface StructuredOnboardingProps {
   onComplete: () => void;
   roleData?: { role: 'parent' | 'individual'; isAdmin?: boolean };
+  onExit: () => Promise<void>;
 }
 
 const SUPERPOWERS = [
@@ -60,7 +62,7 @@ const GOAL_HELPERS = [
   'Learn 3 guitar chords', 'Organize one drawer', 'Text a friend'
 ];
 
-export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboardingProps) {
+export function StructuredOnboarding({ onComplete, roleData, onExit }: StructuredOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<OnboardingData>({
     role: roleData?.role || 'individual',
@@ -396,7 +398,17 @@ export function StructuredOnboarding({ onComplete, roleData }: StructuredOnboard
           <Progress value={(currentStep / getTotalSteps()) * 100} className="h-2" />
         </div>
 
-        <Card className="shadow-card border-0 h-[720px]">
+        <Card className="shadow-card border-0 h-[720px] relative">
+          {/* Exit button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onExit}
+            className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-10"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          
           <CardContent className="p-6 h-full flex flex-col">
             <div className="flex-1 overflow-y-auto">
             {/* Step 1: Name & Pronouns */}

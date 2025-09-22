@@ -5,9 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/components/auth/auth-provider';
+import { X } from 'lucide-react';
 
 export function OnboardingFlow() {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [roleData, setRoleData] = useState<{ role: 'parent' | 'individual' | ''; isAdmin?: boolean }>({ role: '' });
   const [showRoleSelection, setShowRoleSelection] = useState(true);
   const [showInterstitial, setShowInterstitial] = useState(false);
@@ -28,12 +31,33 @@ export function OnboardingFlow() {
     navigate('/');
   };
 
+  const handleExit = async () => {
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      // Still navigate to auth even if signOut fails
+      navigate('/auth');
+    }
+  };
+
   // Show interstitial screen
   if (showInterstitial) {
     const isParent = roleData.role === 'parent';
     return (
       <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
-        <div className="max-w-md mx-auto text-center space-y-6">
+        <div className="max-w-md mx-auto text-center space-y-6 relative">
+          {/* Exit button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExit}
+            className="absolute -top-2 -right-2 h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          
           <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto">
             <span className="text-white text-xl">{isParent ? '👨‍👩‍👧‍👦' : '🙋‍♂️'}</span>
           </div>
@@ -62,7 +86,17 @@ export function OnboardingFlow() {
   if (showRoleSelection) {
     return (
       <div className="min-h-screen p-4 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #E8F0F3 0%, #f0f8fb 100%)' }}>
-        <Card className="w-full max-w-md shadow-card border-0">
+        <Card className="w-full max-w-md shadow-card border-0 relative">
+          {/* Exit button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExit}
+            className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-10"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          
           <CardHeader className="text-left">
             <CardTitle className="text-2xl">Welcome to lunabeam!</CardTitle>
             <p className="text-black">
@@ -122,5 +156,5 @@ export function OnboardingFlow() {
     );
   }
 
-  return <OnboardingConversation roleData={roleData as { role: 'parent' | 'individual'; isAdmin?: boolean }} onComplete={handleOnboardingComplete} />;
+  return <OnboardingConversation roleData={roleData as { role: 'parent' | 'individual'; isAdmin?: boolean }} onComplete={handleOnboardingComplete} onExit={handleExit} />;
 }

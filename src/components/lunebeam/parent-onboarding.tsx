@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
+import { X } from 'lucide-react';
 
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
@@ -30,6 +31,7 @@ interface ParentOnboardingData {
 
 interface ParentOnboardingProps {
   onComplete: () => void;
+  onExit: () => Promise<void>;
 }
 
 const PRONOUNS_OPTIONS = [
@@ -55,7 +57,7 @@ const SUGGESTIONS = [
   'Join a club', 'Cook a new dish', 'Short daily walk', 'Visit the library'
 ];
 
-export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
+export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<ParentOnboardingData>({
     adminName: '',
@@ -287,7 +289,17 @@ export function ParentOnboarding({ onComplete }: ParentOnboardingProps) {
           <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
         </div>
 
-        <Card className="shadow-card border-0">
+        <Card className="shadow-card border-0 relative">
+          {/* Exit button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onExit}
+            className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-10"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          
           <CardContent className="p-6">
             
             {/* Step 1: Admin Name */}

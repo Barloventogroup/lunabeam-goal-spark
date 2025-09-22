@@ -5,14 +5,15 @@ import { ParentOnboarding } from './parent-onboarding';
 interface OnboardingConversationProps {
   roleData: { role: 'parent' | 'individual'; isAdmin?: boolean };
   onComplete: () => void;
+  onExit: () => Promise<void>;
 }
 
-export function OnboardingConversation({ roleData, onComplete }: OnboardingConversationProps) {
+export function OnboardingConversation({ roleData, onComplete, onExit }: OnboardingConversationProps) {
   // Use parent-specific onboarding flow for parents with dual profile setup
   if (roleData.role === 'parent') {
-    return <ParentOnboarding onComplete={onComplete} />;
+    return <ParentOnboarding onComplete={onComplete} onExit={onExit} />;
   }
   
   // Use regular onboarding for individuals
-  return <StructuredOnboarding onComplete={onComplete} roleData={roleData} />;
+  return <StructuredOnboarding onComplete={onComplete} roleData={roleData} onExit={onExit} />;
 }
