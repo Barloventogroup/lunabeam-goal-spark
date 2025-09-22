@@ -59,156 +59,56 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get email from individual profile or generate one
-    let userEmail;
+    const userId = claimRecord.individual_id; // Use the SAME user ID throughout
+    console.log('Setting password for existing user:', userId, 'name:', claimRecord.first_name || 'User');
+
+    // Get user's email from profile
     const { data: profileData } = await supabaseAdmin
       .from('profiles')
-      .select('email')
-      .eq('user_id', claimRecord.individual_id)
+      .select('email, first_name')
+      .eq('user_id', userId)
       .single();
-    
-    if (profileData?.email) {
-      userEmail = profileData.email;
-    } else {
-      // Generate email if none exists
-      const firstName = claimRecord.first_name || 'User';
-      userEmail = `${firstName.toLowerCase().replace(/\s+/g, '')}+${claimToken.slice(0, 8)}@temp.lunabeam.com`;
+
+    if (!profileData) {
+      console.error('No profile found for user:', userId);
+      return new Response(
+        JSON.stringify({ success: false, error: 'User profile not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    console.log('Creating auth user for:', userEmail);
-
-    // Create auth user
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: userEmail,
-      password: password, // Use the password provided by the user
-      user_metadata: {
-        first_name: claimRecord.first_name || 'User'
-      },
-      email_confirm: true // Auto-confirm email
-    });
-
-    if (authError || !authData.user) {
-      console.error('Auth user creation failed:', authError);
+    const userEmail = profileData.email;
+    if (!userEmail) {
+      console.error('No email found for user:', userId);
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to create user account' }),
+        JSON.stringify({ success: false, error: 'User email not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Update the user's password in auth.users
+    const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
+      userId,
+      { password: password }
+    );
+
+    if (passwordError) {
+      console.error('Failed to update user password:', passwordError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to set password' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const userId = authData.user.id;
-    console.log('Created user with ID:', userId);
-
-    // Update supporter relationships to point to the real user
-    const { error: supporterUpdateError } = await supabaseAdmin
-      .from('supporters')
-      .update({ individual_id: userId })
-      .eq('individual_id', claimRecord.individual_id);
-
-    if (supporterUpdateError) {
-      console.error('Failed to update supporter relationships:', supporterUpdateError);
-    } else {
-      console.log('Migrated supporter relationships from placeholder to real user');
-    }
-
-    // Safety net: fix any reversed relationship that might exist (new user as supporter of provisioner)
-    const { data: reversedRel, error: reversedErr } = await supabaseAdmin
-      .from('supporters')
-      .select('id, permission_level, specific_goals')
-      .eq('supporter_id', userId)
-      .eq('individual_id', claimRecord.provisioner_id)
-      .maybeSingle();
-
-    if (reversedErr) {
-      console.warn('Error checking for reversed relationship:', reversedErr);
-    }
-    if (reversedRel) {
-      console.log('Found reversed relationship, correcting direction');
-      // Ensure correct relationship exists
-      const { data: hasCorrect } = await supabaseAdmin
-        .from('supporters')
-        .select('id')
-        .eq('individual_id', userId)
-        .eq('supporter_id', claimRecord.provisioner_id)
-        .maybeSingle();
-      if (!hasCorrect) {
-        const { error: createCorrectErr } = await supabaseAdmin
-          .from('supporters')
-          .insert({
-            individual_id: userId,
-            supporter_id: claimRecord.provisioner_id,
-            role: 'supporter',
-            permission_level: 'admin',
-            is_admin: true,
-            is_provisioner: false,
-            specific_goals: reversedRel.specific_goals || []
-          });
-        if (createCorrectErr) console.error('Failed to create corrected relationship:', createCorrectErr);
-      }
-      const { error: deleteReversedErr } = await supabaseAdmin
-        .from('supporters')
-        .delete()
-        .eq('id', reversedRel.id);
-      if (deleteReversedErr) {
-        console.error('Failed to delete reversed relationship:', deleteReversedErr);
-      } else {
-        console.log('Deleted reversed relationship successfully');
-      }
-    }
-
-    // If no existing supporter relationships were found to migrate, 
-    // create the basic supporter relationship with the provisioner
-    const { data: existingSupporter } = await supabaseAdmin
-      .from('supporters')
-      .select('id')
-      .eq('individual_id', userId)
-      .limit(1)
-      .maybeSingle();
-    
-    if (!existingSupporter) {
-      console.log('No existing supporter found, creating relationship with provisioner');
-      const { error: createSupporterError } = await supabaseAdmin
-        .from('supporters')
-        .insert({
-          individual_id: userId,
-          supporter_id: claimRecord.provisioner_id,
-          role: 'supporter',
-          permission_level: 'admin',
-          is_admin: true,
-          is_provisioner: false // Remove provisioner flag since account is now claimed
-        });
-      
-      if (createSupporterError) {
-        console.error('Failed to create supporter relationship:', createSupporterError);
-      } else {
-        console.log('Successfully created supporter relationship');
-      }
-    }
-
-    // Update the account claim
-    const { error: claimUpdateError } = await supabaseAdmin
-      .from('account_claims')
-      .update({
-        status: 'accepted',
-        claimed_at: new Date().toISOString(),
-        individual_id: userId
-      })
-      .eq('id', claimRecord.id);
-
-    if (claimUpdateError) {
-      console.error('Failed to update claim status:', claimUpdateError);
-    }
-
-    // Update profile to reflect claimed status
+    // Update profile to authenticated status
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
-        first_name: claimRecord.first_name || 'User',
-        email: userEmail, // Store the email in profile
-        onboarding_complete: true, // Skip onboarding since admin already set up
-        comm_pref: 'text',
-        account_status: 'user_claimed',
+        authentication_status: 'authenticated',
+        password_set: true,
+        account_status: 'active',
         claimed_at: new Date().toISOString(),
-        created_by_supporter: claimRecord.provisioner_id // Keep linkage to the provisioner for admin views
+        onboarding_complete: true
       })
       .eq('user_id', userId);
 
@@ -216,23 +116,25 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Failed to update profile:', profileError);
     }
 
-    // Remove provisioner flag
-    const { error: provisionerError } = await supabaseAdmin
-      .from('supporters')
-      .update({ is_provisioner: false })
-      .eq('individual_id', userId)
-      .eq('supporter_id', claimRecord.provisioner_id);
+    // Update the account claim
+    const { error: claimUpdateError } = await supabaseAdmin
+      .from('account_claims')
+      .update({
+        status: 'accepted',
+        claimed_at: new Date().toISOString()
+      })
+      .eq('id', claimRecord.id);
 
-    if (provisionerError) {
-      console.error('Failed to remove provisioner flag:', provisionerError);
+    if (claimUpdateError) {
+      console.error('Failed to update claim status:', claimUpdateError);
     }
 
-    console.log('Successfully claimed account for:', claimRecord.first_name || 'User');
+    console.log('Successfully set password for user:', claimRecord.first_name || 'User');
 
     return new Response(
       JSON.stringify({
         success: true,
-        firstName: claimRecord.first_name || 'User',
+        firstName: profileData.first_name || claimRecord.first_name || 'User',
         userId: userId,
         email: userEmail
       }),

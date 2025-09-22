@@ -561,6 +561,7 @@ export type Database = {
       profiles: {
         Row: {
           account_status: Database["public"]["Enums"]["account_status"]
+          authentication_status: string | null
           avatar_url: string | null
           challenges: string[] | null
           claimed_at: string | null
@@ -573,12 +574,14 @@ export type Database = {
           id: string
           interests: string[] | null
           onboarding_complete: boolean
+          password_set: boolean | null
           strengths: string[] | null
           updated_at: string
           user_id: string
         }
         Insert: {
           account_status?: Database["public"]["Enums"]["account_status"]
+          authentication_status?: string | null
           avatar_url?: string | null
           challenges?: string[] | null
           claimed_at?: string | null
@@ -591,12 +594,14 @@ export type Database = {
           id?: string
           interests?: string[] | null
           onboarding_complete?: boolean
+          password_set?: boolean | null
           strengths?: string[] | null
           updated_at?: string
           user_id: string
         }
         Update: {
           account_status?: Database["public"]["Enums"]["account_status"]
+          authentication_status?: string | null
           avatar_url?: string | null
           challenges?: string[] | null
           claimed_at?: string | null
@@ -609,6 +614,7 @@ export type Database = {
           id?: string
           interests?: string[] | null
           onboarding_complete?: boolean
+          password_set?: boolean | null
           strengths?: string[] | null
           updated_at?: string
           user_id?: string
