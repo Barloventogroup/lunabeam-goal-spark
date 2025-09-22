@@ -471,14 +471,6 @@ export const TabTeam: React.FC = () => {
                 Manage your support network ({combinedMembers.length} members)
               </p>
             </div>
-            <SimpleInviteModal 
-              trigger={
-                <Button size="sm" className="gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Invite
-                </Button>
-              }
-            />
           </div>
         </div>
 
@@ -527,10 +519,6 @@ export const TabTeam: React.FC = () => {
                   <UserPlus className="h-4 w-4 mr-2" />
                   Add Individual
                 </Button>
-                <Button variant="outline" className="flex-1 min-w-[150px]">
-                  <Users className="h-4 w-4 mr-2" />
-                  Bulk Import
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -567,7 +555,6 @@ export const TabTeam: React.FC = () => {
                   <TableBody>
                     {supporters
                       .filter(s => 'memberType' in s && s.memberType === 'individual')
-                      .filter(s => s.profile?.first_name?.toLowerCase() !== 'nat') // Filter out "nat"
                       .map((member) => {
                       const name = member.profile?.first_name || 'Unknown Individual';
                       const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
