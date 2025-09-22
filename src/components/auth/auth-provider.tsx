@@ -58,9 +58,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('AuthProvider: Initial session check:', session?.user?.email);
+    // Check for existing session with error handling for stale tokens
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('AuthProvider: Initial session check:', session?.user?.email, error);
+      
+      // Handle stale JWT token error
+      if (error?.message?.includes('User from sub claim in JWT does not exist')) {
+        console.log('AuthProvider: Detected stale JWT token, signing out...');
+        supabase.auth.signOut().then(() => {
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+          try {
+            localStorage.removeItem('lunebeam-store');
+            console.log('AuthProvider: Cleared persisted store due to stale token');
+          } catch (e) {
+            console.warn('AuthProvider: Failed to clear persisted store');
+          }
+        });
+        return;
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -73,9 +91,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('AuthProvider: Profile loaded for existing session');
           }).catch((error) => {
             console.error('AuthProvider: Failed to load profile for existing session:', error);
+            // If profile loading fails due to auth issues, try to refresh session
+            if (error?.message?.includes('User from sub claim in JWT does not exist')) {
+              console.log('AuthProvider: Profile load failed with stale token, signing out...');
+              supabase.auth.signOut();
+            }
           });
         }, 0);
       }
+    }).catch((sessionError) => {
+      console.error('AuthProvider: Session check failed:', sessionError);
+      // Handle session errors by clearing everything
+      setSession(null);
+      setUser(null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

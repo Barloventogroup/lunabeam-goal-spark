@@ -177,8 +177,10 @@ export const TabTeam: React.FC = () => {
       if (createdErr) {
         console.error('TabTeam: Error fetching created profiles:', createdErr);
       } else if (createdProfiles) {
+        console.log('TabTeam: Found created profiles:', createdProfiles);
         const existingIndividualIds = new Set(allMembers.filter(m => m.memberType === 'individual').map(m => (m as any).individual_id));
         for (const p of createdProfiles) {
+          console.log('TabTeam: Processing created profile:', p);
           if (!existingIndividualIds.has(p.user_id)) {
             // Determine status from account claims
             let displayStatus: 'Pending' | 'Accepted' | 'Not invited yet' = 'Not invited yet';
@@ -191,6 +193,7 @@ export const TabTeam: React.FC = () => {
             if (claim?.status === 'pending') displayStatus = 'Pending';
             else if (claim?.status === 'accepted') displayStatus = 'Accepted';
 
+            console.log('TabTeam: Adding created profile with status:', displayStatus);
             allMembers.push({
               id: `individual-${p.user_id}`,
               individual_id: p.user_id,
@@ -208,6 +211,8 @@ export const TabTeam: React.FC = () => {
             } as any);
           }
         }
+      } else {
+        console.log('TabTeam: No created profiles found');
       }
       
       console.log('TabTeam: All community members:', allMembers);
