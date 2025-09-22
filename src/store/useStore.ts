@@ -383,6 +383,23 @@ export const useStore = create<AppState>()(
             }
           }
           
+          // Ensure the profile name matches auth metadata; auto-repair if mismatched
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const metaFirst = (user?.user_metadata?.first_name || '').toString().trim();
+            const emailLocal = (user?.email || '').split('@')[0] || '';
+            const desiredFirst = metaFirst || emailLocal || profile.first_name;
+            if (user && desiredFirst && profile.first_name !== desiredFirst) {
+              console.log('Store: Profile name mismatch detected. Repairing...', { from: profile.first_name, to: desiredFirst, userId: user.id });
+              const repaired = { ...profile, first_name: desiredFirst };
+              await database.saveProfile(repaired);
+              set({ profile: repaired });
+              return;
+            }
+          } catch (mismatchErr) {
+            console.warn('Store: Mismatch repair check failed (ignored):', mismatchErr);
+          }
+
           console.log('Store: Setting profile from DB:', profile);
           set({ profile });
         } catch (error) {

@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } catch (e) {
             console.warn('AuthProvider: Failed to clear persisted store on sign in');
           }
-          console.log('AuthProvider: User signed in, loading profile...');
+          console.log('AuthProvider: User signed in, loading profile for user:', session.user.id, session.user.email, session.user.user_metadata);
           setTimeout(() => {
             loadProfile().then(() => {
               console.log('AuthProvider: Profile loaded after sign in');

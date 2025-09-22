@@ -2,6 +2,9 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import type { Profile, SelectedGoal, CheckInEntry, Evidence, Badge, SupporterConsent, FamilyCircle, CircleMembership, CircleInvite, WeeklyCheckin } from '@/types';
 
+// These logs help trace auth scoping and profile reads/writes to avoid cross-account leakage
+console.log('DB module loaded');
+
 type DbProfile = Database['public']['Tables']['profiles']['Row'];
 type DbGoal = Database['public']['Tables']['goals']['Row'];
 type DbCheckIn = Database['public']['Tables']['check_ins']['Row'];

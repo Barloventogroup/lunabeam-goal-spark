@@ -27,7 +27,12 @@ export const TabYou: React.FC = () => {
   const { signOut } = useAuth();
   const [currentView, setCurrentView] = useState<YouView>('profile');
 
+  React.useEffect(() => {
+    console.log('TabYou: Rendering with profile:', profile);
+  }, [profile]);
+
   const handleLogout = () => {
+    console.log('TabYou: Sign out clicked');
     signOut();
   };
 
