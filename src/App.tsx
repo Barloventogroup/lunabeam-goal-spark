@@ -10,6 +10,7 @@ import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import RequestReset from "./pages/RequestReset";
 import { ClaimAccount } from "./pages/ClaimAccount";
+import Logout from "./pages/Logout";
 import { ProtectedRoute } from "./components/auth/protected-route";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/auth/reset" element={<ResetPassword />} />
           <Route path="/auth/request-reset" element={<RequestReset />} />
+          <Route path="/logout" element={<Logout />} />
           <Route path="/claim/:claimToken" element={<ClaimAccount />} />
           <Route path="/" element={
             <ProtectedRoute>
