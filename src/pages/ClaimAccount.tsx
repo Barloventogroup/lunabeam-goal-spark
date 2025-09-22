@@ -75,37 +75,14 @@ export function ClaimAccount() {
       }
 
       if (data.success) {
-        toast.success(`Welcome ${data.firstName}! Your account has been claimed.`);
+        toast.success(`Welcome ${data.firstName}! Your account has been claimed. Please sign in using your password.`);
         
-        // Sign in with the credentials we just created
-        console.log('Attempting sign in with email:', data.email);
-        if (data.email && password) {
-          try {
-            const { error: signInError } = await supabase.auth.signInWithPassword({
-              email: data.email,
-              password: password
-            });
-            
-            console.log('Sign in result:', signInError);
-            
-            if (signInError) {
-              console.error('Sign in error:', signInError);
-              toast.error('Account claimed but sign in failed: ' + signInError.message);
-              navigate(`/auth?email=${encodeURIComponent(data.email)}`);
-            } else {
-              console.log('Sign in successful, redirecting to dashboard');
-              // Successful sign in, redirect to dashboard
-              window.location.href = '/';
-            }
-          } catch (error) {
-            console.error('Sign in attempt failed:', error);
-            toast.error('Account claimed but sign in failed. Please try signing in manually.');
-            navigate(`/auth?email=${encodeURIComponent(data.email)}`);
-          }
+        // Do NOT auto sign-in here to avoid replacing any existing admin session in this browser
+        // Open the sign-in page in a new tab with the email prefilled
+        if (data.email) {
+          window.open(`/auth?email=${encodeURIComponent(data.email)}`, '_blank', 'noopener,noreferrer');
         } else {
-          console.log('Missing email or password for sign in');
-          // Fallback redirect
-          window.location.href = '/';
+          window.open(`/auth`, '_blank', 'noopener,noreferrer');
         }
       } else {
         toast.error(data.error || 'Failed to claim account');

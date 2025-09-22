@@ -160,7 +160,8 @@ const handler = async (req: Request): Promise<Response> => {
         onboarding_complete: true, // Skip onboarding since admin already set up
         comm_pref: 'text',
         account_status: 'user_claimed',
-        claimed_at: new Date().toISOString()
+        claimed_at: new Date().toISOString(),
+        created_by_supporter: claimRecord.provisioner_id // Keep linkage to the provisioner for admin views
       })
       .eq('user_id', userId);
 
