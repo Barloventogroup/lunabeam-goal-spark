@@ -14,6 +14,21 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Make force login available globally for debugging
+declare global {
+  interface Window {
+    forceLogin: () => void;
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.forceLogin = () => {
+    console.log('Forcing login page...');
+    localStorage.setItem('force-logout', 'true');
+    window.location.reload();
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -21,6 +36,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { loadProfile } = useStore();
 
   useEffect(() => {
+    // Force logout and redirect to auth if there are persistent auth issues
+    const forceLogout = () => {
+      console.log('AuthProvider: Forcing logout due to persistent auth issues');
+      supabase.auth.signOut().then(() => {
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+        try {
+          localStorage.removeItem('lunebeam-store');
+          localStorage.clear(); // Clear all localStorage
+          console.log('AuthProvider: Cleared all local storage');
+        } catch (e) {
+          console.warn('AuthProvider: Failed to clear local storage');
+        }
+        // Force redirect to auth page
+        window.location.href = '/auth';
+      });
+    };
+
+    // Check for force logout flag
+    if (localStorage.getItem('force-logout') === 'true') {
+      localStorage.removeItem('force-logout');
+      forceLogout();
+      return;
+    }
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
