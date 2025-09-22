@@ -477,7 +477,8 @@ export const TabTeam: React.FC = () => {
         inviteeEmail: email,
         inviterName: user?.user_metadata?.first_name || 'Your supporter',
         inviteLink: inviteLink,
-        message: `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals.`
+        message: `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals.`,
+        passcode
       };
       console.log('Email payload:', emailPayload);
       

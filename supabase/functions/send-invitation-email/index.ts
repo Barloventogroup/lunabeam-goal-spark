@@ -20,6 +20,7 @@ interface InvitationEmailRequest {
   inviteLink: string;
   roleName?: string;
   circeName?: string;
+  passcode?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -39,9 +40,10 @@ const handler = async (req: Request): Promise<Response> => {
       inviterName,
       message,
       inviteLink,
-      roleName,
-      circeName
-    }: InvitationEmailRequest = await req.json();
+        roleName,
+        circeName,
+        passcode
+      }: InvitationEmailRequest = await req.json();
 
     console.log('📋 Request data:', { type, inviteeName, inviteeEmail, inviterName });
 
@@ -92,6 +94,11 @@ const handler = async (req: Request): Promise<Response> => {
           <p>${greeting}</p>
           <p><strong>${inviterName}</strong> has set up a Lunabeam account for you to help track and achieve your goals!</p>
           ${message ? `<div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;"><p><em>"${message}"</em></p></div>` : ''}
+          <p><strong>Your passcode:</strong></p>
+          <div style="background:#f4f4f4;border:1px solid #eee;border-radius:6px;padding:14px 16px;display:inline-block;font-family:monospace;font-size:18px;letter-spacing:2px;">
+            {{PASSCODE}}
+          </div>
+          <p style="color:#666;font-size:12px;margin-top:6px;">Keep this code safe. You'll enter it on the claim page to verify your identity.</p>
           <p>With your Lunabeam account, you can:</p>
           <ul style="margin: 15px 0; padding-left: 25px;">
             <li>Set and track personal goals</li>
@@ -128,6 +135,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Clean up the name and email for proper formatting
     const cleanedEmail = inviteeEmail.trim();
+
+    // Replace passcode placeholder if provided
+    if (type === 'individual' && typeof htmlContent === 'string') {
+      htmlContent = htmlContent.replace('{{PASSCODE}}', (passcode || '******').toString());
+    }
     
     const { data: sent, error: resendError } = await resend.emails.send({
       from: `${FROM_NAME} <${FROM_EMAIL}>`,
