@@ -28,6 +28,8 @@ import {
 import { useAuth } from '@/components/auth/auth-provider';
 import { PermissionsService, type Supporter } from '@/services/permissionsService';
 import { SimpleInviteModal } from '../lunebeam/simple-invite-modal';
+import { AddCommunityMemberModal } from '../lunebeam/add-community-member-modal';
+import { AddIndividualWizard } from '../lunebeam/add-individual-wizard';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -492,43 +494,22 @@ export const TabTeam: React.FC = () => {
             </Card>
           )}
 
-          {/* Enhanced Invite Section */}
-          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <UserPlus className="h-5 w-5 text-primary" />
-                  Quick Actions
-                </div>
-                <Badge variant="outline" className="bg-primary/10 text-primary">
-                  3 Points Available
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-3">
-                <SimpleInviteModal 
-                  trigger={
-                    <Button className="flex-1 min-w-[150px]">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Send Invite
-                    </Button>
-                  }
-                />
-                <Button variant="outline" className="flex-1 min-w-[150px]">
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Add Individual
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Individuals you support (moved to top) */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                People You Support
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  People You Support
+                </div>
+                <AddIndividualWizard 
+                  trigger={
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <UserPlus className="h-4 w-4" />
+                    </Button>
+                  }
+                  onSuccess={loadCommunityData}
+                />
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -537,10 +518,15 @@ export const TabTeam: React.FC = () => {
                   <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No individuals yet</h3>
                   <p className="text-muted-foreground mb-4">Add people you support to start tracking their goals.</p>
-                  <Button onClick={() => document.getElementById('newIndividual')?.focus()}>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Add Individual
-                  </Button>
+                  <AddIndividualWizard 
+                    trigger={
+                      <Button>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Add Individual
+                      </Button>
+                    }
+                    onSuccess={loadCommunityData}
+                  />
                 </div>
               ) : (
                 <Table>
@@ -581,32 +567,42 @@ export const TabTeam: React.FC = () => {
                             {getStatusBadge('supporter', undefined, (member as any).displayStatus)}
                           </TableCell>
                           <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="bg-background border shadow-lg">
-                                {('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') && (
-                                  <DropdownMenuItem onClick={handleInvite}>
-                                    <Mail className="h-4 w-4 mr-2" />
-                                    Invite
+                            <div className="flex gap-1 justify-end">
+                              <SimpleInviteModal 
+                                trigger={
+                                  <Button variant="outline" size="sm">
+                                    <Mail className="h-4 w-4" />
+                                  </Button>
+                                }
+                              />
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleMemberClick(member as any, 'supporter')}
+                              >
+                                <Edit3 className="h-4 w-4" />
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-background border shadow-lg">
+                                  <DropdownMenuItem onClick={() => handleNudge(member as any)}>
+                                    <Bell className="h-4 w-4 mr-2" />
+                                    Nudge
                                   </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem onClick={() => handleNudge(member as any)}>
-                                  <Bell className="h-4 w-4 mr-2" />
-                                  Nudge
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => handleRemove((member as any).id, 'supporter')}
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  <UserMinus className="h-4 w-4 mr-2" />
-                                  Remove
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleRemove((member as any).id, 'supporter')}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <UserMinus className="h-4 w-4 mr-2" />
+                                    Remove
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -620,27 +616,41 @@ export const TabTeam: React.FC = () => {
           {/* Community Members Table */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Community Members
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Community Members
+                </div>
+                <AddCommunityMemberModal 
+                  trigger={
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <UserPlus className="h-4 w-4" />
+                    </Button>
+                  }
+                  onSuccess={loadCommunityData}
+                />
               </CardTitle>
             </CardHeader>
             <CardContent>
               {combinedMembers.filter(m => {
+                // Community members excludes individuals (they go in People You Support)
+                const isNotIndividual = !(m.type === 'supporter' && 'memberType' in m && m.memberType === 'individual');
                 const name = m.type === 'supporter' ? m.profile?.first_name : m.invitee_name;
-                return name?.toLowerCase() !== 'nat'; // Filter out "nat"
+                const isNotNat = name?.toLowerCase() !== 'nat';
+                return isNotIndividual && isNotNat;
               }).length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No community members yet</h3>
                   <p className="text-muted-foreground mb-4">Start building your support network by inviting people to join.</p>
-                  <SimpleInviteModal 
+                  <AddCommunityMemberModal 
                     trigger={
                       <Button>
                         <UserPlus className="h-4 w-4 mr-2" />
                         Send First Invite
                       </Button>
                     }
+                    onSuccess={loadCommunityData}
                   />
                 </div>
               ) : (
@@ -656,8 +666,11 @@ export const TabTeam: React.FC = () => {
                   <TableBody>
                     {combinedMembers
                       .filter(m => {
+                        // Community members excludes individuals (they go in People You Support)
+                        const isNotIndividual = !(m.type === 'supporter' && 'memberType' in m && m.memberType === 'individual');
                         const name = m.type === 'supporter' ? m.profile?.first_name : m.invitee_name;
-                        return name?.toLowerCase() !== 'nat'; // Filter out "nat"
+                        const isNotNat = name?.toLowerCase() !== 'nat';
+                        return isNotIndividual && isNotNat;
                       })
                       .map((member) => {
                       const name = member.type === 'supporter' 
