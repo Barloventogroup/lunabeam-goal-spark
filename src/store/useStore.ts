@@ -311,7 +311,8 @@ export const useStore = create<AppState>()(
             if (user) {
               // If switching between accounts on the same device, clear cross-user data
               const storedUserId = get().lastUserId;
-              if (storedUserId && storedUserId !== user.id) {
+              const isSameUser = !!storedUserId && storedUserId === user.id;
+              if (storedUserId && !isSameUser) {
                 console.log('Store: Detected user switch. Clearing state to prevent data leakage.');
                 set({
                   profile: null,
@@ -325,18 +326,19 @@ export const useStore = create<AppState>()(
                   lastUserId: user.id,
                 });
               } else if (!storedUserId) {
+                // First time we see a user, remember it, but do not trust existing local profile
                 set({ lastUserId: user.id });
               }
 
               // Re-evaluate local profile after potential reset
               const localProfile = get().profile;
 
-              // Only sync a meaningful local profile if it belongs to the same user
+              // Only sync a meaningful local profile if it belongs to the same user (avoid cross-account leakage)
               if (
+                isSameUser &&
                 localProfile?.first_name &&
                 localProfile.first_name.trim() !== '' &&
-                localProfile.first_name !== 'User' &&
-                get().lastUserId === user.id
+                localProfile.first_name !== 'User'
               ) {
                 console.log('Store: Syncing local profile to DB:', localProfile);
                 await database.saveProfile(localProfile);

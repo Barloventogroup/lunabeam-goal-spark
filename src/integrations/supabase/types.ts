@@ -1167,6 +1167,15 @@ export type Database = {
           status: Database["public"]["Enums"]["invite_status"]
         }[]
       }
+      get_profiles_created_by_me: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          account_status: Database["public"]["Enums"]["account_status"]
+          avatar_url: string
+          first_name: string
+          user_id: string
+        }[]
+      }
       get_user_member_circles: {
         Args: Record<PropertyKey, never>
         Returns: {

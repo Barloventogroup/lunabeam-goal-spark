@@ -171,9 +171,7 @@ export const TabTeam: React.FC = () => {
       // Include profiles I created (on-behalf) even if no supporter relation exists yet
       console.log('TabTeam: Fetching profiles I created (on-behalf)...');
       const { data: createdProfiles, error: createdErr } = await supabase
-        .from('profiles')
-        .select('user_id, first_name, avatar_url, account_status')
-        .eq('created_by_supporter', user.id);
+        .rpc('get_profiles_created_by_me');
       if (createdErr) {
         console.error('TabTeam: Error fetching created profiles:', createdErr);
       } else if (createdProfiles) {
