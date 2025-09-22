@@ -155,8 +155,11 @@ export const TabTeam: React.FC = () => {
       } else {
         console.log('TabTeam: Provisioned individuals (via claims):', provisionedList);
       }
-      // Combine supporters and individuals I support into one list
+      // Track individual IDs to prevent duplicates
+      const seenIndividualIds = new Set<string>();
       const allMembers: SupporterWithProfile[] = [];
+      
+      // Add supporters (people who support me)
       const supportersWithProfiles = await Promise.all(
         supportersData.map(async (supporter) => {
           const { data: profile } = await supabase
@@ -177,41 +180,36 @@ export const TabTeam: React.FC = () => {
       
       // Add individuals I support (people I am a supporter for)
       if (individualsISupport) {
-        const individualsWithProfiles = (individualsISupport as any[]).map((individual) => {
-          // Provisioned individuals default to "Not invited yet" 
-          // They only become "Pending" when an invitation is actually sent
-          // and "Accepted" when they claim their account
-          let displayStatus = 'Not invited yet';
-          
-          // Only check for accepted status if there's a claimed account
-          const claimStatus = claimsMap.get(individual.individual_id);
-          if (claimStatus === 'accepted') {
-            displayStatus = 'Accepted';
+        for (const individual of individualsISupport as any[]) {
+          if (!seenIndividualIds.has(individual.individual_id)) {
+            seenIndividualIds.add(individual.individual_id);
+            
+            let displayStatus = 'Not invited yet';
+            const claimStatus = claimsMap.get(individual.individual_id);
+            if (claimStatus === 'accepted') {
+              displayStatus = 'Accepted';
+            }
+            
+            allMembers.push({
+              id: `individual-${individual.individual_id}`,
+              individual_id: individual.individual_id,
+              supporter_id: user.id,
+              role: 'individual' as any,
+              permission_level: (individual.permission_level as 'viewer' | 'collaborator') || 'viewer',
+              specific_goals: [],
+              is_admin: individual.is_admin,
+              is_provisioner: individual.is_provisioner,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              profile: { first_name: 'Unknown Individual' },
+              memberType: 'individual' as const,
+              displayStatus,
+            } as SupporterWithProfile & { displayStatus: string });
           }
-          // Note: We don't set to "Pending" just because there's an unclaimed provision
-          // "Pending" should only be set when an invite is actually sent
-          
-          return {
-            id: `individual-${individual.individual_id}`,
-            individual_id: individual.individual_id,
-            supporter_id: user.id,
-            role: 'individual' as any,
-            permission_level: (individual.permission_level as 'viewer' | 'collaborator') || 'viewer',
-            specific_goals: [],
-            is_admin: individual.is_admin,
-            is_provisioner: individual.is_provisioner,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            profile: { first_name: 'Unknown Individual' },
-            memberType: 'individual' as const,
-            displayStatus,
-          } as SupporterWithProfile & { displayStatus: string };
-        });
-        
-        allMembers.push(...individualsWithProfiles);
+        }
       }
 
-      // Include profiles I created (on-behalf) even if no supporter relation exists yet
+      // Include profiles I created (on-behalf) - only if not already added
       console.log('TabTeam: Fetching profiles I created (on-behalf)...');
       const { data: createdProfiles, error: createdErr } = await supabase
         .rpc('get_profiles_created_by_me');
@@ -220,12 +218,11 @@ export const TabTeam: React.FC = () => {
         console.error('TabTeam: Error fetching created profiles:', createdErr);
       } else if (createdProfiles && createdProfiles.length > 0) {
         console.log('TabTeam: Found created profiles:', createdProfiles);
-        const existingIndividualIds = new Set(allMembers.filter(m => m.memberType === 'individual').map(m => (m as any).individual_id));
-        console.log('TabTeam: Existing individual IDs:', Array.from(existingIndividualIds));
         for (const p of createdProfiles) {
-          console.log('TabTeam: Processing created profile:', p);
-          if (!existingIndividualIds.has(p.user_id)) {
-            // Determine status - provisioned accounts start as "Not invited yet"
+          if (!seenIndividualIds.has(p.user_id)) {
+            seenIndividualIds.add(p.user_id);
+            console.log('TabTeam: Processing created profile:', p);
+            
             let displayStatus: 'Pending' | 'Accepted' | 'Not invited yet' = 'Not invited yet';
             const { data: claim } = await supabase
               .from('account_claims')
@@ -235,11 +232,9 @@ export const TabTeam: React.FC = () => {
               .maybeSingle();
             
             console.log('TabTeam: Account claim for', p.user_id, ':', claim);
-            // Only show "Accepted" if they've actually claimed their account
             if (claim && claim.status === 'accepted') {
               displayStatus = 'Accepted';
             }
-            // Provisioned accounts remain "Not invited yet" until actually invited
 
             console.log('TabTeam: Adding created profile with status:', displayStatus);
             allMembers.push({
@@ -267,12 +262,11 @@ export const TabTeam: React.FC = () => {
 
       // Merge provisioned individuals from account claims as a fallback source
       if (provisionedList && provisionedList.length > 0) {
-        const existingIndividualIds = new Set(allMembers.filter(m => m.memberType === 'individual').map(m => (m as any).individual_id));
         for (const p of provisionedList as any[]) {
-          if (!existingIndividualIds.has(p.user_id)) {
-            // Provisioned individuals start as "Not invited yet"
+          if (!seenIndividualIds.has(p.user_id)) {
+            seenIndividualIds.add(p.user_id);
+            
             let displayStatus = 'Not invited yet';
-            // Only show "Accepted" if they've actually claimed their account
             if (p.status === 'accepted') displayStatus = 'Accepted';
             
             allMembers.push({
