@@ -172,17 +172,18 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
   };
 
   const handleComplete = async () => {
-    const localProfile = {
-      first_name: data.preferredName || 'User',
-      strengths: data.strengths,
-      interests: data.interests,
+    // For admin/parent flow, create profile with admin's name (not the individual's)
+    const adminProfile = {
+      first_name: data.adminName.trim() || 'Admin',
+      strengths: [],
+      interests: [],
       challenges: [],
       comm_pref: 'text' as const,
       onboarding_complete: true,
     };
 
     try {
-      // Save admin's name to auth metadata first
+      // Save admin's name to auth metadata
       if (data.adminName.trim()) {
         try {
           await supabase.auth.updateUser({
@@ -194,20 +195,19 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
         }
       }
 
-      // Update local store first to ensure UI reflects the change immediately
-      useStore.setState({ profile: localProfile });
+      // Update local store with admin profile (not individual's)
+      useStore.setState({ profile: adminProfile });
       
-      // Try to persist to Supabase via store actions
-      await setProfile({ ...localProfile, onboarding_complete: true });
+      // Persist admin profile to Supabase
+      await setProfile({ ...adminProfile, onboarding_complete: true });
       await completeOnboarding();
       
-      console.log('Profile created successfully, navigating to dashboard');
+      console.log('Admin profile created successfully, navigating to dashboard');
       onComplete();
     } catch (error) {
-      console.error('Profile creation failed:', error);
+      console.error('Admin profile creation failed:', error);
       
       // For 409 errors (conflict), it might mean the profile already exists
-      // Try to just update the onboarding completion status
       if (error?.message?.includes('409') || error?.code === '23505') {
         try {
           await completeOnboarding();
@@ -216,7 +216,7 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
         } catch (completionError) {
           console.error('Even completion failed:', completionError);
           // Ensure local state is set even if DB operations fail
-          useStore.setState({ profile: localProfile });
+          useStore.setState({ profile: adminProfile });
           onComplete();
         }
       } else {
@@ -235,30 +235,19 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
             <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-white text-xl">✨</span>
             </div>
-            <CardTitle className="text-2xl">Starter Profile Summary</CardTitle>
+            <CardTitle className="text-2xl">Your Admin Profile</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="bg-card-soft rounded-lg p-4">
-              <p className="text-foreground-soft leading-relaxed">{generatedProfile}</p>
+              <p className="text-foreground-soft leading-relaxed">
+                {data.adminName ? `Welcome ${data.adminName}! ` : 'Welcome! '}
+                As the admin, you'll be able to manage goals, invite supporters, and track progress for {data.preferredName || 'the person you\'re helping'}.
+              </p>
             </div>
-            
-            {(data.strengths.length > 0 || data.interests.length > 0) && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Tags:</p>
-                <div className="flex flex-wrap gap-1">
-                  {data.strengths.map(strength => (
-                    <Badge key={strength} variant="secondary" className="text-xs">{strength}</Badge>
-                  ))}
-                  {data.interests.map(interest => (
-                    <Badge key={interest} variant="outline" className="text-xs">{interest}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div className="text-center space-y-3">
               <p className="text-sm text-foreground-soft">
-                This helps me suggest goals that fit. You can change it anytime.
+                You can create goals and invite the team later. Ready to get started?
               </p>
               <div className="space-y-2">
                 <Button onClick={handleComplete} className="w-full">
