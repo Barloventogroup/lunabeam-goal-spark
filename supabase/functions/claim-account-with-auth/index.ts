@@ -108,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
       .from('profiles')
       .update({
         first_name: firstName,
-        onboarding_complete: false,
+        onboarding_complete: true, // Skip onboarding since admin already set up
         comm_pref: 'text',
         account_status: 'user_claimed',
         claimed_at: new Date().toISOString()
