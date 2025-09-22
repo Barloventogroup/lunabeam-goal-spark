@@ -444,4 +444,3 @@ async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<a
     return [];
   }
 }
-}
