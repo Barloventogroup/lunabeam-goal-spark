@@ -52,7 +52,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Generate email and password for the user
-    const userEmail = `${claimRecord.first_name.toLowerCase().replace(/\s+/g, '')}+${claimToken.slice(0, 8)}@temp.lunabeam.com`;
+    const firstName = claimRecord.first_name || 'User';
+    const userEmail = `${firstName.toLowerCase().replace(/\s+/g, '')}+${claimToken.slice(0, 8)}@temp.lunabeam.com`;
     const userPassword = `temp_${claimToken.slice(0, 12)}`;
 
     console.log('Creating auth user for:', userEmail);
@@ -62,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
       email: userEmail,
       password: userPassword,
       user_metadata: {
-        first_name: claimRecord.first_name
+        first_name: firstName
       },
       email_confirm: true // Auto-confirm email
     });
@@ -107,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
       .from('profiles')
       .upsert({
         user_id: userId,
-        first_name: claimRecord.first_name,
+        first_name: firstName,
         onboarding_complete: false,
         comm_pref: 'text',
         account_status: 'user_claimed',
@@ -143,12 +144,12 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log('Successfully claimed account for:', claimRecord.first_name);
+    console.log('Successfully claimed account for:', firstName);
 
     return new Response(
       JSON.stringify({
         success: true,
-        firstName: claimRecord.first_name,
+        firstName: firstName,
         userId: userId,
         sessionUrl: sessionData.properties?.action_link
       }),
