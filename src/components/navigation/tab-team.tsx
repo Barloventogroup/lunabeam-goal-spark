@@ -103,14 +103,7 @@ export const TabTeam: React.FC = () => {
       console.log('TabTeam: Fetching individuals I support...');
       const { data: individualsISupport, error: individualsError } = await supabase
         .from('supporters')
-        .select(`
-          individual_id,
-          role,
-          permission_level,
-          is_admin,
-          is_provisioner,
-          profiles!supporters_individual_id_fkey(first_name, avatar_url)
-        `)
+        .select('individual_id, role, permission_level, is_admin, is_provisioner')
         .eq('supporter_id', user.id);
 
       if (individualsError) {
@@ -118,11 +111,20 @@ export const TabTeam: React.FC = () => {
       } else {
         console.log('TabTeam: Individuals I support:', individualsISupport);
       }
-      
+
+      // Fetch account claim statuses for these individuals
+      const individualIds = (individualsISupport || []).map((i: any) => i.individual_id);
+      const claimsMap = new Map<string, 'pending' | 'accepted'>();
+      if (individualIds.length) {
+        const { data: claims } = await supabase
+          .from('account_claims')
+          .select('individual_id, status')
+          .eq('provisioner_id', user.id)
+          .in('individual_id', individualIds);
+        (claims || []).forEach((c: any) => claimsMap.set(c.individual_id, c.status));
+      }
       // Combine supporters and individuals I support into one list
       const allMembers: SupporterWithProfile[] = [];
-      
-      // Add my supporters (people who support me)
       const supportersWithProfiles = await Promise.all(
         supportersData.map(async (supporter) => {
           const { data: profile } = await supabase
@@ -143,9 +145,9 @@ export const TabTeam: React.FC = () => {
       
       // Add individuals I support (people I am a supporter for)
       if (individualsISupport) {
-        const individualsWithProfiles = individualsISupport.map((individual: any) => {
-          const invite = invitesByIndividual.get(individual.individual_id);
-          const displayStatus = invite?.status === 'pending' ? 'Pending' : 'Accepted';
+        const individualsWithProfiles = (individualsISupport as any[]).map((individual) => {
+          const claimStatus = claimsMap.get(individual.individual_id);
+          const displayStatus = claimStatus === 'pending' ? 'Pending' : claimStatus === 'accepted' ? 'Accepted' : 'Not invited yet';
           return {
             id: `individual-${individual.individual_id}`,
             individual_id: individual.individual_id,
@@ -157,7 +159,7 @@ export const TabTeam: React.FC = () => {
             is_provisioner: individual.is_provisioner,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-            profile: individual.profiles || { first_name: 'Unknown Individual' },
+            profile: { first_name: 'Unknown Individual' },
             memberType: 'individual' as const,
             displayStatus,
           } as SupporterWithProfile & { displayStatus: string };
@@ -178,8 +180,17 @@ export const TabTeam: React.FC = () => {
         const existingIndividualIds = new Set(allMembers.filter(m => m.memberType === 'individual').map(m => (m as any).individual_id));
         for (const p of createdProfiles) {
           if (!existingIndividualIds.has(p.user_id)) {
-            const invite = invitesByIndividual.get(p.user_id);
-            const displayStatus = invite?.status === 'pending' ? 'Pending' : 'Not invited yet';
+            // Determine status from account claims
+            let displayStatus: 'Pending' | 'Accepted' | 'Not invited yet' = 'Not invited yet';
+            const { data: claim } = await supabase
+              .from('account_claims')
+              .select('status')
+              .eq('provisioner_id', user.id)
+              .eq('individual_id', p.user_id)
+              .maybeSingle();
+            if (claim?.status === 'pending') displayStatus = 'Pending';
+            else if (claim?.status === 'accepted') displayStatus = 'Accepted';
+
             allMembers.push({
               id: `individual-${p.user_id}`,
               individual_id: p.user_id,
