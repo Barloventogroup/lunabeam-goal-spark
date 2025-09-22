@@ -108,6 +108,35 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Failed to update supporter relationships:', supporterUpdateError);
     }
 
+    // If no existing supporter relationships were found to migrate, 
+    // create the basic supporter relationship with the provisioner
+    const { data: existingSupporter } = await supabaseAdmin
+      .from('supporters')
+      .select('id')
+      .eq('individual_id', userId)
+      .limit(1)
+      .maybeSingle();
+    
+    if (!existingSupporter) {
+      console.log('No existing supporter found, creating relationship with provisioner');
+      const { error: createSupporterError } = await supabaseAdmin
+        .from('supporters')
+        .insert({
+          individual_id: userId,
+          supporter_id: claimRecord.provisioner_id,
+          role: 'supporter',
+          permission_level: 'admin',
+          is_admin: true,
+          is_provisioner: false // Remove provisioner flag since account is now claimed
+        });
+      
+      if (createSupporterError) {
+        console.error('Failed to create supporter relationship:', createSupporterError);
+      } else {
+        console.log('Successfully created supporter relationship');
+      }
+    }
+
     // Update the account claim
     const { error: claimUpdateError } = await supabaseAdmin
       .from('account_claims')

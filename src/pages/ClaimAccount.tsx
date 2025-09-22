@@ -78,6 +78,7 @@ export function ClaimAccount() {
         toast.success(`Welcome ${data.firstName}! Your account has been claimed.`);
         
         // Sign in with the credentials we just created
+        console.log('Attempting sign in with email:', data.email);
         if (data.email && password) {
           try {
             const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -85,11 +86,14 @@ export function ClaimAccount() {
               password: password
             });
             
+            console.log('Sign in result:', signInError);
+            
             if (signInError) {
               console.error('Sign in error:', signInError);
-              toast.error('Account claimed but sign in failed. Please try signing in manually.');
+              toast.error('Account claimed but sign in failed: ' + signInError.message);
               navigate(`/auth?email=${encodeURIComponent(data.email)}`);
             } else {
+              console.log('Sign in successful, redirecting to dashboard');
               // Successful sign in, redirect to dashboard
               window.location.href = '/';
             }
@@ -99,6 +103,7 @@ export function ClaimAccount() {
             navigate(`/auth?email=${encodeURIComponent(data.email)}`);
           }
         } else {
+          console.log('Missing email or password for sign in');
           // Fallback redirect
           window.location.href = '/';
         }
