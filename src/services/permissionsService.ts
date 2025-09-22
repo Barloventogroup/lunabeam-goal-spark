@@ -207,18 +207,30 @@ export class PermissionsService {
     }
   }
 
-  // Accept supporter invite using secure function
+  // Accept supporter invite using secure function with fallback and clearer errors
   static async acceptSupporterInvite(inviteToken: string): Promise<void> {
-    const { data, error } = await supabase.rpc('accept_invite_by_token', {
-      _token: inviteToken
-    });
-    
-    if (error) throw error;
-    
-    // Type the response and check if the function returned an error
-    const response = data as { success: boolean; error?: string; message?: string };
-    if (!response?.success) {
-      throw new Error(response?.error || 'Failed to accept invite');
+    // Try primary function
+    const attempt = async (fn: 'accept_invite_by_token' | 'accept_supporter_invite_secure') => {
+      const { data, error } = await supabase.rpc(fn, {
+        _token: inviteToken,
+        _invite_token: inviteToken
+      } as any);
+
+      if (error) throw new Error(error.message || 'Invitation acceptance failed');
+
+      const response = data as { success: boolean; error?: string; message?: string };
+      if (!response?.success) {
+        throw new Error(response?.error || 'Failed to accept invite');
+      }
+    };
+
+    try {
+      await attempt('accept_invite_by_token');
+      return;
+    } catch (errPrimary) {
+      console.warn('accept_invite_by_token failed, trying fallback:', errPrimary);
+      // Fallback
+      await attempt('accept_supporter_invite_secure');
     }
   }
 

@@ -72,10 +72,11 @@ export function TabInvitations() {
       
     } catch (error) {
       console.error('Error accepting invitation:', error);
+      const message = (error as any)?.message || 'Failed to accept invitation or invitation expired';
       toast({
-        title: "Error",
-        description: "Failed to accept invitation or invitation expired",
-        variant: "destructive"
+        title: 'Error',
+        description: message,
+        variant: 'destructive'
       });
     }
   };
@@ -156,10 +157,11 @@ export function TabInvitations() {
       }
     } catch (error) {
       console.error('Error accepting invitation:', error);
+      const message = (error as any)?.message || 'Failed to accept invitation';
       toast({
-        title: "Error",
-        description: "Failed to accept invitation",
-        variant: "destructive"
+        title: 'Error',
+        description: message,
+        variant: 'destructive'
       });
     }
   };
