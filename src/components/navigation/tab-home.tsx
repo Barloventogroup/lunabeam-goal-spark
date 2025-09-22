@@ -10,7 +10,7 @@ import { parseISO, isToday } from 'date-fns';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { RewardsGallery } from '../lunebeam/reward-bank';
 import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
-import { GoalsWizard } from '../lunebeam/goals-wizard';
+import { RedesignedGoalsWizard } from '../lunebeam/redesigned-goals-wizard';
 import { PointsDisplay } from '../lunebeam/points-display';
 import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
@@ -117,9 +117,10 @@ export const TabHome: React.FC<TabHomeProps> = ({
     return <RewardsGallery onBack={() => setCurrentView('dashboard')} />;
   }
   if (currentView === 'add-goal') {
-    return <div className="min-h-screen">
-        <GoalsWizard onComplete={() => setCurrentView('dashboard')} onBack={() => setCurrentView('dashboard')} />
-      </div>;
+    return <RedesignedGoalsWizard 
+      onComplete={() => setCurrentView('dashboard')} 
+      onCancel={() => setCurrentView('dashboard')} 
+    />;
   }
 
   // Active goals from store
