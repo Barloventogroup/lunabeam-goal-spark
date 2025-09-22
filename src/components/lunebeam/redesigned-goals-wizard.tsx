@@ -356,7 +356,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const stepTitles = isSupporter 
       ? [
           'Who is this goal for?',
-          'What do you want them to do?',
+          'What do you want to do?',
           'What type of goal?',
           'Experience level?',
           'Prerequisites check',
