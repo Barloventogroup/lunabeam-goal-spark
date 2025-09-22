@@ -1232,7 +1232,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   
-  const maxStep = isSupporter ? 8 : 7;
+  const maxStep = isSupporter ? 9 : 7;
   const isLastStep = currentStep === maxStep - 1;
   
   return (
