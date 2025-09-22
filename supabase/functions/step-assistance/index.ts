@@ -331,7 +331,30 @@ async function createSubSteps(subSteps: any[], parentStep: any, goal: any) {
       console.log('Created substep:', data.title);
     } catch (error) {
       console.error('Error inserting substep:', error);
+}
+
+async function checkExistingSubsteps(stepId: string) {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  try {
+    const { data: existingSubsteps, error } = await supabase
+      .from('substeps')
+      .select('*')
+      .eq('step_id', stepId);
+
+    if (error) {
+      console.error('Error checking existing substeps:', error);
+      return [];
     }
+
+    return existingSubsteps || [];
+  } catch (error) {
+    console.error('Error in checkExistingSubsteps:', error);
+    return [];
+  }
+}
   }
 
   return createdSubsteps;
@@ -419,28 +442,4 @@ async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<a
   } catch (error) {
     console.error('Error in checkForSimilarPriorSteps:', error);
     return [];
-}
-
-async function checkExistingSubsteps(stepId: string) {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  try {
-    const { data: existingSubsteps, error } = await supabase
-      .from('substeps')
-      .select('*')
-      .eq('step_id', stepId);
-
-    if (error) {
-      console.error('Error checking existing substeps:', error);
-      return [];
-    }
-
-    return existingSubsteps || [];
-  } catch (error) {
-    console.error('Error in checkExistingSubsteps:', error);
-    return [];
-  }
-}
 }
