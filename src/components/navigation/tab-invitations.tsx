@@ -48,13 +48,16 @@ export function TabInvitations() {
   const [sentInvitations, setSentInvitations] = useState<SentInvitation[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Handle URL-based invitation acceptance
+  // Handle URL-based invitation acceptance (avoid duplicate runs)
+  const token = searchParams.get('token');
+  const [handledToken, setHandledToken] = useState<string | null>(null);
+
   useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
+    if (token && token !== handledToken) {
+      setHandledToken(token);
       handleTokenAcceptance(token);
     }
-  }, [searchParams]);
+  }, [token, handledToken]);
 
   const handleTokenAcceptance = async (token: string) => {
     try {
