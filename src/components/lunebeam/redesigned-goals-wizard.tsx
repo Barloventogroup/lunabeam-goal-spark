@@ -814,8 +814,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         updateData({
           supportContext: context.id
         });
-        // Navigate to final confirmation step
-        setCurrentStep(isSupporter ? 8 : 7);
       }}>
             <div className="text-left">
               <div className="font-semibold">{context.label}</div>
