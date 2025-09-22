@@ -499,6 +499,137 @@ export const TabTeam: React.FC = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Enhanced Invite Section */}
+          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5 text-primary" />
+                  Quick Actions
+                </div>
+                <Badge variant="outline" className="bg-primary/10 text-primary">
+                  3 Points Available
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                <SimpleInviteModal 
+                  trigger={
+                    <Button className="flex-1 min-w-[150px]">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Send Invite
+                    </Button>
+                  }
+                />
+                <Button variant="outline" className="flex-1 min-w-[150px]">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add Individual
+                </Button>
+                <Button variant="outline" className="flex-1 min-w-[150px]">
+                  <Users className="h-4 w-4 mr-2" />
+                  Bulk Import
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Individuals you support (moved to top) */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                People You Support
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {supporters.filter(s => 'memberType' in s && s.memberType === 'individual').length === 0 ? (
+                <div className="text-center py-8">
+                  <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No individuals yet</h3>
+                  <p className="text-muted-foreground mb-4">Add people you support to start tracking their goals.</p>
+                  <Button onClick={() => document.getElementById('newIndividual')?.focus()}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add Individual
+                  </Button>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {supporters
+                      .filter(s => 'memberType' in s && s.memberType === 'individual')
+                      .filter(s => s.profile?.first_name?.toLowerCase() !== 'nat') // Filter out "nat"
+                      .map((member) => {
+                      const name = member.profile?.first_name || 'Unknown Individual';
+                      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                      return (
+                        <TableRow key={`individual-row-${member.individual_id}`}>
+                          <TableCell>
+                            <div 
+                              className="flex items-center gap-3 cursor-pointer hover:opacity-70"
+                              onClick={() => handleMemberClick(member as any, 'supporter')}
+                            >
+                              <Avatar className="w-8 h-8">
+                                <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">{initials}</AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">{name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={getRoleColor('individual')}>
+                              <User className="h-3 w-3" />
+                              <span className="ml-1">Individual</span>
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge('supporter', undefined, (member as any).displayStatus)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="bg-background border shadow-lg">
+                                {('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') && (
+                                  <DropdownMenuItem onClick={handleInvite}>
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Invite
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem onClick={() => handleNudge(member as any)}>
+                                  <Bell className="h-4 w-4 mr-2" />
+                                  Nudge
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleRemove((member as any).id, 'supporter')}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <UserMinus className="h-4 w-4 mr-2" />
+                                  Remove
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Community Members Table */}
           <Card>
             <CardHeader>
@@ -508,7 +639,10 @@ export const TabTeam: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {combinedMembers.length === 0 ? (
+              {combinedMembers.filter(m => {
+                const name = m.type === 'supporter' ? m.profile?.first_name : m.invitee_name;
+                return name?.toLowerCase() !== 'nat'; // Filter out "nat"
+              }).length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No community members yet</h3>
@@ -533,7 +667,12 @@ export const TabTeam: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {combinedMembers.map((member) => {
+                    {combinedMembers
+                      .filter(m => {
+                        const name = m.type === 'supporter' ? m.profile?.first_name : m.invitee_name;
+                        return name?.toLowerCase() !== 'nat'; // Filter out "nat"
+                      })
+                      .map((member) => {
                       const name = member.type === 'supporter' 
                         ? member.profile?.first_name || 'Unknown User'
                         : member.invitee_name || 'Unknown User';
@@ -581,7 +720,7 @@ export const TabTeam: React.FC = () => {
                                    : member.role}
                                </span>
                              </Badge>
-                           </TableCell>
+                            </TableCell>
                           <TableCell>
                             {getStatusBadge(member.type, member.type === 'invite' ? member.status : undefined, ('displayStatus' in member ? (member as any).displayStatus : undefined))}
                           </TableCell>
@@ -612,90 +751,6 @@ export const TabTeam: React.FC = () => {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem 
                                   onClick={() => handleRemove(member.id, member.type)}
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  <UserMinus className="h-4 w-4 mr-2" />
-                                  Remove
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Individuals you support (provisioned) */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Individuals you support
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {supporters.filter(s => 'memberType' in s && s.memberType === 'individual').length === 0 ? (
-                <p className="text-muted-foreground">No individuals yet</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {supporters.filter(s => 'memberType' in s && s.memberType === 'individual').map((member) => {
-                      const name = member.profile?.first_name || 'Unknown Individual';
-                      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-                      return (
-                        <TableRow key={`individual-row-${member.individual_id}`}>
-                          <TableCell>
-                            <div 
-                              className="flex items-center gap-3 cursor-pointer hover:opacity-70"
-                              onClick={() => handleMemberClick(member as any, 'supporter')}
-                            >
-                              <Avatar className="w-8 h-8">
-                                <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">{initials}</AvatarFallback>
-                              </Avatar>
-                              <span className="font-medium">{name}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={getRoleColor('individual')}>
-                              <User className="h-3 w-3" />
-                              <span className="ml-1">Individual</span>
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {getStatusBadge('supporter', undefined, (member as any).displayStatus)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="bg-background border shadow-lg">
-                                {('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') && (
-                                  <DropdownMenuItem onClick={handleInvite}>
-                                    <Mail className="h-4 w-4 mr-2" />
-                                    Invite
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem onClick={() => handleNudge(member as any)}>
-                                  <Bell className="h-4 w-4 mr-2" />
-                                  Nudge
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => handleRemove((member as any).id, 'supporter')}
                                   className="text-destructive focus:text-destructive"
                                 >
                                   <UserMinus className="h-4 w-4 mr-2" />
