@@ -1020,7 +1020,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         return null;
     }
   };
-  const maxStep = isSupporter ? 8 : 6;
+  const maxStep = isSupporter ? 8 : 7;
   const isLastStep = currentStep === maxStep - 1;
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       <div className="max-w-md mx-auto py-6 space-y-6">
