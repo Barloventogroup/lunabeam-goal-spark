@@ -353,27 +353,31 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   
   const getStepTitle = () => {
-    const stepTitles = isSupporter 
-      ? [
-          'Who is this goal for?',
-          'What do you want to do?',
-          'What type of goal?',
-          'Experience level?',
-          'Prerequisites check',
-          'Scheduling & timing',
-          'Support context',
-          'Rewards'
-        ]
-      : [
-          'What do you want to do?',
-          'What type of goal?',
-          'Experience level?',
-          'Prerequisites check',
-          'Scheduling & timing',
-          'Support context'
-        ];
+    const supporterTitles = [
+      'Who is this goal for?',
+      'What do you want to do?',
+      'What type of goal?',
+      'Experience level?',
+      'Prerequisites check',
+      'Scheduling & timing',
+      'Support context',
+      'Rewards'
+    ];
     
-    return stepTitles[currentStep] || '';
+    const nonSupporterTitles = [
+      'What do you want to do?',
+      'What type of goal?',
+      'Experience level?',
+      'Prerequisites check',
+      'Scheduling & timing',
+      'Support context'
+    ];
+    
+    if (isSupporter) {
+      return supporterTitles[currentStep] || '';
+    } else {
+      return nonSupporterTitles[currentStep - 1] || '';
+    }
   };
   
   const canProceed = () => {
