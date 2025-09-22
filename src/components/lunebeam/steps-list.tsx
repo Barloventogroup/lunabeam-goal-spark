@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CircularProgress } from '@/components/ui/circular-progress';
+import { Fireworks } from '@/components/ui/fireworks';
 import type { Step, Goal, Substep, StepStatus, StepType } from '@/types';
 import { stepsService } from '@/services/goalsService';
 import { stepValidationService } from '@/services/stepValidationService';
@@ -104,6 +105,7 @@ export const StepsList: React.FC<StepsListProps> = ({
   const [substepsMap, setSubstepsMap] = useState<Record<string, Substep[]>>({});
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
+  const [showFireworks, setShowFireworks] = useState(false);
   const { toast } = useToast();
 
   // Fetch substeps for all steps
@@ -449,6 +451,9 @@ export const StepsList: React.FC<StepsListProps> = ({
         return next;
       });
 
+      // Trigger fireworks animation
+      setShowFireworks(true);
+
       toast({
         title: "Step completed!",
         description: `Great job! You've completed this step.`,
@@ -577,6 +582,9 @@ export const StepsList: React.FC<StepsListProps> = ({
       // Check if all substeps are now completed
       const allCompleted = substeps.every(s => s.completed_at !== null);
       if (allCompleted) {
+        // Trigger fireworks animation for substep completion
+        setShowFireworks(true);
+        
         // Auto-complete the main step
         const step = steps.find(s => s.id === stepId);
         if (step && step.status !== 'done') {
@@ -587,6 +595,9 @@ export const StepsList: React.FC<StepsListProps> = ({
           });
         }
       } else {
+        // Trigger fireworks animation for individual substep completion
+        setShowFireworks(true);
+        
         toast({
           title: "Substep completed!",
           description: "Great progress on breaking down this step.",
@@ -1072,6 +1083,12 @@ export const StepsList: React.FC<StepsListProps> = ({
           onStepUpdate={handleStepUpdate}
         />
       )}
+
+      {/* Fireworks Animation */}
+      <Fireworks 
+        isVisible={showFireworks} 
+        onComplete={() => setShowFireworks(false)} 
+      />
     </Card>
   );
 };
