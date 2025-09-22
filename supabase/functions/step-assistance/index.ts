@@ -15,26 +15,37 @@ serve(async (req) => {
 
   try {
     console.log('Raw request received');
-    const requestBody = await req.json();
-    console.log('Request body parsed:', JSON.stringify(requestBody, null, 2));
-    
-    const { step, goal, userMessage, conversationHistory } = requestBody;
-    
+    let requestBody: any = {};
+    try {
+      requestBody = await req.json();
+    } catch (_err) {
+      return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { step, goal, userMessage, conversationHistory = [] } = requestBody;
+
     if (!step || !goal || !userMessage) {
       console.error('Missing required fields:', { step: !!step, goal: !!goal, userMessage: !!userMessage });
-      throw new Error('Missing required fields: step, goal, or userMessage');
+      return new Response(JSON.stringify({ error: 'Missing required fields: step, goal, or userMessage' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
-    
+
     console.log('Step assistance request:', { 
       stepId: step?.id, 
       goalId: goal?.id, 
-      userMessage: userMessage?.substring(0, 100) 
+      userMessage: typeof userMessage === 'string' ? userMessage.substring(0, 100) : ''
     });
 
     // Count assistant responses in conversation history (ignore system and error messages)
     const assistantResponseCount = Array.isArray(conversationHistory)
       ? conversationHistory.filter((msg: any) => msg.role === 'assistant' && !(typeof msg.id === 'string' && msg.id.startsWith('error-'))).length
       : 0;
+    console.log('assistantResponseCount:', assistantResponseCount);
 
     // Check for similar steps in prior weeks that have substeps
     const inheritedSubsteps = await checkForSimilarPriorSteps(step, goal);
@@ -45,10 +56,13 @@ serve(async (req) => {
     }
 
     // Get completed and remaining steps for this goal to provide context
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase environment not configured');
+    }
     const supabase = createClient(supabaseUrl, supabaseKey);
-    
+
     let progressContext = '';
     try {
       const { data: allSteps } = await supabase
@@ -58,94 +72,33 @@ serve(async (req) => {
         .order('order_index');
       
       if (allSteps) {
-        const completedSteps = allSteps.filter(s => s.status === 'done');
-        const remainingSteps = allSteps.filter(s => s.status !== 'done');
+        const completedSteps = allSteps.filter((s: any) => s.status === 'done');
+        const remainingSteps = allSteps.filter((s: any) => s.status !== 'done');
         
-        progressContext = `
-GOAL PROGRESS CONTEXT:
-- Completed steps (${completedSteps.length}): ${completedSteps.slice(-3).map(s => s.title).join(', ')}
-- Remaining steps (${remainingSteps.length}): ${remainingSteps.slice(0, 3).map(s => s.title).join(', ')}
-- Current step position: ${allSteps.findIndex(s => s.title === step.title) + 1} of ${allSteps.length}
-`;
+        progressContext = `\nGOAL PROGRESS CONTEXT:\n- Completed steps (${completedSteps.length}): ${completedSteps.slice(-3).map((s: any) => s.title).join(', ')}\n- Remaining steps (${remainingSteps.length}): ${remainingSteps.slice(0, 3).map((s: any) => s.title).join(', ')}\n- Current step position: ${allSteps.findIndex((s: any) => s.title === step.title) + 1} of ${allSteps.length}\n`;
       }
     } catch (error) {
       console.log('Could not fetch progress context:', error);
     }
 
-    // Build context for the AI
-    const systemPrompt = `You are Luna, a helpful AI assistant designed for teenagers and young adults (16-25) working on their goals.
+    // Build context for the AI (avoid nested template literals)
+    const isSubstep = !!(step.explainer && String(step.explainer).includes('This is a substep of'));
 
-Current Goal: "${goal.title}"
-Goal Description: ${goal.description || 'No description provided'}
-Goal Domain: ${goal.domain || 'General'}
+    const modeLine = isSubstep
+      ? `SUBSTEP MODE: Only help with \"${step.title}\" - do not suggest breaking it down further or creating additional substeps`
+      : `MAIN STEP MODE: Focus on \"${step.title}\" - may suggest substeps if needed`;
 
-${progressContext}
+    const guidanceBlock = isSubstep
+      ? `\nSUBSTEP GUIDANCE RULES:\n- DO NOT suggest breaking \"${step.title}\" into smaller pieces\n- Provide direct, actionable advice for completing this specific task\n- Keep responses under 100 words\n- Focus on HOW to do this specific thing\n`
+      : `\nMAIN STEP GUIDANCE RULES:\nONLY suggest breaking THIS step into sub-steps if:\n- They ask for help with this step\n- They say this step feels overwhelming\n- They ask \"how do I start\" this step\n\nIf you do suggest sub-steps, they must ALL relate to \"${step.title}\" and format them like this:\n[SUB-STEPS]\n1. Sub-step Title | Brief description specific to \"${step.title}\" (estimated time)\n2. Another Sub-step | Another description for \"${step.title}\" (estimated time)\n[/SUB-STEPS]\n\nDE-DUPLICATION RULES (critical):\n- Do NOT include two sub-steps that achieve the same objective with different wording.\n- Merge near-duplicates into a single, clear action.\n- Examples of duplicates to avoid (pick only ONE phrasing):\n  - \"Choose a Simple Recipe\" vs \"Pick a Simple Recipe\"\n  - \"Follow the Steps\" vs \"Follow the Recipe Step-by-Step\"\n- Each title must represent a distinct action with a unique outcome.\n- Prefer concise, action-first titles; put nuance in the description.\n`;
 
-CURRENT STEP FOCUS: "${step.title}"
-Step Description: ${step.notes || step.explainer || 'No description provided'}
-Estimated Time: ${step.estimated_effort_min ? `${step.estimated_effort_min} minutes` : 'Not specified'}
-
-Your communication style:
-- Be concise and focused - you have limited responses
-- Talk like a supportive friend who gets their struggles
-- Use relatable examples from their world: social media, gaming, apps
-- Keep responses under 150 words when possible
-
-Use quick analogies they'll connect with:
-- "Like organizing your phone apps"
-- "Similar to learning a new game - start simple"
-- "Think of it like creating content - plan, create, share"
-
-CRITICAL RULES:
-1. ${step.explainer && step.explainer.includes('This is a substep of') ? `SUBSTEP MODE: Only help with "${step.title}" - do not suggest breaking it down further or creating additional substeps` : `MAIN STEP MODE: Focus on "${step.title}" - may suggest substeps if needed`}
-2. Analyze what they've completed to understand their progress pattern
-3. ${step.explainer && step.explainer.includes('This is a substep of') ? 'Provide direct action steps for this specific substep' : 'Provide sub-steps ONLY for the current step in question'}
-4. Stay laser-focused on the current ${step.explainer && step.explainer.includes('This is a substep of') ? 'substep' : 'step'}
-
-Your role is to:
-1. Answer their specific questions about THIS ${step.explainer && step.explainer.includes('This is a substep of') ? 'SUBSTEP' : 'STEP'} only
-2. ${step.explainer && step.explainer.includes('This is a substep of') ? 'Give direct, specific guidance for completing this substep' : 'Break down THIS STEP into smaller, manageable sub-steps'}
-3. Give practical advice for completing THIS SPECIFIC ${step.explainer && step.explainer.includes('This is a substep of') ? 'SUBSTEP' : 'STEP'}
-4. Stay laser-focused on the current ${step.explainer && step.explainer.includes('This is a substep of') ? 'substep' : 'step'}
-
-${step.explainer && step.explainer.includes('This is a substep of') ? `
-SUBSTEP GUIDANCE RULES:
-- DO NOT suggest breaking "${step.title}" into smaller pieces
-- Provide direct, actionable advice for completing this specific task
-- Keep responses under 100 words
-- Focus on HOW to do this specific thing
-` : `
-MAIN STEP GUIDANCE RULES:
-ONLY suggest breaking THIS step into sub-steps if:
-- They ask for help with this step
-- They say this step feels overwhelming
-- They ask "how do I start" this step
-
-If you do suggest sub-steps, they must ALL relate to "${step.title}" and format them like this:
-[SUB-STEPS]
-1. Sub-step Title | Brief description specific to "${step.title}" (estimated time)
-2. Another Sub-step | Another description for "${step.title}" (estimated time)
-[/SUB-STEPS]
-
-DE-DUPLICATION RULES (critical):
-- Do NOT include two sub-steps that achieve the same objective with different wording.
-- Merge near-duplicates into a single, clear action.
-- Examples of duplicates to avoid (pick only ONE phrasing):
-  • "Choose a Simple Recipe" vs "Pick a Simple Recipe"
-  • "Follow the Steps" vs "Follow the Recipe Step-by-Step"
-- Each title must represent a distinct action with a unique outcome.
-- Prefer concise, action-first titles; put nuance in the description.
-`}
-
-Be supportive but keep it brief and focused on THIS ${step.explainer && step.explainer.includes('This is a substep of') ? 'SUBSTEP' : 'STEP'} ONLY.`;
+    const systemPrompt = `You are Luna, a helpful AI assistant designed for teenagers and young adults (16-25) working on their goals.\n\nCurrent Goal: \"${goal.title}\"\nGoal Description: ${goal.description || 'No description provided'}\nGoal Domain: ${goal.domain || 'General'}\n\n${progressContext}\n\nCURRENT STEP FOCUS: \"${step.title}\"\nStep Description: ${step.notes || step.explainer || 'No description provided'}\nEstimated Time: ${step.estimated_effort_min ? `${step.estimated_effort_min} minutes` : 'Not specified'}\n\nYour communication style:\n- Be concise and focused - you have limited responses\n- Talk like a supportive friend who gets their struggles\n- Use relatable examples from their world: social media, gaming, apps\n- Keep responses under 150 words when possible\n\nUse quick analogies they'll connect with:\n- \"Like organizing your phone apps\"\n- \"Similar to learning a new game - start simple\"\n- \"Think of it like creating content - plan, create, share\"\n\nCRITICAL RULES:\n1. ${modeLine}\n2. Analyze what they've completed to understand their progress pattern\n3. ${isSubstep ? 'Provide direct action steps for this specific substep' : 'Provide sub-steps ONLY for the current step in question'}\n4. Stay laser-focused on the current ${isSubstep ? 'substep' : 'step'}\n\nYour role is to:\n1. Answer their specific questions about THIS ${isSubstep ? 'SUBSTEP' : 'STEP'} only\n2. ${isSubstep ? 'Give direct, specific guidance for completing this substep' : 'Break down THIS STEP into smaller, manageable sub-steps'}\n3. Give practical advice for completing THIS SPECIFIC ${isSubstep ? 'SUBSTEP' : 'STEP'}\n4. Stay laser-focused on the current ${isSubstep ? 'substep' : 'step'}\n\n${guidanceBlock}\n\nBe supportive but keep it brief and focused on THIS ${isSubstep ? 'SUBSTEP' : 'STEP'} ONLY.`;
 
     // Prepare conversation history for context
+    const history = Array.isArray(conversationHistory) ? conversationHistory : [];
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...conversationHistory.slice(-4).map(msg => ({
-        role: msg.role,
-        content: msg.content
-      })),
+      ...history.slice(-4).map((msg: any) => ({ role: msg.role, content: msg.content })),
       { role: 'user', content: userMessage }
     ];
 
@@ -169,7 +122,7 @@ Be supportive but keep it brief and focused on THIS ${step.explainer && step.exp
     }
 
     const data = await response.json();
-    const assistantResponse = data.choices[0].message.content;
+    const assistantResponse = data.choices?.[0]?.message?.content || '';
 
     // Parse potential sub-steps from the response
     const suggestedSteps = dedupeSubSteps(parseSubSteps(assistantResponse, step, goal));
@@ -186,7 +139,7 @@ Be supportive but keep it brief and focused on THIS ${step.explainer && step.exp
     const existingSubsteps = await checkExistingSubsteps(step.id);
     
     // If sub-steps were suggested or inherited, create them in the database (only if none exist)
-    let createdSteps = [];
+    let createdSteps: any[] = [];
     if (allSteps.length > 0 && existingSubsteps.length === 0) {
       createdSteps = await createSubSteps(allSteps, step, goal);
     } else if (existingSubsteps.length > 0) {
@@ -201,16 +154,12 @@ Be supportive but keep it brief and focused on THIS ${step.explainer && step.exp
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in step-assistance function:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Error message:', error.message);
-    console.error('Error name:', error.name);
-    
+    const details = typeof error?.message === 'string' ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ 
       error: 'An error occurred while processing your request',
-      details: error.message,
-      errorName: error.name
+      details,
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -251,12 +200,12 @@ function tokenize(s: string): Set<string> {
   return new Set(
     t.split(' ')
      .filter(Boolean)
-     .filter(w => !STOPWORDS.has(w))
+     .filter((w) => !STOPWORDS.has(w))
   );
 }
 
 function jaccard(a: Set<string>, b: Set<string>): number {
-  const inter = new Set([...a].filter(x => b.has(x)));
+  const inter = new Set([...a].filter((x) => b.has(x)));
   const union = new Set([...a, ...b]);
   if (union.size === 0) return 0;
   return inter.size / union.size;
@@ -277,7 +226,7 @@ function isNearDuplicate(a: any, b: any): boolean {
 function dedupeSubSteps(list: any[]): any[] {
   const kept: any[] = [];
   for (const item of list) {
-    const dup = kept.some(k => isNearDuplicate(k, item));
+    const dup = kept.some((k) => isNearDuplicate(k, item));
     if (!dup) kept.push(item);
   }
   return kept;
@@ -288,31 +237,32 @@ function parseSubSteps(response: string, parentStep: any, goal: any): any[] {
   if (!subStepsMatch) return [];
 
   const subStepsText = subStepsMatch[1].trim();
-  const lines = subStepsText.split('\n').filter(line => line.trim());
+  const lines = subStepsText.split('\n').filter((line) => line.trim());
 
-  return lines.map((line, index) => {
+  return lines.map((line) => {
     const match = line.match(/^\d+\.\s*(.+?)\s*\|\s*(.+?)(?:\s*\((\d+)\s*minutes?\))?$/);
     if (!match) return null;
 
-    const [, title, description, timeStr] = match;
+    const [, title, description] = match;
 
     return {
-      title: title.trim(),
-      description: description.trim(),
+      title: String(title).trim(),
+      description: String(description).trim(),
       step_id: parentStep.id,
-      is_planned: false
+      is_planned: false,
     };
-  }).filter(Boolean);
+  }).filter(Boolean) as any[];
 }
 
 async function createSubSteps(subSteps: any[], parentStep: any, goal: any) {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!supabaseUrl || !supabaseKey) return [];
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   console.log(`Creating ${subSteps.length} substeps for step ${parentStep.id}`);
 
-  const createdSubsteps = [];
+  const createdSubsteps: any[] = [];
   
   for (const subStep of subSteps) {
     try {
@@ -338,8 +288,9 @@ async function createSubSteps(subSteps: any[], parentStep: any, goal: any) {
 }
 
 async function checkExistingSubsteps(stepId: string) {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!supabaseUrl || !supabaseKey) return [];
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
@@ -361,12 +312,13 @@ async function checkExistingSubsteps(stepId: string) {
 }
 
 async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<any[]> {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!supabaseUrl || !supabaseKey) return [];
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   // Extract week info from current step title (e.g., "Week 3, Session 1: Walk")
-  const weekMatch = currentStep.title.match(/Week (\d+)/);
+  const weekMatch = String(currentStep.title).match(/Week (\d+)/);
   if (!weekMatch) return [];
 
   const currentWeek = parseInt(weekMatch[1]);
@@ -386,13 +338,13 @@ async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<a
     }
 
     // Find similar steps from prior weeks
-    const baseActivity = currentStep.title.replace(/Week \d+, Session \d+:\s*/, '');
-    const similarPriorSteps = allSteps.filter(step => {
-      const stepWeekMatch = step.title.match(/Week (\d+)/);
+    const baseActivity = String(currentStep.title).replace(/Week \d+, Session \d+:\s*/, '');
+    const similarPriorSteps = (allSteps as any[]).filter((step: any) => {
+      const stepWeekMatch = String(step.title).match(/Week (\d+)/);
       if (!stepWeekMatch) return false;
       
       const stepWeek = parseInt(stepWeekMatch[1]);
-      const stepActivity = step.title.replace(/Week \d+, Session \d+:\s*/, '');
+      const stepActivity = String(step.title).replace(/Week \d+, Session \d+:\s*/, '');
       
       return stepWeek < currentWeek && stepActivity === baseActivity;
     });
@@ -400,10 +352,10 @@ async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<a
     if (similarPriorSteps.length === 0) return [];
 
     // Find the most recent similar step that has substeps
-    const mostRecentSimilar = similarPriorSteps.reduce((latest, step) => {
-      const stepWeek = parseInt(step.title.match(/Week (\d+)/)?.[1] || '0');
-      const latestWeek = parseInt(latest.title.match(/Week (\d+)/)?.[1] || '0');
-      return stepWeek > latestWeek ? step : latest;
+    const mostRecentSimilar = similarPriorSteps.reduce((latest: any, s: any) => {
+      const stepWeek = parseInt(String(s.title).match(/Week (\d+)/)?.[1] || '0');
+      const latestWeek = parseInt(String(latest.title).match(/Week (\d+)/)?.[1] || '0');
+      return stepWeek > latestWeek ? s : latest;
     });
 
     // Get substeps for the most recent similar step
@@ -412,7 +364,7 @@ async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<a
       .select('*')
       .eq('goal_id', goal.id)
       .gt('order_index', mostRecentSimilar.order_index)
-      .lt('order_index', mostRecentSimilar.order_index + 10) // Reasonable range for substeps
+      .lt('order_index', mostRecentSimilar.order_index + 10)
       .order('order_index');
 
     if (substepsError || !substeps || substeps.length === 0) {
@@ -420,9 +372,9 @@ async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<a
     }
 
     // Filter out main milestone steps, keep only substeps
-    const actualSubsteps = substeps.filter(step => 
-      !step.title.match(/Week \d+, Session \d+:/) && 
-      step.order_index > mostRecentSimilar.order_index
+    const actualSubsteps = (substeps as any[]).filter((s: any) => 
+      !String(s.title).match(/Week \d+, Session \d+:/) && 
+      s.order_index > mostRecentSimilar.order_index
     );
 
     if (actualSubsteps.length === 0) return [];
@@ -430,7 +382,7 @@ async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<a
     console.log(`Found ${actualSubsteps.length} substeps from similar prior week step`);
 
     // Convert substeps to the format expected by createSubSteps
-    return actualSubsteps.map((substep, index) => ({
+    return actualSubsteps.map((substep: any, index: number) => ({
       title: substep.title,
       notes: substep.notes || substep.explainer,
       estimated_effort_min: substep.estimated_effort_min,
