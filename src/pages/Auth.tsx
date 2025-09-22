@@ -15,8 +15,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    firstName: ''
+    password: ''
   });
 
   const isSupporterInvite = searchParams.get('redirect') === 'supporter-invite';
@@ -42,7 +41,7 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(formData.email, formData.password, formData.firstName || 'User');
+        const { error } = await signUp(formData.email, formData.password, 'User');
         if (error) {
           toast.error(error.message);
         } else {
@@ -119,20 +118,6 @@ export default function Auth() {
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
-            
-            {isSignUp && (
-              <div className="space-y-2">
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  placeholder="Enter your first name"
-                  className="border-gray-500 focus:border-primary text-sm bg-[#E0E0E0]"
-                />
-              </div>
-            )}
             
             <div className="space-y-2">
               <Input
