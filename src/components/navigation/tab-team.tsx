@@ -639,12 +639,14 @@ export const TabTeam: React.FC = () => {
                                   <Edit3 className="h-4 w-4 mr-2" />
                                   Edit Profile
                                 </DropdownMenuItem>
-                                {('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') && (
-                                  <DropdownMenuItem onClick={handleInvite}>
-                                    <Mail className="h-4 w-4 mr-2" />
-                                    Send Invite
-                                  </DropdownMenuItem>
-                                )}
+                                <DropdownMenuItem 
+                                  onClick={('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') ? handleInvite : undefined}
+                                  className={('displayStatus' in member && (member as any).displayStatus !== 'Not invited yet') ? 'text-muted-foreground cursor-not-allowed' : ''}
+                                  disabled={('displayStatus' in member && (member as any).displayStatus !== 'Not invited yet')}
+                                >
+                                  <Mail className="h-4 w-4 mr-2" />
+                                  Send Invite
+                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleNudge(member as any)}>
                                   <Bell className="h-4 w-4 mr-2" />
                                   Nudge
@@ -787,9 +789,12 @@ export const TabTeam: React.FC = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="bg-background border shadow-lg z-50">
-                                {member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' && 
-                                 'displayStatus' in member && (member as any).displayStatus === 'Not invited yet' && (
-                                  <DropdownMenuItem onClick={handleInvite}>
+                                {member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' && (
+                                  <DropdownMenuItem 
+                                    onClick={('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') ? handleInvite : undefined}
+                                    className={('displayStatus' in member && (member as any).displayStatus !== 'Not invited yet') ? 'text-muted-foreground cursor-not-allowed' : ''}
+                                    disabled={('displayStatus' in member && (member as any).displayStatus !== 'Not invited yet')}
+                                  >
                                     <Mail className="h-4 w-4 mr-2" />
                                     Invite
                                   </DropdownMenuItem>
