@@ -309,6 +309,9 @@ export const useStore = create<AppState>()(
             }
 
             if (user) {
+              console.log('Store: Current authenticated user ID:', user.id);
+              console.log('Store: User metadata:', user.user_metadata);
+              
               // If switching between accounts on the same device, clear cross-user data
               const storedUserId = get().lastUserId;
               const isSameUser = !!storedUserId && storedUserId === user.id;

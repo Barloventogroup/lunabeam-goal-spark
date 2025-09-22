@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
+import { database } from '@/services/database';
 import { X } from 'lucide-react';
 
 interface ParentOnboardingData {
@@ -183,6 +184,8 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
     };
 
     try {
+      console.log('Parent onboarding: Creating admin profile with name:', data.adminName);
+      
       // Save admin's name to auth metadata
       if (data.adminName.trim()) {
         try {
@@ -195,35 +198,35 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
         }
       }
 
-      // Update local store with admin profile (not individual's)
+      // Clear any existing cached profile data first
+      useStore.setState({ profile: null });
+      
+      // Force save the admin profile directly to database first
+      await database.saveProfile(adminProfile);
+      console.log('Admin profile saved to database:', adminProfile);
+      
+      // Then update local store with admin profile
       useStore.setState({ profile: adminProfile });
       
-      // Persist admin profile to Supabase
-      await setProfile({ ...adminProfile, onboarding_complete: true });
+      // Complete onboarding
       await completeOnboarding();
       
-      console.log('Admin profile created successfully, navigating to dashboard');
+      console.log('Parent onboarding completed successfully for admin');
       onComplete();
     } catch (error) {
       console.error('Admin profile creation failed:', error);
       
-      // For 409 errors (conflict), it might mean the profile already exists
-      if (error?.message?.includes('409') || error?.code === '23505') {
-        try {
-          await completeOnboarding();
-          console.log('Onboarding marked complete despite profile conflict, navigating to dashboard');
-          onComplete();
-        } catch (completionError) {
-          console.error('Even completion failed:', completionError);
-          // Ensure local state is set even if DB operations fail
-          useStore.setState({ profile: adminProfile });
-          onComplete();
-        }
-      } else {
-        // For other errors, still proceed but log the issue
-        console.warn('Profile save failed but proceeding with local state:', error);
-        onComplete();
+      // Ensure local state shows admin profile even if DB operations fail
+      useStore.setState({ profile: adminProfile });
+      
+      try {
+        await completeOnboarding();
+        console.log('Onboarding marked complete despite profile error');
+      } catch (completionError) {
+        console.error('Completion also failed:', completionError);
       }
+      
+      onComplete();
     }
   };
 
