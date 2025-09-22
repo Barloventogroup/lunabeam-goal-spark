@@ -458,9 +458,20 @@ export const TabTeam: React.FC = () => {
 
   const sendInvitationEmail = async (individualId: string, individualName: string, email: string) => {
     try {
-      // Generate invite link - for now using a basic format
-      // In a real system, you might want to create a supporter_invite record first
-      const inviteLink = `${window.location.origin}/claim-account?individual=${individualId}`;
+      // Create a proper supporter invite record first
+      const inviteResponse = await PermissionsService.createSupporterInvite({
+        individual_id: individualId,
+        inviter_id: user?.id || '',
+        invitee_email: email,
+        invitee_name: individualName,
+        role: 'supporter',
+        permission_level: 'viewer',
+        specific_goals: [],
+        message: '',
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      });
+      
+      const inviteLink = `${window.location.origin}/invitations?token=${inviteResponse.invite_token}`;
       
       // Call the send-invitation-email edge function
       const { data, error } = await supabase.functions.invoke('send-invitation-email', {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, MoreHorizontal, UserPlus, X, Users, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ interface ReceivedInvitation {
   message: string;
   masked_email: string;
   inviter_name: string;
+  invite_token?: string;
 }
 
 interface SentInvitation {
@@ -40,11 +41,44 @@ interface SentInvitation {
 
 export function TabInvitations() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [selectedInvitation, setSelectedInvitation] = useState<ReceivedInvitation | null>(null);
   const [receivedInvitations, setReceivedInvitations] = useState<ReceivedInvitation[]>([]);
   const [sentInvitations, setSentInvitations] = useState<SentInvitation[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Handle URL-based invitation acceptance
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (token) {
+      handleTokenAcceptance(token);
+    }
+  }, [searchParams]);
+
+  const handleTokenAcceptance = async (token: string) => {
+    try {
+      await PermissionsService.acceptSupporterInvite(token);
+      
+      toast({
+        title: "Invitation Accepted",
+        description: "You are now connected as a supporter",
+      });
+      
+      // Redirect to dashboard
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error accepting invitation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to accept invitation or invitation expired",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Load invitations data
   const loadInvitations = async () => {
@@ -106,13 +140,20 @@ export function TabInvitations() {
 
   const handleAcceptInvitation = async (invitation: ReceivedInvitation) => {
     try {
-      // Find the invitation token by ID (would need to be passed from backend)
-      // For now, we'll show a message that this needs to be implemented
-      toast({
-        title: "Feature Coming Soon",
-        description: "Invitation acceptance will be implemented with token-based flow",
-      });
-      setSelectedInvitation(null);
+      // Accept the invitation using the PermissionsService
+      if (invitation.invite_token) {
+        await PermissionsService.acceptSupporterInvite(invitation.invite_token);
+        
+        toast({
+          title: "Invitation Accepted",
+          description: "You are now connected as a supporter",
+        });
+        
+        // Redirect to dashboard
+        window.location.href = '/';
+      } else {
+        throw new Error('No invitation token available');
+      }
     } catch (error) {
       console.error('Error accepting invitation:', error);
       toast({
