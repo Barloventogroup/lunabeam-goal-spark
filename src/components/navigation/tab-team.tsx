@@ -464,7 +464,7 @@ export const TabTeam: React.FC = () => {
       // Create or refresh an account claim for the individual
       console.log('Step 1: Creating account claim...');
       const { claimToken, passcode } = await PermissionsService.createAccountClaim(individualId, user?.id || '');
-      console.log('✅ Account claim created:', { claimToken });
+      console.log('✅ Account claim created:', { claimToken, passcode: passcode.substring(0,2) + '****' });
 
       const inviteLink = `${window.location.origin}/claim/${claimToken}`;
       console.log('Step 2: Generated claim link:', inviteLink);

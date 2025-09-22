@@ -288,10 +288,18 @@ export class PermissionsService {
   // Claim account
   static async claimAccount(claimToken: string, passcode: string): Promise<boolean> {
     try {
+      console.log('🔍 Attempting to claim account:', { 
+        claimToken, 
+        passcode: passcode.substring(0,2) + '****',
+        passcodeLength: passcode.length 
+      });
+      
       const { data, error } = await supabase.rpc('claim_account', {
         _claim_token: claimToken,
         _passcode: passcode
       });
+      
+      console.log('🔍 Claim account response:', { data, error });
       
       if (error) throw error;
       return (data as any)?.success || false;
