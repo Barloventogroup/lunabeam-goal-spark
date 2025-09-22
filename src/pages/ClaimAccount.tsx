@@ -25,20 +25,42 @@ export function ClaimAccount() {
     if (!claimToken) return;
     
     try {
-      const { data, error } = await supabase
+      // First get the claim info
+      const { data: claimData, error: claimError } = await supabase
         .from('account_claims')
-        .select('first_name, expires_at, status')
+        .select('first_name, expires_at, status, individual_id')
         .eq('claim_token', claimToken)
         .eq('status', 'pending')
         .gt('expires_at', new Date().toISOString())
         .single();
 
-      if (error || !data) {
+      if (claimError || !claimData) {
         toast.error('Invalid or expired claim link');
         return;
       }
 
-      setClaimInfo(data);
+      // Get the individual's email from profiles
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('user_id', claimData.individual_id)
+        .single();
+
+      const claimInfoWithEmail = {
+        ...claimData,
+        email: profileData?.email
+      };
+
+      setClaimInfo(claimInfoWithEmail);
+      
+      // Store claim info for login page
+      if (profileData?.email) {
+        localStorage.setItem('claim_info', JSON.stringify({
+          email: profileData.email,
+          firstName: claimData.first_name,
+          claimToken
+        }));
+      }
     } catch (error) {
       console.error('Error loading claim info:', error);
       toast.error('Failed to load claim information');
@@ -96,8 +118,15 @@ export function ClaimAccount() {
         } else if (data.sessionUrl) {
           window.location.href = data.sessionUrl;
         } else {
+          // Clear claim info and redirect to dashboard
+          localStorage.removeItem('claim_info');
           window.location.href = '/';
         }
+      } else if (data.error === 'Account already claimed') {
+        // Account is already claimed, redirect to login with pre-filled email
+        const email = claimInfo.email;
+        toast.info('This account is already claimed. Please sign in with your credentials.');
+        navigate(`/auth?email=${encodeURIComponent(email || '')}`);
       } else {
         toast.error(data.error || 'Failed to claim account');
       }

@@ -18,7 +18,25 @@ export default function Auth() {
     password: ''
   });
 
+  // Pre-fill email for claimed individuals
+  useEffect(() => {
+    const emailFromUrl = searchParams.get('email');
+    const claimInfo = localStorage.getItem('claim_info');
+    
+    if (emailFromUrl) {
+      setFormData(prev => ({ ...prev, email: emailFromUrl }));
+    } else if (claimInfo) {
+      try {
+        const { email } = JSON.parse(claimInfo);
+        setFormData(prev => ({ ...prev, email }));
+      } catch (e) {
+        console.warn('Failed to parse claim info');
+      }
+    }
+  }, [searchParams]);
+
   const isSupporterInvite = searchParams.get('redirect') === 'supporter-invite';
+  const isClaimLogin = searchParams.get('email') || localStorage.getItem('claim_info');
 
   // Redirect to dashboard after successful authentication
   useEffect(() => {
@@ -57,6 +75,8 @@ export default function Auth() {
         if (error) {
           toast.error(error.message);
         } else {
+          // Clear claim info on successful login
+          localStorage.removeItem('claim_info');
           toast.success('Welcome back!');
         }
       }
@@ -93,6 +113,8 @@ export default function Auth() {
           <CardDescription className="text-black font-bold">
             {isSupporterInvite 
               ? "Create an account to become a supporter" 
+              : isClaimLogin
+              ? "Sign in to access your personalized dashboard"
               : "Guiding big dreams, one step at a time"
             }
           </CardDescription>
@@ -114,7 +136,10 @@ export default function Auth() {
           )}
           {!isSignUp && !isSupporterInvite && (
             <div className="mb-4 mt-10 text-sm text-black text-center">
-              Sign in with your email to access your account
+              {isClaimLogin 
+                ? "Enter your password to continue" 
+                : "Sign in with your email to access your account"
+              }
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
