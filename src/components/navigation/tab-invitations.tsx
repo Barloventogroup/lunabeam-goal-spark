@@ -61,17 +61,36 @@ export function TabInvitations() {
 
   const handleTokenAcceptance = async (token: string) => {
     try {
-      await PermissionsService.acceptSupporterInvite(token);
+      // Store the token temporarily to handle after signup
+      localStorage.setItem('pending_supporter_invite', token);
       
-      toast({
-        title: "Invitation Accepted",
-        description: "You are now connected as a supporter",
-      });
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
       
-      // Redirect to dashboard
-      setTimeout(() => {
-        navigate('/');
-      }, 1500);
+      if (user) {
+        // User is already signed in, accept invitation directly
+        await PermissionsService.acceptSupporterInvite(token);
+        localStorage.removeItem('pending_supporter_invite');
+        
+        toast({
+          title: "Invitation Accepted",
+          description: "You are now connected as a supporter",
+        });
+        
+        setTimeout(() => {
+          navigate('/');
+        }, 1500);
+      } else {
+        // User needs to sign up/sign in first
+        toast({
+          title: "Sign Up Required",
+          description: "Please create an account to accept this supporter invitation",
+        });
+        
+        setTimeout(() => {
+          navigate('/auth?redirect=supporter-invite');
+        }, 1500);
+      }
       
     } catch (error) {
       console.error('Error accepting invitation:', error);

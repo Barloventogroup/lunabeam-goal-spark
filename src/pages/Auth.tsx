@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,12 +10,16 @@ import { toast } from 'sonner';
 export default function Auth() {
   const { user, signIn, signUp, signOut } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    firstName: ''
   });
+
+  const isSupporterInvite = searchParams.get('redirect') === 'supporter-invite';
 
   // Redirect to dashboard after successful authentication
   useEffect(() => {
@@ -24,6 +28,13 @@ export default function Auth() {
     }
   }, [user, loading, navigate]);
 
+  // Auto-switch to signup mode for supporter invites
+  useEffect(() => {
+    if (isSupporterInvite && !isSignUp) {
+      setIsSignUp(true);
+    }
+  }, [isSupporterInvite, isSignUp]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,11 +42,15 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(formData.email, formData.password, '');
+        const { error } = await signUp(formData.email, formData.password, formData.firstName || 'User');
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success('Account created! Please check your email to verify your account.');
+          if (isSupporterInvite) {
+            toast.success('Account created! You will be connected as a supporter after verification.');
+          } else {
+            toast.success('Account created! Please check your email to verify your account.');
+          }
           setIsSignUp(false);
         }
       } else {
@@ -77,7 +92,10 @@ export default function Auth() {
             />
           </div>
           <CardDescription className="text-black font-bold">
-            Guiding big dreams, one step at a time
+            {isSupporterInvite 
+              ? "Create an account to become a supporter" 
+              : "Guiding big dreams, one step at a time"
+            }
           </CardDescription>
           {user && (
             <div className="mt-2 text-sm text-muted-foreground">
@@ -90,12 +108,31 @@ export default function Auth() {
         </CardHeader>
         
         <CardContent>
-          {!isSignUp && (
+          {isSupporterInvite && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-800">
+              You've been invited to become a supporter. Create an account to get started!
+            </div>
+          )}
+          {!isSignUp && !isSupporterInvite && (
             <div className="mb-4 mt-10 text-sm text-black text-center">
               Sign in with your email to access your account
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {isSignUp && (
+              <div className="space-y-2">
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  placeholder="Enter your first name"
+                  className="border-gray-500 focus:border-primary text-sm bg-[#E0E0E0]"
+                />
+              </div>
+            )}
             
             <div className="space-y-2">
               <Input
@@ -145,16 +182,18 @@ export default function Auth() {
           </form>
           
           <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              {isSignUp 
-                ? 'Already have an account? Sign in' 
-                : <>Don't have an account? Sign up</>
-              }
-            </button>
+            {!isSupporterInvite && (
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                {isSignUp 
+                  ? 'Already have an account? Sign in' 
+                  : <>Don't have an account? Sign up</>
+                }
+              </button>
+            )}
           </div>
         </CardContent>
       </Card>

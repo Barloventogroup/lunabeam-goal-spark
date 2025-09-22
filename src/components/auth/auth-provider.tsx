@@ -88,13 +88,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.warn('AuthProvider: Failed to clear persisted store on sign in');
           }
           console.log('AuthProvider: User signed in, loading profile for user:', session.user.id, session.user.email, session.user.user_metadata);
-          setTimeout(() => {
-            loadProfile().then(() => {
-              console.log('AuthProvider: Profile loaded after sign in');
-            }).catch((error) => {
-              console.error('AuthProvider: Failed to load profile after sign in:', error);
-            });
-          }, 0);
+          
+          // Check for pending supporter invite
+          const pendingInvite = localStorage.getItem('pending_supporter_invite');
+          if (pendingInvite) {
+            console.log('AuthProvider: Processing pending supporter invite...');
+            setTimeout(async () => {
+              try {
+                // Import here to avoid circular dependency
+                const { PermissionsService } = await import('@/services/permissionsService');
+                await PermissionsService.acceptSupporterInvite(pendingInvite);
+                localStorage.removeItem('pending_supporter_invite');
+                console.log('AuthProvider: Supporter invite accepted successfully');
+                
+                // Redirect to dashboard
+                window.location.href = '/';
+              } catch (error) {
+                console.error('AuthProvider: Failed to accept supporter invite:', error);
+                localStorage.removeItem('pending_supporter_invite');
+              }
+            }, 1000);
+          } else {
+            setTimeout(() => {
+              loadProfile().then(() => {
+                console.log('AuthProvider: Profile loaded after sign in');
+              }).catch((error) => {
+                console.error('AuthProvider: Failed to load profile after sign in:', error);
+              });
+            }, 0);
+          }
         }
       }
     );
