@@ -60,12 +60,16 @@ const handler = async (req: Request): Promise<Response> => {
     let subject: string;
     let htmlContent: string;
 
+    // Use display name or fallback to friendly greeting
+    const displayName = inviteeName && inviteeName.trim() ? inviteeName.trim() : null;
+    const greeting = displayName ? `Hi ${displayName},` : 'Hello there,';
+
     if (type === 'family_circle') {
       subject = `You're invited to join ${circeName || 'a family circle'}!`;
       htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Family Circle Invitation</h2>
-          <p>Hi ${inviteeName},</p>
+          <p>${greeting}</p>
           <p><strong>${inviterName}</strong> has invited you to join their family circle${circeName ? ` "${circeName}"` : ''} on LuneBeam!</p>
           ${message ? `<div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;"><p><em>"${message}"</em></p></div>` : ''}
           <p>Click the link below to accept the invitation:</p>
@@ -81,7 +85,7 @@ const handler = async (req: Request): Promise<Response> => {
       htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Supporter Invitation</h2>
-          <p>Hi ${inviteeName},</p>
+          <p>${greeting}</p>
           <p><strong>${inviterName}</strong> has invited you to join them on Lunabeam${roleName ? ` as a ${roleName}` : ''}!</p>
           ${message ? `<div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;"><p><em>"${message}"</em></p></div>` : ''}
           <p>As a supporter, you'll be able to help track progress and provide encouragement on their goals.</p>
@@ -95,9 +99,13 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     }
 
+    // Clean up the name and email for proper formatting
+    const cleanedEmail = inviteeEmail.trim();
+    const displayName = inviteeName && inviteeName.trim() ? inviteeName.trim() : null;
+    
     const { data: sent, error: resendError } = await resend.emails.send({
       from: `${FROM_NAME} <${FROM_EMAIL}>`,
-      to: [inviteeName ? `${inviteeName} <${inviteeEmail.trim()}>` : inviteeEmail.trim()],
+      to: [displayName ? `${displayName} <${cleanedEmail}>` : cleanedEmail],
       subject: subject,
       html: htmlContent,
     });
