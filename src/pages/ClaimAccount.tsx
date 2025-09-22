@@ -115,7 +115,12 @@ export function ClaimAccount() {
 
   if (!claimInfo) {
     return (
-      <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ 
+      backgroundImage: 'url(/lovable-uploads/9c1b5bdb-2b99-433d-8696-e539336f2074.png)', 
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }}>
         <Card className="w-full max-w-md">
           <CardContent className="flex items-center justify-center p-6">
             <Loader2 className="w-6 h-6 animate-spin" />
@@ -126,7 +131,12 @@ export function ClaimAccount() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ 
+        backgroundImage: 'url(/lovable-uploads/9c1b5bdb-2b99-433d-8696-e539336f2074.png)', 
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Claim Your Account</CardTitle>
