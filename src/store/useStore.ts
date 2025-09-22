@@ -5,10 +5,12 @@ import { database } from '../services/database';
 import { goalsService, stepsService } from '../services/goalsService';
 import { pointsService, type PointsSummary } from '../services/pointsService';
 import { supabase } from '@/integrations/supabase/client';
+import { getUserContext, type UserContext } from '@/utils/userTypeUtils';
 
 interface AppState {
   // Core data
   profile: Profile | null;
+  userContext: UserContext | null;
   consent: Consent;
   justCompletedOnboarding: boolean;
   
@@ -37,6 +39,7 @@ interface AppState {
   
   // Actions
   setProfile: (profile: Profile) => Promise<void>;
+  updateUserContext: () => Promise<void>;
   updateConsent: (consent: Consent) => void;
   completeOnboarding: () => Promise<void>;
   clearJustCompletedOnboarding: () => void;
@@ -120,6 +123,7 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       // Initial state
       profile: null,
+      userContext: null,
       consent: demoConsent,
       justCompletedOnboarding: false,
       
@@ -145,6 +149,15 @@ export const useStore = create<AppState>()(
       setProfile: async (profile) => {
         await database.saveProfile(profile);
         set({ profile });
+        // Update user context when profile changes
+        const userContext = await getUserContext(profile);
+        set({ userContext });
+      },
+
+      updateUserContext: async () => {
+        const { profile } = get();
+        const userContext = await getUserContext(profile);
+        set({ userContext });
       },
       
       // New Goals & Steps actions
@@ -366,17 +379,23 @@ export const useStore = create<AppState>()(
               console.log('Store: Creating minimal profile from auth:', minimalProfile);
               console.log('Store: User info:', { id: user.id, email: user.email, metadata: user.user_metadata });
               
-              try {
-                await database.saveProfile(minimalProfile);
-                console.log('Store: Successfully saved minimal profile to DB');
-                set({ profile: minimalProfile });
-                return;
-              } catch (saveError) {
-                console.error('Store: Failed to save minimal profile to DB:', saveError);
-                // Set profile in state even if DB save fails, so onboarding can proceed
-                set({ profile: minimalProfile });
-                return;
-              }
+          try {
+            await database.saveProfile(minimalProfile);
+            console.log('Store: Successfully saved minimal profile to DB');
+            set({ profile: minimalProfile });
+            // Update user context for the new profile
+            const userContext = await getUserContext(minimalProfile);
+            set({ userContext });
+            return;
+          } catch (saveError) {
+            console.error('Store: Failed to save minimal profile to DB:', saveError);
+            // Set profile in state even if DB save fails, so onboarding can proceed
+            set({ profile: minimalProfile });
+            // Still try to get user context
+            const userContext = await getUserContext(minimalProfile);
+            set({ userContext });
+            return;
+          }
             } else {
               console.error('Store: No authenticated user found');
               throw new Error('No authenticated user found');
@@ -394,6 +413,9 @@ export const useStore = create<AppState>()(
               const repaired = { ...profile, first_name: desiredFirst };
               await database.saveProfile(repaired);
               set({ profile: repaired });
+              // Update user context for the repaired profile
+              const userContext = await getUserContext(repaired);
+              set({ userContext });
               return;
             }
           } catch (mismatchErr) {
@@ -402,6 +424,9 @@ export const useStore = create<AppState>()(
 
           console.log('Store: Setting profile from DB:', profile);
           set({ profile });
+          // Update user context for the loaded profile
+          const userContext = await getUserContext(profile);
+          set({ userContext });
         } catch (error) {
           console.error('Store: Failed to load profile:', error);
           const errMsg = (error as any)?.message || '';

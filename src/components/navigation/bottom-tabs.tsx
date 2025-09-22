@@ -3,6 +3,7 @@ import { Home, Target, Users, User, MessageCircle, ArrowLeft } from 'lucide-reac
 import { TabHome } from './tab-home';
 import { TabGoals } from './tab-goals';
 import { TabTeam } from './tab-team';
+import { TabTeamIndividual } from './tab-team-individual';
 import { TabYou } from './tab-you';
 import { AIChat } from '../lunebeam/ai-chat';
 import { useStore } from '@/store/useStore';
@@ -14,7 +15,7 @@ export const BottomTabs: React.FC = () => {
   const [showChat, setShowChat] = useState(false);
   const [isWizardActive, setIsWizardActive] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
-  const { loadGoals } = useStore();
+  const { loadGoals, userContext } = useStore();
 
   const tabs = [
     {
@@ -60,7 +61,7 @@ export const BottomTabs: React.FC = () => {
       case 'goals':
         return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} />;
       case 'team':
-        return <TabTeam />;
+        return userContext?.isClaimedIndividual ? <TabTeamIndividual /> : <TabTeam />;
       case 'you':
         return <TabYou />;
       default:

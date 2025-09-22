@@ -10,6 +10,8 @@ export interface Profile {
   comm_pref: 'voice' | 'text';
   onboarding_complete?: boolean;
   avatar_url?: string;
+  account_status?: 'active' | 'pending_user_consent' | 'user_claimed';
+  claimed_at?: string;
   created_at?: string;
   updated_at?: string;
 }

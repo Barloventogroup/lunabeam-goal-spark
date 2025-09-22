@@ -33,6 +33,7 @@ import { useStore } from '@/store/useStore';
 import { useAuth } from '@/components/auth/auth-provider';
 import { format, addDays, isToday, parseISO } from 'date-fns';
 import type { Goal } from '@/types';
+import { getWelcomeMessage } from '@/utils/userTypeUtils';
 
 interface HomeDashboardProps {
   onNavigate: (view: string, data?: any) => void;
@@ -41,6 +42,7 @@ interface HomeDashboardProps {
 const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const { 
     profile, 
+    userContext,
     goals,
     steps,
     getActiveGoal, 
@@ -57,7 +59,8 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     loadFamilyCircles,
     loadPoints,
     clearJustCompletedOnboarding,
-    createFamilyCircle
+    createFamilyCircle,
+    updateUserContext
   } = useStore();
   
   const { user, signOut } = useAuth();
@@ -71,8 +74,9 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       loadEvidence();
       loadFamilyCircles();
       loadPoints();
+      updateUserContext(); // Ensure user context is loaded
     }
-  }, [user, loadProfile, loadGoals, loadCheckIns, loadEvidence, loadFamilyCircles, loadPoints]);
+  }, [user, loadProfile, loadGoals, loadCheckIns, loadEvidence, loadFamilyCircles, loadPoints, updateUserContext]);
 
   // Add refresh data when tab becomes visible
   useEffect(() => {
@@ -180,7 +184,12 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const hasActiveOrPlannedGoals = goals.some(goal => goal.status === 'active' || goal.status === 'planned');
   const isFirstTimeUser = justCompletedOnboarding && !hasActiveOrPlannedGoals;
   const hasProgressToShow = activeGoal && ((activeGoal.progress_pct || 0) > 0 || activeGoalSteps.length > 0);
-  const displayName = profile?.first_name ? profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1) : 'User';
+  
+  // Get personalized welcome message based on user type
+  const welcomeMessage = userContext ? getWelcomeMessage(userContext, isFirstTimeUser) : {
+    title: 'Welcome!',
+    subtitle: 'Loading your personalized experience...'
+  };
   
   const handleSnooze = (goalId: string, duration: '15m' | '1h') => {
     console.log(`Snoozing goal ${goalId} for ${duration}`);
@@ -255,7 +264,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         {/* Welcome Message */}
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-foreground">
-            {isFirstTimeUser ? <>Welcome {displayName}!</> : <>Welcome back, {displayName}!!</>}
+            {welcomeMessage.title}
           </h1>
           {isFirstTimeUser ? (
             <p className="text-muted-foreground">
@@ -263,7 +272,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
             </p>
           ) : (
             <p className="text-muted-foreground">
-              Let's keep moving forward, one step at a time.
+              {welcomeMessage.subtitle}
             </p>
           )}
         </div>
@@ -388,21 +397,27 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
 
         {/* Add Goal and Rewards Cards */}
         <div className="space-y-4">
-          {/* Add Goal */}
-          <Card 
-            className="cursor-pointer hover:bg-muted/50 transition-colors"
-            onClick={() => onNavigate('goal-wizard')}
-          >
-            <CardContent className="p-6 text-center space-y-3">
-              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto">
-                <Plus className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground">Add Goal</p>
-                <p className="text-sm text-muted-foreground">Start something new</p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Add Goal - Only show for admin users or if no goals exist */}
+          {(!userContext?.isClaimedIndividual || !hasActiveOrPlannedGoals) && (
+            <Card 
+              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => onNavigate('goal-wizard')}
+            >
+              <CardContent className="p-6 text-center space-y-3">
+                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto">
+                  <Plus className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">
+                    {userContext?.isClaimedIndividual ? 'Suggest a Goal' : 'Add Goal'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {userContext?.isClaimedIndividual ? 'Share ideas with your support team' : 'Start something new'}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* LunaPoints */}
           <Card 
@@ -420,7 +435,8 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           </Card>
         </div>
 
-        {!isFirstTimeUser && (
+        {/* Show personalized greeting only for admin users or first-time users */}
+        {(!userContext?.isClaimedIndividual || isFirstTimeUser) && (
           <PersonalizedGreeting 
             onResumeGoal={handleResumeGoal}
             onNewGoal={handleNewGoal}
