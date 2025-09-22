@@ -101,7 +101,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Clean up the name and email for proper formatting
     const cleanedEmail = inviteeEmail.trim();
-    const displayName = inviteeName && inviteeName.trim() ? inviteeName.trim() : null;
     
     const { data: sent, error: resendError } = await resend.emails.send({
       from: `${FROM_NAME} <${FROM_EMAIL}>`,
