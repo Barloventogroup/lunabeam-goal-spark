@@ -39,6 +39,7 @@ interface SupporterWithProfile extends Supporter {
     phone?: string;
   };
   memberType?: 'supporter' | 'individual'; // supporter = supports me, individual = I support them
+  displayStatus?: 'Accepted' | 'Pending' | 'Not invited yet' | 'Active';
 }
 
 interface PendingInvite {
@@ -91,6 +92,12 @@ export const TabTeam: React.FC = () => {
       console.log('TabTeam: Fetching my supporters...');
       const supportersData = await PermissionsService.getSupporters(user.id);
       console.log('TabTeam: My supporters data:', supportersData);
+
+      // Load invitations I've sent (to determine status for individuals)
+      console.log('TabTeam: Fetching my sent invites (for status)...');
+      const invitesData = await PermissionsService.getSentInvites();
+      const invitesByIndividual = new Map<string, any>((invitesData || []).map((i: any) => [i.individual_id, i]));
+      console.log('TabTeam: Invites data:', invitesData);
       
       // Load individuals that I support (people I am a supporter for)
       console.log('TabTeam: Fetching individuals I support...');
@@ -127,7 +134,7 @@ export const TabTeam: React.FC = () => {
           return {
             ...supporter,
             profile: profile || { first_name: 'Unknown User' },
-            memberType: 'supporter' as const // Person who supports me
+            memberType: 'supporter' as const,
           };
         })
       );
@@ -136,33 +143,68 @@ export const TabTeam: React.FC = () => {
       
       // Add individuals I support (people I am a supporter for)
       if (individualsISupport) {
-        const individualsWithProfiles = individualsISupport.map(individual => ({
-          id: `individual-${individual.individual_id}`,
-          individual_id: individual.individual_id,
-          supporter_id: user.id,
-          role: 'individual' as any,
-          permission_level: individual.permission_level as 'viewer' | 'collaborator',
-          specific_goals: [],
-          is_admin: individual.is_admin,
-          is_provisioner: individual.is_provisioner,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          profile: (individual as any).profiles || { first_name: 'Unknown Individual' },
-          memberType: 'individual' as const // Person I support
-        }));
+        const individualsWithProfiles = individualsISupport.map((individual: any) => {
+          const invite = invitesByIndividual.get(individual.individual_id);
+          const displayStatus = invite?.status === 'pending' ? 'Pending' : 'Accepted';
+          return {
+            id: `individual-${individual.individual_id}`,
+            individual_id: individual.individual_id,
+            supporter_id: user.id,
+            role: 'individual' as any,
+            permission_level: (individual.permission_level as 'viewer' | 'collaborator') || 'viewer',
+            specific_goals: [],
+            is_admin: individual.is_admin,
+            is_provisioner: individual.is_provisioner,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            profile: individual.profiles || { first_name: 'Unknown Individual' },
+            memberType: 'individual' as const,
+            displayStatus,
+          } as SupporterWithProfile & { displayStatus: string };
+        });
         
         allMembers.push(...individualsWithProfiles);
+      }
+
+      // Include profiles I created (on-behalf) even if no supporter relation exists yet
+      console.log('TabTeam: Fetching profiles I created (on-behalf)...');
+      const { data: createdProfiles, error: createdErr } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, avatar_url, account_status')
+        .eq('created_by_supporter', user.id);
+      if (createdErr) {
+        console.error('TabTeam: Error fetching created profiles:', createdErr);
+      } else if (createdProfiles) {
+        const existingIndividualIds = new Set(allMembers.filter(m => m.memberType === 'individual').map(m => (m as any).individual_id));
+        for (const p of createdProfiles) {
+          if (!existingIndividualIds.has(p.user_id)) {
+            const invite = invitesByIndividual.get(p.user_id);
+            const displayStatus = invite?.status === 'pending' ? 'Pending' : 'Not invited yet';
+            allMembers.push({
+              id: `individual-${p.user_id}`,
+              individual_id: p.user_id,
+              supporter_id: user.id,
+              role: 'individual' as any,
+              permission_level: 'viewer',
+              specific_goals: [],
+              is_admin: false,
+              is_provisioner: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              profile: { first_name: p.first_name, avatar_url: p.avatar_url },
+              memberType: 'individual',
+              displayStatus,
+            } as any);
+          }
+        }
       }
       
       console.log('TabTeam: All community members:', allMembers);
       setSupporters(allMembers);
 
-      // Load pending invites
-      console.log('TabTeam: Fetching pending invites...');
-      const invitesData = await PermissionsService.getSentInvites();
-      console.log('TabTeam: Invites data:', invitesData);
-      setPendingInvites(invitesData.filter(invite => invite.status === 'pending'));
-      
+      // Keep pending invites list for the table (for invite rows)
+      setPendingInvites((invitesData || []).filter((invite: any) => invite.status === 'pending'));
+
     } catch (error) {
       console.error('TabTeam: Error loading community data:', error);
       toast({
@@ -195,11 +237,17 @@ export const TabTeam: React.FC = () => {
     }
   };
 
-  const getStatusBadge = (type: 'supporter' | 'invite', inviteStatus?: string) => {
-    if (type === 'supporter') {
-      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300">Active</Badge>;
-    } else {
-      return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300">Pending</Badge>;
+  const getStatusBadge = (type: 'supporter' | 'invite', inviteStatus?: string, displayStatus?: string) => {
+    const status = displayStatus || (type === 'invite' ? inviteStatus : undefined) || (type === 'supporter' ? 'Active' : 'Pending');
+    switch (status) {
+      case 'Active':
+      case 'Accepted':
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300">Accepted</Badge>;
+      case 'Pending':
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300">Pending</Badge>;
+      case 'Not invited yet':
+      default:
+        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300">Not invited yet</Badge>;
     }
   };
 
@@ -438,7 +486,7 @@ export const TabTeam: React.FC = () => {
                              </Badge>
                            </TableCell>
                           <TableCell>
-                            {getStatusBadge(member.type, member.type === 'invite' ? member.status : undefined)}
+                            {getStatusBadge(member.type, member.type === 'invite' ? member.status : undefined, ('displayStatus' in member ? (member as any).displayStatus : undefined))}
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
@@ -448,6 +496,13 @@ export const TabTeam: React.FC = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="bg-background border shadow-lg">
+                                {member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' && 
+                                 'displayStatus' in member && (member as any).displayStatus === 'Not invited yet' && (
+                                  <DropdownMenuItem onClick={handleInvite}>
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Invite
+                                  </DropdownMenuItem>
+                                )}
                                 {member.type === 'invite' && (
                                   <DropdownMenuItem onClick={handleInvite}>
                                     <Mail className="h-4 w-4 mr-2" />
