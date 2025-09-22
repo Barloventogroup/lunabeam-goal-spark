@@ -106,6 +106,53 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (supporterUpdateError) {
       console.error('Failed to update supporter relationships:', supporterUpdateError);
+    } else {
+      console.log('Migrated supporter relationships from placeholder to real user');
+    }
+
+    // Safety net: fix any reversed relationship that might exist (new user as supporter of provisioner)
+    const { data: reversedRel, error: reversedErr } = await supabaseAdmin
+      .from('supporters')
+      .select('id, permission_level, specific_goals')
+      .eq('supporter_id', userId)
+      .eq('individual_id', claimRecord.provisioner_id)
+      .maybeSingle();
+
+    if (reversedErr) {
+      console.warn('Error checking for reversed relationship:', reversedErr);
+    }
+    if (reversedRel) {
+      console.log('Found reversed relationship, correcting direction');
+      // Ensure correct relationship exists
+      const { data: hasCorrect } = await supabaseAdmin
+        .from('supporters')
+        .select('id')
+        .eq('individual_id', userId)
+        .eq('supporter_id', claimRecord.provisioner_id)
+        .maybeSingle();
+      if (!hasCorrect) {
+        const { error: createCorrectErr } = await supabaseAdmin
+          .from('supporters')
+          .insert({
+            individual_id: userId,
+            supporter_id: claimRecord.provisioner_id,
+            role: 'supporter',
+            permission_level: 'admin',
+            is_admin: true,
+            is_provisioner: false,
+            specific_goals: reversedRel.specific_goals || []
+          });
+        if (createCorrectErr) console.error('Failed to create corrected relationship:', createCorrectErr);
+      }
+      const { error: deleteReversedErr } = await supabaseAdmin
+        .from('supporters')
+        .delete()
+        .eq('id', reversedRel.id);
+      if (deleteReversedErr) {
+        console.error('Failed to delete reversed relationship:', deleteReversedErr);
+      } else {
+        console.log('Deleted reversed relationship successfully');
+      }
     }
 
     // If no existing supporter relationships were found to migrate, 
