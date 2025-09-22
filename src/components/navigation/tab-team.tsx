@@ -412,7 +412,7 @@ export const TabTeam: React.FC = () => {
           .from('profiles')
           .select('email')
           .eq('user_id', individualId)
-          .single();
+          .maybeSingle(); // Use maybeSingle to handle no data gracefully
 
         if (error) {
           console.error('Error fetching profile:', error);
@@ -424,7 +424,8 @@ export const TabTeam: React.FC = () => {
           return;
         }
 
-        if (!profile?.email) {
+        // Check if profile exists and has email
+        if (!profile || !profile.email) {
           // Show modal to collect email
           setCollectEmailModal({
             open: true,
