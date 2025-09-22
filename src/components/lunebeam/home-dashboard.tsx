@@ -266,15 +266,9 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           <h1 className="text-2xl font-bold text-foreground">
             {welcomeMessage.title}
           </h1>
-          {isFirstTimeUser ? (
-            <p className="text-muted-foreground">
-              👋 Hey {displayName}! Welcome aboard. Let’s kick things off by setting your very first goal (see that big plus sign in the blue circle — that is where you start). And remember, big or small, every step counts. Ready to get started?
-            </p>
-          ) : (
-            <p className="text-muted-foreground">
-              {welcomeMessage.subtitle}
-            </p>
-          )}
+          <p className="text-muted-foreground">
+            {welcomeMessage.subtitle}
+          </p>
         </div>
 
         {/* Today's Focus Card - Always show */}
