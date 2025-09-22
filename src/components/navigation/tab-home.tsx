@@ -340,7 +340,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                             setShowCheckinModal(true);
                           }}
                         >
-                          Check In
+                          Review
                         </Button>
                         <Button 
                           size="sm" 
