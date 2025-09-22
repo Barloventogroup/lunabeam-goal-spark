@@ -126,6 +126,15 @@ export const TabTeam: React.FC = () => {
           .in('individual_id', individualIds);
         (claims || []).forEach((c: any) => claimsMap.set(c.individual_id, c.status));
       }
+
+      // Also fetch any individuals I have provisioned (even if no supporter relationship yet)
+      const { data: provisionedList, error: provisionedErr } = await (supabase as any)
+        .rpc('get_my_provisioned_individuals');
+      if (provisionedErr) {
+        console.warn('TabTeam: get_my_provisioned_individuals error:', provisionedErr);
+      } else {
+        console.log('TabTeam: Provisioned individuals (via claims):', provisionedList);
+      }
       // Combine supporters and individuals I support into one list
       const allMembers: SupporterWithProfile[] = [];
       const supportersWithProfiles = await Promise.all(
@@ -219,6 +228,31 @@ export const TabTeam: React.FC = () => {
         }
       } else {
         console.log('TabTeam: No created profiles found (empty result)');
+      }
+
+      // Merge provisioned individuals from account claims as a fallback source
+      if (provisionedList && provisionedList.length > 0) {
+        const existingIndividualIds = new Set(allMembers.filter(m => m.memberType === 'individual').map(m => (m as any).individual_id));
+        for (const p of provisionedList as any[]) {
+          if (!existingIndividualIds.has(p.user_id)) {
+            const displayStatus = p.status === 'pending' ? 'Pending' : p.status === 'accepted' ? 'Accepted' : 'Not invited yet';
+            allMembers.push({
+              id: `individual-${p.user_id}`,
+              individual_id: p.user_id,
+              supporter_id: user.id,
+              role: 'individual' as any,
+              permission_level: 'viewer',
+              specific_goals: [],
+              is_admin: false,
+              is_provisioner: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              profile: { first_name: p.first_name },
+              memberType: 'individual',
+              displayStatus,
+            } as any);
+          }
+        }
       }
       
       console.log('TabTeam: All community members:', allMembers);

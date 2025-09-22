@@ -1137,6 +1137,14 @@ export type Database = {
           status: Database["public"]["Enums"]["invite_status"]
         }[]
       }
+      get_my_provisioned_individuals: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          first_name: string
+          status: Database["public"]["Enums"]["invite_status"]
+          user_id: string
+        }[]
+      }
       get_my_received_invites: {
         Args: Record<PropertyKey, never>
         Returns: {
