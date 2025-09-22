@@ -1110,6 +1110,33 @@ export type Database = {
         Args: { _claim_token: string; _passcode: string }
         Returns: Json
       }
+      create_supporter_invite_secure: {
+        Args: {
+          p_expires_at?: string
+          p_individual_id: string
+          p_invitee_email: string
+          p_invitee_name?: string
+          p_message?: string
+          p_permission_level?: Database["public"]["Enums"]["permission_level"]
+          p_role?: Database["public"]["Enums"]["user_role"]
+          p_specific_goals?: string[]
+        }
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          individual_id: string
+          invite_token: string
+          invitee_email: string
+          invitee_name: string
+          inviter_id: string
+          message: string
+          permission_level: Database["public"]["Enums"]["permission_level"]
+          role: Database["public"]["Enums"]["user_role"]
+          specific_goals: string[]
+          status: Database["public"]["Enums"]["invite_status"]
+        }[]
+      }
       get_goal_completion_bonus: {
         Args: { category: string }
         Returns: number

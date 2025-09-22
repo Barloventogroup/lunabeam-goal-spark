@@ -162,56 +162,43 @@ export class PermissionsService {
     if (error) throw error;
   }
 
-  // Create supporter invite - with type compatibility
+  // Create supporter invite using secure database function to bypass RLS
   static async createSupporterInvite(invite: Omit<SupporterInvite, 'id' | 'created_at' | 'status' | 'invite_token'>): Promise<SupporterInvite> {
-    console.group('🔄 Creating Supporter Invite');
+    console.group('🔄 Creating Supporter Invite (Secure)');
     console.log('Invite data:', invite);
-    
-    const inviteToken = crypto.randomUUID();
-    console.log('Generated invite token:', inviteToken);
-    
-    const invitePayload = {
-      ...invite,
-      role: invite.role,
-      permission_level: invite.permission_level,
-      invite_token: inviteToken,
-      status: 'pending' as const
-    };
-    
-    console.log('Full invite object for insertion:', invitePayload);
 
     try {
-      const { data, error } = await supabase
-        .from('supporter_invites')
-        .insert(invitePayload)
-        .select()
-        .single();
+      const { data, error } = await supabase.rpc('create_supporter_invite_secure', {
+        p_individual_id: invite.individual_id,
+        p_invitee_email: invite.invitee_email,
+        p_invitee_name: invite.invitee_name,
+        p_role: invite.role,
+        p_permission_level: invite.permission_level,
+        p_specific_goals: invite.specific_goals,
+        p_message: invite.message,
+        p_expires_at: invite.expires_at
+      });
       
       if (error) {
-        console.error('❌ Database error creating invite:', error);
-        console.error('Error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        });
+        console.error('❌ Database function error creating invite:', error);
         console.groupEnd();
         throw new Error(`Failed to create supporter invite: ${error.message}`);
       }
 
-      if (!data) {
-        console.error('❌ No data returned from insert');
+      if (!data || data.length === 0) {
+        console.error('❌ No data returned from function');
         console.groupEnd();
         throw new Error('No data returned from supporter invite creation');
       }
 
-      console.log('✅ Invite created successfully:', data);
+      const inviteRecord = data[0];
+      console.log('✅ Invite created successfully via secure function:', inviteRecord);
       console.groupEnd();
       
       return {
-        ...data,
-        role: data.role as UserRole,
-        permission_level: data.permission_level as PermissionLevel
+        ...inviteRecord,
+        role: inviteRecord.role as UserRole,
+        permission_level: inviteRecord.permission_level as PermissionLevel
       } as SupporterInvite;
     } catch (err) {
       console.error('❌ Exception in createSupporterInvite:', err);
