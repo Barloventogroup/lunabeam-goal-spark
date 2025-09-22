@@ -349,7 +349,27 @@ export const useStore = create<AppState>()(
           set({ profile });
         } catch (error) {
           console.error('Store: Failed to load profile:', error);
-          // For new users who might have auth issues, create a basic profile to allow onboarding
+          const errMsg = (error as any)?.message || '';
+          const isAuthError =
+            (error as any)?.__isAuthError === true ||
+            (error as any)?.status === 403 ||
+            errMsg.includes('User from sub claim in JWT does not exist') ||
+            errMsg.includes('User not authenticated') ||
+            errMsg.includes('No authenticated user');
+
+          // If it's an auth-related error, don't override state with a fallback profile.
+          if (isAuthError) {
+            console.log('Store: Auth error detected while loading profile. Skipping fallback to avoid onboarding loop.');
+            return;
+          }
+
+          // If we already have a profile in state, don't override it either.
+          if (get().profile) {
+            console.log('Store: Existing profile present. Not overriding with fallback.');
+            return;
+          }
+
+          // Otherwise, set a minimal local profile so UI can proceed.
           const basicProfile = {
             first_name: 'User',
             strengths: [],
@@ -358,7 +378,7 @@ export const useStore = create<AppState>()(
             comm_pref: 'text' as const,
             onboarding_complete: false,
           };
-          console.log('Store: Setting fallback profile due to error:', basicProfile);
+          console.log('Store: Setting fallback profile due to non-auth error:', basicProfile);
           set({ profile: basicProfile });
         }
       },

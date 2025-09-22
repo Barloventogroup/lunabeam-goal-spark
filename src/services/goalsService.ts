@@ -58,10 +58,16 @@ export const goalsService = {
     q?: string;
     includeArchived?: boolean;
   }): Promise<Goal[]> {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user?.id) {
+      // Not authenticated or missing user id; avoid invalid UUID errors
+      return [];
+    }
+
     let query = supabase
       .from('goals')
       .select('*')
-      .eq('owner_id', (await supabase.auth.getUser()).data.user?.id);
+      .eq('owner_id', user.id);
 
     // By default, exclude archived goals unless specifically requested
     if (!filters?.includeArchived) {
