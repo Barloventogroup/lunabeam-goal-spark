@@ -77,12 +77,18 @@ export const TabTeam: React.FC = () => {
   }, [user]);
 
   const loadCommunityData = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('TabTeam: No user found, cannot load community data');
+      return;
+    }
     
+    console.log('TabTeam: Loading community data for user:', user.id);
     setLoading(true);
     try {
       // Load supporters with profiles
+      console.log('TabTeam: Fetching supporters...');
       const supportersData = await PermissionsService.getSupporters(user.id);
+      console.log('TabTeam: Supporters data:', supportersData);
       
       // Get profile data for each supporter
       const supportersWithProfiles = await Promise.all(
@@ -100,14 +106,17 @@ export const TabTeam: React.FC = () => {
         })
       );
       
+      console.log('TabTeam: Supporters with profiles:', supportersWithProfiles);
       setSupporters(supportersWithProfiles);
 
       // Load pending invites
+      console.log('TabTeam: Fetching pending invites...');
       const invitesData = await PermissionsService.getSentInvites();
+      console.log('TabTeam: Invites data:', invitesData);
       setPendingInvites(invitesData.filter(invite => invite.status === 'pending'));
       
     } catch (error) {
-      console.error('Error loading community data:', error);
+      console.error('TabTeam: Error loading community data:', error);
       toast({
         title: "Error",
         description: "Failed to load community data",
