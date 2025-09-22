@@ -23,11 +23,15 @@ interface InvitationEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('🚀 Edge function invoked:', req.method, req.url);
+  
   if (req.method === "OPTIONS") {
+    console.log('✅ Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('📩 Processing invitation email request...');
     const {
       type,
       inviteeName,
@@ -39,12 +43,12 @@ const handler = async (req: Request): Promise<Response> => {
       circeName
     }: InvitationEmailRequest = await req.json();
 
-    console.log('Sending invitation email:', { type, inviteeName, inviteeEmail, inviterName });
+    console.log('📋 Request data:', { type, inviteeName, inviteeEmail, inviterName });
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(inviteeEmail)) {
-      console.error('Invalid email format:', inviteeEmail);
+      console.error('❌ Invalid email format:', inviteeEmail);
       return new Response(
         JSON.stringify({ 
           success: false, 
