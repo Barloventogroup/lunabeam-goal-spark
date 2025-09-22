@@ -104,8 +104,8 @@ export const CollectEmailModal = ({
           </div>
           
           <div className="text-sm text-muted-foreground">
-            An email address is required to send the invitation. Please provide 
-            {individualName}'s email address.
+            To send the invitation, we need an email address for {individualName}. 
+            Please enter their email below and we'll send them a friendly invitation to join!
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
