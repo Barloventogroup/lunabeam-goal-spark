@@ -12,6 +12,9 @@ interface AppState {
   consent: Consent;
   justCompletedOnboarding: boolean;
   
+  // Track which authenticated user this persisted store belongs to
+  lastUserId: string | null;
+  
   // New Goals & Steps system
   goals: Goal[];
   steps: Record<string, Step[]>; // keyed by goal_id
@@ -119,6 +122,9 @@ export const useStore = create<AppState>()(
       profile: null,
       consent: demoConsent,
       justCompletedOnboarding: false,
+      
+      // Track current authenticated user for this store snapshot
+      lastUserId: null,
       
       // New Goals & Steps system
       goals: [],
@@ -294,24 +300,51 @@ export const useStore = create<AppState>()(
           
           if (!profile) {
             console.log('Store: No profile found in DB, creating for new user...');
-            const localProfile = get().profile;
 
-            // If we already have a meaningful local profile, sync it to DB
-            if (localProfile?.first_name && localProfile.first_name.trim() !== '' && localProfile.first_name !== 'User') {
-              console.log('Store: Syncing local profile to DB:', localProfile);
-              await database.saveProfile(localProfile);
-              set({ profile: localProfile });
-              return;
-            }
-
-            // Otherwise, create a minimal profile using auth user info
+            // Get current auth user first to scope persisted state
             const { data: { user }, error: userError } = await supabase.auth.getUser();
             if (userError) {
               console.error('Store: Failed to get user info:', userError);
               throw userError;
             }
-            
+
             if (user) {
+              // If switching between accounts on the same device, clear cross-user data
+              const storedUserId = get().lastUserId;
+              if (storedUserId && storedUserId !== user.id) {
+                console.log('Store: Detected user switch. Clearing state to prevent data leakage.');
+                set({
+                  profile: null,
+                  goals: [],
+                  steps: {},
+                  legacyGoals: [],
+                  checkIns: [],
+                  evidence: [],
+                  badges: [],
+                  currentGoal: null,
+                  lastUserId: user.id,
+                });
+              } else if (!storedUserId) {
+                set({ lastUserId: user.id });
+              }
+
+              // Re-evaluate local profile after potential reset
+              const localProfile = get().profile;
+
+              // Only sync a meaningful local profile if it belongs to the same user
+              if (
+                localProfile?.first_name &&
+                localProfile.first_name.trim() !== '' &&
+                localProfile.first_name !== 'User' &&
+                get().lastUserId === user.id
+              ) {
+                console.log('Store: Syncing local profile to DB:', localProfile);
+                await database.saveProfile(localProfile);
+                set({ profile: localProfile });
+                return;
+              }
+
+              // Otherwise, create a minimal profile using auth user info
               const metaFirst = (user.user_metadata?.first_name || '').toString().trim();
               const emailLocal = (user.email || '').split('@')[0] || '';
               const firstName = metaFirst || emailLocal || 'User';
@@ -468,7 +501,8 @@ export const useStore = create<AppState>()(
         evidence: state.evidence,
         badges: state.badges,
         justCompletedOnboarding: state.justCompletedOnboarding,
-        currentGoal: state.currentGoal
+        currentGoal: state.currentGoal,
+        lastUserId: state.lastUserId,
       })
     }
   )
