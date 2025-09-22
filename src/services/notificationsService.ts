@@ -63,5 +63,70 @@ export const notificationsService = {
       .eq('id', notificationId);
 
     if (error) throw error;
-  }
+  },
+
+  // Email notification functionality
+  async sendNotificationEmail(request: {
+    type: 'check_in' | 'step_complete' | 'goal_created' | 'goal_assigned';
+    userId: string;
+    goalId?: string;
+    stepId?: string;
+    substepId?: string;
+    supporterIds?: string[];
+  }): Promise<void> {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-notification-email', {
+        body: request,
+      });
+
+      if (error) {
+        console.error('Error sending notification email:', error);
+        throw error;
+      }
+
+      console.log('Notification email sent successfully:', data);
+    } catch (error) {
+      console.error('Failed to send notification email:', error);
+      // Don't throw the error to prevent blocking the main functionality
+    }
+  },
+
+  // Helper methods for specific notification types
+  async notifyCheckIn(userId: string, goalId?: string, stepId?: string, substepId?: string): Promise<void> {
+    await this.sendNotificationEmail({
+      type: 'check_in',
+      userId,
+      goalId,
+      stepId,
+      substepId,
+    });
+  },
+
+  async notifyStepComplete(userId: string, goalId?: string, stepId?: string, substepId?: string): Promise<void> {
+    await this.sendNotificationEmail({
+      type: 'step_complete',
+      userId,
+      goalId,
+      stepId,
+      substepId,
+    });
+  },
+
+  async notifyGoalCreated(userId: string, goalId: string, supporterIds?: string[]): Promise<void> {
+    await this.sendNotificationEmail({
+      type: 'goal_created',
+      userId,
+      goalId,
+      supporterIds,
+    });
+  },
+
+  async notifyGoalAssigned(userId: string, goalId: string, supporterIds?: string[]): Promise<void> {
+    await this.sendNotificationEmail({
+      type: 'goal_assigned',
+      userId,
+      goalId,
+      supporterIds,
+    });
+  },
 };

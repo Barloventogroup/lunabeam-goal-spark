@@ -19,6 +19,8 @@ import { BlockedStepGuidance } from './blocked-step-guidance';
 import { StepChatModal } from './step-chat-modal';
 import { StepEditModal } from './step-edit-modal';
 import { useToast } from '@/hooks/use-toast';
+import { notificationsService } from '@/services/notificationsService';
+import { supabase } from '@/integrations/supabase/client';
 import { useStore } from '@/store/useStore';
 import { cleanStepTitle } from '@/utils/stepUtils';
 import { parseISO, isBefore } from 'date-fns';
@@ -451,6 +453,12 @@ export const StepsList: React.FC<StepsListProps> = ({
         title: "Step completed!",
         description: `Great job! You've completed this step.`,
       });
+
+      // Send email notification to supporters
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await notificationsService.notifyStepComplete(user.id, goal.id, stepId);
+      }
     } catch (error) {
       console.error('Error completing step:', error);
       toast({
@@ -481,6 +489,12 @@ export const StepsList: React.FC<StepsListProps> = ({
         title: "Checked in!",
         description: "You've started working on this step.",
       });
+
+      // Send email notification to supporters
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await notificationsService.notifyCheckIn(user.id, goal.id, stepId);
+      }
     } catch (error) {
       console.error('Error checking in step:', error);
       toast({
@@ -503,6 +517,12 @@ export const StepsList: React.FC<StepsListProps> = ({
         title: "Checked in!",
         description: "You've started working on this substep.",
       });
+
+      // Send email notification to supporters
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await notificationsService.notifyCheckIn(user.id, goal.id, stepId, substepId);
+      }
     } catch (error) {
       console.error('Error checking in substep:', error);
       toast({
@@ -571,6 +591,12 @@ export const StepsList: React.FC<StepsListProps> = ({
           title: "Substep completed!",
           description: "Great progress on breaking down this step.",
         });
+
+        // Send email notification to supporters for substep completion
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await notificationsService.notifyStepComplete(user.id, goal.id, stepId, substepId);
+        }
       }
 
       // Trigger points refresh after substep completion

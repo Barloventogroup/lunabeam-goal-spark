@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Goal, Step, GoalDomain, GoalPriority, GoalStatus, StepStatus } from '@/types';
 import { pointsService } from './pointsService';
 import { validateGoalFrequencyWithDueDate } from '@/utils/goalValidationUtils';
+import { notificationsService } from './notificationsService';
 import { fixGoalDomains } from '@/utils/goalMigrationUtils';
 
 // Make migration available globally for admin use
@@ -176,6 +177,14 @@ export const goalsService = {
       .single();
 
     if (error) throw error;
+    
+    // Send notification email to supporters about goal creation
+    try {
+      await notificationsService.notifyGoalCreated(user.data.user.id, data.id);
+    } catch (notificationError) {
+      console.error('Failed to send goal creation notification:', notificationError);
+    }
+    
     return data as Goal;
   },
 
