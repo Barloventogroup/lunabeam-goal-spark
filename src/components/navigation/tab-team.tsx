@@ -590,12 +590,11 @@ export const TabTeam: React.FC = () => {
               ) : (
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
+                     <TableRow>
+                       <TableHead>Name</TableHead>
+                       <TableHead>Status</TableHead>
+                       <TableHead className="text-right">Actions</TableHead>
+                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {supporters
@@ -615,15 +614,9 @@ export const TabTeam: React.FC = () => {
                               </Avatar>
                               <span className="font-medium">{name}</span>
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={getRoleColor('individual')}>
-                              <User className="h-3 w-3" />
-                              <span className="ml-1">Individual</span>
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {getStatusBadge('supporter', undefined, (member as any).displayStatus)}
+                           </TableCell>
+                           <TableCell>
+                             {getStatusBadge('supporter', undefined, (member as any).displayStatus)}
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
@@ -713,12 +706,11 @@ export const TabTeam: React.FC = () => {
               ) : (
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
+                     <TableRow>
+                       <TableHead>Name</TableHead>
+                       <TableHead>Status</TableHead>
+                       <TableHead className="text-right">Actions</TableHead>
+                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {combinedMembers
@@ -759,27 +751,9 @@ export const TabTeam: React.FC = () => {
                         )}
                               </div>
                             </div>
-                          </TableCell>
+                           </TableCell>
                            <TableCell>
-                             <Badge variant="outline" className={`text-xs ${getRoleColor(
-                               member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' 
-                                 ? 'individual' 
-                                 : member.role
-                             )}`}>
-                               {getRoleIcon(
-                                 member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' 
-                                   ? 'individual' 
-                                   : member.role
-                               )}
-                               <span className="ml-1 capitalize">
-                                 {member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' 
-                                   ? 'Individual' 
-                                   : member.role}
-                               </span>
-                             </Badge>
-                            </TableCell>
-                          <TableCell>
-                            {getStatusBadge(member.type, member.type === 'invite' ? member.status : undefined, ('displayStatus' in member ? (member as any).displayStatus : undefined))}
+                             {getStatusBadge(member.type, member.type === 'invite' ? member.status : undefined, ('displayStatus' in member ? (member as any).displayStatus : undefined))}
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
