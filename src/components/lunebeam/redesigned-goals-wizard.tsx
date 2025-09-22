@@ -600,12 +600,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <Sparkles className="h-8 w-8 text-primary" />
         </div>
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">
-          {isSupporter && data.recipient === 'other' 
-            ? `What would you like ${data.supportedPersonName} to work on?`
-            : "Describe what you want to achieve"
-          }
-        </p>
       </CardHeader>
       
       <CardContent className="space-y-6">
