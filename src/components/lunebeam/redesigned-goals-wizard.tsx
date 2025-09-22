@@ -552,31 +552,50 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
         
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label>Categories</Label>
+          <Label>Categories</Label>
+          
+          {/* Category Carousel */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-2">
+              {categories
+                .sort((a, b) => a.title.localeCompare(b.title))
+                .slice(0, 3)
+                .map(category => (
+                <Card 
+                  key={category.id}
+                  className={cn(
+                    "cursor-pointer hover:shadow-md transition-all border-2",
+                    data.category === category.id ? "border-primary bg-primary/5" : "border-border"
+                  )}
+                  onClick={() => handleCategorySelect(category.id)}
+                >
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <category.icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm truncate">{category.title}</h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{category.description}</p>
+                      </div>
+                      {data.category === category.id && (
+                        <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            
             <Button 
               variant="outline" 
               size="sm"
+              className="w-full"
               onClick={() => setShowCategoryDialog(true)}
             >
-              Browse categories
+              More categories
             </Button>
           </div>
-          
-          {data.category && (
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-sm">
-                {categories.find(c => c.id === data.category)?.emoji} {categories.find(c => c.id === data.category)?.title}
-              </Badge>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => updateData({ category: undefined })}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
           
           <p className="text-xs text-muted-foreground">
             Categories help organize your goals. If you skip this, we'll auto-classify your goal.
