@@ -610,6 +610,11 @@ export const StepsList: React.FC<StepsListProps> = ({
         }
       }
 
+      // Trigger parent component refresh to update counters
+      if (onStepsChange) {
+        onStepsChange();
+      }
+
       // Trigger points refresh after substep completion
       window.dispatchEvent(new CustomEvent('pointsUpdated'));
     } catch (error) {
