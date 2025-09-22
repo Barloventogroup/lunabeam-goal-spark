@@ -269,6 +269,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [categoryPageIndex, setCategoryPageIndex] = useState(0);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [datePickerType, setDatePickerType] = useState<'start' | 'end'>('start');
   
   const { toast } = useToast();
@@ -863,21 +864,36 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         <div className="space-y-3">
           <Label>When during the day?</Label>
           <div className="grid grid-cols-2 gap-2">
-            {timesOfDay.map(time => (
-              <Button
-                key={time.id}
-                variant={data.timeOfDay === time.id ? 'default' : 'outline'}
-                className="h-auto p-3"
-                onClick={() => updateData({ timeOfDay: time.id })}
-              >
-                <div className="text-center">
-                  <div className="font-semibold">{time.label}</div>
-                  <div className="text-xs text-muted-foreground">{time.description}</div>
-                </div>
-              </Button>
-            ))}
+             {timesOfDay.map(time => (
+               <Button
+                 key={time.id}
+                 variant={data.timeOfDay === time.id ? 'default' : 'outline'}
+                 className="h-auto p-3"
+                 onClick={() => {
+                   if (time.id === 'custom') {
+                     setShowTimePicker(true);
+                   } else {
+                     updateData({ timeOfDay: time.id });
+                   }
+                 }}
+               >
+                 <div className="text-center">
+                   <div className="font-semibold">{time.label}</div>
+                   <div className="text-xs text-muted-foreground">{time.description}</div>
+                 </div>
+               </Button>
+             ))}
           </div>
-        </div>
+         </div>
+         
+         {/* Custom Time Display */}
+         {data.timeOfDay === 'custom' && data.customTime && (
+           <div className="mt-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
+             <div className="text-sm font-medium text-primary">
+               Selected time: {data.customTime}
+             </div>
+           </div>
+         )}
         
         {/* Date range */}
         <div className="space-y-3">
@@ -1245,6 +1261,76 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <CarouselPrevious />
               <CarouselNext />
             </Carousel>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Custom Time Picker Dialog */}
+        <Dialog open={showTimePicker} onOpenChange={setShowTimePicker}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Pick a time</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4 p-4">
+              {/* Time input */}
+              <div className="space-y-2">
+                <Label htmlFor="custom-time">Select time</Label>
+                <Input
+                  id="custom-time"
+                  type="time"
+                  value={data.customTime || ''}
+                  onChange={(e) => updateData({ customTime: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+              
+              {/* Quick time options */}
+              <div className="space-y-2">
+                <Label>Or choose a common time:</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: '7:00 AM', value: '07:00' },
+                    { label: '8:00 AM', value: '08:00' },
+                    { label: '12:00 PM', value: '12:00' },
+                    { label: '3:00 PM', value: '15:00' },
+                    { label: '6:00 PM', value: '18:00' },
+                    { label: '9:00 PM', value: '21:00' }
+                  ].map(timeOption => (
+                    <Button
+                      key={timeOption.value}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateData({ customTime: timeOption.value })}
+                      className="text-xs"
+                    >
+                      {timeOption.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="flex gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowTimePicker(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (data.customTime) {
+                      updateData({ timeOfDay: 'custom' });
+                      setShowTimePicker(false);
+                    }
+                  }}
+                  disabled={!data.customTime}
+                  className="flex-1"
+                >
+                  Confirm
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
