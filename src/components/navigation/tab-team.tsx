@@ -485,13 +485,12 @@ export const TabTeam: React.FC = () => {
       // Call the send-invitation-email edge function
       console.log('Step 3: Sending email via edge function...');
       const emailPayload = {
-        type: 'supporter',
+        type: 'individual',
         inviteeName: individualName,
         inviteeEmail: email,
         inviterName: user?.user_metadata?.first_name || 'Your supporter',
         inviteLink: inviteLink,
-        roleName: 'supporter',
-        message: `You have been set up as an individual on Lunabeam. Please use this invitation to claim your account and start tracking your goals!`
+        message: `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals.`
       };
       console.log('Email payload:', emailPayload);
       
