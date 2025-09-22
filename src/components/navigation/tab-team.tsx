@@ -172,11 +172,13 @@ export const TabTeam: React.FC = () => {
       console.log('TabTeam: Fetching profiles I created (on-behalf)...');
       const { data: createdProfiles, error: createdErr } = await supabase
         .rpc('get_profiles_created_by_me');
+      console.log('TabTeam: get_profiles_created_by_me result:', { data: createdProfiles, error: createdErr });
       if (createdErr) {
         console.error('TabTeam: Error fetching created profiles:', createdErr);
-      } else if (createdProfiles) {
+      } else if (createdProfiles && createdProfiles.length > 0) {
         console.log('TabTeam: Found created profiles:', createdProfiles);
         const existingIndividualIds = new Set(allMembers.filter(m => m.memberType === 'individual').map(m => (m as any).individual_id));
+        console.log('TabTeam: Existing individual IDs:', Array.from(existingIndividualIds));
         for (const p of createdProfiles) {
           console.log('TabTeam: Processing created profile:', p);
           if (!existingIndividualIds.has(p.user_id)) {
@@ -188,6 +190,7 @@ export const TabTeam: React.FC = () => {
               .eq('provisioner_id', user.id)
               .eq('individual_id', p.user_id)
               .maybeSingle();
+            console.log('TabTeam: Account claim for', p.user_id, ':', claim);
             if (claim?.status === 'pending') displayStatus = 'Pending';
             else if (claim?.status === 'accepted') displayStatus = 'Accepted';
 
@@ -207,10 +210,12 @@ export const TabTeam: React.FC = () => {
               memberType: 'individual',
               displayStatus,
             } as any);
+          } else {
+            console.log('TabTeam: Skipping duplicate individual ID:', p.user_id);
           }
         }
       } else {
-        console.log('TabTeam: No created profiles found');
+        console.log('TabTeam: No created profiles found (empty result)');
       }
       
       console.log('TabTeam: All community members:', allMembers);

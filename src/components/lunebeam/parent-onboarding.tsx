@@ -173,7 +173,10 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
   };
 
   const handleComplete = async () => {
-    // For admin/parent flow, create profile with admin's name (not the individual's)
+    // For admin/parent flow, we need to create TWO things:
+    // 1. Admin's own profile (for the authenticated user)
+    // 2. Individual's profile (marked as created_by_supporter)
+    
     const adminProfile = {
       first_name: data.adminName.trim() || 'Admin',
       strengths: [],
@@ -183,9 +186,26 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
       onboarding_complete: true,
     };
 
+    const individualProfile = {
+      first_name: data.preferredName.trim() || 'Individual',
+      strengths: data.strengths,
+      interests: data.interests,
+      challenges: [],
+      comm_pref: 'text' as const,
+      onboarding_complete: false, // Individual hasn't completed onboarding yet
+    };
+
     try {
-      console.log('Parent onboarding: Creating admin profile with name:', data.adminName);
+      console.log('Parent onboarding: Creating admin profile:', adminProfile);
+      console.log('Parent onboarding: Will create individual profile:', individualProfile);
       
+      // Get current authenticated user (admin)
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        throw new Error('No authenticated user found');
+      }
+      console.log('Parent onboarding: Current authenticated admin user:', currentUser.id);
+
       // Save admin's name to auth metadata
       if (data.adminName.trim()) {
         try {
@@ -201,20 +221,91 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
       // Clear any existing cached profile data first
       useStore.setState({ profile: null });
       
-      // Force save the admin profile directly to database first
+      // 1. Create admin's own profile
       await database.saveProfile(adminProfile);
       console.log('Admin profile saved to database:', adminProfile);
       
-      // Then update local store with admin profile
+      // 2. Create a separate profile for the individual (on-behalf profile)
+      if (data.preferredName.trim()) {
+        console.log('Parent onboarding: Creating on-behalf profile for individual...');
+        
+        // Generate a unique user ID for the individual
+        const individualUserId = crypto.randomUUID();
+        console.log('Parent onboarding: Generated individual user ID:', individualUserId);
+        
+        // Insert the individual's profile directly with created_by_supporter field
+        const { error: individualProfileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: individualUserId,
+            first_name: individualProfile.first_name,
+            strengths: individualProfile.strengths,
+            interests: individualProfile.interests,
+            challenges: individualProfile.challenges,
+            comm_pref: individualProfile.comm_pref,
+            onboarding_complete: false,
+            created_by_supporter: currentUser.id, // Mark as created by admin
+            account_status: 'pending_user_consent'
+          });
+
+        if (individualProfileError) {
+          console.error('Failed to create individual profile:', individualProfileError);
+          throw individualProfileError;
+        }
+
+        console.log('Individual profile created successfully with ID:', individualUserId);
+        
+        // Create a supporter relationship
+        const { error: supporterError } = await supabase
+          .from('supporters')
+          .insert({
+            individual_id: individualUserId,
+            supporter_id: currentUser.id,
+            role: 'supporter',
+            permission_level: 'collaborator',
+            is_admin: true,
+            is_provisioner: true
+          });
+
+        if (supporterError) {
+          console.warn('Failed to create supporter relationship:', supporterError);
+          // Don't throw here, profile creation is more important
+        } else {
+          console.log('Supporter relationship created successfully');
+        }
+
+        // Create an account claim for the individual
+        const claimToken = crypto.randomUUID().substring(0, 8);
+        const claimPasscode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        
+        const { error: claimError } = await supabase
+          .from('account_claims')
+          .insert({
+            provisioner_id: currentUser.id,
+            individual_id: individualUserId,
+            claim_token: claimToken,
+            claim_passcode: claimPasscode,
+            status: 'pending'
+          });
+
+        if (claimError) {
+          console.warn('Failed to create account claim:', claimError);
+          // Don't throw here, profile creation is more important
+        } else {
+          console.log('Account claim created with token:', claimToken, 'passcode:', claimPasscode);
+        }
+      }
+      
+      // Update local store with admin profile
       useStore.setState({ profile: adminProfile });
       
       // Complete onboarding
       await completeOnboarding();
       
-      console.log('Parent onboarding completed successfully for admin');
+      console.log('Parent onboarding completed successfully - both admin and individual profiles created');
       onComplete();
     } catch (error) {
-      console.error('Admin profile creation failed:', error);
+      console.error('Parent onboarding profile creation failed:', error);
       
       // Ensure local state shows admin profile even if DB operations fail
       useStore.setState({ profile: adminProfile });

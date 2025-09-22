@@ -19,13 +19,33 @@ type DbWeeklyCheckin = Database['public']['Tables']['weekly_checkins']['Row'];
 export const database = {
   // Profile operations
   async getProfile(): Promise<Profile | null> {
+    // Always scope explicitly to the authenticated user to avoid accidental leakage
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) {
+      console.error('DB:getProfile auth error:', userError);
+      throw userError;
+    }
+    if (!user) {
+      console.warn('DB:getProfile called with no authenticated user');
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
+      .eq('user_id', user.id)
       .maybeSingle();
     
-    if (error) throw error;
-    if (!data) return null;
+    if (error) {
+      console.error('DB:getProfile select error:', error);
+      throw error;
+    }
+    if (!data) {
+      console.log('DB:getProfile no profile row for user:', user.id);
+      return null;
+    }
+
+    console.log('DB:getProfile loaded row:', { userId: user.id, first_name: data.first_name, created_by_supporter: data.created_by_supporter });
     
     return {
       first_name: data.first_name,
@@ -41,6 +61,8 @@ export const database = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
+    console.log('DB:saveProfile upserting for user:', { id: user.id, first_name: profile.first_name });
+
     const { error } = await supabase
       .from('profiles')
       .upsert({
@@ -53,7 +75,10 @@ export const database = {
         onboarding_complete: profile.onboarding_complete ?? false
       }, { onConflict: 'user_id' });
     
-    if (error) throw error;
+    if (error) {
+      console.error('DB:saveProfile upsert error:', error);
+      throw error;
+    }
   },
 
   // Goal operations
