@@ -304,7 +304,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }));
   };
   const nextStep = () => {
-    const maxStep = isSupporter ? 7 : 6;
+    const maxStep = isSupporter ? 8 : 7;
     if (currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
     }
