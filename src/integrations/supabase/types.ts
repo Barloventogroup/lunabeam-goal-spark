@@ -567,6 +567,7 @@ export type Database = {
           comm_pref: string
           created_at: string
           created_by_supporter: string | null
+          email: string | null
           first_name: string
           guardian_locked_until: string | null
           id: string
@@ -584,6 +585,7 @@ export type Database = {
           comm_pref: string
           created_at?: string
           created_by_supporter?: string | null
+          email?: string | null
           first_name: string
           guardian_locked_until?: string | null
           id?: string
@@ -601,6 +603,7 @@ export type Database = {
           comm_pref?: string
           created_at?: string
           created_by_supporter?: string | null
+          email?: string | null
           first_name?: string
           guardian_locked_until?: string | null
           id?: string

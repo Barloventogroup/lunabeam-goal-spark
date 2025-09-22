@@ -31,6 +31,7 @@ import { SimpleInviteModal } from '../lunebeam/simple-invite-modal';
 import { AddCommunityMemberModal } from '../lunebeam/add-community-member-modal';
 import { AddIndividualWizard } from '../lunebeam/add-individual-wizard';
 import { EditIndividualModal } from '../lunebeam/edit-individual-modal';
+import { CollectEmailModal } from '../lunebeam/collect-email-modal';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -393,13 +394,113 @@ export const TabTeam: React.FC = () => {
     }
   };
 
-  const handleInvite = () => {
-    // This will be handled by the SimpleInviteModal
-    toast({
-      title: "Invite sent",
-      description: "Your invitation has been sent successfully"
-    });
-    loadCommunityData(); // Refresh data
+  const [collectEmailModal, setCollectEmailModal] = useState<{
+    open: boolean;
+    individualId: string;
+    individualName: string;
+  } | null>(null);
+
+  const handleInvite = async (member?: any) => {
+    // If member is provided, we're handling a specific individual
+    if (member && 'individual_id' in member) {
+      const individualId = member.individual_id;
+      const individualName = member.profile?.first_name || 'Unknown Individual';
+      
+      try {
+        // Check if individual has an email in their profile
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('user_id', individualId)
+          .single();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+          toast({
+            title: "Error",
+            description: "Failed to check profile information",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        if (!profile?.email) {
+          // Show modal to collect email
+          setCollectEmailModal({
+            open: true,
+            individualId,
+            individualName
+          });
+          return;
+        }
+
+        // Email exists, proceed with sending invitation
+        await sendInvitationEmail(individualId, individualName, profile.email);
+        
+      } catch (error) {
+        console.error('Error in invite process:', error);
+        toast({
+          title: "Error",
+          description: "Failed to process invitation",
+          variant: "destructive"
+        });
+      }
+    } else {
+      // Fallback for general invite (existing behavior)
+      toast({
+        title: "Invite sent",
+        description: "Your invitation has been sent successfully"
+      });
+      loadCommunityData();
+    }
+  };
+
+  const sendInvitationEmail = async (individualId: string, individualName: string, email: string) => {
+    try {
+      // Generate invite link - for now using a basic format
+      // In a real system, you might want to create a supporter_invite record first
+      const inviteLink = `${window.location.origin}/claim-account?individual=${individualId}`;
+      
+      // Call the send-invitation-email edge function
+      const { data, error } = await supabase.functions.invoke('send-invitation-email', {
+        body: {
+          type: 'supporter',
+          inviteeName: individualName,
+          inviteeEmail: email,
+          inviterName: user?.user_metadata?.first_name || 'Your supporter',
+          inviteLink: inviteLink,
+          roleName: 'supporter',
+          message: `You have been set up as an individual on Lunabeam. Please use this invitation to claim your account and start tracking your goals!`
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Invitation Sent",
+        description: `Invitation has been sent to ${individualName} at ${email}`
+      });
+      
+      loadCommunityData(); // Refresh data
+    } catch (error) {
+      console.error('Error sending invitation email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send invitation email. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleEmailCollected = async (email: string) => {
+    if (collectEmailModal) {
+      await sendInvitationEmail(
+        collectEmailModal.individualId,
+        collectEmailModal.individualName,
+        email
+      );
+      setCollectEmailModal(null);
+    }
   };
 
   const handleRemove = async (memberId: string, type: 'supporter' | 'invite') => {
@@ -633,7 +734,7 @@ export const TabTeam: React.FC = () => {
                                   Edit Profile
                                 </DropdownMenuItem>
                                 <DropdownMenuItem 
-                                  onClick={('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') ? handleInvite : undefined}
+                                  onClick={('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') ? () => handleInvite(member) : undefined}
                                   className={('displayStatus' in member && (member as any).displayStatus !== 'Not invited yet') ? 'text-muted-foreground cursor-not-allowed' : ''}
                                   disabled={('displayStatus' in member && (member as any).displayStatus !== 'Not invited yet')}
                                 >
@@ -765,7 +866,7 @@ export const TabTeam: React.FC = () => {
                               <DropdownMenuContent align="end" className="bg-background border shadow-lg z-50">
                                 {member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' && (
                                   <DropdownMenuItem 
-                                    onClick={('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') ? handleInvite : undefined}
+                                    onClick={('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') ? () => handleInvite(member) : undefined}
                                     className={('displayStatus' in member && (member as any).displayStatus !== 'Not invited yet') ? 'text-muted-foreground cursor-not-allowed' : ''}
                                     disabled={('displayStatus' in member && (member as any).displayStatus !== 'Not invited yet')}
                                   >
@@ -813,6 +914,17 @@ export const TabTeam: React.FC = () => {
         initialData={editIndividualModal.initialData}
         onSuccess={loadCommunityData}
       />
+
+      {/* Collect Email Modal */}
+      {collectEmailModal && (
+        <CollectEmailModal
+          open={collectEmailModal.open}
+          onClose={() => setCollectEmailModal(null)}
+          individualId={collectEmailModal.individualId}
+          individualName={collectEmailModal.individualName}
+          onEmailCollected={handleEmailCollected}
+        />
+      )}
 
       {/* Member Detail Modal */}
       {selectedMember && (
