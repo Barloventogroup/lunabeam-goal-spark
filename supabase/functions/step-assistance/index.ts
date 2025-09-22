@@ -331,6 +331,10 @@ async function createSubSteps(subSteps: any[], parentStep: any, goal: any) {
       console.log('Created substep:', data.title);
     } catch (error) {
       console.error('Error inserting substep:', error);
+    }
+  }
+
+  return createdSubsteps;
 }
 
 async function checkExistingSubsteps(stepId: string) {
@@ -353,8 +357,6 @@ async function checkExistingSubsteps(stepId: string) {
   } catch (error) {
     console.error('Error in checkExistingSubsteps:', error);
     return [];
-  }
-}
   }
 
   return createdSubsteps;
