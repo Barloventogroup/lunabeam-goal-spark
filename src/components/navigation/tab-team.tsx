@@ -72,6 +72,9 @@ export const TabTeam: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<MemberDetailData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<MemberDetailData | null>(null);
+  // Quick provision state
+  const [newIndividualName, setNewIndividualName] = useState('');
+  const [creatingIndividual, setCreatingIndividual] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -233,6 +236,31 @@ export const TabTeam: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createIndividual = async () => {
+    if (!newIndividualName.trim()) return;
+    if (!user) return;
+    setCreatingIndividual(true);
+    try {
+      const { data: provisionResult, error } = await supabase.rpc('provision_individual', {
+        p_first_name: newIndividualName.trim(),
+        p_strengths: [],
+        p_interests: [],
+        p_comm_pref: 'text'
+      });
+      if (error) throw error;
+
+      // Refresh list
+      setNewIndividualName('');
+      await loadCommunityData();
+      toast({ title: 'Added', description: 'Individual has been added to your community' });
+    } catch (err) {
+      console.error('TabTeam: Failed to provision individual:', err);
+      toast({ title: 'Error', description: 'Failed to add individual', variant: 'destructive' });
+    } finally {
+      setCreatingIndividual(false);
     }
   };
 
@@ -421,6 +449,22 @@ export const TabTeam: React.FC = () => {
         </div>
 
         <div className="p-4 space-y-6">
+          {/* Quick add individual when empty */}
+          {supporters.filter(s => 'memberType' in s && s.memberType === 'individual').length === 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-end">
+                  <div className="flex-1">
+                    <Label htmlFor="newIndividual">Add an individual you support</Label>
+                    <Input id="newIndividual" placeholder="Enter a name" value={newIndividualName} onChange={(e) => setNewIndividualName(e.target.value)} />
+                  </div>
+                  <Button onClick={createIndividual} disabled={creatingIndividual || !newIndividualName.trim()}>
+                    {creatingIndividual ? 'Adding...' : 'Add'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           {/* Community Members Table */}
           <Card>
             <CardHeader>
@@ -567,6 +611,7 @@ export const TabTeam: React.FC = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -578,7 +623,10 @@ export const TabTeam: React.FC = () => {
                       return (
                         <TableRow key={`individual-row-${member.individual_id}`}>
                           <TableCell>
-                            <div className="flex items-center gap-3">
+                            <div 
+                              className="flex items-center gap-3 cursor-pointer hover:opacity-70"
+                              onClick={() => handleMemberClick(member as any, 'supporter')}
+                            >
                               <Avatar className="w-8 h-8">
                                 <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">{initials}</AvatarFallback>
                               </Avatar>
@@ -586,14 +634,41 @@ export const TabTeam: React.FC = () => {
                             </div>
                           </TableCell>
                           <TableCell>
+                            <Badge variant="outline" className={getRoleColor('individual')}>
+                              <User className="h-3 w-3" />
+                              <span className="ml-1">Individual</span>
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
                             {getStatusBadge('supporter', undefined, (member as any).displayStatus)}
                           </TableCell>
                           <TableCell className="text-right">
-                            {('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') && (
-                              <Button size="sm" variant="ghost" onClick={handleInvite}>
-                                <Mail className="h-4 w-4 mr-2" /> Invite
-                              </Button>
-                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="bg-background border shadow-lg">
+                                {('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') && (
+                                  <DropdownMenuItem onClick={handleInvite}>
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Invite
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem onClick={() => handleNudge(member as any)}>
+                                  <Bell className="h-4 w-4 mr-2" />
+                                  Nudge
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleRemove((member as any).id, 'supporter')}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <UserMinus className="h-4 w-4 mr-2" />
+                                  Remove
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </TableCell>
                         </TableRow>
                       );
