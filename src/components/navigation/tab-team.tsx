@@ -22,7 +22,8 @@ import {
   UserMinus,
   Bell,
   Save,
-  X
+  X,
+  User
 } from 'lucide-react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { PermissionsService, type Supporter } from '@/services/permissionsService';
@@ -37,6 +38,7 @@ interface SupporterWithProfile extends Supporter {
     email?: string;
     phone?: string;
   };
+  memberType?: 'supporter' | 'individual'; // supporter = supports me, individual = I support them
 }
 
 interface PendingInvite {
@@ -85,12 +87,35 @@ export const TabTeam: React.FC = () => {
     console.log('TabTeam: Loading community data for user:', user.id);
     setLoading(true);
     try {
-      // Load supporters with profiles
-      console.log('TabTeam: Fetching supporters...');
+      // Load supporters of the current user (people who support me)
+      console.log('TabTeam: Fetching my supporters...');
       const supportersData = await PermissionsService.getSupporters(user.id);
-      console.log('TabTeam: Supporters data:', supportersData);
+      console.log('TabTeam: My supporters data:', supportersData);
       
-      // Get profile data for each supporter
+      // Load individuals that I support (people I am a supporter for)
+      console.log('TabTeam: Fetching individuals I support...');
+      const { data: individualsISupport, error: individualsError } = await supabase
+        .from('supporters')
+        .select(`
+          individual_id,
+          role,
+          permission_level,
+          is_admin,
+          is_provisioner,
+          profiles!supporters_individual_id_fkey(first_name, avatar_url)
+        `)
+        .eq('supporter_id', user.id);
+
+      if (individualsError) {
+        console.error('TabTeam: Error fetching individuals I support:', individualsError);
+      } else {
+        console.log('TabTeam: Individuals I support:', individualsISupport);
+      }
+      
+      // Combine supporters and individuals I support into one list
+      const allMembers: SupporterWithProfile[] = [];
+      
+      // Add my supporters (people who support me)
       const supportersWithProfiles = await Promise.all(
         supportersData.map(async (supporter) => {
           const { data: profile } = await supabase
@@ -101,13 +126,36 @@ export const TabTeam: React.FC = () => {
           
           return {
             ...supporter,
-            profile: profile || { first_name: 'Unknown User' }
+            profile: profile || { first_name: 'Unknown User' },
+            memberType: 'supporter' as const // Person who supports me
           };
         })
       );
       
-      console.log('TabTeam: Supporters with profiles:', supportersWithProfiles);
-      setSupporters(supportersWithProfiles);
+      allMembers.push(...supportersWithProfiles);
+      
+      // Add individuals I support (people I am a supporter for)
+      if (individualsISupport) {
+        const individualsWithProfiles = individualsISupport.map(individual => ({
+          id: `individual-${individual.individual_id}`,
+          individual_id: individual.individual_id,
+          supporter_id: user.id,
+          role: 'individual' as any,
+          permission_level: individual.permission_level as 'viewer' | 'collaborator',
+          specific_goals: [],
+          is_admin: individual.is_admin,
+          is_provisioner: individual.is_provisioner,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          profile: (individual as any).profiles || { first_name: 'Unknown Individual' },
+          memberType: 'individual' as const // Person I support
+        }));
+        
+        allMembers.push(...individualsWithProfiles);
+      }
+      
+      console.log('TabTeam: All community members:', allMembers);
+      setSupporters(allMembers);
 
       // Load pending invites
       console.log('TabTeam: Fetching pending invites...');
@@ -132,6 +180,7 @@ export const TabTeam: React.FC = () => {
       case 'supporter': return <Users className="h-3 w-3" />;
       case 'friend': return <MessageSquare className="h-3 w-3" />;
       case 'provider': return <Edit3 className="h-3 w-3" />;
+      case 'individual': return <User className="h-3 w-3" />;
       default: return <Users className="h-3 w-3" />;
     }
   };
@@ -141,6 +190,7 @@ export const TabTeam: React.FC = () => {
       case 'supporter': return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300';
       case 'friend': return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300';
       case 'provider': return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300';
+      case 'individual': return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300';
       default: return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300';
     }
   };
@@ -357,19 +407,36 @@ export const TabTeam: React.FC = () => {
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex items-center gap-2">
-                                <span className="font-medium">{name}</span>
-                                {member.type === 'supporter' && member.is_admin && (
-                                  <Crown className="h-4 w-4 text-yellow-500" />
-                                )}
+                        <span className="font-medium">{name}</span>
+                        {member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' && (
+                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300">
+                            Individual
+                          </Badge>
+                        )}
+                        {member.type === 'supporter' && member.is_admin && (
+                          <Crown className="h-4 w-4 text-yellow-500" />
+                        )}
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={`text-xs ${getRoleColor(member.role)}`}>
-                              {getRoleIcon(member.role)}
-                              <span className="ml-1 capitalize">{member.role}</span>
-                            </Badge>
-                          </TableCell>
+                           <TableCell>
+                             <Badge variant="outline" className={`text-xs ${getRoleColor(
+                               member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' 
+                                 ? 'individual' 
+                                 : member.role
+                             )}`}>
+                               {getRoleIcon(
+                                 member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' 
+                                   ? 'individual' 
+                                   : member.role
+                               )}
+                               <span className="ml-1 capitalize">
+                                 {member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' 
+                                   ? 'Individual' 
+                                   : member.role}
+                               </span>
+                             </Badge>
+                           </TableCell>
                           <TableCell>
                             {getStatusBadge(member.type, member.type === 'invite' ? member.status : undefined)}
                           </TableCell>
