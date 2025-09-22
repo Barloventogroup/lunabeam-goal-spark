@@ -21,6 +21,7 @@ export type Database = {
           claimed_at: string | null
           created_at: string
           expires_at: string
+          first_name: string | null
           id: string
           individual_id: string
           provisioner_id: string
@@ -32,6 +33,7 @@ export type Database = {
           claimed_at?: string | null
           created_at?: string
           expires_at?: string
+          first_name?: string | null
           id?: string
           individual_id: string
           provisioner_id: string
@@ -43,6 +45,7 @@ export type Database = {
           claimed_at?: string | null
           created_at?: string
           expires_at?: string
+          first_name?: string | null
           id?: string
           individual_id?: string
           provisioner_id?: string
