@@ -553,7 +553,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label>Category</Label>
+            <Label>Categories</Label>
             <Button 
               variant="outline" 
               size="sm"
