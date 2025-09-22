@@ -701,6 +701,7 @@ export type Database = {
           explainer: string | null
           goal_id: string
           id: string
+          initiated_at: string | null
           is_planned: boolean | null
           is_required: boolean
           notes: string | null
@@ -722,6 +723,7 @@ export type Database = {
           explainer?: string | null
           goal_id: string
           id?: string
+          initiated_at?: string | null
           is_planned?: boolean | null
           is_required?: boolean
           notes?: string | null
@@ -743,6 +745,7 @@ export type Database = {
           explainer?: string | null
           goal_id?: string
           id?: string
+          initiated_at?: string | null
           is_planned?: boolean | null
           is_required?: boolean
           notes?: string | null
@@ -772,6 +775,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          initiated_at: string | null
           is_planned: boolean | null
           points_awarded: number | null
           step_id: string
@@ -783,6 +787,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          initiated_at?: string | null
           is_planned?: boolean | null
           points_awarded?: number | null
           step_id: string
@@ -794,6 +799,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          initiated_at?: string | null
           is_planned?: boolean | null
           points_awarded?: number | null
           step_id?: string

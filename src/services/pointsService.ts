@@ -189,6 +189,15 @@ export const pointsService = {
     return data;
   },
 
+  async checkInSubstep(substepId: string): Promise<void> {
+    const { error } = await supabase
+      .from('substeps')
+      .update({ initiated_at: new Date().toISOString() })
+      .eq('id', substepId);
+
+    if (error) throw error;
+  },
+
   async completeSubstep(substepId: string): Promise<Substep> {
     const { data, error } = await supabase
       .from('substeps')

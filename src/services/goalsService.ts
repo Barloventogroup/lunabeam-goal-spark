@@ -493,4 +493,14 @@ export const stepsService = {
     if (goalError) throw goalError;
     return goalData as Goal;
   },
+
+  // Check in to step (mark initiation)
+  async checkInStep(stepId: string): Promise<void> {
+    const { error } = await supabase
+      .from('steps')
+      .update({ initiated_at: new Date().toISOString() })
+      .eq('id', stepId);
+
+    if (error) throw error;
+  },
 };

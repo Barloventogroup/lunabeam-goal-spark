@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreHorizontal, Edit, Hourglass } from 'lucide-react';
+import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreHorizontal, Edit, Hourglass, Play } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -464,6 +464,55 @@ export const StepsList: React.FC<StepsListProps> = ({
     }
   };
 
+  const handleCheckInStep = async (stepId: string) => {
+    try {
+      await stepsService.checkInStep(stepId);
+      
+      // Update the step's initiated_at timestamp locally
+      const updatedSteps = steps.map(step => 
+        step.id === stepId 
+          ? { ...step, initiated_at: new Date().toISOString() } 
+          : step
+      );
+      
+      onStepsUpdate?.(updatedSteps, goal);
+      
+      toast({
+        title: "Checked in!",
+        description: "You've started working on this step.",
+      });
+    } catch (error) {
+      console.error('Error checking in step:', error);
+      toast({
+        title: "Error",
+        description: "Failed to check in. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCheckInSubstep = async (substepId: string, stepId: string) => {
+    try {
+      await pointsService.checkInSubstep(substepId);
+      
+      // Refresh substeps for this step to get the updated initiated_at
+      const substeps = dedupeSubsteps(await pointsService.getSubsteps(stepId));
+      setSubstepsMap(prev => ({ ...prev, [stepId]: substeps }));
+      
+      toast({
+        title: "Checked in!",
+        description: "You've started working on this substep.",
+      });
+    } catch (error) {
+      console.error('Error checking in substep:', error);
+      toast({
+        title: "Error",
+        description: "Failed to check in. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleNeedHelp = (step: Step) => {
     setCurrentHelpStep(step);
     setHelpModalOpen(true);
@@ -616,21 +665,32 @@ export const StepsList: React.FC<StepsListProps> = ({
     }
 
     const status = isStepDone(step) ? 'done' : step.status;
+    const hasBeenInitiated = !!(step as any).initiated_at;
+    
     switch (status) {
       case 'done':
         return <CheckCircle2 className="h-5 w-5 text-green-600" />;
       case 'doing':
         return <Clock className="h-5 w-5 text-blue-600" />;
       default:
+        // Show initiated icon if step has been checked in
+        if (hasBeenInitiated && !isStepDone(step)) {
+          return <Clock className="h-5 w-5 text-blue-600" />;
+        }
+        
         // For steps with substeps, show different icon based on completion
         if (stepSubsteps.length > 0) {
           if (allSubstepsCompleted) {
             return <CheckCircle2 className="h-5 w-5 text-amber-600" />;
           } else {
-            return <Clock className="h-5 w-5 text-blue-600" />;
+            // Check if any substeps have been initiated
+            const hasInitiatedSubsteps = stepSubsteps.some(sub => (sub as any).initiated_at);
+            if (hasInitiatedSubsteps) {
+              return <Clock className="h-5 w-5 text-blue-600" />;
+            }
           }
         }
-        return null; // No icon for todo steps without substeps
+        return null; // No icon for todo steps without substeps or initiation
     }
   };
 
@@ -780,22 +840,28 @@ export const StepsList: React.FC<StepsListProps> = ({
                                       <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="bg-background border border-border shadow-lg z-50">
-                                    <DropdownMenuItem onClick={() => {
-                                      if (subSteps.length > 0 && !allSubStepsCompleted) {
-                                        const proceed = window.confirm('Some substeps are not complete. Mark this step complete anyway?');
-                                        if (!proceed) return;
-                                      }
-                                      handleMarkComplete(mainStep.id);
-                                    }}>
-                                      <CheckCircle2 className="h-4 w-4 mr-2" />
-                                      Mark Complete
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleEditStep(mainStep)}>
-                                      <Edit className="h-4 w-4 mr-2" />
-                                      Edit
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
+                                   <DropdownMenuContent align="end" className="bg-background border border-border shadow-lg z-50">
+                                     {!(mainStep as any).initiated_at && (
+                                       <DropdownMenuItem onClick={() => handleCheckInStep(mainStep.id)}>
+                                         <Play className="h-4 w-4 mr-2" />
+                                         Check In / Start Working
+                                       </DropdownMenuItem>
+                                     )}
+                                     <DropdownMenuItem onClick={() => {
+                                       if (subSteps.length > 0 && !allSubStepsCompleted) {
+                                         const proceed = window.confirm('Some substeps are not complete. Mark this step complete anyway?');
+                                         if (!proceed) return;
+                                       }
+                                       handleMarkComplete(mainStep.id);
+                                     }}>
+                                       <CheckCircle2 className="h-4 w-4 mr-2" />
+                                       Mark Complete
+                                     </DropdownMenuItem>
+                                     <DropdownMenuItem onClick={() => handleEditStep(mainStep)}>
+                                       <Edit className="h-4 w-4 mr-2" />
+                                       Edit
+                                     </DropdownMenuItem>
+                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               )}
                               {isBlocked && (
@@ -836,19 +902,22 @@ export const StepsList: React.FC<StepsListProps> = ({
                                              : 'bg-background hover:border-gray-300'
                                          }`}
                                     >
-                                      {/* Substep title */}
-                                      <div className="flex items-center gap-2 mb-3">
-                                        <h4 className={`text-sm font-medium ${
-                                          substep.completed_at 
-                                            ? 'line-through text-muted-foreground' 
-                                            : 'text-foreground'
-                                        }`}>
-                                           {cleanStepTitle(substep.title)}
-                                        </h4>
-                                        {substep.completed_at && (
-                                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-                                        )}
-                                      </div>
+                                       {/* Substep title */}
+                                       <div className="flex items-center gap-2 mb-3">
+                                         <h4 className={`text-sm font-medium ${
+                                           substep.completed_at 
+                                             ? 'line-through text-muted-foreground' 
+                                             : 'text-foreground'
+                                         }`}>
+                                            {cleanStepTitle(substep.title)}
+                                         </h4>
+                                         {substep.completed_at && (
+                                           <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                         )}
+                                         {!substep.completed_at && substep.initiated_at && (
+                                           <Clock className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                                         )}
+                                       </div>
 
                                      {/* Substep description */}
                                      <div className="mb-4 min-h-[60px]">
@@ -859,15 +928,26 @@ export const StepsList: React.FC<StepsListProps> = ({
 
                                        {/* Actions */}
                                        <div className="flex flex-col gap-2">
-                                         {!substep.completed_at ? (
-                                           <>
-                                             <Button
-                                               onClick={() => handleCompleteSubstep(substep.id, mainStep.id)}
-                                               className="w-full h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
-                                               size="sm"
-                                             >
-                                               Mark Complete
-                                             </Button>
+                                          {!substep.completed_at ? (
+                                            <>
+                                              {!(substep as any).initiated_at && (
+                                                <Button
+                                                  onClick={() => handleCheckInSubstep(substep.id, mainStep.id)}
+                                                  className="w-full h-8 text-xs bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                                                  size="sm"
+                                                  variant="outline"
+                                                >
+                                                  <Play className="h-3 w-3 mr-1" />
+                                                  Check In / Start Working
+                                                </Button>
+                                              )}
+                                              <Button
+                                                onClick={() => handleCompleteSubstep(substep.id, mainStep.id)}
+                                                className="w-full h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+                                                size="sm"
+                                              >
+                                                Mark Complete
+                                              </Button>
                                              <button
                                                onClick={() => handleSubstepHelp(substep, mainStep)}
                                                className="text-primary hover:text-primary/80 underline text-xs cursor-pointer bg-transparent border-none p-0 text-center"

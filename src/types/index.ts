@@ -120,6 +120,7 @@ export interface Step {
   is_planned?: boolean;
   planned_week_index?: number;
   points_awarded?: number;
+  initiated_at?: string;
   
   // Legacy fields (kept for backwards compatibility)
   hidden?: boolean;
@@ -145,6 +146,7 @@ export interface Substep {
   description?: string;
   is_planned: boolean;
   completed_at?: string;
+  initiated_at?: string;
   points_awarded: number;
   created_at: string;
   updated_at: string;
