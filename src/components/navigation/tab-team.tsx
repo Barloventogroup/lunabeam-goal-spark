@@ -177,15 +177,18 @@ export const TabTeam: React.FC = () => {
       // Add individuals I support (people I am a supporter for)
       if (individualsISupport) {
         const individualsWithProfiles = (individualsISupport as any[]).map((individual) => {
-          const claimStatus = claimsMap.get(individual.individual_id);
-          // Only show "Pending" or "Accepted" if there's a valid, non-expired claim
-          // Otherwise default to "Not invited yet"
+          // Provisioned individuals default to "Not invited yet" 
+          // They only become "Pending" when an invitation is actually sent
+          // and "Accepted" when they claim their account
           let displayStatus = 'Not invited yet';
-          if (claimStatus === 'pending') {
-            displayStatus = 'Pending';
-          } else if (claimStatus === 'accepted') {
+          
+          // Only check for accepted status if there's a claimed account
+          const claimStatus = claimsMap.get(individual.individual_id);
+          if (claimStatus === 'accepted') {
             displayStatus = 'Accepted';
           }
+          // Note: We don't set to "Pending" just because there's an unclaimed provision
+          // "Pending" should only be set when an invite is actually sent
           
           return {
             id: `individual-${individual.individual_id}`,
@@ -221,7 +224,7 @@ export const TabTeam: React.FC = () => {
         for (const p of createdProfiles) {
           console.log('TabTeam: Processing created profile:', p);
           if (!existingIndividualIds.has(p.user_id)) {
-            // Determine status from account claims
+            // Determine status - provisioned accounts start as "Not invited yet"
             let displayStatus: 'Pending' | 'Accepted' | 'Not invited yet' = 'Not invited yet';
             const { data: claim } = await supabase
               .from('account_claims')
@@ -231,10 +234,11 @@ export const TabTeam: React.FC = () => {
               .maybeSingle();
             
             console.log('TabTeam: Account claim for', p.user_id, ':', claim);
-            if (claim && new Date(claim.expires_at) > new Date()) {
-              if (claim.status === 'pending') displayStatus = 'Pending';
-              else if (claim.status === 'accepted') displayStatus = 'Accepted';
+            // Only show "Accepted" if they've actually claimed their account
+            if (claim && claim.status === 'accepted') {
+              displayStatus = 'Accepted';
             }
+            // Provisioned accounts remain "Not invited yet" until actually invited
 
             console.log('TabTeam: Adding created profile with status:', displayStatus);
             allMembers.push({
@@ -265,10 +269,10 @@ export const TabTeam: React.FC = () => {
         const existingIndividualIds = new Set(allMembers.filter(m => m.memberType === 'individual').map(m => (m as any).individual_id));
         for (const p of provisionedList as any[]) {
           if (!existingIndividualIds.has(p.user_id)) {
-            // Only show valid, non-expired statuses
+            // Provisioned individuals start as "Not invited yet"
             let displayStatus = 'Not invited yet';
-            if (p.status === 'pending') displayStatus = 'Pending';
-            else if (p.status === 'accepted') displayStatus = 'Accepted';
+            // Only show "Accepted" if they've actually claimed their account
+            if (p.status === 'accepted') displayStatus = 'Accepted';
             
             allMembers.push({
               id: `individual-${p.user_id}`,
