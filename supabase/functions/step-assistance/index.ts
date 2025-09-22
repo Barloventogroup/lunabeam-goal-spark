@@ -182,10 +182,16 @@ Be supportive but keep it brief and focused on THIS ${step.explainer && step.exp
       console.log(`Auto-inheriting ${inheritedSubsteps.length} substeps from similar prior week steps`);
     }
 
-    // If sub-steps were suggested or inherited, create them in the database
+    // Check if substeps already exist for this step
+    const existingSubsteps = await checkExistingSubsteps(step.id);
+    
+    // If sub-steps were suggested or inherited, create them in the database (only if none exist)
     let createdSteps = [];
-    if (allSteps.length > 0) {
+    if (allSteps.length > 0 && existingSubsteps.length === 0) {
       createdSteps = await createSubSteps(allSteps, step, goal);
+    } else if (existingSubsteps.length > 0) {
+      console.log(`Skipping substep creation - ${existingSubsteps.length} substeps already exist for step ${step.id}`);
+      createdSteps = existingSubsteps;
     }
 
     return new Response(JSON.stringify({
@@ -413,5 +419,28 @@ async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<a
   } catch (error) {
     console.error('Error in checkForSimilarPriorSteps:', error);
     return [];
+}
+
+async function checkExistingSubsteps(stepId: string) {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  try {
+    const { data: existingSubsteps, error } = await supabase
+      .from('substeps')
+      .select('*')
+      .eq('step_id', stepId);
+
+    if (error) {
+      console.error('Error checking existing substeps:', error);
+      return [];
+    }
+
+    return existingSubsteps || [];
+  } catch (error) {
+    console.error('Error in checkExistingSubsteps:', error);
+    return [];
   }
+}
 }
