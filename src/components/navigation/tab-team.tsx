@@ -30,6 +30,7 @@ import { PermissionsService, type Supporter } from '@/services/permissionsServic
 import { SimpleInviteModal } from '../lunebeam/simple-invite-modal';
 import { AddCommunityMemberModal } from '../lunebeam/add-community-member-modal';
 import { AddIndividualWizard } from '../lunebeam/add-individual-wizard';
+import { EditIndividualModal } from '../lunebeam/edit-individual-modal';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -74,6 +75,15 @@ export const TabTeam: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<MemberDetailData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<MemberDetailData | null>(null);
+  const [editIndividualModal, setEditIndividualModal] = useState<{
+    open: boolean;
+    individualId: string;
+    initialData: any;
+  }>({
+    open: false,
+    individualId: '',
+    initialData: {}
+  });
   // Quick provision state
   const [newIndividualName, setNewIndividualName] = useState('');
   const [creatingIndividual, setCreatingIndividual] = useState(false);
@@ -273,6 +283,29 @@ export const TabTeam: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditIndividual = async (member: SupporterWithProfile) => {
+    // Fetch full profile data for editing
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name, strengths, interests, comm_pref')
+      .eq('user_id', member.individual_id)
+      .single();
+
+    setEditIndividualModal({
+      open: true,
+      individualId: member.individual_id,
+      initialData: {
+        firstName: profile?.first_name || member.profile?.first_name || '',
+        lastName: '', // Add if you have last name field
+        email: '', // Add if you have email field
+        phone: '', // Add if you have phone field
+        strengths: profile?.strengths || [],
+        interests: profile?.interests || [],
+        commPref: profile?.comm_pref || 'text'
+      }
+    });
   };
 
   const createIndividual = async () => {
@@ -567,42 +600,38 @@ export const TabTeam: React.FC = () => {
                             {getStatusBadge('supporter', undefined, (member as any).displayStatus)}
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex gap-1 justify-end">
-                              <SimpleInviteModal 
-                                trigger={
-                                  <Button variant="outline" size="sm">
-                                    <Mail className="h-4 w-4" />
-                                  </Button>
-                                }
-                              />
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleMemberClick(member as any, 'supporter')}
-                              >
-                                <Edit3 className="h-4 w-4" />
-                              </Button>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-background border shadow-lg">
-                                  <DropdownMenuItem onClick={() => handleNudge(member as any)}>
-                                    <Bell className="h-4 w-4 mr-2" />
-                                    Nudge
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="bg-background border shadow-lg z-50">
+                                <DropdownMenuItem 
+                                  onClick={() => handleEditIndividual(member)}
+                                >
+                                  <Edit3 className="h-4 w-4 mr-2" />
+                                  Edit Profile
+                                </DropdownMenuItem>
+                                {('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') && (
+                                  <DropdownMenuItem onClick={handleInvite}>
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Send Invite
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => handleRemove((member as any).id, 'supporter')}
-                                    className="text-destructive focus:text-destructive"
-                                  >
-                                    <UserMinus className="h-4 w-4 mr-2" />
-                                    Remove
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
+                                )}
+                                <DropdownMenuItem onClick={() => handleNudge(member as any)}>
+                                  <Bell className="h-4 w-4 mr-2" />
+                                  Nudge
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleRemove((member as any).id, 'supporter')}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <UserMinus className="h-4 w-4 mr-2" />
+                                  Remove
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </TableCell>
                         </TableRow>
                       );
@@ -731,7 +760,7 @@ export const TabTeam: React.FC = () => {
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="bg-background border shadow-lg">
+                              <DropdownMenuContent align="end" className="bg-background border shadow-lg z-50">
                                 {member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' && 
                                  'displayStatus' in member && (member as any).displayStatus === 'Not invited yet' && (
                                   <DropdownMenuItem onClick={handleInvite}>
@@ -770,6 +799,15 @@ export const TabTeam: React.FC = () => {
 
         </div>
       </div>
+
+      {/* Edit Individual Modal */}
+      <EditIndividualModal
+        open={editIndividualModal.open}
+        onOpenChange={(open) => setEditIndividualModal(prev => ({ ...prev, open }))}
+        individualId={editIndividualModal.individualId}
+        initialData={editIndividualModal.initialData}
+        onSuccess={loadCommunityData}
+      />
 
       {/* Member Detail Modal */}
       {selectedMember && (
