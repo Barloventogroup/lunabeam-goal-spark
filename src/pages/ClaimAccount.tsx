@@ -14,6 +14,7 @@ export function ClaimAccount() {
   const [loading, setLoading] = useState(false);
   const [claimInfo, setClaimInfo] = useState<any>(null);
   const [passcode, setPasscode] = useState('');
+  const [password, setPassword] = useState('');
 
   useEffect(() => {
     if (claimToken) {
@@ -39,28 +40,7 @@ export function ClaimAccount() {
         return;
       }
 
-      // Get the individual's email from profiles
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('user_id', claimData.individual_id)
-        .single();
-
-      const claimInfoWithEmail = {
-        ...claimData,
-        email: profileData?.email
-      };
-
-      setClaimInfo(claimInfoWithEmail);
-      
-      // Store claim info for login page
-      if (profileData?.email) {
-        localStorage.setItem('claim_info', JSON.stringify({
-          email: profileData.email,
-          firstName: claimData.first_name,
-          claimToken
-        }));
-      }
+      setClaimInfo(claimData);
     } catch (error) {
       console.error('Error loading claim info:', error);
       toast.error('Failed to load claim information');
@@ -68,8 +48,13 @@ export function ClaimAccount() {
   };
 
   const handleClaim = async () => {
-    if (!claimToken || !passcode) {
-      toast.error('Please enter the passcode');
+    if (!claimToken || !passcode || !password) {
+      toast.error('Please enter both the passcode and create a password');
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
       return;
     }
 
@@ -79,7 +64,8 @@ export function ClaimAccount() {
       const { data, error } = await supabase.functions.invoke('claim-account-with-auth', {
         body: {
           claimToken,
-          passcode: passcode.toUpperCase()
+          passcode: passcode.toUpperCase(),
+          password
         }
       });
 
@@ -91,42 +77,31 @@ export function ClaimAccount() {
       if (data.success) {
         toast.success(`Welcome ${data.firstName}! Your account has been claimed.`);
         
-        // If we have email and password, sign in directly
-        if (data.email && data.password) {
+        // Sign in with the credentials we just created
+        if (data.email && password) {
           try {
             const { error: signInError } = await supabase.auth.signInWithPassword({
               email: data.email,
-              password: data.password
+              password: password
             });
             
             if (signInError) {
               console.error('Sign in error:', signInError);
-              // Fallback to session URL if available
-              if (data.sessionUrl) {
-                window.location.href = data.sessionUrl;
-              } else {
-                window.location.href = '/';
-              }
+              toast.error('Account claimed but sign in failed. Please try signing in manually.');
+              navigate(`/auth?email=${encodeURIComponent(data.email)}`);
             } else {
               // Successful sign in, redirect to dashboard
               window.location.href = '/';
             }
           } catch (error) {
             console.error('Sign in attempt failed:', error);
-            window.location.href = '/';
+            toast.error('Account claimed but sign in failed. Please try signing in manually.');
+            navigate(`/auth?email=${encodeURIComponent(data.email)}`);
           }
-        } else if (data.sessionUrl) {
-          window.location.href = data.sessionUrl;
         } else {
-          // Clear claim info and redirect to dashboard
-          localStorage.removeItem('claim_info');
+          // Fallback redirect
           window.location.href = '/';
         }
-      } else if (data.error === 'Account already claimed') {
-        // Account is already claimed, redirect to login with pre-filled email
-        const email = claimInfo.email;
-        toast.info('This account is already claimed. Please sign in with your credentials.');
-        navigate(`/auth?email=${encodeURIComponent(email || '')}`);
       } else {
         toast.error(data.error || 'Failed to claim account');
       }
@@ -156,7 +131,7 @@ export function ClaimAccount() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Claim Your Account</CardTitle>
           <p className="text-muted-foreground">
-            Welcome {claimInfo.first_name}! Enter your passcode to access your account.
+            Welcome {claimInfo.first_name}! Enter your passcode and create a password to access your account.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -172,10 +147,22 @@ export function ClaimAccount() {
             />
           </div>
 
+          <div>
+            <Label htmlFor="password">Create Your Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Create a secure password (min 6 characters)"
+              minLength={6}
+            />
+          </div>
+
           <Button 
             onClick={handleClaim} 
             className="w-full" 
-            disabled={loading || !passcode}
+            disabled={loading || !passcode || !password}
           >
             {loading ? (
               <>

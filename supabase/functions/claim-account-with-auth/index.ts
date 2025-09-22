@@ -9,6 +9,7 @@ const corsHeaders = {
 interface ClaimRequest {
   claimToken: string;
   passcode: string;
+  password: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -18,11 +19,18 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { claimToken, passcode }: ClaimRequest = await req.json();
+    const { claimToken, passcode, password }: ClaimRequest = await req.json();
 
-    if (!claimToken || !passcode) {
+    if (!claimToken || !passcode || !password) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Missing claim token or passcode' }),
+        JSON.stringify({ success: false, error: 'Missing claim token, passcode, or password' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (password.length < 6) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Password must be at least 6 characters' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -51,19 +59,30 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Generate email and password for the user
-    const firstName = claimRecord.first_name || 'User';
-    const userEmail = `${firstName.toLowerCase().replace(/\s+/g, '')}+${claimToken.slice(0, 8)}@temp.lunabeam.com`;
-    const userPassword = `temp_${claimToken.slice(0, 12)}`;
+    // Get email from individual profile or generate one
+    let userEmail;
+    const { data: profileData } = await supabaseAdmin
+      .from('profiles')
+      .select('email')
+      .eq('user_id', claimRecord.individual_id)
+      .single();
+    
+    if (profileData?.email) {
+      userEmail = profileData.email;
+    } else {
+      // Generate email if none exists
+      const firstName = claimRecord.first_name || 'User';
+      userEmail = `${firstName.toLowerCase().replace(/\s+/g, '')}+${claimToken.slice(0, 8)}@temp.lunabeam.com`;
+    }
 
     console.log('Creating auth user for:', userEmail);
 
     // Create auth user
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: userEmail,
-      password: userPassword,
+      password: password, // Use the password provided by the user
       user_metadata: {
-        first_name: firstName
+        first_name: claimRecord.first_name || 'User'
       },
       email_confirm: true // Auto-confirm email
     });
@@ -107,7 +126,8 @@ const handler = async (req: Request): Promise<Response> => {
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
-        first_name: firstName,
+        first_name: claimRecord.first_name || 'User',
+        email: userEmail, // Store the email in profile
         onboarding_complete: true, // Skip onboarding since admin already set up
         comm_pref: 'text',
         account_status: 'user_claimed',
@@ -130,39 +150,14 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Failed to remove provisioner flag:', provisionerError);
     }
 
-    // Create a session for the user
-    const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.admin.createUser({
-      email: userEmail,
-      password: userPassword,
-      email_confirm: true
-    });
-
-    if (sessionError) {
-      console.error('Failed to create session:', sessionError);
-    }
-
-    // Generate access token for immediate login
-    const { data: tokenData, error: tokenError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'signup',
-      email: userEmail,
-      password: userPassword
-    });
-
-    if (tokenError || !tokenData) {
-      console.error('Failed to generate login token:', tokenError);
-      // Don't fail the entire process, just don't provide session URL
-    }
-
-    console.log('Successfully claimed account for:', firstName);
+    console.log('Successfully claimed account for:', claimRecord.first_name || 'User');
 
     return new Response(
       JSON.stringify({
         success: true,
-        firstName: firstName,
+        firstName: claimRecord.first_name || 'User',
         userId: userId,
-        email: userEmail,
-        password: userPassword,
-        sessionUrl: tokenData?.properties?.action_link
+        email: userEmail
       }),
       { 
         status: 200, 
