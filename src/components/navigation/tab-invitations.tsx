@@ -72,7 +72,24 @@ export function TabInvitations() {
       
     } catch (error) {
       console.error('Error accepting invitation:', error);
-      const message = (error as any)?.message || 'Failed to accept invitation or invitation expired';
+      let message = 'Failed to accept invitation or invitation expired';
+      
+      // Check if it's an "already accepted" error and show appropriate message
+      if (error instanceof Error) {
+        if (error.message.includes('already accepted') || error.message.includes('already exists')) {
+          toast({
+            title: "Already Connected",
+            description: "You are already connected as a supporter",
+          });
+          // Still redirect to dashboard
+          setTimeout(() => {
+            navigate('/');
+          }, 1500);
+          return;
+        }
+        message = error.message;
+      }
+      
       toast({
         title: 'Error',
         description: message,

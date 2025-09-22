@@ -216,10 +216,22 @@ export class PermissionsService {
         : { _invite_token: inviteToken };
       const { data, error } = await supabase.rpc(fn, params as any);
 
-      if (error) throw new Error(error.message || 'Invitation acceptance failed');
+      if (error) {
+        // Handle specific error cases more gracefully
+        if (error.message?.includes('already accepted') || error.message?.includes('already exists')) {
+          console.log('Invitation already accepted, this is expected behavior');
+          return;
+        }
+        throw new Error(error.message || 'Invitation acceptance failed');
+      }
 
       const response = data as { success: boolean; error?: string; message?: string };
       if (!response?.success) {
+        // Handle "already accepted" case gracefully
+        if (response?.error?.includes('already accepted') || response?.error?.includes('already exists')) {
+          console.log('Invitation already accepted, this is expected behavior');
+          return;
+        }
         throw new Error(response?.error || 'Failed to accept invite');
       }
     };
@@ -228,6 +240,15 @@ export class PermissionsService {
       await attempt('accept_invite_by_token');
       return;
     } catch (errPrimary) {
+      // Check if it's an "already accepted" error
+      if (errPrimary instanceof Error && (
+          errPrimary.message.includes('already accepted') || 
+          errPrimary.message.includes('already exists')
+      )) {
+        console.log('Invitation already accepted, no action needed');
+        return;
+      }
+      
       console.warn('accept_invite_by_token failed, trying fallback:', errPrimary);
       // Fallback
       await attempt('accept_supporter_invite_secure');
