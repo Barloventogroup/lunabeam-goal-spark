@@ -259,28 +259,7 @@ export const TabTeam: React.FC = () => {
         }
       } else {
         console.log('TabTeam: No created profiles found (empty result)');
-      
-      // Fetch actual profile data for individuals I support
-      const individualsWithNames = await Promise.all(
-        allMembers.filter(m => m.memberType === 'individual').map(async (member) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('first_name, avatar_url')
-            .eq('user_id', member.individual_id)
-            .single();
-          
-          return {
-            ...member,
-            profile: profile || { first_name: 'User' }
-          };
-        })
-      );
-      
-      // Replace individuals in allMembers with ones that have proper profile data
-      const finalMembers = [
-        ...allMembers.filter(m => m.memberType === 'supporter'),
-        ...individualsWithNames
-      ];
+      }
 
       // Merge provisioned individuals from account claims as a fallback source
       if (provisionedList && provisionedList.length > 0) {
