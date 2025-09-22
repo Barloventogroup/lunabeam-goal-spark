@@ -211,10 +211,10 @@ export class PermissionsService {
   static async acceptSupporterInvite(inviteToken: string): Promise<void> {
     // Try primary function
     const attempt = async (fn: 'accept_invite_by_token' | 'accept_supporter_invite_secure') => {
-      const { data, error } = await supabase.rpc(fn, {
-        _token: inviteToken,
-        _invite_token: inviteToken
-      } as any);
+      const params = fn === 'accept_invite_by_token'
+        ? { _token: inviteToken }
+        : { _invite_token: inviteToken };
+      const { data, error } = await supabase.rpc(fn, params as any);
 
       if (error) throw new Error(error.message || 'Invitation acceptance failed');
 
