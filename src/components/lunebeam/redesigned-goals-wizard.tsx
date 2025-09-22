@@ -9,28 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { 
-  ArrowLeft, 
-  ArrowRight, 
-  Check, 
-  Sparkles,
-  Calendar as CalendarIcon,
-  Clock,
-  Users,
-  Heart,
-  Home,
-  Briefcase,
-  GraduationCap,
-  MessageSquare,
-  Building,
-  Star,
-  PartyPopper,
-  X,
-  User,
-  UserPlus,
-  ChevronRight,
-  Gift
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -39,7 +18,6 @@ import { goalProposalsService } from '@/services/goalProposalsService';
 import { supabase } from '@/integrations/supabase/client';
 import { PermissionsService } from '@/services/permissionsService';
 import type { GoalDomain } from '@/types';
-
 interface RedesignedGoalsWizardProps {
   onComplete: () => void;
   onCancel: () => void;
@@ -48,202 +26,194 @@ interface RedesignedGoalsWizardProps {
 }
 
 // Category definitions with icons, explanations, and detailed examples
-const categories = [
-  {
-    id: 'health',
-    title: 'Health & Well Being',
-    icon: Heart,
-    emoji: '🌱',
-    description: 'Build healthy habits for mind and body',
-    examples: 'Exercise, sleep better, eat well, manage stress',
-    detailedExamples: [
-      'Walk daily for 30 minutes',
-      'Stretch every morning',
-      'Sleep 8 hours per night',
-      'Drink more water',
-      'Practice meditation',
-      'Eat healthy meals'
-    ]
-  },
-  {
-    id: 'education',
-    title: 'Education - High School / Academic Readiness',
-    icon: GraduationCap,
-    emoji: '📘',
-    description: 'Academic skills and school success',
-    examples: 'Study habits, homework, test prep, reading',
-    detailedExamples: [
-      'Complete homework daily',
-      'Study for 1 hour each evening',
-      'Read 30 minutes before bed',
-      'Take organized notes',
-      'Practice math problems',
-      'Prepare for upcoming tests'
-    ]
-  },
-  {
-    id: 'employment',
-    title: 'Employment',
-    icon: Briefcase,
-    emoji: '💼',
-    description: 'Job skills and career preparation',
-    examples: 'Resume, interviews, work skills, networking',
-    detailedExamples: [
-      'Update resume weekly',
-      'Practice interview skills',
-      'Learn new software',
-      'Network with professionals',
-      'Apply for jobs daily',
-      'Develop work portfolio'
-    ]
-  },
-  {
-    id: 'independent_living',
-    title: 'Independent Living',
-    icon: Home,
-    emoji: '🏠',
-    description: 'Life skills for independence',
-    examples: 'Cooking, cleaning, budgeting, transportation',
-    detailedExamples: [
-      'Cook a meal from scratch',
-      'Clean room weekly',
-      'Track monthly budget',
-      'Learn public transportation',
-      'Do laundry independently',
-      'Grocery shopping'
-    ]
-  },
-  {
-    id: 'social_skills',
-    title: 'Social / Self-Advocacy',
-    icon: MessageSquare,
-    emoji: '🗣️',
-    description: 'Communication and relationships',
-    examples: 'Making friends, speaking up, teamwork',
-    detailedExamples: [
-      'Start conversations with peers',
-      'Practice speaking up in meetings',
-      'Join a social group',
-      'Express needs clearly',
-      'Work on team projects',
-      'Build friendships'
-    ]
-  },
-  {
-    id: 'postsecondary',
-    title: 'Postsecondary - Learning After High School',
-    icon: Building,
-    emoji: '🎓',
-    description: 'College, trade school, or training prep',
-    examples: 'College apps, study skills, career planning',
-    detailedExamples: [
-      'Research college programs',
-      'Complete application essays',
-      'Visit campus tours',
-      'Apply for scholarships',
-      'Develop study strategies',
-      'Plan career path'
-    ]
-  },
-  {
-    id: 'fun_recreation',
-    title: 'Fun / Recreation',
-    icon: PartyPopper,
-    emoji: '🎉',
-    description: 'Hobbies, interests, and enjoyment',
-    examples: 'Sports, music, art, games, social activities',
-    detailedExamples: [
-      'Play guitar for 30 minutes',
-      'Paint or draw weekly',
-      'Join a sports team',
-      'Play board games with friends',
-      'Learn a new hobby',
-      'Attend social events'
-    ]
-  }
-];
+const categories = [{
+  id: 'health',
+  title: 'Health & Well Being',
+  icon: Heart,
+  emoji: '🌱',
+  description: 'Build healthy habits for mind and body',
+  examples: 'Exercise, sleep better, eat well, manage stress',
+  detailedExamples: ['Walk daily for 30 minutes', 'Stretch every morning', 'Sleep 8 hours per night', 'Drink more water', 'Practice meditation', 'Eat healthy meals']
+}, {
+  id: 'education',
+  title: 'Education - High School / Academic Readiness',
+  icon: GraduationCap,
+  emoji: '📘',
+  description: 'Academic skills and school success',
+  examples: 'Study habits, homework, test prep, reading',
+  detailedExamples: ['Complete homework daily', 'Study for 1 hour each evening', 'Read 30 minutes before bed', 'Take organized notes', 'Practice math problems', 'Prepare for upcoming tests']
+}, {
+  id: 'employment',
+  title: 'Employment',
+  icon: Briefcase,
+  emoji: '💼',
+  description: 'Job skills and career preparation',
+  examples: 'Resume, interviews, work skills, networking',
+  detailedExamples: ['Update resume weekly', 'Practice interview skills', 'Learn new software', 'Network with professionals', 'Apply for jobs daily', 'Develop work portfolio']
+}, {
+  id: 'independent_living',
+  title: 'Independent Living',
+  icon: Home,
+  emoji: '🏠',
+  description: 'Life skills for independence',
+  examples: 'Cooking, cleaning, budgeting, transportation',
+  detailedExamples: ['Cook a meal from scratch', 'Clean room weekly', 'Track monthly budget', 'Learn public transportation', 'Do laundry independently', 'Grocery shopping']
+}, {
+  id: 'social_skills',
+  title: 'Social / Self-Advocacy',
+  icon: MessageSquare,
+  emoji: '🗣️',
+  description: 'Communication and relationships',
+  examples: 'Making friends, speaking up, teamwork',
+  detailedExamples: ['Start conversations with peers', 'Practice speaking up in meetings', 'Join a social group', 'Express needs clearly', 'Work on team projects', 'Build friendships']
+}, {
+  id: 'postsecondary',
+  title: 'Postsecondary - Learning After High School',
+  icon: Building,
+  emoji: '🎓',
+  description: 'College, trade school, or training prep',
+  examples: 'College apps, study skills, career planning',
+  detailedExamples: ['Research college programs', 'Complete application essays', 'Visit campus tours', 'Apply for scholarships', 'Develop study strategies', 'Plan career path']
+}, {
+  id: 'fun_recreation',
+  title: 'Fun / Recreation',
+  icon: PartyPopper,
+  emoji: '🎉',
+  description: 'Hobbies, interests, and enjoyment',
+  examples: 'Sports, music, art, games, social activities',
+  detailedExamples: ['Play guitar for 30 minutes', 'Paint or draw weekly', 'Join a sports team', 'Play board games with friends', 'Learn a new hobby', 'Attend social events']
+}];
 
 // Goal types
-const goalTypes = [
-  { id: 'reminder', label: 'Reminder', description: 'Remember to do something regularly' },
-  { id: 'practice', label: 'Practice & Variation', description: 'Improve an existing skill' },
-  { id: 'new_skill', label: 'New Skill', description: 'Learn something completely new' }
-];
+const goalTypes = [{
+  id: 'reminder',
+  label: 'Reminder',
+  description: 'Remember to do something regularly'
+}, {
+  id: 'practice',
+  label: 'Practice & Variation',
+  description: 'Improve an existing skill'
+}, {
+  id: 'new_skill',
+  label: 'New Skill',
+  description: 'Learn something completely new'
+}];
 
 // Experience levels
-const experienceLevels = [
-  { id: 'first_time', label: 'First time', description: 'Brand new to this' },
-  { id: 'learning', label: 'Learning', description: 'Some experience, still figuring it out' },
-  { id: 'routine', label: 'Routine', description: 'Know how, just need consistency' }
-];
+const experienceLevels = [{
+  id: 'first_time',
+  label: 'First time',
+  description: 'Brand new to this'
+}, {
+  id: 'learning',
+  label: 'Learning',
+  description: 'Some experience, still figuring it out'
+}, {
+  id: 'routine',
+  label: 'Routine',
+  description: 'Know how, just need consistency'
+}];
 
 // Support contexts
-const supportContexts = [
-  { id: 'alone', label: 'Alone', description: 'Work on this independently' },
-  { id: 'parent', label: 'With Parent', description: 'Parent/guardian helps' },
-  { id: 'coach', label: 'With Coach', description: 'Coach or mentor guides' },
-  { id: 'friend', label: 'With Friend', description: 'Friend or peer supports' }
-];
+const supportContexts = [{
+  id: 'alone',
+  label: 'Alone',
+  description: 'Work on this independently'
+}, {
+  id: 'parent',
+  label: 'With Parent',
+  description: 'Parent/guardian helps'
+}, {
+  id: 'coach',
+  label: 'With Coach',
+  description: 'Coach or mentor guides'
+}, {
+  id: 'friend',
+  label: 'With Friend',
+  description: 'Friend or peer supports'
+}];
 
 // Frequency options
-const frequencies = [
-  { id: 'daily', label: 'Daily', value: 7 },
-  { id: 'weekdays', label: 'Weekdays only', value: 5 },
-  { id: 'three_times', label: '3 times per week', value: 3 },
-  { id: 'twice', label: '2 times per week', value: 2 },
-  { id: 'weekly', label: 'Once per week', value: 1 }
-];
+const frequencies = [{
+  id: 'daily',
+  label: 'Daily',
+  value: 7
+}, {
+  id: 'weekdays',
+  label: 'Weekdays only',
+  value: 5
+}, {
+  id: 'three_times',
+  label: '3 times per week',
+  value: 3
+}, {
+  id: 'twice',
+  label: '2 times per week',
+  value: 2
+}, {
+  id: 'weekly',
+  label: 'Once per week',
+  value: 1
+}];
 
 // Time of day options
-const timesOfDay = [
-  { id: 'morning', label: 'Morning', description: '6-11 AM' },
-  { id: 'afternoon', label: 'Afternoon', description: '12-5 PM' },
-  { id: 'evening', label: 'Evening', description: '6-10 PM' },
-  { id: 'custom', label: 'Custom time', description: 'Pick specific time' }
-];
-
+const timesOfDay = [{
+  id: 'morning',
+  label: 'Morning',
+  description: '6-11 AM'
+}, {
+  id: 'afternoon',
+  label: 'Afternoon',
+  description: '12-5 PM'
+}, {
+  id: 'evening',
+  label: 'Evening',
+  description: '6-10 PM'
+}, {
+  id: 'custom',
+  label: 'Custom time',
+  description: 'Pick specific time'
+}];
 interface WizardData {
   // Step 0: Who is this for (supporters only)
   recipient: 'self' | 'other';
   supportedPersonId?: string;
   supportedPersonName?: string;
   isMyIdea?: boolean;
-  
+
   // Step 1: Goal description
   goalTitle: string;
   category?: string;
-  
+
   // Step 2: Goal type
   goalType?: string;
-  
+
   // Step 3: Experience level
   experienceLevel?: string;
-  
+
   // Step 4: Prerequisites
   hasPrerequisites: boolean;
-  
+
   // Step 5: Scheduling & timing
   startDate: Date;
   endDate?: Date;
   frequency: number;
   timeOfDay?: string;
   customTime?: string;
-  
+
   // Step 6: Context/Support
   supportContext?: string;
   sendReminderToMe?: boolean; // For supporters
-  
+
   // Step 7: Rewards (supporters only)
   assignReward?: boolean;
   rewardType?: string;
   pointValue?: number;
 }
-
 interface SupportedPerson {
   id: string;
   name: string;
 }
-
 export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   onComplete,
   onCancel,
@@ -260,7 +230,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     frequency: 3,
     isMyIdea: true
   });
-  
   const [supportedPeople, setSupportedPeople] = useState<SupportedPerson[]>([]);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [selectedCategoryDetails, setSelectedCategoryDetails] = useState<any>(null);
@@ -271,145 +240,131 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [datePickerType, setDatePickerType] = useState<'start' | 'end'>('start');
-  
-  const { toast } = useToast();
-  
+  const {
+    toast
+  } = useToast();
+
   // Load supported people for supporters
   useEffect(() => {
     if (isSupporter) {
       loadSupportedPeople();
     }
   }, [isSupporter]);
-  
+
   // Check permissions when supported person changes
   useEffect(() => {
     if (data.supportedPersonId && data.recipient === 'other') {
       checkAssignPermissions();
     }
   }, [data.supportedPersonId, data.recipient]);
-  
   const loadSupportedPeople = async () => {
     try {
-      const { data: supporters, error } = await supabase
-        .from('supporters')
-        .select(`
+      const {
+        data: supporters,
+        error
+      } = await supabase.from('supporters').select(`
           individual_id,
           profiles!supporters_individual_id_fkey(first_name)
-        `)
-        .eq('supporter_id', (await supabase.auth.getUser()).data.user?.id);
-
+        `).eq('supporter_id', (await supabase.auth.getUser()).data.user?.id);
       if (error) throw error;
-
       const people = (supporters || []).map(s => ({
         id: s.individual_id,
         name: (s as any).profiles?.first_name || 'Unknown'
       }));
-
       setSupportedPeople(people);
-      
+
       // Set initial name if we have an ID
       if (initialIndividualId) {
         const person = people.find(p => p.id === initialIndividualId);
         if (person) {
-          setData(prev => ({ ...prev, supportedPersonName: person.name }));
+          setData(prev => ({
+            ...prev,
+            supportedPersonName: person.name
+          }));
         }
       }
     } catch (error) {
       console.error('Failed to load supported people:', error);
     }
   };
-  
   const checkAssignPermissions = async () => {
     if (!data.supportedPersonId) return;
-    
     try {
-      const canAssign = await PermissionsService.checkPermission(
-        data.supportedPersonId,
-        'create_goals'
-      );
+      const canAssign = await PermissionsService.checkPermission(data.supportedPersonId, 'create_goals');
       setCanAssignDirectly(canAssign);
     } catch (error) {
       console.error('Failed to check permissions:', error);
       setCanAssignDirectly(false);
     }
   };
-  
   const updateData = (updates: Partial<WizardData>) => {
-    setData(prev => ({ ...prev, ...updates }));
+    setData(prev => ({
+      ...prev,
+      ...updates
+    }));
   };
-  
   const nextStep = () => {
     const maxStep = isSupporter ? 7 : 6;
     if (currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
     }
   };
-  
   const prevStep = () => {
     const minStep = isSupporter ? 0 : 1;
     if (currentStep > minStep) {
       setCurrentStep(currentStep - 1);
     }
   };
-  
   const getStepTitle = () => {
-    const supporterTitles = [
-      'Who is this goal for?',
-      'What do you want to do?',
-      'What type of goal?',
-      'Experience level?',
-      'Prerequisites check',
-      'Scheduling & timing',
-      'Support context',
-      'Rewards'
-    ];
-    
-    const nonSupporterTitles = [
-      'What do you want to do?',
-      'What type of goal?',
-      'Experience level?',
-      'Prerequisites check',
-      'Scheduling & timing',
-      'Support context'
-    ];
-    
+    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context', 'Rewards'];
+    const nonSupporterTitles = ['What do you want to do?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context'];
     if (isSupporter) {
       return supporterTitles[currentStep] || '';
     } else {
       return nonSupporterTitles[currentStep - 1] || '';
     }
   };
-  
   const canProceed = () => {
     switch (currentStep) {
-      case 0: // Who is this for (supporters only)
-        return data.recipient === 'self' || (data.recipient === 'other' && data.supportedPersonId);
-      case 1: // Goal description
+      case 0:
+        // Who is this for (supporters only)
+        return data.recipient === 'self' || data.recipient === 'other' && data.supportedPersonId;
+      case 1:
+        // Goal description
         return data.goalTitle.trim().length > 0;
-      case 2: // Goal type
+      case 2:
+        // Goal type
         return !!data.goalType;
-      case 3: // Experience level
+      case 3:
+        // Experience level
         return !!data.experienceLevel;
-      case 4: // Prerequisites
-        return true; // Always can proceed
-      case 5: // Scheduling
+      case 4:
+        // Prerequisites
+        return true;
+      // Always can proceed
+      case 5:
+        // Scheduling
         return !!data.frequency && !!data.timeOfDay;
-      case 6: // Support context
+      case 6:
+        // Support context
         return !!data.supportContext;
-      case 7: // Rewards (supporters only)
-        return true; // Optional step
+      case 7:
+        // Rewards (supporters only)
+        return true;
+      // Optional step
       default:
         return false;
     }
   };
-  
   const handleCategorySelect = (categoryId: string) => {
     if (expandedCategory === categoryId) {
       // If clicking the same category, either select it or collapse
       if (data.category === categoryId) {
         setExpandedCategory(null);
       } else {
-        updateData({ category: categoryId });
+        updateData({
+          category: categoryId
+        });
         setExpandedCategory(null);
       }
     } else {
@@ -417,13 +372,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       setExpandedCategory(categoryId);
     }
   };
-  
   const handleSubmit = async () => {
     setLoading(true);
-    
     try {
       const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
-      
       const goalData = {
         title: data.goalTitle,
         description: buildGoalDescription(),
@@ -432,7 +384,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         due_date: data.endDate ? format(data.endDate, 'yyyy-MM-dd') : undefined,
         frequency_per_week: data.frequency
       };
-      
       if (isProposal) {
         // Create proposal
         await goalProposalsService.createProposal({
@@ -445,7 +396,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           frequency_per_week: data.frequency,
           rationale: `Goal type: ${data.goalType}, Experience: ${data.experienceLevel}, Support: ${data.supportContext}`
         });
-        
         toast({
           title: 'Proposal submitted! 📝',
           description: `Sent for review by ${data.supportedPersonName}'s admins.`
@@ -453,18 +403,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       } else {
         // Create goal directly
         await goalsService.createGoal(goalData);
-        
         toast({
           title: data.recipient === 'self' ? 'Goal created! 🎯' : `Goal assigned to ${data.supportedPersonName}! 🎯`,
           description: 'Ready to start making progress!'
         });
       }
-      
+
       // Celebration animation
       setTimeout(() => {
         onComplete();
       }, 1000);
-      
     } catch (error) {
       console.error('Failed to create goal:', error);
       toast({
@@ -476,15 +424,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       setLoading(false);
     }
   };
-  
   const buildGoalDescription = () => {
     const category = categories.find(c => c.id === data.category);
     const type = goalTypes.find(t => t.id === data.goalType);
     const experience = experienceLevels.find(e => e.id === data.experienceLevel);
     const support = supportContexts.find(s => s.id === data.supportContext);
-    
     let description = data.goalTitle;
-    
     if (type) description += ` (${type.label})`;
     if (experience) description += ` - ${experience.label}`;
     if (support) description += ` with ${support.label.toLowerCase()}`;
@@ -493,25 +438,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       const timeLabel = timesOfDay.find(t => t.id === data.timeOfDay)?.label;
       if (timeLabel) description += ` in the ${timeLabel.toLowerCase()}`;
     }
-    
     return description;
   };
-  
   const mapCategoryToDomain = (categoryId?: string) => {
     const mapping: Record<string, GoalDomain> = {
       'health': 'health',
-      'education': 'school', // Map education to school
-      'employment': 'work', // Map employment to work 
-      'independent_living': 'life', // Map independent_living to life
-      'social_skills': 'other', // Map social_skills to other since it's not in constraint
-      'postsecondary': 'education', // Map postsecondary to education
+      'education': 'school',
+      // Map education to school
+      'employment': 'work',
+      // Map employment to work 
+      'independent_living': 'life',
+      // Map independent_living to life
+      'social_skills': 'other',
+      // Map social_skills to other since it's not in constraint
+      'postsecondary': 'education',
+      // Map postsecondary to education
       'fun_recreation': 'other' // Map fun_recreation to other since it's not in constraint
     };
     return mapping[categoryId || ''] || 'other' as GoalDomain;
   };
-  
-  const renderStep0 = () => (
-    <Card className="border-0 shadow-lg">
+  const renderStep0 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Users className="h-8 w-8 text-primary" />
@@ -521,11 +467,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Button
-          variant={data.recipient === 'self' ? 'default' : 'outline'}
-          className="w-full h-auto p-6 justify-start"
-          onClick={() => updateData({ recipient: 'self' })}
-        >
+        <Button variant={data.recipient === 'self' ? 'default' : 'outline'} className="w-full h-auto p-6 justify-start" onClick={() => updateData({
+        recipient: 'self'
+      })}>
           <div className="flex items-center gap-4">
             <User className="h-6 w-6" />
             <div className="text-left">
@@ -535,11 +479,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
         </Button>
         
-        <Button
-          variant={data.recipient === 'other' ? 'default' : 'outline'}
-          className="w-full h-auto p-6 justify-start"
-          onClick={() => updateData({ recipient: 'other' })}
-        >
+        <Button variant={data.recipient === 'other' ? 'default' : 'outline'} className="w-full h-auto p-6 justify-start" onClick={() => updateData({
+        recipient: 'other'
+      })}>
           <div className="flex items-center gap-4">
             <UserPlus className="h-6 w-6" />
             <div className="text-left">
@@ -549,52 +491,36 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
         </Button>
         
-        {data.recipient === 'other' && (
-          <div className="space-y-3 pt-4">
+        {data.recipient === 'other' && <div className="space-y-3 pt-4">
             <Label>Select person:</Label>
             <div className="grid gap-2">
-              {supportedPeople.map(person => (
-                <Button
-                  key={person.id}
-                  variant={data.supportedPersonId === person.id ? 'default' : 'outline'}
-                  className="justify-start"
-                  onClick={() => updateData({ 
-                    supportedPersonId: person.id,
-                    supportedPersonName: person.name 
-                  })}
-                >
+              {supportedPeople.map(person => <Button key={person.id} variant={data.supportedPersonId === person.id ? 'default' : 'outline'} className="justify-start" onClick={() => updateData({
+            supportedPersonId: person.id,
+            supportedPersonName: person.name
+          })}>
                   {person.name}
-                </Button>
-              ))}
+                </Button>)}
             </div>
             
-            {data.supportedPersonId && (
-              <div className="space-y-3 pt-4 border-t">
+            {data.supportedPersonId && <div className="space-y-3 pt-4 border-t">
                 <Label>Is this your idea or theirs?</Label>
                 <div className="flex gap-2">
-                  <Button
-                    variant={data.isMyIdea ? 'default' : 'outline'}
-                    onClick={() => updateData({ isMyIdea: true })}
-                  >
+                  <Button variant={data.isMyIdea ? 'default' : 'outline'} onClick={() => updateData({
+              isMyIdea: true
+            })}>
                     My idea
                   </Button>
-                  <Button
-                    variant={!data.isMyIdea ? 'default' : 'outline'}
-                    onClick={() => updateData({ isMyIdea: false })}
-                  >
+                  <Button variant={!data.isMyIdea ? 'default' : 'outline'} onClick={() => updateData({
+              isMyIdea: false
+            })}>
                     Their idea
                   </Button>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              </div>}
+          </div>}
       </CardContent>
-    </Card>
-  );
-  
-  const renderStep1 = () => (
-    <Card className="border-0 shadow-lg">
+    </Card>;
+  const renderStep1 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Sparkles className="h-8 w-8 text-primary" />
@@ -604,14 +530,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="goal-title">Goal description *</Label>
-          <Input
-            id="goal-title"
-            placeholder="e.g., Practice guitar for 30 minutes daily"
-            value={data.goalTitle}
-            onChange={(e) => updateData({ goalTitle: e.target.value })}
-            className="text-lg"
-          />
+          
+          <Input id="goal-title" placeholder="e.g., Practice guitar for 30 minutes daily" value={data.goalTitle} onChange={e => updateData({
+          goalTitle: e.target.value
+        })} className="text-lg" />
         </div>
         
         <div className="space-y-4">
@@ -626,20 +548,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-2">
               {(() => {
-                const sortedCategories = categories.sort((a, b) => a.title.localeCompare(b.title));
-                const startIndex = categoryPageIndex * 3;
-                const visibleCategories = sortedCategories.slice(startIndex, startIndex + 3);
-                
-                return visibleCategories.map(category => (
-                  <Card 
-                    key={category.id}
-                    className={cn(
-                      "cursor-pointer hover:shadow-md transition-all border-2",
-                      data.category === category.id ? "border-primary bg-primary/5" : 
-                      expandedCategory === category.id ? "border-primary/50 bg-primary/2" : "border-border"
-                    )}
-                    onClick={() => handleCategorySelect(category.id)}
-                  >
+              const sortedCategories = categories.sort((a, b) => a.title.localeCompare(b.title));
+              const startIndex = categoryPageIndex * 3;
+              const visibleCategories = sortedCategories.slice(startIndex, startIndex + 3);
+              return visibleCategories.map(category => <Card key={category.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.category === category.id ? "border-primary bg-primary/5" : expandedCategory === category.id ? "border-primary/50 bg-primary/2" : "border-border")} onClick={() => handleCategorySelect(category.id)}>
                     <CardContent className="p-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -650,156 +562,102 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           <p className="text-xs text-muted-foreground line-clamp-2">{category.description}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          {data.category === category.id && (
-                            <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                          )}
-                          {expandedCategory === category.id ? (
-                            <ChevronRight className="h-4 w-4 text-primary rotate-90 transition-transform" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform" />
-                          )}
+                          {data.category === category.id && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
+                          {expandedCategory === category.id ? <ChevronRight className="h-4 w-4 text-primary rotate-90 transition-transform" /> : <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform" />}
                         </div>
                       </div>
                       
                       {/* Expanded Details */}
-                      {expandedCategory === category.id && (
-                        <div className="mt-3 pt-3 border-t border-border animate-fade-in">
+                      {expandedCategory === category.id && <div className="mt-3 pt-3 border-t border-border animate-fade-in">
                           <p className="text-xs font-medium text-foreground mb-2">Goal ideas:</p>
                           <div className="grid grid-cols-1 gap-1">
-                            {category.detailedExamples.map((example, index) => (
-                              <div
-                                key={index}
-                                className="text-xs text-muted-foreground p-2 bg-muted/30 rounded cursor-pointer hover:bg-muted/50 transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateData({ 
-                                    goalTitle: example,
-                                    category: category.id 
-                                  });
-                                  setExpandedCategory(null);
-                                }}
-                              >
+                            {category.detailedExamples.map((example, index) => <div key={index} className="text-xs text-muted-foreground p-2 bg-muted/30 rounded cursor-pointer hover:bg-muted/50 transition-colors" onClick={e => {
+                        e.stopPropagation();
+                        updateData({
+                          goalTitle: example,
+                          category: category.id
+                        });
+                        setExpandedCategory(null);
+                      }}>
                                 • {example}
-                              </div>
-                            ))}
+                              </div>)}
                           </div>
                           
                           <div className="flex gap-2 mt-3">
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="flex-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                updateData({ category: category.id });
-                                setExpandedCategory(null);
-                              }}
-                            >
+                            <Button size="sm" variant="default" className="flex-1" onClick={e => {
+                        e.stopPropagation();
+                        updateData({
+                          category: category.id
+                        });
+                        setExpandedCategory(null);
+                      }}>
                               Choose this category
                             </Button>
                           </div>
-                        </div>
-                      )}
+                        </div>}
                     </CardContent>
-                  </Card>
-                ));
-              })()}
+                  </Card>);
+            })()}
             </div>
             
             {(() => {
-              const sortedCategories = categories.sort((a, b) => a.title.localeCompare(b.title));
-              const totalPages = Math.ceil(sortedCategories.length / 3);
-              const hasMore = categoryPageIndex < totalPages - 1;
-              
-              return hasMore ? (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setCategoryPageIndex(prev => prev + 1)}
-                >
+            const sortedCategories = categories.sort((a, b) => a.title.localeCompare(b.title));
+            const totalPages = Math.ceil(sortedCategories.length / 3);
+            const hasMore = categoryPageIndex < totalPages - 1;
+            return hasMore ? <Button variant="outline" size="sm" className="w-full" onClick={() => setCategoryPageIndex(prev => prev + 1)}>
                   More categories
-                </Button>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setCategoryPageIndex(0)}
-                >
+                </Button> : <Button variant="outline" size="sm" className="w-full" onClick={() => setCategoryPageIndex(0)}>
                   Show first categories
-                </Button>
-              );
-            })()}
+                </Button>;
+          })()}
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
-  
-  const renderStep2 = () => (
-    <Card className="border-0 shadow-lg">
+    </Card>;
+  const renderStep2 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">This helps us provide better guidance</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {goalTypes.map(type => (
-          <Button
-            key={type.id}
-            variant={data.goalType === type.id ? 'default' : 'outline'}
-            className="w-full h-auto p-4 justify-start"
-            onClick={() => updateData({ goalType: type.id })}
-          >
+        {goalTypes.map(type => <Button key={type.id} variant={data.goalType === type.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        goalType: type.id
+      })}>
             <div className="text-left">
               <div className="font-semibold">{type.label}</div>
               <div className="text-sm text-muted-foreground">{type.description}</div>
             </div>
-          </Button>
-        ))}
+          </Button>)}
       </CardContent>
-    </Card>
-  );
-  
-  const renderStep3 = () => (
-    <Card className="border-0 shadow-lg">
+    </Card>;
+  const renderStep3 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">How familiar are you with this activity?</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {experienceLevels.map(level => (
-          <Button
-            key={level.id}
-            variant={data.experienceLevel === level.id ? 'default' : 'outline'}
-            className="w-full h-auto p-4 justify-start"
-            onClick={() => updateData({ experienceLevel: level.id })}
-          >
+        {experienceLevels.map(level => <Button key={level.id} variant={data.experienceLevel === level.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        experienceLevel: level.id
+      })}>
             <div className="text-left">
               <div className="font-semibold">{level.label}</div>
               <div className="text-sm text-muted-foreground">{level.description}</div>
             </div>
-          </Button>
-        ))}
+          </Button>)}
       </CardContent>
-    </Card>
-  );
-  
-  const renderStep4 = () => (
-    <Card className="border-0 shadow-lg">
+    </Card>;
+  const renderStep4 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Do you already have what you need?</CardTitle>
         <p className="text-muted-foreground">Equipment, knowledge, access, etc.</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Button
-          variant={data.hasPrerequisites ? 'default' : 'outline'}
-          className="w-full h-auto p-4 justify-start"
-          onClick={() => updateData({ hasPrerequisites: true })}
-        >
+        <Button variant={data.hasPrerequisites ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        hasPrerequisites: true
+      })}>
           <div className="flex items-center gap-3">
             <Check className="h-5 w-5" />
             <div className="text-left">
@@ -809,11 +667,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
         </Button>
         
-        <Button
-          variant={!data.hasPrerequisites ? 'default' : 'outline'}
-          className="w-full h-auto p-4 justify-start"
-          onClick={() => updateData({ hasPrerequisites: false })}
-        >
+        <Button variant={!data.hasPrerequisites ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        hasPrerequisites: false
+      })}>
           <div className="flex items-center gap-3">
             <X className="h-5 w-5" />
             <div className="text-left">
@@ -823,19 +679,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
         </Button>
         
-        {!data.hasPrerequisites && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        {!data.hasPrerequisites && <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800">
               ✨ We'll auto-suggest prep steps to help you get ready!
             </p>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
-  
-  const renderStep5 = () => (
-    <Card className="border-0 shadow-lg">
+    </Card>;
+  const renderStep5 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">Set your schedule and timing</p>
@@ -846,16 +697,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         <div className="space-y-3">
           <Label>How often?</Label>
           <div className="grid grid-cols-1 gap-2">
-            {frequencies.map(freq => (
-              <Button
-                key={freq.id}
-                variant={data.frequency === freq.value ? 'default' : 'outline'}
-                className="justify-start"
-                onClick={() => updateData({ frequency: freq.value })}
-              >
+            {frequencies.map(freq => <Button key={freq.id} variant={data.frequency === freq.value ? 'default' : 'outline'} className="justify-start" onClick={() => updateData({
+            frequency: freq.value
+          })}>
                 {freq.label}
-              </Button>
-            ))}
+              </Button>)}
           </div>
         </div>
         
@@ -863,36 +709,29 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         <div className="space-y-3">
           <Label>When during the day?</Label>
           <div className="grid grid-cols-2 gap-2">
-             {timesOfDay.map(time => (
-               <Button
-                 key={time.id}
-                 variant={data.timeOfDay === time.id ? 'default' : 'outline'}
-                 className="h-auto p-3"
-                 onClick={() => {
-                   if (time.id === 'custom') {
-                     setShowTimePicker(true);
-                   } else {
-                     updateData({ timeOfDay: time.id });
-                   }
-                 }}
-               >
+             {timesOfDay.map(time => <Button key={time.id} variant={data.timeOfDay === time.id ? 'default' : 'outline'} className="h-auto p-3" onClick={() => {
+            if (time.id === 'custom') {
+              setShowTimePicker(true);
+            } else {
+              updateData({
+                timeOfDay: time.id
+              });
+            }
+          }}>
                  <div className="text-center">
                    <div className="font-semibold">{time.label}</div>
                    <div className="text-xs text-muted-foreground">{time.description}</div>
                  </div>
-               </Button>
-             ))}
+               </Button>)}
           </div>
          </div>
          
          {/* Custom Time Display */}
-         {data.timeOfDay === 'custom' && data.customTime && (
-           <div className="mt-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
+         {data.timeOfDay === 'custom' && data.customTime && <div className="mt-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
              <div className="text-sm font-medium text-primary">
                Selected time: {data.customTime}
              </div>
-           </div>
-         )}
+           </div>}
         
         {/* Date range */}
         <div className="space-y-3">
@@ -900,10 +739,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label className="text-xs">Start date</Label>
-              <Popover open={showDatePicker && datePickerType === 'start'} onOpenChange={(open) => {
-                setShowDatePicker(open);
-                if (open) setDatePickerType('start');
-              }}>
+              <Popover open={showDatePicker && datePickerType === 'start'} onOpenChange={open => {
+              setShowDatePicker(open);
+              if (open) setDatePickerType('start');
+            }}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
                     <CalendarIcon className="h-4 w-4 mr-2" />
@@ -911,27 +750,24 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={data.startDate}
-                    onSelect={(date) => {
-                      if (date) {
-                        updateData({ startDate: date });
-                        setShowDatePicker(false);
-                      }
-                    }}
-                    disabled={(date) => date < new Date()}
-                  />
+                  <Calendar mode="single" selected={data.startDate} onSelect={date => {
+                  if (date) {
+                    updateData({
+                      startDate: date
+                    });
+                    setShowDatePicker(false);
+                  }
+                }} disabled={date => date < new Date()} />
                 </PopoverContent>
               </Popover>
             </div>
             
             <div className="space-y-1">
               <Label className="text-xs">End date (optional)</Label>
-              <Popover open={showDatePicker && datePickerType === 'end'} onOpenChange={(open) => {
-                setShowDatePicker(open);
-                if (open) setDatePickerType('end');
-              }}>
+              <Popover open={showDatePicker && datePickerType === 'end'} onOpenChange={open => {
+              setShowDatePicker(open);
+              if (open) setDatePickerType('end');
+            }}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
                     <CalendarIcon className="h-4 w-4 mr-2" />
@@ -939,15 +775,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={data.endDate}
-                    onSelect={(date) => {
-                      updateData({ endDate: date });
-                      setShowDatePicker(false);
-                    }}
-                    disabled={(date) => date < data.startDate}
-                  />
+                  <Calendar mode="single" selected={data.endDate} onSelect={date => {
+                  updateData({
+                    endDate: date
+                  });
+                  setShowDatePicker(false);
+                }} disabled={date => date < data.startDate} />
                 </PopoverContent>
               </Popover>
             </div>
@@ -958,57 +791,40 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
         </div>
         
-        {isSupporter && data.recipient === 'other' && (
-          <div className="pt-4 border-t space-y-2">
+        {isSupporter && data.recipient === 'other' && <div className="pt-4 border-t space-y-2">
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="reminder-me"
-                checked={data.sendReminderToMe}
-                onChange={(e) => updateData({ sendReminderToMe: e.target.checked })}
-                className="rounded"
-              />
+              <input type="checkbox" id="reminder-me" checked={data.sendReminderToMe} onChange={e => updateData({
+            sendReminderToMe: e.target.checked
+          })} className="rounded" />
               <Label htmlFor="reminder-me" className="text-sm">
                 Send reminder to me too
               </Label>
             </div>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
-  
-  const renderStep6 = () => (
-    <Card className="border-0 shadow-lg">
+    </Card>;
+  const renderStep6 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Who supports this goal?</CardTitle>
         <p className="text-muted-foreground">Choose your support system</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {supportContexts.map(context => (
-          <Button
-            key={context.id}
-            variant={data.supportContext === context.id ? 'default' : 'outline'}
-            className="w-full h-auto p-4 justify-start"
-            onClick={() => {
-              updateData({ supportContext: context.id });
-              // Navigate to final confirmation step
-              setCurrentStep(isSupporter ? 8 : 7);
-            }}
-          >
+        {supportContexts.map(context => <Button key={context.id} variant={data.supportContext === context.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => {
+        updateData({
+          supportContext: context.id
+        });
+        // Navigate to final confirmation step
+        setCurrentStep(isSupporter ? 8 : 7);
+      }}>
             <div className="text-left">
               <div className="font-semibold">{context.label}</div>
               <div className="text-sm text-muted-foreground">{context.description}</div>
             </div>
-          </Button>
-        ))}
+          </Button>)}
       </CardContent>
-    </Card>
-  );
-  
-  const renderStep7 = () => (
-    <Card className="border-0 shadow-lg">
+    </Card>;
+  const renderStep7 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Gift className="h-8 w-8 text-primary" />
@@ -1018,71 +834,61 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Button
-          variant={!data.assignReward ? 'default' : 'outline'}
-          className="w-full h-auto p-4 justify-start"
-          onClick={() => updateData({ assignReward: false })}
-        >
+        <Button variant={!data.assignReward ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        assignReward: false
+      })}>
           <div className="text-left">
             <div className="font-semibold">No reward</div>
             <div className="text-sm text-muted-foreground">Just the satisfaction of completing it</div>
           </div>
         </Button>
         
-        <Button
-          variant={data.assignReward ? 'default' : 'outline'}
-          className="w-full h-auto p-4 justify-start"
-          onClick={() => updateData({ assignReward: true })}
-        >
+        <Button variant={data.assignReward ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        assignReward: true
+      })}>
           <div className="text-left">
             <div className="font-semibold">Add reward</div>
             <div className="text-sm text-muted-foreground">Choose from Reward Bank or create new</div>
           </div>
         </Button>
         
-        {data.assignReward && (
-          <div className="space-y-3 pt-4 border-t">
+        {data.assignReward && <div className="space-y-3 pt-4 border-t">
             <Label>Point value</Label>
             <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: 5, label: 'Small', desc: '5 pts' },
-                { value: 10, label: 'Medium', desc: '10 pts' },
-                { value: 20, label: 'Large', desc: '20 pts' }
-              ].map(point => (
-                <Button
-                  key={point.value}
-                  variant={data.pointValue === point.value ? 'default' : 'outline'}
-                  className="h-auto p-3"
-                  onClick={() => updateData({ pointValue: point.value })}
-                >
+              {[{
+            value: 5,
+            label: 'Small',
+            desc: '5 pts'
+          }, {
+            value: 10,
+            label: 'Medium',
+            desc: '10 pts'
+          }, {
+            value: 20,
+            label: 'Large',
+            desc: '20 pts'
+          }].map(point => <Button key={point.value} variant={data.pointValue === point.value ? 'default' : 'outline'} className="h-auto p-3" onClick={() => updateData({
+            pointValue: point.value
+          })}>
                   <div className="text-center">
                     <div className="font-semibold">{point.label}</div>
                     <div className="text-xs text-muted-foreground">{point.desc}</div>
                   </div>
-                </Button>
-              ))}
+                </Button>)}
             </div>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
-  
+    </Card>;
   const renderConfirmStep = () => {
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
-    
-    return (
-      <Card className="border-0 shadow-lg">
+    return <Card className="border-0 shadow-lg">
         <CardHeader className="text-center pb-4">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="h-8 w-8 text-green-600" />
           </div>
           <CardTitle className="text-2xl">Confirm</CardTitle>
           <p className="text-muted-foreground">
-            {isProposal 
-              ? `This will be sent to ${data.supportedPersonName}'s admins for approval`
-              : 'Ready to start your goal?'
-            }
+            {isProposal ? `This will be sent to ${data.supportedPersonName}'s admins for approval` : 'Ready to start your goal?'}
           </p>
         </CardHeader>
         
@@ -1095,43 +901,33 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <span className="text-sm text-right flex-1 ml-4 font-semibold">{data.goalTitle}</span>
               </div>
               
-              {data.category && (
-                <div className="flex justify-between items-center">
+              {data.category && <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-foreground">Category:</span>
                   <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                     {categories.find(c => c.id === data.category)?.emoji} {categories.find(c => c.id === data.category)?.title}
                   </Badge>
-                </div>
-              )}
+                </div>}
               
-              {data.goalType && (
-                <div className="flex justify-between items-center">
+              {data.goalType && <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-foreground">Type:</span>
                   <span className="text-sm text-primary font-medium">
                     {goalTypes.find(t => t.id === data.goalType)?.label}
                   </span>
-                </div>
-              )}
+                </div>}
               
-              {data.experienceLevel && (
-                <div className="flex justify-between items-center">
+              {data.experienceLevel && <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-foreground">Level:</span>
                   <span className="text-sm text-primary font-medium">
                     {experienceLevels.find(e => e.id === data.experienceLevel)?.label}
                   </span>
-                </div>
-              )}
+                </div>}
               
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-foreground">Schedule:</span>
                 <span className="text-sm text-primary font-medium">
                   {data.frequency} times per week
-                  {data.timeOfDay && data.timeOfDay !== 'custom' && (
-                    <span>, {timesOfDay.find(t => t.id === data.timeOfDay)?.label.toLowerCase()}</span>
-                  )}
-                  {data.timeOfDay === 'custom' && data.customTime && (
-                    <span>, at {data.customTime}</span>
-                  )}
+                  {data.timeOfDay && data.timeOfDay !== 'custom' && <span>, {timesOfDay.find(t => t.id === data.timeOfDay)?.label.toLowerCase()}</span>}
+                  {data.timeOfDay === 'custom' && data.customTime && <span>, at {data.customTime}</span>}
                 </span>
               </div>
               
@@ -1144,14 +940,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </span>
               </div>
               
-              {data.supportContext && (
-                <div className="flex justify-between items-center">
+              {data.supportContext && <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-foreground">Support:</span>
                   <span className="text-sm text-primary font-medium">
                     {supportContexts.find(s => s.id === data.supportContext)?.label}
                   </span>
-                </div>
-              )}
+                </div>}
             </div>
           </div>
           
@@ -1159,92 +953,80 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="space-y-3">
             <h4 className="font-semibold text-foreground">First steps to get started:</h4>
             <div className="space-y-2">
-              {[
-                `Set up your ${data.goalTitle.toLowerCase()} space`,
-                `Plan your first session`,
-                `Track your progress`
-              ].map((step, index) => (
-                <div key={index} className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg">
+              {[`Set up your ${data.goalTitle.toLowerCase()} space`, `Plan your first session`, `Track your progress`].map((step, index) => <div key={index} className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg">
                   <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center">
                     <span className="text-xs font-medium text-primary">{index + 1}</span>
                   </div>
                   <span className="text-sm text-foreground">{step}</span>
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
           
-          {isProposal && (
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          {isProposal && <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800">
                 💡 This goal will be sent as a proposal since you don't have direct assignment permissions for {data.supportedPersonName}.
               </p>
-            </div>
-          )}
+            </div>}
           
           {/* Actions */}
           <div className="flex gap-3 pt-4">
-            <Button 
-              variant="outline"
-              onClick={() => setCurrentStep(isSupporter ? 6 : 5)} // Go back to previous step
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={() => setCurrentStep(isSupporter ? 6 : 5)} // Go back to previous step
+          className="flex-1">
               Edit
             </Button>
-            <Button 
-              onClick={handleSubmit}
-              disabled={loading}
-              className="flex-1 h-12 text-lg font-semibold"
-            >
-              {loading ? (
-                'Creating...'
-              ) : isProposal ? (
-                <>
+            <Button onClick={handleSubmit} disabled={loading} className="flex-1 h-12 text-lg font-semibold">
+              {loading ? 'Creating...' : isProposal ? <>
                   <Sparkles className="h-5 w-5 mr-2" />
                   Confirm Proposal
-                </>
-              ) : (
-                <>
+                </> : <>
                   <Sparkles className="h-5 w-5 mr-2" />
                   Confirm Goal
-                </>
-              )}
+                </>}
             </Button>
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   };
-  
   const renderCurrentStep = () => {
     switch (currentStep) {
-      case 0: return renderStep0(); // Who is this for (supporters only)
-      case 1: return renderStep1(); // Goal description
-      case 2: return renderStep2(); // Goal type
-      case 3: return renderStep3(); // Experience level
-      case 4: return renderStep4(); // Prerequisites
-      case 5: return renderStep5(); // Scheduling
-      case 6: return renderStep6(); // Support context
-      case 7: return isSupporter ? renderStep7() : renderConfirmStep(); // Rewards or confirm
-      case 8: return renderConfirmStep(); // Final confirm (supporters only)
-      default: return null;
+      case 0:
+        return renderStep0();
+      // Who is this for (supporters only)
+      case 1:
+        return renderStep1();
+      // Goal description
+      case 2:
+        return renderStep2();
+      // Goal type
+      case 3:
+        return renderStep3();
+      // Experience level
+      case 4:
+        return renderStep4();
+      // Prerequisites
+      case 5:
+        return renderStep5();
+      // Scheduling
+      case 6:
+        return renderStep6();
+      // Support context
+      case 7:
+        return isSupporter ? renderStep7() : renderConfirmStep();
+      // Rewards or confirm
+      case 8:
+        return renderConfirmStep();
+      // Final confirm (supporters only)
+      default:
+        return null;
     }
   };
-  
   const maxStep = isSupporter ? 8 : 6;
   const isLastStep = currentStep === maxStep - 1;
-  
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       <div className="max-w-md mx-auto py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={currentStep === (isSupporter ? 0 : 1) ? onCancel : prevStep}
-            className="p-2"
-          >
+          <Button variant="ghost" size="sm" onClick={currentStep === (isSupporter ? 0 : 1) ? onCancel : prevStep} className="p-2">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
@@ -1260,26 +1042,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         {/* Progress Bar */}
         <div className="w-full bg-muted rounded-full h-2">
-          <div 
-            className="bg-primary h-2 rounded-full transition-all duration-300" 
-            style={{ width: `${((currentStep + 1) / maxStep) * 100}%` }}
-          />
+          <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{
+          width: `${(currentStep + 1) / maxStep * 100}%`
+        }} />
         </div>
         
         {/* Current Step */}
         {renderCurrentStep()}
         
         {/* Navigation */}
-        {!isLastStep && (
-          <Button 
-            onClick={nextStep}
-            disabled={!canProceed()}
-            className="w-full h-12 text-lg font-semibold"
-          >
+        {!isLastStep && <Button onClick={nextStep} disabled={!canProceed()} className="w-full h-12 text-lg font-semibold">
             Continue
             <ArrowRight className="h-5 w-5 ml-2" />
-          </Button>
-        )}
+          </Button>}
         
         {/* Category Selection Dialog */}
         <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
@@ -1290,15 +1065,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             
             <Carousel className="w-full">
               <CarouselContent>
-                {Array.from({ length: Math.ceil(categories.length / 3) }, (_, i) => (
-                  <CarouselItem key={i}>
+                {Array.from({
+                length: Math.ceil(categories.length / 3)
+              }, (_, i) => <CarouselItem key={i}>
                     <div className="grid grid-cols-1 gap-4 p-1">
-                      {categories.slice(i * 3, (i + 1) * 3).map(category => (
-                        <Card 
-                          key={category.id}
-                          className="cursor-pointer hover:shadow-md transition-shadow"
-                          onClick={() => handleCategorySelect(category.id)}
-                        >
+                      {categories.slice(i * 3, (i + 1) * 3).map(category => <Card key={category.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCategorySelect(category.id)}>
                           <CardContent className="p-4">
                             <div className="flex items-start gap-3">
                               <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -1312,11 +1083,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                               <ChevronRight className="h-4 w-4 text-muted-foreground" />
                             </div>
                           </CardContent>
-                        </Card>
-                      ))}
+                        </Card>)}
                     </div>
-                  </CarouselItem>
-                ))}
+                  </CarouselItem>)}
               </CarouselContent>
               <CarouselPrevious />
               <CarouselNext />
@@ -1335,58 +1104,53 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               {/* Time input */}
               <div className="space-y-2">
                 <Label htmlFor="custom-time">Select time</Label>
-                <Input
-                  id="custom-time"
-                  type="time"
-                  value={data.customTime || ''}
-                  onChange={(e) => updateData({ customTime: e.target.value })}
-                  className="w-full"
-                />
+                <Input id="custom-time" type="time" value={data.customTime || ''} onChange={e => updateData({
+                customTime: e.target.value
+              })} className="w-full" />
               </div>
               
               {/* Quick time options */}
               <div className="space-y-2">
                 <Label>Or choose a common time:</Label>
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: '7:00 AM', value: '07:00' },
-                    { label: '8:00 AM', value: '08:00' },
-                    { label: '12:00 PM', value: '12:00' },
-                    { label: '3:00 PM', value: '15:00' },
-                    { label: '6:00 PM', value: '18:00' },
-                    { label: '9:00 PM', value: '21:00' }
-                  ].map(timeOption => (
-                    <Button
-                      key={timeOption.value}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateData({ customTime: timeOption.value })}
-                      className="text-xs"
-                    >
+                  {[{
+                  label: '7:00 AM',
+                  value: '07:00'
+                }, {
+                  label: '8:00 AM',
+                  value: '08:00'
+                }, {
+                  label: '12:00 PM',
+                  value: '12:00'
+                }, {
+                  label: '3:00 PM',
+                  value: '15:00'
+                }, {
+                  label: '6:00 PM',
+                  value: '18:00'
+                }, {
+                  label: '9:00 PM',
+                  value: '21:00'
+                }].map(timeOption => <Button key={timeOption.value} variant="outline" size="sm" onClick={() => updateData({
+                  customTime: timeOption.value
+                })} className="text-xs">
                       {timeOption.label}
-                    </Button>
-                  ))}
+                    </Button>)}
                 </div>
               </div>
               
               <div className="flex gap-2 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowTimePicker(false)}
-                  className="flex-1"
-                >
+                <Button variant="outline" onClick={() => setShowTimePicker(false)} className="flex-1">
                   Cancel
                 </Button>
-                <Button
-                  onClick={() => {
-                    if (data.customTime) {
-                      updateData({ timeOfDay: 'custom' });
-                      setShowTimePicker(false);
-                    }
-                  }}
-                  disabled={!data.customTime}
-                  className="flex-1"
-                >
+                <Button onClick={() => {
+                if (data.customTime) {
+                  updateData({
+                    timeOfDay: 'custom'
+                  });
+                  setShowTimePicker(false);
+                }
+              }} disabled={!data.customTime} className="flex-1">
                   Confirm
                 </Button>
               </div>
@@ -1394,6 +1158,5 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </DialogContent>
         </Dialog>
       </div>
-    </div>
-  );
+    </div>;
 };
