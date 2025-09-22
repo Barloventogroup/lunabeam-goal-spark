@@ -617,7 +617,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
         
         <div className="space-y-4">
-          <Label>Categories</Label>
+          <div className="space-y-1">
+            <Label>Categories</Label>
+            <p className="text-xs text-muted-foreground">
+              Categories help organize your goals. If you skip this, we'll auto-classify your goal.
+            </p>
+          </div>
           
           {/* Category Carousel */}
           <div className="space-y-3">
@@ -729,10 +734,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               );
             })()}
           </div>
-          
-          <p className="text-xs text-muted-foreground">
-            Categories help organize your goals. If you skip this, we'll auto-classify your goal.
-          </p>
         </div>
       </CardContent>
     </Card>
