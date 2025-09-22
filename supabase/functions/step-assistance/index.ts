@@ -358,8 +358,6 @@ async function checkExistingSubsteps(stepId: string) {
     console.error('Error in checkExistingSubsteps:', error);
     return [];
   }
-
-  return createdSubsteps;
 }
 
 async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<any[]> {
@@ -445,4 +443,5 @@ async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<a
     console.error('Error in checkForSimilarPriorSteps:', error);
     return [];
   }
+}
 }
