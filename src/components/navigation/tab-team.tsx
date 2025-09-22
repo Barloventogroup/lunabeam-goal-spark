@@ -461,26 +461,13 @@ export const TabTeam: React.FC = () => {
     console.log('Parameters:', { individualId, individualName, email, currentUserId: user?.id });
     
     try {
-      // Create a proper supporter invite record first
-      console.log('Step 1: Creating supporter invite...');
-      const inviteData = {
-        individual_id: individualId,
-        inviter_id: user?.id || '',
-        invitee_email: email,
-        invitee_name: individualName,
-        role: 'supporter' as const,
-        permission_level: 'viewer' as const,
-        specific_goals: [] as never[],
-        message: '',
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-      };
-      
-      console.log('Invite data being sent:', inviteData);
-      const inviteResponse = await PermissionsService.createSupporterInvite(inviteData);
-      console.log('✅ Invite created:', inviteResponse);
-      
-      const inviteLink = `${window.location.origin}/invitations?token=${inviteResponse.invite_token}`;
-      console.log('Step 2: Generated invite link:', inviteLink);
+      // Create or refresh an account claim for the individual
+      console.log('Step 1: Creating account claim...');
+      const { claimToken, passcode } = await PermissionsService.createAccountClaim(individualId, user?.id || '');
+      console.log('✅ Account claim created:', { claimToken });
+
+      const inviteLink = `${window.location.origin}/claim/${claimToken}`;
+      console.log('Step 2: Generated claim link:', inviteLink);
       
       // Call the send-invitation-email edge function
       console.log('Step 3: Sending email via edge function...');
