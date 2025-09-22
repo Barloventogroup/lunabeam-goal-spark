@@ -133,10 +133,17 @@ export const TabTeam: React.FC = () => {
       if (individualIds.length) {
         const { data: claims } = await supabase
           .from('account_claims')
-          .select('individual_id, status')
+          .select('individual_id, status, expires_at')
           .eq('provisioner_id', user.id)
           .in('individual_id', individualIds);
-        (claims || []).forEach((c: any) => claimsMap.set(c.individual_id, c.status));
+        
+        // Only consider valid, non-expired claims
+        (claims || []).forEach((c: any) => {
+          const isExpired = new Date(c.expires_at) < new Date();
+          if (!isExpired && (c.status === 'pending' || c.status === 'accepted')) {
+            claimsMap.set(c.individual_id, c.status);
+          }
+        });
       }
 
       // Also fetch any individuals I have provisioned (even if no supporter relationship yet)
@@ -171,7 +178,15 @@ export const TabTeam: React.FC = () => {
       if (individualsISupport) {
         const individualsWithProfiles = (individualsISupport as any[]).map((individual) => {
           const claimStatus = claimsMap.get(individual.individual_id);
-          const displayStatus = claimStatus === 'pending' ? 'Pending' : claimStatus === 'accepted' ? 'Accepted' : 'Not invited yet';
+          // Only show "Pending" or "Accepted" if there's a valid, non-expired claim
+          // Otherwise default to "Not invited yet"
+          let displayStatus = 'Not invited yet';
+          if (claimStatus === 'pending') {
+            displayStatus = 'Pending';
+          } else if (claimStatus === 'accepted') {
+            displayStatus = 'Accepted';
+          }
+          
           return {
             id: `individual-${individual.individual_id}`,
             individual_id: individual.individual_id,
@@ -210,13 +225,16 @@ export const TabTeam: React.FC = () => {
             let displayStatus: 'Pending' | 'Accepted' | 'Not invited yet' = 'Not invited yet';
             const { data: claim } = await supabase
               .from('account_claims')
-              .select('status')
+              .select('status, expires_at')
               .eq('provisioner_id', user.id)
               .eq('individual_id', p.user_id)
               .maybeSingle();
+            
             console.log('TabTeam: Account claim for', p.user_id, ':', claim);
-            if (claim?.status === 'pending') displayStatus = 'Pending';
-            else if (claim?.status === 'accepted') displayStatus = 'Accepted';
+            if (claim && new Date(claim.expires_at) > new Date()) {
+              if (claim.status === 'pending') displayStatus = 'Pending';
+              else if (claim.status === 'accepted') displayStatus = 'Accepted';
+            }
 
             console.log('TabTeam: Adding created profile with status:', displayStatus);
             allMembers.push({
@@ -247,7 +265,11 @@ export const TabTeam: React.FC = () => {
         const existingIndividualIds = new Set(allMembers.filter(m => m.memberType === 'individual').map(m => (m as any).individual_id));
         for (const p of provisionedList as any[]) {
           if (!existingIndividualIds.has(p.user_id)) {
-            const displayStatus = p.status === 'pending' ? 'Pending' : p.status === 'accepted' ? 'Accepted' : 'Not invited yet';
+            // Only show valid, non-expired statuses
+            let displayStatus = 'Not invited yet';
+            if (p.status === 'pending') displayStatus = 'Pending';
+            else if (p.status === 'accepted') displayStatus = 'Accepted';
+            
             allMembers.push({
               id: `individual-${p.user_id}`,
               individual_id: p.user_id,
