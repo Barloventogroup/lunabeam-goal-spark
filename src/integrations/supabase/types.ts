@@ -1192,6 +1192,19 @@ export type Database = {
         Args: { p_redemption_id: string }
         Returns: undefined
       }
+      provision_individual: {
+        Args: {
+          p_comm_pref?: string
+          p_first_name: string
+          p_interests?: string[]
+          p_strengths?: string[]
+        }
+        Returns: {
+          claim_passcode: string
+          claim_token: string
+          individual_id: string
+        }[]
+      }
     }
     Enums: {
       account_status: "active" | "pending_user_consent" | "user_claimed"
