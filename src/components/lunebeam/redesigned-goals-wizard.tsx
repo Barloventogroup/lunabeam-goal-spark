@@ -210,6 +210,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [selectedCategoryDetails, setSelectedCategoryDetails] = useState<any>(null);
   const [canAssignDirectly, setCanAssignDirectly] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [categoryPageIndex, setCategoryPageIndex] = useState(0);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [datePickerType, setDatePickerType] = useState<'start' | 'end'>('start');
   
@@ -557,44 +558,64 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           {/* Category Carousel */}
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-2">
-              {categories
-                .sort((a, b) => a.title.localeCompare(b.title))
-                .slice(0, 3)
-                .map(category => (
-                <Card 
-                  key={category.id}
-                  className={cn(
-                    "cursor-pointer hover:shadow-md transition-all border-2",
-                    data.category === category.id ? "border-primary bg-primary/5" : "border-border"
-                  )}
-                  onClick={() => handleCategorySelect(category.id)}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <category.icon className="h-5 w-5 text-primary" />
+              {(() => {
+                const sortedCategories = categories.sort((a, b) => a.title.localeCompare(b.title));
+                const startIndex = categoryPageIndex * 3;
+                const visibleCategories = sortedCategories.slice(startIndex, startIndex + 3);
+                
+                return visibleCategories.map(category => (
+                  <Card 
+                    key={category.id}
+                    className={cn(
+                      "cursor-pointer hover:shadow-md transition-all border-2",
+                      data.category === category.id ? "border-primary bg-primary/5" : "border-border"
+                    )}
+                    onClick={() => handleCategorySelect(category.id)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <category.icon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-sm truncate">{category.title}</h3>
+                          <p className="text-xs text-muted-foreground line-clamp-2">{category.description}</p>
+                        </div>
+                        {data.category === category.id && (
+                          <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm truncate">{category.title}</h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">{category.description}</p>
-                      </div>
-                      {data.category === category.id && (
-                        <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ));
+              })()}
             </div>
             
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="w-full"
-              onClick={() => setShowCategoryDialog(true)}
-            >
-              More categories
-            </Button>
+            {(() => {
+              const sortedCategories = categories.sort((a, b) => a.title.localeCompare(b.title));
+              const totalPages = Math.ceil(sortedCategories.length / 3);
+              const hasMore = categoryPageIndex < totalPages - 1;
+              
+              return hasMore ? (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setCategoryPageIndex(prev => prev + 1)}
+                >
+                  More categories
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setCategoryPageIndex(0)}
+                >
+                  Show first categories
+                </Button>
+              );
+            })()}
           </div>
           
           <p className="text-xs text-muted-foreground">
