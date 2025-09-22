@@ -10,6 +10,7 @@ import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import RequestReset from "./pages/RequestReset";
 import { ClaimAccount } from "./pages/ClaimAccount";
+import Invitations from "./pages/Invitations";
 import Logout from "./pages/Logout";
 import { ProtectedRoute } from "./components/auth/protected-route";
 
@@ -31,6 +32,11 @@ const App = () => (
           <Route path="/" element={
             <ProtectedRoute>
               <Index />
+            </ProtectedRoute>
+          } />
+          <Route path="/invitations" element={
+            <ProtectedRoute>
+              <Invitations />
             </ProtectedRoute>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
