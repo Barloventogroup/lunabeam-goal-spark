@@ -209,13 +209,17 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
       await database.saveProfile(adminProfile);
       console.log('Admin profile saved to database:', adminProfile);
       
-      // 2. Create individual profile using secure function (if name provided)
+      // 2. Create individual profile using provisional system (if name provided)
       if (data.preferredName.trim()) {
-        console.log('Parent onboarding: Creating on-behalf profile using secure function...');
+        console.log('Parent onboarding: Creating provisional profile...');
+        
+        // Generate a temporary email for the individual
+        const tempEmail = `${data.preferredName.toLowerCase().replace(/\s+/g, '')}+temp${Date.now()}@temp.lunabeam.com`;
         
         const { data: provisionResult, error: provisionError } = await supabase
-          .rpc('provision_individual', {
+          .rpc('provision_individual_with_email', {
             p_first_name: data.preferredName.trim(),
+            p_invitee_email: tempEmail,
             p_strengths: data.strengths,
             p_interests: data.interests,
             p_comm_pref: 'text'
@@ -231,7 +235,7 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
           console.log('Individual profile provisioned successfully:', {
             individual_id: result.individual_id,
             claim_token: result.claim_token,
-            claim_passcode: result.claim_passcode
+            magic_link_token: result.magic_link_token
           });
         } else {
           console.warn('Provision function returned no results');
