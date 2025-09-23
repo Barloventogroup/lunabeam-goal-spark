@@ -182,6 +182,8 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
   };
 
   const handleComplete = async () => {
+    console.log('🚀 Let\'s go button clicked - starting handleComplete');
+    
     // For admin/parent flow, we need to create TWO things:
     // 1. Admin's own profile (for the authenticated user)
     // 2. Individual's profile (using secure database function)
@@ -196,8 +198,8 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
     };
 
     try {
-      console.log('Parent onboarding: Creating admin profile:', adminProfile);
-      console.log('Parent onboarding: Will create individual profile:', data.preferredName, data.strengths, data.interests);
+      console.log('✅ Parent onboarding: Creating admin profile:', adminProfile);
+      console.log('👤 Parent onboarding: Will create individual profile:', data.preferredName, data.strengths, data.interests);
       
       // Save admin's name to auth metadata
       if (data.adminName.trim()) {
@@ -220,39 +222,35 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
       
       // 2. Create individual profile using provisional system (if name provided)
       if (data.preferredName.trim()) {
-        console.log('Parent onboarding: Creating provisional profile...');
+        console.log('👤 Parent onboarding: Creating provisional profile for:', data.preferredName.trim());
         
-        // Generate a temporary email for the individual
-        const tempEmail = `${data.preferredName.toLowerCase().replace(/\s+/g, '')}+temp${Date.now()}@temp.lunabeam.com`;
-        
-        console.log('Parent onboarding: Calling provision_individual_direct with:', {
+        console.log('📞 Parent onboarding: Calling provision_individual_direct with:', {
           p_first_name: data.preferredName.trim(),
-          p_strengths: data.strengths,
-          p_interests: data.interests,
+          p_strengths: data.strengths || [],
+          p_interests: data.interests || [],
           p_comm_pref: 'text'
         });
         
         const { data: provisionResult, error: provisionError } = await supabase
           .rpc('provision_individual_direct', {
             p_first_name: data.preferredName.trim(),
-            p_strengths: data.strengths,
-            p_interests: data.interests,
+            p_strengths: data.strengths || [],
+            p_interests: data.interests || [],
             p_comm_pref: 'text'
           });
 
-        console.log('Parent onboarding: provision_individual_direct response:', {
+        console.log('📋 Parent onboarding: provision_individual_direct response:', {
           data: provisionResult,
           error: provisionError
         });
 
         if (provisionError) {
-          console.error('Failed to provision individual profile:', provisionError);
-          throw provisionError;
-        }
-
-        if (provisionResult && provisionResult.length > 0) {
+          console.error('❌ Failed to provision individual profile:', provisionError);
+          // Don't throw - continue with admin setup even if individual creation fails
+          alert(`Note: Could not create account for ${data.preferredName}. You can try again later. Error: ${provisionError.message}`);
+        } else if (provisionResult && provisionResult.length > 0) {
           const result = provisionResult[0];
-          console.log('Individual profile provisioned successfully:', {
+          console.log('✅ Individual profile provisioned successfully:', {
             individual_id: result.individual_id,
             placeholder_email: result.placeholder_email
           });
@@ -263,9 +261,13 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
               .from('supporters')
               .select('*')
               .eq('supporter_id', currentUser.id);
-            console.log('Parent onboarding: Supporter relationships after provision:', { supporters, supportersError });
+            console.log('🤝 Parent onboarding: Supporter relationships after provision:', { supporters, supportersError });
           }
+        } else {
+          console.warn('⚠️ provision_individual_direct returned no data');
         }
+      } else {
+        console.log('⏭️ No individual name provided, skipping individual account creation');
       }
       
       // Update local store with admin profile
@@ -274,19 +276,22 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
       // Complete onboarding
       await completeOnboarding();
       
-      console.log('Parent onboarding completed successfully - both admin and individual profiles created');
+      console.log('🎉 Parent onboarding completed successfully - both admin and individual profiles created');
       onComplete();
     } catch (error) {
-      console.error('Parent onboarding failed:', error);
+      console.error('💥 Parent onboarding failed:', error);
+      
+      // Show user-friendly error message
+      alert(`There was an issue completing setup: ${error.message || 'Unknown error'}. Your admin account was created, but you may need to create the individual account again.`);
       
       // Ensure local state shows admin profile even if individual provisioning fails
       useStore.setState({ profile: adminProfile });
       
       try {
         await completeOnboarding();
-        console.log('Onboarding marked complete despite error');
+        console.log('✅ Onboarding marked complete despite error');
       } catch (completionError) {
-        console.error('Completion also failed:', completionError);
+        console.error('❌ Completion also failed:', completionError);
       }
       
       onComplete();
