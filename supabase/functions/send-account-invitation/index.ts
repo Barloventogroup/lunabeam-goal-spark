@@ -40,8 +40,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Create the claim URL
-    const claimUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${magic_link_token}&type=magiclink&redirect_to=${encodeURIComponent(window.location.origin)}/claim-account?token=${claim_token}`;
+    // Create the claim URL with the site URL from environment
+    const siteUrl = Deno.env.get('SUPABASE_URL')?.replace('https://soyiqjdwnhtvopvwvfkq.supabase.co', 'https://your-site.lovable.app') || 'https://your-site.lovable.app';
+    const claimUrl = `${siteUrl}/claim-account?token=${claim_token}`;
 
     const subject = `${inviter_name} has set up an account for you`;
     
