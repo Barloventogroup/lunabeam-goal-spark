@@ -23,13 +23,13 @@ export async function getUserContext(profile: Profile | null): Promise<UserConte
     };
   }
 
-  // Simply read the user_type from the profile
-  const userType = profile.user_type || 'individual';
+  // Simply read the user_type from the profile (no fallback to individual)
+  const userType = (profile.user_type ?? 'unknown') as UserType;
   const isClaimedIndividual = profile.account_status === 'user_claimed';
   const hasAdminFeatures = userType === 'admin';
 
   return {
-    userType: userType as UserType,
+    userType,
     isClaimedIndividual,
     hasAdminFeatures,
     profile
