@@ -646,45 +646,16 @@ export const TabTeam: React.FC = () => {
         {/* Header */}
         <div className="p-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="text-center space-y-4">
-              <h3 className="text-lg font-semibold">Welcome to Community</h3>
+            <div>
+              <h3 className="text-lg font-semibold">Community</h3>
               <p className="text-foreground-soft">
                 Manage your support network ({combinedMembers.length} members)
               </p>
-              {combinedMembers.length === 0 && (
-                <div className="bg-accent/20 border border-accent/30 rounded-lg p-4 space-y-3">
-                  <p className="text-sm text-foreground-soft">
-                    You haven't created any individual accounts yet. Create one to get started!
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" onClick={() => setShowEmailSetup(true)} className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                Create Individual Account
-              </Button>
             </div>
           </div>
         </div>
 
         <div className="p-4 space-y-6">
-          {/* Quick add individual when empty */}
-          {supporters.filter(s => 'memberType' in s && s.memberType === 'individual').length === 0 && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-end">
-                  <div className="flex-1">
-                    <Label htmlFor="newIndividual">Add an individual you support</Label>
-                    <Input id="newIndividual" placeholder="Enter a name" value={newIndividualName} onChange={(e) => setNewIndividualName(e.target.value)} />
-                  </div>
-                  <Button onClick={createIndividual} disabled={creatingIndividual || !newIndividualName.trim()}>
-                    {creatingIndividual ? 'Adding...' : 'Add'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Individuals you support (moved to top) */}
           <Card>
@@ -694,15 +665,6 @@ export const TabTeam: React.FC = () => {
                   <User className="h-5 w-5" />
                   People You Support
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="gap-2"
-                  onClick={() => setShowEmailSetup(true)}
-                >
-                  <UserPlus className="h-4 w-4" />
-                  Set up account
-                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>

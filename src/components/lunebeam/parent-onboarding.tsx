@@ -216,6 +216,13 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
         // Generate a temporary email for the individual
         const tempEmail = `${data.preferredName.toLowerCase().replace(/\s+/g, '')}+temp${Date.now()}@temp.lunabeam.com`;
         
+        console.log('Parent onboarding: Calling provision_individual_direct with:', {
+          p_first_name: data.preferredName.trim(),
+          p_strengths: data.strengths,
+          p_interests: data.interests,
+          p_comm_pref: 'text'
+        });
+        
         const { data: provisionResult, error: provisionError } = await supabase
           .rpc('provision_individual_direct', {
             p_first_name: data.preferredName.trim(),
@@ -223,6 +230,11 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
             p_interests: data.interests,
             p_comm_pref: 'text'
           });
+
+        console.log('Parent onboarding: provision_individual_direct response:', {
+          data: provisionResult,
+          error: provisionError
+        });
 
         if (provisionError) {
           console.error('Failed to provision individual profile:', provisionError);
@@ -235,8 +247,20 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
             individual_id: result.individual_id,
             placeholder_email: result.placeholder_email
           });
+          
+          // Verify the supporter relationship was created
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          if (currentUser) {
+            const { data: supporters, error: supportersError } = await supabase
+              .from('supporters')
+              .select('*')
+              .eq('supporter_id', currentUser.id);
+            console.log('Parent onboarding: Supporter relationships after provision:', { supporters, supportersError });
+          }
+          
         } else {
           console.warn('Provision function returned no results');
+          throw new Error('Provision function returned empty results');
         }
       }
       
