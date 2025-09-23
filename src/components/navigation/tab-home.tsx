@@ -282,18 +282,25 @@ export const TabHome: React.FC<TabHomeProps> = ({
           <div>
             {(() => {
               const isFirstTime = activeGoals.length === 0;
-              const welcomeMessage = userContext ? getWelcomeMessage(userContext, isFirstTime) : {
-                title: `Welcome${displayName ? `, ${displayName}` : ''}! 💜`,
-                subtitle: "Let's get started by setting up your first goal."
-              };
+              const isIndividual = userContext?.userType === 'individual';
+              const title = isIndividual
+                ? `Welcome, ${displayName}!`
+                : (isFirstTime ? `Welcome ${displayName}!` : `Welcome back, ${displayName}!`);
+              const subtitle = isIndividual
+                ? (isFirstTime 
+                    ? "Your support team has set up your goals. Let's continue your journey together!"
+                    : "Ready to continue working on your goals? Your support team is here to help.")
+                : (isFirstTime
+                    ? "👋 Hey there! Welcome aboard. Let's kick things off by setting your very first goal. Ready to get started?"
+                    : "Let's keep moving forward, one step at a time.");
               
               return (
                 <>
                   <h2 className="text-2xl font-bold mb-1">
-                    {welcomeMessage.title}
+                    {title}
                   </h2>
                   <p className="text-muted-foreground">
-                    {welcomeMessage.subtitle}
+                    {subtitle}
                   </p>
                 </>
               );

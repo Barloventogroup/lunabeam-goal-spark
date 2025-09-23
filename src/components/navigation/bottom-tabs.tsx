@@ -61,7 +61,7 @@ export const BottomTabs: React.FC = () => {
       case 'goals':
         return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} />;
       case 'team':
-        return userContext?.isClaimedIndividual ? <TabTeamIndividual /> : <TabTeam />;
+        return userContext?.userType === 'individual' ? <TabTeamIndividual /> : <TabTeam />;
       case 'you':
         return <TabYou />;
       default:
