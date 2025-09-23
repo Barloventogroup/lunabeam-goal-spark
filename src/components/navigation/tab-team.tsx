@@ -227,7 +227,6 @@ export const TabTeam: React.FC = () => {
         .rpc('get_profiles_created_by_me');
       console.log('TabTeam: get_profiles_created_by_me result:', { data: createdProfiles, error: createdErr });
 
-      // Note: provisional_profiles table was removed - we now create real users directly
       if (createdErr) {
         console.error('TabTeam: Error fetching created profiles:', createdErr);
       } else if (createdProfiles && createdProfiles.length > 0) {
@@ -271,7 +270,7 @@ export const TabTeam: React.FC = () => {
           }
         }
       } else {
-        console.log('TabTeam: No created profiles found (empty result)');
+        console.log('TabTeam: No created profiles found - this is normal for individual accounts');
       }
 
 
