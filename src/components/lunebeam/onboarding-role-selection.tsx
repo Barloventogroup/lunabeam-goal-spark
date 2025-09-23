@@ -21,7 +21,7 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
   };
 
   const handleParentContinue = () => {
-    if (role === 'parent' && individualEmail.trim().length > 0) {
+    if (role === 'parent') {
       setShowInterstitial(true);
     }
   };
@@ -33,8 +33,7 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
     });
   };
 
-  const canParentContinue = role === 'parent' && individualEmail.trim().length > 0 && 
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(individualEmail.trim());
+  const canParentContinue = role === 'parent';
 
   // Show interstitial screen
   if (showInterstitial) {
