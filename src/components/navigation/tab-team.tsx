@@ -624,6 +624,11 @@ export const TabTeam: React.FC = () => {
     }
   };
 
+  const handleViewProfile = (member: any) => {
+    // Implementation for viewing profile details
+    console.log('View profile for:', member);
+  };
+
   const combinedMembers = [
     ...supporters.map(s => ({ ...s, type: 'supporter' as const })),
     ...pendingInvites.map(p => ({ ...p, type: 'invite' as const }))
@@ -657,129 +662,155 @@ export const TabTeam: React.FC = () => {
 
         <div className="p-4 space-y-6">
 
-          {/* Individuals you support (moved to top) */}
+          {/* Quick Add Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <UserPlus className="h-5 w-5" />
+                Quick Add Individual
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter first name"
+                  value={newIndividualName}
+                  onChange={(e) => setNewIndividualName(e.target.value)}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={createIndividual} 
+                  disabled={!newIndividualName.trim() || creatingIndividual}
+                >
+                  {creatingIndividual ? 'Adding...' : 'Add Individual'}
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Creates a new individual account that you can manage and support
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Users I Support Table */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <User className="h-5 w-5" />
-                  People You Support
+                  Users I Support ({supporters.filter(s => s.memberType === 'individual').length})
                 </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {/* TEMPORARY TEST BUTTON - REMOVE AFTER TESTING */}
-              <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded">
-                <p className="text-sm text-yellow-800 mb-2">Test: Click to verify provisioning works</p>
-                <Button 
-                  size="sm" 
-                  onClick={async () => {
-                    try {
-                      console.log('Testing provision_individual_direct...');
-                      const { data, error } = await supabase.rpc('provision_individual_direct', {
-                        p_first_name: 'TestUser',
-                        p_strengths: ['test'],
-                        p_interests: ['test'],
-                        p_comm_pref: 'text'
-                      });
-                      console.log('Test result:', { data, error });
-                      if (error) {
-                        console.error('Test failed:', error);
-                        alert('Test failed: ' + error.message);
-                      } else {
-                        console.log('Test succeeded:', data);
-                        alert('Test succeeded! Check console for details.');
-                        loadCommunityData(); // Refresh the data
-                      }
-                    } catch (err) {
-                      console.error('Test error:', err);
-                      alert('Test error: ' + err);
-                    }
-                  }}
-                >
-                  Test Provisioning Function
-                </Button>
-              </div>
-              
-              {supporters.filter(s => 'memberType' in s && s.memberType === 'individual').length === 0 ? (
-                <div className="text-center py-8">
-                  <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No individuals yet</h3>
-                  <p className="text-muted-foreground mb-4">Individuals created during onboarding will appear here.</p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                     <TableRow>
-                       <TableHead>Name</TableHead>
-                       <TableHead>Status</TableHead>
-                       <TableHead className="text-right">Actions</TableHead>
-                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {supporters
-                      .filter(s => 'memberType' in s && s.memberType === 'individual')
-                      .map((member) => {
-                      const name = member.profile?.first_name || 'User';
-                      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-                      return (
-                        <TableRow key={`individual-row-${member.individual_id}`}>
-                          <TableCell>
-                            <div 
-                              className="flex items-center gap-3 cursor-pointer hover:opacity-70"
-                              onClick={() => handleMemberClick(member as any, 'supporter')}
-                            >
-                              <Avatar className="w-8 h-8">
-                                <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">{initials}</AvatarFallback>
-                              </Avatar>
-                              <span className="font-medium">{name}</span>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Account Status</TableHead>
+                    <TableHead>Admin Level</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {supporters.filter(s => s.memberType === 'individual').map((member, index) => (
+                    <TableRow key={member.id || index}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                              {member.profile?.first_name?.charAt(0)?.toUpperCase() || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium text-sm">
+                              {member.profile?.first_name || 'Unknown User'}
                             </div>
-                           </TableCell>
-                           <TableCell>
-                             {getStatusBadge('supporter', undefined, (member as any).displayStatus)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="bg-background border shadow-lg z-50">
-                                <DropdownMenuItem 
-                                  onClick={() => handleEditIndividual(member)}
-                                >
-                                  <Edit3 className="h-4 w-4 mr-2" />
-                                  Edit Profile
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={('displayStatus' in member && (member as any).displayStatus === 'Not invited yet') ? () => handleInvite(member) : undefined}
-                                  className={('displayStatus' in member && (member as any).displayStatus !== 'Not invited yet') ? 'text-muted-foreground cursor-not-allowed' : ''}
-                                  disabled={('displayStatus' in member && (member as any).displayStatus !== 'Not invited yet')}
-                                >
-                                  <Mail className="h-4 w-4 mr-2" />
-                                  Send Invite
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleNudge(member as any)}>
-                                  <Bell className="h-4 w-4 mr-2" />
-                                  Nudge
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => handleRemove((member as any).id, 'supporter')}
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  <UserMinus className="h-4 w-4 mr-2" />
-                                  Remove
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              )}
+                            <div className="text-xs text-muted-foreground">
+                              Individual Account
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {member.displayStatus === 'Accepted' ? (
+                          <Badge className="bg-green-100 text-green-800 border-green-200">
+                            ✓ Accepted
+                          </Badge>
+                        ) : member.displayStatus === 'Pending' ? (
+                          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                            ⏳ Pending Invite
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
+                            📧 Not Invited
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {member.is_admin && (
+                            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                              <Crown className="h-3 w-3 mr-1" />
+                              Admin
+                            </Badge>
+                          )}
+                          {member.is_provisioner && (
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                              Provisioner
+                            </Badge>
+                          )}
+                          {!member.is_admin && !member.is_provisioner && (
+                            <span className="text-sm text-muted-foreground">Standard</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(member.created_at).toLocaleDateString()}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditIndividual(member)}>
+                              <Edit3 className="h-4 w-4 mr-2" />
+                              Edit Profile
+                            </DropdownMenuItem>
+                            {member.displayStatus === 'Not invited yet' && (
+                              <DropdownMenuItem onClick={() => handleInvite(member)}>
+                                <Mail className="h-4 w-4 mr-2" />
+                                Send Invite
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={() => handleViewProfile(member)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  
+                  {supporters.filter(s => s.memberType === 'individual').length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        <div className="flex flex-col items-center gap-2">
+                          <User className="h-8 w-8 text-muted-foreground/50" />
+                          <p>No individuals under your support yet</p>
+                          <p className="text-xs">Add one using the form above</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
 
