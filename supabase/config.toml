@@ -63,8 +63,11 @@ verify_jwt = true
 [functions.ai-coach]
 verify_jwt = true
 
-# Make the invitation email function public (no JWT required)
+# Make the invitation email functions public (no JWT required)
 [functions.send-invitation-email]
+verify_jwt = false
+
+[functions.send-account-invitation]
 verify_jwt = false
 
 # Make the claim account function public (no JWT required) 
