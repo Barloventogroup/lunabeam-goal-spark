@@ -15,9 +15,8 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
 
   const handleRoleSelection = (selectedRole: 'parent' | 'individual') => {
     setRole(selectedRole);
-    if (selectedRole === 'individual') {
-      setShowInterstitial(true);
-    }
+    // Advance immediately upon selection for both roles
+    setShowInterstitial(true);
   };
 
   const handleParentContinue = () => {
@@ -29,7 +28,7 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
   const handleInterstitialNext = () => {
     onComplete({
       role: role as 'parent' | 'individual',
-      individualEmail: role === 'parent' ? individualEmail : undefined
+      individualEmail: role === 'parent' && individualEmail.trim() ? individualEmail.trim() : undefined
     });
   };
 
