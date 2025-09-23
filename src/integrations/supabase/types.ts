@@ -1172,6 +1172,10 @@ export type Database = {
           status: Database["public"]["Enums"]["invite_status"]
         }[]
       }
+      delete_user_safely: {
+        Args: { user_id_to_delete: string }
+        Returns: boolean
+      }
       get_goal_completion_bonus: {
         Args: { category: string }
         Returns: number
