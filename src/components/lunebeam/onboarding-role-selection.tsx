@@ -9,7 +9,7 @@ interface OnboardingRoleSelectionProps {
 }
 
 export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionProps) {
-  const [role, setRole] = useState<'parent' | 'individual' | ''>('');
+  const [role, setRole] = useState<'parent' | 'individual' | ''>('parent');
   const [individualEmail, setIndividualEmail] = useState('');
   const [showInterstitial, setShowInterstitial] = useState(false);
 
@@ -33,7 +33,7 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
     });
   };
 
-  const canParentContinue = role === 'parent';
+  const canParentContinue = true;
 
   // Show interstitial screen
   if (showInterstitial) {
