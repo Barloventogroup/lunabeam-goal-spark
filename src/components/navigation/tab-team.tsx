@@ -652,6 +652,10 @@ export const TabTeam: React.FC = () => {
                 Manage your support network ({combinedMembers.length} members)
               </p>
             </div>
+            <Button size="sm" onClick={() => setShowEmailSetup(true)} className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              Create Individual Account
+            </Button>
           </div>
         </div>
 
