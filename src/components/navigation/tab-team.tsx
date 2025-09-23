@@ -668,6 +668,39 @@ export const TabTeam: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {/* TEMPORARY TEST BUTTON - REMOVE AFTER TESTING */}
+              <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded">
+                <p className="text-sm text-yellow-800 mb-2">Test: Click to verify provisioning works</p>
+                <Button 
+                  size="sm" 
+                  onClick={async () => {
+                    try {
+                      console.log('Testing provision_individual_direct...');
+                      const { data, error } = await supabase.rpc('provision_individual_direct', {
+                        p_first_name: 'TestUser',
+                        p_strengths: ['test'],
+                        p_interests: ['test'],
+                        p_comm_pref: 'text'
+                      });
+                      console.log('Test result:', { data, error });
+                      if (error) {
+                        console.error('Test failed:', error);
+                        alert('Test failed: ' + error.message);
+                      } else {
+                        console.log('Test succeeded:', data);
+                        alert('Test succeeded! Check console for details.');
+                        loadCommunityData(); // Refresh the data
+                      }
+                    } catch (err) {
+                      console.error('Test error:', err);
+                      alert('Test error: ' + err);
+                    }
+                  }}
+                >
+                  Test Provisioning Function
+                </Button>
+              </div>
+              
               {supporters.filter(s => 'memberType' in s && s.memberType === 'individual').length === 0 ? (
                 <div className="text-center py-8">
                   <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
