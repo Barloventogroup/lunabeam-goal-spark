@@ -217,9 +217,8 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
         const tempEmail = `${data.preferredName.toLowerCase().replace(/\s+/g, '')}+temp${Date.now()}@temp.lunabeam.com`;
         
         const { data: provisionResult, error: provisionError } = await supabase
-          .rpc('provision_individual_with_email', {
+          .rpc('provision_individual_direct', {
             p_first_name: data.preferredName.trim(),
-            p_invitee_email: tempEmail,
             p_strengths: data.strengths,
             p_interests: data.interests,
             p_comm_pref: 'text'
@@ -234,8 +233,7 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
           const result = provisionResult[0];
           console.log('Individual profile provisioned successfully:', {
             individual_id: result.individual_id,
-            claim_token: result.claim_token,
-            magic_link_token: result.magic_link_token
+            placeholder_email: result.placeholder_email
           });
         } else {
           console.warn('Provision function returned no results');

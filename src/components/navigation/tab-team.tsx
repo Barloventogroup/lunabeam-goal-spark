@@ -32,6 +32,7 @@ import { AddCommunityMemberModal } from '../lunebeam/add-community-member-modal'
 import { EmailAccountSetup } from '../lunebeam/email-account-setup';
 import { EditIndividualModal } from '../lunebeam/edit-individual-modal';
 import { CollectEmailModal } from '../lunebeam/collect-email-modal';
+import { AssignEmailModal } from '../lunebeam/assign-email-modal';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -89,6 +90,15 @@ export const TabTeam: React.FC = () => {
   const [newIndividualName, setNewIndividualName] = useState('');
   const [creatingIndividual, setCreatingIndividual] = useState(false);
   const [showEmailSetup, setShowEmailSetup] = useState(false);
+  const [assignEmailModal, setAssignEmailModal] = useState<{
+    open: boolean;
+    individualId: string;
+    individualName: string;
+  }>({
+    open: false,
+    individualId: '',
+    individualName: ''
+  });
 
   useEffect(() => {
     if (user) {
@@ -217,12 +227,7 @@ export const TabTeam: React.FC = () => {
         .rpc('get_profiles_created_by_me');
       console.log('TabTeam: get_profiles_created_by_me result:', { data: createdProfiles, error: createdErr });
 
-      // Also fetch provisional profiles (accounts created via email but not yet claimed)
-      const { data: provisionalProfiles, error: provisionalErr } = await supabase
-        .from('provisional_profiles')
-        .select('*')
-        .eq('created_by_supporter', user.id);
-      console.log('TabTeam: Provisional profiles result:', { data: provisionalProfiles, error: provisionalErr });
+      // Note: provisional_profiles table was removed - we now create real users directly
       if (createdErr) {
         console.error('TabTeam: Error fetching created profiles:', createdErr);
       } else if (createdProfiles && createdProfiles.length > 0) {
@@ -269,44 +274,6 @@ export const TabTeam: React.FC = () => {
         console.log('TabTeam: No created profiles found (empty result)');
       }
 
-      // Handle provisional profiles (email invitations not yet claimed)
-      if (provisionalProfiles && provisionalProfiles.length > 0) {
-        console.log('TabTeam: Processing provisional profiles:', provisionalProfiles);
-        for (const p of provisionalProfiles) {
-          if (!seenIndividualIds.has(p.user_id)) {
-            seenIndividualIds.add(p.user_id);
-            
-            // Check for account claim status
-            const { data: claim } = await supabase
-              .from('account_claims')
-              .select('status, expires_at')
-              .eq('provisioner_id', user.id)
-              .eq('individual_id', p.user_id)
-              .maybeSingle();
-            
-            let displayStatus: 'Pending' | 'Accepted' | 'Not invited yet' = 'Pending';
-            if (claim && claim.status === 'accepted') {
-              displayStatus = 'Accepted';
-            }
-
-            allMembers.push({
-              id: `provisional-${p.user_id}`,
-              individual_id: p.user_id,
-              supporter_id: user.id,
-              role: 'individual' as any,
-              permission_level: 'viewer',
-              specific_goals: [],
-              is_admin: false,
-              is_provisioner: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              profile: { first_name: p.first_name },
-              memberType: 'individual',
-              displayStatus,
-            } as any);
-          }
-        }
-      }
 
       // Merge provisioned individuals from account claims as a fallback source
       if (provisionedList && provisionedList.length > 0) {
@@ -404,7 +371,7 @@ export const TabTeam: React.FC = () => {
     if (!user) return;
     setCreatingIndividual(true);
     try {
-      const { data: provisionResult, error } = await supabase.rpc('provision_individual', {
+      const { data: provisionResult, error } = await supabase.rpc('provision_individual_direct', {
         p_first_name: newIndividualName.trim(),
         p_strengths: [],
         p_interests: [],
@@ -470,46 +437,12 @@ export const TabTeam: React.FC = () => {
       const individualId = member.individual_id;
       const individualName = member.profile?.first_name || 'Unknown Individual';
       
-      try {
-        // Check if individual has an email in their profile
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('user_id', individualId)
-          .maybeSingle(); // Use maybeSingle to handle no data gracefully
-
-        if (error) {
-          console.error('Error fetching profile:', error);
-          toast({
-            title: "Error",
-            description: "Failed to check profile information",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        // Check if profile exists and has email
-        if (!profile || !profile.email) {
-          // Show modal to collect email
-          setCollectEmailModal({
-            open: true,
-            individualId,
-            individualName
-          });
-          return;
-        }
-
-        // Email exists, proceed with sending invitation
-        await sendInvitationEmail(individualId, individualName, profile.email);
-        
-      } catch (error) {
-        console.error('Error in invite process:', error);
-        toast({
-          title: "Error",
-          description: "Failed to process invitation",
-          variant: "destructive"
-        });
-      }
+      // Open the assign email modal directly
+      setAssignEmailModal({
+        open: true,
+        individualId,
+        individualName
+      });
     } else {
       // Fallback for general invite (existing behavior)
       toast({
@@ -1152,6 +1085,14 @@ export const TabTeam: React.FC = () => {
           setShowEmailSetup(false);
           loadCommunityData();
         }}
+      />
+
+      <AssignEmailModal
+        open={assignEmailModal.open}
+        onOpenChange={(open) => setAssignEmailModal(prev => ({ ...prev, open }))}
+        individualId={assignEmailModal.individualId}
+        individualName={assignEmailModal.individualName}
+        onSuccess={loadCommunityData}
       />
     </>
   );

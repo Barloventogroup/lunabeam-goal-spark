@@ -9,11 +9,9 @@ const corsHeaders = {
 };
 
 interface AccountInvitationRequest {
+  individual_id: string;
   invitee_email: string;
-  invitee_name: string;
-  inviter_name: string;
-  claim_token: string;
-  magic_link_token: string;
+  invitee_name?: string;
   message?: string;
 }
 
@@ -24,27 +22,59 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { 
-      invitee_email, 
-      invitee_name, 
-      inviter_name, 
-      claim_token, 
-      magic_link_token, 
-      message 
-    }: AccountInvitationRequest = await req.json();
+    const { individual_id, invitee_email, invitee_name, message }: AccountInvitationRequest = await req.json();
 
-    if (!invitee_email || !claim_token || !magic_link_token) {
+    if (!individual_id || !invitee_email) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        JSON.stringify({ error: "Missing required fields: individual_id, invitee_email" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
       );
     }
 
-    // Create the claim URL with the site URL from environment
-    const siteUrl = Deno.env.get('SUPABASE_URL')?.replace('https://soyiqjdwnhtvopvwvfkq.supabase.co', 'https://your-site.lovable.app') || 'https://your-site.lovable.app';
-    const claimUrl = `${siteUrl}/claim-account?token=${claim_token}`;
+    // Call the database function to update email and generate magic link
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.55.0');
+    
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
 
-    const subject = `${inviter_name} has set up an account for you`;
+    const { data: assignResult, error: assignError } = await supabase
+      .rpc('assign_email_and_invite', {
+        p_individual_id: individual_id,
+        p_real_email: invitee_email,
+        p_invitee_name: invitee_name
+      });
+
+    if (assignError) {
+      console.error('Error assigning email:', assignError);
+      return new Response(
+        JSON.stringify({ error: `Failed to assign email: ${assignError.message}` }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    if (!assignResult || assignResult.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "No result from email assignment" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    const { magic_link_token } = assignResult[0];
+    const siteUrl = Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com') || 'https://your-site.com';
+    const magicLinkUrl = `${siteUrl}/auth/callback?token=${magic_link_token}&type=magiclink&redirect_to=${encodeURIComponent(siteUrl)}`;
+
+    const subject = "Your LunaBeam Account is Ready!";
     
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -52,49 +82,63 @@ const handler = async (req: Request): Promise<Response> => {
         
         <p>Hi ${invitee_name || 'there'},</p>
         
-        <p><strong>${inviter_name}</strong> has set up a LunaBeam account for you and invited you to get started with goal tracking and achievement.</p>
+        <p>Your LunaBeam account has been set up and is ready to use! Someone has created an account for you and you can now access it.</p>
         
         ${message ? `<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0; font-style: italic;">"${message}"</p>
         </div>` : ''}
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${claimUrl}" 
-             style="background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-            Accept Invitation & Set Up Account
+          <a href="${magicLinkUrl}" 
+             style="background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+            Access Your Account
           </a>
         </div>
         
-        <p style="color: #666; font-size: 14px;">
-          This invitation link will expire in 24 hours. If you have any questions, you can reply to this email.
-        </p>
+        <p><strong>Important:</strong> This magic link will expire in 24 hours for security reasons.</p>
+        
+        <p>Once you access your account, you can:</p>
+        <ul>
+          <li>View and work on your goals</li>
+          <li>Track your progress</li>
+          <li>Set your own password</li>
+          <li>Update your profile</li>
+        </ul>
+        
+        <p>If you have any questions or need help, don't hesitate to reach out!</p>
         
         <p>Best regards,<br>The LunaBeam Team</p>
         
-        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-        <p style="color: #999; font-size: 12px; text-align: center;">
-          If you're having trouble with the button above, copy and paste this URL into your web browser:<br>
-          <a href="${claimUrl}" style="color: #999;">${claimUrl}</a>
+        <hr style="margin-top: 30px; border: none; border-top: 1px solid #eee;">
+        <p style="font-size: 12px; color: #666; text-align: center;">
+          If you didn't expect this email, you can safely ignore it.
         </p>
       </div>
     `;
 
     const emailResponse = await resend.emails.send({
-      from: `${Deno.env.get("RESEND_FROM_NAME")} <${Deno.env.get("RESEND_FROM_EMAIL")}>`,
+      from: `${Deno.env.get('RESEND_FROM_NAME') || 'LunaBeam'} <${Deno.env.get('RESEND_FROM_EMAIL') || 'no-reply@lunabeam.com'}>`,
       to: [invitee_email],
       subject: subject,
       html: htmlContent,
     });
 
-    console.log("Account invitation email sent successfully:", emailResponse);
+    console.log("Magic link email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify(emailResponse), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: "Account invitation sent successfully",
+        email_sent: true 
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      }
+    );
   } catch (error: any) {
     console.error("Error in send-account-invitation function:", error);
     return new Response(
