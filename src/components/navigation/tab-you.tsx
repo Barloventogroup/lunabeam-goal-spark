@@ -10,7 +10,8 @@ import {
   ChevronRight,
   Trophy,
   LogOut,
-  Shield
+  Shield,
+  RotateCcw
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '../auth/auth-provider';
@@ -23,7 +24,7 @@ import { ProfileView } from '../lunebeam/profile-view';
 type YouView = 'profile' | 'rewards' | 'achievements' | 'rewardsHub' | 'profileDetail' | 'rewardBank' | 'rewardAdmin' | 'redemptionInbox';
 
 export const TabYou: React.FC = () => {
-  const { profile } = useStore();
+  const { profile, resetOnboarding } = useStore();
   const { signOut } = useAuth();
   const [currentView, setCurrentView] = useState<YouView>('profile');
 
@@ -34,6 +35,13 @@ export const TabYou: React.FC = () => {
   const handleLogout = () => {
     console.log('TabYou: Sign out clicked');
     signOut();
+  };
+
+  const handleResetOnboarding = async () => {
+    if (confirm('Reset onboarding to test role selection? This will log you out.')) {
+      await resetOnboarding();
+      signOut();
+    }
   };
 
   if (currentView === 'rewards') {
@@ -135,6 +143,21 @@ export const TabYou: React.FC = () => {
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Test: Reset Onboarding */}
+          <Card className="cursor-pointer hover:shadow-md transition-shadow border-orange-200" onClick={handleResetOnboarding}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <RotateCcw className="h-5 w-5 text-orange-500" />
+                  <div>
+                    <div className="font-medium text-orange-600">Reset Onboarding (Test)</div>
+                    <div className="text-sm text-muted-foreground">Test role selection flow</div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
