@@ -681,7 +681,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit }: Structure
                 disabled={!canProceed() || isGenerating}
                 className="w-full"
               >
-                {isGenerating ? 'Creating...' : currentStep === getTotalSteps() ? 'Create Profile' : 'Next'}
+                {isGenerating ? 'Creating...' : currentStep === getTotalSteps() ? 'Create Profile' : 'Continue'}
               </Button>
             </div>
           </CardContent>

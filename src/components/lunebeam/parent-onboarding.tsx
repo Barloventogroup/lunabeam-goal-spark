@@ -316,7 +316,7 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
           <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
         </div>
 
-        <Card className="shadow-card border-0 relative">
+        <Card className="shadow-card border-0 relative h-[720px]">
           {/* Exit button */}
           <Button
             variant="ghost"
@@ -327,7 +327,8 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
             <X className="h-4 w-4" />
           </Button>
           
-          <CardContent className="p-6">
+          <CardContent className="p-6 h-full flex flex-col">
+            <div className="flex-1 overflow-y-auto">
             
             {/* Step 1: Admin Name */}
             {currentStep === 1 && (
@@ -699,9 +700,10 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
                   </Button>
                 )}
                 <Button onClick={handleNext}>
-                  {currentStep === totalSteps ? 'Create Profile' : 'Next'}
+                  {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
                 </Button>
               </div>
+            </div>
             </div>
           </CardContent>
         </Card>
