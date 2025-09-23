@@ -69,12 +69,12 @@ export async function getUserContext(profile: Profile | null): Promise<UserConte
     hasAdminFeatures = true;
   } else {
     // New user with no relationships - check if created by supporter (individual) or truly new (admin)
-    if (profile.created_by_supporter || profile.account_status === 'active') {
-      // Individual account created during onboarding
+    if (profile.created_by_supporter) {
+      // Individual account created during onboarding by a supporter
       userType = 'individual';
       hasAdminFeatures = false;
     } else {
-      // Truly new user = admin (default)
+      // Direct signup = admin (default)
       userType = 'admin';
       hasAdminFeatures = true;
     }
