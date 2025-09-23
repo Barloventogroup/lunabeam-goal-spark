@@ -119,7 +119,7 @@ export function OnboardingFlow() {
                   <div className="space-y-3">
                     <div 
                       className="w-full p-4 rounded-lg border-2 border-primary bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors"
-                      onClick={() => { setSelectedRole('parent'); handleRoleSelection('parent'); }}
+                      onClick={() => setSelectedRole('parent')}
                     >
                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value="parent" id="parent" />
@@ -136,7 +136,7 @@ export function OnboardingFlow() {
                     
                     <div 
                       className="w-full p-4 rounded-lg border border-border cursor-pointer hover:bg-muted/30 transition-colors"
-                      onClick={() => { setSelectedRole('individual'); handleRoleSelection('individual'); }}
+                      onClick={() => setSelectedRole('individual')}
                     >
                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value="individual" id="individual" />
