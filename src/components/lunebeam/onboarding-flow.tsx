@@ -12,6 +12,7 @@ export function OnboardingFlow() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const [roleData, setRoleData] = useState<{ role: 'parent' | 'individual' | ''; isAdmin?: boolean }>({ role: '' });
+  const [selectedRole, setSelectedRole] = useState<'parent' | 'individual'>('parent');
   const [showRoleSelection, setShowRoleSelection] = useState(true);
   const [showInterstitial, setShowInterstitial] = useState(false);
 
@@ -114,11 +115,11 @@ export function OnboardingFlow() {
               </div>
               
               <div className="space-y-6">
-                <RadioGroup defaultValue="parent" className="space-y-4">
+                <RadioGroup value={selectedRole} onValueChange={(v) => setSelectedRole(v as 'parent' | 'individual')} className="space-y-4">
                   <div className="space-y-3">
                     <div 
                       className="w-full p-4 rounded-lg border-2 border-primary bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors"
-                      onClick={() => handleRoleSelection('parent')}
+                      onClick={() => { setSelectedRole('parent'); handleRoleSelection('parent'); }}
                     >
                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value="parent" id="parent" />
@@ -135,7 +136,7 @@ export function OnboardingFlow() {
                     
                     <div 
                       className="w-full p-4 rounded-lg border border-border cursor-pointer hover:bg-muted/30 transition-colors"
-                      onClick={() => handleRoleSelection('individual')}
+                      onClick={() => { setSelectedRole('individual'); handleRoleSelection('individual'); }}
                     >
                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value="individual" id="individual" />
@@ -165,9 +166,8 @@ export function OnboardingFlow() {
             
             <div className="mt-6">
               <Button 
-                onClick={() => handleRoleSelection('parent')} 
+                onClick={() => handleRoleSelection(selectedRole)} 
                 className="w-full"
-                disabled={true}
               >
                 Continue
               </Button>
