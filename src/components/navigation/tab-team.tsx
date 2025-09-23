@@ -646,16 +646,25 @@ export const TabTeam: React.FC = () => {
         {/* Header */}
         <div className="p-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold">Community</h1>
-              <p className="text-sm text-muted-foreground">
+            <div className="text-center space-y-4">
+              <h3 className="text-lg font-semibold">Welcome to Community</h3>
+              <p className="text-foreground-soft">
                 Manage your support network ({combinedMembers.length} members)
               </p>
+              {combinedMembers.length === 0 && (
+                <div className="bg-accent/20 border border-accent/30 rounded-lg p-4 space-y-3">
+                  <p className="text-sm text-foreground-soft">
+                    You haven't created any individual accounts yet. Create one to get started!
+                  </p>
+                </div>
+              )}
             </div>
-            <Button size="sm" onClick={() => setShowEmailSetup(true)} className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              Create Individual Account
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => setShowEmailSetup(true)} className="gap-2">
+                <UserPlus className="h-4 w-4" />
+                Create Individual Account
+              </Button>
+            </div>
           </div>
         </div>
 
