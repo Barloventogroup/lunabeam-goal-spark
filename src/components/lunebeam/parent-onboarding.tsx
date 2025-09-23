@@ -107,36 +107,13 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
   };
 
   const handleNext = async () => {
-    // Step 3: Name is mandatory and we create the user account immediately
+    // Step 3: Name is mandatory - validate before continuing
     if (currentStep === 3) {
       if (!data.preferredName.trim()) {
         alert('Please enter a name before continuing.');
         return;
       }
-
-      try {
-        console.log('Creating user account for:', data.preferredName.trim());
-        
-        const { data: provisionResult, error: provisionError } = await supabase
-          .rpc('provision_individual_direct', {
-            p_first_name: data.preferredName.trim(),
-            p_strengths: [],
-            p_interests: [],
-            p_comm_pref: 'text'
-          });
-
-        if (provisionError) {
-          console.error('Failed to create user account:', provisionError);
-          alert(`Failed to create account: ${provisionError.message}`);
-          return;
-        }
-
-        console.log('User account created successfully:', provisionResult);
-      } catch (error) {
-        console.error('Error creating user account:', error);
-        alert('Failed to create user account. Please try again.');
-        return;
-      }
+      // Name validation passed - no account creation here, that happens at the end
     }
 
     if (currentStep < totalSteps) {
