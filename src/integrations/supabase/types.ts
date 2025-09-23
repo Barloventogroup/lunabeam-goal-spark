@@ -1081,6 +1081,10 @@ export type Database = {
         Args: { _invite_token: string }
         Returns: Json
       }
+      admin_delete_user: {
+        Args: { user_id_to_delete: string }
+        Returns: boolean
+      }
       assign_email_and_invite: {
         Args: {
           p_individual_id: string
