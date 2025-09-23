@@ -44,8 +44,11 @@ export interface AccountClaim {
   id: string;
   individual_id: string;
   provisioner_id: string;
-  claim_passcode: string;
+  first_name?: string;
   claim_token: string;
+  invitee_email?: string;
+  magic_link_token?: string;
+  magic_link_expires_at?: string;
   expires_at: string;
   claimed_at?: string;
   created_at: string;

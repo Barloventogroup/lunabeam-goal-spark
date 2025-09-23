@@ -1,111 +1,122 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Loader2, Mail, CheckCircle, AlertCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
 
-export function ClaimAccount() {
-  const { claimToken } = useParams<{ claimToken: string }>();
+interface ClaimInfo {
+  individual_id: string;
+  first_name: string;
+  invitee_email: string;
+  status: string;
+  provisioner_name?: string;
+}
+
+export default function ClaimAccount() {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [claimInfo, setClaimInfo] = useState<any>(null);
-  const [passcode, setPasscode] = useState('');
-  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [claiming, setClaiming] = useState(false);
+  const [claimInfo, setClaimInfo] = useState<ClaimInfo | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  
+  const claimToken = searchParams.get('token');
 
   useEffect(() => {
     if (claimToken) {
       loadClaimInfo();
+    } else {
+      setError('No claim token provided');
+      setLoading(false);
     }
   }, [claimToken]);
 
   const loadClaimInfo = async () => {
     if (!claimToken) return;
-    
+
     try {
-      // First get the claim info
-      const { data: claimData, error: claimError } = await supabase
+      const { data, error } = await supabase
         .from('account_claims')
-        .select('first_name, expires_at, status, individual_id')
+        .select(`
+          individual_id,
+          first_name,
+          invitee_email,
+          status,
+          expires_at,
+          magic_link_expires_at,
+          profiles!provisioner_id(first_name)
+        `)
         .eq('claim_token', claimToken)
         .eq('status', 'pending')
-        .gt('expires_at', new Date().toISOString())
+        .gt('magic_link_expires_at', new Date().toISOString())
         .single();
 
-      if (claimError || !claimData) {
-        toast.error('Invalid or expired claim link');
-        return;
-      }
-
-      setClaimInfo(claimData);
-    } catch (error) {
-      console.error('Error loading claim info:', error);
-      toast.error('Failed to load claim information');
-    }
-  };
-
-  const handleClaim = async () => {
-    if (!claimToken || !passcode || !password) {
-      toast.error('Please enter both the passcode and create a password');
-      return;
-    }
-
-    if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Call the edge function to handle the full claim process
-      const { data, error } = await supabase.functions.invoke('claim-account-with-auth', {
-        body: {
-          claimToken,
-          passcode: passcode.toUpperCase(),
-          password
-        }
-      });
-
       if (error) {
-        toast.error('Failed to claim account: ' + error.message);
+        setError('This invitation link has expired or is invalid.');
         return;
       }
 
-      if (data.success) {
-        toast.success(`Welcome ${data.firstName}! Your account has been claimed. Please sign in using your password.`);
-        
-        // Do NOT auto sign-in here to avoid replacing any existing admin session in this browser
-        // Open the sign-in page in a new tab with the email prefilled
-        if (data.email) {
-          window.open(`/auth?email=${encodeURIComponent(data.email)}`, '_blank', 'noopener,noreferrer');
-        } else {
-          window.open(`/auth`, '_blank', 'noopener,noreferrer');
-        }
-      } else {
-        toast.error(data.error || 'Failed to claim account');
-      }
-    } catch (error) {
-      console.error('Claim error:', error);
-      toast.error('An unexpected error occurred');
+      setClaimInfo({
+        ...data,
+        provisioner_name: (data.profiles as any)?.first_name || 'Someone'
+      });
+    } catch (err: any) {
+      setError('Failed to load invitation details.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (!claimInfo) {
+  const handleMagicLinkSignIn = async () => {
+    if (!claimInfo) return;
+
+    try {
+      setClaiming(true);
+      
+      const { error } = await supabase.auth.signInWithOtp({
+        email: claimInfo.invitee_email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/claim-complete?token=${claimToken}`
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(`Magic link sent to ${claimInfo.invitee_email}! Check your email to complete setup.`);
+      
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send magic link');
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  if (loading) {
     return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ 
-      backgroundImage: 'url(/lovable-uploads/9c1b5bdb-2b99-433d-8696-e539336f2074.png)', 
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
-    }}>
+      <div className="min-h-screen bg-gradient-to-br from-primary/20 via-background to-primary/10 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
-          <CardContent className="flex items-center justify-center p-6">
-            <Loader2 className="w-6 h-6 animate-spin" />
+          <CardContent className="p-8 text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-muted-foreground">Loading invitation details...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error || !claimInfo) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/20 via-background to-primary/10 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Invalid Invitation</h2>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <Button onClick={() => navigate('/auth')} variant="outline">
+              Go to Sign In
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -113,56 +124,43 @@ export function ClaimAccount() {
   }
 
   return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ 
-        backgroundImage: 'url(/lovable-uploads/9c1b5bdb-2b99-433d-8696-e539336f2074.png)', 
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}>
+    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-background to-primary/10 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Claim Your Account</CardTitle>
-          <p className="text-muted-foreground">
-            Welcome {claimInfo.first_name}! Enter your passcode and create a password to access your account.
+        <CardHeader className="text-center pb-4">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail className="w-8 h-8 text-primary" />
+          </div>
+          <CardTitle className="text-xl">Accept Invitation</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {claimInfo.provisioner_name} has set up a LunaBeam account for you
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="passcode">Claim Passcode</Label>
-            <Input
-              id="passcode"
-              value={passcode}
-              onChange={(e) => setPasscode(e.target.value.toUpperCase())}
-              placeholder="Enter the passcode you received"
-              className="uppercase text-center text-lg tracking-wider"
-              maxLength={6}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="password">Create Your Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a secure password (min 6 characters)"
-              minLength={6}
-            />
+        
+        <CardContent className="space-y-6">
+          <div className="bg-muted/50 rounded-lg p-4">
+            <h3 className="font-medium mb-2">Account Details</h3>
+            <div className="space-y-1 text-sm">
+              <p><span className="text-muted-foreground">Name:</span> {claimInfo.first_name}</p>
+              <p><span className="text-muted-foreground">Email:</span> {claimInfo.invitee_email}</p>
+            </div>
           </div>
 
           <Button 
-            onClick={handleClaim} 
-            className="w-full" 
-            disabled={loading || !passcode || !password}
+            onClick={handleMagicLinkSignIn}
+            disabled={claiming}
+            className="w-full"
+            size="lg"
           >
-            {loading ? (
+            {claiming ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Claiming Account...
+                Sending magic link...
               </>
             ) : (
-              'Claim My Account'
+              <>
+                <Mail className="w-4 h-4 mr-2" />
+                Get Started - Send Magic Link
+              </>
             )}
           </Button>
         </CardContent>

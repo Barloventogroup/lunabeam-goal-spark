@@ -29,7 +29,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { PermissionsService, type Supporter } from '@/services/permissionsService';
 import { SimpleInviteModal } from '../lunebeam/simple-invite-modal';
 import { AddCommunityMemberModal } from '../lunebeam/add-community-member-modal';
-import { AddIndividualWizard } from '../lunebeam/add-individual-wizard';
+import { EmailAccountSetup } from '../lunebeam/email-account-setup';
 import { EditIndividualModal } from '../lunebeam/edit-individual-modal';
 import { CollectEmailModal } from '../lunebeam/collect-email-modal';
 import { useToast } from '@/hooks/use-toast';
@@ -88,6 +88,7 @@ export const TabTeam: React.FC = () => {
   // Quick provision state
   const [newIndividualName, setNewIndividualName] = useState('');
   const [creatingIndividual, setCreatingIndividual] = useState(false);
+  const [showEmailSetup, setShowEmailSetup] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -701,14 +702,15 @@ export const TabTeam: React.FC = () => {
                   <User className="h-5 w-5" />
                   People You Support
                 </div>
-                <AddIndividualWizard 
-                  trigger={
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <UserPlus className="h-4 w-4" />
-                    </Button>
-                  }
-                  onSuccess={loadCommunityData}
-                />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => setShowEmailSetup(true)}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Set up account
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -717,15 +719,10 @@ export const TabTeam: React.FC = () => {
                   <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No individuals yet</h3>
                   <p className="text-muted-foreground mb-4">Add people you support to start tracking their goals.</p>
-                  <AddIndividualWizard 
-                    trigger={
-                      <Button>
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Add Individual
-                      </Button>
-                    }
-                    onSuccess={loadCommunityData}
-                  />
+                  <Button onClick={() => setShowEmailSetup(true)}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Set up account for someone
+                  </Button>
                 </div>
               ) : (
                 <Table>
@@ -1101,6 +1098,15 @@ export const TabTeam: React.FC = () => {
           </DialogContent>
         </Dialog>
       )}
+
+      <EmailAccountSetup
+        open={showEmailSetup}
+        onClose={() => setShowEmailSetup(false)}
+        onSuccess={() => {
+          setShowEmailSetup(false);
+          loadCommunityData();
+        }}
+      />
     </>
   );
 };

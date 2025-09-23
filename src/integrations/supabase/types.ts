@@ -1122,6 +1122,18 @@ export type Database = {
         Args: { _claim_token: string; _passcode: string }
         Returns: Json
       }
+      create_account_claim_with_email: {
+        Args: {
+          p_individual_id: string
+          p_invitee_email: string
+          p_invitee_name?: string
+          p_message?: string
+        }
+        Returns: {
+          claim_token: string
+          magic_link_token: string
+        }[]
+      }
       create_supporter_invite_secure: {
         Args: {
           p_expires_at?: string
