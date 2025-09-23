@@ -670,8 +670,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit }: Structure
 
 
             </div>
-            {/* Navigation */}
-            <div className="pt-6 mt-auto space-y-2">
+            {/* Navigation - Fixed position at bottom */}
+            <div className="absolute bottom-6 left-6 right-6 space-y-2">
               {currentStep > 1 && (
                 <BackButton variant="text" onClick={handleBack} className="w-full" />
               )}

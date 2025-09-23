@@ -309,9 +309,6 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-foreground-soft">{currentStep}/{totalSteps}</span>
-            {currentStep > 1 && (
-                <BackButton variant="minimal" onClick={handleBack} />
-            )}
           </div>
           <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
         </div>
@@ -688,18 +685,18 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
             )}
 
 
-            {/* Navigation */}
-            <div className="flex justify-between items-center pt-6">
+            {/* Navigation - Fixed position at bottom */}
+            <div className="absolute bottom-6 left-6 right-6 space-y-2">
               {currentStep > 1 && (
-                <BackButton variant="minimal" onClick={handleBack} />
+                <BackButton variant="text" onClick={handleBack} className="w-full" />
               )}
-              <div className="flex gap-2 ml-auto">
+              <div className="flex gap-2">
                 {currentStep < totalSteps && (
-                  <Button variant="outline" onClick={handleSkip}>
+                  <Button variant="outline" onClick={handleSkip} className="flex-1">
                     Skip
                   </Button>
                 )}
-                <Button onClick={handleNext}>
+                <Button onClick={handleNext} className="flex-1">
                   {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
                 </Button>
               </div>
