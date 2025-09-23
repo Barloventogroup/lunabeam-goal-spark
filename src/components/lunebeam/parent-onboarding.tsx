@@ -106,7 +106,39 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
     return 'them';
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    // Step 3: Name is mandatory and we create the user account immediately
+    if (currentStep === 3) {
+      if (!data.preferredName.trim()) {
+        alert('Please enter a name before continuing.');
+        return;
+      }
+
+      try {
+        console.log('Creating user account for:', data.preferredName.trim());
+        
+        const { data: provisionResult, error: provisionError } = await supabase
+          .rpc('provision_individual_direct', {
+            p_first_name: data.preferredName.trim(),
+            p_strengths: [],
+            p_interests: [],
+            p_comm_pref: 'text'
+          });
+
+        if (provisionError) {
+          console.error('Failed to create user account:', provisionError);
+          alert(`Failed to create account: ${provisionError.message}`);
+          return;
+        }
+
+        console.log('User account created successfully:', provisionResult);
+      } catch (error) {
+        console.error('Error creating user account:', error);
+        alert('Failed to create user account. Please try again.');
+        return;
+      }
+    }
+
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -395,12 +427,13 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
                   <h2 className="text-xl font-semibold mb-2">What should we call them?</h2>
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium">Preferred name</Label>
+                      <Label className="text-sm font-medium">Preferred name <span className="text-red-500">*</span></Label>
                       <Input
                         value={data.preferredName}
                         onChange={(e) => setData(prev => ({ ...prev, preferredName: e.target.value }))}
                         placeholder="Enter their preferred name"
                         className="mt-1"
+                        required
                       />
                       <p className="text-xs text-foreground-soft mt-1">
                         This is how we'll address them in the app. Initials or a nickname are okay.
