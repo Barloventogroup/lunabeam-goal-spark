@@ -627,6 +627,42 @@ export type Database = {
         }
         Relationships: []
       }
+      provisional_profiles: {
+        Row: {
+          comm_pref: string | null
+          created_at: string | null
+          created_by_supporter: string
+          email: string
+          first_name: string
+          interests: string[] | null
+          strengths: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          comm_pref?: string | null
+          created_at?: string | null
+          created_by_supporter: string
+          email: string
+          first_name: string
+          interests?: string[] | null
+          strengths?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          comm_pref?: string | null
+          created_at?: string | null
+          created_by_supporter?: string
+          email?: string
+          first_name?: string
+          interests?: string[] | null
+          strengths?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       redemptions: {
         Row: {
           approved_at: string | null

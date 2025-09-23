@@ -216,6 +216,13 @@ export const TabTeam: React.FC = () => {
       const { data: createdProfiles, error: createdErr } = await supabase
         .rpc('get_profiles_created_by_me');
       console.log('TabTeam: get_profiles_created_by_me result:', { data: createdProfiles, error: createdErr });
+
+      // Also fetch provisional profiles (accounts created via email but not yet claimed)
+      const { data: provisionalProfiles, error: provisionalErr } = await supabase
+        .from('provisional_profiles')
+        .select('*')
+        .eq('created_by_supporter', user.id);
+      console.log('TabTeam: Provisional profiles result:', { data: provisionalProfiles, error: provisionalErr });
       if (createdErr) {
         console.error('TabTeam: Error fetching created profiles:', createdErr);
       } else if (createdProfiles && createdProfiles.length > 0) {
@@ -260,6 +267,45 @@ export const TabTeam: React.FC = () => {
         }
       } else {
         console.log('TabTeam: No created profiles found (empty result)');
+      }
+
+      // Handle provisional profiles (email invitations not yet claimed)
+      if (provisionalProfiles && provisionalProfiles.length > 0) {
+        console.log('TabTeam: Processing provisional profiles:', provisionalProfiles);
+        for (const p of provisionalProfiles) {
+          if (!seenIndividualIds.has(p.user_id)) {
+            seenIndividualIds.add(p.user_id);
+            
+            // Check for account claim status
+            const { data: claim } = await supabase
+              .from('account_claims')
+              .select('status, expires_at')
+              .eq('provisioner_id', user.id)
+              .eq('individual_id', p.user_id)
+              .maybeSingle();
+            
+            let displayStatus: 'Pending' | 'Accepted' | 'Not invited yet' = 'Pending';
+            if (claim && claim.status === 'accepted') {
+              displayStatus = 'Accepted';
+            }
+
+            allMembers.push({
+              id: `provisional-${p.user_id}`,
+              individual_id: p.user_id,
+              supporter_id: user.id,
+              role: 'individual' as any,
+              permission_level: 'viewer',
+              specific_goals: [],
+              is_admin: false,
+              is_provisioner: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              profile: { first_name: p.first_name },
+              memberType: 'individual',
+              displayStatus,
+            } as any);
+          }
+        }
       }
 
       // Merge provisioned individuals from account claims as a fallback source
