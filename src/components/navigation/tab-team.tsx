@@ -672,11 +672,7 @@ export const TabTeam: React.FC = () => {
                 <div className="text-center py-8">
                   <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No individuals yet</h3>
-                  <p className="text-muted-foreground mb-4">Add people you support to start tracking their goals.</p>
-                  <Button onClick={() => setShowEmailSetup(true)}>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Set up account for someone
-                  </Button>
+                  <p className="text-muted-foreground mb-4">Individuals created during onboarding will appear here.</p>
                 </div>
               ) : (
                 <Table>
