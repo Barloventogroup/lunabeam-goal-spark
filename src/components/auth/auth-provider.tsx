@@ -66,6 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('AuthProvider: Auth state change:', event, session?.user?.email);
+        console.log('AuthProvider: Current URL:', window.location.href);
+        console.log('AuthProvider: Session details:', session);
         if (event === 'SIGNED_OUT') {
           try {
             localStorage.removeItem('lunebeam-store');
