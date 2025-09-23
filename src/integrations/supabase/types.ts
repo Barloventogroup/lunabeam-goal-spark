@@ -1293,20 +1293,6 @@ export type Database = {
           placeholder_email: string
         }[]
       }
-      provision_individual_with_email: {
-        Args: {
-          p_comm_pref?: string
-          p_first_name: string
-          p_interests?: string[]
-          p_invitee_email: string
-          p_strengths?: string[]
-        }
-        Returns: {
-          claim_token: string
-          individual_id: string
-          magic_link_token: string
-        }[]
-      }
     }
     Enums: {
       account_status: "active" | "pending_user_consent" | "user_claimed"

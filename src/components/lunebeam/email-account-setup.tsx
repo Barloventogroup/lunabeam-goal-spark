@@ -3,8 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Mail, UserPlus, Loader2 } from "lucide-react";
+import { UserPlus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -20,90 +19,44 @@ export const EmailAccountSetup: React.FC<EmailAccountSetupProps> = ({
   onSuccess
 }) => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    email: '',
-    message: '',
-    strengths: [] as string[],
-    interests: [] as string[],
-    commPref: 'text'
-  });
+  const [firstName, setFirstName] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.firstName.trim() || !formData.email.trim()) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error('Please enter a valid email address');
+    if (!firstName.trim()) {
+      toast.error('Please enter a name');
       return;
     }
 
     try {
       setLoading(true);
 
-      // Call the new provisioning function
-      const { data, error } = await supabase.rpc('provision_individual_with_email', {
-        p_first_name: formData.firstName.trim(),
-        p_invitee_email: formData.email.trim(),
-        p_strengths: formData.strengths,
-        p_interests: formData.interests,
-        p_comm_pref: formData.commPref
+      // Create the individual account directly (simplified approach)
+      const { data, error } = await supabase.rpc('provision_individual_direct', {
+        p_first_name: firstName.trim(),
+        p_strengths: [],
+        p_interests: [],
+        p_comm_pref: 'text'
       });
 
       if (error) throw error;
 
       const result = data?.[0];
       if (!result) {
-        throw new Error('Failed to create account provision');
+        throw new Error('Failed to create individual account');
       }
 
-      // Get current user's name for the email
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('first_name')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
-
-      // Send invitation email
-      const { error: emailError } = await supabase.functions.invoke('send-account-invitation', {
-        body: {
-          invitee_email: formData.email,
-          invitee_name: formData.firstName,
-          inviter_name: profile?.first_name || 'Someone',
-          claim_token: result.claim_token,
-          magic_link_token: result.magic_link_token,
-          message: formData.message.trim() || undefined
-        }
-      });
-
-      if (emailError) {
-        console.error('Email sending failed:', emailError);
-        toast.error('Account was created but invitation email failed to send');
-      } else {
-        toast.success(`Invitation sent to ${formData.email}!`);
-      }
+      toast.success(`Account created for ${firstName}! They will appear in your Community view.`);
 
       onSuccess();
       
       // Reset form
-      setFormData({
-        firstName: '',
-        email: '',
-        message: '',
-        strengths: [],
-        interests: [],
-        commPref: 'text'
-      });
+      setFirstName('');
 
     } catch (error: any) {
-      console.error('Failed to set up account:', error);
-      toast.error(error.message || 'Failed to set up account');
+      console.error('Failed to create account:', error);
+      toast.error(error.message || 'Failed to create account');
     } finally {
       setLoading(false);
     }
@@ -115,7 +68,7 @@ export const EmailAccountSetup: React.FC<EmailAccountSetupProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-primary" />
-            Set up account for someone
+            Create account for someone
           </DialogTitle>
         </DialogHeader>
 
@@ -124,45 +77,22 @@ export const EmailAccountSetup: React.FC<EmailAccountSetupProps> = ({
             <Label htmlFor="firstName">First Name *</Label>
             <Input
               id="firstName"
-              value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
               placeholder="Enter their first name"
               required
             />
           </div>
 
-          <div>
-            <Label htmlFor="email">Email Address *</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="their.email@example.com"
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="message">Personal Message (Optional)</Label>
-            <Textarea
-              id="message"
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              placeholder="Add a personal note to include in the invitation..."
-              rows={3}
-            />
-          </div>
-
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <div className="flex items-start gap-2">
-              <Mail className="w-4 h-4 text-blue-600 mt-0.5" />
+              <UserPlus className="w-4 h-4 text-blue-600 mt-0.5" />
               <div className="text-sm text-blue-700">
-                <p className="font-medium">What happens next:</p>
+                <p className="font-medium">What happens:</p>
                 <ul className="mt-1 list-disc list-inside space-y-1">
-                  <li>An invitation email will be sent to their address</li>
-                  <li>They'll click a secure link to set up their account</li>
-                  <li>No passwords needed - they'll use magic link authentication</li>
+                  <li>A new account will be created immediately</li>
+                  <li>They will appear in your Community view</li>
+                  <li>You can manage their goals and progress</li>
                 </ul>
               </div>
             </div>
@@ -185,12 +115,12 @@ export const EmailAccountSetup: React.FC<EmailAccountSetupProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
+                  Creating...
                 </>
               ) : (
                 <>
-                  <Mail className="w-4 h-4 mr-2" />
-                  Send Invitation
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Create Account
                 </>
               )}
             </Button>
