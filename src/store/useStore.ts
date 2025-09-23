@@ -306,11 +306,8 @@ export const useStore = create<AppState>()(
       // Computed helper for onboarding status
       isOnboardingComplete: () => {
         const profile = get().profile;
-        // If profile exists but doesn't have user_type set, onboarding is incomplete
-        if (profile && !profile.user_type) {
-          return false;
-        }
-        return profile?.onboarding_complete || false;
+        // Onboarding is complete only if profile exists, has user_type, AND onboarding_complete is true
+        return profile?.onboarding_complete === true && profile?.user_type != null;
       },
       
       // Helpers
