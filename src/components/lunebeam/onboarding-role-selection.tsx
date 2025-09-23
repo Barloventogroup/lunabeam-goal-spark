@@ -33,7 +33,8 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
     });
   };
 
-  const canParentContinue = role === 'parent' && individualEmail.trim().length > 0;
+  const canParentContinue = role === 'parent' && individualEmail.trim().length > 0 && 
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(individualEmail.trim());
 
   // Show interstitial screen
   if (showInterstitial) {
