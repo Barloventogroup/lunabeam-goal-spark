@@ -19,6 +19,7 @@ import { supabase } from '../../integrations/supabase/client';
 import { useAuth } from '../auth/auth-provider';
 import { goalsService, stepsService } from '../../services/goalsService';
 import { normalizeDomainForDisplay } from '../../utils/domainUtils';
+import { getWelcomeMessage } from '../../utils/userTypeUtils';
 import type { Goal } from '../../types';
 
 interface TabHomeProps {
@@ -41,6 +42,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const { user } = useAuth();
   const {
     profile,
+    userContext,
     loadProfile,
     goals,
     steps,
@@ -278,14 +280,24 @@ export const TabHome: React.FC<TabHomeProps> = ({
         <div className="p-4 space-y-6">
           {/* Welcome Message */}
           <div>
-            <h2 className="text-2xl font-bold mb-1">
-              {activeGoals.length === 0 ? `Welcome! 💜` : `Welcome back, ${displayName}!`}
-            </h2>
-            {activeGoals.length === 0 ? <div className="text-muted-foreground space-y-2">
-                <p>You've created this account to support someone important in your life. As the Admin, you can help set goals, follow progress, and invite others such as friends, providers, or coaches to be part of the team.</p>
-                <p>This space is here to make collaboration easy and encouraging. Together we'll turn small steps into big milestones.</p>
-                <p>✨ Let's get started by setting up the first goal.</p>
-              </div> : <p className="text-muted-foreground">Let's keep moving forward, one step at a time.</p>}
+            {(() => {
+              const isFirstTime = activeGoals.length === 0;
+              const welcomeMessage = userContext ? getWelcomeMessage(userContext, isFirstTime) : {
+                title: `Welcome${displayName ? `, ${displayName}` : ''}! 💜`,
+                subtitle: "Let's get started by setting up your first goal."
+              };
+              
+              return (
+                <>
+                  <h2 className="text-2xl font-bold mb-1">
+                    {welcomeMessage.title}
+                  </h2>
+                  <p className="text-muted-foreground">
+                    {welcomeMessage.subtitle}
+                  </p>
+                </>
+              );
+            })()}
           </div>
 
           {/* First Time User Reminder */}

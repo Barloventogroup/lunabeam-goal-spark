@@ -43,6 +43,7 @@ interface AppState {
   updateConsent: (consent: Consent) => void;
   completeOnboarding: () => Promise<void>;
   clearJustCompletedOnboarding: () => void;
+  resetOnboarding: () => Promise<void>;
   setCurrentStep: (step: number) => void;
   
   // New Goals & Steps actions
@@ -282,12 +283,33 @@ export const useStore = create<AppState>()(
       clearJustCompletedOnboarding: () => {
         set({ justCompletedOnboarding: false });
       },
+
+      resetOnboarding: async () => {
+        try {
+          const current = get().profile;
+          if (current) {
+            const resetProfile = { 
+              ...current, 
+              onboarding_complete: false,
+              user_type: undefined // Clear user type to force role selection
+            };
+            await database.saveProfile(resetProfile);
+            set({ profile: resetProfile });
+          }
+        } catch (error) {
+          console.error('Error resetting onboarding:', error);
+        }
+      },
       
       setCurrentStep: (step) => set({ currentStep: step }),
       
       // Computed helper for onboarding status
       isOnboardingComplete: () => {
         const profile = get().profile;
+        // If profile exists but doesn't have user_type set, onboarding is incomplete
+        if (profile && !profile.user_type) {
+          return false;
+        }
         return profile?.onboarding_complete || false;
       },
       
