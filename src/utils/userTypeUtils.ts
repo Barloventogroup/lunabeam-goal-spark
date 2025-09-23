@@ -55,6 +55,10 @@ export async function getUserContext(profile: Profile | null): Promise<UserConte
     // Individual who claimed their account and has supporters
     userType = 'individual';
     hasAdminFeatures = false;
+  } else if (hasSupporter && !supportsOthers) {
+    // User who has supporters but doesn't support others = individual (provisioned)
+    userType = 'individual';
+    hasAdminFeatures = false;
   } else if (supportsOthers && !hasSupporter) {
     // User who supports others but has no supporters = admin
     userType = 'admin';

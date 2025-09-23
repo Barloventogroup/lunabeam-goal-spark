@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -97,6 +97,9 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
             <Mail className="h-5 w-5" />
             Send Account Invite
           </DialogTitle>
+          <DialogDescription>
+            Send a magic link invitation to allow the individual to access their account.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
