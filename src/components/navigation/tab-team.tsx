@@ -282,6 +282,7 @@ export const TabTeam: React.FC = () => {
             
             let displayStatus = 'Not invited yet';
             if (p.status === 'accepted') displayStatus = 'Accepted';
+            else if (p.status === 'pending') displayStatus = 'Pending';
             
             allMembers.push({
               id: `individual-${p.user_id}`,

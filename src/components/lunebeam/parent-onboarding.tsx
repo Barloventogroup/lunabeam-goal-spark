@@ -236,18 +236,32 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
           error: provisionError
         });
 
-        if (provisionError) {
-          console.error('Failed to provision individual profile:', provisionError);
-          throw provisionError;
-        }
+        if (provisionError || !provisionResult || provisionResult.length === 0) {
+          console.warn('Direct provisioning failed, falling back to provisional via email', provisionError);
 
-        if (provisionResult && provisionResult.length > 0) {
+          // Fallback: create a provisional individual using a temporary email (no real email required)
+          const fallbackEmail = `${data.preferredName.toLowerCase().replace(/\s+/g, '')}+temp${Date.now()}@pending.lunabeam.com`;
+          const { data: fallbackResult, error: fallbackError } = await supabase
+            .rpc('provision_individual_with_email', {
+              p_first_name: data.preferredName.trim(),
+              p_invitee_email: fallbackEmail,
+              p_strengths: data.strengths,
+              p_interests: data.interests,
+              p_comm_pref: 'text'
+            });
+
+          console.log('Parent onboarding: fallback provisional result:', { fallbackResult, fallbackError });
+          if (fallbackError) {
+            throw fallbackError;
+          }
+
+          // Provisioned via account_claims; Community tab will show under "Provisioned (pending)"
+        } else {
           const result = provisionResult[0];
           console.log('Individual profile provisioned successfully:', {
             individual_id: result.individual_id,
             placeholder_email: result.placeholder_email
           });
-          
           // Verify the supporter relationship was created
           const { data: { user: currentUser } } = await supabase.auth.getUser();
           if (currentUser) {
@@ -257,10 +271,6 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
               .eq('supporter_id', currentUser.id);
             console.log('Parent onboarding: Supporter relationships after provision:', { supporters, supportersError });
           }
-          
-        } else {
-          console.warn('Provision function returned no results');
-          throw new Error('Provision function returned empty results');
         }
       }
       
