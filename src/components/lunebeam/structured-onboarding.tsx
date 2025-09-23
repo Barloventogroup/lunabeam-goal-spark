@@ -274,6 +274,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit }: Structure
       challenges: data.barriers,
       comm_pref: 'text' as const,
       onboarding_complete: true,
+      user_type: 'individual' as const, // Set explicit user type for individuals
     };
 
     try {

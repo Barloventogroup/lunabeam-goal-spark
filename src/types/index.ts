@@ -15,6 +15,7 @@ export interface Profile {
   created_at?: string;
   updated_at?: string;
   created_by_supporter?: string | null;
+  user_type?: 'admin' | 'individual'; // New field for role
 }
 
 export interface ConsentSection {

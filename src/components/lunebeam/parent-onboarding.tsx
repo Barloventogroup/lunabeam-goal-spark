@@ -195,6 +195,7 @@ export function ParentOnboarding({ onComplete, onExit }: ParentOnboardingProps) 
       challenges: [],
       comm_pref: 'text' as const,
       onboarding_complete: true,
+      user_type: 'admin' as const, // Set explicit user type for admins
     };
 
     try {

@@ -584,6 +584,7 @@ export type Database = {
           strengths: string[] | null
           updated_at: string
           user_id: string
+          user_type: string
         }
         Insert: {
           account_status?: Database["public"]["Enums"]["account_status"]
@@ -604,6 +605,7 @@ export type Database = {
           strengths?: string[] | null
           updated_at?: string
           user_id: string
+          user_type?: string
         }
         Update: {
           account_status?: Database["public"]["Enums"]["account_status"]
@@ -624,6 +626,7 @@ export type Database = {
           strengths?: string[] | null
           updated_at?: string
           user_id?: string
+          user_type?: string
         }
         Relationships: []
       }

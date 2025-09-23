@@ -11,7 +11,7 @@ export interface UserContext {
 }
 
 /**
- * Determines the user type based on their profile and supporter relationships
+ * Determines the user type based on their profile
  */
 export async function getUserContext(profile: Profile | null): Promise<UserContext> {
   if (!profile?.user_id) {
@@ -23,65 +23,13 @@ export async function getUserContext(profile: Profile | null): Promise<UserConte
     };
   }
 
-  // Check if this user is a claimed individual
+  // Simply read the user_type from the profile
+  const userType = profile.user_type || 'individual';
   const isClaimedIndividual = profile.account_status === 'user_claimed';
-
-  // Check if user has supporters (meaning they're an individual)
-  const { data: supporters, error: supportersError } = await supabase
-    .from('supporters')
-    .select('id')
-    .eq('individual_id', profile.user_id)
-    .limit(1);
-
-  // Check if user supports others (meaning they're an admin/supporter)
-  const { data: individualsSupported, error: individualsError } = await supabase
-    .from('supporters')
-    .select('id')
-    .eq('supporter_id', profile.user_id)
-    .limit(1);
-
-  if (supportersError || individualsError) {
-    console.error('Error checking user relationships:', { supportersError, individualsError });
-  }
-
-  const hasSupporter = supporters && supporters.length > 0;
-  const supportsOthers = individualsSupported && individualsSupported.length > 0;
-
-  // Determine user type
-  let userType: UserType = 'unknown';
-  let hasAdminFeatures = false;
-
-  if (isClaimedIndividual && hasSupporter) {
-    // Individual who claimed their account and has supporters
-    userType = 'individual';
-    hasAdminFeatures = false;
-  } else if (hasSupporter && !supportsOthers) {
-    // User who has supporters but doesn't support others = individual (provisioned)
-    userType = 'individual';
-    hasAdminFeatures = false;
-  } else if (supportsOthers && !hasSupporter) {
-    // User who supports others but has no supporters = admin
-    userType = 'admin';
-    hasAdminFeatures = true;
-  } else if (supportsOthers && hasSupporter) {
-    // User who both supports others and has supporters = admin (mixed role)
-    userType = 'admin';
-    hasAdminFeatures = true;
-  } else {
-    // New user with no relationships - check if created by supporter (individual) or truly new (admin)
-    if (profile.created_by_supporter) {
-      // Individual account created during onboarding by a supporter
-      userType = 'individual';
-      hasAdminFeatures = false;
-    } else {
-      // Direct signup = admin (default)
-      userType = 'admin';
-      hasAdminFeatures = true;
-    }
-  }
+  const hasAdminFeatures = userType === 'admin';
 
   return {
-    userType,
+    userType: userType as UserType,
     isClaimedIndividual,
     hasAdminFeatures,
     profile
