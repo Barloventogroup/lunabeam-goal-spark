@@ -16,7 +16,6 @@ export type Database = {
     Tables: {
       account_claims: {
         Row: {
-          claim_passcode: string
           claim_token: string
           claimed_at: string | null
           created_at: string
@@ -24,11 +23,13 @@ export type Database = {
           first_name: string | null
           id: string
           individual_id: string
+          invitee_email: string | null
+          magic_link_expires_at: string | null
+          magic_link_token: string | null
           provisioner_id: string
           status: Database["public"]["Enums"]["invite_status"]
         }
         Insert: {
-          claim_passcode: string
           claim_token: string
           claimed_at?: string | null
           created_at?: string
@@ -36,11 +37,13 @@ export type Database = {
           first_name?: string | null
           id?: string
           individual_id: string
+          invitee_email?: string | null
+          magic_link_expires_at?: string | null
+          magic_link_token?: string | null
           provisioner_id: string
           status?: Database["public"]["Enums"]["invite_status"]
         }
         Update: {
-          claim_passcode?: string
           claim_token?: string
           claimed_at?: string | null
           created_at?: string
@@ -48,6 +51,9 @@ export type Database = {
           first_name?: string | null
           id?: string
           individual_id?: string
+          invitee_email?: string | null
+          magic_link_expires_at?: string | null
+          magic_link_token?: string | null
           provisioner_id?: string
           status?: Database["public"]["Enums"]["invite_status"]
         }
@@ -1250,6 +1256,20 @@ export type Database = {
           claim_passcode: string
           claim_token: string
           individual_id: string
+        }[]
+      }
+      provision_individual_with_email: {
+        Args: {
+          p_comm_pref?: string
+          p_first_name: string
+          p_interests?: string[]
+          p_invitee_email: string
+          p_strengths?: string[]
+        }
+        Returns: {
+          claim_token: string
+          individual_id: string
+          magic_link_token: string
         }[]
       }
     }
