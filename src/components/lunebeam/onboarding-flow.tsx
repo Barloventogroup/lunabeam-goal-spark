@@ -7,22 +7,41 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/components/auth/auth-provider';
 import { X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useStore } from '@/store/useStore';
+import { updateUserRole } from '@/utils/roleUtils';
 
 export function OnboardingFlow() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { loadProfile } = useStore();
   const [roleData, setRoleData] = useState<{ role: 'parent' | 'individual' | ''; isAdmin?: boolean }>({ role: '' });
   const [selectedRole, setSelectedRole] = useState<'parent' | 'individual'>('parent');
   const [showRoleSelection, setShowRoleSelection] = useState(true);
   const [showInterstitial, setShowInterstitial] = useState(false);
 
-  const handleRoleSelection = (role: 'parent' | 'individual') => {
+  const handleRoleSelection = async (role: 'parent' | 'individual') => {
     // Automatically assign Admin role to parents/caregivers
     const isAdmin = role === 'parent';
     setRoleData({ role, isAdmin });
     setShowInterstitial(true);
-  };
 
+    try {
+      const newRole = isAdmin ? 'admin' : 'individual';
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const res = await updateUserRole(user.id, newRole);
+        if (res?.error) {
+          console.error('OnboardingFlow: Error updating user role:', res.error);
+        } else {
+          // Refresh profile/userContext so downstream UI picks up the correct role
+          await loadProfile();
+        }
+      }
+    } catch (err) {
+      console.error('OnboardingFlow: Failed to persist selected role', err);
+    }
+  };
   const handleInterstitialNext = () => {
     setShowRoleSelection(false);
     setShowInterstitial(false);
