@@ -14,6 +14,7 @@ export interface Profile {
   claimed_at?: string;
   created_at?: string;
   updated_at?: string;
+  created_by_supporter?: string | null;
 }
 
 export interface ConsentSection {
