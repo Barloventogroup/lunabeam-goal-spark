@@ -53,7 +53,9 @@ export const database = {
       interests: data.interests || [],
       challenges: data.challenges || [],
       comm_pref: data.comm_pref as 'voice' | 'text',
-      onboarding_complete: data.onboarding_complete ?? false
+      onboarding_complete: data.onboarding_complete ?? false,
+      user_type: (data.user_type as 'admin' | 'individual' | undefined),
+      created_by_supporter: data.created_by_supporter
     };
   },
 
@@ -72,7 +74,8 @@ export const database = {
         interests: profile.interests,
         challenges: profile.challenges,
         comm_pref: profile.comm_pref,
-        onboarding_complete: profile.onboarding_complete ?? false
+        onboarding_complete: profile.onboarding_complete ?? false,
+        user_type: profile.user_type
       }, { onConflict: 'user_id' });
     
     if (error) {
