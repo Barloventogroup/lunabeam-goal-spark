@@ -627,42 +627,6 @@ export type Database = {
         }
         Relationships: []
       }
-      provisional_profiles: {
-        Row: {
-          comm_pref: string | null
-          created_at: string | null
-          created_by_supporter: string
-          email: string
-          first_name: string
-          interests: string[] | null
-          strengths: string[] | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          comm_pref?: string | null
-          created_at?: string | null
-          created_by_supporter: string
-          email: string
-          first_name: string
-          interests?: string[] | null
-          strengths?: string[] | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          comm_pref?: string | null
-          created_at?: string | null
-          created_by_supporter?: string
-          email?: string
-          first_name?: string
-          interests?: string[] | null
-          strengths?: string[] | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       redemptions: {
         Row: {
           approved_at: string | null
@@ -1117,6 +1081,17 @@ export type Database = {
         Args: { _invite_token: string }
         Returns: Json
       }
+      assign_email_and_invite: {
+        Args: {
+          p_individual_id: string
+          p_invitee_name?: string
+          p_real_email: string
+        }
+        Returns: {
+          magic_link_token: string
+          success: boolean
+        }[]
+      }
       calculate_step_points: {
         Args: { goal_domain?: string; step_notes?: string; step_title: string }
         Returns: number
@@ -1304,6 +1279,18 @@ export type Database = {
           claim_passcode: string
           claim_token: string
           individual_id: string
+        }[]
+      }
+      provision_individual_direct: {
+        Args: {
+          p_comm_pref?: string
+          p_first_name: string
+          p_interests?: string[]
+          p_strengths?: string[]
+        }
+        Returns: {
+          individual_id: string
+          placeholder_email: string
         }[]
       }
       provision_individual_with_email: {
