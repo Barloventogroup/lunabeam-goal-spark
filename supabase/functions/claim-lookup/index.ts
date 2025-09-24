@@ -44,8 +44,8 @@ serve(async (req) => {
     // Always fetch the claim row first (service role bypasses RLS)
     const { data: claim, error: claimErr } = await supabase
       .from("account_claims")
-      .select("id, first_name, invitee_email, status, expires_at, claim_token")
-      .eq("claim_token", claim_token)
+      .select("id, first_name, invitee_email, status, expires_at, claim_token, magic_link_token")
+      .or(`claim_token.eq.${claim_token},magic_link_token.eq.${claim_token}`)
       .maybeSingle();
 
     if (claimErr) {
