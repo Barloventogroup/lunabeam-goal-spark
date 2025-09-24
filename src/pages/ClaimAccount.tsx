@@ -93,7 +93,11 @@ export default function ClaimAccount() {
       if (error) throw error;
 
       if (data.success) {
-        toast.success('Account claimed successfully! Please sign in with your new password.');
+        if (data.useLoginFlow) {
+          toast.success('Account is ready. Please sign in to finish setup.');
+        } else {
+          toast.success('Account claimed successfully! Please sign in with your new password.');
+        }
         navigate('/auth');
       } else {
         throw new Error(data.error || 'Failed to claim account');

@@ -97,16 +97,55 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Ensure auth user exists before setting password
+    const { data: userLookup, error: getUserError } = await supabaseAdmin.auth.admin.getUserById(userId);
+
+    if (getUserError || !userLookup?.user) {
+      console.warn('Auth user not found; switching to login flow', { userId, getUserError });
+
+      // Mark claim as accepted and update profile status
+      const { error: profileUpdateErr } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          authentication_status: 'pending',
+          password_set: false,
+          account_status: 'active',
+          claimed_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+      if (profileUpdateErr) {
+        console.error('Profile update (login flow) failed:', profileUpdateErr);
+      }
+
+      const { error: claimAcceptErr } = await supabaseAdmin
+        .from('account_claims')
+        .update({ status: 'accepted', claimed_at: new Date().toISOString() })
+        .eq('id', claimRecord.id);
+      if (claimAcceptErr) {
+        console.error('Claim accept (login flow) failed:', claimAcceptErr);
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          useLoginFlow: true,
+          firstName: profileData.first_name || claimRecord.first_name || 'User',
+          email: userEmail
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Update the user's password in auth.users
     const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
       userId,
-      { password: password }
+      { password }
     );
 
     if (passwordError) {
       console.error('Failed to update user password:', passwordError);
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to set password' }),
+        JSON.stringify({ success: false, error: `Failed to set password: ${passwordError.message || 'unknown'}` }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
