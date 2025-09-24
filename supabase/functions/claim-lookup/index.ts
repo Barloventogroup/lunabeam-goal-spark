@@ -1,5 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
+import { Resend } from "npm:resend@4.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -97,8 +100,8 @@ serve(async (req) => {
         );
       }
 
-      const siteOrigin = req.headers.get("origin") || req.headers.get("referer") || Deno.env.get("SITE_URL") || "";
-      const redirectTo = redirect_to || `${(siteOrigin || "").replace(/\/$/, "")}/claim-complete?token=${claim_token}`;
+      const appUrl = Deno.env.get("SITE_URL") || "https://lunabeam.app";
+      const redirectTo = redirect_to || `${appUrl.replace(/\/$/, "")}/claim-complete?token=${claim_token}`;
 
       // First, create the user account if it doesn't exist
       const { data: signUpData, error: signUpError } = await supabase.auth.admin.createUser({
@@ -118,19 +121,53 @@ serve(async (req) => {
         );
       }
 
-      // Send magic link email to the invitee
-      const { error: otpErr } = await supabase.auth.signInWithOtp({
+      // Generate a magic link and send via Resend from verified domain
+      const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
         email: claim.invitee_email,
-        options: { emailRedirectTo: redirectTo },
+        options: { redirectTo },
       });
 
-      if (otpErr) {
-        console.error("claim-lookup: signInWithOtp error", otpErr);
+      if (linkErr) {
+        console.error("claim-lookup: generateLink error", linkErr);
         return new Response(
-          JSON.stringify({ success: false, error: otpErr.message }),
+          JSON.stringify({ success: false, error: linkErr.message }),
           { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
+
+      const actionLink = (linkData as any)?.properties?.action_link || (linkData as any)?.properties?.email_otp_link;
+      if (!actionLink) {
+        console.error("claim-lookup: no action_link returned", linkData);
+        return new Response(
+          JSON.stringify({ success: false, error: 'No action link returned' }),
+          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #333; text-align: center;">Sign in to LunaBeam</h1>
+          <p>Click the secure link below to access your account.</p>
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${actionLink}"
+               style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
+              Access Your Account
+            </a>
+          </div>
+          <p style="font-size: 12px; color: #666;">If the button doesn’t work, copy and paste this URL into your browser:<br />
+            <span style="word-break: break-all;">${actionLink}</span>
+          </p>
+        </div>`;
+
+      const sendResp = await resend.emails.send({
+        from: 'LunaBeam <invites@invites.lunabeam.app>',
+        to: [claim.invitee_email],
+        subject: 'Access your LunaBeam account',
+        html,
+      });
+
+      console.log('claim-lookup: resend result', sendResp);
 
       return new Response(
         JSON.stringify({ success: true }),
