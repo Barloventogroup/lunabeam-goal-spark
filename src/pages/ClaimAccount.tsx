@@ -48,10 +48,10 @@ export default function ClaimAccount() {
           magic_link_expires_at,
           profiles!provisioner_id(first_name)
         `)
-        .or(`claim_token.eq.${claimToken},magic_link_token.eq.${claimToken}`)
+        .eq('claim_token', claimToken)
         .eq('status', 'pending')
         .gt('expires_at', new Date().toISOString())
-        .single();
+        .maybeSingle();
 
       if (error) {
         setError('This invitation link has expired or is invalid.');
