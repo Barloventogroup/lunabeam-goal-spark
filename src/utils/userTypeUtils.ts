@@ -14,42 +14,36 @@ export interface UserContext {
  * Determines the user type based on their profile
  */
 export async function getUserContext(profile: Profile | null): Promise<UserContext> {
-  if (!profile?.user_id) {
-    return {
-      userType: 'unknown',
-      isClaimedIndividual: false,
-      hasAdminFeatures: false,
-      profile
-    };
-  }
-
-  // Simply read the user_type from the profile (no fallback to individual)
-  const userType = (profile.user_type ?? 'unknown') as UserType;
-  const isClaimedIndividual = profile.account_status === 'user_claimed';
+  // Do not require user_id; rely on persisted profile.user_type
+  const userType = (profile?.user_type ?? 'unknown') as UserType;
+  const isClaimedIndividual = profile?.account_status === 'user_claimed';
   const hasAdminFeatures = userType === 'admin';
 
   return {
     userType,
     isClaimedIndividual,
     hasAdminFeatures,
-    profile
+    profile,
   };
 }
 
 /**
  * Gets a personalized welcome message based on user type
  */
-export function getWelcomeMessage(userContext: UserContext, isFirstTime: boolean): { title: string; subtitle: string } {
-  const displayName = userContext.profile?.first_name 
-    ? userContext.profile.first_name.charAt(0).toUpperCase() + userContext.profile.first_name.slice(1) 
+export function getWelcomeMessage(
+  userContext: UserContext,
+  isFirstTime: boolean
+): { title: string; subtitle: string } {
+  const displayName = userContext.profile?.first_name
+    ? userContext.profile.first_name.charAt(0).toUpperCase() + userContext.profile.first_name.slice(1)
     : 'User';
 
   if (userContext.isClaimedIndividual) {
     return {
       title: `Welcome, ${displayName}!`,
-      subtitle: isFirstTime 
+      subtitle: isFirstTime
         ? "Your support team has set up your goals. Let's continue your journey together!"
-        : "Ready to continue working on your goals? Your support team is here to help."
+        : 'Ready to continue working on your goals? Your support team is here to help.',
     };
   }
 
@@ -58,6 +52,6 @@ export function getWelcomeMessage(userContext: UserContext, isFirstTime: boolean
     title: isFirstTime ? `Welcome ${displayName}!` : `Welcome back, ${displayName}!`,
     subtitle: isFirstTime
       ? "👋 Hey there! Welcome aboard. Let's kick things off by setting your very first goal. Ready to get started?"
-      : "Let's keep moving forward, one step at a time."
+      : "Let's keep moving forward, one step at a time.",
   };
 }
