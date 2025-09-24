@@ -109,30 +109,26 @@ serve(async (req) => {
       let linkData: any | null = null;
       let linkErr: any | null = null;
 
-      // First check if user exists by trying to get their profile
-      const { data: existingUser } = await supabase.auth.admin.getUserByEmail(claim.invitee_email);
-      
-      if (existingUser.user) {
-        console.log('claim-lookup: user exists, using magic link');
-        // User exists, use magic link
+      // Try magic link first; if it fails (e.g., user doesn't exist), fall back to invite link
+      try {
         const magicResp = await supabase.auth.admin.generateLink({
           type: 'magiclink',
           email: claim.invitee_email,
           options: { redirectTo },
         });
-        
         if (magicResp.error) {
-          console.error('claim-lookup: magic link failed for existing user', magicResp.error);
+          console.error('claim-lookup: magic link failed', magicResp.error);
           linkErr = magicResp.error;
         } else {
           linkData = magicResp.data;
           console.log('claim-lookup: magic link generated successfully');
         }
-      } else {
-        console.log('claim-lookup: new user, using invite link');
+      } catch (e) {
+        console.error('claim-lookup: magic link threw', e);
+        linkErr = e;
       }
       
-      // If magic link failed or user doesn't exist, try invite link
+      // If magic link failed, try invite link
       if (!linkData || linkErr) {
         console.log('claim-lookup: generating invite link');
         const inviteResp = await supabase.auth.admin.generateLink({
