@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@4.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -169,18 +169,28 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("✅ send-account-invitation: RESEND_API_KEY is configured");
 
     try {
-      console.log("📧 send-account-invitation: Attempting to send email via Resend");
-      const emailResponse = await resend.emails.send({
-        from: 'LunaBeam <invites@invites.lunabeam.app>',
-        to: [invitee_email],
-        subject: subject,
-        html: htmlContent,
+      console.log("📧 send-account-invitation: Attempting to send email via Resend HTTP API");
+      const apiKey = Deno.env.get("RESEND_API_KEY");
+      const resp = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          from: "LunaBeam <invites@invites.lunabeam.app>",
+          to: [invitee_email],
+          subject,
+          html: htmlContent,
+        }),
       });
 
-      if (emailResponse.error) {
-        console.error("❌ send-account-invitation: Resend email error:", emailResponse.error);
+      const emailResponse = await resp.json();
+
+      if (!resp.ok) {
+        console.error("❌ send-account-invitation: Resend email error:", emailResponse);
         return new Response(
-          JSON.stringify({ error: `Failed to send email: ${emailResponse.error.message}` }),
+          JSON.stringify({ error: `Failed to send email: ${emailResponse?.message || resp.statusText}` }),
           {
             status: 500,
             headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -189,16 +199,16 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       console.log("✅ send-account-invitation: Email sent successfully:", {
-        id: emailResponse.data?.id,
-        to: invitee_email
+        id: emailResponse?.id,
+        to: invitee_email,
       });
 
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: "Account invitation sent successfully",
           email_sent: true,
-          email_id: emailResponse.data?.id
+          email_id: emailResponse?.id,
         }),
         {
           status: 200,

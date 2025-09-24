@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
-import { Resend } from "npm:resend@4.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
+
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -144,7 +144,7 @@ serve(async (req) => {
               success: false, 
               error: `Failed to generate authentication link: ${inviteResp.error.message}` 
             }),
-            { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+            { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         } else {
           linkData = inviteResp.data;
@@ -155,35 +155,6 @@ serve(async (req) => {
 
       const actionLink = (linkData as any)?.properties?.action_link || (linkData as any)?.properties?.email_otp_link;
 
-      // Try to send via Resend, but still succeed even if email send fails
-      try {
-        if (actionLink) {
-          const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h1 style="color: #333; text-align: center;">Sign in to LunaBeam</h1>
-              <p>Click the secure link below to access your account.</p>
-              <div style="text-align: center; margin: 24px 0;">
-                <a href="${actionLink}"
-                   style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
-                  Access Your Account
-                </a>
-              </div>
-              <p style="font-size: 12px; color: #666;">If the button doesn’t work, copy and paste this URL into your browser:<br />
-                <span style="word-break: break-all;">${actionLink}</span>
-              </p>
-            </div>`;
-
-          const sendResp = await resend.emails.send({
-            from: 'LunaBeam <invites@invites.lunabeam.app>',
-            to: [claim.invitee_email],
-            subject: 'Access your LunaBeam account',
-            html,
-          });
-          console.log('claim-lookup: resend result', sendResp);
-        }
-      } catch (e) {
-        console.error('claim-lookup: resend send failed (continuing with action link)', e);
-      }
 
       return new Response(
         JSON.stringify({ success: true, action_link: actionLink }),
