@@ -40,7 +40,9 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Validate claim token
+    console.log('Looking up claim with token:', claimToken);
+    
+    // Validate claim token (no passcode needed anymore)
     const { data: claimRecord, error: claimError } = await supabaseAdmin
       .from('account_claims')
       .select('*')
