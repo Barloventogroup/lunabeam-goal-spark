@@ -748,24 +748,6 @@ export const TabTeam: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          {member.is_admin && (
-                            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                              <Crown className="h-3 w-3 mr-1" />
-                              Admin
-                            </Badge>
-                          )}
-                          {member.is_provisioner && (
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                              Provisioner
-                            </Badge>
-                          )}
-                          {!member.is_admin && !member.is_provisioner && (
-                            <span className="text-sm text-muted-foreground">Standard</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
                         <span className="text-sm text-muted-foreground">
                           {new Date(member.created_at).toLocaleDateString()}
                         </span>
