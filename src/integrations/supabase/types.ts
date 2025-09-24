@@ -1095,6 +1095,7 @@ export type Database = {
           p_real_email: string
         }
         Returns: {
+          claim_token: string
           magic_link_token: string
           success: boolean
         }[]
