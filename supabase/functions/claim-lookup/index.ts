@@ -108,29 +108,28 @@ serve(async (req) => {
       let linkData: any | null = null;
       let linkErr: any | null = null;
 
-      // For account claims, we need to create the user first if they don't exist
-      // Try invite link which can create new users
+      // Try recovery link first (works for existing users with auth schema issues)
       try {
-        console.log('claim-lookup: attempting invite link generation');
-        const inviteResp = await supabase.auth.admin.generateLink({
-          type: 'invite',
+        console.log('claim-lookup: attempting recovery link generation');
+        const recoveryResp = await supabase.auth.admin.generateLink({
+          type: 'recovery',
           email: claim.invitee_email,
           options: { redirectTo },
         });
         
-        if (inviteResp.error) {
-          console.error('claim-lookup: invite link failed', inviteResp.error);
-          linkErr = inviteResp.error;
+        if (recoveryResp.error) {
+          console.error('claim-lookup: recovery link failed', recoveryResp.error);
+          linkErr = recoveryResp.error;
         } else {
-          linkData = inviteResp.data;
-          console.log('claim-lookup: invite link generated successfully');
+          linkData = recoveryResp.data;
+          console.log('claim-lookup: recovery link generated successfully');
         }
       } catch (e) {
-        console.error('claim-lookup: invite link threw', e);
+        console.error('claim-lookup: recovery link threw', e);
         linkErr = e;
       }
 
-      // If invite link failed, try magic link as fallback
+      // If recovery failed, try magic link
       if (!linkData && linkErr) {
         try {
           console.log('claim-lookup: attempting magic link as fallback');
