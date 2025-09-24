@@ -37,9 +37,21 @@ const handler = async (req: Request): Promise<Response> => {
     // Call the database function to update email and generate magic link
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.55.0');
     
+    const authHeader = req.headers.get('Authorization') || '';
+    if (!authHeader) {
+      console.warn('Missing Authorization header on invitation request');
+    }
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      {
+        global: {
+          headers: {
+            Authorization: authHeader,
+          },
+        },
+      }
     );
 
     const { data: assignResult, error: assignError } = await supabase
