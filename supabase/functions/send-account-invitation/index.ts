@@ -83,8 +83,33 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const { magic_link_token } = assignResult[0];
-    const siteUrl = Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com') || 'https://your-site.com';
-    const magicLinkUrl = `${siteUrl}/auth/callback?token=${magic_link_token}&type=magiclink&redirect_to=${encodeURIComponent(siteUrl)}`;
+
+    // Resolve site URL from request origin first (best), then env fallbacks
+    const origin = req.headers.get('origin') || req.headers.get('referer') || '';
+    const siteUrl = origin || Deno.env.get('SITE_URL') || (Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com')) || 'https://your-site.com';
+
+    // Fetch the claim token for this individual/provisioner to drive the in-app claim flow
+    const { data: userData } = await supabase.auth.getUser();
+    let claimLinkUrl: string | null = null;
+
+    if (userData?.user) {
+      const { data: claimRow } = await supabase
+        .from('account_claims')
+        .select('claim_token')
+        .eq('individual_id', individual_id)
+        .eq('provisioner_id', userData.user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (claimRow?.claim_token) {
+        claimLinkUrl = `${siteUrl.replace(/\/$/, '')}/claim?token=${claimRow.claim_token}`;
+      }
+    }
+
+    // Fallback to simple magic link style if claim token was not found
+    const magicLinkUrl = claimLinkUrl || `${siteUrl.replace(/\/$/, '')}/auth/callback?token=${magic_link_token}&type=magiclink&redirect_to=${encodeURIComponent(siteUrl)}`;
 
     const subject = "Your LunaBeam Account is Ready!";
     
