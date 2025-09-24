@@ -136,7 +136,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: `${Deno.env.get('RESEND_FROM_NAME') || 'LunaBeam'} <${Deno.env.get('RESEND_FROM_EMAIL') || 'no-reply@lunabeam.com'}>`,
+      from: 'LunaBeam <onboarding@resend.dev>',
       to: [invitee_email],
       subject: subject,
       html: htmlContent,
