@@ -16,13 +16,23 @@ interface AccountInvitationRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("🚀 send-account-invitation: Function started");
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log("📋 send-account-invitation: Handling CORS preflight");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log("📥 send-account-invitation: Parsing request body");
     const { individual_id, invitee_email, invitee_name, message }: AccountInvitationRequest = await req.json();
+    console.log("✅ send-account-invitation: Request parsed:", {
+      individual_id: individual_id ? "present" : "missing",
+      invitee_email: invitee_email ? `${invitee_email.substring(0, 3)}***` : "missing",
+      invitee_name: invitee_name ? "present" : "missing",
+      message: message ? "present" : "missing"
+    });
 
     if (!individual_id || !invitee_email) {
       return new Response(
@@ -35,11 +45,13 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Call the database function to update email and generate magic link
+    console.log("🔧 send-account-invitation: Setting up Supabase client");
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.55.0');
     
     const authHeader = req.headers.get('Authorization') || '';
+    console.log("🔑 send-account-invitation: Auth header:", authHeader ? "present" : "missing");
     if (!authHeader) {
-      console.warn('Missing Authorization header on invitation request');
+      console.warn('⚠️ send-account-invitation: Missing Authorization header on invitation request');
     }
     
     const supabase = createClient(
@@ -53,7 +65,9 @@ const handler = async (req: Request): Promise<Response> => {
         },
       }
     );
+    console.log("✅ send-account-invitation: Supabase client created");
 
+    console.log("🗄️ send-account-invitation: Calling assign_email_and_invite RPC");
     const { data: assignResult, error: assignError } = await supabase
       .rpc('assign_email_and_invite', {
         p_individual_id: individual_id,
@@ -62,7 +76,7 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
     if (assignError) {
-      console.error('Error assigning email:', assignError);
+      console.error('❌ send-account-invitation: Database RPC error:', assignError);
       return new Response(
         JSON.stringify({ error: `Failed to assign email: ${assignError.message}` }),
         {
@@ -71,6 +85,11 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
     }
+
+    console.log("✅ send-account-invitation: Database RPC successful:", {
+      resultCount: assignResult?.length || 0,
+      hasTokens: assignResult?.[0]?.magic_link_token && assignResult?.[0]?.claim_token
+    });
 
     if (!assignResult || assignResult.length === 0) {
       return new Response(
@@ -136,8 +155,9 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     // Check if RESEND_API_KEY is configured
+    console.log("🔑 send-account-invitation: Checking RESEND_API_KEY");
     if (!Deno.env.get("RESEND_API_KEY")) {
-      console.error("RESEND_API_KEY not configured");
+      console.error("❌ send-account-invitation: RESEND_API_KEY not configured");
       return new Response(
         JSON.stringify({ error: "Email service not configured" }),
         {
@@ -146,8 +166,10 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
     }
+    console.log("✅ send-account-invitation: RESEND_API_KEY is configured");
 
     try {
+      console.log("📧 send-account-invitation: Attempting to send email via Resend");
       const emailResponse = await resend.emails.send({
         from: 'LunaBeam <invites@invites.lunabeam.app>',
         to: [invitee_email],
@@ -156,7 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       if (emailResponse.error) {
-        console.error("Resend email error:", emailResponse.error);
+        console.error("❌ send-account-invitation: Resend email error:", emailResponse.error);
         return new Response(
           JSON.stringify({ error: `Failed to send email: ${emailResponse.error.message}` }),
           {
@@ -166,7 +188,10 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      console.log("Magic link email sent successfully:", emailResponse);
+      console.log("✅ send-account-invitation: Email sent successfully:", {
+        id: emailResponse.data?.id,
+        to: invitee_email
+      });
 
       return new Response(
         JSON.stringify({ 
@@ -184,7 +209,7 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
     } catch (emailError: any) {
-      console.error("Error sending email:", emailError);
+      console.error("❌ send-account-invitation: Email service error:", emailError);
       return new Response(
         JSON.stringify({ error: `Email service error: ${emailError.message}` }),
         {
@@ -194,7 +219,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
   } catch (error: any) {
-    console.error("Error in send-account-invitation function:", error);
+    console.error("❌ send-account-invitation: Top-level error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
