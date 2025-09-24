@@ -66,7 +66,6 @@ export default function ClaimAccount() {
   };
 
   const handleMagicLinkSignIn = async () => {
-    if (!claimInfo) return;
 
     try {
       setClaiming(true);
@@ -113,9 +112,14 @@ export default function ClaimAccount() {
             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Invalid Invitation</h2>
             <p className="text-muted-foreground mb-6">{error}</p>
-            <Button onClick={() => navigate('/auth')} variant="outline">
-              Go to Sign In
-            </Button>
+            <div className="flex gap-3 justify-center">
+              <Button onClick={() => navigate('/auth')} variant="outline">
+                Go to Sign In
+              </Button>
+              <Button onClick={handleMagicLinkSignIn} disabled={claiming}>
+                {claiming ? 'Sending magic link...' : 'Send Magic Link'}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
