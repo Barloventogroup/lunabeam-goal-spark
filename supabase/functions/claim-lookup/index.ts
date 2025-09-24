@@ -103,38 +103,58 @@ serve(async (req) => {
       const appUrl = Deno.env.get("SITE_URL") || "https://lunabeam.app";
       const redirectTo = redirect_to || `${appUrl.replace(/\/$/, "")}/claim-complete?token=${claim_token}`;
 
-      // Generate a sign-in link without pre-creating the user. If user doesn't exist, fall back to an invite link.
+      // For new users, prefer invite link which creates the user. For existing users, use magic link.
+      console.log(`claim-lookup: generating link for ${claim.invitee_email}`);
+      
       let linkData: any | null = null;
       let linkErr: any | null = null;
 
-      // Try magic link for existing users
-      const magicResp = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: claim.invitee_email,
-        options: { redirectTo },
-      });
-      if (magicResp.error) {
-        linkErr = magicResp.error;
-        console.error('claim-lookup: magiclink generateLink error (will try invite)', linkErr);
-        // Try invite which creates the user if needed
+      // First check if user exists by trying to get their profile
+      const { data: existingUser } = await supabase.auth.admin.getUserByEmail(claim.invitee_email);
+      
+      if (existingUser.user) {
+        console.log('claim-lookup: user exists, using magic link');
+        // User exists, use magic link
+        const magicResp = await supabase.auth.admin.generateLink({
+          type: 'magiclink',
+          email: claim.invitee_email,
+          options: { redirectTo },
+        });
+        
+        if (magicResp.error) {
+          console.error('claim-lookup: magic link failed for existing user', magicResp.error);
+          linkErr = magicResp.error;
+        } else {
+          linkData = magicResp.data;
+          console.log('claim-lookup: magic link generated successfully');
+        }
+      } else {
+        console.log('claim-lookup: new user, using invite link');
+      }
+      
+      // If magic link failed or user doesn't exist, try invite link
+      if (!linkData || linkErr) {
+        console.log('claim-lookup: generating invite link');
         const inviteResp = await supabase.auth.admin.generateLink({
           type: 'invite',
           email: claim.invitee_email,
           options: { redirectTo },
         });
+        
         if (inviteResp.error) {
-          console.error('claim-lookup: invite generateLink error', inviteResp.error);
+          console.error('claim-lookup: invite link generation failed', inviteResp.error);
           return new Response(
-            JSON.stringify({ success: false, error: inviteResp.error.message || 'Failed to generate link' }),
+            JSON.stringify({ 
+              success: false, 
+              error: `Failed to generate authentication link: ${inviteResp.error.message}` 
+            }),
             { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         } else {
           linkData = inviteResp.data;
           linkErr = null;
+          console.log('claim-lookup: invite link generated successfully');
         }
-      } else {
-        linkData = magicResp.data;
-        linkErr = null;
       }
 
       const actionLink = (linkData as any)?.properties?.action_link || (linkData as any)?.properties?.email_otp_link;
