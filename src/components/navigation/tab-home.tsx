@@ -283,23 +283,36 @@ export const TabHome: React.FC<TabHomeProps> = ({
             {(() => {
               const isFirstTime = activeGoals.length === 0;
               const isIndividual = userContext?.userType === 'individual';
-              const title = isIndividual
-                ? `Welcome, ${displayName}!`
-                : (isFirstTime ? `Welcome ${displayName}!` : `Welcome back, ${displayName}!`);
-              const subtitle = isIndividual
-                ? (isFirstTime 
-                    ? "Your support team has set up your goals. Let's continue your journey together!"
-                    : "Ready to continue working on your goals? Your support team is here to help.")
-                : (isFirstTime
-                    ? "👋 Hey there! Welcome aboard. Let's kick things off by setting your very first goal. Ready to get started?"
-                    : "Let's keep moving forward, one step at a time.");
+              const isAdmin = userContext?.userType === 'admin';
+              
+              let title, subtitle;
+              
+              if (isIndividual) {
+                // Individual experience
+                title = `Welcome, ${displayName}!`;
+                subtitle = isFirstTime 
+                  ? "Your support team has set up your goals. Let's continue your journey together!"
+                  : "Ready to continue working on your goals? Your support team is here to help.";
+              } else if (isAdmin) {
+                // Admin experience
+                title = "Welcome! 💜";
+                subtitle = isFirstTime
+                  ? "You've created this account to support someone important in your life. As the Admin, you can help set goals, follow progress, and invite others such as friends, providers, or coaches to be part of the team.\n\nThis space is here to make collaboration easy and encouraging. Together we'll turn small steps into big milestones.\n\n✨ Let's get started by setting up the first goal."
+                  : `Welcome back, ${displayName}! Ready to continue supporting your team and tracking progress together.`;
+              } else {
+                // Fallback for unknown user types
+                title = isFirstTime ? `Welcome ${displayName}!` : `Welcome back, ${displayName}!`;
+                subtitle = isFirstTime
+                  ? "👋 Hey there! Welcome aboard. Let's kick things off by setting your very first goal. Ready to get started?"
+                  : "Let's keep moving forward, one step at a time.";
+              }
               
               return (
                 <>
                   <h2 className="text-2xl font-bold mb-1">
                     {title}
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground whitespace-pre-line">
                     {subtitle}
                   </p>
                 </>
