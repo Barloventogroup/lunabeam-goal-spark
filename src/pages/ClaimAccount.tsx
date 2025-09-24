@@ -25,7 +25,6 @@ export default function ClaimAccount() {
   const [claiming, setClaiming] = useState(false);
   const [claimInfo, setClaimInfo] = useState<ClaimInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [passcode, setPasscode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -69,7 +68,7 @@ export default function ClaimAccount() {
   };
 
   const handleClaimAccount = async () => {
-    if (!claimToken || !passcode || !password) return;
+    if (!claimToken || !password) return;
 
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
@@ -87,7 +86,6 @@ export default function ClaimAccount() {
       const { data, error } = await supabase.functions.invoke('claim-account-with-auth', {
         body: { 
           claimToken: claimToken,
-          passcode: passcode.toUpperCase(),
           password: password
         }
       });
@@ -150,7 +148,7 @@ export default function ClaimAccount() {
           </div>
           <CardTitle className="text-xl">Claim Your Account</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Welcome {claimInfo.first_name}! Please enter your passcode and create a password.
+            Welcome {claimInfo.first_name}! Please create a password for your account.
           </p>
         </CardHeader>
         
@@ -162,21 +160,6 @@ export default function ClaimAccount() {
           </div>
 
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="passcode">Passcode</Label>
-              <Input
-                id="passcode"
-                type="text"
-                placeholder="Enter your passcode"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value.toUpperCase())}
-                maxLength={6}
-              />
-              <p className="text-xs text-muted-foreground">
-                Enter the 6-character passcode provided to you
-              </p>
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="password">Create Password</Label>
               <Input
@@ -201,7 +184,7 @@ export default function ClaimAccount() {
             
             <Button 
               onClick={handleClaimAccount}
-              disabled={claiming || !passcode || !password || !confirmPassword}
+              disabled={claiming || !password || !confirmPassword}
               className="w-full"
               size="lg"
             >

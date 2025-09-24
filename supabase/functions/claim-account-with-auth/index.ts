@@ -8,7 +8,6 @@ const corsHeaders = {
 
 interface ClaimRequest {
   claimToken: string;
-  passcode: string;
   password: string;
 }
 
@@ -19,11 +18,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { claimToken, passcode, password }: ClaimRequest = await req.json();
+    const { claimToken, password }: ClaimRequest = await req.json();
 
-    if (!claimToken || !passcode || !password) {
+    if (!claimToken || !password) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Missing claim token, passcode, or password' }),
+        JSON.stringify({ success: false, error: 'Missing claim token or password' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -41,12 +40,11 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Validate claim token and passcode
+    // Validate claim token
     const { data: claimRecord, error: claimError } = await supabaseAdmin
       .from('account_claims')
       .select('*')
       .eq('claim_token', claimToken)
-      .eq('claim_passcode', passcode.toUpperCase())
       .eq('status', 'pending')
       .gt('expires_at', new Date().toISOString())
       .single();
