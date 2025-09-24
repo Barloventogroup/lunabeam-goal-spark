@@ -135,29 +135,64 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    const emailResponse = await resend.emails.send({
-      from: 'LunaBeam <invites@invites.lunabeam.app>',
-      to: [invitee_email],
-      subject: subject,
-      html: htmlContent,
-    });
+    // Check if RESEND_API_KEY is configured
+    if (!Deno.env.get("RESEND_API_KEY")) {
+      console.error("RESEND_API_KEY not configured");
+      return new Response(
+        JSON.stringify({ error: "Email service not configured" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
-    console.log("Magic link email sent successfully:", emailResponse);
+    try {
+      const emailResponse = await resend.emails.send({
+        from: 'LunaBeam <invites@invites.lunabeam.app>',
+        to: [invitee_email],
+        subject: subject,
+        html: htmlContent,
+      });
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "Account invitation sent successfully",
-        email_sent: true 
-      }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders,
-        },
+      if (emailResponse.error) {
+        console.error("Resend email error:", emailResponse.error);
+        return new Response(
+          JSON.stringify({ error: `Failed to send email: ${emailResponse.error.message}` }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
       }
-    );
+
+      console.log("Magic link email sent successfully:", emailResponse);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Account invitation sent successfully",
+          email_sent: true,
+          email_id: emailResponse.data?.id
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
+    } catch (emailError: any) {
+      console.error("Error sending email:", emailError);
+      return new Response(
+        JSON.stringify({ error: `Email service error: ${emailError.message}` }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
   } catch (error: any) {
     console.error("Error in send-account-invitation function:", error);
     return new Response(
