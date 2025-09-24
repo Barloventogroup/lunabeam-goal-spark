@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       account_claims: {
         Row: {
+          claim_passcode: string | null
           claim_token: string
           claimed_at: string | null
           created_at: string
@@ -30,6 +31,7 @@ export type Database = {
           status: Database["public"]["Enums"]["invite_status"]
         }
         Insert: {
+          claim_passcode?: string | null
           claim_token: string
           claimed_at?: string | null
           created_at?: string
@@ -44,6 +46,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["invite_status"]
         }
         Update: {
+          claim_passcode?: string | null
           claim_token?: string
           claimed_at?: string | null
           created_at?: string
