@@ -68,8 +68,6 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("✅ send-account-invitation: Supabase client created");
 
     console.log("🗄️ send-account-invitation: Calling assign_email_and_invite RPC");
-    // Generate a 6-character alphanumeric passcode
-    const passcode = Math.random().toString(36).substr(2, 6).toUpperCase();
     
     const { data: assignResult, error: assignError } = await supabase
       .rpc('assign_email_and_invite', {
