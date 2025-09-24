@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Mail, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { SITE_URL } from '@/services/config';
 import { toast } from 'sonner';
 
 interface ClaimInfo {
@@ -70,11 +71,12 @@ export default function ClaimAccount() {
     try {
       setClaiming(true);
       
+      const baseUrl = (SITE_URL || window.location.origin).replace(/\/$/, '');
       const { data, error } = await supabase.functions.invoke('claim-lookup', {
         body: {
           action: 'send_magic_link',
           claim_token: claimToken,
-          redirect_to: `${window.location.origin}/claim-complete?token=${claimToken}`,
+          redirect_to: `${baseUrl}/claim-complete?token=${claimToken}`,
         },
       });
 
