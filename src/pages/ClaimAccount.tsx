@@ -78,8 +78,13 @@ export default function ClaimAccount() {
         },
       });
 
-      if (error || !data?.success) {
+      if (error && !data?.success) {
+        console.error('Error invoking claim-lookup:', error);
         throw new Error(error?.message || 'Failed to send magic link');
+      }
+
+      if (data && !data.success) {
+        throw new Error(data.error || 'Failed to send magic link');
       }
 
       if (data?.action_link) {
