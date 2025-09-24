@@ -82,6 +82,11 @@ export default function ClaimAccount() {
         throw new Error(error?.message || 'Failed to send magic link');
       }
 
+      if (data?.action_link) {
+        window.location.href = data.action_link;
+        return;
+      }
+
       toast.success(`Magic link sent! Check your email to complete setup.`);
       
     } catch (error: any) {
