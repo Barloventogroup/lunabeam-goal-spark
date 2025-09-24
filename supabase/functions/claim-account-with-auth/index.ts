@@ -35,9 +35,20 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Create admin client for user management
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || 'https://soyiqjdwnhtvopvwvfkq.supabase.co';
+    const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+
+    if (!SERVICE_ROLE) {
+      console.error('Missing SUPABASE_SERVICE_ROLE_KEY in Edge Function environment');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Server misconfiguration: missing service role key' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      SUPABASE_URL,
+      SERVICE_ROLE
     );
 
     console.log('Looking up claim with token:', claimToken);
