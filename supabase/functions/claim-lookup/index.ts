@@ -57,11 +57,24 @@ serve(async (req) => {
     }
 
     const valid = !!claim && claim.status === "pending" && new Date(claim.expires_at) > new Date();
+    console.log("claim-lookup: lookup", { token: claim_token, found: !!claim, status: claim?.status, expires_at: claim?.expires_at, valid });
 
     if (action === "lookup") {
-      if (!valid) {
+      if (!claim) {
         return new Response(
-          JSON.stringify({ valid: false }),
+          JSON.stringify({ valid: false, reason: "not_found" }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+      if (claim.status !== "pending") {
+        return new Response(
+          JSON.stringify({ valid: false, reason: "status_not_pending" }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+      if (new Date(claim.expires_at) <= new Date()) {
+        return new Response(
+          JSON.stringify({ valid: false, reason: "expired" }),
           { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
