@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Mail, CheckCircle, AlertCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2, Lock, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { SITE_URL } from '@/services/config';
 import { toast } from 'sonner';
 
 interface ClaimInfo {
@@ -18,12 +19,15 @@ interface ClaimInfo {
 export default function ClaimAccount() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const claimToken = searchParams.get('token');
+  
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
   const [claimInfo, setClaimInfo] = useState<ClaimInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
-  const claimToken = searchParams.get('token');
+  const [passcode, setPasscode] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     if (claimToken) {
@@ -35,20 +39,18 @@ export default function ClaimAccount() {
   }, [claimToken]);
 
   const loadClaimInfo = async () => {
-    if (!claimToken) return;
-
     try {
       const { data, error } = await supabase.functions.invoke('claim-lookup', {
-        body: { action: 'lookup', claim_token: claimToken },
+        body: { 
+          action: 'lookup',
+          claim_token: claimToken 
+        }
       });
 
-      if (error) {
-        setError('Failed to load invitation details.');
-        return;
-      }
+      if (error) throw error;
 
-      if (!data?.valid) {
-        setError('This invitation link has expired or is invalid.');
+      if (!data.valid) {
+        setError(data.reason === 'expired' ? 'This invitation has expired.' : 'Invalid invitation link.');
         return;
       }
 
@@ -56,48 +58,52 @@ export default function ClaimAccount() {
         individual_id: '',
         first_name: data.first_name,
         invitee_email: data.masked_email,
-        status: 'pending',
-        provisioner_name: 'Someone',
+        status: 'pending'
       });
-    } catch (err: any) {
+    } catch (error: any) {
+      console.error('Failed to load claim info:', error);
       setError('Failed to load invitation details.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleMagicLinkSignIn = async () => {
+  const handleClaimAccount = async () => {
+    if (!claimToken || !passcode || !password) return;
+
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
 
     try {
       setClaiming(true);
       
-      const baseUrl = (SITE_URL || window.location.origin).replace(/\/$/, '');
-      const { data, error } = await supabase.functions.invoke('claim-lookup', {
-        body: {
-          action: 'send_magic_link',
-          claim_token: claimToken,
-          redirect_to: `${baseUrl}/claim-complete?token=${claimToken}`,
-        },
+      const { data, error } = await supabase.functions.invoke('claim-account-with-auth', {
+        body: { 
+          claimToken: claimToken,
+          passcode: passcode.toUpperCase(),
+          password: password
+        }
       });
 
-      if (error && !data?.success) {
-        console.error('Error invoking claim-lookup:', error);
-        throw new Error(error?.message || 'Failed to send magic link');
+      if (error) throw error;
+
+      if (data.success) {
+        toast.success('Account claimed successfully! Please sign in with your new password.');
+        navigate('/auth');
+      } else {
+        throw new Error(data.error || 'Failed to claim account');
       }
 
-      if (data && !data.success) {
-        throw new Error(data.error || 'Failed to send magic link');
-      }
-
-      if (data?.action_link) {
-        window.location.href = data.action_link;
-        return;
-      }
-
-      toast.success(`Magic link sent! Check your email to complete setup.`);
-      
     } catch (error: any) {
-      toast.error(error.message || 'Failed to send magic link');
+      console.error('Failed to claim account:', error);
+      toast.error(error.message || 'Failed to claim account');
     } finally {
       setClaiming(false);
     }
@@ -123,15 +129,12 @@ export default function ClaimAccount() {
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Invalid Invitation</h2>
-            <p className="text-muted-foreground mb-6">{error}</p>
-            <div className="flex gap-3 justify-center">
-              <Button onClick={() => navigate('/auth')} variant="outline">
-                Go to Sign In
-              </Button>
-              <Button onClick={handleMagicLinkSignIn} disabled={claiming}>
-                {claiming ? 'Sending magic link...' : 'Send Magic Link'}
-              </Button>
-            </div>
+            <p className="text-muted-foreground mb-6">
+              {error || 'This invitation link is invalid or has expired.'}
+            </p>
+            <Button onClick={() => navigate('/auth')} variant="outline" className="w-full">
+              Go to Sign In
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -143,41 +146,75 @@ export default function ClaimAccount() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center pb-4">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail className="w-8 h-8 text-primary" />
+            <Lock className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-xl">Accept Invitation</CardTitle>
+          <CardTitle className="text-xl">Claim Your Account</CardTitle>
           <p className="text-sm text-muted-foreground">
-            {claimInfo.provisioner_name} has set up a LunaBeam account for you
+            Welcome {claimInfo.first_name}! Please enter your passcode and create a password.
           </p>
         </CardHeader>
         
         <CardContent className="space-y-6">
           <div className="bg-muted/50 rounded-lg p-4">
-            <h3 className="font-medium mb-2">Account Details</h3>
-            <div className="space-y-1 text-sm">
-              <p><span className="text-muted-foreground">Name:</span> {claimInfo.first_name}</p>
-              <p><span className="text-muted-foreground">Email:</span> {claimInfo.invitee_email}</p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Account for: {claimInfo.invitee_email}</span>
             </div>
           </div>
 
-          <Button 
-            onClick={handleMagicLinkSignIn}
-            disabled={claiming}
-            className="w-full"
-            size="lg"
-          >
-            {claiming ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Sending magic link...
-              </>
-            ) : (
-              <>
-                <Mail className="w-4 h-4 mr-2" />
-                Get Started - Send Magic Link
-              </>
-            )}
-          </Button>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="passcode">Passcode</Label>
+              <Input
+                id="passcode"
+                type="text"
+                placeholder="Enter your passcode"
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value.toUpperCase())}
+                maxLength={6}
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter the 6-character passcode provided to you
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Create Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter a password (min 6 characters)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+            
+            <Button 
+              onClick={handleClaimAccount}
+              disabled={claiming || !passcode || !password || !confirmPassword}
+              className="w-full"
+              size="lg"
+            >
+              {claiming ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Claiming Account...
+                </>
+              ) : (
+                'Claim Account'
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
