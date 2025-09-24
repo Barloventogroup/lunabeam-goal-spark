@@ -61,9 +61,15 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
         }
       });
 
-      if (error) {
+      // Check if the response data indicates an error, not just the error field
+      if (error && !data?.success) {
         console.error('Error sending invitation:', error);
         throw error;
+      }
+
+      // If data indicates failure, throw an error with the message
+      if (data && !data.success) {
+        throw new Error(data.error || 'Failed to send invitation');
       }
 
       toast({
