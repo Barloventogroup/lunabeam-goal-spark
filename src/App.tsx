@@ -31,6 +31,7 @@ const App = () => (
           <Route path="/logout" element={<Logout />} />
           <Route path="/claim-account" element={<ClaimAccount />} />
           <Route path="/claim-complete" element={<ClaimComplete />} />
+          <Route path="/claim" element={<ClaimAccount />} />
           <Route path="/claim/:claimToken" element={<ClaimAccount />} />
           <Route path="/" element={
             <ProtectedRoute>
