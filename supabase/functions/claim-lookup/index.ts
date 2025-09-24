@@ -103,74 +103,40 @@ serve(async (req) => {
       const appUrl = Deno.env.get("SITE_URL") || "https://lunabeam.app";
       const redirectTo = redirect_to || `${appUrl.replace(/\/$/, "")}/claim-complete?token=${claim_token}`;
 
-      console.log(`claim-lookup: generating auth link for ${claim.invitee_email}`);
+      console.log(`claim-lookup: inviting user ${claim.invitee_email}`);
       
-      let linkData: any | null = null;
-      let linkErr: any | null = null;
-
-      // Try recovery link first (works for existing users with auth schema issues)
+      // Use inviteUserByEmail which handles user creation better
       try {
-        console.log('claim-lookup: attempting recovery link generation');
-        const recoveryResp = await supabase.auth.admin.generateLink({
-          type: 'recovery',
-          email: claim.invitee_email,
-          options: { redirectTo },
+        const inviteResp = await supabase.auth.admin.inviteUserByEmail(claim.invitee_email, {
+          redirectTo,
         });
         
-        if (recoveryResp.error) {
-          console.error('claim-lookup: recovery link failed', recoveryResp.error);
-          linkErr = recoveryResp.error;
-        } else {
-          linkData = recoveryResp.data;
-          console.log('claim-lookup: recovery link generated successfully');
+        if (inviteResp.error) {
+          console.error('claim-lookup: invite failed', inviteResp.error);
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: `Failed to send invitation: ${inviteResp.error.message}`
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
         }
+        
+        console.log('claim-lookup: invitation sent successfully');
+        return new Response(
+          JSON.stringify({ success: true, message: 'Invitation email sent successfully' }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
       } catch (e) {
-        console.error('claim-lookup: recovery link threw', e);
-        linkErr = e;
-      }
-
-      // If recovery failed, try magic link
-      if (!linkData && linkErr) {
-        try {
-          console.log('claim-lookup: attempting magic link as fallback');
-          const magicResp = await supabase.auth.admin.generateLink({
-            type: 'magiclink',
-            email: claim.invitee_email,
-            options: { redirectTo },
-          });
-          if (magicResp.error) {
-            console.error('claim-lookup: magic link also failed', magicResp.error);
-            linkErr = magicResp.error;
-          } else {
-            linkData = magicResp.data;
-            linkErr = null;
-            console.log('claim-lookup: magic link generated successfully');
-          }
-        } catch (e) {
-          console.error('claim-lookup: magic link also threw', e);
-          linkErr = e;
-        }
-      }
-
-      // If both failed, return error but with 200 status
-      if (!linkData || linkErr) {
-        console.error('claim-lookup: both invite and magic link generation failed');
+        console.error('claim-lookup: invite threw', e);
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: `Unable to generate authentication link. Please contact support.`
+            error: `Unable to send invitation. Please contact support.`
           }),
           { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
-
-      const actionLink = (linkData as any)?.properties?.action_link || (linkData as any)?.properties?.email_otp_link;
-
-
-      return new Response(
-        JSON.stringify({ success: true, action_link: actionLink }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
     }
 
     return new Response(
