@@ -89,7 +89,7 @@ Help them think about support options. Give them 2-3 simple choices about who mi
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in ai-onboarding-guide:', error);
     return new Response(JSON.stringify({ 
       error: 'Failed to generate guidance',

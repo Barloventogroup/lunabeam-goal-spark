@@ -235,18 +235,18 @@ Be supportive and real about the challenges of being their age.`;
 
     if (currentGoals?.length > 0) {
       contextInfo += `Current Goals:
-${currentGoals.map(goal => {
+${currentGoals.map((goal: any) => {
         let goalInfo = `- ${goal.title} (${goal.status})`;
         if (goal.steps) {
-          const completedSteps = goal.steps.filter(step => step.status === 'done');
+          const completedSteps = goal.steps.filter((step: any) => step.status === 'done');
           const totalSteps = goal.steps.length;
           goalInfo += ` - Progress: ${completedSteps.length}/${totalSteps} steps completed`;
           if (completedSteps.length > 0) {
-            goalInfo += `\n  Recently completed: ${completedSteps.slice(-3).map(s => s.title).join(', ')}`;
+            goalInfo += `\n  Recently completed: ${completedSteps.slice(-3).map((s: any) => s.title).join(', ')}`;
           }
-          const nextSteps = goal.steps.filter(step => step.status === 'not_started').slice(0, 2);
+          const nextSteps = goal.steps.filter((step: any) => step.status === 'not_started').slice(0, 2);
           if (nextSteps.length > 0) {
-            goalInfo += `\n  Up next: ${nextSteps.map(s => s.title).join(', ')}`;
+            goalInfo += `\n  Up next: ${nextSteps.map((s: any) => s.title).join(', ')}`;
           }
         }
         return goalInfo;
@@ -299,7 +299,7 @@ Please respond supportively according to your role as Lune.`;
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in ai-coach:', error);
     return new Response(JSON.stringify({ 
       error: 'Failed to generate guidance',

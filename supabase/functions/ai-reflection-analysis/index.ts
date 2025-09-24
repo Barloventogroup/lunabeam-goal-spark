@@ -120,7 +120,7 @@ Be specific and encouraging.`;
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in ai-reflection-analysis:', error);
     return new Response(JSON.stringify({ 
       error: 'Failed to analyze reflection',

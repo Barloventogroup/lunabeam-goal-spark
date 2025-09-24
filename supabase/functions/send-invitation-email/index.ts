@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -141,20 +141,40 @@ const handler = async (req: Request): Promise<Response> => {
       htmlContent = htmlContent.replace('{{PASSCODE}}', (passcode || '******').toString());
     }
     
-    const { data: sent, error: resendError } = await resend.emails.send({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
-      to: [displayName ? `${displayName} <${cleanedEmail}>` : cleanedEmail],
-      subject: subject,
-      html: htmlContent,
-    });
-
-    if (resendError) {
-      console.error("Resend error:", resendError);
+    const apiKey = Deno.env.get('RESEND_API_KEY');
+    if (!apiKey) {
+      console.error('Resend not configured');
       return new Response(
-        JSON.stringify({ success: false, error: resendError.message || 'Failed to send via Resend' }),
-        { status: resendError.statusCode || 502, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        JSON.stringify({ success: false, error: 'Email service not configured' }),
+        { status: 502, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
+
+    const resp = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        to: [displayName ? `${displayName} <${cleanedEmail}>` : cleanedEmail],
+        subject,
+        html: htmlContent,
+      }),
+    });
+
+    const sent = await resp.json();
+
+    if (!resp.ok) {
+      console.error('Resend error:', sent);
+      return new Response(
+        JSON.stringify({ success: false, error: sent?.message || 'Failed to send via Resend' }),
+        { status: resp.status || 502, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // success path continues below
 
     console.log("Email sent successfully:", sent);
 

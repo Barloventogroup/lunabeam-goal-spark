@@ -1,9 +1,9 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -183,12 +183,30 @@ serve(async (req) => {
         </div>
       `;
 
-      return resend.emails.send({
-        from: Deno.env.get('RESEND_FROM_EMAIL') || "LuneBeam <notifications@resend.dev>",
-        to: [authUser.user.email],
-        subject: subject,
-        html: personalizedContent,
+      const apiKey = Deno.env.get('RESEND_API_KEY');
+      if (!apiKey) {
+        console.error('RESEND_API_KEY not configured');
+        return null;
+      }
+      const resp = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          from: Deno.env.get('RESEND_FROM_EMAIL') || 'LuneBeam <notifications@resend.dev>',
+          to: [authUser.user.email],
+          subject,
+          html: personalizedContent,
+        }),
       });
+      if (!resp.ok) {
+        const errText = await resp.text();
+        console.error('Resend HTTP error:', resp.status, errText);
+        return null;
+      }
+      return await resp.json();
     });
 
     const results = await Promise.allSettled(emailPromises.filter(Boolean));
@@ -206,7 +224,7 @@ serve(async (req) => {
       }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error sending notification emails:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
