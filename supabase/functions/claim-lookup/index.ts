@@ -87,6 +87,24 @@ serve(async (req) => {
       const siteOrigin = req.headers.get("origin") || req.headers.get("referer") || Deno.env.get("SITE_URL") || "";
       const redirectTo = redirect_to || `${(siteOrigin || "").replace(/\/$/, "")}/claim-complete?token=${claim_token}`;
 
+      // First, create the user account if it doesn't exist
+      const { data: signUpData, error: signUpError } = await supabase.auth.admin.createUser({
+        email: claim.invitee_email,
+        email_confirm: true,
+        user_metadata: {
+          first_name: claim.first_name,
+          claim_token: claim_token
+        }
+      });
+
+      if (signUpError && !signUpError.message.includes('already been registered')) {
+        console.error("claim-lookup: createUser error", signUpError);
+        return new Response(
+          JSON.stringify({ success: false, error: signUpError.message }),
+          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
       // Send magic link email to the invitee
       const { error: otpErr } = await supabase.auth.signInWithOtp({
         email: claim.invitee_email,
