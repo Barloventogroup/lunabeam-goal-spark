@@ -97,57 +97,63 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Ensure auth user exists before setting password
+    // Check if auth user exists; if not, create one  
     const { data: userLookup, error: getUserError } = await supabaseAdmin.auth.admin.getUserById(userId);
 
     if (getUserError || !userLookup?.user) {
-      console.warn('Auth user not found; switching to login flow', { userId, getUserError });
+      console.log('Auth user not found, creating new auth user with email and password');
 
-      // Mark claim as accepted and update profile status
-      const { error: profileUpdateErr } = await supabaseAdmin
+      // Create a new auth user with email and password
+      const { data: newUser, error: createUserError } = await supabaseAdmin.auth.admin.createUser({
+        email: userEmail,
+        password: password,
+        email_confirm: true,
+        user_metadata: {
+          first_name: profileData.first_name || claimRecord.first_name || 'User'
+        }
+      });
+
+      if (createUserError || !newUser?.user) {
+        console.error('Failed to create auth user:', createUserError);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `Failed to create auth user: ${createUserError?.message || 'unknown'}` 
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('Successfully created auth user:', newUser.user.id);
+
+      // Update the profile with the new user ID
+      await supabaseAdmin
         .from('profiles')
-        .update({
-          authentication_status: 'pending',
-          password_set: false,
-          account_status: 'active',
-          claimed_at: new Date().toISOString()
-        })
+        .update({ user_id: newUser.user.id })
         .eq('user_id', userId);
-      if (profileUpdateErr) {
-        console.error('Profile update (login flow) failed:', profileUpdateErr);
-      }
 
-      const { error: claimAcceptErr } = await supabaseAdmin
-        .from('account_claims')
-        .update({ status: 'accepted', claimed_at: new Date().toISOString() })
-        .eq('id', claimRecord.id);
-      if (claimAcceptErr) {
-        console.error('Claim accept (login flow) failed:', claimAcceptErr);
-      }
+    } else {
+      console.log('Auth user found, updating password');
 
-      return new Response(
-        JSON.stringify({
-          success: true,
-          useLoginFlow: true,
-          firstName: profileData.first_name || claimRecord.first_name || 'User',
-          email: userEmail
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      // Update the existing user's password
+      const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
+        userId,
+        { 
+          password,
+          email_confirm: true,
+          user_metadata: {
+            first_name: profileData.first_name || claimRecord.first_name || 'User'
+          }
+        }
       );
-    }
 
-    // Update the user's password in auth.users
-    const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
-      userId,
-      { password }
-    );
-
-    if (passwordError) {
-      console.error('Failed to update user password:', passwordError);
-      return new Response(
-        JSON.stringify({ success: false, error: `Failed to set password: ${passwordError.message || 'unknown'}` }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      if (passwordError) {
+        console.error('Failed to update user password:', passwordError);
+        return new Response(
+          JSON.stringify({ success: false, error: `Failed to set password: ${passwordError.message || 'unknown'}` }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Update profile to authenticated status
