@@ -37,30 +37,26 @@ export default function ClaimAccount() {
     if (!claimToken) return;
 
     try {
-      const { data, error } = await supabase
-        .from('account_claims')
-        .select(`
-          individual_id,
-          first_name,
-          invitee_email,
-          status,
-          expires_at,
-          magic_link_expires_at,
-          profiles!provisioner_id(first_name)
-        `)
-        .eq('claim_token', claimToken)
-        .eq('status', 'pending')
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle();
+      const { data, error } = await supabase.functions.invoke('claim-lookup', {
+        body: { action: 'lookup', claim_token: claimToken },
+      });
 
       if (error) {
+        setError('Failed to load invitation details.');
+        return;
+      }
+
+      if (!data?.valid) {
         setError('This invitation link has expired or is invalid.');
         return;
       }
 
       setClaimInfo({
-        ...data,
-        provisioner_name: (data.profiles as any)?.first_name || 'Someone'
+        individual_id: '',
+        first_name: data.first_name,
+        invitee_email: data.masked_email,
+        status: 'pending',
+        provisioner_name: 'Someone',
       });
     } catch (err: any) {
       setError('Failed to load invitation details.');
@@ -75,16 +71,19 @@ export default function ClaimAccount() {
     try {
       setClaiming(true);
       
-      const { error } = await supabase.auth.signInWithOtp({
-        email: claimInfo.invitee_email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/claim-complete?token=${claimToken}`
-        }
+      const { data, error } = await supabase.functions.invoke('claim-lookup', {
+        body: {
+          action: 'send_magic_link',
+          claim_token: claimToken,
+          redirect_to: `${window.location.origin}/claim-complete?token=${claimToken}`,
+        },
       });
 
-      if (error) throw error;
+      if (error || !data?.success) {
+        throw new Error(error?.message || 'Failed to send magic link');
+      }
 
-      toast.success(`Magic link sent to ${claimInfo.invitee_email}! Check your email to complete setup.`);
+      toast.success(`Magic link sent! Check your email to complete setup.`);
       
     } catch (error: any) {
       toast.error(error.message || 'Failed to send magic link');
