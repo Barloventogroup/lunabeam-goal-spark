@@ -103,34 +103,15 @@ serve(async (req) => {
       const appUrl = Deno.env.get("SITE_URL") || "https://lunabeam.app";
       const redirectTo = redirect_to || `${appUrl.replace(/\/$/, "")}/claim-complete?token=${claim_token}`;
 
-      // For new users, prefer invite link which creates the user. For existing users, use magic link.
-      console.log(`claim-lookup: generating link for ${claim.invitee_email}`);
+      console.log(`claim-lookup: generating auth link for ${claim.invitee_email}`);
       
       let linkData: any | null = null;
       let linkErr: any | null = null;
 
-      // Try magic link first; if it fails (e.g., user doesn't exist), fall back to invite link
+      // For account claims, we need to create the user first if they don't exist
+      // Try invite link which can create new users
       try {
-        const magicResp = await supabase.auth.admin.generateLink({
-          type: 'magiclink',
-          email: claim.invitee_email,
-          options: { redirectTo },
-        });
-        if (magicResp.error) {
-          console.error('claim-lookup: magic link failed', magicResp.error);
-          linkErr = magicResp.error;
-        } else {
-          linkData = magicResp.data;
-          console.log('claim-lookup: magic link generated successfully');
-        }
-      } catch (e) {
-        console.error('claim-lookup: magic link threw', e);
-        linkErr = e;
-      }
-      
-      // If magic link failed, try invite link
-      if (!linkData || linkErr) {
-        console.log('claim-lookup: generating invite link');
+        console.log('claim-lookup: attempting invite link generation');
         const inviteResp = await supabase.auth.admin.generateLink({
           type: 'invite',
           email: claim.invitee_email,
@@ -138,19 +119,50 @@ serve(async (req) => {
         });
         
         if (inviteResp.error) {
-          console.error('claim-lookup: invite link generation failed', inviteResp.error);
-          return new Response(
-            JSON.stringify({ 
-              success: false, 
-              error: `Failed to generate authentication link: ${inviteResp.error.message}` 
-            }),
-            { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-          );
+          console.error('claim-lookup: invite link failed', inviteResp.error);
+          linkErr = inviteResp.error;
         } else {
           linkData = inviteResp.data;
-          linkErr = null;
           console.log('claim-lookup: invite link generated successfully');
         }
+      } catch (e) {
+        console.error('claim-lookup: invite link threw', e);
+        linkErr = e;
+      }
+
+      // If invite link failed, try magic link as fallback
+      if (!linkData && linkErr) {
+        try {
+          console.log('claim-lookup: attempting magic link as fallback');
+          const magicResp = await supabase.auth.admin.generateLink({
+            type: 'magiclink',
+            email: claim.invitee_email,
+            options: { redirectTo },
+          });
+          if (magicResp.error) {
+            console.error('claim-lookup: magic link also failed', magicResp.error);
+            linkErr = magicResp.error;
+          } else {
+            linkData = magicResp.data;
+            linkErr = null;
+            console.log('claim-lookup: magic link generated successfully');
+          }
+        } catch (e) {
+          console.error('claim-lookup: magic link also threw', e);
+          linkErr = e;
+        }
+      }
+
+      // If both failed, return error but with 200 status
+      if (!linkData || linkErr) {
+        console.error('claim-lookup: both invite and magic link generation failed');
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `Unable to generate authentication link. Please contact support.`
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
       }
 
       const actionLink = (linkData as any)?.properties?.action_link || (linkData as any)?.properties?.email_otp_link;
