@@ -136,7 +136,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: 'LunaBeam <onboarding@resend.dev>',
+      from: 'LunaBeam <invites@invites.lunabeam.app>',
       to: [invitee_email],
       subject: subject,
       html: htmlContent,
