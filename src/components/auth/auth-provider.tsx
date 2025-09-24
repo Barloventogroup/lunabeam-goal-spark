@@ -83,12 +83,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Load user profile when signed in
         if (event === 'SIGNED_IN' && session?.user) {
-          try {
-            localStorage.removeItem('lunebeam-store');
-            console.log('AuthProvider: Cleared persisted store on sign in');
-          } catch (e) {
-            console.warn('AuthProvider: Failed to clear persisted store on sign in');
-          }
           console.log('AuthProvider: User signed in, loading profile for user:', session.user.id, session.user.email, session.user.user_metadata);
           
           // Check for pending supporter invite
@@ -111,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
             }, 1000);
           } else {
+            // Don't clear store immediately - let profile load first
             setTimeout(() => {
               loadProfile().then(() => {
                 console.log('AuthProvider: Profile loaded after sign in');
