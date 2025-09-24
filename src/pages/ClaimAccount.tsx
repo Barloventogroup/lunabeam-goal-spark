@@ -48,9 +48,9 @@ export default function ClaimAccount() {
           magic_link_expires_at,
           profiles!provisioner_id(first_name)
         `)
-        .eq('claim_token', claimToken)
+        .or(`claim_token.eq.${claimToken},magic_link_token.eq.${claimToken}`)
         .eq('status', 'pending')
-        .gt('magic_link_expires_at', new Date().toISOString())
+        .gt('expires_at', new Date().toISOString())
         .single();
 
       if (error) {
