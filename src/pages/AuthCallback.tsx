@@ -21,8 +21,8 @@ export default function AuthCallback() {
         const token = url.searchParams.get('token');
         const email = url.searchParams.get('email');
 
-        // Handle account claim tokens
-        if (token && email) {
+        // Handle account claim tokens (email optional)
+        if (token) {
           console.log('Processing account claim with token:', token, 'email:', email);
           
           try {
@@ -30,7 +30,7 @@ export default function AuthCallback() {
             const { data: bootstrapData, error: bootstrapError } = await supabase.functions.invoke(
               'claim-bootstrap',
               {
-                body: { token, email: email.toLowerCase() }
+                body: email ? { token, email: email.toLowerCase() } : { token }
               }
             );
 
@@ -66,8 +66,9 @@ export default function AuthCallback() {
               token: token
             }));
             
-            setStatus('ready');
-            setMsg('Account ready! Setting up your password...');
+            // Confirm session and go straight to setup to avoid race conditions
+            await supabase.auth.getSession();
+            window.location.replace('/auth?mode=setup');
             return;
             
           } catch (error) {

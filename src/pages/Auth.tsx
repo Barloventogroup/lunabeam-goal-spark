@@ -42,10 +42,14 @@ export default function Auth() {
     }
     
     // Handle different modes
-    if (mode === 'claim' && token && emailFromUrl) {
-      // Redirect claim links to callback to process auto account creation
+    if (token) {
+      // Redirect claim links to callback to process auto account creation (email optional)
       setSigningOut(true);
-      navigate(`/auth/callback?token=${token}&email=${encodeURIComponent(emailFromUrl)}`, { replace: true });
+      const dest = emailFromUrl
+        ? `/auth/callback?token=${token}&email=${encodeURIComponent(emailFromUrl)}`
+        : `/auth/callback?token=${token}`;
+      console.log('Auth: Detected claim token, redirecting to', dest);
+      navigate(dest, { replace: true });
       return;
     }
     if (mode === 'setup') {

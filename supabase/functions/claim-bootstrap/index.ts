@@ -14,9 +14,9 @@ Deno.serve(async (req) => {
   try {
     const { token, email } = await req.json();
 
-    if (!token || !email) {
+    if (!token) {
       return new Response(
-        JSON.stringify({ error: 'Token and email are required' }),
+        JSON.stringify({ error: 'Token is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -33,17 +33,22 @@ Deno.serve(async (req) => {
       }
     );
 
-    console.log(`🔍 Validating claim token: ${token} for email: ${email}`);
+    const emailLog = email ? email : '(none)';
+    console.log(`🔍 Validating claim token: ${token} for email: ${emailLog}`);
 
-    // Validate claim token and get claim details
-    const { data: claim, error: claimError } = await supabaseAdmin
+    // Validate claim token and get claim details (email optional)
+    let query = supabaseAdmin
       .from('account_claims')
       .select('*')
       .eq('claim_token', token)
-      .eq('invitee_email', email.toLowerCase().trim())
       .eq('status', 'pending')
-      .gt('expires_at', new Date().toISOString())
-      .single();
+      .gt('expires_at', new Date().toISOString());
+
+    if (email) {
+      query = query.eq('invitee_email', email.toLowerCase().trim());
+    }
+
+    const { data: claim, error: claimError } = await query.single();
 
     if (claimError || !claim) {
       console.log('❌ Invalid or expired claim token');
@@ -55,6 +60,16 @@ Deno.serve(async (req) => {
 
     console.log(`✅ Valid claim found for individual: ${claim.individual_id}`);
 
+    // Determine email to use
+    const emailToUse = (email?.toLowerCase().trim()) || (claim.invitee_email?.toLowerCase().trim());
+    if (!emailToUse) {
+      console.error('❌ No invitee email available on claim');
+      return new Response(
+        JSON.stringify({ error: 'No invitee email associated with this claim' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Generate temporary password
     const tempPassword = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
 
@@ -62,7 +77,7 @@ Deno.serve(async (req) => {
     const { data: authUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       claim.individual_id,
       {
-        email: email.toLowerCase().trim(),
+        email: emailToUse,
         password: tempPassword,
         email_confirm: true,
         user_metadata: {
@@ -87,7 +102,7 @@ Deno.serve(async (req) => {
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
-        email: email.toLowerCase().trim(),
+        email: emailToUse,
         account_status: 'user_claimed',
         authentication_status: 'temp_password',
         updated_at: new Date().toISOString(),
@@ -103,7 +118,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        email: email.toLowerCase().trim(),
+        email: emailToUse,
         tempPassword,
         individualId: claim.individual_id,
         firstName: claim.first_name,
