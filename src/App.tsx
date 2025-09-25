@@ -9,8 +9,6 @@ import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import RequestReset from "./pages/RequestReset";
-import ClaimAccount from "./pages/ClaimAccount";
-import ClaimComplete from "./pages/ClaimComplete";
 import Invitations from "./pages/Invitations";
 import Logout from "./pages/Logout";
 import { ProtectedRoute } from "./components/auth/protected-route";
@@ -29,10 +27,6 @@ const App = () => (
           <Route path="/auth/reset" element={<ResetPassword />} />
           <Route path="/auth/request-reset" element={<RequestReset />} />
           <Route path="/logout" element={<Logout />} />
-          <Route path="/claim-account" element={<ClaimAccount />} />
-          <Route path="/claim-complete" element={<ClaimComplete />} />
-          <Route path="/claim" element={<ClaimAccount />} />
-          <Route path="/claim/:claimToken" element={<ClaimAccount />} />
           <Route path="/" element={
             <ProtectedRoute>
               <Index />
