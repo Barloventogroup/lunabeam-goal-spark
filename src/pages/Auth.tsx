@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/components/auth/auth-provider';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Auth() {
   const { user, signIn, signUp, signOut } = useAuth();
@@ -73,7 +74,22 @@ export default function Auth() {
       } else {
         const { error } = await signIn(formData.email, formData.password);
         if (error) {
-          toast.error(error.message);
+          const msg = (error?.message || '').toLowerCase();
+          if (error?.status === 500 || msg.includes('database error querying schema') || msg.includes('unexpected_failure')) {
+            const redirectUrl = `${window.location.origin}/auth/callback`;
+            const { error: otpError } = await supabase.auth.signInWithOtp({
+              email: formData.email,
+              options: { emailRedirectTo: redirectUrl }
+            });
+            if (!otpError) {
+              toast.success('Magic link sent! Check your email to continue.');
+              localStorage.setItem('claim_info', JSON.stringify({ email: formData.email }));
+            } else {
+              toast.error(otpError.message || 'Failed to send magic link');
+            }
+          } else {
+            toast.error(error.message);
+          }
         } else {
           // Clear claim info on successful login
           localStorage.removeItem('claim_info');
