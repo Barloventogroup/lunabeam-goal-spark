@@ -643,9 +643,9 @@ export const TabTeam: React.FC = () => {
                               <Edit3 className="h-4 w-4 mr-2" />
                               Edit Profile
                             </DropdownMenuItem>
-                            {member.displayStatus === 'Not invited yet' && <DropdownMenuItem onClick={() => handleInvite(member)}>
+                            {(member.displayStatus === 'Not invited yet' || member.displayStatus === 'Connected') && <DropdownMenuItem onClick={() => handleInvite(member)}>
                                 <Mail className="h-4 w-4 mr-2" />
-                                Send Invite
+                                {member.displayStatus === 'Connected' ? 'Send Welcome Email' : 'Send Invite'}
                               </DropdownMenuItem>}
                             <DropdownMenuItem onClick={() => handleViewProfile(member)}>
                               <Eye className="h-4 w-4 mr-2" />
