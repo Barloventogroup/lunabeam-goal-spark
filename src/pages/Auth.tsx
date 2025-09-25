@@ -99,29 +99,11 @@ export default function Auth() {
         error
       } = await supabase.from('profiles').select('password_set, authentication_status').eq('user_id', user.id).single();
       
-      // If no profile exists, create one for regular signup users
-      if (error?.code === 'PGRST116') {
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: user.id,
-            first_name: user.user_metadata?.first_name || 'User',
-            email: user.email,
-            user_type: 'individual',
-            account_status: 'active',
-            authentication_status: 'authenticated',
-            password_set: true, // They just set it during signup
-            onboarding_complete: false,
-            comm_pref: 'text'
-          });
-        
-        if (insertError) throw insertError;
-        
+      if (error) {
+        console.error('Auth: Error checking profile:', error);
         navigate('/', { replace: true });
         return;
       }
-      
-      if (error) throw error;
       
       // Show password setup if password not set OR authentication status is pending
       if (!profile?.password_set || profile?.authentication_status === 'pending') {
