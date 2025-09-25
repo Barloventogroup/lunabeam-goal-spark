@@ -54,6 +54,7 @@ export default function AuthCallback() {
             email: email.toLowerCase(),
             password: tempPassword,
             options: {
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
               data: {
                 first_name: claimData.first_name
               }

@@ -44,6 +44,8 @@ export default function Auth() {
     // Handle different modes
     if (mode === 'setup') {
       setNeedsPasswordSetup(true);
+      setShowPasswordSetup(true);
+      setIsSignUp(false);
     } else if (mode === 'signup' && fromParam === 'invite') {
       setIsSignUp(true);
     } else if (mode === 'signin') {
