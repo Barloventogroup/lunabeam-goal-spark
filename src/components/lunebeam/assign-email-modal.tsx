@@ -90,7 +90,7 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
       // Generate a unique claim token for this invitation
       const claimToken = crypto.randomUUID().replace(/-/g, '').substring(0, 24);
       
-      // Create an account claim record
+      // Create an account claim record with magic link token
       const { error: claimError } = await supabase
         .from('account_claims')
         .insert({
@@ -99,6 +99,7 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
           invitee_email: sanitizedEmail,
           first_name: individualName,
           claim_token: claimToken,
+          magic_link_token: claimToken, // Use the same token for now
           status: 'pending'
         });
 
@@ -107,7 +108,7 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
         throw new Error(`Failed to create account claim: ${claimError.message}`);
       }
 
-      // Generate invitation link that leads to a dedicated claim page
+      // Generate invitation link that leads to signup with claim mode
       const inviteLink = `${window.location.origin}/auth?mode=claim&token=${claimToken}&email=${encodeURIComponent(sanitizedEmail)}`;
 
       // Send invitation email with proper error handling

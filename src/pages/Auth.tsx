@@ -44,8 +44,9 @@ export default function Auth() {
     if (mode === 'setup') {
       setNeedsPasswordSetup(true);
     } else if (mode === 'claim' && token) {
-      // This is an account claim invitation - set to signup mode
-      setIsSignUp(true);
+      // This is an account claim invitation - show password setup
+      setNeedsPasswordSetup(true);
+      setShowPasswordSetup(true);
       // Store the claim token for later use
       sessionStorage.setItem('claimToken', token);
     } else if (mode === 'signup' && fromParam === 'invite') {
@@ -65,6 +66,19 @@ export default function Auth() {
   }, [user, loading, navigate]);
   const checkPasswordSetupNeeded = async () => {
     if (!user) return;
+    
+    // Check for claim token from URL params or session storage
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlClaimToken = urlParams.get('token');
+    const claimToken = sessionStorage.getItem('claimToken') || urlClaimToken;
+    
+    if (claimToken) {
+      // This is from a claim invitation, show password setup
+      setNeedsPasswordSetup(true);
+      setShowPasswordSetup(true);
+      return;
+    }
+    
     try {
       const {
         data: profile,
@@ -114,6 +128,7 @@ export default function Auth() {
   const handlePasswordSetupComplete = () => {
     setShowPasswordSetup(false);
     setNeedsPasswordSetup(false);
+    // Redirect to individual's home tab
     navigate('/', {
       replace: true
     });
@@ -139,72 +154,17 @@ export default function Auth() {
         if (error) {
           toast.error(error.message);
         } else {
-          // If this is an account claim, link the new user to the existing profile
-          if (claimToken) {
-            try {
-              // Get the current user after signup
-              const { data: { user } } = await supabase.auth.getUser();
-              
-              if (user) {
-                // First, get the account claim to find the original provisional individual_id
-                const { data: claimData } = await supabase
-                  .from('account_claims')
-                  .select('individual_id, first_name')
-                  .eq('claim_token', claimToken)
-                  .eq('status', 'pending')
-                  .single();
-
-                if (claimData) {
-                  // Transfer any existing supporter relationships from provisional account to real user
-                  await supabase
-                    .from('supporters')
-                    .update({ individual_id: user.id })
-                    .eq('individual_id', claimData.individual_id);
-
-                  // Transfer goals and related data
-                  await supabase
-                    .from('goals')
-                    .update({ owner_id: user.id })
-                    .eq('owner_id', claimData.individual_id);
-
-                  // Delete the old provisional profile
-                  await supabase
-                    .from('profiles')
-                    .delete()
-                    .eq('user_id', claimData.individual_id);
-
-                  // Update the account claim
-                  const { error: updateError } = await supabase
-                    .from('account_claims')
-                    .update({
-                      status: 'accepted',
-                      claimed_at: new Date().toISOString(),
-                      individual_id: user.id
-                    })
-                    .eq('claim_token', claimToken);
-
-                  if (!updateError) {
-                    toast.success('Account claimed successfully! Welcome to Lunabeam.');
-                    sessionStorage.removeItem('claimToken');
-                  } else {
-                    console.error('Account claim update error:', updateError);
-                    toast.success('Account created! You can now sign in.');
-                  }
-                } else {
-                  console.warn('No matching claim found');
-                  toast.success('Account created! You can now sign in.');
-                }
-              }
-            } catch (claimError) {
-              console.error('Account claim error:', claimError);
-              toast.success('Account created! You can now sign in.');
-            }
+          // Check if this is an account claim process
+            if (claimToken) {
+            toast.success('Account created! Please check your email to verify your account.');
+            setIsSignUp(false);
           } else if (isSupporterInvite) {
             toast.success('Account created! You will be connected as a supporter after verification.');
+            setIsSignUp(false);
           } else {
             toast.success('Account created! Please check your email to verify your account.');
+            setIsSignUp(false);
           }
-          setIsSignUp(false);
         }
       } else {
         const {

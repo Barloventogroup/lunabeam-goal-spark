@@ -18,6 +18,38 @@ export default function AuthCallback() {
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get('code');
+        const token = url.searchParams.get('token');
+        const email = url.searchParams.get('email');
+
+        // Handle account claim tokens
+        if (token && email) {
+          console.log('Processing account claim token:', token, email);
+          
+          // Validate the claim token
+          const { data: claimData, error: claimError } = await supabase
+            .from('account_claims')
+            .select('individual_id, first_name, status, expires_at')
+            .eq('claim_token', token)
+            .eq('invitee_email', email.toLowerCase())
+            .single();
+
+          if (claimError || !claimData || claimData.status !== 'pending') {
+            setStatus('error');
+            setMsg('Invalid or expired invitation link. Please request a new invitation.');
+            return;
+          }
+
+          if (new Date(claimData.expires_at) < new Date()) {
+            setStatus('error');
+            setMsg('This invitation has expired. Please request a new invitation.');
+            return;
+          }
+
+          // Store claim token for later use and redirect to auth with claim mode
+          sessionStorage.setItem('claimToken', token);
+          nav(`/auth?mode=claim&token=${token}&email=${encodeURIComponent(email)}`, { replace: true });
+          return;
+        }
 
         if (code) {
           // New-style PKCE callback: exchange ?code= for a session (email confirm, magic link, etc.)
@@ -74,7 +106,7 @@ export default function AuthCallback() {
         setMsg(e?.message || 'Something went wrong.');
       }
     })();
-  }, [status]);
+  }, [status, nav]);
 
   // Redirects based on intent with delay for success
   useEffect(() => {
