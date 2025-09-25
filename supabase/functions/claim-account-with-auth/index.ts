@@ -104,6 +104,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('Auth user not found, creating new auth user with email and password');
 
       // Create a new auth user with email and password
+      // Use a simpler approach to avoid confirmation_token issues
       const { data: newUser, error: createUserError } = await supabaseAdmin.auth.admin.createUser({
         email: userEmail,
         password: password,
