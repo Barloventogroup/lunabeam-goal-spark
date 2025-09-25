@@ -45,11 +45,10 @@ export default function Auth() {
     if (mode === 'setup') {
       setNeedsPasswordSetup(true);
     } else if (mode === 'claim' && token) {
-      // This is an account claim invitation - sign out any existing user first
+      // This is an account claim invitation - sign out any existing user first, then show signup
       setSigningOut(true);
       supabase.auth.signOut().then(() => {
-        setNeedsPasswordSetup(true);
-        setShowPasswordSetup(true);
+        setIsSignUp(true); // Show signup form instead of password setup
         // Store the claim token for later use
         sessionStorage.setItem('claimToken', token);
         setSigningOut(false);
@@ -160,8 +159,8 @@ export default function Auth() {
           toast.error(error.message);
         } else {
           // Check if this is an account claim process
-            if (claimToken) {
-            toast.success('Account created! Please check your email to verify your account.');
+          if (claimToken) {
+            toast.success('Account created! Please check your email to verify your account, then return to complete setup.');
             setIsSignUp(false);
           } else if (isSupporterInvite) {
             toast.success('Account created! You will be connected as a supporter after verification.');

@@ -41,10 +41,14 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
         // This is an account claim - need to handle the full claim process
         console.log('Processing account claim with token:', claimToken);
         
-        // Update user password first
+        // First ensure we have a valid session
+        if (!user) {
+          throw new Error('No authenticated user found. Please sign up first.');
+        }
+        
+        // Update user password
         const { error: passwordError } = await supabase.auth.updateUser({
-          password: password,
-          email: user?.email // Ensure email is set from the authenticated user
+          password: password
         });
 
         if (passwordError) throw passwordError;
