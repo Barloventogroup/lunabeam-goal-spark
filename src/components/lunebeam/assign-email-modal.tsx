@@ -51,8 +51,7 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
 
     setSending(true);
     try {
-      // Update the individual's email and send invitation via the simplified flow
-      // First update the profile with the email
+      // Update the individual's profile with email
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ 
@@ -65,38 +64,18 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
         throw updateError;
       }
 
-      // Update auth.users email as well
-      const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
-        individualId,
-        { email: email.trim() }
-      );
+      // Generate a simple signup link with email parameter for easier access
+      const inviteLink = `${window.location.origin}/auth?mode=signin&email=${encodeURIComponent(email.trim())}`;
 
-      if (authUpdateError) {
-        console.warn('Could not update auth email:', authUpdateError);
-      }
-
-      // Generate a magic link for the individual to sign in and set their password
-      const { data: magicLinkData, error: magicLinkError } = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: email.trim(),
-        options: {
-          redirectTo: `${window.location.origin}/auth?mode=setup`
-        }
-      });
-
-      if (magicLinkError) {
-        throw magicLinkError;
-      }
-
-      // Send invitation email with the magic link
+      // Send invitation email
       const { data, error } = await supabase.functions.invoke('send-invitation-email', {
         body: {
           type: 'individual',
           inviteeName: individualName,
           inviteeEmail: email.trim(),
           inviterName: 'Your supporter',
-          inviteLink: magicLinkData.properties?.action_link || `${window.location.origin}/auth?mode=setup`,
-          message: message.trim() || `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals. Click the link below to set your password and get started.`
+          inviteLink: inviteLink,
+          message: message.trim() || `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals. Use the "Forgot Password" option if you need to set a new password.`
         }
       });
 
@@ -107,7 +86,7 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
 
       toast({
         title: "Invitation Sent!",
-        description: `Magic link sent to ${email}. They can now access their account.`,
+        description: `Invitation sent to ${email}. They can sign in with their email and use "Forgot Password" to set a new password.`,
       });
 
       // Reset form and close modal
@@ -137,7 +116,7 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
             Send Account Invite
           </DialogTitle>
           <DialogDescription>
-            Send a magic link invitation to allow the individual to access their account.
+            Send an invitation email to allow the individual to access their account.
           </DialogDescription>
         </DialogHeader>
         
@@ -147,7 +126,7 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
               Sending invitation to <strong>{individualName}</strong>
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              They'll receive a magic link to access their account and can set their own password.
+              They'll receive an invitation email with instructions to access their account.
             </p>
           </div>
 
