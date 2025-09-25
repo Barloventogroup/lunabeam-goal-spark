@@ -28,44 +28,68 @@ export default function AuthCallback() {
           // Sign out any existing user first to prevent conflicts
           await supabase.auth.signOut();
           
-          // Validate the claim token
-          const { data: claimData, error: claimError } = await supabase
-            .from('account_claims')
-            .select('individual_id, first_name, status, expires_at')
-            .eq('claim_token', token)
-            .eq('invitee_email', email.toLowerCase())
-            .single();
+          // Validate the claim token using edge function (bypasses RLS)
+          const { data: validationResult, error: validationError } = await supabase.functions.invoke(
+            'validate-claim-token',
+            {
+              body: { token, email: email.toLowerCase() }
+            }
+          );
 
-          if (claimError || !claimData || claimData.status !== 'pending') {
+          console.log('Validation result:', validationResult, 'Error:', validationError);
+
+          if (validationError || !validationResult?.success) {
             setStatus('error');
-            setMsg('Invalid or expired invitation link. Please request a new invitation.');
+            setMsg(validationResult?.error || 'Invalid or expired invitation link. Please request a new invitation.');
             return;
           }
 
-          if (new Date(claimData.expires_at) < new Date()) {
-            setStatus('error');
-            setMsg('This invitation has expired. Please request a new invitation.');
-            return;
-          }
+          const claimData = validationResult.claimData;
 
           // Create user account automatically with a temporary password
           const tempPassword = crypto.randomUUID();
+          console.log('Creating user account for:', email.toLowerCase());
+          
           const { data: authData, error: signUpError } = await supabase.auth.signUp({
             email: email.toLowerCase(),
             password: tempPassword,
             options: {
               emailRedirectTo: `${window.location.origin}/auth/callback`,
               data: {
-                first_name: claimData.first_name
+                first_name: claimData.first_name || 'User'
               }
             }
           });
 
+          console.log('Signup result:', authData, 'Error:', signUpError);
+
           if (signUpError) {
             console.error('Auto signup error:', signUpError);
-            setStatus('error');
-            setMsg('Failed to create account. Please try again or contact support.');
-            return;
+            
+            // Check if user already exists
+            if (signUpError.message?.includes('already registered')) {
+              // Try to sign in with a magic link instead
+              const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+                email: email.toLowerCase(),
+                options: {
+                  emailRedirectTo: `${window.location.origin}/auth?mode=setup`
+                }
+              });
+              
+              if (magicLinkError) {
+                setStatus('error');
+                setMsg('Account exists but failed to send login link. Please contact support.');
+                return;
+              }
+              
+              setStatus('success');
+              setMsg('Login link sent to your email. Please check your email to continue setup.');
+              return;
+            } else {
+              setStatus('error');
+              setMsg(`Failed to create account: ${signUpError.message}`);
+              return;
+            }
           }
 
           // Store claim token for completing the claim process after password setup

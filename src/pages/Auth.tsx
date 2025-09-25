@@ -42,10 +42,10 @@ export default function Auth() {
     }
     
     // Handle different modes
-    if (mode === 'claim' && token) {
+    if (mode === 'claim' && token && emailFromUrl) {
       // Redirect claim links to callback to process auto account creation
       setSigningOut(true);
-      navigate(`/auth/callback?token=${token}&email=${encodeURIComponent(emailFromUrl || '')}`, { replace: true });
+      navigate(`/auth/callback?token=${token}&email=${encodeURIComponent(emailFromUrl)}`, { replace: true });
       return;
     }
     if (mode === 'setup') {
