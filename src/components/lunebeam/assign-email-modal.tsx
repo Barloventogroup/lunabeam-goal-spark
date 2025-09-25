@@ -65,18 +65,38 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
         throw updateError;
       }
 
-      // Generate invite link
-      const inviteLink = `${window.location.origin}/auth?mode=signup`;
+      // Update auth.users email as well
+      const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
+        individualId,
+        { email: email.trim() }
+      );
 
-      // Send invitation email
+      if (authUpdateError) {
+        console.warn('Could not update auth email:', authUpdateError);
+      }
+
+      // Generate a magic link for the individual to sign in and set their password
+      const { data: magicLinkData, error: magicLinkError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email: email.trim(),
+        options: {
+          redirectTo: `${window.location.origin}/auth?mode=setup`
+        }
+      });
+
+      if (magicLinkError) {
+        throw magicLinkError;
+      }
+
+      // Send invitation email with the magic link
       const { data, error } = await supabase.functions.invoke('send-invitation-email', {
         body: {
           type: 'individual',
           inviteeName: individualName,
           inviteeEmail: email.trim(),
           inviterName: 'Your supporter',
-          inviteLink: inviteLink,
-          message: message.trim() || `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals.`
+          inviteLink: magicLinkData.properties?.action_link || `${window.location.origin}/auth?mode=setup`,
+          message: message.trim() || `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals. Click the link below to set your password and get started.`
         }
       });
 

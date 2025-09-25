@@ -26,14 +26,22 @@ export default function Auth() {
     password: ''
   });
 
-  // Pre-fill email from URL parameter
+  // Check for password setup mode and pre-fill email from URL parameter
   useEffect(() => {
     const emailFromUrl = searchParams.get('email');
+    const mode = searchParams.get('mode');
+    
     if (emailFromUrl) {
       setFormData(prev => ({
         ...prev,
         email: emailFromUrl
       }));
+    }
+    
+    // Handle password setup mode - when they click magic link from invitation
+    if (mode === 'setup') {
+      // We'll check if they need password setup after they're authenticated
+      // This will be handled in the checkPasswordSetupNeeded function
     }
   }, [searchParams]);
   
@@ -217,7 +225,7 @@ export default function Auth() {
     }
   };
 
-  // Show password setup screen for first-time users
+  // Show password setup screen for first-time users or invited individuals
   if (showPasswordSetup && needsPasswordSetup) {
     return <FirstTimePasswordSetup onComplete={handlePasswordSetupComplete} />;
   }
