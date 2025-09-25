@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/components/auth/auth-provider';
+import { FirstTimePasswordSetup } from '@/components/auth/first-time-password-setup';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -14,6 +15,8 @@ export default function Auth() {
   const [searchParams] = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPasswordSetup, setShowPasswordSetup] = useState(false);
+  const [needsPasswordSetup, setNeedsPasswordSetup] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -42,9 +45,39 @@ export default function Auth() {
   // Redirect to dashboard after successful authentication
   useEffect(() => {
     if (user && !loading) {
-      navigate('/', { replace: true });
+      checkPasswordSetupNeeded();
     }
   }, [user, loading, navigate]);
+
+  const checkPasswordSetupNeeded = async () => {
+    if (!user) return;
+
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('password_set, authentication_status')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+
+      if (!profile?.password_set || profile?.authentication_status === 'pending') {
+        setNeedsPasswordSetup(true);
+        setShowPasswordSetup(true);
+      } else {
+        navigate('/', { replace: true });
+      }
+    } catch (error) {
+      console.error('Error checking password setup:', error);
+      navigate('/', { replace: true });
+    }
+  };
+
+  const handlePasswordSetupComplete = () => {
+    setShowPasswordSetup(false);
+    setNeedsPasswordSetup(false);
+    navigate('/', { replace: true });
+  };
 
   // Auto-switch to signup mode for supporter invites
   useEffect(() => {
@@ -146,7 +179,6 @@ export default function Auth() {
         toast.error(error.message || 'Failed to send magic link');
       } else {
         toast.success('Magic link sent! Check your email to continue.');
-        localStorage.setItem('claim_info', JSON.stringify({ email: formData.email }));
       }
     } catch (e) {
       toast.error('Failed to send magic link');
@@ -154,6 +186,11 @@ export default function Auth() {
       setLoading(false);
     }
   };
+
+  // Show password setup screen for first-time users
+  if (showPasswordSetup && needsPasswordSetup) {
+    return <FirstTimePasswordSetup onComplete={handlePasswordSetupComplete} />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ 
