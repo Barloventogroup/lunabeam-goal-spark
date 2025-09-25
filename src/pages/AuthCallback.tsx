@@ -21,7 +21,7 @@ export default function AuthCallback() {
         const token = url.searchParams.get('token');
         const email = url.searchParams.get('email');
 
-        // Handle account claim tokens
+        // Handle account claim tokens - create account automatically
         if (token && email) {
           console.log('Processing account claim token:', token, email);
           
@@ -48,9 +48,32 @@ export default function AuthCallback() {
             return;
           }
 
-          // Store claim token for later use and redirect to auth with claim mode
+          // Create user account automatically with a temporary password
+          const tempPassword = crypto.randomUUID();
+          const { data: authData, error: signUpError } = await supabase.auth.signUp({
+            email: email.toLowerCase(),
+            password: tempPassword,
+            options: {
+              data: {
+                first_name: claimData.first_name
+              }
+            }
+          });
+
+          if (signUpError) {
+            console.error('Auto signup error:', signUpError);
+            setStatus('error');
+            setMsg('Failed to create account. Please try again or contact support.');
+            return;
+          }
+
+          // Store claim token for completing the claim process after password setup
           sessionStorage.setItem('claimToken', token);
-          nav(`/auth?mode=claim&token=${token}&email=${encodeURIComponent(email)}`, { replace: true });
+          sessionStorage.setItem('claimEmail', email);
+          
+          // Set success and redirect to password setup
+          setStatus('ready');
+          setMsg('Account created! Setting up your password...');
           return;
         }
 
@@ -114,7 +137,13 @@ export default function AuthCallback() {
   // Redirects based on intent with delay for success
   useEffect(() => {
     if (status === 'ready') {
-      nav('/auth/reset', { replace: true });
+      // Check if this is a claim setup
+      const claimToken = sessionStorage.getItem('claimToken');
+      if (claimToken) {
+        nav('/auth?mode=setup', { replace: true });
+      } else {
+        nav('/auth/reset', { replace: true });
+      }
     }
     if (status === 'success') {
       // Show confirmation message for 2 seconds before redirecting

@@ -36,6 +36,7 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
     try {
       // Check for claim token to handle account claiming flow
       const claimToken = sessionStorage.getItem('claimToken');
+      const claimEmail = sessionStorage.getItem('claimEmail');
       
       if (claimToken) {
         // This is an account claim - need to handle the full claim process
@@ -43,12 +44,13 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
         
         // First ensure we have a valid session
         if (!user) {
-          throw new Error('No authenticated user found. Please sign up first.');
+          throw new Error('No authenticated user found. Please try again.');
         }
         
         // Update user password
         const { error: passwordError } = await supabase.auth.updateUser({
-          password: password
+          password: password,
+          email: claimEmail || user.email // Ensure email is properly set
         });
 
         if (passwordError) throw passwordError;
@@ -110,6 +112,7 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
 
         // Clean up session storage
         sessionStorage.removeItem('claimToken');
+        sessionStorage.removeItem('claimEmail');
         
         toast.success('Account claimed successfully! Welcome to Lunabeam.');
       } else {

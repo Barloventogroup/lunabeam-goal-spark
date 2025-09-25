@@ -44,15 +44,6 @@ export default function Auth() {
     // Handle different modes
     if (mode === 'setup') {
       setNeedsPasswordSetup(true);
-    } else if (mode === 'claim' && token) {
-      // This is an account claim invitation - sign out any existing user first, then show signup
-      setSigningOut(true);
-      supabase.auth.signOut().then(() => {
-        setIsSignUp(true); // Show signup form instead of password setup
-        // Store the claim token for later use
-        sessionStorage.setItem('claimToken', token);
-        setSigningOut(false);
-      });
     } else if (mode === 'signup' && fromParam === 'invite') {
       setIsSignUp(true);
     } else if (mode === 'signin') {
