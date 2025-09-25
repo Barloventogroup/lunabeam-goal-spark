@@ -745,24 +745,24 @@ export const TabTeam: React.FC = () => {
             </Card>
           )}
 
-          {/* Invite Supporters Section */}
-          <Card>
+          {/* Invite Supporters Section - Always Visible for All Users */}
+          <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Users className="h-5 w-5" />
-                Invite Supporters
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <UserPlus className="h-6 w-6 text-primary" />
+                Add Supporters
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Build your support network by inviting friends, family, coaches, or mentors to help you achieve your goals
+              </p>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Invite friends, family, or coaches to support your goals
-                </p>
-                <div className="flex gap-2">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <AddCommunityMemberModal 
                     trigger={
-                      <Button className="flex-1">
-                        <UserPlus className="h-4 w-4 mr-2" />
+                      <Button size="lg" className="w-full h-12 text-base font-medium">
+                        <UserPlus className="h-5 w-5 mr-2" />
                         Invite Supporter
                       </Button>
                     }
@@ -770,12 +770,15 @@ export const TabTeam: React.FC = () => {
                   />
                   <SimpleInviteModal 
                     trigger={
-                      <Button variant="outline" className="flex-1">
-                        <Mail className="h-4 w-4 mr-2" />
+                      <Button variant="outline" size="lg" className="w-full h-12 text-base font-medium">
+                        <Mail className="h-5 w-5 mr-2" />
                         Quick Invite
                       </Button>
                     }
                   />
+                </div>
+                <div className="text-xs text-muted-foreground text-center bg-muted/50 p-3 rounded-lg">
+                  💡 <strong>Tip:</strong> Supporters can view your progress, cheer you on, and help keep you accountable on your journey
                 </div>
               </div>
             </CardContent>
