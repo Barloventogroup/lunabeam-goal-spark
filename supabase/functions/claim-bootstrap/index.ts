@@ -73,10 +73,17 @@ Deno.serve(async (req) => {
     // Generate temporary password
     const tempPassword = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
 
-    // Update the existing auth user with confirmed email and temporary password
-    const { data: authUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-      claim.individual_id,
-      {
+    // Ensure there's a valid auth user to update; if missing, create and remap
+    let userIdToUse = claim.individual_id as string;
+
+    // Check if auth user exists
+    const { data: existingUser, error: getUserError } = await supabaseAdmin.auth.admin.getUserById(userIdToUse);
+
+    if (getUserError || !existingUser?.user) {
+      console.warn(`⚠️ Auth user ${userIdToUse} not found. Creating a new user and remapping data...`, getUserError);
+
+      // Create a new auth user
+      const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: emailToUse,
         password: tempPassword,
         email_confirm: true,
@@ -85,32 +92,92 @@ Deno.serve(async (req) => {
           temp_password_set: true,
           temp_password_expires: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes
         }
+      });
+
+      if (createError || !created?.user?.id) {
+        console.error('❌ Failed to create auth user:', createError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to create user account' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
-    );
 
-    if (updateError) {
-      console.error('❌ Failed to update auth user:', updateError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to update user account' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      userIdToUse = created.user.id;
+      console.log(`✅ Created new auth user: ${userIdToUse}. Remapping related records...`);
+
+      // Remap profile to new user id and update status
+      const { error: remapProfileError } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          user_id: userIdToUse,
+          email: emailToUse,
+          account_status: 'user_claimed',
+          authentication_status: 'temp_password',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', claim.individual_id);
+      if (remapProfileError) console.error('❌ Failed to remap profile:', remapProfileError);
+
+      // Remap supporters (individual side)
+      const { error: remapSupportersIndError } = await supabaseAdmin
+        .from('supporters')
+        .update({ individual_id: userIdToUse })
+        .eq('individual_id', claim.individual_id);
+      if (remapSupportersIndError) console.error('❌ Failed to remap supporters (individual):', remapSupportersIndError);
+
+      // Remap supporters (supporter side) - best effort
+      const { error: remapSupportersSupError } = await supabaseAdmin
+        .from('supporters')
+        .update({ supporter_id: userIdToUse })
+        .eq('supporter_id', claim.individual_id);
+      if (remapSupportersSupError) console.warn('⚠️ Failed to remap supporters (supporter side) - may be expected:', remapSupportersSupError);
+
+      // Remap this specific claim to point to the new user id
+      const { error: remapClaimError } = await supabaseAdmin
+        .from('account_claims')
+        .update({ individual_id: userIdToUse })
+        .eq('id', claim.id);
+      if (remapClaimError) console.error('❌ Failed to remap claim record:', remapClaimError);
+
+    } else {
+      // Auth user exists - update with confirmed email and temporary password
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+        userIdToUse,
+        {
+          email: emailToUse,
+          password: tempPassword,
+          email_confirm: true,
+          user_metadata: {
+            ...claim,
+            temp_password_set: true,
+            temp_password_expires: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes
+          }
+        }
       );
-    }
 
-    console.log(`✅ Auth user updated successfully`);
+      if (updateError) {
+        console.error('❌ Failed to update auth user:', updateError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to update user account' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
-    // Update profile status
-    const { error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .update({
-        email: emailToUse,
-        account_status: 'user_claimed',
-        authentication_status: 'temp_password',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', claim.individual_id);
+      console.log(`✅ Auth user updated successfully`);
 
-    if (profileError) {
-      console.error('❌ Failed to update profile:', profileError);
+      // Update profile status for existing user
+      const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          email: emailToUse,
+          account_status: 'user_claimed',
+          authentication_status: 'temp_password',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userIdToUse);
+      if (profileError) {
+        console.error('❌ Failed to update profile:', profileError);
+      }
     }
 
     console.log(`🎉 Claim bootstrap completed successfully`);
@@ -120,7 +187,7 @@ Deno.serve(async (req) => {
         success: true,
         email: emailToUse,
         tempPassword,
-        individualId: claim.individual_id,
+        individualId: userIdToUse,
         firstName: claim.first_name,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
