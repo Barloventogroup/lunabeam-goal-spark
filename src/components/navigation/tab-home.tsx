@@ -122,6 +122,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
     return <RedesignedGoalsWizard 
       onComplete={() => setCurrentView('dashboard')} 
       onCancel={() => setCurrentView('dashboard')} 
+      isSupporter={userContext?.hasAdminFeatures || false}
     />;
   }
 

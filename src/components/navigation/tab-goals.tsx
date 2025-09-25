@@ -7,6 +7,7 @@ import { GoalCategories } from '../lunebeam/goal-categories';
 import { GoalsWizard } from '../lunebeam/goals-wizard';
 import { RedesignedGoalsWizard } from '../lunebeam/redesigned-goals-wizard';
 import { GoalProposalsView } from '../lunebeam/goal-proposals-view';
+import { useStore } from '../../store/useStore';
 
 type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wizard' | 'create-wizard' | 'proposals';
 
@@ -21,6 +22,8 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [aiGoal, setAiGoal] = useState<any>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const { userContext } = useStore();
 
   // Handle initial goal ID navigation
   useEffect(() => {
@@ -129,6 +132,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
               setCurrentView('list');
               onWizardStateChange?.(false);
             }}
+            isSupporter={userContext?.hasAdminFeatures || false}
           />
         );
       case 'proposals':
