@@ -67,11 +67,7 @@ export const goalsService = {
 
     let query = supabase
       .from('goals')
-      .select(`
-        *,
-        owner_profile:profiles!owner_id(first_name),
-        creator_profile:profiles!created_by(first_name)
-      `)
+      .select('*')
       .or(`owner_id.eq.${user.id},created_by.eq.${user.id}`);
 
     // By default, exclude archived goals unless specifically requested
