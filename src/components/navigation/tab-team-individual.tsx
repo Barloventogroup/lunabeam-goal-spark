@@ -16,6 +16,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { PermissionsService, type Supporter } from '@/services/permissionsService';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { InviteSupportersCard } from '@/components/lunebeam/invite-supporters-card';
 
 interface SupporterWithProfile extends Supporter {
   profile?: {
@@ -122,6 +123,9 @@ export const TabTeamIndividual: React.FC = () => {
             These people are here to help you succeed with your goals.
           </p>
         </div>
+
+        {/* Invite Supporters Section */}
+        <InviteSupportersCard onSuccess={loadSupporters} />
 
         {/* Support Team List */}
         {supporters.length > 0 ? (
