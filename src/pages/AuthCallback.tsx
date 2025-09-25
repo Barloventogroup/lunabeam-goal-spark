@@ -66,9 +66,9 @@ export default function AuthCallback() {
               token: token
             }));
             
-            // Confirm session and go straight to setup to avoid race conditions
+            // Confirm session and navigate to setup while maintaining React context
             await supabase.auth.getSession();
-            window.location.replace('/auth?mode=setup');
+            nav('/auth?mode=setup', { replace: true });
             return;
             
           } catch (error) {

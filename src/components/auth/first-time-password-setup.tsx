@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,40 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
+
+  // Wait for user context to be available
+  useEffect(() => {
+    const checkUser = async () => {
+      if (user) {
+        setUserLoading(false);
+        return;
+      }
+      
+      // Give the auth context a moment to initialize
+      setTimeout(async () => {
+        if (!user) {
+          // Fallback: try to get session directly
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) {
+              toast.error('Session expired. Please try again.');
+              window.location.href = '/auth';
+              return;
+            }
+          } catch (error) {
+            console.error('Failed to get session:', error);
+            toast.error('Authentication error. Please try again.');
+            window.location.href = '/auth';
+            return;
+          }
+        }
+        setUserLoading(false);
+      }, 1000);
+    };
+    
+    checkUser();
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,11 +69,17 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
     setLoading(true);
     try {
       // Ensure we have a valid session
-      if (!user) {
-        throw new Error('No authenticated user found. Please try again.');
+      let currentUser = user;
+      if (!currentUser) {
+        // Fallback: get user from current session
+        const { data: { session } } = await supabase.auth.getSession();
+        currentUser = session?.user || null;
+        if (!currentUser) {
+          throw new Error('No authenticated user found. Please try again.');
+        }
       }
 
-      console.log('Setting up password for user:', user.id);
+      console.log('Setting up password for user:', currentUser.id);
 
       // Update the user's password
       const { error: passwordError } = await supabase.auth.updateUser({
@@ -56,7 +96,7 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
           authentication_status: 'active',
           account_status: 'active'
         })
-        .eq('user_id', user.id);
+        .eq('user_id', currentUser.id);
 
       if (profileError) {
         console.error('Failed to update profile:', profileError);
@@ -96,6 +136,15 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
       setLoading(false);
     }
   };
+
+  // Show loading while waiting for user context
+  if (userLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ 
