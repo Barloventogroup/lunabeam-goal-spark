@@ -20,37 +20,28 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
   const [loading, setLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(true);
 
-  // Wait for user context to be available
+  // Wait for user/session to be available without redirecting
   useEffect(() => {
-    const checkUser = async () => {
-      if (user) {
-        setUserLoading(false);
+    let cancelled = false;
+    let attempts = 0;
+    const heartbeat = async () => {
+      if (cancelled) return;
+      const current = user || (await supabase.auth.getSession()).data.session?.user || null;
+      if (current) {
+        console.log('FirstTimePasswordSetup: session detected for', current.id);
+        if (!cancelled) setUserLoading(false);
         return;
       }
-      
-      // Give the auth context a moment to initialize
-      setTimeout(async () => {
-        if (!user) {
-          // Fallback: try to get session directly
-          try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session?.user) {
-              toast.error('Session expired. Please try again.');
-              window.location.href = '/auth';
-              return;
-            }
-          } catch (error) {
-            console.error('Failed to get session:', error);
-            toast.error('Authentication error. Please try again.');
-            window.location.href = '/auth';
-            return;
-          }
-        }
-        setUserLoading(false);
-      }, 1000);
+      if (attempts < 24) {
+        attempts += 1;
+        setTimeout(heartbeat, 300);
+      } else {
+        console.warn('FirstTimePasswordSetup: session not found after waiting');
+        if (!cancelled) setUserLoading(false);
+      }
     };
-    
-    checkUser();
+    heartbeat();
+    return () => { cancelled = true; };
   }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,15 +84,17 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
         .from('profiles')
         .update({ 
           password_set: true,
-          authentication_status: 'active',
+          authentication_status: 'authenticated',
           account_status: 'active'
         })
         .eq('user_id', currentUser.id);
 
       if (profileError) {
         console.error('Failed to update profile:', profileError);
+      } else {
+        console.log('FirstTimePasswordSetup: profile updated for', currentUser.id);
       }
-
+ 
       // If this was a claim flow, mark the claim as accepted
       const claimData = sessionStorage.getItem('claimData');
       if (claimData) {
@@ -130,8 +123,8 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
       
       onComplete();
     } catch (error: any) {
-      console.error('Password setup failed:', error);
-      toast.error(error.message || 'Failed to set password');
+       console.error('Password setup failed:', error);
+       toast.error(error.message || 'Failed to set password');
     } finally {
       setLoading(false);
     }

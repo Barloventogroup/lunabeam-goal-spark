@@ -108,15 +108,17 @@ Deno.serve(async (req) => {
       // Remap profile to new user id and update status
       const { error: remapProfileError } = await supabaseAdmin
         .from('profiles')
-        .update({
+        .upsert({
           user_id: userIdToUse,
           email: emailToUse,
           account_status: 'user_claimed',
-          authentication_status: 'temp_password',
+          authentication_status: 'pending',
+          first_name: claim.first_name ?? 'User',
+          password_set: false,
+          onboarding_complete: false,
           updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', claim.individual_id);
-      if (remapProfileError) console.error('❌ Failed to remap profile:', remapProfileError);
+        }, { onConflict: 'user_id' });
+      if (remapProfileError) console.error('❌ Failed to upsert profile:', remapProfileError);
 
       // Remap supporters (individual side)
       const { error: remapSupportersIndError } = await supabaseAdmin
@@ -168,15 +170,16 @@ Deno.serve(async (req) => {
       // Update profile status for existing user
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
-        .update({
+        .upsert({
+          user_id: userIdToUse,
           email: emailToUse,
           account_status: 'user_claimed',
-          authentication_status: 'temp_password',
+          authentication_status: 'pending',
+          first_name: claim.first_name ?? 'User',
           updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userIdToUse);
+        }, { onConflict: 'user_id' });
       if (profileError) {
-        console.error('❌ Failed to update profile:', profileError);
+        console.error('❌ Failed to upsert profile:', profileError);
       }
     }
 
