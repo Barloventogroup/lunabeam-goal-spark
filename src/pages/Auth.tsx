@@ -30,6 +30,7 @@ export default function Auth() {
   useEffect(() => {
     const emailFromUrl = searchParams.get('email');
     const mode = searchParams.get('mode');
+    const fromParam = searchParams.get('from');
     
     if (emailFromUrl) {
       setFormData(prev => ({
@@ -38,10 +39,13 @@ export default function Auth() {
       }));
     }
     
-    // Handle password setup mode - when they click magic link from invitation
+    // Handle different modes
     if (mode === 'setup') {
-      // We'll check if they need password setup after they're authenticated
-      // This will be handled in the checkPasswordSetupNeeded function
+      setNeedsPasswordSetup(true);
+    } else if (mode === 'signup' && fromParam === 'invite') {
+      setIsSignUp(true);
+    } else if (mode === 'signin') {
+      setIsSignUp(false);
     }
   }, [searchParams]);
   

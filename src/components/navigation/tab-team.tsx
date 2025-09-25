@@ -145,9 +145,27 @@ export const TabTeam: React.FC = () => {
         for (const individual of individualsISupport as any[]) {
           if (!seenIndividualIds.has(individual.individual_id)) {
             seenIndividualIds.add(individual.individual_id);
-            // Check if they have an email to determine if they've been invited
-            const hasEmail = individual.profile?.email && individual.profile.email.trim() !== '';
-            const displayStatus = hasEmail ? 'Connected' : 'Not invited yet';
+            // Get profile to check email and status
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('email, account_status, authentication_status')
+              .eq('user_id', individual.individual_id)
+              .single();
+            
+            const hasEmail = profileData?.email && profileData.email.trim() !== '';
+            const accountStatus = profileData?.account_status;
+            
+            // Determine display status based on email and account status
+            let displayStatus = 'Not invited yet';
+            if (hasEmail) {
+              if (accountStatus === 'user_claimed' || accountStatus === 'active') {
+                displayStatus = 'Connected';
+              } else if (accountStatus === 'pending_user_consent') {
+                displayStatus = 'Invited';
+              } else {
+                displayStatus = 'Invited';
+              }
+            }
             allMembers.push({
               id: `individual-${individual.individual_id}`,
               individual_id: individual.individual_id,
@@ -336,15 +354,19 @@ export const TabTeam: React.FC = () => {
   };
   const getStatusBadge = (type: 'supporter' | 'invite', inviteStatus?: string, displayStatus?: string) => {
     const status = displayStatus || (type === 'invite' ? inviteStatus : undefined) || (type === 'supporter' ? 'Active' : 'Pending');
+    
     switch (status) {
+      case 'Connected':
       case 'Active':
       case 'Accepted':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300">Accepted</Badge>;
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300">Connected</Badge>;
+      case 'Invited':
       case 'Pending':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300">Pending</Badge>;
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300">Invited</Badge>;
       case 'Not invited yet':
-      default:
         return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300">Not invited yet</Badge>;
+      default:
+        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300">Unknown</Badge>;
     }
   };
   const [collectEmailModal, setCollectEmailModal] = useState<{

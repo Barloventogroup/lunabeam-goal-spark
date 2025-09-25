@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { validateInvitationForm, sanitizeInput } from '@/utils/validateInviteFlow';
+import { ErrorHandlers } from '@/utils/errorHandling';
 
 interface AssignEmailModalProps {
   open: boolean;
@@ -29,21 +31,40 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
   const { toast } = useToast();
 
   const handleSend = async () => {
-    if (!email.trim()) {
+    // Validate all form inputs
+    const validation = validateInvitationForm({
+      email: email,
+      individualName: individualName,
+      message: message
+    });
+
+    if (!validation.isValid) {
       toast({
-        title: "Email Required",
-        description: "Please enter an email address",
+        title: "Validation Error",
+        description: validation.errors[0], // Show first error
         variant: "destructive"
       });
       return;
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedMessage = sanitizeInput(message);
+
+    // Validate required fields
+    if (!individualId) {
       toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address",
+        title: "Error",
+        description: "Individual ID is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!individualName?.trim()) {
+      toast({
+        title: "Error", 
+        description: "Individual name is required",
         variant: "destructive"
       });
       return;
@@ -51,42 +72,46 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
 
     setSending(true);
     try {
-      // Update the individual's profile with email
+      // Update the individual's profile with email and proper status
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ 
-          email: email.trim(),
-          account_status: 'pending_user_consent'
+          email: sanitizedEmail,
+          account_status: 'pending_user_consent',
+          authentication_status: 'pending'
         })
         .eq('user_id', individualId);
 
       if (updateError) {
-        throw updateError;
+        console.error('Profile update error:', updateError);
+        throw new Error(`Failed to update profile: ${updateError.message}`);
       }
 
-      // Generate a simple signup link with email parameter for easier access
-      const inviteLink = `${window.location.origin}/auth?mode=signin&email=${encodeURIComponent(email.trim())}`;
+      // Generate invitation link that leads to signup with pre-filled email
+      const inviteLink = `${window.location.origin}/auth?mode=signup&email=${encodeURIComponent(sanitizedEmail)}&from=invite`;
 
-      // Send invitation email
+      // Send invitation email with proper error handling
       const { data, error } = await supabase.functions.invoke('send-invitation-email', {
         body: {
           type: 'individual',
           inviteeName: individualName,
-          inviteeEmail: email.trim(),
+          inviteeEmail: sanitizedEmail,
           inviterName: 'Your supporter',
           inviteLink: inviteLink,
-          message: message.trim() || `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals. Use the "Forgot Password" option if you need to set a new password.`
+          message: sanitizedMessage || `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals. Click the link to create your password and get started.`
         }
       });
 
       if (error) {
-        console.error('Error sending invitation:', error);
-        throw error;
+        console.error('Email sending error:', error);
+        throw new Error(`Failed to send invitation email: ${error.message || 'Unknown error'}`);
       }
+
+      console.log('Invitation email sent successfully:', data);
 
       toast({
         title: "Invitation Sent!",
-        description: `Invitation sent to ${email}. They can sign in with their email and use "Forgot Password" to set a new password.`,
+        description: `Invitation sent to ${sanitizedEmail}. They will receive an email with setup instructions.`,
       });
 
       // Reset form and close modal
@@ -96,10 +121,10 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
       onSuccess?.();
 
     } catch (error: any) {
-      console.error('Failed to send invitation:', error);
+      const formattedError = ErrorHandlers.invitation(error);
       toast({
-        title: "Failed to Send",
-        description: error.message || "Failed to send invitation email",
+        title: "Failed to Send Invitation",
+        description: formattedError.message,
         variant: "destructive"
       });
     } finally {
