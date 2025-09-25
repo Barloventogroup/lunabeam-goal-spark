@@ -454,7 +454,7 @@ export const TabTeam: React.FC = () => {
         claimToken,
         passcode: passcode.substring(0, 2) + '****'
       });
-      const inviteLink = `${window.location.origin}/claim/${claimToken}`;
+      const inviteLink = `${window.location.origin}/auth?mode=signup&claim=${claimToken}`;
       console.log('Step 2: Generated claim link:', inviteLink);
 
       // Call the send-invitation-email edge function
