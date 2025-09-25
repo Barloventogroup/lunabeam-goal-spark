@@ -327,98 +327,130 @@ export const useStore = create<AppState>()(
       loadProfile: async () => {
         try {
           console.log('Store: loadProfile called');
+          
+          // First check if a profile already exists in database - avoid race conditions
           const profile = await database.getProfile();
           console.log('Store: Profile from DB:', profile);
           
-          if (!profile) {
-            console.log('Store: No profile found in DB, creating for new user...');
-
-            // Get current auth user first to scope persisted state
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            if (userError) {
-              console.error('Store: Failed to get user info:', userError);
-              throw userError;
-            }
-
-            if (user) {
-              console.log('Store: Current authenticated user ID:', user.id);
-              console.log('Store: User metadata:', user.user_metadata);
-              
-              // If switching between accounts on the same device, clear cross-user data
-              const storedUserId = get().lastUserId;
-              const isSameUser = !!storedUserId && storedUserId === user.id;
-              if (storedUserId && !isSameUser) {
-                console.log('Store: Detected user switch. Clearing state to prevent data leakage.');
-                set({
-                  profile: null,
-                  goals: [],
-                  steps: {},
-                  legacyGoals: [],
-                  checkIns: [],
-                  evidence: [],
-                  badges: [],
-                  currentGoal: null,
-                  lastUserId: user.id,
-                });
-              } else if (!storedUserId) {
-                // First time we see a user, remember it, but do not trust existing local profile
-                set({ lastUserId: user.id });
-              }
-
-              // Re-evaluate local profile after potential reset
-              const localProfile = get().profile;
-
-              // Only sync a meaningful local profile if it belongs to the same user (avoid cross-account leakage)
-              if (
-                isSameUser &&
-                localProfile?.first_name &&
-                localProfile.first_name.trim() !== '' &&
-                localProfile.first_name !== 'User'
-              ) {
-                console.log('Store: Syncing local profile to DB:', localProfile);
-                await database.saveProfile(localProfile);
-                set({ profile: localProfile });
-                return;
-              }
-
-              // Otherwise, create a minimal profile using auth user info
-              const metaFirst = (user.user_metadata?.first_name || '').toString().trim();
-              const emailLocal = (user.email || '').split('@')[0] || '';
-              const firstName = metaFirst || emailLocal || 'User';
-
-              const minimalProfile = {
-                first_name: firstName,
-                strengths: [],
-                interests: [],
-                challenges: [],
-                comm_pref: 'text' as const,
-                onboarding_complete: false,
-              };
-
-              console.log('Store: Creating minimal profile from auth:', minimalProfile);
-              console.log('Store: User info:', { id: user.id, email: user.email, metadata: user.user_metadata });
-              
-          try {
-            await database.saveProfile(minimalProfile);
-            console.log('Store: Successfully saved minimal profile to DB');
-            set({ profile: minimalProfile });
-            // Update user context for the new profile
-            const userContext = await getUserContext(minimalProfile);
-            set({ userContext });
-            return;
-          } catch (saveError) {
-            console.error('Store: Failed to save minimal profile to DB:', saveError);
-            // Set profile in state even if DB save fails, so onboarding can proceed
-            set({ profile: minimalProfile });
-            // Still try to get user context
-            const userContext = await getUserContext(minimalProfile);
+          if (profile) {
+            console.log('Store: Found existing profile, using it');
+            set({ profile });
+            const userContext = await getUserContext(profile);
             set({ userContext });
             return;
           }
-            } else {
-              console.error('Store: No authenticated user found');
-              throw new Error('No authenticated user found');
+          
+          console.log('Store: No profile found in DB, checking if one should exist...');
+
+          // Check if this might be a race condition - wait briefly and check again
+          await new Promise(resolve => setTimeout(resolve, 100));
+          const secondCheck = await database.getProfile();
+          if (secondCheck) {
+            console.log('Store: Profile appeared after brief delay, using it');
+            set({ profile: secondCheck });
+            const userContext = await getUserContext(secondCheck);
+            set({ userContext });
+            return;
+          }
+
+          console.log('Store: Definitely no profile exists, creating for new user...');
+
+          // Get current auth user first to scope persisted state
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError) {
+            console.error('Store: Failed to get user info:', userError);
+            throw userError;
+          }
+
+          if (user) {
+            console.log('Store: Current authenticated user ID:', user.id);
+            console.log('Store: User metadata:', user.user_metadata);
+            
+            // If switching between accounts on the same device, clear cross-user data
+            const storedUserId = get().lastUserId;
+            const isSameUser = !!storedUserId && storedUserId === user.id;
+            if (storedUserId && !isSameUser) {
+              console.log('Store: Detected user switch. Clearing state to prevent data leakage.');
+              set({
+                profile: null,
+                goals: [],
+                steps: {},
+                legacyGoals: [],
+                checkIns: [],
+                evidence: [],
+                badges: [],
+                currentGoal: null,
+                lastUserId: user.id,
+              });
+            } else if (!storedUserId) {
+              // First time we see a user, remember it, but do not trust existing local profile
+              set({ lastUserId: user.id });
             }
+
+            // Re-evaluate local profile after potential reset
+            const localProfile = get().profile;
+
+            // Only sync a meaningful local profile if it belongs to the same user (avoid cross-account leakage)
+            if (
+              isSameUser &&
+              localProfile?.first_name &&
+              localProfile.first_name.trim() !== '' &&
+              localProfile.first_name !== 'User'
+            ) {
+              console.log('Store: Syncing local profile to DB:', localProfile);
+              await database.saveProfile(localProfile);
+              set({ profile: localProfile });
+              return;
+            }
+
+            // Check if this is a claimed account by looking for claim tokens in session storage
+            const claimToken = sessionStorage.getItem('claim_token');
+            const isClaimedAccount = !!claimToken;
+            
+            console.log('Store: Creating minimal profile for', isClaimedAccount ? 'claimed account' : 'regular user');
+
+            // Create minimal profile with proper authentication fields
+            const metaFirst = (user.user_metadata?.first_name || '').toString().trim();
+            const emailLocal = (user.email || '').split('@')[0] || '';
+            const firstName = metaFirst || emailLocal || 'User';
+
+            const minimalProfile = {
+              first_name: firstName,
+              strengths: [],
+              interests: [],
+              challenges: [],
+              comm_pref: 'text' as const,
+              // Include authentication fields for regular users who just completed signup
+              password_set: true, // They just completed authentication
+              authentication_status: 'authenticated' as const,
+              account_status: isClaimedAccount ? 'user_claimed' as const : 'active' as const,
+              user_type: 'individual' as const,
+              onboarding_complete: isClaimedAccount, // Skip onboarding for claimed accounts only
+            };
+
+            console.log('Store: Creating minimal profile from auth:', minimalProfile);
+            console.log('Store: User info:', { id: user.id, email: user.email, metadata: user.user_metadata });
+            
+            try {
+              await database.saveProfile(minimalProfile);
+              console.log('Store: Successfully saved minimal profile to DB with auth fields for', isClaimedAccount ? 'claimed account' : 'regular user');
+              set({ profile: minimalProfile });
+              // Update user context for the new profile
+              const userContext = await getUserContext(minimalProfile);
+              set({ userContext });
+              return;
+            } catch (saveError) {
+              console.error('Store: Failed to save minimal profile to DB:', saveError);
+              // Set profile in state even if DB save fails, so onboarding can proceed
+              set({ profile: minimalProfile });
+              // Still try to get user context
+              const userContext = await getUserContext(minimalProfile);
+              set({ userContext });
+              return;
+            }
+          } else {
+            console.error('Store: No authenticated user found');
+            throw new Error('No authenticated user found');
           }
           
           // Ensure the profile name matches auth metadata; auto-repair if mismatched
