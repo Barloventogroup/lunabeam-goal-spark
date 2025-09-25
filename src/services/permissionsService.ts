@@ -55,7 +55,9 @@ export interface SupporterInvite {
   message?: string;
   expires_at: string;
   created_at: string;
-  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  status: 'pending' | 'accepted' | 'declined' | 'expired' | 'pending_admin_approval';
+  requires_approval?: boolean;
+  requested_by?: string;
 }
 
 export class PermissionsService {
@@ -152,12 +154,52 @@ export class PermissionsService {
     if (error) throw error;
   }
 
-  // Create supporter invite using secure database function to bypass RLS
+  // Create supporter invite or request (depending on admin status)
   static async createSupporterInvite(invite: Omit<SupporterInvite, 'id' | 'created_at' | 'status' | 'invite_token'>): Promise<SupporterInvite> {
-    console.group('🔄 Creating Supporter Invite (Secure)');
+    console.group('🔄 Creating Supporter Invite/Request');
     console.log('Invite data:', invite);
 
     try {
+      // Check if current user is admin of the individual account
+      const isUserAdmin = await this.isAdmin(invite.individual_id);
+      console.log('Is user admin?', isUserAdmin);
+
+      if (!isUserAdmin) {
+        // Non-admin creates a request for approval
+        console.log('Creating approval request (non-admin user)');
+        const { data, error } = await supabase
+          .from('supporter_invites')
+          .insert({
+            individual_id: invite.individual_id,
+            inviter_id: (await supabase.auth.getUser()).data.user?.id,
+            invitee_email: invite.invitee_email,
+            invitee_name: invite.invitee_name,
+            role: invite.role,
+            permission_level: invite.permission_level,
+            specific_goals: invite.specific_goals,
+            message: invite.message,
+            expires_at: invite.expires_at,
+            status: 'pending_admin_approval',
+            requires_approval: true,
+            requested_by: (await supabase.auth.getUser()).data.user?.id,
+            invite_token: '' // Will be generated on approval
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        console.log('✅ Approval request created:', data);
+        console.groupEnd();
+        return {
+          ...data,
+          role: data.role as UserRole,
+          permission_level: data.permission_level as PermissionLevel
+        } as SupporterInvite;
+      }
+
+      // Admin creates direct invitation
+      console.log('Creating direct invitation (admin user)');
       const { data, error } = await supabase.rpc('create_supporter_invite_secure', {
         p_individual_id: invite.individual_id,
         p_invitee_email: invite.invitee_email,
@@ -370,9 +412,20 @@ export class PermissionsService {
     const currentUserId = userId || (await supabase.auth.getUser()).data.user?.id;
     if (!currentUserId) return false;
 
-    // User is admin of themselves
-    if (currentUserId === individualId) return true;
+    // Check if user is admin of themselves (only for self-signup users)
+    if (currentUserId === individualId) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('created_by_supporter')
+        .eq('user_id', individualId)
+        .single();
+      
+      // Self-signup users (created_by_supporter is null) are admin of themselves
+      // Supporter-created users are NOT admin of themselves
+      return profile?.created_by_supporter === null;
+    }
 
+    // Check if user is admin via supporters table
     const { data, error } = await supabase
       .from('supporters')
       .select('is_admin')
@@ -399,5 +452,77 @@ export class PermissionsService {
       permission_level: supporter.permission_level === 'admin' ? 'collaborator' : supporter.permission_level,
       is_admin: true
     })) as Supporter[];
+  }
+
+  // Get pending approval requests for admin review
+  static async getPendingRequests(individualId: string): Promise<SupporterInvite[]> {
+    const { data, error } = await supabase
+      .from('supporter_invites')
+      .select('*')
+      .eq('individual_id', individualId)
+      .eq('status', 'pending_admin_approval')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return (data || []).map(request => ({
+      ...request,
+      role: request.role as UserRole,
+      permission_level: request.permission_level as PermissionLevel
+    })) as SupporterInvite[];
+  }
+
+  // Approve supporter request (converts to real invitation)
+  static async approveSupporterRequest(requestId: string): Promise<SupporterInvite> {
+    try {
+      // First, get the request details
+      const { data: request, error: fetchError } = await supabase
+        .from('supporter_invites')
+        .select('*')
+        .eq('id', requestId)
+        .eq('status', 'pending_admin_approval')
+        .single();
+
+      if (fetchError || !request) throw new Error('Request not found');
+
+      // Create actual invitation using secure function
+      const { data, error } = await supabase.rpc('create_supporter_invite_secure', {
+        p_individual_id: request.individual_id,
+        p_invitee_email: request.invitee_email,
+        p_invitee_name: request.invitee_name,
+        p_role: request.role,
+        p_permission_level: request.permission_level,
+        p_specific_goals: request.specific_goals,
+        p_message: request.message,
+        p_expires_at: request.expires_at
+      });
+
+      if (error) throw error;
+
+      // Delete the approval request
+      await supabase
+        .from('supporter_invites')
+        .delete()
+        .eq('id', requestId);
+
+      const inviteRecord = data[0];
+      return {
+        ...inviteRecord,
+        role: inviteRecord.role as UserRole,
+        permission_level: inviteRecord.permission_level as PermissionLevel
+      } as SupporterInvite;
+    } catch (error) {
+      console.error('Failed to approve supporter request:', error);
+      throw error;
+    }
+  }
+
+  // Deny supporter request
+  static async denySupporterRequest(requestId: string): Promise<void> {
+    const { error } = await supabase
+      .from('supporter_invites')
+      .update({ status: 'declined' })
+      .eq('id', requestId);
+    
+    if (error) throw error;
   }
 }

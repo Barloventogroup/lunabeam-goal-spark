@@ -889,6 +889,8 @@ export type Database = {
           inviter_id: string
           message: string | null
           permission_level: Database["public"]["Enums"]["permission_level"]
+          requested_by: string | null
+          requires_approval: boolean | null
           role: Database["public"]["Enums"]["user_role"]
           specific_goals: string[] | null
           status: Database["public"]["Enums"]["invite_status"]
@@ -904,6 +906,8 @@ export type Database = {
           inviter_id: string
           message?: string | null
           permission_level: Database["public"]["Enums"]["permission_level"]
+          requested_by?: string | null
+          requires_approval?: boolean | null
           role: Database["public"]["Enums"]["user_role"]
           specific_goals?: string[] | null
           status?: Database["public"]["Enums"]["invite_status"]
@@ -919,6 +923,8 @@ export type Database = {
           inviter_id?: string
           message?: string | null
           permission_level?: Database["public"]["Enums"]["permission_level"]
+          requested_by?: string | null
+          requires_approval?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
           specific_goals?: string[] | null
           status?: Database["public"]["Enums"]["invite_status"]
@@ -1311,7 +1317,12 @@ export type Database = {
     }
     Enums: {
       account_status: "active" | "pending_user_consent" | "user_claimed"
-      invite_status: "pending" | "accepted" | "declined" | "expired"
+      invite_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "expired"
+        | "pending_admin_approval"
       permission_level: "viewer" | "collaborator" | "admin"
       permission_level_fixed: "viewer" | "collaborator"
       user_role: "individual" | "supporter" | "friend" | "provider" | "admin"
@@ -1444,7 +1455,13 @@ export const Constants = {
   public: {
     Enums: {
       account_status: ["active", "pending_user_consent", "user_claimed"],
-      invite_status: ["pending", "accepted", "declined", "expired"],
+      invite_status: [
+        "pending",
+        "accepted",
+        "declined",
+        "expired",
+        "pending_admin_approval",
+      ],
       permission_level: ["viewer", "collaborator", "admin"],
       permission_level_fixed: ["viewer", "collaborator"],
       user_role: ["individual", "supporter", "friend", "provider", "admin"],

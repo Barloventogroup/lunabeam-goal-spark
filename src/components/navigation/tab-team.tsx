@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Users, UserPlus, Crown, Eye, MessageSquare, Edit3, MoreHorizontal, Mail, Phone, UserMinus, Bell, Save, X, User } from 'lucide-react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { PermissionsService, type Supporter } from '@/services/permissionsService';
+import { PermissionsService, type Supporter, type SupporterInvite } from '@/services/permissionsService';
 import { SimpleInviteModal } from '../lunebeam/simple-invite-modal';
 import { AddCommunityMemberModal } from '../lunebeam/add-community-member-modal';
 import { EmailAccountSetup } from '../lunebeam/email-account-setup';
@@ -58,6 +58,7 @@ export const TabTeam: React.FC = () => {
   } = useToast();
   const [supporters, setSupporters] = useState<SupporterWithProfile[]>([]);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<SupporterInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<MemberDetailData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -257,6 +258,34 @@ export const TabTeam: React.FC = () => {
 
       // Keep pending invites list for the table (for invite rows)
       setPendingInvites((invitesData || []).filter((invite: any) => invite.status === 'pending'));
+
+      // Load pending approval requests if user is admin of any account
+      const allMyIndividuals = individualsISupport || [];
+      let allPendingRequests: any[] = [];
+      
+      for (const individual of allMyIndividuals) {
+        if (individual.is_admin) {
+          try {
+            const requests = await PermissionsService.getPendingRequests(individual.individual_id);
+            allPendingRequests.push(...requests);
+          } catch (error) {
+            console.error('Error loading pending requests for individual:', individual.individual_id, error);
+          }
+        }
+      }
+      
+      // Also check if user is admin of themselves
+      const isAdminOfSelf = await PermissionsService.isAdmin(user.id);
+      if (isAdminOfSelf) {
+        try {
+          const selfRequests = await PermissionsService.getPendingRequests(user.id);
+          allPendingRequests.push(...selfRequests);
+        } catch (error) {
+          console.error('Error loading pending requests for self:', error);
+        }
+      }
+      
+      setPendingRequests(allPendingRequests);
     } catch (error) {
       console.error('TabTeam: Error loading community data:', error);
       toast({
@@ -549,6 +578,61 @@ export const TabTeam: React.FC = () => {
     // Implementation for viewing profile details
     console.log('View profile for:', member);
   };
+
+  // Handle approval request actions
+  const handleApproveRequest = async (requestId: string) => {
+    try {
+      const approvedInvite = await PermissionsService.approveSupporterRequest(requestId);
+      
+      // Send invitation email
+      const inviteLink = `${window.location.origin}/invitations/${approvedInvite.invite_token}`;
+      
+      await supabase.functions.invoke('send-invitation-email', {
+        body: {
+          type: 'supporter',
+          inviteeName: approvedInvite.invitee_name || 'User',
+          inviteeEmail: approvedInvite.invitee_email,
+          inviterName: user?.user_metadata?.first_name || 'Admin',
+          inviteLink: inviteLink,
+          message: approvedInvite.message || 'You have been invited to join as a supporter.'
+        }
+      });
+
+      toast({
+        title: "Request Approved",
+        description: "Invitation has been sent to the requested supporter."
+      });
+
+      loadCommunityData(); // Refresh data
+    } catch (error) {
+      console.error('Error approving request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to approve request. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDenyRequest = async (requestId: string) => {
+    try {
+      await PermissionsService.denySupporterRequest(requestId);
+      
+      toast({
+        title: "Request Denied",
+        description: "The supporter request has been declined."
+      });
+
+      loadCommunityData(); // Refresh data
+    } catch (error) {
+      console.error('Error denying request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to deny request. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
   const combinedMembers = [...supporters.map(s => ({
     ...s,
     type: 'supporter' as const
@@ -579,6 +663,87 @@ export const TabTeam: React.FC = () => {
         </div>
 
         <div className="p-4 space-y-6">
+
+          {/* Pending Approval Requests Section */}
+          {pendingRequests.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Pending Approval Requests ({pendingRequests.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Requested By</TableHead>
+                      <TableHead>Supporter Details</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Permission Level</TableHead>
+                      <TableHead>Message</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingRequests.map((request) => (
+                      <TableRow key={request.id}>
+                        <TableCell>
+                          <div className="text-sm">
+                            <div className="font-medium">Request from user</div>
+                            <div className="text-muted-foreground">
+                              {new Date(request.created_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <div className="font-medium">{request.invitee_name || 'Unnamed'}</div>
+                            <div className="text-muted-foreground">{request.invitee_email}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={getRoleColor(request.role)}>
+                            {getRoleIcon(request.role)}
+                            <span className="ml-1 capitalize">{request.role}</span>
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">
+                            {request.permission_level}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="max-w-xs text-sm text-muted-foreground truncate">
+                            {request.message || 'No message'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleApproveRequest(request.id)}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDenyRequest(request.id)}
+                              className="text-red-600 border-red-300 hover:bg-red-50"
+                            >
+                              Deny
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Quick Add Section */}
           <Card>

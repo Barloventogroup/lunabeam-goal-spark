@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { PermissionsService } from '@/services/permissionsService';
 import { useAuth } from '@/components/auth/auth-provider';
 
 interface AddCommunityMemberModalProps {
@@ -47,26 +48,47 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
 
     setLoading(true);
     try {
-      // Create supporter invite
-      const { error } = await supabase
-        .from('supporter_invites')
-        .insert({
-          inviter_id: user.id,
-          individual_id: user.id, // They are inviting to support the current user
-          invitee_name: formData.name.trim(),
-          invitee_email: formData.email.trim(),
-          role: formData.role as any,
-          permission_level: formData.permission_level as any,
-          invite_token: crypto.randomUUID(),
-          message: `${formData.name} has been invited to join your support network.`
+      // Use PermissionsService which handles approval workflow
+      const inviteResult = await PermissionsService.createSupporterInvite({
+        individual_id: user.id, // They are inviting to support the current user
+        inviter_id: user.id,
+        invitee_name: formData.name.trim(),
+        invitee_email: formData.email.trim(),
+        role: formData.role as any,
+        permission_level: formData.permission_level as any,
+        specific_goals: [],
+        message: `${formData.name} has been invited to join your support network.`,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+      });
+
+      // Check if it's a request or direct invitation based on status
+      const isRequest = inviteResult.status === 'pending_admin_approval';
+      
+      if (isRequest) {
+        toast({
+          title: "Request Sent for Approval",
+          description: `Your request to add ${formData.name} has been sent to an admin for approval.`
+        });
+      } else {
+        // For direct invitations, also send email
+        const inviteLink = `${window.location.origin}/invitations/${inviteResult.invite_token}`;
+        
+        await supabase.functions.invoke('send-invitation-email', {
+          body: {
+            type: 'supporter',
+            inviteeName: formData.name,
+            inviteeEmail: formData.email,
+            inviterName: user?.user_metadata?.first_name || 'Your friend',
+            inviteLink: inviteLink,
+            message: `${formData.name} has been invited to join your support network.`
+          }
         });
 
-      if (error) throw error;
-
-      toast({
-        title: "Invite Sent",
-        description: `Invitation sent to ${formData.name} successfully.`
-      });
+        toast({
+          title: "Invitation Sent",
+          description: `Invitation sent to ${formData.name} successfully.`
+        });
+      }
 
       setOpen(false);
       resetForm();
@@ -182,7 +204,7 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
               disabled={loading || !formData.name.trim() || !formData.email.trim()}
               className="flex-1"
             >
-              {loading ? 'Sending...' : 'Send Invite'}
+              {loading ? 'Sending...' : 'Send Request'}
             </Button>
           </div>
         </form>
