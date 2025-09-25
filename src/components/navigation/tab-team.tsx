@@ -745,29 +745,156 @@ export const TabTeam: React.FC = () => {
             </Card>
           )}
 
-          {/* Quick Add Section */}
+          {/* Invite Supporters Section */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <UserPlus className="h-5 w-5" />
-                Quick Add Individual
+                <Users className="h-5 w-5" />
+                Invite Supporters
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-2">
-                <Input placeholder="Enter first name" value={newIndividualName} onChange={e => setNewIndividualName(e.target.value)} className="flex-1" />
-                <Button onClick={createIndividual} disabled={!newIndividualName.trim() || creatingIndividual}>
-                  {creatingIndividual ? 'Adding...' : 'Add Individual'}
-                </Button>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Invite friends, family, or coaches to support your goals
+                </p>
+                <div className="flex gap-2">
+                  <AddCommunityMemberModal 
+                    trigger={
+                      <Button className="flex-1">
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Invite Supporter
+                      </Button>
+                    }
+                    onSuccess={loadCommunityData}
+                  />
+                  <SimpleInviteModal 
+                    trigger={
+                      <Button variant="outline" className="flex-1">
+                        <Mail className="h-4 w-4 mr-2" />
+                        Quick Invite
+                      </Button>
+                    }
+                  />
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                Creates a new individual account that you can manage and support
-              </p>
             </CardContent>
           </Card>
 
+          {/* Quick Add Individual Section (for admins) */}
+          {supporters.some(s => s.memberType === 'individual') && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <UserPlus className="h-5 w-5" />
+                  Quick Add Individual
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Enter first name" 
+                    value={newIndividualName} 
+                    onChange={e => setNewIndividualName(e.target.value)} 
+                    className="flex-1" 
+                  />
+                  <Button onClick={createIndividual} disabled={!newIndividualName.trim() || creatingIndividual}>
+                    {creatingIndividual ? 'Adding...' : 'Add Individual'}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Creates a new individual account that you can manage and support
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* My Supporters Table */}
+          {supporters.filter(s => s.memberType === 'supporter').length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    My Supporters ({supporters.filter(s => s.memberType === 'supporter').length})
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Permission Level</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {supporters.filter(s => s.memberType === 'supporter').map((member) => (
+                      <TableRow key={member.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                {member.profile?.first_name?.charAt(0)?.toUpperCase() || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-medium text-sm">
+                                {member.profile?.first_name || 'Unknown User'}
+                              </div>
+                              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                {member.is_admin && <Crown className="h-3 w-3 text-yellow-500" />}
+                                Supporter
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={getRoleColor(member.role)}>
+                            {getRoleIcon(member.role)}
+                            <span className="ml-1 capitalize">{member.role}</span>
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">
+                            {member.permission_level}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleMemberClick(member, 'supporter')}>
+                                <Edit3 className="h-4 w-4 mr-2" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleRemove(member.id, 'supporter')}
+                                className="text-red-600"
+                              >
+                                <UserMinus className="h-4 w-4 mr-2" />
+                                Remove
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Users I Support Table */}
-          <Card>
+          {supporters.filter(s => s.memberType === 'individual').length > 0 && (
+            <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -858,6 +985,7 @@ export const TabTeam: React.FC = () => {
               </Table>
             </CardContent>
           </Card>
+          )}
 
           {/* Community Members Table */}
           <Card>
