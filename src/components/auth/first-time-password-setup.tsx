@@ -79,20 +79,31 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
 
       if (passwordError) throw passwordError;
 
-      // Update the user's profile to mark password as set
+      // Check if this is a claimed account to determine onboarding status
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('account_status')
+        .eq('user_id', currentUser.id)
+        .single();
+
+      const isClaimedAccount = currentProfile?.account_status === 'user_claimed';
+      
+      // Update profile to mark password as set and handle onboarding
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
           password_set: true,
           authentication_status: 'authenticated',
-          account_status: 'active'
+          account_status: 'active',
+          onboarding_complete: isClaimedAccount // Skip onboarding for claimed accounts
         })
         .eq('user_id', currentUser.id);
 
       if (profileError) {
         console.error('Failed to update profile:', profileError);
       } else {
-        console.log('FirstTimePasswordSetup: profile updated for', currentUser.id);
+        console.log('FirstTimePasswordSetup: profile updated for', currentUser.id, 
+          isClaimedAccount ? '(claimed account - onboarding skipped)' : '(regular account - onboarding required)');
       }
  
       // If this was a claim flow, mark the claim as accepted

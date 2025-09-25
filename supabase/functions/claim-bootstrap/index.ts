@@ -115,10 +115,11 @@ Deno.serve(async (req) => {
           authentication_status: 'pending',
           first_name: claim.first_name ?? 'User',
           password_set: false,
-          onboarding_complete: false,
+          onboarding_complete: true, // Skip onboarding since admin already configured account
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
       if (remapProfileError) console.error('❌ Failed to upsert profile:', remapProfileError);
+      else console.log('✅ Profile configured for claimed account with onboarding bypassed');
 
       // Remap supporters (individual side)
       const { error: remapSupportersIndError } = await supabaseAdmin
@@ -176,10 +177,13 @@ Deno.serve(async (req) => {
           account_status: 'user_claimed',
           authentication_status: 'pending',
           first_name: claim.first_name ?? 'User',
+          onboarding_complete: true, // Skip onboarding since admin already configured account
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
       if (profileError) {
         console.error('❌ Failed to upsert profile:', profileError);
+      } else {
+        console.log('✅ Existing profile updated for claimed account with onboarding bypassed');
       }
     }
 
