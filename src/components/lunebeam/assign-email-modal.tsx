@@ -51,25 +51,38 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
 
     setSending(true);
     try {
-      // Call the edge function to assign email and send invitation
-      const { data, error } = await supabase.functions.invoke('send-account-invitation', {
+      // Update the individual's email and send invitation via the simplified flow
+      // First update the profile with the email
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          email: email.trim(),
+          account_status: 'pending_user_consent'
+        })
+        .eq('user_id', individualId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Generate invite link
+      const inviteLink = `${window.location.origin}/auth?mode=signup`;
+
+      // Send invitation email
+      const { data, error } = await supabase.functions.invoke('send-invitation-email', {
         body: {
-          individual_id: individualId,
-          invitee_email: email.trim(),
-          invitee_name: individualName,
-          message: message.trim() || undefined
+          type: 'individual',
+          inviteeName: individualName,
+          inviteeEmail: email.trim(),
+          inviterName: 'Your supporter',
+          inviteLink: inviteLink,
+          message: message.trim() || `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals.`
         }
       });
 
-      // Check if the response data indicates an error, not just the error field
-      if (error && !data?.success) {
+      if (error) {
         console.error('Error sending invitation:', error);
         throw error;
-      }
-
-      // If data indicates failure, throw an error with the message
-      if (data && !data.success) {
-        throw new Error(data.error || 'Failed to send invitation');
       }
 
       toast({

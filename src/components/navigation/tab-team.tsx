@@ -145,7 +145,9 @@ export const TabTeam: React.FC = () => {
         for (const individual of individualsISupport as any[]) {
           if (!seenIndividualIds.has(individual.individual_id)) {
             seenIndividualIds.add(individual.individual_id);
-            const displayStatus = 'Connected';
+            // Check if they have an email to determine if they've been invited
+            const hasEmail = individual.profile?.email && individual.profile.email.trim() !== '';
+            const displayStatus = hasEmail ? 'Connected' : 'Not invited yet';
             allMembers.push({
               id: `individual-${individual.individual_id}`,
               individual_id: individual.individual_id,
