@@ -226,7 +226,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   initialIndividualId,
   isSupporter = false
 }) => {
-  const [currentStep, setCurrentStep] = useState(isSupporter ? 0 : 1);
+  const [currentStep, setCurrentStep] = useState<number | null>(null); // Start with null to indicate loading
   const [data, setData] = useState<WizardData>({
     recipient: initialIndividualId ? 'other' : 'self',
     supportedPersonId: initialIndividualId,
@@ -263,6 +263,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       checkAssignPermissions();
     }
   }, [data.supportedPersonId, data.recipient]);
+
+  // Set initial step once isSupporter is determined
+  useEffect(() => {
+    if (currentStep === null) {
+      setCurrentStep(isSupporter ? 0 : 1);
+    }
+  }, [isSupporter, currentStep]);
   const loadSupportedPeople = async () => {
     try {
       const {
@@ -1030,8 +1037,22 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const lastStepIndex = isSupporter ? 8 : 7;
   const totalSteps = isSupporter ? 9 : 7;
-  const currentStepDisplay = isSupporter ? currentStep + 1 : currentStep;
+  const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
+  
+  // Show loading state while determining initial step
+  if (currentStep === null) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+        <div className="max-w-md mx-auto py-6 space-y-6">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       <div className="max-w-md mx-auto py-6 space-y-6">
         {/* Header */}
