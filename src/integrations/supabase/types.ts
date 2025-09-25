@@ -419,6 +419,7 @@ export type Database = {
           base_points_per_milestone: number | null
           base_points_per_planned_step: number | null
           created_at: string
+          created_by: string
           description: string | null
           domain: string | null
           due_date: string | null
@@ -446,6 +447,7 @@ export type Database = {
           base_points_per_milestone?: number | null
           base_points_per_planned_step?: number | null
           created_at?: string
+          created_by: string
           description?: string | null
           domain?: string | null
           due_date?: string | null
@@ -473,6 +475,7 @@ export type Database = {
           base_points_per_milestone?: number | null
           base_points_per_planned_step?: number | null
           created_at?: string
+          created_by?: string
           description?: string | null
           domain?: string | null
           due_date?: string | null

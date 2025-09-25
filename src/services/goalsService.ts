@@ -57,6 +57,7 @@ export const goalsService = {
     dueAfter?: string;
     q?: string;
     includeArchived?: boolean;
+    owner_id?: string;
   }): Promise<Goal[]> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user?.id) {
@@ -66,8 +67,12 @@ export const goalsService = {
 
     let query = supabase
       .from('goals')
-      .select('*')
-      .eq('owner_id', user.id);
+      .select(`
+        *,
+        owner_profile:profiles!goals_owner_id_fkey(first_name),
+        creator_profile:profiles!goals_created_by_fkey(first_name)
+      `)
+      .or(`owner_id.eq.${user.id},created_by.eq.${user.id}`);
 
     // By default, exclude archived goals unless specifically requested
     if (!filters?.includeArchived) {
@@ -76,6 +81,9 @@ export const goalsService = {
 
     if (filters?.status) {
       query = query.eq('status', filters.status);
+    }
+    if (filters?.owner_id) {
+      query = query.eq('owner_id', filters.owner_id);
     }
     if (filters?.dueBefore) {
       query = query.lte('due_date', filters.dueBefore);
@@ -117,9 +125,13 @@ export const goalsService = {
     duration_weeks?: number;
     step_type?: string;
     planned_milestones_count?: number;
+    assignedTo?: string;
   }): Promise<Goal> {
     const user = await supabase.auth.getUser();
     if (!user.data.user) throw new Error('User not authenticated');
+
+    const userId = user.data.user.id;
+    const assignedTo = goalData.assignedTo || userId;
 
 
     // Parse goal for TPP calculation if not provided
@@ -164,7 +176,8 @@ export const goalsService = {
       .insert({
         ...goalData,
         description: sanitizeDescription(goalData.description),
-        owner_id: user.data.user.id,
+        owner_id: assignedTo,
+        created_by: userId,
         priority: goalData.priority || 'medium',
         // Points system fields
         frequency_per_week: frequencyPerWeek,

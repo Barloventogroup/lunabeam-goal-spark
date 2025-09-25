@@ -19,10 +19,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { PermissionsService } from '@/services/permissionsService';
 import type { GoalDomain } from '@/types';
 interface RedesignedGoalsWizardProps {
-  onComplete: () => void;
+  onComplete: (goalData: any) => void;
   onCancel: () => void;
   initialIndividualId?: string;
   isSupporter?: boolean;
+}
+
+interface SupportedIndividual {
+  user_id: string;
+  first_name: string;
+  avatar_url?: string;
 }
 
 // Category definitions with icons, explanations, and detailed examples
@@ -411,7 +417,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
       // Celebration animation
       setTimeout(() => {
-        onComplete();
+        onComplete({
+          title: data.goalTitle,
+          description: data.goalTitle, // Use title as description for now
+          category: data.category,
+          frequency_per_week: data.frequency,
+          duration_weeks: Math.ceil((data.endDate ? (data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24 * 7) : 8)),
+          start_date: data.startDate.toISOString().split('T')[0],
+          due_date: data.endDate?.toISOString().split('T')[0],
+          assignedTo: data.recipient === 'other' ? data.supportedPersonId : undefined
+        });
       }, 1000);
     } catch (error) {
       console.error('Failed to create goal:', error);

@@ -187,6 +187,7 @@ export const goalProposalsService = {
       .from('goals')
       .insert({
         owner_id: proposal.individual_id,
+        created_by: proposal.proposer_id,
         title: proposal.title,
         description: proposal.description,
         domain: proposal.category?.toLowerCase().replace(/\s+/g, '-'),

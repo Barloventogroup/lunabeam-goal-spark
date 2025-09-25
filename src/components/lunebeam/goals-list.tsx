@@ -4,13 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight, User, Shield } from 'lucide-react';
 import { goalsService, stepsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal, Step } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
@@ -25,6 +27,9 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<GoalsTab>('active');
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterOwner, setFilterOwner] = useState<string>("all");
+  const [supportedPeople, setSupportedPeople] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const { toast } = useToast();
 
   const GOALS_PER_PAGE = 10;
