@@ -69,8 +69,8 @@ export const goalsService = {
       .from('goals')
       .select(`
         *,
-        owner_profile:profiles!goals_owner_id_fkey(first_name),
-        creator_profile:profiles!goals_created_by_fkey(first_name)
+        owner_profile:profiles!owner_id(first_name),
+        creator_profile:profiles!created_by(first_name)
       `)
       .or(`owner_id.eq.${user.id},created_by.eq.${user.id}`);
 
