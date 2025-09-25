@@ -87,8 +87,28 @@ export const AssignEmailModal: React.FC<AssignEmailModalProps> = ({
         throw new Error(`Failed to update profile: ${updateError.message}`);
       }
 
-      // Generate invitation link that leads to signup with pre-filled email
-      const inviteLink = `${window.location.origin}/auth?mode=signup&email=${encodeURIComponent(sanitizedEmail)}&from=invite`;
+      // Generate a unique claim token for this invitation
+      const claimToken = crypto.randomUUID().replace(/-/g, '').substring(0, 24);
+      
+      // Create an account claim record
+      const { error: claimError } = await supabase
+        .from('account_claims')
+        .insert({
+          individual_id: individualId,
+          provisioner_id: (await supabase.auth.getUser()).data.user?.id,
+          invitee_email: sanitizedEmail,
+          first_name: individualName,
+          claim_token: claimToken,
+          status: 'pending'
+        });
+
+      if (claimError) {
+        console.error('Account claim error:', claimError);
+        throw new Error(`Failed to create account claim: ${claimError.message}`);
+      }
+
+      // Generate invitation link that leads to a dedicated claim page
+      const inviteLink = `${window.location.origin}/auth?mode=claim&token=${claimToken}&email=${encodeURIComponent(sanitizedEmail)}`;
 
       // Send invitation email with proper error handling
       const { data, error } = await supabase.functions.invoke('send-invitation-email', {

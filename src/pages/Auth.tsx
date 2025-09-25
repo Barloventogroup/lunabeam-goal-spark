@@ -31,6 +31,7 @@ export default function Auth() {
     const emailFromUrl = searchParams.get('email');
     const mode = searchParams.get('mode');
     const fromParam = searchParams.get('from');
+    const token = searchParams.get('token');
     
     if (emailFromUrl) {
       setFormData(prev => ({
@@ -42,6 +43,11 @@ export default function Auth() {
     // Handle different modes
     if (mode === 'setup') {
       setNeedsPasswordSetup(true);
+    } else if (mode === 'claim' && token) {
+      // This is an account claim invitation - set to signup mode
+      setIsSignUp(true);
+      // Store the claim token for later use
+      sessionStorage.setItem('claimToken', token);
     } else if (mode === 'signup' && fromParam === 'invite') {
       setIsSignUp(true);
     } else if (mode === 'signin') {
@@ -124,13 +130,76 @@ export default function Auth() {
     setLoading(true);
     try {
       if (isSignUp) {
+        // Check if this is an account claim process
+        const claimToken = sessionStorage.getItem('claimToken');
+        
         const {
           error
         } = await signUp(formData.email, formData.password, 'User');
         if (error) {
           toast.error(error.message);
         } else {
-          if (isSupporterInvite) {
+          // If this is an account claim, link the new user to the existing profile
+          if (claimToken) {
+            try {
+              // Get the current user after signup
+              const { data: { user } } = await supabase.auth.getUser();
+              
+              if (user) {
+                // First, get the account claim to find the original provisional individual_id
+                const { data: claimData } = await supabase
+                  .from('account_claims')
+                  .select('individual_id, first_name')
+                  .eq('claim_token', claimToken)
+                  .eq('status', 'pending')
+                  .single();
+
+                if (claimData) {
+                  // Transfer any existing supporter relationships from provisional account to real user
+                  await supabase
+                    .from('supporters')
+                    .update({ individual_id: user.id })
+                    .eq('individual_id', claimData.individual_id);
+
+                  // Transfer goals and related data
+                  await supabase
+                    .from('goals')
+                    .update({ owner_id: user.id })
+                    .eq('owner_id', claimData.individual_id);
+
+                  // Delete the old provisional profile
+                  await supabase
+                    .from('profiles')
+                    .delete()
+                    .eq('user_id', claimData.individual_id);
+
+                  // Update the account claim
+                  const { error: updateError } = await supabase
+                    .from('account_claims')
+                    .update({
+                      status: 'accepted',
+                      claimed_at: new Date().toISOString(),
+                      individual_id: user.id
+                    })
+                    .eq('claim_token', claimToken);
+
+                  if (!updateError) {
+                    toast.success('Account claimed successfully! Welcome to Lunabeam.');
+                    sessionStorage.removeItem('claimToken');
+                  } else {
+                    console.error('Account claim update error:', updateError);
+                    toast.success('Account created! You can now sign in.');
+                  }
+                } else {
+                  console.warn('No matching claim found');
+                  toast.success('Account created! You can now sign in.');
+                }
+              }
+            } catch (claimError) {
+              console.error('Account claim error:', claimError);
+              toast.success('Account created! You can now sign in.');
+            }
+          } else if (isSupporterInvite) {
             toast.success('Account created! You will be connected as a supporter after verification.');
           } else {
             toast.success('Account created! Please check your email to verify your account.');
@@ -245,7 +314,9 @@ export default function Auth() {
             <img src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" alt="Lunabeam logo" className="h-11 w-auto object-cover object-center" />
           </div>
           <CardDescription className="text-black font-bold">
-            {isSupporterInvite ? "Create an account to become a supporter" : "Guiding big dreams, one step at a time"}
+            {isSupporterInvite ? "Create an account to become a supporter" : 
+             searchParams.get('mode') === 'claim' ? "Complete your account setup" :
+             "Guiding big dreams, one step at a time"}
           </CardDescription>
           {user && <div className="mt-2 text-sm text-muted-foreground">
               You're currently signed in. 
@@ -260,6 +331,9 @@ export default function Auth() {
         <CardContent>
           {isSupporterInvite && <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-800">
               You've been invited to become a supporter. Create an account to get started!
+            </div>}
+          {searchParams.get('mode') === 'claim' && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-800">
+              You've been invited to join Lunabeam! Create your account to get started with your goals.
             </div>}
           {!isSignUp && !isSupporterInvite}
           <div className="space-y-3 mb-4">
