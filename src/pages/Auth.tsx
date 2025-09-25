@@ -53,6 +53,7 @@ export default function Auth() {
       return;
     }
     if (mode === 'setup') {
+      console.log('Auth: Setup mode detected, showing password setup');
       setNeedsPasswordSetup(true);
       setShowPasswordSetup(true);
       setIsSignUp(false);
@@ -67,20 +68,26 @@ export default function Auth() {
 
   // Redirect to dashboard after successful authentication
   useEffect(() => {
-    if (user && !loading) {
+    if (user && !loading && !showPasswordSetup) {
       checkPasswordSetupNeeded();
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, showPasswordSetup]);
   const checkPasswordSetupNeeded = async () => {
     if (!user) return;
     
-    // Check for claim token from URL params or session storage
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlClaimToken = urlParams.get('token');
-    const claimToken = sessionStorage.getItem('claimToken') || urlClaimToken;
+    // Check for mode=setup in URL
+    const mode = searchParams.get('mode');
+    if (mode === 'setup') {
+      console.log('Auth: Setup mode in URL, showing password setup');
+      setNeedsPasswordSetup(true);
+      setShowPasswordSetup(true);
+      return;
+    }
     
-    if (claimToken) {
-      // This is from a claim invitation, show password setup
+    // Check for claim data from session storage
+    const claimData = sessionStorage.getItem('claimData');
+    if (claimData) {
+      console.log('Auth: Claim data in session storage, showing password setup');
       setNeedsPasswordSetup(true);
       setShowPasswordSetup(true);
       return;
@@ -90,7 +97,7 @@ export default function Auth() {
       const {
         data: profile,
         error
-      } = await supabase.from('profiles').select('password_set, authentication_status, created_by_supporter').eq('user_id', user.id).single();
+      } = await supabase.from('profiles').select('password_set, authentication_status').eq('user_id', user.id).single();
       
       // If no profile exists, create one for regular signup users
       if (error?.code === 'PGRST116') {
@@ -102,7 +109,7 @@ export default function Auth() {
             email: user.email,
             user_type: 'individual',
             account_status: 'active',
-            authentication_status: 'active',
+            authentication_status: 'authenticated',
             password_set: true, // They just set it during signup
             onboarding_complete: false,
             comm_pref: 'text'
@@ -116,8 +123,9 @@ export default function Auth() {
       
       if (error) throw error;
       
-      // Only show password setup for claimed accounts that haven't set a password yet
-      if (profile?.created_by_supporter && (!profile?.password_set || profile?.authentication_status === 'pending')) {
+      // Show password setup if password not set OR authentication status is pending
+      if (!profile?.password_set || profile?.authentication_status === 'pending') {
+        console.log('Auth: Profile needs password setup:', { password_set: profile?.password_set, authentication_status: profile?.authentication_status });
         setNeedsPasswordSetup(true);
         setShowPasswordSetup(true);
       } else {
