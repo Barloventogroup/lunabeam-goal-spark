@@ -64,9 +64,34 @@ export default function Auth() {
       const {
         data: profile,
         error
-      } = await supabase.from('profiles').select('password_set, authentication_status').eq('user_id', user.id).single();
+      } = await supabase.from('profiles').select('password_set, authentication_status, created_by_supporter').eq('user_id', user.id).single();
+      
+      // If no profile exists, create one for regular signup users
+      if (error?.code === 'PGRST116') {
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            first_name: user.user_metadata?.first_name || 'User',
+            email: user.email,
+            user_type: 'individual',
+            account_status: 'active',
+            authentication_status: 'active',
+            password_set: true, // They just set it during signup
+            onboarding_complete: false,
+            comm_pref: 'text'
+          });
+        
+        if (insertError) throw insertError;
+        
+        navigate('/', { replace: true });
+        return;
+      }
+      
       if (error) throw error;
-      if (!profile?.password_set || profile?.authentication_status === 'pending') {
+      
+      // Only show password setup for claimed accounts that haven't set a password yet
+      if (profile?.created_by_supporter && (!profile?.password_set || profile?.authentication_status === 'pending')) {
         setNeedsPasswordSetup(true);
         setShowPasswordSetup(true);
       } else {
