@@ -26,31 +26,18 @@ export default function Auth() {
     password: ''
   });
 
-  // Pre-fill email for claimed individuals
+  // Pre-fill email from URL parameter
   useEffect(() => {
     const emailFromUrl = searchParams.get('email');
-    const claimInfo = localStorage.getItem('claim_info');
     if (emailFromUrl) {
       setFormData(prev => ({
         ...prev,
         email: emailFromUrl
       }));
-    } else if (claimInfo) {
-      try {
-        const {
-          email
-        } = JSON.parse(claimInfo);
-        setFormData(prev => ({
-          ...prev,
-          email
-        }));
-      } catch (e) {
-        console.warn('Failed to parse claim info');
-      }
     }
   }, [searchParams]);
+  
   const isSupporterInvite = searchParams.get('redirect') === 'supporter-invite';
-  const isClaimLogin = searchParams.get('email') || localStorage.getItem('claim_info');
 
   // Redirect to dashboard after successful authentication
   useEffect(() => {
@@ -156,9 +143,6 @@ export default function Auth() {
             });
             if (!otpError) {
               toast.success('Magic link sent! Check your email to continue.');
-              localStorage.setItem('claim_info', JSON.stringify({
-                email: formData.email
-              }));
             } else {
               toast.error(otpError.message || 'Failed to send magic link');
             }
@@ -166,8 +150,6 @@ export default function Auth() {
             toast.error(error.message);
           }
         } else {
-          // Clear claim info on successful login
-          localStorage.removeItem('claim_info');
           toast.success('Welcome back!');
         }
       }
@@ -251,7 +233,7 @@ export default function Auth() {
             <img src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" alt="Lunabeam logo" className="h-11 w-auto object-cover object-center" />
           </div>
           <CardDescription className="text-black font-bold">
-            {isSupporterInvite ? "Create an account to become a supporter" : isClaimLogin ? "Sign in to access your personalized dashboard" : "Guiding big dreams, one step at a time"}
+            {isSupporterInvite ? "Create an account to become a supporter" : "Guiding big dreams, one step at a time"}
           </CardDescription>
           {user && <div className="mt-2 text-sm text-muted-foreground">
               You're currently signed in. 

@@ -392,7 +392,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         {/* Add Goal and Rewards Cards */}
         <div className="space-y-4">
           {/* Add Goal - Only show for admin users or if no goals exist */}
-          {(!userContext?.isClaimedIndividual || !hasActiveOrPlannedGoals) && (
+          {!hasActiveOrPlannedGoals && (
             <Card 
               className="cursor-pointer hover:bg-muted/50 transition-colors"
               onClick={() => onNavigate('goal-wizard')}
@@ -402,12 +402,8 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                   <Plus className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">
-                    {userContext?.isClaimedIndividual ? 'Suggest a Goal' : 'Add Goal'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {userContext?.isClaimedIndividual ? 'Share ideas with your support team' : 'Start something new'}
-                  </p>
+                  <p className="font-semibold text-foreground">Add Goal</p>
+                  <p className="text-sm text-muted-foreground">Start something new</p>
                 </div>
               </CardContent>
             </Card>
@@ -430,7 +426,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         </div>
 
         {/* Show personalized greeting only for admin users or first-time users */}
-        {(!userContext?.isClaimedIndividual || isFirstTimeUser) && (
+        {isFirstTimeUser && (
           <PersonalizedGreeting 
             onResumeGoal={handleResumeGoal}
             onNewGoal={handleNewGoal}

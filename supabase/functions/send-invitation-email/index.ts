@@ -87,31 +87,26 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       `;
     } else if (type === 'individual') {
-      subject = `Welcome to Lunabeam - Claim Your Account`;
+      subject = `Welcome to Lunabeam - Join Your Support Network`;
       htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Your Lunabeam Account is Ready!</h2>
+          <h2 style="color: #333;">Welcome to Lunabeam!</h2>
           <p>${greeting}</p>
-          <p><strong>${inviterName}</strong> has set up a Lunabeam account for you to help track and achieve your goals!</p>
+          <p><strong>${inviterName}</strong> has invited you to join Lunabeam to help track and achieve your goals together!</p>
           ${message ? `<div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;"><p><em>"${message}"</em></p></div>` : ''}
-          <p><strong>Your passcode:</strong></p>
-          <div style="background:#f4f4f4;border:1px solid #eee;border-radius:6px;padding:14px 16px;display:inline-block;font-family:monospace;font-size:18px;letter-spacing:2px;">
-            {{PASSCODE}}
-          </div>
-          <p style="color:#666;font-size:12px;margin-top:6px;">Keep this code safe. You'll enter it on the claim page to verify your identity.</p>
-          <p>With your Lunabeam account, you can:</p>
+          <p>With Lunabeam, you can:</p>
           <ul style="margin: 15px 0; padding-left: 25px;">
             <li>Set and track personal goals</li>
             <li>Break down goals into manageable steps</li>
             <li>Celebrate achievements and earn points</li>
             <li>Get support from your network</li>
           </ul>
-          <p>Click the link below to claim your account and start tracking your goals:</p>
-          <a href="${inviteLink}" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">Claim Your Account</a>
+          <p>Click the link below to create your account and start your journey:</p>
+          <a href="${inviteLink}" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">Join Lunabeam</a>
           <p>Or copy and paste this link in your browser:</p>
           <p style="background: #f8f9fa; padding: 10px; border-radius: 3px; font-family: monospace; word-break: break-all;">${inviteLink}</p>
           <hr style="margin: 30px 0;">
-          <p style="color: #666; font-size: 14px;">This account was created for you by ${inviterName} through Lunabeam. If you have any questions, please contact them directly.</p>
+          <p style="color: #666; font-size: 14px;">This invitation was sent by ${inviterName} through Lunabeam. If you didn't expect this invitation, you can safely ignore this email.</p>
         </div>
       `;
     } else {

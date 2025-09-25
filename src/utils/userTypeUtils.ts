@@ -5,7 +5,6 @@ export type UserType = 'individual' | 'admin' | 'unknown';
 
 export interface UserContext {
   userType: UserType;
-  isClaimedIndividual: boolean;
   hasAdminFeatures: boolean;
   profile: Profile | null;
 }
@@ -16,12 +15,10 @@ export interface UserContext {
 export async function getUserContext(profile: Profile | null): Promise<UserContext> {
   // Do not require user_id; rely on persisted profile.user_type
   const userType = (profile?.user_type ?? 'unknown') as UserType;
-  const isClaimedIndividual = profile?.account_status === 'user_claimed';
   const hasAdminFeatures = userType === 'admin';
 
   return {
     userType,
-    isClaimedIndividual,
     hasAdminFeatures,
     profile,
   };
@@ -38,14 +35,7 @@ export function getWelcomeMessage(
     ? userContext.profile.first_name.charAt(0).toUpperCase() + userContext.profile.first_name.slice(1)
     : 'User';
 
-  if (userContext.isClaimedIndividual) {
-    return {
-      title: `Welcome, ${displayName}!`,
-      subtitle: isFirstTime
-        ? "Your support team has set up your goals. Let's continue your journey together!"
-        : 'Ready to continue working on your goals? Your support team is here to help.',
-    };
-  }
+  // Simplified welcome logic - no more claim distinction
 
   // Admin/supporter messages
   return {

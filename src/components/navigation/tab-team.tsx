@@ -28,7 +28,7 @@ interface SupporterWithProfile extends Supporter {
     phone?: string;
   };
   memberType?: 'supporter' | 'individual'; // supporter = supports me, individual = I support them
-  displayStatus?: 'Accepted' | 'Pending' | 'Not invited yet' | 'Active';
+  displayStatus?: 'Connected' | 'Invited' | 'Not invited yet' | 'Active';
 }
 interface PendingInvite {
   id: string;
@@ -120,33 +120,7 @@ export const TabTeam: React.FC = () => {
         console.log('TabTeam: Individuals I support:', individualsISupport);
       }
 
-      // Fetch account claim statuses for these individuals
-      const individualIds = (individualsISupport || []).map((i: any) => i.individual_id);
-      const claimsMap = new Map<string, 'pending' | 'accepted'>();
-      if (individualIds.length) {
-        const {
-          data: claims
-        } = await supabase.from('account_claims').select('individual_id, status, expires_at').eq('provisioner_id', user.id).in('individual_id', individualIds);
-
-        // Only consider valid, non-expired claims
-        (claims || []).forEach((c: any) => {
-          const isExpired = new Date(c.expires_at) < new Date();
-          if (!isExpired && (c.status === 'pending' || c.status === 'accepted')) {
-            claimsMap.set(c.individual_id, c.status);
-          }
-        });
-      }
-
-      // Also fetch any individuals I have provisioned (even if no supporter relationship yet)
-      const {
-        data: provisionedList,
-        error: provisionedErr
-      } = await (supabase as any).rpc('get_my_provisioned_individuals');
-      if (provisionedErr) {
-        console.warn('TabTeam: get_my_provisioned_individuals error:', provisionedErr);
-      } else {
-        console.log('TabTeam: Provisioned individuals (via claims):', provisionedList);
-      }
+      // No more claim tracking - using simplified flow
       // Track individual IDs to prevent duplicates
       const seenIndividualIds = new Set<string>();
       const allMembers: SupporterWithProfile[] = [];
@@ -171,11 +145,7 @@ export const TabTeam: React.FC = () => {
         for (const individual of individualsISupport as any[]) {
           if (!seenIndividualIds.has(individual.individual_id)) {
             seenIndividualIds.add(individual.individual_id);
-            let displayStatus = 'Not invited yet';
-            const claimStatus = claimsMap.get(individual.individual_id);
-            if (claimStatus === 'accepted') {
-              displayStatus = 'Accepted';
-            }
+            const displayStatus = 'Connected';
             allMembers.push({
               id: `individual-${individual.individual_id}`,
               individual_id: individual.individual_id,
@@ -218,15 +188,7 @@ export const TabTeam: React.FC = () => {
           if (!seenIndividualIds.has(p.user_id)) {
             seenIndividualIds.add(p.user_id);
             console.log('TabTeam: Processing created profile:', p);
-            let displayStatus: 'Pending' | 'Accepted' | 'Not invited yet' = 'Not invited yet';
-            const {
-              data: claim
-            } = await supabase.from('account_claims').select('status, expires_at').eq('provisioner_id', user.id).eq('individual_id', p.user_id).maybeSingle();
-            console.log('TabTeam: Account claim for', p.user_id, ':', claim);
-            if (claim && claim.status === 'accepted') {
-              displayStatus = 'Accepted';
-            }
-            console.log('TabTeam: Adding created profile with status:', displayStatus);
+            const displayStatus = 'Invited';
             allMembers.push({
               id: `individual-${p.user_id}`,
               individual_id: p.user_id,
@@ -253,33 +215,7 @@ export const TabTeam: React.FC = () => {
         console.log('TabTeam: No created profiles found - this is normal for individual accounts');
       }
 
-      // Merge provisioned individuals from account claims as a fallback source
-      if (provisionedList && provisionedList.length > 0) {
-        for (const p of provisionedList as any[]) {
-          if (!seenIndividualIds.has(p.user_id)) {
-            seenIndividualIds.add(p.user_id);
-            let displayStatus = 'Not invited yet';
-            if (p.status === 'accepted') displayStatus = 'Accepted';else if (p.status === 'pending') displayStatus = 'Pending';
-            allMembers.push({
-              id: `individual-${p.user_id}`,
-              individual_id: p.user_id,
-              supporter_id: user.id,
-              role: 'individual' as any,
-              permission_level: 'viewer',
-              specific_goals: [],
-              is_admin: false,
-              is_provisioner: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              profile: {
-                first_name: p.first_name
-              },
-              memberType: 'individual',
-              displayStatus
-            } as any);
-          }
-        }
-      }
+      // No more provisioned individuals tracking from claims
 
       // Fetch actual profile data for individuals I support
       const individualsWithNames = await Promise.all(allMembers.filter(m => m.memberType === 'individual').map(async member => {
@@ -444,29 +380,19 @@ export const TabTeam: React.FC = () => {
       currentUserId: user?.id
     });
     try {
-      // Create or refresh an account claim for the individual
-      console.log('Step 1: Creating account claim...');
-      const {
-        claimToken,
-        passcode
-      } = await PermissionsService.createAccountClaim(individualId, user?.id || '');
-      console.log('✅ Account claim created:', {
-        claimToken,
-        passcode: passcode.substring(0, 2) + '****'
-      });
-      const inviteLink = `${window.location.origin}/auth?mode=signup&claim=${claimToken}`;
-      console.log('Step 2: Generated claim link:', inviteLink);
+      // Generate a simple signup link - no more claiming process
+      const inviteLink = `${window.location.origin}/auth?mode=signup`;
+      console.log('Step 1: Generated signup link:', inviteLink);
 
       // Call the send-invitation-email edge function
-      console.log('Step 3: Sending email via edge function...');
+      console.log('Step 2: Sending email via edge function...');
       const emailPayload = {
         type: 'individual',
         inviteeName: individualName,
         inviteeEmail: email,
         inviterName: user?.user_metadata?.first_name || 'Your supporter',
         inviteLink: inviteLink,
-        message: `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals.`,
-        passcode
+        message: `Welcome to Lunabeam! Your account has been set up and is ready for you to start tracking your goals. Please sign up using this link and your supporter will help you get started.`
       };
       console.log('Email payload:', emailPayload);
       const {
@@ -692,10 +618,10 @@ export const TabTeam: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {member.displayStatus === 'Accepted' ? <Badge className="bg-green-100 text-green-800 border-green-200">
-                            ✓ Accepted
-                          </Badge> : member.displayStatus === 'Pending' ? <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                            ⏳ Pending Invite
+                        {member.displayStatus === 'Connected' ? <Badge className="bg-green-100 text-green-800 border-green-200">
+                            ✓ Connected
+                          </Badge> : member.displayStatus === 'Invited' ? <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                            ⏳ Invited
                           </Badge> : <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
                             📧 Not Invited
                           </Badge>}

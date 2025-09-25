@@ -40,20 +40,7 @@ export interface AdminActionLog {
   created_at: string;
 }
 
-export interface AccountClaim {
-  id: string;
-  individual_id: string;
-  provisioner_id: string;
-  first_name?: string;
-  claim_token: string;
-  invitee_email?: string;
-  magic_link_token?: string;
-  magic_link_expires_at?: string;
-  expires_at: string;
-  claimed_at?: string;
-  created_at: string;
-  status: 'pending' | 'accepted' | 'declined' | 'expired';
-}
+// AccountClaim interface removed - using simplified auth flow
 
 export interface SupporterInvite {
   id: string;
@@ -267,64 +254,7 @@ export class PermissionsService {
   }
 
   // Create account claim for on-behalf account creation
-  static async createAccountClaim(
-    individualId: string, 
-    provisionerId: string
-  ): Promise<{ claimToken: string; passcode: string }> {
-    const claimToken = crypto.randomUUID();
-    const passcode = Math.random().toString(36).substring(2, 8).toUpperCase();
-    
-    const { error } = await supabase
-      .from('account_claims')
-      .insert({
-        individual_id: individualId,
-        provisioner_id: provisionerId,
-        claim_token: claimToken,
-        claim_passcode: passcode,
-        status: 'pending'
-      });
-    
-    if (error) throw error;
-    return { claimToken, passcode };
-  }
-
-  // Claim account
-  static async claimAccount(claimToken: string, passcode: string): Promise<boolean> {
-    try {
-      console.log('🔍 Attempting to claim account:', { 
-        claimToken, 
-        passcode: passcode.substring(0,2) + '****',
-        passcodeLength: passcode.length 
-      });
-      
-      const { data, error } = await supabase.rpc('claim_account', {
-        _claim_token: claimToken,
-        _passcode: passcode
-      });
-      
-      console.log('🔍 Claim account response:', { data, error });
-      
-      if (error) throw error;
-      return (data as any)?.success || false;
-    } catch (error) {
-      console.error('Account claim failed:', error);
-      return false;
-    }
-  }
-
-  // Get account claim by token
-  static async getAccountClaim(claimToken: string): Promise<AccountClaim | null> {
-    const { data, error } = await supabase
-      .from('account_claims')
-      .select('*')
-      .eq('claim_token', claimToken)
-      .eq('status', 'pending')
-      .gt('expires_at', new Date().toISOString())
-      .single();
-    
-    if (error) return null;
-    return data;
-  }
+  // Legacy account claim methods removed - using simplified auth flow
 
   // Check if user is provisioner for an individual
   static async isProvisioner(individualId: string, supporterId: string): Promise<boolean> {
