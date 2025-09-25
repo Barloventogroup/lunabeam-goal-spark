@@ -70,11 +70,11 @@ verify_jwt = false
 [functions.send-account-invitation]
 verify_jwt = false
 
-# Make the claim account function public (no JWT required) 
-[functions.claim-account-with-auth]
+# Make the claim bootstrap function public (no JWT required)
+[functions.claim-bootstrap]
 verify_jwt = false
 
-[functions.claim-lookup]
+[functions.validate-claim-token]
 verify_jwt = false
 
 [edge_runtime]

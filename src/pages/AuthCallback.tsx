@@ -21,85 +21,61 @@ export default function AuthCallback() {
         const token = url.searchParams.get('token');
         const email = url.searchParams.get('email');
 
-        // Handle account claim tokens - create account automatically
+        // Handle account claim tokens
         if (token && email) {
-          console.log('Processing account claim token:', token, email);
+          console.log('Processing account claim with token:', token, 'email:', email);
           
-          // Sign out any existing user first to prevent conflicts
-          await supabase.auth.signOut();
-          
-          // Validate the claim token using edge function (bypasses RLS)
-          const { data: validationResult, error: validationError } = await supabase.functions.invoke(
-            'validate-claim-token',
-            {
-              body: { token, email: email.toLowerCase() }
+          try {
+            // Use claim-bootstrap to validate token and get temporary credentials
+            const { data: bootstrapData, error: bootstrapError } = await supabase.functions.invoke(
+              'claim-bootstrap',
+              {
+                body: { token, email: email.toLowerCase() }
+              }
+            );
+
+            console.log('Bootstrap result:', bootstrapData, 'Error:', bootstrapError);
+
+            if (bootstrapError || !bootstrapData?.success) {
+              console.error('Claim bootstrap failed:', bootstrapError || bootstrapData?.error);
+              setStatus('error');
+              setMsg(bootstrapData?.error || 'Invalid or expired invitation link');
+              return;
             }
-          );
 
-          console.log('Validation result:', validationResult, 'Error:', validationError);
+            // Sign in immediately with the temporary password
+            console.log('Signing in with temporary credentials for:', bootstrapData.email);
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+              email: bootstrapData.email,
+              password: bootstrapData.tempPassword
+            });
 
-          if (validationError || !validationResult?.success) {
+            if (signInError) {
+              console.error('Temporary sign-in failed:', signInError);
+              setStatus('error');
+              setMsg('Failed to authenticate account');
+              return;
+            }
+
+            console.log('✅ Successfully signed in with temporary credentials');
+            
+            // Store claim info for password setup
+            sessionStorage.setItem('claimData', JSON.stringify({
+              individual_id: bootstrapData.individualId,
+              first_name: bootstrapData.firstName,
+              token: token
+            }));
+            
+            setStatus('ready');
+            setMsg('Account ready! Setting up your password...');
+            return;
+            
+          } catch (error) {
+            console.error('Account claim processing error:', error);
             setStatus('error');
-            setMsg(validationResult?.error || 'Invalid or expired invitation link. Please request a new invitation.');
+            setMsg('Failed to process account claim');
             return;
           }
-
-          const claimData = validationResult.claimData;
-
-          // Create user account automatically with a temporary password
-          const tempPassword = crypto.randomUUID();
-          console.log('Creating user account for:', email.toLowerCase());
-          
-          const { data: authData, error: signUpError } = await supabase.auth.signUp({
-            email: email.toLowerCase(),
-            password: tempPassword,
-            options: {
-              emailRedirectTo: `${window.location.origin}/auth/callback`,
-              data: {
-                first_name: claimData.first_name || 'User'
-              }
-            }
-          });
-
-          console.log('Signup result:', authData, 'Error:', signUpError);
-
-          if (signUpError) {
-            console.error('Auto signup error:', signUpError);
-            
-            // Check if user already exists
-            if (signUpError.message?.includes('already registered')) {
-              // Try to sign in with a magic link instead
-              const { error: magicLinkError } = await supabase.auth.signInWithOtp({
-                email: email.toLowerCase(),
-                options: {
-                  emailRedirectTo: `${window.location.origin}/auth?mode=setup`
-                }
-              });
-              
-              if (magicLinkError) {
-                setStatus('error');
-                setMsg('Account exists but failed to send login link. Please contact support.');
-                return;
-              }
-              
-              setStatus('success');
-              setMsg('Login link sent to your email. Please check your email to continue setup.');
-              return;
-            } else {
-              setStatus('error');
-              setMsg(`Failed to create account: ${signUpError.message}`);
-              return;
-            }
-          }
-
-          // Store claim token for completing the claim process after password setup
-          sessionStorage.setItem('claimToken', token);
-          sessionStorage.setItem('claimEmail', email);
-          
-          // Set success and redirect to password setup
-          setStatus('ready');
-          setMsg('Account created! Setting up your password...');
-          return;
         }
 
         if (code) {
@@ -163,8 +139,8 @@ export default function AuthCallback() {
   useEffect(() => {
     if (status === 'ready') {
       // Check if this is a claim setup
-      const claimToken = sessionStorage.getItem('claimToken');
-      if (claimToken) {
+      const claimData = sessionStorage.getItem('claimData');
+      if (claimData) {
         nav('/auth?mode=setup', { replace: true });
       } else {
         nav('/auth/reset', { replace: true });

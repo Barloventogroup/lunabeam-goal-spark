@@ -34,106 +34,57 @@ export const FirstTimePasswordSetup: React.FC<FirstTimePasswordSetupProps> = ({ 
 
     setLoading(true);
     try {
-      // Check for claim token to handle account claiming flow
-      const claimToken = sessionStorage.getItem('claimToken');
-      const claimEmail = sessionStorage.getItem('claimEmail');
-      
-      if (claimToken) {
-        // This is an account claim - need to handle the full claim process
-        console.log('Processing account claim with token:', claimToken);
+      // Ensure we have a valid session
+      if (!user) {
+        throw new Error('No authenticated user found. Please try again.');
+      }
+
+      console.log('Setting up password for user:', user.id);
+
+      // Update the user's password
+      const { error: passwordError } = await supabase.auth.updateUser({
+        password: password
+      });
+
+      if (passwordError) throw passwordError;
+
+      // Update the user's profile to mark password as set
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ 
+          password_set: true,
+          authentication_status: 'active',
+          account_status: 'active'
+        })
+        .eq('user_id', user.id);
+
+      if (profileError) {
+        console.error('Failed to update profile:', profileError);
+      }
+
+      // If this was a claim flow, mark the claim as accepted
+      const claimData = sessionStorage.getItem('claimData');
+      if (claimData) {
+        const claimInfo = JSON.parse(claimData);
         
-        // First ensure we have a valid session
-        if (!user) {
-          throw new Error('No authenticated user found. Please try again.');
-        }
-        
-        // Update user password
-        const { error: passwordError } = await supabase.auth.updateUser({
-          password: password,
-          email: claimEmail || user.email // Ensure email is properly set
-        });
-
-        if (passwordError) throw passwordError;
-
-        // Get the claim details to transfer data
-        const { data: claimData, error: claimError } = await supabase
+        // Update account claim status
+        const { error: claimError } = await supabase
           .from('account_claims')
-          .select('individual_id, first_name, provisioner_id')
-          .eq('claim_token', claimToken)
-          .eq('status', 'pending')
-          .single();
-
-        if (claimError || !claimData) {
-          throw new Error('Invalid or expired claim token');
-        }
-
-        // Transfer supporter relationships from provisional account to real user
-        await supabase
-          .from('supporters')
-          .update({ individual_id: user?.id })
-          .eq('individual_id', claimData.individual_id);
-
-        // Transfer goals and related data
-        await supabase
-          .from('goals')
-          .update({ owner_id: user?.id })
-          .eq('owner_id', claimData.individual_id);
-
-        // Delete the old provisional profile
-        await supabase
-          .from('profiles')
-          .delete()
-          .eq('user_id', claimData.individual_id);
-
-        // Update the account claim status
-        await supabase
-          .from('account_claims')
-          .update({
+          .update({ 
             status: 'accepted',
-            claimed_at: new Date().toISOString(),
-            individual_id: user?.id
+            claimed_at: new Date().toISOString()
           })
-          .eq('claim_token', claimToken);
+          .eq('claim_token', claimInfo.token);
 
-        // Create/update the profile for the claiming user
-        await supabase
-          .from('profiles')
-          .upsert({
-            user_id: user?.id,
-            first_name: claimData.first_name || 'User',
-            email: user?.email,
-            user_type: 'individual',
-            account_status: 'active',
-            authentication_status: 'active',
-            password_set: true,
-            onboarding_complete: false,
-            comm_pref: 'text'
-          });
+        if (claimError) {
+          console.error('Failed to update claim status:', claimError);
+        }
 
-        // Clean up session storage
-        sessionStorage.removeItem('claimToken');
-        sessionStorage.removeItem('claimEmail');
+        // Clear claim data
+        sessionStorage.removeItem('claimData');
         
         toast.success('Account claimed successfully! Welcome to Lunabeam.');
       } else {
-        // Regular password setup flow
-        const { error: passwordError } = await supabase.auth.updateUser({
-          password: password
-        });
-
-        if (passwordError) throw passwordError;
-
-        // Mark password as set in profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ 
-            password_set: true,
-            authentication_status: 'active'
-          })
-          .eq('user_id', user?.id);
-
-        if (profileError) throw profileError;
-        
         toast.success('Password set successfully! You can now log in with your email and password.');
       }
       
