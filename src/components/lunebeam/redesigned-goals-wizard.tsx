@@ -272,18 +272,37 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   }, [isSupporter, currentStep]);
   const loadSupportedPeople = async () => {
     try {
-      const {
-        data: supporters,
-        error
-      } = await supabase.from('supporters').select(`
-          individual_id,
-          profiles!supporters_individual_id_fkey(first_name)
-        `).eq('supporter_id', (await supabase.auth.getUser()).data.user?.id);
-      if (error) throw error;
-      const people = (supporters || []).map(s => ({
-        id: s.individual_id,
-        name: (s as any).profiles?.first_name || 'Unknown'
-      }));
+      // First, get the supporter relationships
+      const { data: supporters, error: supportersError } = await supabase
+        .from('supporters')
+        .select('individual_id')
+        .eq('supporter_id', (await supabase.auth.getUser()).data.user?.id);
+      
+      if (supportersError) throw supportersError;
+      
+      if (!supporters || supporters.length === 0) {
+        setSupportedPeople([]);
+        return;
+      }
+
+      // Then get the profile names for those individuals
+      const individualIds = supporters.map(s => s.individual_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, first_name')
+        .in('user_id', individualIds);
+      
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      const people = supporters.map(s => {
+        const profile = profiles?.find(p => p.user_id === s.individual_id);
+        return {
+          id: s.individual_id,
+          name: profile?.first_name || 'Unknown'
+        };
+      });
+      
       setSupportedPeople(people);
 
       // Set initial name if we have an ID
