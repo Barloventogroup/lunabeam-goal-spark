@@ -9,11 +9,14 @@ import { fixGoalDomains } from '@/utils/goalMigrationUtils';
 declare global {
   interface Window {
     fixGoalDomains: () => Promise<void>;
+    reassignGoalOwner: (goalId: string, newOwnerUserId: string) => Promise<Goal>;
   }
 }
 
 if (typeof window !== 'undefined') {
   window.fixGoalDomains = fixGoalDomains;
+  window.reassignGoalOwner = (goalId: string, newOwnerUserId: string) => 
+    goalsService.reassignGoalOwner(goalId, newOwnerUserId);
 }
 
 const sanitizeDescription = (text?: string): string => {
@@ -303,6 +306,19 @@ export const goalsService = {
   // Admin utility to fix goal domains
   async fixGoalDomains(): Promise<void> {
     return fixGoalDomains();
+  },
+
+  // Temporary admin utility to reassign goal ownership
+  async reassignGoalOwner(goalId: string, newOwnerUserId: string): Promise<Goal> {
+    const { data, error } = await supabase
+      .from('goals')
+      .update({ owner_id: newOwnerUserId })
+      .eq('id', goalId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as Goal;
   }
 };
 // Steps API
