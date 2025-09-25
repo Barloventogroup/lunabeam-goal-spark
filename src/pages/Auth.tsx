@@ -110,6 +110,51 @@ export default function Auth() {
     }));
   };
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: { access_type: 'offline', prompt: 'consent' }
+        }
+      });
+      if (error) {
+        toast.error(error.message || 'Google sign-in failed');
+      }
+    } catch (e) {
+      toast.error('Google sign-in failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMagicLink = async () => {
+    if (!formData.email) {
+      toast.error('Please enter your email first');
+      return;
+    }
+    setLoading(true);
+    try {
+      const redirectUrl = `${window.location.origin}/auth/callback`;
+      const { error } = await supabase.auth.signInWithOtp({
+        email: formData.email,
+        options: { emailRedirectTo: redirectUrl }
+      });
+      if (error) {
+        toast.error(error.message || 'Failed to send magic link');
+      } else {
+        toast.success('Magic link sent! Check your email to continue.');
+        localStorage.setItem('claim_info', JSON.stringify({ email: formData.email }));
+      }
+    } catch (e) {
+      toast.error('Failed to send magic link');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ 
       backgroundImage: 'url(/lovable-uploads/9c1b5bdb-2b99-433d-8696-e539336f2074.png)', 
@@ -158,6 +203,16 @@ export default function Auth() {
               }
             </div>
           )}
+          <div className="space-y-3 mb-4">
+            <Button type="button" variant="secondary" className="w-full" onClick={handleGoogleSignIn} disabled={loading}>
+              Continue with Google
+            </Button>
+            <div className="text-xs text-muted-foreground text-center">or</div>
+            <Button type="button" variant="outline" className="w-full" onClick={handleMagicLink} disabled={loading || !formData.email}>
+              Send magic link to email
+            </Button>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             
             <div className="space-y-2">
