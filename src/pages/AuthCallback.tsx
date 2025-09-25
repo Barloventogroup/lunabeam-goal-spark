@@ -25,6 +25,9 @@ export default function AuthCallback() {
         if (token && email) {
           console.log('Processing account claim token:', token, email);
           
+          // Sign out any existing user first to prevent conflicts
+          await supabase.auth.signOut();
+          
           // Validate the claim token
           const { data: claimData, error: claimError } = await supabase
             .from('account_claims')

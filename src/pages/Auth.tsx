@@ -21,6 +21,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   const [needsPasswordSetup, setNeedsPasswordSetup] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -44,11 +45,15 @@ export default function Auth() {
     if (mode === 'setup') {
       setNeedsPasswordSetup(true);
     } else if (mode === 'claim' && token) {
-      // This is an account claim invitation - show password setup
-      setNeedsPasswordSetup(true);
-      setShowPasswordSetup(true);
-      // Store the claim token for later use
-      sessionStorage.setItem('claimToken', token);
+      // This is an account claim invitation - sign out any existing user first
+      setSigningOut(true);
+      supabase.auth.signOut().then(() => {
+        setNeedsPasswordSetup(true);
+        setShowPasswordSetup(true);
+        // Store the claim token for later use
+        sessionStorage.setItem('claimToken', token);
+        setSigningOut(false);
+      });
     } else if (mode === 'signup' && fromParam === 'invite') {
       setIsSignUp(true);
     } else if (mode === 'signin') {
@@ -257,6 +262,24 @@ export default function Auth() {
       setLoading(false);
     }
   };
+
+  // Show loading when signing out for claim
+  if (signingOut) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{
+        backgroundImage: 'url(/lovable-uploads/9c1b5bdb-2b99-433d-8696-e539336f2074.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}>
+        <Card className="w-full max-w-xs shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
+          <CardContent className="flex flex-col items-center justify-center p-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+            <p className="text-sm text-muted-foreground">Preparing your account setup...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Show password setup screen for first-time users or invited individuals
   if (showPasswordSetup && needsPasswordSetup) {
