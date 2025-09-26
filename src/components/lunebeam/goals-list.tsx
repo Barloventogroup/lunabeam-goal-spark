@@ -57,14 +57,27 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
         );
       }
       
-      // Build profiles lookup
+      // Build profiles lookup by fetching profiles separately
       const profiles: Record<string, any> = {};
+      const userIds = new Set<string>();
+      
+      // Collect all unique user IDs from goals
       for (const goal of goalsData) {
-        if ((goal as any).owner_profile) {
-          profiles[goal.owner_id] = (goal as any).owner_profile;
-        }
-        if ((goal as any).creator_profile) {
-          profiles[goal.created_by] = (goal as any).creator_profile;
+        if (goal.owner_id) userIds.add(goal.owner_id);
+        if (goal.created_by) userIds.add(goal.created_by);
+      }
+      
+      // Fetch profiles for all unique user IDs
+      if (userIds.size > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, first_name')
+          .in('user_id', Array.from(userIds));
+        
+        if (profilesData) {
+          for (const profile of profilesData) {
+            profiles[profile.user_id] = profile;
+          }
         }
       }
       setAllProfiles(profiles);

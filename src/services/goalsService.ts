@@ -77,11 +77,7 @@ export const goalsService = {
 
     let query = supabase
       .from('goals')
-      .select(`
-        *,
-        owner_profile:profiles!owner_id(first_name),
-        creator_profile:profiles!created_by(first_name)
-      `);
+      .select('*');
 
     // Include goals where user is owner, creator, or admin of the owner
     if (supportedIds.length > 0) {
