@@ -78,39 +78,46 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days
       });
 
-      // Send email invitation
-      try {
-        const baseUrl = SITE_URL || window.location.origin;
-        const inviteLink = `${baseUrl}/invitations?token=${inviteResponse.invite_token}`;
-        
-        const { data: currentUser } = await supabase.auth.getUser();
-        const inviterName = currentUser?.user?.user_metadata?.full_name || 'Someone';
+      // Only send email if invite token exists (direct admin invite); otherwise show approval notice
+      if (inviteResponse.invite_token && inviteResponse.status !== 'pending_admin_approval') {
+        try {
+          const baseUrl = SITE_URL || window.location.origin;
+          const inviteLink = `${baseUrl}/invitations?token=${inviteResponse.invite_token}`;
+          
+          const { data: currentUser } = await supabase.auth.getUser();
+          const inviterName = currentUser?.user?.user_metadata?.full_name || 'Someone';
 
-        const { data, error } = await supabase.functions.invoke('send-invitation-email', {
-          body: {
-            type: 'supporter',
-            inviteeName: inviteForm.name || 'Friend',
-            inviteeEmail: email,
-            inviterName,
-            message: inviteForm.message || undefined,
-            inviteLink,
-            roleName: inviteForm.role
-          }
-        });
+          const { data, error } = await supabase.functions.invoke('send-invitation-email', {
+            body: {
+              type: 'supporter',
+              inviteeName: inviteForm.name || 'Friend',
+              inviteeEmail: email,
+              inviterName,
+              message: inviteForm.message || undefined,
+              inviteLink,
+              roleName: inviteForm.role
+            }
+          });
 
-        if (error) throw error;
-        if (data && !data.success) throw new Error(data.error || 'Failed to send invitation');
+          if (error) throw error;
+          if (data && !data.success) throw new Error(data.error || 'Failed to send invitation');
 
+          toast({
+            title: "Invite Sent",
+            description: `Email invitation sent to ${inviteForm.email}`
+          });
+        } catch (emailError) {
+          console.error('Email sending failed:', emailError);
+          toast({
+            title: "Invitation Created",
+            description: "Invitation created but email could not be sent. Share the link manually.",
+            variant: "default"
+          });
+        }
+      } else {
         toast({
-          title: "Invite Sent",
-          description: `Email invitation sent to ${inviteForm.email}`
-        });
-      } catch (emailError) {
-        console.error('Email sending failed:', emailError);
-        toast({
-          title: "Invitation Created",
-          description: "Invitation created but email could not be sent. Share the link manually.",
-          variant: "default"
+          title: "Request Sent for Approval",
+          description: `Your request to add ${inviteForm.name || 'this supporter'} has been sent to an admin for approval.`
         });
       }
 

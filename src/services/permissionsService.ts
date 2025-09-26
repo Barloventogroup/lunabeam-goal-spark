@@ -186,19 +186,31 @@ export class PermissionsService {
             requires_approval: true,
             requested_by: currentUserId,
             invite_token: '' // Will be generated on approval
-          })
-          .select()
-          .single();
+          });
 
         if (error) throw error;
         
-        console.log('✅ Self-invite request created:', data);
-        console.groupEnd();
-        return {
-          ...data,
-          role: data.role as UserRole,
-          permission_level: data.permission_level as PermissionLevel
+        const constructed = {
+          id: 'temp',
+          individual_id: invite.individual_id,
+          inviter_id: currentUserId,
+          invitee_email: invite.invitee_email,
+          invitee_name: invite.invitee_name,
+          role: invite.role as UserRole,
+          permission_level: invite.permission_level as PermissionLevel,
+          specific_goals: invite.specific_goals,
+          invite_token: '',
+          message: invite.message,
+          expires_at: invite.expires_at,
+          created_at: new Date().toISOString(),
+          status: 'pending_admin_approval' as const,
+          requires_approval: true,
+          requested_by: currentUserId,
         } as SupporterInvite;
+
+        console.log('✅ Self-invite request created (minimal return):', constructed);
+        console.groupEnd();
+        return constructed;
       }
 
       // Check if current user is admin of the individual account
@@ -224,19 +236,31 @@ export class PermissionsService {
             requires_approval: true,
             requested_by: currentUserId,
             invite_token: '' // Will be generated on approval
-          })
-          .select()
-          .single();
+          });
 
         if (error) throw error;
         
-        console.log('✅ Approval request created:', data);
-        console.groupEnd();
-        return {
-          ...data,
-          role: data.role as UserRole,
-          permission_level: data.permission_level as PermissionLevel
+        const constructed = {
+          id: 'temp',
+          individual_id: invite.individual_id,
+          inviter_id: currentUserId,
+          invitee_email: invite.invitee_email,
+          invitee_name: invite.invitee_name,
+          role: invite.role as UserRole,
+          permission_level: invite.permission_level as PermissionLevel,
+          specific_goals: invite.specific_goals,
+          invite_token: '',
+          message: invite.message,
+          expires_at: invite.expires_at,
+          created_at: new Date().toISOString(),
+          status: 'pending_admin_approval' as const,
+          requires_approval: true,
+          requested_by: currentUserId,
         } as SupporterInvite;
+        
+        console.log('✅ Approval request created (minimal return):', constructed);
+        console.groupEnd();
+        return constructed;
       }
 
       // Admin creates direct invitation
