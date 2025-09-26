@@ -60,6 +60,7 @@ export interface GoalProgress {
 export interface Goal {
   id: string;
   owner_id: string;
+  created_by: string;
   title: string;
   description?: string;
   domain?: GoalDomain;

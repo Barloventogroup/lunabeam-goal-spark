@@ -9,14 +9,11 @@ import { fixGoalDomains } from '@/utils/goalMigrationUtils';
 declare global {
   interface Window {
     fixGoalDomains: () => Promise<void>;
-    reassignGoalOwner: (goalId: string, newOwnerUserId: string) => Promise<Goal>;
   }
 }
 
 if (typeof window !== 'undefined') {
   window.fixGoalDomains = fixGoalDomains;
-  window.reassignGoalOwner = (goalId: string, newOwnerUserId: string) => 
-    goalsService.reassignGoalOwner(goalId, newOwnerUserId);
 }
 
 const sanitizeDescription = (text?: string): string => {
@@ -61,6 +58,7 @@ export const goalsService = {
     q?: string;
     includeArchived?: boolean;
     owner_id?: string;
+    created_by?: string;
   }): Promise<Goal[]> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user?.id) {
@@ -83,6 +81,9 @@ export const goalsService = {
     }
     if (filters?.owner_id) {
       query = query.eq('owner_id', filters.owner_id);
+    }
+    if (filters?.created_by) {
+      query = query.eq('created_by', filters.created_by);
     }
     if (filters?.dueBefore) {
       query = query.lte('due_date', filters.dueBefore);

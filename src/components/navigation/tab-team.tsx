@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Users, UserPlus, Crown, Eye, MessageSquare, Edit3, MoreHorizontal, Mail, Phone, UserMinus, Bell, Save, X, User } from 'lucide-react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { PermissionsService, type Supporter, type SupporterInvite } from '@/services/permissionsService';
+import { goalsService } from '@/services/goalsService';
+import type { Goal } from '@/types/index';
 import { SimpleInviteModal } from '../lunebeam/simple-invite-modal';
 import { AddCommunityMemberModal } from '../lunebeam/add-community-member-modal';
 import { EmailAccountSetup } from '../lunebeam/email-account-setup';
@@ -62,6 +64,10 @@ export const TabTeam: React.FC = () => {
   const [pendingRequests, setPendingRequests] = useState<SupporterInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<MemberDetailData | null>(null);
+  
+  // Goal maintenance state
+  const [misassignedGoals, setMisassignedGoals] = useState<Goal[]>([]);
+  const [loadingGoals, setLoadingGoals] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<MemberDetailData | null>(null);
   const [editIndividualModal, setEditIndividualModal] = useState<{
@@ -89,6 +95,7 @@ export const TabTeam: React.FC = () => {
   useEffect(() => {
     if (user) {
       loadCommunityData();
+      loadMisassignedGoals();
     }
   }, [user]);
   const loadCommunityData = async () => {
@@ -296,6 +303,56 @@ export const TabTeam: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMisassignedGoals = async () => {
+    if (!user) return;
+    
+    setLoadingGoals(true);
+    try {
+      // Find goals where current user is creator but also owner (likely misassigned)
+      const goals = await goalsService.getGoals({
+        includeArchived: false,
+        owner_id: user.id,
+        created_by: user.id
+      });
+      
+      // Check if this user supports other individuals
+      const { data: individualsSupported } = await supabase
+        .from('supporters')
+        .select('individual_id')
+        .eq('supporter_id', user.id);
+      
+      // Only show as potentially misassigned if user supports others
+      if (individualsSupported && individualsSupported.length > 0) {
+        setMisassignedGoals(goals.filter(goal => 
+          goal.owner_id === user.id && goal.created_by === user.id
+        ));
+      }
+    } catch (error) {
+      console.error('Error loading misassigned goals:', error);
+    } finally {
+      setLoadingGoals(false);
+    }
+  };
+
+  const reassignGoal = async (goalId: string, newOwnerId: string) => {
+    try {
+      await goalsService.reassignGoalOwner(goalId, newOwnerId);
+      await loadMisassignedGoals(); // Refresh the list
+      
+      toast({
+        title: "Goal Reassigned",
+        description: "Goal ownership has been updated successfully",
+      });
+    } catch (error) {
+      console.error('Error reassigning goal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reassign goal",
+        variant: "destructive"
+      });
     }
   };
   const handleEditIndividual = async (member: SupporterWithProfile) => {
@@ -1054,6 +1111,58 @@ export const TabTeam: React.FC = () => {
                 </Table>}
             </CardContent>
           </Card>
+
+          {/* Goal Maintenance Section - Only for admins with potentially misassigned goals */}
+          {misassignedGoals.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Edit3 className="h-4 w-4" />
+                  Goal Maintenance
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Goals you created that might need ownership reassignment
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {misassignedGoals.map((goal) => (
+                    <div key={goal.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{goal.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Domain: {goal.domain || 'Other'} • Status: {goal.status}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Reassign to:</span>
+                        <Select
+                          onValueChange={(newOwnerId) => reassignGoal(goal.id, newOwnerId)}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select individual..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {supporters
+                              .filter(s => s.memberType === 'individual')
+                              .map((individual) => (
+                                <SelectItem 
+                                  key={individual.individual_id} 
+                                  value={individual.individual_id}
+                                >
+                                  {individual.profile?.first_name}
+                                </SelectItem>
+                              ))
+                            }
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
         </div>
       </div>

@@ -18,6 +18,7 @@ export const BlockedStepGuidance: React.FC<BlockedStepGuidanceProps> = ({ step }
         const mockGoal: Goal = {
           id: step.goal_id || '',
           owner_id: '',
+          created_by: '',
           title: '',
           description: '',
           domain: 'other',
