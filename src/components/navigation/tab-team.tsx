@@ -274,25 +274,32 @@ export const TabTeam: React.FC = () => {
       for (const individual of allMyIndividuals) {
         if (individual.is_admin) {
           try {
+            console.log('TabTeam: Loading pending requests for individual:', individual.individual_id);
             const requests = await PermissionsService.getPendingRequests(individual.individual_id);
+            console.log('TabTeam: Found pending requests:', requests);
             allPendingRequests.push(...requests);
           } catch (error) {
-            console.error('Error loading pending requests for individual:', individual.individual_id, error);
+            console.error('TabTeam: Error loading pending requests for individual:', individual.individual_id, error);
+            // Continue with other individuals instead of failing completely
           }
         }
       }
       
       // Also check if user is admin of themselves
-      const isAdminOfSelf = await PermissionsService.isAdmin(user.id);
-      if (isAdminOfSelf) {
-        try {
+      try {
+        const isAdminOfSelf = await PermissionsService.isAdmin(user.id);
+        if (isAdminOfSelf) {
+          console.log('TabTeam: User is admin of self, loading pending requests');
           const selfRequests = await PermissionsService.getPendingRequests(user.id);
+          console.log('TabTeam: Found self pending requests:', selfRequests);
           allPendingRequests.push(...selfRequests);
-        } catch (error) {
-          console.error('Error loading pending requests for self:', error);
         }
+      } catch (error) {
+        console.error('TabTeam: Error loading pending requests for self:', error);
+        // Continue with loading - this is not critical
       }
       
+      console.log('TabTeam: Total pending requests found:', allPendingRequests.length);
       setPendingRequests(allPendingRequests);
     } catch (error) {
       console.error('TabTeam: Error loading community data:', error);
