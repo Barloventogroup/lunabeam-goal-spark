@@ -79,8 +79,8 @@ export const goalsService = {
       .from('goals')
       .select(`
         *,
-        owner_profile:profiles!goals_owner_id_fkey(first_name),
-        creator_profile:profiles!goals_created_by_fkey(first_name)
+        owner_profile:profiles!owner_id(first_name),
+        creator_profile:profiles!created_by(first_name)
       `);
 
     // Include goals where user is owner, creator, or admin of the owner
