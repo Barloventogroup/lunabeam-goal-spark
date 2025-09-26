@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit } from 'lucide-react';
+import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit, Users, UserCheck } from 'lucide-react';
 import { BackButton } from '@/components/ui/back-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { goalsService, stepsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
+import { supabase } from '@/integrations/supabase/client';
 import { StepsList } from './steps-list';
 import { StepsChat } from './steps-chat';
 import { StepChatModal } from './step-chat-modal';
@@ -48,6 +49,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedStep, setSelectedStep] = useState<Step | null>(null);
   const [chatStep, setChatStep] = useState<Step | undefined>(undefined);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [ownerProfile, setOwnerProfile] = useState<any>(null);
+  const [creatorProfile, setCreatorProfile] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -75,12 +79,25 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const loadGoalData = async () => {
     try {
       setLoading(true);
-      const [goalData, stepsData] = await Promise.all([
+      
+      // Get current user and goal data
+      const [{ data: { user } }, goalData, stepsData] = await Promise.all([
+        supabase.auth.getUser(),
         goalsService.getGoal(goalId),
         stepsService.getSteps(goalId)
       ]);
+      
+      setCurrentUser(user);
 
       if (goalData) {
+        // Fetch owner and creator profiles
+        const [ownerData, creatorData] = await Promise.all([
+          supabase.from('profiles').select('first_name, user_id').eq('user_id', goalData.owner_id).single(),
+          supabase.from('profiles').select('first_name, user_id').eq('user_id', goalData.created_by).single()
+        ]);
+        
+        setOwnerProfile(ownerData.data);
+        setCreatorProfile(creatorData.data);
         // Auto-generate steps if none exist
         let finalSteps = stepsData || [];
         
@@ -277,6 +294,20 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 <Badge variant="outline" className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   <span className="truncate">Due {formatDate(goal.due_date)}</span>
+                </Badge>
+              )}
+              
+              {/* Ownership badges */}
+              {currentUser && goal.owner_id !== currentUser.id && ownerProfile && (
+                <Badge variant="outline" className="text-xs">
+                  <Users className="h-3 w-3 mr-1" />
+                  For {ownerProfile.first_name}
+                </Badge>
+              )}
+              {currentUser && goal.created_by !== currentUser.id && creatorProfile && goal.owner_id === currentUser.id && (
+                <Badge variant="outline" className="text-xs">
+                  <UserCheck className="h-3 w-3 mr-1" />
+                  Created by {creatorProfile.first_name}
                 </Badge>
               )}
             </div>

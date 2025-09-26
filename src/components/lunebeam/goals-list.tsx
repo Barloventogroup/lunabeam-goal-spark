@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight, User, Shield } from 'lucide-react';
+import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight, User, Shield, Users, UserCheck } from 'lucide-react';
 import { goalsService, stepsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal, Step } from '@/types';
@@ -30,6 +30,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   const [filterOwner, setFilterOwner] = useState<string>("all");
   const [supportedPeople, setSupportedPeople] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [allProfiles, setAllProfiles] = useState<Record<string, any>>({});
+  const [filterCreator, setFilterCreator] = useState<string>("all");
   const { toast } = useToast();
 
   const GOALS_PER_PAGE = 10;
@@ -37,6 +39,10 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   const loadGoals = async () => {
     try {
       let goalsData: Goal[];
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
       
       if (activeTab === 'completed') {
         // Get completed goals
@@ -50,6 +56,18 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
           goal.status !== 'completed' && goal.status !== 'archived'
         );
       }
+      
+      // Build profiles lookup
+      const profiles: Record<string, any> = {};
+      for (const goal of goalsData) {
+        if ((goal as any).owner_profile) {
+          profiles[goal.owner_id] = (goal as any).owner_profile;
+        }
+        if ((goal as any).creator_profile) {
+          profiles[goal.created_by] = (goal as any).creator_profile;
+        }
+      }
+      setAllProfiles(profiles);
       
       setGoals(goalsData);
 
@@ -177,11 +195,18 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
     return out;
   };
 
+  // Apply filters
+  const filteredGoals = goals.filter(goal => {
+    if (filterCreator === "me" && goal.created_by !== currentUser?.id) return false;
+    if (filterCreator === "others" && goal.created_by === currentUser?.id) return false;
+    return true;
+  });
+
   // Calculate pagination
-  const totalPages = Math.ceil(goals.length / GOALS_PER_PAGE);
+  const totalPages = Math.ceil(filteredGoals.length / GOALS_PER_PAGE);
   const startIndex = (currentPage - 1) * GOALS_PER_PAGE;
   const endIndex = startIndex + GOALS_PER_PAGE;
-  const currentGoals = goals.slice(startIndex, endIndex);
+  const currentGoals = filteredGoals.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -222,11 +247,25 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
             </TabsList>
           </Tabs>
 
+          {/* Filter Controls */}
+          <div className="flex gap-2">
+            <Select value={filterCreator} onValueChange={setFilterCreator}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filter by creator" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Goals</SelectItem>
+                <SelectItem value="me">Created by me</SelectItem>
+                <SelectItem value="others">Created by others</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Pagination Controls - Top Right */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                Showing {startIndex + 1}-{Math.min(endIndex, goals.length)} of {goals.length} goals
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -273,16 +312,18 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto" data-scroll-container>
         <div className="px-4 py-4">
-          {goals.length === 0 ? (
+          {filteredGoals.length === 0 ? (
             <Card>
               <CardContent className="text-center py-8">
                 <h3>
                   {activeTab === 'completed' ? 'No completed goals yet' : 'No active goals yet'}
                 </h3>
                 <p className="text-body-sm text-muted-foreground mb-4">
-                  {activeTab === 'completed' 
-                    ? 'Complete some goals to see them here!'
-                    : 'Create your first goal to get started on your journey!'
+                  {filteredGoals.length === 0 && goals.length > 0
+                    ? 'No goals match your current filter.'
+                    : activeTab === 'completed' 
+                      ? 'Complete some goals to see them here!'
+                      : 'Create your first goal to get started on your journey!'
                   }
                 </p>
                 {activeTab === 'active' && (
@@ -301,8 +342,14 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
           ) : (
             <div className="space-y-4">
               {currentGoals.map((goal) => {
-                const stepCount = stepsCount[goal.id] || { required: goal.progress?.actionable || 0, done: goal.progress?.done || 0 };
+                 const stepCount = stepsCount[goal.id] || { required: goal.progress?.actionable || 0, done: goal.progress?.done || 0 };
                 const progressPct = goal.progress_pct || (goal.progress ? goal.progress.percent : 0);
+                
+                // Determine ownership context
+                const isOwnGoal = goal.owner_id === currentUser?.id;
+                const isCreatedByMe = goal.created_by === currentUser?.id;
+                const ownerName = allProfiles[goal.owner_id]?.first_name || 'Unknown';
+                const creatorName = allProfiles[goal.created_by]?.first_name || 'Unknown';
 
                 return (
                   <Card 
@@ -316,12 +363,26 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                           onClick={() => onNavigate('goal-detail', goal.id)}
                         >
                           <h4 className="mb-2 capitalize">{goal.title}</h4>
-                          <div className="flex items-center gap-2 mb-2">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <Badge variant={getStatusColor(goal.status)}>
                               {goal.status === 'active' ? 'In Progress' : goal.status}
                             </Badge>
                             {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && (
                               <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>
+                            )}
+                            
+                            {/* Ownership badges */}
+                            {!isOwnGoal && (
+                              <Badge variant="outline" className="text-xs">
+                                <Users className="h-3 w-3 mr-1" />
+                                For {ownerName}
+                              </Badge>
+                            )}
+                            {!isCreatedByMe && isOwnGoal && (
+                              <Badge variant="outline" className="text-xs">
+                                <UserCheck className="h-3 w-3 mr-1" />
+                                Created by {creatorName}
+                              </Badge>
                             )}
                           </div>
                           {goal.due_date && (

@@ -66,10 +66,29 @@ export const goalsService = {
       return [];
     }
 
+    // Get supported individuals for this user
+    const { data: supportedIndividuals } = await supabase
+      .from('supporters')
+      .select('individual_id')
+      .eq('supporter_id', user.id)
+      .eq('is_admin', true);
+
+    const supportedIds = supportedIndividuals?.map(s => s.individual_id) || [];
+
     let query = supabase
       .from('goals')
-      .select('*')
-      .or(`owner_id.eq.${user.id},created_by.eq.${user.id}`);
+      .select(`
+        *,
+        owner_profile:profiles!goals_owner_id_fkey(first_name),
+        creator_profile:profiles!goals_created_by_fkey(first_name)
+      `);
+
+    // Include goals where user is owner, creator, or admin of the owner
+    if (supportedIds.length > 0) {
+      query = query.or(`owner_id.eq.${user.id},created_by.eq.${user.id},owner_id.in.(${supportedIds.join(',')})`);
+    } else {
+      query = query.or(`owner_id.eq.${user.id},created_by.eq.${user.id}`);
+    }
 
     // By default, exclude archived goals unless specifically requested
     if (!filters?.includeArchived) {
