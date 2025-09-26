@@ -24,6 +24,83 @@ export const notificationsService = {
     return data || [];
   },
 
+  // Create in-app notification
+  async createNotification(notification: {
+    user_id: string;
+    type: string;
+    title: string;
+    message: string;
+    data?: any;
+  }): Promise<Notification> {
+    const { data, error } = await supabase
+      .from('notifications')
+      .insert(notification)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Create approval request notification
+  async createApprovalRequestNotification(adminId: string, requestData: {
+    individual_id: string;
+    invitee_email: string;
+    invitee_name?: string;
+    requester_name: string;
+  }): Promise<void> {
+    await this.createNotification({
+      user_id: adminId,
+      type: 'approval_request',
+      title: 'New Supporter Request',
+      message: `${requestData.requester_name} wants to invite ${requestData.invitee_name || requestData.invitee_email} as a supporter`,
+      data: requestData
+    });
+  },
+
+  // Create check-in notification
+  async createCheckInNotification(supporterId: string, checkInData: {
+    individual_name: string;
+    goal_title?: string;
+  }): Promise<void> {
+    await this.createNotification({
+      user_id: supporterId,
+      type: 'check_in',
+      title: 'Check-in Completed',
+      message: `${checkInData.individual_name} completed a check-in${checkInData.goal_title ? ` for "${checkInData.goal_title}"` : ''}`,
+      data: checkInData
+    });
+  },
+
+  // Create step completion notification
+  async createStepCompletionNotification(supporterId: string, stepData: {
+    individual_name: string;
+    step_title: string;
+    goal_title: string;
+  }): Promise<void> {
+    await this.createNotification({
+      user_id: supporterId,
+      type: 'step_complete',
+      title: 'Step Completed! 🎉',
+      message: `${stepData.individual_name} completed "${stepData.step_title}" in goal "${stepData.goal_title}"`,
+      data: stepData
+    });
+  },
+
+  // Create supporter invite accepted notification
+  async createInviteAcceptedNotification(inviterId: string, acceptData: {
+    supporter_name: string;
+    individual_name: string;
+  }): Promise<void> {
+    await this.createNotification({
+      user_id: inviterId,
+      type: 'invite_accepted',
+      title: 'Supporter Joined!',
+      message: `${acceptData.supporter_name} accepted the invitation to support ${acceptData.individual_name}`,
+      data: acceptData
+    });
+  },
+
   // Get unread notifications count
   async getUnreadCount(): Promise<number> {
     const { count, error } = await supabase

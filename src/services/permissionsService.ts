@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { notificationsService } from './notificationsService';
 
 export type PermissionLevel = 'viewer' | 'collaborator';
 export type UserRole = 'individual' | 'supporter' | 'friend' | 'provider';
@@ -167,6 +168,25 @@ export class PermissionsService {
         throw new Error('Not authenticated');
       }
       
+      // Check for existing pending requests to prevent duplicates
+      const { data: existingRequest } = await supabase
+        .from('supporter_invites')
+        .select('*')
+        .eq('individual_id', invite.individual_id)
+        .eq('invitee_email', invite.invitee_email.toLowerCase().trim())
+        .eq('status', 'pending_admin_approval')
+        .single();
+
+      if (existingRequest) {
+        console.log('✅ Found existing pending request, returning it');
+        console.groupEnd();
+        return {
+          ...existingRequest,
+          role: existingRequest.role as UserRole,
+          permission_level: existingRequest.permission_level as PermissionLevel
+        } as SupporterInvite;
+      }
+      
       // If user is inviting for their own account, always create a pending request
       if (currentUserId === invite.individual_id) {
         console.log('Creating approval request (self-invite)');
@@ -185,7 +205,7 @@ export class PermissionsService {
             status: 'pending_admin_approval',
             requires_approval: true,
             requested_by: currentUserId,
-            invite_token: '' // Will be generated on approval
+            invite_token: crypto.randomUUID() // Generate unique token instead of empty string
           });
 
         if (error) throw error;
@@ -207,6 +227,23 @@ export class PermissionsService {
           requires_approval: true,
           requested_by: currentUserId,
         } as SupporterInvite;
+
+        // Create notification for admins
+        const admins = await this.getAdmins(invite.individual_id);
+        const requesterProfile = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('user_id', currentUserId)
+          .single();
+        
+        for (const admin of admins) {
+          await notificationsService.createApprovalRequestNotification(admin.supporter_id, {
+            individual_id: invite.individual_id,
+            invitee_email: invite.invitee_email,
+            invitee_name: invite.invitee_name,
+            requester_name: requesterProfile.data?.first_name || 'Someone'
+          });
+        }
 
         console.log('✅ Self-invite request created (minimal return):', constructed);
         console.groupEnd();
@@ -235,7 +272,7 @@ export class PermissionsService {
             status: 'pending_admin_approval',
             requires_approval: true,
             requested_by: currentUserId,
-            invite_token: '' // Will be generated on approval
+            invite_token: crypto.randomUUID() // Generate unique token instead of empty string
           });
 
         if (error) throw error;
@@ -257,6 +294,23 @@ export class PermissionsService {
           requires_approval: true,
           requested_by: currentUserId,
         } as SupporterInvite;
+        
+        // Create notification for admins
+        const admins = await this.getAdmins(invite.individual_id);
+        const requesterProfile = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('user_id', currentUserId)
+          .single();
+        
+        for (const admin of admins) {
+          await notificationsService.createApprovalRequestNotification(admin.supporter_id, {
+            individual_id: invite.individual_id,
+            invitee_email: invite.invitee_email,
+            invitee_name: invite.invitee_name,
+            requester_name: requesterProfile.data?.first_name || 'Someone'
+          });
+        }
         
         console.log('✅ Approval request created (minimal return):', constructed);
         console.groupEnd();
@@ -589,5 +643,35 @@ export class PermissionsService {
       .eq('id', requestId);
     
     if (error) throw error;
+  }
+
+  // Approve request by individual_id and email (for notification actions)
+  static async approveRequest(individualId: string, inviteeEmail: string): Promise<void> {
+    const { data: request, error: fetchError } = await supabase
+      .from('supporter_invites')
+      .select('*')
+      .eq('individual_id', individualId)
+      .eq('invitee_email', inviteeEmail)
+      .eq('status', 'pending_admin_approval')
+      .single();
+
+    if (fetchError || !request) throw new Error('Request not found');
+    
+    await this.approveSupporterRequest(request.id);
+  }
+
+  // Deny request by individual_id and email (for notification actions)
+  static async denyRequest(individualId: string, inviteeEmail: string): Promise<void> {
+    const { data: request, error: fetchError } = await supabase
+      .from('supporter_invites')
+      .select('id')
+      .eq('individual_id', individualId)
+      .eq('invitee_email', inviteeEmail)
+      .eq('status', 'pending_admin_approval')
+      .single();
+
+    if (fetchError || !request) throw new Error('Request not found');
+    
+    await this.denySupporterRequest(request.id);
   }
 }

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, Settings, Award, HelpCircle, ChevronRight, Trophy, LogOut, Shield, RotateCcw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { User, Settings, Award, HelpCircle, ChevronRight, Trophy, LogOut, Shield, RotateCcw, Bell } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '../auth/auth-provider';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
@@ -9,7 +10,10 @@ import { AchievementsView } from '../lunebeam/achievements-view';
 import { RewardsHub } from '../lunebeam/rewards-hub';
 import { RewardsGallery, RewardsAdminList, RedemptionInbox } from '../lunebeam/reward-bank';
 import { ProfileView } from '../lunebeam/profile-view';
-type YouView = 'profile' | 'rewards' | 'achievements' | 'rewardsHub' | 'profileDetail' | 'rewardBank' | 'rewardAdmin' | 'redemptionInbox';
+import { NotificationsList } from '../lunebeam/notifications-list';
+import { notificationsService } from '@/services/notificationsService';
+import { supabase } from '@/integrations/supabase/client';
+type YouView = 'profile' | 'rewards' | 'achievements' | 'rewardsHub' | 'profileDetail' | 'rewardBank' | 'rewardAdmin' | 'redemptionInbox' | 'notifications';
 export const TabYou: React.FC = () => {
   const {
     profile,
@@ -19,9 +23,44 @@ export const TabYou: React.FC = () => {
     signOut
   } = useAuth();
   const [currentView, setCurrentView] = useState<YouView>('profile');
-  React.useEffect(() => {
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
     console.log('TabYou: Rendering with profile:', profile);
+    loadUnreadCount();
+
+    // Subscribe to real-time notification updates
+    const channel = supabase
+      .channel('notification-count-updates')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications'
+      }, () => {
+        loadUnreadCount();
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'notifications'
+      }, () => {
+        loadUnreadCount();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [profile]);
+
+  const loadUnreadCount = async () => {
+    try {
+      const count = await notificationsService.getUnreadCount();
+      setUnreadCount(count);
+    } catch (error) {
+      console.error('Error loading unread count:', error);
+    }
+  };
   const handleLogout = () => {
     console.log('TabYou: Sign out clicked');
     signOut();
@@ -52,6 +91,9 @@ export const TabYou: React.FC = () => {
   }
   if (currentView === 'profileDetail') {
     return <ProfileView onBack={() => setCurrentView('profile')} />;
+  }
+  if (currentView === 'notifications') {
+    return <NotificationsList onBack={() => setCurrentView('profile')} />;
   }
   return <div className="min-h-screen bg-gradient-soft">
       {/* Header */}
@@ -104,6 +146,29 @@ export const TabYou: React.FC = () => {
                   <div>
                     <div className="font-medium">Achievements</div>
                     <div className="text-sm text-muted-foreground">View your completed goals and milestones</div>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Notifications */}
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('notifications')}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Bell className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <div className="font-medium flex items-center gap-2">
+                      Notifications
+                      {unreadCount > 0 && (
+                        <Badge variant="secondary" className="text-xs px-2 py-0">
+                          {unreadCount}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground">View your activity and updates</div>
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
