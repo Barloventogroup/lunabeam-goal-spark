@@ -13,11 +13,13 @@ import { useAuth } from '@/components/auth/auth-provider';
 interface AddCommunityMemberModalProps {
   trigger?: React.ReactNode;
   onSuccess?: () => void;
+  individualId?: string; // The person who needs support
 }
 
 export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = ({ 
   trigger, 
-  onSuccess 
+  onSuccess,
+  individualId
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -46,12 +48,15 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
     e.preventDefault();
     if (!user || !formData.name.trim() || !formData.email.trim()) return;
 
+    // Determine who needs support - use prop or current user as fallback
+    const targetIndividualId = individualId || user.id;
+    
     setLoading(true);
     try {
       // Use PermissionsService which handles approval workflow
       const inviteResult = await PermissionsService.createSupporterInvite({
-        individual_id: user.id, // They are inviting to support the current user
-        inviter_id: user.id,
+        individual_id: targetIndividualId, // The person who needs support
+        inviter_id: user.id, // The person sending the invitation
         invitee_name: formData.name.trim(),
         invitee_email: formData.email.trim(),
         role: formData.role as any,
