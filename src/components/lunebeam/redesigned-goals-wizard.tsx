@@ -415,7 +415,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         start_date: format(data.startDate, 'yyyy-MM-dd'),
         due_date: data.endDate ? format(data.endDate, 'yyyy-MM-dd') : undefined,
         frequency_per_week: data.frequency,
-        assignedTo: data.recipient === 'other' ? data.supportedPersonId : undefined
+        owner_id: data.recipient === 'other' ? data.supportedPersonId : undefined
       };
       if (isProposal) {
         // Create proposal

@@ -125,13 +125,12 @@ export const goalsService = {
     duration_weeks?: number;
     step_type?: string;
     planned_milestones_count?: number;
-    assignedTo?: string;
+    owner_id?: string;
   }): Promise<Goal> {
     const user = await supabase.auth.getUser();
     if (!user.data.user) throw new Error('User not authenticated');
 
     const userId = user.data.user.id;
-    const assignedTo = goalData.assignedTo || userId;
 
 
     // Parse goal for TPP calculation if not provided
@@ -176,7 +175,7 @@ export const goalsService = {
       .insert({
         ...goalData,
         description: sanitizeDescription(goalData.description),
-        owner_id: assignedTo,
+        owner_id: goalData.owner_id || userId,
         created_by: userId,
         priority: goalData.priority || 'medium',
         // Points system fields
