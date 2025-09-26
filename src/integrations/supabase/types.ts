@@ -1328,7 +1328,13 @@ export type Database = {
         | "pending_admin_approval"
       permission_level: "viewer" | "collaborator" | "admin"
       permission_level_fixed: "viewer" | "collaborator"
-      user_role: "individual" | "supporter" | "friend" | "provider" | "admin"
+      user_role:
+        | "individual"
+        | "supporter"
+        | "friend"
+        | "provider"
+        | "admin"
+        | "parent"
       user_role_fixed: "individual" | "supporter" | "friend" | "provider"
     }
     CompositeTypes: {
@@ -1467,7 +1473,14 @@ export const Constants = {
       ],
       permission_level: ["viewer", "collaborator", "admin"],
       permission_level_fixed: ["viewer", "collaborator"],
-      user_role: ["individual", "supporter", "friend", "provider", "admin"],
+      user_role: [
+        "individual",
+        "supporter",
+        "friend",
+        "provider",
+        "admin",
+        "parent",
+      ],
       user_role_fixed: ["individual", "supporter", "friend", "provider"],
     },
   },
