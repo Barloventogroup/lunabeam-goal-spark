@@ -160,6 +160,43 @@ export class PermissionsService {
     console.log('Invite data:', invite);
 
     try {
+      const currentUser = await supabase.auth.getUser();
+      const currentUserId = currentUser.data.user?.id;
+      
+      // If user is inviting for their own account, always create a pending request
+      if (currentUserId === invite.individual_id) {
+        console.log('Creating approval request (self-invite)');
+        const { data, error } = await supabase
+          .from('supporter_invites')
+          .insert({
+            individual_id: invite.individual_id,
+            inviter_id: currentUserId,
+            invitee_email: invite.invitee_email,
+            invitee_name: invite.invitee_name,
+            role: invite.role,
+            permission_level: invite.permission_level,
+            specific_goals: invite.specific_goals,
+            message: invite.message,
+            expires_at: invite.expires_at,
+            status: 'pending_admin_approval',
+            requires_approval: true,
+            requested_by: currentUserId,
+            invite_token: '' // Will be generated on approval
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        console.log('✅ Self-invite request created:', data);
+        console.groupEnd();
+        return {
+          ...data,
+          role: data.role as UserRole,
+          permission_level: data.permission_level as PermissionLevel
+        } as SupporterInvite;
+      }
+
       // Check if current user is admin of the individual account
       const isUserAdmin = await this.isAdmin(invite.individual_id);
       console.log('Is user admin?', isUserAdmin);

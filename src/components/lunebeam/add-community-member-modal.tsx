@@ -48,6 +48,16 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
     e.preventDefault();
     if (!user || !formData.name.trim() || !formData.email.trim()) return;
 
+    // Prevent user from inviting their own email address
+    if (formData.email.toLowerCase().trim() === user.email?.toLowerCase()) {
+      toast({
+        title: "Invalid Email",
+        description: "You cannot invite yourself. Please enter a different email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Determine who needs support - use prop or current user as fallback
     const targetIndividualId = individualId || user.id;
     
@@ -122,9 +132,12 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" aria-describedby="add-member-description">
         <DialogHeader>
           <DialogTitle>Add Community Member</DialogTitle>
+          <p id="add-member-description" className="text-sm text-muted-foreground">
+            Invite someone to join your support network and help with your goals.
+          </p>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
