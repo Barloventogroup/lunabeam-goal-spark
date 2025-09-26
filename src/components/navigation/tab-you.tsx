@@ -14,7 +14,12 @@ import { NotificationsList } from '../lunebeam/notifications-list';
 import { notificationsService } from '@/services/notificationsService';
 import { supabase } from '@/integrations/supabase/client';
 type YouView = 'profile' | 'rewards' | 'achievements' | 'rewardsHub' | 'profileDetail' | 'rewardBank' | 'rewardAdmin' | 'redemptionInbox' | 'notifications';
-export const TabYou: React.FC = () => {
+
+interface TabYouProps {
+  initialView?: YouView;
+}
+
+export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
   const {
     profile,
     resetOnboarding
@@ -22,7 +27,7 @@ export const TabYou: React.FC = () => {
   const {
     signOut
   } = useAuth();
-  const [currentView, setCurrentView] = useState<YouView>('profile');
+  const [currentView, setCurrentView] = useState<YouView>(initialView);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {

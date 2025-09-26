@@ -15,6 +15,7 @@ export const BottomTabs: React.FC = () => {
   const [showChat, setShowChat] = useState(false);
   const [isWizardActive, setIsWizardActive] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [youTabInitialView, setYouTabInitialView] = useState<'profile' | 'notifications'>('profile');
   const { loadGoals, userContext } = useStore();
 
   const tabs = [
@@ -60,19 +61,25 @@ export const BottomTabs: React.FC = () => {
             setActiveTab('goals');
             setSelectedGoalId(goalId || null);
           }}
-          onNavigateToNotifications={() => setActiveTab('you')}
+          onNavigateToNotifications={() => {
+            setYouTabInitialView('notifications');
+            setActiveTab('you');
+          }}
         />;
       case 'goals':
         return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} />;
       case 'team':
         return userContext?.userType === 'individual' ? <TabTeamIndividual /> : <TabTeam />;
       case 'you':
-        return <TabYou />;
+        return <TabYou initialView={youTabInitialView} />;
       default:
         return <TabHome 
           onOpenChat={() => setShowChat(true)} 
           onNavigateToGoals={() => setActiveTab('goals')}
-          onNavigateToNotifications={() => setActiveTab('you')}
+          onNavigateToNotifications={() => {
+            setYouTabInitialView('notifications');
+            setActiveTab('you');
+          }}
         />;
     }
   };
@@ -124,6 +131,10 @@ export const BottomTabs: React.FC = () => {
                     // Clear selected goal when clicking Goals tab directly
                     if (tab.id === 'goals') {
                       setSelectedGoalId(null);
+                    }
+                    // Reset You tab to profile view when clicking directly
+                    if (tab.id === 'you') {
+                      setYouTabInitialView('profile');
                     }
                   }}
                   className={`flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 rounded-lg transition-colors ${
