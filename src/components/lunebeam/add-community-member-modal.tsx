@@ -110,9 +110,10 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
       onSuccess?.();
     } catch (error) {
       console.error('Error sending invite:', error);
+      const message = (error as any)?.message || 'Failed to send invitation. Please try again.';
       toast({
         title: "Error",
-        description: "Failed to send invitation. Please try again.",
+        description: message,
         variant: "destructive"
       });
     } finally {

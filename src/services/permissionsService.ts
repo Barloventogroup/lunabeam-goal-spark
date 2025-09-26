@@ -162,6 +162,10 @@ export class PermissionsService {
     try {
       const currentUser = await supabase.auth.getUser();
       const currentUserId = currentUser.data.user?.id;
+      if (!currentUserId) {
+        console.error('❌ No authenticated user when creating invite');
+        throw new Error('Not authenticated');
+      }
       
       // If user is inviting for their own account, always create a pending request
       if (currentUserId === invite.individual_id) {
@@ -208,7 +212,7 @@ export class PermissionsService {
           .from('supporter_invites')
           .insert({
             individual_id: invite.individual_id,
-            inviter_id: (await supabase.auth.getUser()).data.user?.id,
+            inviter_id: currentUserId,
             invitee_email: invite.invitee_email,
             invitee_name: invite.invitee_name,
             role: invite.role,
@@ -218,7 +222,7 @@ export class PermissionsService {
             expires_at: invite.expires_at,
             status: 'pending_admin_approval',
             requires_approval: true,
-            requested_by: (await supabase.auth.getUser()).data.user?.id,
+            requested_by: currentUserId,
             invite_token: '' // Will be generated on approval
           })
           .select()
