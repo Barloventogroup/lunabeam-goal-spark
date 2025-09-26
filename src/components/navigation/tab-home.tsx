@@ -11,6 +11,7 @@ import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { RewardsGallery } from '../lunebeam/reward-bank';
 import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
 import { RedesignedGoalsWizard } from '../lunebeam/redesigned-goals-wizard';
+import { NotificationBadge } from '../lunebeam/notification-badge';
 import { PointsDisplay } from '../lunebeam/points-display';
 import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
@@ -25,13 +26,15 @@ import type { Goal } from '../../types';
 interface TabHomeProps {
   onOpenChat: () => void;
   onNavigateToGoals: (goalId?: string) => void;
+  onNavigateToNotifications: () => void;
 }
 
 type HomeView = 'dashboard' | 'rewards' | 'checkin' | 'add-goal' | 'reward-bank';
 
 export const TabHome: React.FC<TabHomeProps> = ({
   onOpenChat,
-  onNavigateToGoals
+  onNavigateToGoals,
+  onNavigateToNotifications
 }) => {
   const [currentView, setCurrentView] = useState<HomeView>('dashboard');
   const [showCheckinModal, setShowCheckinModal] = useState(false);
@@ -260,6 +263,11 @@ export const TabHome: React.FC<TabHomeProps> = ({
           </div>
           
           <div className="flex items-center gap-3">
+            {/* Notification Badge */}
+            <NotificationBadge 
+              onNavigateToNotifications={onNavigateToNotifications}
+            />
+            
             {/* LunaPoints Display */}
             <div 
               className="flex items-center gap-1 bg-muted px-3 py-1.5 rounded-full cursor-pointer hover:bg-muted/80 transition-colors"

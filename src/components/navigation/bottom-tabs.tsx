@@ -54,10 +54,14 @@ export const BottomTabs: React.FC = () => {
   const renderActiveTab = () => {
     switch (activeTab) {
       case 'home':
-        return <TabHome onOpenChat={() => setShowChat(true)} onNavigateToGoals={(goalId?: string) => {
-          setActiveTab('goals');
-          setSelectedGoalId(goalId || null);
-        }} />;
+        return <TabHome 
+          onOpenChat={() => setShowChat(true)} 
+          onNavigateToGoals={(goalId?: string) => {
+            setActiveTab('goals');
+            setSelectedGoalId(goalId || null);
+          }}
+          onNavigateToNotifications={() => setActiveTab('you')}
+        />;
       case 'goals':
         return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} />;
       case 'team':
@@ -65,7 +69,11 @@ export const BottomTabs: React.FC = () => {
       case 'you':
         return <TabYou />;
       default:
-        return <TabHome onOpenChat={() => setShowChat(true)} onNavigateToGoals={() => setActiveTab('goals')} />;
+        return <TabHome 
+          onOpenChat={() => setShowChat(true)} 
+          onNavigateToGoals={() => setActiveTab('goals')}
+          onNavigateToNotifications={() => setActiveTab('you')}
+        />;
     }
   };
 
