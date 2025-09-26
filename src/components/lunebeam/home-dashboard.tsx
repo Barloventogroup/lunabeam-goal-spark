@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 import { ProgressRing } from '@/components/ui/progress-ring';
 import { 
@@ -19,7 +20,8 @@ import {
   ChevronRight,
   Trophy,
   Star,
-  Coins
+  Coins,
+  UserCheck
 } from 'lucide-react';
 import { AIChat } from './ai-chat';
 import { FamilyCircleCard } from './family-circle-card';
@@ -34,6 +36,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { format, addDays, isToday, parseISO } from 'date-fns';
 import type { Goal } from '@/types';
 import { getWelcomeMessage } from '@/utils/userTypeUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface HomeDashboardProps {
   onNavigate: (view: string, data?: any) => void;
@@ -64,6 +67,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   } = useStore();
   
   const { user, signOut } = useAuth();
+  const [profiles, setProfiles] = useState<Record<string, any>>({});
 
   useEffect(() => {
     if (user) {
@@ -77,6 +81,36 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       updateUserContext(); // Ensure user context is loaded
     }
   }, [user, loadProfile, loadGoals, loadCheckIns, loadEvidence, loadFamilyCircles, loadPoints, updateUserContext]);
+
+  // Fetch profiles for goal owners and creators
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      if (goals.length === 0) return;
+      
+      const userIds = new Set<string>();
+      goals.forEach(goal => {
+        if (goal.owner_id) userIds.add(goal.owner_id);
+        if (goal.created_by) userIds.add(goal.created_by);
+      });
+      
+      if (userIds.size > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, first_name')
+          .in('user_id', Array.from(userIds));
+        
+        if (profilesData) {
+          const profilesLookup: Record<string, any> = {};
+          profilesData.forEach(profile => {
+            profilesLookup[profile.user_id] = profile;
+          });
+          setProfiles(profilesLookup);
+        }
+      }
+    };
+    
+    fetchProfiles();
+  }, [goals]);
 
   // Add refresh data when tab becomes visible
   useEffect(() => {
@@ -311,23 +345,37 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
                 .filter(goal => goal.status === 'active' || goal.status === 'planned')
                 .slice(0, 3)
                 .map((goal) => (
-                <Card key={goal.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground mb-1">{goal.title}</h3>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-muted rounded-full h-1.5">
-                            <div 
-                              className="bg-primary h-1.5 rounded-full transition-all duration-300"
-                              style={{ width: `${Math.round(goal.progress_pct || 0)}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {Math.round(goal.progress_pct || 0)}%
-                          </span>
-                        </div>
-                      </div>
+                 <Card key={goal.id}>
+                   <CardContent className="p-4">
+                     <div className="flex items-center justify-between mb-3">
+                       <div className="flex-1">
+                         <div className="flex items-center gap-2 mb-1">
+                           <h3 className="font-semibold text-foreground">{goal.title}</h3>
+                           {goal.owner_id !== user?.id && profiles[goal.owner_id] && (
+                             <Badge variant="secondary" className="text-xs">
+                               <Users className="h-3 w-3 mr-1" />
+                               For {profiles[goal.owner_id].first_name}
+                             </Badge>
+                           )}
+                           {goal.created_by !== user?.id && goal.created_by !== goal.owner_id && profiles[goal.created_by] && (
+                             <Badge variant="outline" className="text-xs">
+                               <UserCheck className="h-3 w-3 mr-1" />
+                               Created by {profiles[goal.created_by].first_name}
+                             </Badge>
+                           )}
+                         </div>
+                         <div className="flex items-center gap-2">
+                           <div className="w-16 bg-muted rounded-full h-1.5">
+                             <div 
+                               className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                               style={{ width: `${Math.round(goal.progress_pct || 0)}%` }}
+                             />
+                           </div>
+                           <span className="text-xs text-muted-foreground">
+                             {Math.round(goal.progress_pct || 0)}%
+                           </span>
+                         </div>
+                       </div>
                       <div className="flex gap-2">
                         <Button 
                           size="sm" 
