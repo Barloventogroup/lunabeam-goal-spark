@@ -143,12 +143,11 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="supporter">Supporter</SelectItem>
-                  <SelectItem value="parent">Parent</SelectItem>
-                  <SelectItem value="friend">Friend</SelectItem>
-                  <SelectItem value="provider">Provider</SelectItem>
-                </SelectContent>
+              <SelectContent>
+                <SelectItem value="supporter">Supporter</SelectItem>
+                <SelectItem value="friend">Friend</SelectItem>
+                <SelectItem value="provider">Provider</SelectItem>
+              </SelectContent>
             </Select>
           </div>
 
