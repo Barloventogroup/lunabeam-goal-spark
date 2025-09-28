@@ -576,13 +576,13 @@ export class PermissionsService {
   // Get pending approval requests for admin review
   static async getPendingRequests(individualId: string): Promise<SupporterInvite[]> {
     const { data, error } = await supabase
-      .from('supporter_invites')
-      .select('*')
-      .eq('individual_id', individualId)
-      .eq('status', 'pending_admin_approval')
-      .order('created_at', { ascending: false });
+      .rpc('get_pending_requests_for_individual', { p_individual_id: individualId });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error getting pending requests:', error);
+      throw error;
+    }
+
     return (data || []).map(request => ({
       ...request,
       role: request.role as UserRole,

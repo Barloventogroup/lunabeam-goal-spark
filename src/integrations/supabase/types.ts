@@ -1323,6 +1323,23 @@ export type Database = {
           status: Database["public"]["Enums"]["invite_status"]
         }[]
       }
+      get_pending_requests_for_individual: {
+        Args: { p_individual_id: string }
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          individual_id: string
+          invitee_email: string
+          invitee_name: string
+          inviter_id: string
+          message: string
+          permission_level: Database["public"]["Enums"]["permission_level"]
+          role: Database["public"]["Enums"]["user_role"]
+          specific_goals: string[]
+          status: Database["public"]["Enums"]["invite_status"]
+        }[]
+      }
       get_profiles_created_by_me: {
         Args: Record<PropertyKey, never>
         Returns: {
