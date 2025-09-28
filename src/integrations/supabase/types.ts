@@ -1166,16 +1166,28 @@ export type Database = {
         }[]
       }
       create_supporter_invite_secure: {
-        Args: {
-          p_expires_at?: string
-          p_individual_id: string
-          p_invitee_email: string
-          p_invitee_name?: string
-          p_message?: string
-          p_permission_level?: Database["public"]["Enums"]["permission_level"]
-          p_role?: Database["public"]["Enums"]["user_role"]
-          p_specific_goals?: string[]
-        }
+        Args:
+          | {
+              p_expires_at?: string
+              p_individual_id: string
+              p_invitee_email: string
+              p_invitee_name?: string
+              p_inviter_id?: string
+              p_message?: string
+              p_permission_level?: Database["public"]["Enums"]["permission_level"]
+              p_role?: Database["public"]["Enums"]["user_role"]
+              p_specific_goals?: string[]
+            }
+          | {
+              p_expires_at?: string
+              p_individual_id: string
+              p_invitee_email: string
+              p_invitee_name?: string
+              p_message?: string
+              p_permission_level?: Database["public"]["Enums"]["permission_level"]
+              p_role?: Database["public"]["Enums"]["user_role"]
+              p_specific_goals?: string[]
+            }
         Returns: {
           created_at: string
           expires_at: string

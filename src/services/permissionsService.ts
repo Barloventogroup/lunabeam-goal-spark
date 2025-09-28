@@ -612,7 +612,8 @@ export class PermissionsService {
         p_permission_level: request.permission_level,
         p_specific_goals: request.specific_goals,
         p_message: request.message,
-        p_expires_at: request.expires_at
+        p_expires_at: request.expires_at,
+        p_inviter_id: request.inviter_id  // Preserve original inviter
       });
 
       if (error) throw error;
