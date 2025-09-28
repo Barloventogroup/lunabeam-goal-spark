@@ -648,27 +648,27 @@ export class PermissionsService {
   // Approve request by individual_id and email (for notification actions)
   static async approveRequest(individualId: string, inviteeEmail: string): Promise<SupporterInvite> {
     try {
-      console.log('Approving request for:', individualId, inviteeEmail);
-      
-      // First get the request ID
-      const { data: request, error: fetchError } = await supabase
-        .from('supporter_invites')
-        .select('id')
-        .eq('individual_id', individualId)
-        .eq('invitee_email', inviteeEmail.trim().toLowerCase())
-        .eq('status', 'pending_admin_approval')
+      console.log('Approving request for:', { individualId, inviteeEmail });
+
+      // Use the email-based secure RPC to approve (no client-side SELECT needed)
+      const { data: approvedInvite, error: approveError } = await supabase
+        .rpc('approve_supporter_request_by_email', {
+          p_individual_id: individualId,
+          p_invitee_email: inviteeEmail.trim()
+        })
         .single();
 
-      if (fetchError) {
-        console.error('Error fetching request:', fetchError);
-        throw new Error('Failed to fetch request');
+      if (approveError) {
+        console.error('Error approving request:', approveError);
+        throw new Error(`Database error: ${approveError.message}`);
       }
 
-      // Use the secure approve method and return the result
-      const approvedInvite = await this.approveSupporterRequest(request.id);
-      
-      console.log('Successfully approved request');
-      return approvedInvite;
+      console.log('Successfully approved request:', approvedInvite);
+      return {
+        ...approvedInvite,
+        role: approvedInvite.role as UserRole,
+        permission_level: approvedInvite.permission_level as PermissionLevel
+      } as SupporterInvite;
     } catch (error) {
       console.error('Error in approveRequest:', error);
       throw error;
@@ -678,25 +678,20 @@ export class PermissionsService {
   // Deny request by individual_id and email (for notification actions)
   static async denyRequest(individualId: string, inviteeEmail: string): Promise<void> {
     try {
-      console.log('Denying request for:', individualId, inviteeEmail);
-      
-      // First get the request ID
-      const { data: request, error: fetchError } = await supabase
-        .from('supporter_invites')
-        .select('id')
-        .eq('individual_id', individualId)
-        .eq('invitee_email', inviteeEmail.trim().toLowerCase())
-        .eq('status', 'pending_admin_approval')
-        .single();
+      console.log('Denying request for:', { individualId, inviteeEmail });
 
-      if (fetchError) {
-        console.error('Error fetching request:', fetchError);
-        throw new Error('Failed to fetch request');
+      // Use the email-based secure RPC to deny (no client-side SELECT needed)
+      const { error: denyError } = await supabase
+        .rpc('deny_supporter_request_by_email', {
+          p_individual_id: individualId,
+          p_invitee_email: inviteeEmail.trim()
+        });
+
+      if (denyError) {
+        console.error('Error denying request:', denyError);
+        throw new Error(`Database error: ${denyError.message}`);
       }
 
-      // Use the secure deny method
-      await this.denySupporterRequest(request.id);
-      
       console.log('Successfully denied request');
     } catch (error) {
       console.error('Error in denyRequest:', error);
