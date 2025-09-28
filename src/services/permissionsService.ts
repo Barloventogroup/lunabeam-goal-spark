@@ -654,14 +654,43 @@ export class PermissionsService {
     try {
       console.log('Approving request for:', { individualId, inviteeEmail });
 
-      // First, get pending requests for this individual using secure RPC
+      // Primary approach: Use the email-based RPC function directly
+      const { data: approvedInviteArray, error: approveError } = await supabase
+        .rpc('approve_supporter_request_by_email', {
+          p_individual_id: individualId,
+          p_invitee_email: inviteeEmail
+        });
+
+      if (!approveError && approvedInviteArray && approvedInviteArray.length > 0) {
+        // Success with primary method
+        const approvedInvite = approvedInviteArray[0];
+        console.log('Successfully approved request via email-based RPC:', approvedInvite);
+        return {
+          ...approvedInvite,
+          role: approvedInvite.role as UserRole,
+          permission_level: approvedInvite.permission_level as PermissionLevel
+        } as SupporterInvite;
+      }
+
+      // Log detailed error information for debugging
+      if (approveError) {
+        console.error('Email-based approval failed with full error details:', {
+          message: approveError.message,
+          code: approveError.code,
+          details: approveError.details,
+          hint: approveError.hint
+        });
+      }
+
+      // Fallback approach: Get pending requests and use ID-based approval
+      console.log('Attempting fallback to ID-based approval...');
       const { data: requests, error: fetchError } = await supabase.rpc('get_pending_requests_for_individual', {
         p_individual_id: individualId
       });
 
       if (fetchError) {
-        console.error('Error fetching pending requests:', fetchError);
-        throw new Error(`Failed to fetch requests: ${fetchError.message}`);
+        console.error('Error fetching pending requests for fallback:', fetchError);
+        throw new Error(`Failed to fetch requests for fallback: ${fetchError.message}`);
       }
 
       // Find the request with matching email
@@ -670,31 +699,35 @@ export class PermissionsService {
       );
 
       if (!request) {
-        throw new Error('Request not found or not pending approval');
+        throw new Error('Request not found or not pending approval. Please check if the request still exists.');
       }
 
-      // Use the secure id-based approval RPC (remove .single() as it returns an array)
-      const { data: approvedInviteArray, error: approveError } = await supabase
+      // Use ID-based approval as fallback
+      const { data: fallbackInviteArray, error: fallbackError } = await supabase
         .rpc('approve_supporter_request_secure', {
           p_request_id: request.id
         });
 
-      if (approveError) {
-        console.error('Error approving request:', approveError);
-        throw new Error(`Database error: ${approveError.message}`);
+      if (fallbackError) {
+        console.error('Fallback approval also failed:', {
+          message: fallbackError.message,
+          code: fallbackError.code,
+          details: fallbackError.details,
+          hint: fallbackError.hint
+        });
+        throw new Error(`Both approval methods failed. Primary error: ${approveError?.message || 'Unknown'}. Fallback error: ${fallbackError.message}`);
       }
 
-      // Handle array response from RPC function
-      const approvedInvite = Array.isArray(approvedInviteArray) ? approvedInviteArray[0] : approvedInviteArray;
-      if (!approvedInvite) {
-        throw new Error('No invite returned from approval');
+      const fallbackInvite = Array.isArray(fallbackInviteArray) ? fallbackInviteArray[0] : fallbackInviteArray;
+      if (!fallbackInvite) {
+        throw new Error('No invite returned from fallback approval');
       }
 
-      console.log('Successfully approved request:', approvedInvite);
+      console.log('Successfully approved request via fallback method:', fallbackInvite);
       return {
-        ...approvedInvite,
-        role: approvedInvite.role as UserRole,
-        permission_level: approvedInvite.permission_level as PermissionLevel
+        ...fallbackInvite,
+        role: fallbackInvite.role as UserRole,
+        permission_level: fallbackInvite.permission_level as PermissionLevel
       } as SupporterInvite;
     } catch (error) {
       console.error('Error in approveRequest:', error);
