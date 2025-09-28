@@ -92,7 +92,7 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
       console.error('Error handling approval action:', error);
       toast({
         title: "Error",
-        description: "Failed to process the request",
+        description: error instanceof Error ? error.message : "Failed to process the request",
         variant: "destructive"
       });
     }

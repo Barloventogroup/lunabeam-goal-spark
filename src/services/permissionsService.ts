@@ -669,16 +669,21 @@ export class PermissionsService {
         throw new Error('Request not found or not pending approval');
       }
 
-      // Use the secure id-based approval RPC
-      const { data: approvedInvite, error: approveError } = await supabase
+      // Use the secure id-based approval RPC (remove .single() as it returns an array)
+      const { data: approvedInviteArray, error: approveError } = await supabase
         .rpc('approve_supporter_request_secure', {
           p_request_id: request.id
-        })
-        .single();
+        });
 
       if (approveError) {
         console.error('Error approving request:', approveError);
         throw new Error(`Database error: ${approveError.message}`);
+      }
+
+      // Handle array response from RPC function
+      const approvedInvite = Array.isArray(approvedInviteArray) ? approvedInviteArray[0] : approvedInviteArray;
+      if (!approvedInvite) {
+        throw new Error('No invite returned from approval');
       }
 
       console.log('Successfully approved request:', approvedInvite);
