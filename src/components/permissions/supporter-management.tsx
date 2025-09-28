@@ -65,6 +65,16 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
       return;
     }
 
+    // Prevent user from inviting their own email address
+    if (email.toLowerCase() === user.email?.toLowerCase()) {
+      toast({
+        title: "Invalid Email",
+        description: "You cannot invite yourself. Please enter a different email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const inviteResponse = await PermissionsService.createSupporterInvite({
         individual_id: individualId,
@@ -131,9 +141,10 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
       });
     } catch (error) {
       console.error('Failed to send invite:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to send invitation";
       toast({
         title: "Error",
-        description: "Failed to send invitation",
+        description: errorMessage,
         variant: "destructive"
       });
     }

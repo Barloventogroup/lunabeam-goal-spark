@@ -333,6 +333,10 @@ export class PermissionsService {
       if (error) {
         console.error('❌ Database function error creating invite:', error);
         console.groupEnd();
+        // Handle specific validation errors with user-friendly messages
+        if (error.message?.includes('Cannot invite yourself')) {
+          throw new Error('You cannot invite yourself. Please enter a different email address.');
+        }
         throw new Error(`Failed to create supporter invite: ${error.message}`);
       }
 

@@ -99,6 +99,18 @@ export function FamilyInviteModal({ circle, trigger }: FamilyInviteModalProps) {
       return;
     }
 
+    // Prevent user from inviting their own email address
+    const { data: { user } } = await supabase.auth.getUser();
+    if (inviteeContact.includes('@') && user?.email && 
+        inviteeContact.toLowerCase().trim() === user.email.toLowerCase()) {
+      toast({
+        title: "Invalid Email",
+        description: "You cannot invite yourself. Please enter a different email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const invite = await database.createCircleInvite({
