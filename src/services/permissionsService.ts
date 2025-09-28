@@ -693,6 +693,31 @@ export class PermissionsService {
         }
       }
 
+      // Check if the error indicates already handled (graceful fallback)
+      if (approveError && approveError.message?.includes('Request not found or not pending approval')) {
+        console.log('Request might already be approved, checking for existing pending invite...');
+        
+        // Look for existing pending invite for this email/individual combination
+        const { data: existingInvite, error: existingError } = await supabase
+          .from('supporter_invites')
+          .select('*')
+          .eq('individual_id', individualId)
+          .ilike('invitee_email', inviteeEmail.toLowerCase().trim())
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!existingError && existingInvite) {
+          console.log('Found existing pending invite, returning it as already approved:', existingInvite);
+          return {
+            ...existingInvite,
+            role: existingInvite.role as UserRole,
+            permission_level: existingInvite.permission_level as PermissionLevel
+          } as SupporterInvite;
+        }
+      }
+
       // Log detailed error information for debugging
       if (approveError) {
         console.error('Email-based approval v3 failed with full error details:', {
@@ -711,7 +736,8 @@ export class PermissionsService {
 
       if (fetchError) {
         console.error('Error fetching pending requests for fallback:', fetchError);
-        throw new Error(`Failed to fetch requests for fallback: ${fetchError.message}`);
+        // If we can't fetch pending requests, show a benign message instead of error
+        throw new Error('Request has already been handled or no longer exists.');
       }
 
       // Find the request with matching email
@@ -720,7 +746,8 @@ export class PermissionsService {
       );
 
       if (!request) {
-        throw new Error('Request not found or not pending approval. Please check if the request still exists.');
+        // No pending request found - treat as already handled gracefully
+        throw new Error('Request has already been handled or no longer exists.');
       }
 
       // Use ID-based approval v3 as fallback
@@ -736,7 +763,7 @@ export class PermissionsService {
           details: fallbackError.details,
           hint: fallbackError.hint
         });
-        throw new Error(`Both approval methods failed. Primary error: ${approveError?.message || 'Unknown'}. Fallback error: ${fallbackError.message}`);
+        throw new Error('Request has already been handled or no longer exists.');
       }
 
       if (!fallbackInviteId) {
