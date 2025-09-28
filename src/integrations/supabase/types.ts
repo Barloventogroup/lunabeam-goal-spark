@@ -1122,6 +1122,10 @@ export type Database = {
         Args: { p_individual_id: string; p_invitee_email: string }
         Returns: string
       }
+      approve_supporter_request_by_email_v3: {
+        Args: { p_individual_id: string; p_invitee_email: string }
+        Returns: string
+      }
       approve_supporter_request_secure: {
         Args: { p_request_id: string }
         Returns: {
@@ -1141,6 +1145,10 @@ export type Database = {
         }[]
       }
       approve_supporter_request_secure_v2: {
+        Args: { p_request_id: string }
+        Returns: string
+      }
+      approve_supporter_request_secure_v3: {
         Args: { p_request_id: string }
         Returns: string
       }

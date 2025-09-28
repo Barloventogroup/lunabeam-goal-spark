@@ -599,9 +599,9 @@ export class PermissionsService {
     try {
       console.log('Approving supporter request:', requestId);
       
-      // Use the v2 RPC function that returns only UUID to avoid ambiguity
+      // Use the v3 RPC function that returns only UUID to avoid ambiguity
       const { data: inviteId, error: approveError } = await supabase
-        .rpc('approve_supporter_request_secure_v2', {
+        .rpc('approve_supporter_request_secure_v3', {
           p_request_id: requestId
         });
 
@@ -666,9 +666,9 @@ export class PermissionsService {
     try {
       console.log('Approving request for:', { individualId, inviteeEmail });
 
-      // Primary approach: Use the v2 email-based RPC function that returns UUID
+      // Primary approach: Use the v3 email-based RPC function that returns UUID
       const { data: approvedInviteId, error: approveError } = await supabase
-        .rpc('approve_supporter_request_by_email_v2', {
+        .rpc('approve_supporter_request_by_email_v3', {
           p_individual_id: individualId,
           p_invitee_email: inviteeEmail
         });
@@ -682,7 +682,7 @@ export class PermissionsService {
           .single();
 
         if (!fetchError && invite) {
-          console.log('Successfully approved request via email-based RPC v2:', invite);
+          console.log('Successfully approved request via email-based RPC v3:', invite);
           return {
             ...invite,
             role: invite.role as UserRole,
@@ -695,7 +695,7 @@ export class PermissionsService {
 
       // Log detailed error information for debugging
       if (approveError) {
-        console.error('Email-based approval v2 failed with full error details:', {
+        console.error('Email-based approval v3 failed with full error details:', {
           message: approveError.message,
           code: approveError.code,
           details: approveError.details,
@@ -703,8 +703,8 @@ export class PermissionsService {
         });
       }
 
-      // Fallback approach: Get pending requests and use ID-based approval v2
-      console.log('Attempting fallback to ID-based approval v2...');
+      // Fallback approach: Get pending requests and use ID-based approval v3
+      console.log('Attempting fallback to ID-based approval v3...');
       const { data: requests, error: fetchError } = await supabase.rpc('get_pending_requests_for_individual', {
         p_individual_id: individualId
       });
@@ -723,14 +723,14 @@ export class PermissionsService {
         throw new Error('Request not found or not pending approval. Please check if the request still exists.');
       }
 
-      // Use ID-based approval v2 as fallback
+      // Use ID-based approval v3 as fallback
       const { data: fallbackInviteId, error: fallbackError } = await supabase
-        .rpc('approve_supporter_request_secure_v2', {
+        .rpc('approve_supporter_request_secure_v3', {
           p_request_id: request.id
         });
 
       if (fallbackError) {
-        console.error('Fallback approval v2 also failed:', {
+        console.error('Fallback approval v3 also failed:', {
           message: fallbackError.message,
           code: fallbackError.code,
           details: fallbackError.details,
@@ -755,7 +755,7 @@ export class PermissionsService {
         throw new Error('Failed to fetch approved invite details from fallback');
       }
 
-      console.log('Successfully approved request via fallback method v2:', fallbackInvite);
+      console.log('Successfully approved request via fallback method v3:', fallbackInvite);
       return {
         ...fallbackInvite,
         role: fallbackInvite.role as UserRole,
