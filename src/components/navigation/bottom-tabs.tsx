@@ -5,6 +5,8 @@ import { TabGoals } from './tab-goals';
 import { TabTeam } from './tab-team';
 import { TabTeamIndividual } from './tab-team-individual';
 import { TabYou } from './tab-you';
+import { TabSupporterHome } from './tab-supporter-home';
+import { TabSupporterGoals } from './tab-supporter-goals';
 import { AIChat } from '../lunebeam/ai-chat';
 import { useStore } from '@/store/useStore';
 
@@ -53,6 +55,34 @@ export const BottomTabs: React.FC = () => {
   }, [activeTab, loadGoals]);
 
   const renderActiveTab = () => {
+    // Route supporters to supporter-specific interfaces
+    if (userContext?.userType === 'supporter') {
+      switch (activeTab) {
+        case 'home':
+          return <TabSupporterHome 
+            onNavigateToGoals={(individualId?: string) => {
+              setActiveTab('goals');
+              setSelectedGoalId(individualId || null);
+            }}
+            onNavigateToIndividual={(individualId: string) => {
+              setActiveTab('team');
+            }}
+          />;
+        case 'goals':
+          return <TabSupporterGoals selectedIndividualId={selectedGoalId || undefined} />;
+        case 'team':
+          return <TabTeam />; // Show supporter's community view
+        case 'you':
+          return <TabYou initialView={youTabInitialView} />;
+        default:
+          return <TabSupporterHome 
+            onNavigateToGoals={() => setActiveTab('goals')}
+            onNavigateToIndividual={() => setActiveTab('team')}
+          />;
+      }
+    }
+
+    // Default individual/admin interface
     switch (activeTab) {
       case 'home':
         return <TabHome 

@@ -757,9 +757,9 @@ export class PermissionsService {
         .eq('user_id', invite.inviter_id)
         .single();
 
-      // Build invite link
+      // Build invite link - use supporter setup flow
       const baseUrl = window.location.origin;
-      const inviteLink = `${baseUrl}/invitations?token=${invite.invite_token}`;
+      const inviteLink = `${baseUrl}/auth?mode=supporter-setup&token=${invite.supporter_setup_token || invite.invite_token}`;
 
       // Send email via edge function
       await supabase.functions.invoke('send-invitation-email', {

@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/components/auth/auth-provider';
 import { FirstTimePasswordSetup } from '@/components/auth/first-time-password-setup';
+import { SupporterPasswordSetup } from '@/components/auth/supporter-password-setup';
+import { getSupporterInviteByToken } from '@/utils/supporterUtils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 export default function Auth() {
@@ -21,6 +23,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   const [needsPasswordSetup, setNeedsPasswordSetup] = useState(false);
+  const [showSupporterSetup, setShowSupporterSetup] = useState(false);
+  const [supporterSetupData, setSupporterSetupData] = useState<{token: string, individualName: string} | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -57,6 +61,12 @@ export default function Auth() {
       setNeedsPasswordSetup(true);
       setShowPasswordSetup(true);
       setIsSignUp(false);
+    } else if (mode === 'supporter-setup') {
+      // Handle supporter setup mode
+      const supporterToken = searchParams.get('token');
+      if (supporterToken) {
+        handleSupporterSetup(supporterToken);
+      }
     } else if (mode === 'signup' && fromParam === 'invite') {
       setIsSignUp(true);
     } else if (mode === 'signin') {
@@ -129,6 +139,31 @@ export default function Auth() {
     navigate('/', {
       replace: true
     });
+  };
+
+  const handleSupporterSetup = async (token: string) => {
+    try {
+      const inviteData = await getSupporterInviteByToken(token);
+      if (inviteData) {
+        setSupporterSetupData({
+          token,
+          individualName: inviteData.individual_name
+        });
+        setShowSupporterSetup(true);
+      } else {
+        toast.error('Invalid or expired invitation link');
+      }
+    } catch (error) {
+      console.error('Error processing supporter invitation:', error);
+      toast.error('Failed to process invitation');
+    }
+  };
+
+  const handleSupporterSetupComplete = () => {
+    setShowSupporterSetup(false);
+    setSupporterSetupData(null);
+    // Redirect to supporter dashboard
+    navigate('/', { replace: true });
   };
 
   // Auto-switch to signup mode for supporter invites
@@ -270,6 +305,17 @@ export default function Auth() {
           </CardContent>
         </Card>
       </div>
+    );
+  }
+
+  // Show supporter setup screen
+  if (showSupporterSetup && supporterSetupData) {
+    return (
+      <SupporterPasswordSetup 
+        onComplete={handleSupporterSetupComplete}
+        supporterToken={supporterSetupData.token}
+        individualName={supporterSetupData.individualName}
+      />
     );
   }
 

@@ -897,6 +897,7 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
           specific_goals: string[] | null
           status: Database["public"]["Enums"]["invite_status"]
+          supporter_setup_token: string | null
         }
         Insert: {
           created_at?: string
@@ -914,6 +915,7 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
           specific_goals?: string[] | null
           status?: Database["public"]["Enums"]["invite_status"]
+          supporter_setup_token?: string | null
         }
         Update: {
           created_at?: string
@@ -931,6 +933,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           specific_goals?: string[] | null
           status?: Database["public"]["Enums"]["invite_status"]
+          supporter_setup_token?: string | null
         }
         Relationships: []
       }

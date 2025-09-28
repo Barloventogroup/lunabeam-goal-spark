@@ -1,7 +1,8 @@
 import { Profile } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
+import { getEnhancedUserType } from '@/utils/supporterUtils';
 
-export type UserType = 'individual' | 'admin' | 'unknown';
+export type UserType = 'individual' | 'supporter' | 'hybrid' | 'admin' | 'unknown';
 
 export interface UserContext {
   userType: UserType;
@@ -13,12 +14,20 @@ export interface UserContext {
  * Determines the user type based on their profile
  */
 export async function getUserContext(profile: Profile | null): Promise<UserContext> {
-  // Do not require user_id; rely on persisted profile.user_type
-  const userType = (profile?.user_type ?? 'unknown') as UserType;
-  const hasAdminFeatures = userType === 'admin';
+  if (!profile) {
+    return {
+      userType: 'unknown',
+      hasAdminFeatures: false,
+      profile,
+    };
+  }
+
+  // Get enhanced user type that considers supporter relationships
+  const enhancedUserType = await getEnhancedUserType(profile);
+  const hasAdminFeatures = enhancedUserType === 'admin';
 
   return {
-    userType,
+    userType: enhancedUserType,
     hasAdminFeatures,
     profile,
   };
