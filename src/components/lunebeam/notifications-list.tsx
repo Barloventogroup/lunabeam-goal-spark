@@ -88,13 +88,24 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
       // Mark notification as read and remove from list
       await handleMarkAsRead(notificationId);
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error handling approval action:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to process the request",
-        variant: "destructive"
-      });
+      
+      // If the request was already handled, still mark notification as read
+      if (error?.message?.includes('already handled or no longer exists')) {
+        await handleMarkAsRead(notificationId);
+        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+        toast({
+          title: "Request already processed",
+          description: "This request has already been handled",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to process the request",
+          variant: "destructive"
+        });
+      }
     }
   };
 

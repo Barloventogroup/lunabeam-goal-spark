@@ -1287,6 +1287,17 @@ export type Database = {
           status: Database["public"]["Enums"]["invite_status"]
         }[]
       }
+      get_invite_token_by_id_secure: {
+        Args: { p_invite_id: string }
+        Returns: {
+          individual_id: string
+          invite_token: string
+          invitee_email: string
+          invitee_name: string
+          inviter_id: string
+          message: string
+        }[]
+      }
       get_my_invite_by_token: {
         Args: { _token: string }
         Returns: {

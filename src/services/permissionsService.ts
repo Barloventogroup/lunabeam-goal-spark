@@ -674,23 +674,24 @@ export class PermissionsService {
         });
 
       if (!approveError && approvedInviteId) {
-        // Success with primary method - fetch the full invite by ID
-        const { data: invite, error: fetchError } = await supabase
-          .from('supporter_invites')
-          .select('*')
-          .eq('id', approvedInviteId)
-          .single();
-
-        if (!fetchError && invite) {
-          console.log('Successfully approved request via email-based RPC v3:', invite);
-          return {
-            ...invite,
-            role: invite.role as UserRole,
-            permission_level: invite.permission_level as PermissionLevel
-          } as SupporterInvite;
-        } else {
-          console.error('Error fetching approved invite:', fetchError);
-        }
+        // Success with primary method - get invite details and send email
+        await this.sendInvitationEmailById(approvedInviteId);
+        
+        return {
+          id: approvedInviteId,
+          individual_id: individualId,
+          invitee_email: inviteeEmail,
+          status: 'pending',
+          role: 'supporter' as UserRole,
+          permission_level: 'viewer' as PermissionLevel,
+          invite_token: '',
+          created_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          inviter_id: '',
+          invitee_name: null,
+          specific_goals: [],
+          message: null
+        } as SupporterInvite;
       }
 
       // Check if the error indicates already handled (graceful fallback)
@@ -709,88 +710,74 @@ export class PermissionsService {
           .maybeSingle();
 
         if (!existingError && existingInvite) {
-          console.log('Found existing pending invite, returning it as already approved:', existingInvite);
+          console.log('Found existing pending invite, sending email and returning it:', existingInvite);
+          // Send email for existing invite if not already sent
+          await this.sendInvitationEmailById(existingInvite.id);
           return {
             ...existingInvite,
             role: existingInvite.role as UserRole,
             permission_level: existingInvite.permission_level as PermissionLevel
           } as SupporterInvite;
         }
+        
+        // If no pending invite found, treat as already handled
+        throw new Error('Request already handled or no longer exists');
       }
 
-      // Log detailed error information for debugging
-      if (approveError) {
-        console.error('Email-based approval v3 failed with full error details:', {
-          message: approveError.message,
-          code: approveError.code,
-          details: approveError.details,
-          hint: approveError.hint
-        });
-      }
+      // Log and rethrow other errors
+      console.error('Email-based approval v3 failed:', approveError);
+      throw new Error(`Failed to approve request: ${approveError?.message || 'Unknown error'}`);
 
-      // Fallback approach: Get pending requests and use ID-based approval v3
-      console.log('Attempting fallback to ID-based approval v3...');
-      const { data: requests, error: fetchError } = await supabase.rpc('get_pending_requests_for_individual', {
-        p_individual_id: individualId
-      });
-
-      if (fetchError) {
-        console.error('Error fetching pending requests for fallback:', fetchError);
-        // If we can't fetch pending requests, show a benign message instead of error
-        throw new Error('Request has already been handled or no longer exists.');
-      }
-
-      // Find the request with matching email
-      const request = requests?.find(r => 
-        r.invitee_email?.toLowerCase().trim() === inviteeEmail.toLowerCase().trim()
-      );
-
-      if (!request) {
-        // No pending request found - treat as already handled gracefully
-        throw new Error('Request has already been handled or no longer exists.');
-      }
-
-      // Use ID-based approval v3 as fallback
-      const { data: fallbackInviteId, error: fallbackError } = await supabase
-        .rpc('approve_supporter_request_secure_v3', {
-          p_request_id: request.id
-        });
-
-      if (fallbackError) {
-        console.error('Fallback approval v3 also failed:', {
-          message: fallbackError.message,
-          code: fallbackError.code,
-          details: fallbackError.details,
-          hint: fallbackError.hint
-        });
-        throw new Error('Request has already been handled or no longer exists.');
-      }
-
-      if (!fallbackInviteId) {
-        throw new Error('No invite ID returned from fallback approval');
-      }
-
-      // Fetch the full invite record by ID
-      const { data: fallbackInvite, error: fallbackFetchError } = await supabase
-        .from('supporter_invites')
-        .select('*')
-        .eq('id', fallbackInviteId)
-        .single();
-
-      if (fallbackFetchError || !fallbackInvite) {
-        console.error('Error fetching fallback approved invite:', fallbackFetchError);
-        throw new Error('Failed to fetch approved invite details from fallback');
-      }
-
-      console.log('Successfully approved request via fallback method v3:', fallbackInvite);
-      return {
-        ...fallbackInvite,
-        role: fallbackInvite.role as UserRole,
-        permission_level: fallbackInvite.permission_level as PermissionLevel
-      } as SupporterInvite;
     } catch (error) {
       console.error('Error in approveRequest:', error);
       throw error;
+    }
+  }
+
+  // Helper method to send invitation email by invite ID
+  static async sendInvitationEmailById(inviteId: string): Promise<void> {
+    try {
+      // Get invite details securely
+      const { data: inviteDetails, error: detailsError } = await supabase.rpc(
+        'get_invite_token_by_id_secure',
+        { p_invite_id: inviteId }
+      );
+
+      if (detailsError || !inviteDetails?.[0]) {
+        console.error('Could not fetch invite details for email:', detailsError);
+        return; // Don't throw - email failure shouldn't block approval success
+      }
+
+      const invite = inviteDetails[0];
+      
+      // Get inviter's name
+      const { data: inviterProfile } = await supabase
+        .from('profiles')
+        .select('first_name')
+        .eq('user_id', invite.inviter_id)
+        .single();
+
+      // Build invite link
+      const baseUrl = window.location.origin;
+      const inviteLink = `${baseUrl}/invitations?token=${invite.invite_token}`;
+
+      // Send email via edge function
+      await supabase.functions.invoke('send-invitation-email', {
+        body: {
+          type: 'supporter',
+          inviteeName: invite.invitee_name || 'there',
+          inviteeEmail: invite.invitee_email,
+          inviterName: inviterProfile?.first_name || 'Your supporter',
+          message: invite.message || '',
+          roleName: 'Supporter',
+          inviteLink
+        }
+      });
+
+      console.log('Successfully sent invitation email for invite:', inviteId);
+    } catch (error) {
+      console.error('Error sending invitation email:', error);
+      // Don't throw - email failure shouldn't block approval success
     }
   }
 
