@@ -1118,6 +1118,10 @@ export type Database = {
           status: Database["public"]["Enums"]["invite_status"]
         }[]
       }
+      approve_supporter_request_by_email_v2: {
+        Args: { p_individual_id: string; p_invitee_email: string }
+        Returns: string
+      }
       approve_supporter_request_secure: {
         Args: { p_request_id: string }
         Returns: {
@@ -1135,6 +1139,10 @@ export type Database = {
           specific_goals: string[]
           status: Database["public"]["Enums"]["invite_status"]
         }[]
+      }
+      approve_supporter_request_secure_v2: {
+        Args: { p_request_id: string }
+        Returns: string
       }
       assign_email_and_invite: {
         Args: {
