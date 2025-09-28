@@ -1100,6 +1100,24 @@ export type Database = {
         Args: { user_id_to_delete: string }
         Returns: boolean
       }
+      approve_supporter_request_secure: {
+        Args: { p_request_id: string }
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          individual_id: string
+          invite_token: string
+          invitee_email: string
+          invitee_name: string
+          inviter_id: string
+          message: string
+          permission_level: Database["public"]["Enums"]["permission_level"]
+          role: Database["public"]["Enums"]["user_role"]
+          specific_goals: string[]
+          status: Database["public"]["Enums"]["invite_status"]
+        }[]
+      }
       assign_email_and_invite: {
         Args: {
           p_individual_id: string
@@ -1207,6 +1225,10 @@ export type Database = {
       delete_user_safely: {
         Args: { user_id_to_delete: string }
         Returns: boolean
+      }
+      deny_supporter_request_secure: {
+        Args: { p_request_id: string }
+        Returns: undefined
       }
       get_goal_completion_bonus: {
         Args: { category: string }

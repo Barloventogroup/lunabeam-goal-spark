@@ -593,86 +593,114 @@ export class PermissionsService {
   // Approve supporter request (converts to real invitation)
   static async approveSupporterRequest(requestId: string): Promise<SupporterInvite> {
     try {
-      // First, get the request details
-      const { data: request, error: fetchError } = await supabase
-        .from('supporter_invites')
-        .select('*')
-        .eq('id', requestId)
-        .eq('status', 'pending_admin_approval')
-        .single();
+      console.log('Approving supporter request:', requestId);
+      
+      // Use the secure RPC function that handles the entire approval flow
+      const { data: invite, error: approveError } = await supabase
+        .rpc('approve_supporter_request_secure', {
+          p_request_id: requestId
+        });
 
-      if (fetchError || !request) throw new Error('Request not found');
+      if (approveError) {
+        console.error('Error approving request:', approveError);
+        throw new Error(`Failed to approve request: ${approveError.message}`);
+      }
 
-      // Create actual invitation using secure function
-      const { data, error } = await supabase.rpc('create_supporter_invite_secure', {
-        p_individual_id: request.individual_id,
-        p_invitee_email: request.invitee_email,
-        p_invitee_name: request.invitee_name,
-        p_role: request.role,
-        p_permission_level: request.permission_level,
-        p_specific_goals: request.specific_goals,
-        p_message: request.message,
-        p_expires_at: request.expires_at,
-        p_inviter_id: request.inviter_id  // Preserve original inviter
-      });
+      if (!invite || invite.length === 0) {
+        throw new Error('No invite returned from approval');
+      }
 
-      if (error) throw error;
-
-      // Delete the approval request
-      await supabase
-        .from('supporter_invites')
-        .delete()
-        .eq('id', requestId);
-
-      const inviteRecord = data[0];
+      console.log('Successfully approved supporter request');
       return {
-        ...inviteRecord,
-        role: inviteRecord.role as UserRole,
-        permission_level: inviteRecord.permission_level as PermissionLevel
+        ...invite[0],
+        role: invite[0].role as UserRole,
+        permission_level: invite[0].permission_level as PermissionLevel
       } as SupporterInvite;
     } catch (error) {
-      console.error('Failed to approve supporter request:', error);
+      console.error('Error in approveSupporterRequest:', error);
       throw error;
     }
   }
 
   // Deny supporter request
   static async denySupporterRequest(requestId: string): Promise<void> {
-    const { error } = await supabase
-      .from('supporter_invites')
-      .update({ status: 'declined' })
-      .eq('id', requestId);
-    
-    if (error) throw error;
+    try {
+      console.log('Denying supporter request:', requestId);
+      
+      // Use the secure RPC function that handles the denial flow
+      const { error } = await supabase
+        .rpc('deny_supporter_request_secure', {
+          p_request_id: requestId
+        });
+
+      if (error) {
+        console.error('Error denying request:', error);
+        throw new Error(`Failed to deny request: ${error.message}`);
+      }
+
+      console.log('Successfully denied supporter request');
+    } catch (error) {
+      console.error('Error in denySupporterRequest:', error);
+      throw error;
+    }
   }
 
   // Approve request by individual_id and email (for notification actions)
-  static async approveRequest(individualId: string, inviteeEmail: string): Promise<void> {
-    const { data: request, error: fetchError } = await supabase
-      .from('supporter_invites')
-      .select('*')
-      .eq('individual_id', individualId)
-      .eq('invitee_email', inviteeEmail)
-      .eq('status', 'pending_admin_approval')
-      .single();
+  static async approveRequest(individualId: string, inviteeEmail: string): Promise<SupporterInvite> {
+    try {
+      console.log('Approving request for:', individualId, inviteeEmail);
+      
+      // First get the request ID
+      const { data: request, error: fetchError } = await supabase
+        .from('supporter_invites')
+        .select('id')
+        .eq('individual_id', individualId)
+        .eq('invitee_email', inviteeEmail.trim().toLowerCase())
+        .eq('status', 'pending_admin_approval')
+        .single();
 
-    if (fetchError || !request) throw new Error('Request not found');
-    
-    await this.approveSupporterRequest(request.id);
+      if (fetchError) {
+        console.error('Error fetching request:', fetchError);
+        throw new Error('Failed to fetch request');
+      }
+
+      // Use the secure approve method and return the result
+      const approvedInvite = await this.approveSupporterRequest(request.id);
+      
+      console.log('Successfully approved request');
+      return approvedInvite;
+    } catch (error) {
+      console.error('Error in approveRequest:', error);
+      throw error;
+    }
   }
 
   // Deny request by individual_id and email (for notification actions)
   static async denyRequest(individualId: string, inviteeEmail: string): Promise<void> {
-    const { data: request, error: fetchError } = await supabase
-      .from('supporter_invites')
-      .select('id')
-      .eq('individual_id', individualId)
-      .eq('invitee_email', inviteeEmail)
-      .eq('status', 'pending_admin_approval')
-      .single();
+    try {
+      console.log('Denying request for:', individualId, inviteeEmail);
+      
+      // First get the request ID
+      const { data: request, error: fetchError } = await supabase
+        .from('supporter_invites')
+        .select('id')
+        .eq('individual_id', individualId)
+        .eq('invitee_email', inviteeEmail.trim().toLowerCase())
+        .eq('status', 'pending_admin_approval')
+        .single();
 
-    if (fetchError || !request) throw new Error('Request not found');
-    
-    await this.denySupporterRequest(request.id);
+      if (fetchError) {
+        console.error('Error fetching request:', fetchError);
+        throw new Error('Failed to fetch request');
+      }
+
+      // Use the secure deny method
+      await this.denySupporterRequest(request.id);
+      
+      console.log('Successfully denied request');
+    } catch (error) {
+      console.error('Error in denyRequest:', error);
+      throw error;
+    }
   }
 }
