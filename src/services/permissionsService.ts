@@ -650,11 +650,29 @@ export class PermissionsService {
     try {
       console.log('Approving request for:', { individualId, inviteeEmail });
 
-      // Use the email-based secure RPC to approve (no client-side SELECT needed)
+      // First, get pending requests for this individual using secure RPC
+      const { data: requests, error: fetchError } = await supabase.rpc('get_pending_requests_for_individual', {
+        p_individual_id: individualId
+      });
+
+      if (fetchError) {
+        console.error('Error fetching pending requests:', fetchError);
+        throw new Error(`Failed to fetch requests: ${fetchError.message}`);
+      }
+
+      // Find the request with matching email
+      const request = requests?.find(r => 
+        r.invitee_email?.toLowerCase().trim() === inviteeEmail.toLowerCase().trim()
+      );
+
+      if (!request) {
+        throw new Error('Request not found or not pending approval');
+      }
+
+      // Use the secure id-based approval RPC
       const { data: approvedInvite, error: approveError } = await supabase
-        .rpc('approve_supporter_request_by_email', {
-          p_individual_id: individualId,
-          p_invitee_email: inviteeEmail.trim()
+        .rpc('approve_supporter_request_secure', {
+          p_request_id: request.id
         })
         .single();
 
@@ -680,11 +698,29 @@ export class PermissionsService {
     try {
       console.log('Denying request for:', { individualId, inviteeEmail });
 
-      // Use the email-based secure RPC to deny (no client-side SELECT needed)
+      // First, get pending requests for this individual using secure RPC
+      const { data: requests, error: fetchError } = await supabase.rpc('get_pending_requests_for_individual', {
+        p_individual_id: individualId
+      });
+
+      if (fetchError) {
+        console.error('Error fetching pending requests:', fetchError);
+        throw new Error(`Failed to fetch requests: ${fetchError.message}`);
+      }
+
+      // Find the request with matching email
+      const request = requests?.find(r => 
+        r.invitee_email?.toLowerCase().trim() === inviteeEmail.toLowerCase().trim()
+      );
+
+      if (!request) {
+        throw new Error('Request not found or not pending approval');
+      }
+
+      // Use the secure id-based denial RPC
       const { error: denyError } = await supabase
-        .rpc('deny_supporter_request_by_email', {
-          p_individual_id: individualId,
-          p_invitee_email: inviteeEmail.trim()
+        .rpc('deny_supporter_request_secure', {
+          p_request_id: request.id
         });
 
       if (denyError) {
