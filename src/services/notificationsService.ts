@@ -31,15 +31,17 @@ export const notificationsService = {
     title: string;
     message: string;
     data?: any;
-  }): Promise<Notification> {
-    const { data, error } = await supabase
-      .from('notifications')
-      .insert(notification)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  }): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .insert(notification);
+      if (error) {
+        console.error('Error creating notification:', error);
+      }
+    } catch (err) {
+      console.error('Failed to create notification:', err);
+    }
   },
 
   // Create approval request notification
