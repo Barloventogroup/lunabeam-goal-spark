@@ -7,6 +7,8 @@ import { Lock, Eye, EyeOff, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "./auth-provider";
+import { PermissionsService } from "@/services/permissionsService";
+import { useStore } from "@/store/useStore";
 
 interface SupporterPasswordSetupProps {
   onComplete: () => void;
@@ -22,6 +24,7 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
   inviteeEmail 
 }) => {
   const { user } = useAuth();
+  const setProfileInStore = useStore(s => s.setProfile);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -138,18 +141,50 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
         }
       }
 
-      // If we have a supporter token, mark the invitation as accepted
+      // Link supporter to individual and accept invite using invite token
       if (supporterToken) {
-        const { error: inviteError } = await supabase
-          .from('supporter_invites')
-          .update({ 
-            status: 'accepted'
-          })
-          .eq('supporter_setup_token', supporterToken);
-
-        if (inviteError) {
-          console.error('Failed to update invitation status:', inviteError);
+        try {
+          const { data: inviteRows, error: rpcError } = await supabase.rpc('get_supporter_invite_public', {
+            p_token: supporterToken
+          });
+          if (rpcError) {
+            console.error('Failed to fetch invite via RPC:', rpcError);
+          } else if (inviteRows && inviteRows.length > 0) {
+            const inviteToken = (inviteRows[0] as any).invite_token as string | undefined;
+            if (inviteToken) {
+              try {
+                await PermissionsService.acceptSupporterInvite(inviteToken);
+              } catch (acceptErr) {
+                console.error('Failed to accept supporter invite:', acceptErr);
+              }
+            } else {
+              console.warn('RPC did not return invite_token; cannot accept invite.');
+            }
+          }
+        } catch (err) {
+          console.error('Invite acceptance flow failed:', err);
         }
+      }
+
+      // Optimistically update local store so router skips onboarding immediately
+      try {
+        const firstName = (currentUser as any)?.user_metadata?.first_name || (inviteeEmail?.split('@')[0] ?? 'Supporter');
+        const localProfile: any = {
+          first_name: firstName,
+          strengths: [],
+          interests: [],
+          challenges: [],
+          comm_pref: 'text',
+          onboarding_complete: true,
+          user_type: 'supporter',
+          authentication_status: 'authenticated',
+          account_status: 'active',
+          password_set: true,
+          email: inviteeEmail
+        };
+        await setProfileInStore(localProfile);
+      } catch (e) {
+        console.warn('Best-effort local profile update failed (ignored):', e);
       }
 
       toast.success(`Welcome to the support team${individualName ? ` for ${individualName}` : ''}!`);
