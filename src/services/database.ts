@@ -55,7 +55,7 @@ export const database = {
       challenges: data.challenges || [],
       comm_pref: data.comm_pref as 'voice' | 'text',
       onboarding_complete: data.onboarding_complete ?? false,
-      user_type: (data.user_type as 'admin' | 'individual' | undefined),
+      user_type: (data.user_type as 'admin' | 'individual' | 'supporter' | 'hybrid' | undefined),
       created_by_supporter: data.created_by_supporter
     };
   },

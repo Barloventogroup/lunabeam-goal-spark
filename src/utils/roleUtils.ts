@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
 
-export type UserRole = 'admin' | 'individual';
+export type UserRole = 'admin' | 'individual' | 'supporter' | 'hybrid';
 
 /**
  * Updates the user's role in their profile

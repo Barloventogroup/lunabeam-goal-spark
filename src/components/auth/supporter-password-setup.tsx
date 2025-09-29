@@ -66,10 +66,6 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
       return;
     }
 
-    if (!inviteeEmail) {
-      toast.error('No email found in invitation');
-      return;
-    }
 
     setLoading(true);
     try {
@@ -93,17 +89,29 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
 
       if (passwordError) throw passwordError;
 
-      // Update profile to mark password as set and skip onboarding for supporters
+      // Upsert profile to mark password as set and skip onboarding for supporters
+      const metaFirst = (currentUser.user_metadata?.first_name || '').toString().trim();
+      const emailLocal = (currentUser.email || inviteeEmail || '').split('@')[0] || '';
+      const firstName = metaFirst || emailLocal || 'User';
+
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ 
+        .upsert({ 
+          user_id: currentUser.id,
+          first_name: firstName,
+          comm_pref: 'text',
           password_set: true,
           authentication_status: 'authenticated',
           account_status: 'active',
           onboarding_complete: true, // Supporters skip onboarding
           user_type: 'supporter'
-        })
-        .eq('user_id', currentUser.id);
+        }, { onConflict: 'user_id' });
+
+      if (profileError) {
+        console.error('Failed to upsert profile:', profileError);
+      } else {
+        console.log('SupporterPasswordSetup: profile upserted for', currentUser.id);
+      }
 
       if (profileError) {
         console.error('Failed to update profile:', profileError);
