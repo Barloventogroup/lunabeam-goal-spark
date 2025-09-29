@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "./auth-provider";
 import { PermissionsService } from "@/services/permissionsService";
+import { useStore } from '@/store/useStore';
 
 interface SupporterPasswordSetupProps {
   onComplete: () => void;
@@ -141,6 +142,11 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
       }
 
       toast.success(`Welcome to the support team${individualName ? ` for ${individualName}` : ''}!`);
+      try {
+        await useStore.getState().loadProfile();
+      } catch (e) {
+        console.warn('SupporterPasswordSetup: failed to refresh profile after setup', e);
+      }
       onComplete();
       
     } catch (error: any) {

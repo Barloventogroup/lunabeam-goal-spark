@@ -10,6 +10,7 @@ import { SupporterPasswordSetup } from '@/components/auth/supporter-password-set
 import { getSupporterInviteByToken } from '@/utils/supporterUtils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useStore } from '@/store/useStore';
 export default function Auth() {
   const {
     user,
@@ -164,9 +165,14 @@ useEffect(() => {
     }
   };
 
-  const handleSupporterSetupComplete = () => {
+  const handleSupporterSetupComplete = async () => {
     setShowSupporterSetup(false);
     setSupporterSetupData(null);
+    try {
+      await useStore.getState().loadProfile();
+    } catch (e) {
+      console.warn('Auth: failed to refresh profile after supporter setup', e);
+    }
     // Redirect to supporter dashboard
     navigate('/', { replace: true });
   };

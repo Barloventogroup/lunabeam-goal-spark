@@ -14,16 +14,8 @@ export interface UserContext {
  * Determines the user type based on their profile
  */
 export async function getUserContext(profile: Profile | null): Promise<UserContext> {
-  if (!profile) {
-    return {
-      userType: 'unknown',
-      hasAdminFeatures: false,
-      profile,
-    };
-  }
-
-  // Get enhanced user type that considers supporter relationships
-  const enhancedUserType = await getEnhancedUserType(profile);
+  // Compute enhanced user type even if profile is null (falls back to auth user)
+  const enhancedUserType = await getEnhancedUserType(profile as any);
   const hasAdminFeatures = enhancedUserType === 'admin';
 
   return {
