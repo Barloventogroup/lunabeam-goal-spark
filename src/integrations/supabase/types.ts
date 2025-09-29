@@ -1386,6 +1386,7 @@ export type Database = {
           id: string
           individual_id: string
           individual_name: string
+          invite_token: string
           invitee_email: string
           invitee_name: string
           message: string
