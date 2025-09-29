@@ -24,7 +24,7 @@ export default function Auth() {
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   const [needsPasswordSetup, setNeedsPasswordSetup] = useState(false);
   const [showSupporterSetup, setShowSupporterSetup] = useState(false);
-  const [supporterSetupData, setSupporterSetupData] = useState<{token: string, individualName: string} | null>(null);
+  const [supporterSetupData, setSupporterSetupData] = useState<{token: string, individualName: string, inviteeEmail: string} | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -62,7 +62,7 @@ export default function Auth() {
       setShowPasswordSetup(true);
       setIsSignUp(false);
     } else if (mode === 'supporter-setup') {
-      // Handle supporter setup mode
+      // Handle supporter setup mode - show setup immediately without requiring auth
       const supporterToken = searchParams.get('token');
       if (supporterToken) {
         handleSupporterSetup(supporterToken);
@@ -147,7 +147,8 @@ export default function Auth() {
       if (inviteData) {
         setSupporterSetupData({
           token,
-          individualName: inviteData.individual_name
+          individualName: inviteData.individual_name,
+          inviteeEmail: inviteData.invitee_email
         });
         setShowSupporterSetup(true);
       } else {
@@ -315,6 +316,7 @@ export default function Auth() {
         onComplete={handleSupporterSetupComplete}
         supporterToken={supporterSetupData.token}
         individualName={supporterSetupData.individualName}
+        inviteeEmail={supporterSetupData.inviteeEmail}
       />
     );
   }

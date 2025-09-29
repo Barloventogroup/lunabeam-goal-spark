@@ -12,43 +12,21 @@ interface SupporterPasswordSetupProps {
   onComplete: () => void;
   supporterToken?: string;
   individualName?: string;
+  inviteeEmail?: string;
 }
 
 export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({ 
   onComplete, 
   supporterToken,
-  individualName 
+  individualName,
+  inviteeEmail 
 }) => {
   const { user } = useAuth();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [userLoading, setUserLoading] = useState(true);
-
-  // Wait for user/session to be available
-  useEffect(() => {
-    let cancelled = false;
-    let attempts = 0;
-    const heartbeat = async () => {
-      if (cancelled) return;
-      const current = user || (await supabase.auth.getSession()).data.session?.user || null;
-      if (current) {
-        console.log('SupporterPasswordSetup: session detected for', current.id);
-        if (!cancelled) setUserLoading(false);
-        return;
-      }
-      if (attempts < 24) {
-        attempts += 1;
-        setTimeout(heartbeat, 300);
-      } else {
-        console.warn('SupporterPasswordSetup: session not found after waiting');
-        if (!cancelled) setUserLoading(false);
-      }
-    };
-    heartbeat();
-    return () => { cancelled = true; };
-  }, [user]);
+  const [userLoading, setUserLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,26 +41,63 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
       return;
     }
 
+    if (!inviteeEmail) {
+      toast.error('No email found in invitation');
+      return;
+    }
+
     setLoading(true);
     try {
-      // Ensure we have a valid session
       let currentUser = user;
+      
+      // If no current user, try to create an account or sign in
       if (!currentUser) {
-        const { data: { session } } = await supabase.auth.getSession();
-        currentUser = session?.user || null;
-        if (!currentUser) {
-          throw new Error('No authenticated user found. Please try again.');
+        console.log('No current user, attempting to create account for:', inviteeEmail);
+        
+        // Try to sign up first (in case they don't have an account)
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: inviteeEmail,
+          password: password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth?mode=supporter-setup&token=${supporterToken}`
+          }
+        });
+
+        if (signUpError) {
+          // If sign up fails (e.g., user exists), try to sign in
+          if (signUpError.message?.includes('already registered') || signUpError.message?.includes('User already registered')) {
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+              email: inviteeEmail,
+              password: password
+            });
+
+            if (signInError) {
+              throw new Error('Failed to sign in with provided credentials. Please check your password or try creating a new account.');
+            }
+            currentUser = signInData.user;
+          } else {
+            throw signUpError;
+          }
+        } else {
+          currentUser = signUpData.user;
         }
+      }
+
+      if (!currentUser) {
+        throw new Error('Unable to authenticate. Please try again.');
       }
 
       console.log('Setting up password for supporter:', currentUser.id);
 
-      // Update the user's password
+      // Update the user's password (in case they signed in with an old password)
       const { error: passwordError } = await supabase.auth.updateUser({
         password: password
       });
 
-      if (passwordError) throw passwordError;
+      if (passwordError) {
+        console.error('Password update error:', passwordError);
+        // Don't throw here as the user is already authenticated
+      }
 
       // Update profile to mark password as set and complete supporter setup
       const { error: profileError } = await supabase
@@ -123,7 +138,7 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
     }
   };
 
-  // Show loading while waiting for user context
+  // Show loading while processing
   if (userLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

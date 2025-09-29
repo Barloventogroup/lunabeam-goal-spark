@@ -111,6 +111,7 @@ export async function getSupporterInviteByToken(token: string) {
         id,
         individual_id,
         invitee_name,
+        invitee_email,
         role,
         permission_level,
         message,
