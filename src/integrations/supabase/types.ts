@@ -1291,7 +1291,7 @@ export type Database = {
         }[]
       }
       get_invite_token_by_id_secure: {
-        Args: { p_invite_id: string }
+        Args: { invite_id: string }
         Returns: {
           individual_id: string
           invite_token: string
@@ -1299,6 +1299,7 @@ export type Database = {
           invitee_name: string
           inviter_id: string
           message: string
+          supporter_setup_token: string
         }[]
       }
       get_my_invite_by_token: {

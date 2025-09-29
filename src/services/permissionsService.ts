@@ -740,7 +740,7 @@ export class PermissionsService {
       // Get invite details securely
       const { data: inviteDetails, error: detailsError } = await supabase.rpc(
         'get_invite_token_by_id_secure',
-        { p_invite_id: inviteId }
+        { invite_id: inviteId }
       );
 
       if (detailsError || !inviteDetails?.[0]) {
@@ -759,7 +759,7 @@ export class PermissionsService {
 
       // Build invite link - use supporter setup flow
       const baseUrl = window.location.origin;
-      const inviteLink = `${baseUrl}/auth?mode=supporter-setup&token=${invite.supporter_setup_token || invite.invite_token}`;
+      const inviteLink = `${baseUrl}/auth?mode=supporter-setup&token=${(invite as any).supporter_setup_token || invite.invite_token}`;
 
       // Send email via edge function
       await supabase.functions.invoke('send-invitation-email', {
