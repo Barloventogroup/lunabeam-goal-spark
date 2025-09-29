@@ -1380,6 +1380,20 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_supporter_invite_public: {
+        Args: { p_token: string }
+        Returns: {
+          id: string
+          individual_id: string
+          individual_name: string
+          invitee_email: string
+          invitee_name: string
+          message: string
+          permission_level: Database["public"]["Enums"]["permission_level"]
+          role: Database["public"]["Enums"]["user_role"]
+          supporter_setup_token: string
+        }[]
+      }
       get_user_member_circles: {
         Args: Record<PropertyKey, never>
         Returns: {

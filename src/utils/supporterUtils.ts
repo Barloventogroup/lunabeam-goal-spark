@@ -107,7 +107,7 @@ export async function getSupporterInviteByToken(token: string) {
   try {
     // Use public RPC that bypasses RLS for unauthenticated access
     const { data, error } = await supabase
-      .rpc('get_supporter_invite_public', { p_token: token })
+      .rpc('get_supporter_invite_public' as any, { p_token: token })
       .maybeSingle();
 
     if (error) {
@@ -115,7 +115,17 @@ export async function getSupporterInviteByToken(token: string) {
       return null;
     }
 
-    return data;
+    return data as {
+      id: string;
+      individual_id: string;
+      invitee_email: string;
+      invitee_name: string | null;
+      role: string;
+      permission_level: string;
+      message: string | null;
+      supporter_setup_token: string | null;
+      individual_name: string | null;
+    } | null;
   } catch (error) {
     console.error('Error fetching supporter invite:', error);
     return null;
