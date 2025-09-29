@@ -92,7 +92,7 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
       if (inviteResponse.invite_token && inviteResponse.status !== 'pending_admin_approval') {
         try {
           const baseUrl = SITE_URL || window.location.origin;
-          const inviteLink = `${baseUrl}/invitations?token=${inviteResponse.invite_token}`;
+          const inviteLink = `${baseUrl}/auth?mode=supporter-setup&token=${inviteResponse.supporter_setup_token || inviteResponse.invite_token}`;
           
           const { data: currentUser } = await supabase.auth.getUser();
           const inviterName = currentUser?.user?.user_metadata?.full_name || 'Someone';

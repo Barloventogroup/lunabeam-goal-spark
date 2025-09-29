@@ -650,7 +650,7 @@ export const TabTeam: React.FC = () => {
       const approvedInvite = await PermissionsService.approveSupporterRequest(requestId);
       
       // Send invitation email
-      const inviteLink = `${window.location.origin}/invitations/${approvedInvite.invite_token}`;
+      const inviteLink = `${window.location.origin}/auth?mode=supporter-setup&token=${approvedInvite.supporter_setup_token || approvedInvite.invite_token}`;
       
       await supabase.functions.invoke('send-invitation-email', {
         body: {

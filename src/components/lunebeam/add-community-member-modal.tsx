@@ -86,7 +86,7 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
         });
       } else {
         // For direct invitations, also send email
-        const inviteLink = `${window.location.origin}/invitations/${inviteResult.invite_token}`;
+        const inviteLink = `${window.location.origin}/auth?mode=supporter-setup&token=${inviteResult.supporter_setup_token || inviteResult.invite_token}`;
         
         await supabase.functions.invoke('send-invitation-email', {
           body: {

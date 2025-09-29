@@ -53,6 +53,7 @@ export interface SupporterInvite {
   permission_level: PermissionLevel;
   specific_goals: string[];
   invite_token: string;
+  supporter_setup_token?: string;
   message?: string;
   expires_at: string;
   created_at: string;
