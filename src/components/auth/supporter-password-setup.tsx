@@ -105,7 +105,9 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
         .update({ 
           password_set: true,
           authentication_status: 'authenticated',
-          account_status: 'active'
+          account_status: 'active',
+          onboarding_complete: true,
+          user_type: 'supporter'
         })
         .eq('user_id', currentUser.id);
 
