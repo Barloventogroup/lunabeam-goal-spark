@@ -101,42 +101,21 @@ export async function getEnhancedUserType(profile: any): Promise<'individual' | 
 }
 
 /**
- * Gets supporter invitation details by token
+ * Gets supporter invitation details by token (works for unauthenticated users)
  */
 export async function getSupporterInviteByToken(token: string) {
   try {
+    // Use public RPC that bypasses RLS for unauthenticated access
     const { data, error } = await supabase
-      .from('supporter_invites')
-      .select(`
-        id,
-        individual_id,
-        invitee_name,
-        invitee_email,
-        role,
-        permission_level,
-        message,
-        supporter_setup_token
-      `)
-      .eq('supporter_setup_token', token)
-      .eq('status', 'pending')
-      .gt('expires_at', new Date().toISOString())
-      .single();
+      .rpc('get_supporter_invite_public', { p_token: token })
+      .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
+      console.error('Error fetching supporter invite via RPC:', error);
       return null;
     }
 
-    // Get individual name separately
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('first_name')
-      .eq('user_id', data.individual_id)
-      .single();
-
-    return {
-      ...data,
-      individual_name: profile?.first_name || 'User'
-    };
+    return data;
   } catch (error) {
     console.error('Error fetching supporter invite:', error);
     return null;
