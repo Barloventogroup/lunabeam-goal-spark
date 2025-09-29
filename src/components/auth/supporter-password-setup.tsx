@@ -99,20 +99,43 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
         // Don't throw here as the user is already authenticated
       }
 
-      // Update profile to mark password as set and complete supporter setup
-      const { error: profileError } = await supabase
+      // Ensure profile reflects supporter setup and skip onboarding
+      const { data: updatedProfileRows, error: profileUpdateError } = await supabase
         .from('profiles')
-        .update({ 
+        .update({
           password_set: true,
           authentication_status: 'authenticated',
           account_status: 'active',
           onboarding_complete: true,
-          user_type: 'supporter'
+          user_type: 'supporter',
+          email: inviteeEmail
         })
-        .eq('user_id', currentUser.id);
+        .eq('user_id', currentUser.id)
+        .select('id');
 
-      if (profileError) {
-        console.error('Failed to update profile:', profileError);
+      if (profileUpdateError) {
+        console.error('Failed to update profile:', profileUpdateError);
+      }
+
+      // If no profile row was updated (new supporter), create it now
+      if (!profileUpdateError && (!updatedProfileRows || updatedProfileRows.length === 0)) {
+        const { error: profileInsertError } = await supabase
+          .from('profiles')
+          .insert([{
+            user_id: currentUser.id,
+            first_name: (currentUser as any)?.user_metadata?.first_name || (inviteeEmail?.split('@')[0] ?? 'Supporter'),
+            comm_pref: 'text',
+            onboarding_complete: true,
+            user_type: 'supporter',
+            account_status: 'active',
+            authentication_status: 'authenticated',
+            email: inviteeEmail,
+            password_set: true
+          }]);
+
+        if (profileInsertError) {
+          console.error('Failed to create profile:', profileInsertError);
+        }
       }
 
       // If we have a supporter token, mark the invitation as accepted
