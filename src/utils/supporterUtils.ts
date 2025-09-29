@@ -85,9 +85,16 @@ export async function getSupporterContext(userId: string): Promise<SupporterCont
  * Enhanced user type detection that considers supporter relationships
  */
 export async function getEnhancedUserType(profile: any): Promise<'individual' | 'supporter' | 'hybrid' | 'admin'> {
-  if (!profile?.user_id) return 'individual';
+  // Get user ID from profile or fall back to current auth user
+  let userId = profile?.user_id;
+  if (!userId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id;
+  }
+  
+  if (!userId) return 'individual';
 
-  const supporterContext = await getSupporterContext(profile.user_id);
+  const supporterContext = await getSupporterContext(userId);
 
   if (supporterContext.isHybrid) {
     return 'hybrid';

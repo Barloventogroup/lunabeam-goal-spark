@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "./auth-provider";
 import { PermissionsService } from "@/services/permissionsService";
-import { useStore } from "@/store/useStore";
 
 interface SupporterPasswordSetupProps {
   onComplete: () => void;
@@ -24,12 +23,35 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
   inviteeEmail 
 }) => {
   const { user } = useAuth();
-  const setProfileInStore = useStore(s => s.setProfile);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [userLoading, setUserLoading] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
+
+  // Wait for user/session to be available without redirecting
+  useEffect(() => {
+    let cancelled = false;
+    let attempts = 0;
+    const heartbeat = async () => {
+      if (cancelled) return;
+      const current = user || (await supabase.auth.getSession()).data.session?.user || null;
+      if (current) {
+        console.log('SupporterPasswordSetup: session detected for', current.id);
+        if (!cancelled) setUserLoading(false);
+        return;
+      }
+      if (attempts < 24) {
+        attempts += 1;
+        setTimeout(heartbeat, 300);
+      } else {
+        console.warn('SupporterPasswordSetup: session not found after waiting');
+        if (!cancelled) setUserLoading(false);
+      }
+    };
+    heartbeat();
+    return () => { cancelled = true; };
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,140 +73,63 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
 
     setLoading(true);
     try {
+      // Ensure we have a valid session
       let currentUser = user;
-      
-      // If no current user, try to create an account or sign in
       if (!currentUser) {
-        console.log('No current user, attempting to create account for:', inviteeEmail);
-        
-        // Try to sign up first (in case they don't have an account)
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: inviteeEmail,
-          password: password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth?mode=supporter-setup&token=${supporterToken}`
-          }
-        });
-
-        if (signUpError) {
-          // If sign up fails (e.g., user exists), try to sign in
-          if (signUpError.message?.includes('already registered') || signUpError.message?.includes('User already registered')) {
-            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-              email: inviteeEmail,
-              password: password
-            });
-
-            if (signInError) {
-              throw new Error('Failed to sign in with provided credentials. Please check your password or try creating a new account.');
-            }
-            currentUser = signInData.user;
-          } else {
-            throw signUpError;
-          }
-        } else {
-          currentUser = signUpData.user;
+        // Fallback: get user from current session
+        const { data: { session } } = await supabase.auth.getSession();
+        currentUser = session?.user || null;
+        if (!currentUser) {
+          throw new Error('No authenticated user found. Please try again.');
         }
-      }
-
-      if (!currentUser) {
-        throw new Error('Unable to authenticate. Please try again.');
       }
 
       console.log('Setting up password for supporter:', currentUser.id);
 
-      // Update the user's password (in case they signed in with an old password)
+      // Update the user's password
       const { error: passwordError } = await supabase.auth.updateUser({
         password: password
       });
 
-      if (passwordError) {
-        console.error('Password update error:', passwordError);
-        // Don't throw here as the user is already authenticated
-      }
+      if (passwordError) throw passwordError;
 
-      // Ensure profile reflects supporter setup and skip onboarding
-      const { data: updatedProfileRows, error: profileUpdateError } = await supabase
+      // Update profile to mark password as set and skip onboarding for supporters
+      const { error: profileError } = await supabase
         .from('profiles')
-        .update({
+        .update({ 
           password_set: true,
           authentication_status: 'authenticated',
           account_status: 'active',
-          onboarding_complete: true,
-          user_type: 'supporter',
-          email: inviteeEmail
+          onboarding_complete: true, // Supporters skip onboarding
+          user_type: 'supporter'
         })
-        .eq('user_id', currentUser.id)
-        .select('id');
+        .eq('user_id', currentUser.id);
 
-      if (profileUpdateError) {
-        console.error('Failed to update profile:', profileUpdateError);
+      if (profileError) {
+        console.error('Failed to update profile:', profileError);
+      } else {
+        console.log('SupporterPasswordSetup: profile updated for', currentUser.id);
       }
 
-      // If no profile row was updated (new supporter), create it now
-      if (!profileUpdateError && (!updatedProfileRows || updatedProfileRows.length === 0)) {
-        const { error: profileInsertError } = await supabase
-          .from('profiles')
-          .insert([{
-            user_id: currentUser.id,
-            first_name: (currentUser as any)?.user_metadata?.first_name || (inviteeEmail?.split('@')[0] ?? 'Supporter'),
-            comm_pref: 'text',
-            onboarding_complete: true,
-            user_type: 'supporter',
-            account_status: 'active',
-            authentication_status: 'authenticated',
-            email: inviteeEmail,
-            password_set: true
-          }]);
-
-        if (profileInsertError) {
-          console.error('Failed to create profile:', profileInsertError);
-        }
-      }
-
-      // Link supporter to individual and accept invite using invite token
+      // Accept supporter invite if token provided
       if (supporterToken) {
         try {
           const { data: inviteRows, error: rpcError } = await supabase.rpc('get_supporter_invite_public', {
             p_token: supporterToken
           });
+          
           if (rpcError) {
             console.error('Failed to fetch invite via RPC:', rpcError);
           } else if (inviteRows && inviteRows.length > 0) {
             const inviteToken = (inviteRows[0] as any).invite_token as string | undefined;
             if (inviteToken) {
-              try {
-                await PermissionsService.acceptSupporterInvite(inviteToken);
-              } catch (acceptErr) {
-                console.error('Failed to accept supporter invite:', acceptErr);
-              }
-            } else {
-              console.warn('RPC did not return invite_token; cannot accept invite.');
+              await PermissionsService.acceptSupporterInvite(inviteToken);
+              console.log('Supporter invite accepted successfully');
             }
           }
         } catch (err) {
-          console.error('Invite acceptance flow failed:', err);
+          console.error('Invite acceptance failed:', err);
         }
-      }
-
-      // Optimistically update local store so router skips onboarding immediately
-      try {
-        const firstName = (currentUser as any)?.user_metadata?.first_name || (inviteeEmail?.split('@')[0] ?? 'Supporter');
-        const localProfile: any = {
-          first_name: firstName,
-          strengths: [],
-          interests: [],
-          challenges: [],
-          comm_pref: 'text',
-          onboarding_complete: true,
-          user_type: 'supporter',
-          authentication_status: 'authenticated',
-          account_status: 'active',
-          password_set: true,
-          email: inviteeEmail
-        };
-        await setProfileInStore(localProfile);
-      } catch (e) {
-        console.warn('Best-effort local profile update failed (ignored):', e);
       }
 
       toast.success(`Welcome to the support team${individualName ? ` for ${individualName}` : ''}!`);

@@ -48,6 +48,7 @@ export const database = {
     console.log('DB:getProfile loaded row:', { userId: user.id, first_name: data.first_name, created_by_supporter: data.created_by_supporter });
     
     return {
+      user_id: data.user_id,
       first_name: data.first_name,
       strengths: data.strengths || [],
       interests: data.interests || [],
