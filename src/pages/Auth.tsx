@@ -31,48 +31,52 @@ export default function Auth() {
     password: ''
   });
 
-  // Check for password setup mode and pre-fill email from URL parameter
-  useEffect(() => {
-    const emailFromUrl = searchParams.get('email');
-    const mode = searchParams.get('mode');
-    const fromParam = searchParams.get('from');
-    const token = searchParams.get('token');
-    
-    if (emailFromUrl) {
-      setFormData(prev => ({
-        ...prev,
-        email: emailFromUrl
-      }));
-    }
-    
-    // Handle different modes
-    if (token) {
-      // Redirect claim links to callback to process auto account creation (email optional)
-      setSigningOut(true);
-      const dest = emailFromUrl
-        ? `/auth/callback?token=${token}&email=${encodeURIComponent(emailFromUrl)}`
-        : `/auth/callback?token=${token}`;
-      console.log('Auth: Detected claim token, redirecting to', dest);
-      navigate(dest, { replace: true });
+// Check for password setup mode and pre-fill email from URL parameter
+useEffect(() => {
+  const emailFromUrl = searchParams.get('email');
+  const mode = searchParams.get('mode');
+  const fromParam = searchParams.get('from');
+  const token = searchParams.get('token');
+  
+  if (emailFromUrl) {
+    setFormData(prev => ({
+      ...prev,
+      email: emailFromUrl
+    }));
+  }
+  
+  // Prioritize supporter setup to avoid generic token redirect
+  if (mode === 'supporter-setup') {
+    const supporterToken = token;
+    if (supporterToken) {
+      handleSupporterSetup(supporterToken);
       return;
     }
-    if (mode === 'setup') {
-      console.log('Auth: Setup mode detected, showing password setup');
-      setNeedsPasswordSetup(true);
-      setShowPasswordSetup(true);
-      setIsSignUp(false);
-    } else if (mode === 'supporter-setup') {
-      // Handle supporter setup mode - show setup immediately without requiring auth
-      const supporterToken = searchParams.get('token');
-      if (supporterToken) {
-        handleSupporterSetup(supporterToken);
-      }
-    } else if (mode === 'signup' && fromParam === 'invite') {
-      setIsSignUp(true);
-    } else if (mode === 'signin') {
-      setIsSignUp(false);
-    }
-  }, [searchParams]);
+  }
+
+  // Handle claim links explicitly
+  if (mode === 'claim' && token) {
+    // Redirect claim links to callback to process auto account creation (email optional)
+    setSigningOut(true);
+    const dest = emailFromUrl
+      ? `/auth/callback?token=${token}&email=${encodeURIComponent(emailFromUrl)}`
+      : `/auth/callback?token=${token}`;
+    console.log('Auth: Detected claim token, redirecting to', dest);
+    navigate(dest, { replace: true });
+    return;
+  }
+
+  if (mode === 'setup') {
+    console.log('Auth: Setup mode detected, showing password setup');
+    setNeedsPasswordSetup(true);
+    setShowPasswordSetup(true);
+    setIsSignUp(false);
+  } else if (mode === 'signup' && fromParam === 'invite') {
+    setIsSignUp(true);
+  } else if (mode === 'signin') {
+    setIsSignUp(false);
+  }
+}, [searchParams]);
   
   const isSupporterInvite = searchParams.get('redirect') === 'supporter-invite';
 
