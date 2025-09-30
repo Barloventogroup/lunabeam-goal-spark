@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { database } from '@/services/database';
+import { useToast } from '@/hooks/use-toast';
 import { X, ArrowLeft } from 'lucide-react';
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
@@ -42,6 +43,7 @@ export function ParentOnboarding({
   onExit
 }: ParentOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const { toast } = useToast();
   const [data, setData] = useState<ParentOnboardingData>({
     adminName: '',
     preferredName: '',
@@ -91,7 +93,11 @@ export function ParentOnboarding({
     // Step 3: Name is mandatory - validate before continuing
     if (currentStep === 3) {
       if (!data.preferredName.trim()) {
-        alert('Please enter a name before continuing.');
+        toast({
+          title: "Name Required",
+          description: "Please enter a name to continue.",
+          variant: "destructive",
+        });
         return;
       }
       // Name validation passed - no account creation here, that happens at the end
