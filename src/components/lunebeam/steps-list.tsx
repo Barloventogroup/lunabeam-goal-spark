@@ -502,11 +502,19 @@ export const StepsList: React.FC<StepsListProps> = ({
         await notificationsService.notifyCheckIn(user.id, goal.id, stepId);
         
         // Get admin supporters for in-app notifications
-        const { data: adminSupporters } = await supabase
+        console.log('Fetching admin supporters for check-in notification...');
+        const { data: adminSupporters, error: supportersError } = await supabase
           .from('supporters')
-          .select('supporter_id, profiles!supporters_supporter_id_fkey(first_name)')
+          .select(`
+            supporter_id,
+            profiles!inner (
+              first_name
+            )
+          `)
           .eq('individual_id', user.id)
           .eq('is_admin', true);
+
+        console.log('Admin supporters found:', adminSupporters?.length || 0, supportersError);
 
         // Create in-app notifications for each admin
         if (adminSupporters && adminSupporters.length > 0) {
@@ -518,13 +526,21 @@ export const StepsList: React.FC<StepsListProps> = ({
             .single()
             .then(({ data }) => data?.first_name || 'User');
 
+          console.log('Creating in-app notifications for admins:', adminSupporters.map(a => a.supporter_id));
           for (const admin of adminSupporters) {
-            await notificationsService.createCheckInNotification(admin.supporter_id, {
-              individual_name: userName,
-              goal_title: goal.title,
-              step_title: stepTitle
-            });
+            try {
+              await notificationsService.createCheckInNotification(admin.supporter_id, {
+                individual_name: userName,
+                goal_title: goal.title,
+                step_title: stepTitle
+              });
+              console.log('Created notification for admin:', admin.supporter_id);
+            } catch (error) {
+              console.error('Failed to create notification for admin:', admin.supporter_id, error);
+            }
           }
+        } else {
+          console.log('No admin supporters found for notifications');
         }
       }
     } catch (error) {
@@ -557,11 +573,19 @@ export const StepsList: React.FC<StepsListProps> = ({
         await notificationsService.notifyCheckIn(user.id, goal.id, stepId, substepId);
         
         // Get admin supporters for in-app notifications
-        const { data: adminSupporters } = await supabase
+        console.log('Fetching admin supporters for substep check-in notification...');
+        const { data: adminSupporters, error: supportersError } = await supabase
           .from('supporters')
-          .select('supporter_id, profiles!supporters_supporter_id_fkey(first_name)')
+          .select(`
+            supporter_id,
+            profiles!inner (
+              first_name
+            )
+          `)
           .eq('individual_id', user.id)
           .eq('is_admin', true);
+
+        console.log('Admin supporters found:', adminSupporters?.length || 0, supportersError);
 
         // Create in-app notifications for each admin
         if (adminSupporters && adminSupporters.length > 0) {
@@ -575,13 +599,21 @@ export const StepsList: React.FC<StepsListProps> = ({
             .single()
             .then(({ data }) => data?.first_name || 'User');
 
+          console.log('Creating in-app notifications for substep check-in:', adminSupporters.map(a => a.supporter_id));
           for (const admin of adminSupporters) {
-            await notificationsService.createCheckInNotification(admin.supporter_id, {
-              individual_name: userName,
-              goal_title: goal.title,
-              step_title: `${stepTitle} - ${substepTitle}`
-            });
+            try {
+              await notificationsService.createCheckInNotification(admin.supporter_id, {
+                individual_name: userName,
+                goal_title: goal.title,
+                step_title: `${stepTitle} - ${substepTitle}`
+              });
+              console.log('Created substep notification for admin:', admin.supporter_id);
+            } catch (error) {
+              console.error('Failed to create substep notification for admin:', admin.supporter_id, error);
+            }
           }
+        } else {
+          console.log('No admin supporters found for substep notifications');
         }
       }
     } catch (error) {

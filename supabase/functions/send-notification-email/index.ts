@@ -42,25 +42,43 @@ serve(async (req) => {
 
     // Get supporters if not provided
     let supporters = [];
+    console.log('Fetching supporters for user:', userId, 'type:', type);
+    
     if (supporterIds && supporterIds.length > 0) {
-      const { data } = await supabase
+      console.log('Using provided supporter IDs:', supporterIds);
+      const { data, error } = await supabase
         .from('supporters')
         .select(`
           supporter_id,
-          profiles!supporters_supporter_id_fkey(first_name)
+          profiles!inner (
+            first_name
+          )
         `)
         .in('supporter_id', supporterIds);
+      
+      if (error) {
+        console.error('Error fetching specific supporters:', error);
+      }
       supporters = data || [];
     } else {
-      const { data } = await supabase
+      console.log('Fetching all supporters for individual:', userId);
+      const { data, error } = await supabase
         .from('supporters')
         .select(`
           supporter_id,
-          profiles!supporters_supporter_id_fkey(first_name)
+          profiles!inner (
+            first_name
+          )
         `)
         .eq('individual_id', userId);
+      
+      if (error) {
+        console.error('Error fetching all supporters:', error);
+      }
       supporters = data || [];
     }
+    
+    console.log('Found supporters:', supporters?.length || 0);
 
     // Get goal information if provided
     let goalInfo = null;
