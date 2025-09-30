@@ -496,15 +496,17 @@ export const StepsList: React.FC<StepsListProps> = ({
             }
           }
 
-          // If all planned steps are done, notify goal completion in-app
-          const { count: remainingPlanned } = await supabase
+          // Check if this is the last step defined in the goal (by order_index)
+          const { data: allGoalSteps } = await supabase
             .from('steps')
-            .select('*', { count: 'exact', head: true })
+            .select('id, order_index, status')
             .eq('goal_id', goal.id)
-            .eq('is_planned', true)
-            .neq('status', 'done');
+            .order('order_index', { ascending: false });
 
-          if ((remainingPlanned ?? 0) === 0) {
+          const completedStep = allGoalSteps?.find(s => s.id === stepId);
+          const isLastStep = allGoalSteps && allGoalSteps[0]?.id === stepId;
+
+          if (isLastStep) {
             // Show celebration modal for the individual
             setShowGoalCelebration(true);
             
