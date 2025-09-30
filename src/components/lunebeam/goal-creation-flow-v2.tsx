@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { goalsService } from '@/services/goalsService';
 import type { GoalDomain, GoalPriority } from '@/types';
 import { OwnerSelector } from '@/components/ui/owner-selector';
-import { getAvailableOwners, getDefaultOwner, type OwnerOption } from '@/utils/ownerSelectionUtils';
+import { getAvailableOwners, getDefaultOwner, shouldShowOwnerSelector, type OwnerOption } from '@/utils/ownerSelectionUtils';
 
 interface FlowData {
   timeframe?: 'short_term' | 'mid_term' | 'long_term';
@@ -41,6 +41,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
   const [selectedTime, setSelectedTime] = useState('18:00');
   const [owners, setOwners] = useState<OwnerOption[]>([]);
   const [selectedOwnerId, setSelectedOwnerId] = useState<string>('');
+  const [showOwnerSelector, setShowOwnerSelector] = useState(false);
   const { toast } = useToast();
 
   // Load available owners on mount
@@ -48,7 +49,9 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
     const loadOwners = async () => {
       const availableOwners = await getAvailableOwners();
       const defaultOwner = await getDefaultOwner();
+      const shouldShow = await shouldShowOwnerSelector();
       setOwners(availableOwners);
+      setShowOwnerSelector(shouldShow);
       if (defaultOwner) {
         setSelectedOwnerId(defaultOwner);
       }
@@ -155,6 +158,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
           owners={owners}
           selectedOwnerId={selectedOwnerId}
           onOwnerChange={setSelectedOwnerId}
+          alwaysShow={showOwnerSelector}
         />
       </div>
       <div className="flex gap-2">

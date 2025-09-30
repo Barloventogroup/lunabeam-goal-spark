@@ -50,6 +50,22 @@ export async function getAvailableOwners(): Promise<OwnerOption[]> {
 }
 
 /**
+ * Checks if user is an admin or supporter who should see owner selection
+ */
+export async function shouldShowOwnerSelector(): Promise<boolean> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const supporterContext = await getSupporterContext(user.id);
+    return supporterContext.supportedIndividuals.length > 0 || supporterContext.isSupporterOnly;
+  } catch (error) {
+    console.error('Error checking if should show owner selector:', error);
+    return false;
+  }
+}
+
+/**
  * Gets the default owner based on user context
  */
 export async function getDefaultOwner(): Promise<string | null> {

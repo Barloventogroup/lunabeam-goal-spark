@@ -10,6 +10,7 @@ interface OwnerSelectorProps {
   onOwnerChange: (ownerId: string) => void;
   label?: string;
   placeholder?: string;
+  alwaysShow?: boolean;
 }
 
 export const OwnerSelector: React.FC<OwnerSelectorProps> = ({
@@ -17,10 +18,12 @@ export const OwnerSelector: React.FC<OwnerSelectorProps> = ({
   selectedOwnerId,
   onOwnerChange,
   label = "Create goal for",
-  placeholder = "Select who this goal is for"
+  placeholder = "Select who this goal is for",
+  alwaysShow = false
 }) => {
-  if (owners.length <= 1) {
-    return null; // Don't show selector if only one option
+  // Hide selector only if there's one option AND alwaysShow is false
+  if (owners.length <= 1 && !alwaysShow) {
+    return null;
   }
 
   return (

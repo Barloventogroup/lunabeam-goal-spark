@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
 import { OwnerSelector } from '@/components/ui/owner-selector';
-import { getAvailableOwners, getDefaultOwner, type OwnerOption } from '@/utils/ownerSelectionUtils';
+import { getAvailableOwners, getDefaultOwner, shouldShowOwnerSelector, type OwnerOption } from '@/utils/ownerSelectionUtils';
 
 interface CreateGoalProps {
   onNavigate: (view: string, goalId?: string) => void;
@@ -31,6 +31,7 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
   const [loading, setLoading] = useState(false);
   const [owners, setOwners] = useState<OwnerOption[]>([]);
   const [selectedOwnerId, setSelectedOwnerId] = useState<string>('');
+  const [showOwnerSelector, setShowOwnerSelector] = useState(false);
   const { toast } = useToast();
 
   // Load available owners on mount
@@ -38,7 +39,9 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
     const loadOwners = async () => {
       const availableOwners = await getAvailableOwners();
       const defaultOwner = await getDefaultOwner();
+      const shouldShow = await shouldShowOwnerSelector();
       setOwners(availableOwners);
+      setShowOwnerSelector(shouldShow);
       if (defaultOwner) {
         setSelectedOwnerId(defaultOwner);
       }
@@ -142,6 +145,7 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
               owners={owners}
               selectedOwnerId={selectedOwnerId}
               onOwnerChange={setSelectedOwnerId}
+              alwaysShow={showOwnerSelector}
             />
 
             {/* Title */}
