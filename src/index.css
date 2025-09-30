@@ -90,7 +90,7 @@
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-supportive: linear-gradient(135deg, hsl(var(--supportive)), hsl(var(--supportive-soft)));
     --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--background-soft)));
-    --gradient-progress: linear-gradient(90deg, #E8F5E8, #006400);
+    --gradient-progress: linear-gradient(90deg, hsl(200 100% 85%), hsl(200 100% 40%));
 
     /* Badge colors */
     --badge-planned: 0 0% 62%; /* #9E9E9E */
@@ -203,7 +203,7 @@
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-soft)));
     --gradient-supportive: linear-gradient(135deg, hsl(var(--supportive)), hsl(var(--supportive-soft)));
     --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--background-soft)));
-    --gradient-progress: linear-gradient(90deg, #E8F5E8, #006400);
+    --gradient-progress: linear-gradient(90deg, hsl(200 80% 25%), hsl(200 100% 60%));
 
     /* Badge colors */
     --badge-planned: 0 0% 62%; /* #9E9E9E */
