@@ -57,6 +57,19 @@ export async function shouldShowOwnerSelector(): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
+    // Get user profile to check user_type
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('user_id', user.id)
+      .single();
+
+    // Show selector for admin, supporter, and hybrid user types
+    if (profile?.user_type && ['admin', 'supporter', 'hybrid'].includes(profile.user_type)) {
+      return true;
+    }
+
+    // Also check supporter context as fallback
     const supporterContext = await getSupporterContext(user.id);
     return supporterContext.supportedIndividuals.length > 0 || supporterContext.isSupporterOnly;
   } catch (error) {

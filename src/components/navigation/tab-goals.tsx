@@ -31,9 +31,9 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
 
   const { userContext } = useStore();
 
-  // Get supporter context for supporters
+  // Get supporter context for supporters and hybrids
   useEffect(() => {
-    if (userContext?.userType === 'supporter') {
+    if (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid') {
       const getCurrentUser = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
@@ -151,7 +151,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
               setCurrentView('list');
               onWizardStateChange?.(false);
             }}
-            isSupporter={userContext?.hasAdminFeatures || false}
+            isSupporter={(userContext?.userType && userContext.userType !== 'individual') || false}
           />
         );
       case 'proposals':
@@ -166,8 +166,8 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
     }
   };
 
-  // Show tabs for supporters
-  if (userContext?.userType === 'supporter' && supporterContext?.supportedIndividuals?.length > 0) {
+  // Show tabs for supporters and hybrids
+  if ((userContext?.userType === 'supporter' || userContext?.userType === 'hybrid') && supporterContext?.supportedIndividuals?.length > 0) {
     const supportedIndividual = supporterContext.supportedIndividuals[0];
     
     return (
