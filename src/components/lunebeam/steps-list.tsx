@@ -495,10 +495,37 @@ export const StepsList: React.FC<StepsListProps> = ({
         description: "You've started working on this step.",
       });
 
-      // Send email notification to supporters
+      // Send notifications to supporters
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Send email notifications
         await notificationsService.notifyCheckIn(user.id, goal.id, stepId);
+        
+        // Get admin supporters for in-app notifications
+        const { data: adminSupporters } = await supabase
+          .from('supporters')
+          .select('supporter_id, profiles!supporters_supporter_id_fkey(first_name)')
+          .eq('individual_id', user.id)
+          .eq('is_admin', true);
+
+        // Create in-app notifications for each admin
+        if (adminSupporters && adminSupporters.length > 0) {
+          const stepTitle = steps.find(s => s.id === stepId)?.title || 'a step';
+          const userName = await supabase
+            .from('profiles')
+            .select('first_name')
+            .eq('user_id', user.id)
+            .single()
+            .then(({ data }) => data?.first_name || 'User');
+
+          for (const admin of adminSupporters) {
+            await notificationsService.createCheckInNotification(admin.supporter_id, {
+              individual_name: userName,
+              goal_title: goal.title,
+              step_title: stepTitle
+            });
+          }
+        }
       }
     } catch (error) {
       console.error('Error checking in step:', error);
@@ -523,10 +550,39 @@ export const StepsList: React.FC<StepsListProps> = ({
         description: "You've started working on this substep.",
       });
 
-      // Send email notification to supporters
+      // Send notifications to supporters
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Send email notifications
         await notificationsService.notifyCheckIn(user.id, goal.id, stepId, substepId);
+        
+        // Get admin supporters for in-app notifications
+        const { data: adminSupporters } = await supabase
+          .from('supporters')
+          .select('supporter_id, profiles!supporters_supporter_id_fkey(first_name)')
+          .eq('individual_id', user.id)
+          .eq('is_admin', true);
+
+        // Create in-app notifications for each admin
+        if (adminSupporters && adminSupporters.length > 0) {
+          const substep = substepsMap[stepId]?.find(s => s.id === substepId);
+          const stepTitle = steps.find(s => s.id === stepId)?.title || 'a step';
+          const substepTitle = substep?.title || 'a substep';
+          const userName = await supabase
+            .from('profiles')
+            .select('first_name')
+            .eq('user_id', user.id)
+            .single()
+            .then(({ data }) => data?.first_name || 'User');
+
+          for (const admin of adminSupporters) {
+            await notificationsService.createCheckInNotification(admin.supporter_id, {
+              individual_name: userName,
+              goal_title: goal.title,
+              step_title: `${stepTitle} - ${substepTitle}`
+            });
+          }
+        }
       }
     } catch (error) {
       console.error('Error checking in substep:', error);

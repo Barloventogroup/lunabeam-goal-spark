@@ -64,12 +64,13 @@ export const notificationsService = {
   async createCheckInNotification(supporterId: string, checkInData: {
     individual_name: string;
     goal_title?: string;
+    step_title?: string;
   }): Promise<void> {
     await this.createNotification({
       user_id: supporterId,
       type: 'check_in',
-      title: 'Check-in Completed',
-      message: `${checkInData.individual_name} completed a check-in${checkInData.goal_title ? ` for "${checkInData.goal_title}"` : ''}`,
+      title: '📚 Started Working',
+      message: `${checkInData.individual_name} checked in and started working${checkInData.step_title ? ` on "${checkInData.step_title}"` : ''}${checkInData.goal_title ? ` in goal "${checkInData.goal_title}"` : ''}`,
       data: checkInData
     });
   },
