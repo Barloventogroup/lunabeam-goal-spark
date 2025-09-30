@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target } from 'lucide-react';
+import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -42,7 +42,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [goalsLoaded, setGoalsLoaded] = useState(false);
 
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const {
     profile,
     userContext,
@@ -252,6 +252,15 @@ export const TabHome: React.FC<TabHomeProps> = ({
     onNavigateToGoals(goalId);
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      window.location.href = '/auth';
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return <>
       <div className="min-h-screen bg-gradient-soft">
         {/* Header */}
@@ -283,6 +292,16 @@ export const TabHome: React.FC<TabHomeProps> = ({
                 {profile?.first_name?.charAt(0)?.toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
+            
+            {/* Sign Out Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSignOut}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
