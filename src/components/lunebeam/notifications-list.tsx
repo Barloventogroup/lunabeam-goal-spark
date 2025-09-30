@@ -138,7 +138,7 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
     if (totalPages <= 1) return null;
 
     return (
-      <div className="flex items-center justify-between mt-6 px-4 py-3 bg-card rounded-lg border">
+      <div className="flex items-center justify-between px-6 py-3 bg-card/80 backdrop-blur border-b border-gray-200">
         <div className="text-sm text-muted-foreground">
           Showing {(currentPage - 1) * notificationsPerPage + 1} to{' '}
           {Math.min(currentPage * notificationsPerPage, total)} of {total} notifications
@@ -279,22 +279,25 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
 
   return (
     <div className="min-h-screen bg-gradient-soft">
-      <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-xl font-bold">Notifications</h1>
-          {unreadCount > 0 && (
-            <Badge variant="secondary">{unreadCount} unread</Badge>
-          )}
+      {/* Header */}
+      <div className="sticky top-0 z-10">
+        <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={onBack}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <h1 className="text-xl font-bold">Notifications</h1>
+            {unreadCount > 0 && (
+              <Badge variant="secondary">{unreadCount} unread</Badge>
+            )}
+          </div>
         </div>
+        
+        {/* Pagination Subheader */}
+        {renderPagination()}
       </div>
 
       <div className="px-6 pt-6 pb-6">
-        {/* Pagination at the top */}
-        {renderPagination()}
-        
         {notifications.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
