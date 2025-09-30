@@ -156,7 +156,7 @@ export const BottomTabs: React.FC = () => {
 
       {/* Bottom tab bar - hidden during wizard */}
       {!isWizardActive && (
-        <div className="fixed bottom-0 left-0 right-0 bg-card backdrop-blur border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.1)] opacity-90">
+        <div className="fixed bottom-0 left-0 right-0 bg-card backdrop-blur border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
           <div className="flex items-center justify-around px-2 py-2">
             {tabs.map((tab) => {
               const Icon = tab.icon;
