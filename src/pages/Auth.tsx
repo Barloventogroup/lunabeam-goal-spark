@@ -83,12 +83,17 @@ useEffect(() => {
 
   // Redirect to dashboard after successful authentication
   useEffect(() => {
-    if (user && !loading && !showPasswordSetup) {
+    if (user && !loading && !showPasswordSetup && !showSupporterSetup) {
       checkPasswordSetupNeeded();
     }
-  }, [user, loading, navigate, showPasswordSetup]);
+  }, [user, loading, navigate, showPasswordSetup, showSupporterSetup]);
   const checkPasswordSetupNeeded = async () => {
     if (!user) return;
+    
+    // Prevent redirect while supporter setup is active or when URL indicates supporter setup
+    if (showSupporterSetup || searchParams.get('mode') === 'supporter-setup') {
+      return;
+    }
     
     // Check for mode=setup in URL
     const mode = searchParams.get('mode');
@@ -98,7 +103,6 @@ useEffect(() => {
       setShowPasswordSetup(true);
       return;
     }
-    
     // Check for claim data from session storage
     const claimData = sessionStorage.getItem('claimData');
     if (claimData) {

@@ -6,6 +6,7 @@ import { goalsService, stepsService } from '../services/goalsService';
 import { pointsService, type PointsSummary } from '../services/pointsService';
 import { supabase } from '@/integrations/supabase/client';
 import { getUserContext, type UserContext } from '@/utils/userTypeUtils';
+import { getSupporterContext } from '@/utils/supporterUtils';
 
 interface AppState {
   // Core data
@@ -416,6 +417,17 @@ export const useStore = create<AppState>()(
             const emailLocal = (user.email || '').split('@')[0] || '';
             const firstName = metaFirst || emailLocal || 'User';
 
+            // Infer role from supporter relationships to classify supporters/hybrids
+            let inferredType: 'individual' | 'supporter' | 'hybrid' = 'individual';
+            try {
+              const supporterCtx = await getSupporterContext(user.id);
+              inferredType = supporterCtx.isHybrid
+                ? 'hybrid'
+                : (supporterCtx.isSupporterOnly ? 'supporter' : 'individual');
+            } catch (e) {
+              console.warn('Store: could not infer supporter context, defaulting to individual', e);
+            }
+
             const minimalProfile = {
               first_name: firstName,
               strengths: [],
@@ -423,11 +435,12 @@ export const useStore = create<AppState>()(
               challenges: [],
               comm_pref: 'text' as const,
               // Include authentication fields for regular users who just completed signup
-              password_set: true, // They just completed authentication
+              password_set: true as const,
               authentication_status: 'authenticated' as const,
-              account_status: isClaimedAccount ? 'user_claimed' as const : 'active' as const,
-              user_type: 'individual' as const,
-              onboarding_complete: isClaimedAccount, // Skip onboarding for claimed accounts only
+              account_status: isClaimedAccount ? ('user_claimed' as const) : ('active' as const),
+              user_type: inferredType as any,
+              // Supporters/hybrids and claimed accounts skip onboarding
+              onboarding_complete: isClaimedAccount || inferredType === 'supporter' || inferredType === 'hybrid',
             };
 
             console.log('Store: Creating minimal profile from auth:', minimalProfile);
