@@ -49,6 +49,12 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
     try {
       setLoading(true);
       const result = await notificationsService.getNotifications(currentPage, notificationsPerPage);
+      console.log('Notifications loaded:', {
+        currentPage,
+        total: result.total,
+        notificationsCount: result.notifications.length,
+        hasMore: result.hasMore
+      });
       setNotifications(result.notifications);
       setTotal(result.total);
       setHasMore(result.hasMore);
@@ -127,6 +133,7 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
 
   const renderPagination = () => {
     const totalPages = Math.ceil(total / notificationsPerPage);
+    console.log('Pagination check:', { total, totalPages, notificationsPerPage });
     
     if (totalPages <= 1) return null;
 
@@ -281,6 +288,30 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
           {unreadCount > 0 && (
             <Badge variant="secondary">{unreadCount} unread</Badge>
           )}
+          <div className="text-xs text-muted-foreground ml-auto">
+            Total: {total} notifications
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={async () => {
+              try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                  await supabase.functions.invoke('create-test-notifications', {
+                    body: { userId: user.id, count: 15 }
+                  });
+                  toast({ title: "Test notifications created" });
+                  setCurrentPage(1);
+                  loadNotifications();
+                }
+              } catch (error) {
+                console.error('Failed to create test notifications:', error);
+              }
+            }}
+          >
+            Add Test Data
+          </Button>
         </div>
       </div>
 
@@ -295,6 +326,13 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
           </Card>
         ) : (
           <div className="space-y-3">
+            {/* Debug info */}
+            <div className="text-xs text-muted-foreground p-2 bg-muted rounded">
+              Debug: Page {currentPage} of {Math.ceil(total / notificationsPerPage)} | 
+              Showing {notifications.length} of {total} total | 
+              Has more: {hasMore ? 'Yes' : 'No'}
+            </div>
+            
             {notifications.map((notification) => (
               <Card 
                 key={notification.id} 
