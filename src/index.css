@@ -45,6 +45,7 @@
     /* Muted Tones */
     --muted: 215 15% 90%;
     --muted-foreground: 215 15% 45%;
+    --muted-light: 0 0% 83%; /* #D3D3D3 */
     --muted-soft: 215 10% 93%;
 
     /* Accent Colors */
@@ -163,6 +164,7 @@
     /* Muted Tones */
     --muted: 215 10% 25%;
     --muted-foreground: 215 10% 65%;
+    --muted-light: 0 0% 83%; /* #D3D3D3 */
     --muted-soft: 215 8% 20%;
 
     /* Accent Colors */

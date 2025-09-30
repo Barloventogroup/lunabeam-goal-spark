@@ -523,7 +523,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <UserPlus className="h-6 w-6" />
             <div className="text-left">
               <div className="font-semibold">For someone I support</div>
-              <div className="text-sm text-foreground-soft">Create or suggest a goal for them</div>
+              <div className="text-sm text-muted-light">Create or suggest a goal for them</div>
             </div>
           </div>
         </Button>

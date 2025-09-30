@@ -79,7 +79,8 @@ export default {
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
 					foreground: 'hsl(var(--muted-foreground))',
-					soft: 'hsl(var(--muted-soft))'
+					soft: 'hsl(var(--muted-soft))',
+					light: 'hsl(var(--muted-light))'
 				},
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
