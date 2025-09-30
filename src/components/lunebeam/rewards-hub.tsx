@@ -15,6 +15,7 @@ interface RewardsHubProps {
   onNavigateToRewardBank: () => void;
   onNavigateToManageRewards: () => void;
   onNavigateToRedemptionInbox: () => void;
+  showAdminFeatures?: boolean;
 }
 
 export const RewardsHub: React.FC<RewardsHubProps> = ({
@@ -22,7 +23,8 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
   onNavigateToRewards,
   onNavigateToRewardBank,
   onNavigateToManageRewards,
-  onNavigateToRedemptionInbox
+  onNavigateToRedemptionInbox,
+  showAdminFeatures = true
 }) => {
   return (
     <div className="min-h-screen bg-gradient-soft">
@@ -68,37 +70,41 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
           </CardContent>
         </Card>
 
-        {/* Manage Rewards */}
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToManageRewards}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Settings className="h-5 w-5 text-blue-500" />
-                <div>
-                  <div className="font-medium">Manage Rewards</div>
-                  <div className="text-sm text-muted-foreground">Supporter controls</div>
+        {/* Manage Rewards - Admin Only */}
+        {showAdminFeatures && (
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToManageRewards}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Settings className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <div className="font-medium">Manage Rewards</div>
+                    <div className="text-sm text-muted-foreground">Supporter controls</div>
+                  </div>
                 </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Redemption Inbox */}
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToRedemptionInbox}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Inbox className="h-5 w-5 text-green-500" />
-                <div>
-                  <div className="font-medium">Redemption Inbox</div>
-                  <div className="text-sm text-muted-foreground">Approve redemptions</div>
+        {/* Redemption Inbox - Admin Only */}
+        {showAdminFeatures && (
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToRedemptionInbox}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Inbox className="h-5 w-5 text-green-500" />
+                  <div>
+                    <div className="font-medium">Redemption Inbox</div>
+                    <div className="text-sm text-muted-foreground">Approve redemptions</div>
+                  </div>
                 </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

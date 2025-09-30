@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { User, Settings, Award, HelpCircle, ChevronRight, Trophy, LogOut, Shield, RotateCcw, Bell } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '../auth/auth-provider';
+import { getSupporterContext } from '@/utils/supporterUtils';
 import { RewardsScreen } from '../lunebeam/rewards-screen';
 import { AchievementsView } from '../lunebeam/achievements-view';
 import { RewardsHub } from '../lunebeam/rewards-hub';
@@ -22,17 +23,20 @@ interface TabYouProps {
 export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
   const {
     profile,
-    resetOnboarding
+    resetOnboarding,
+    userContext
   } = useStore();
   const {
     signOut
   } = useAuth();
   const [currentView, setCurrentView] = useState<YouView>(initialView);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     console.log('TabYou: Rendering with profile:', profile);
     loadUnreadCount();
+    checkAdminStatus();
 
     // Subscribe to real-time notification updates
     const channel = supabase
@@ -56,7 +60,28 @@ export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile]);
+  }, [profile, userContext]);
+
+  const checkAdminStatus = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const supporterContext = await getSupporterContext(user.id);
+      
+      // Check if user is admin by looking at supporters table
+      const { data: supporterData } = await supabase
+        .from('supporters')
+        .select('is_admin')
+        .eq('supporter_id', user.id)
+        .single();
+
+      setIsAdmin(supporterData?.is_admin || false);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      setIsAdmin(false);
+    }
+  };
 
   const loadUnreadCount = async () => {
     try {
@@ -83,7 +108,14 @@ export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
     return <AchievementsView onBack={() => setCurrentView('profile')} />;
   }
   if (currentView === 'rewardsHub') {
-    return <RewardsHub onBack={() => setCurrentView('profile')} onNavigateToRewards={() => setCurrentView('rewards')} onNavigateToRewardBank={() => setCurrentView('rewardBank')} onNavigateToManageRewards={() => setCurrentView('rewardAdmin')} onNavigateToRedemptionInbox={() => setCurrentView('redemptionInbox')} />;
+    return <RewardsHub 
+      onBack={() => setCurrentView('profile')} 
+      onNavigateToRewards={() => setCurrentView('rewards')} 
+      onNavigateToRewardBank={() => setCurrentView('rewardBank')} 
+      onNavigateToManageRewards={() => setCurrentView('rewardAdmin')} 
+      onNavigateToRedemptionInbox={() => setCurrentView('redemptionInbox')}
+      showAdminFeatures={isAdmin}
+    />;
   }
   if (currentView === 'rewardBank') {
     return <RewardsGallery onBack={() => setCurrentView('rewardsHub')} />;
