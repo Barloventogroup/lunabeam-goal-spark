@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,8 @@ import type { GoalDomain, GoalPriority } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
+import { OwnerSelector } from '@/components/ui/owner-selector';
+import { getAvailableOwners, getDefaultOwner, type OwnerOption } from '@/utils/ownerSelectionUtils';
 
 interface CreateGoalProps {
   onNavigate: (view: string, goalId?: string) => void;
@@ -27,7 +29,22 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
   });
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [loading, setLoading] = useState(false);
+  const [owners, setOwners] = useState<OwnerOption[]>([]);
+  const [selectedOwnerId, setSelectedOwnerId] = useState<string>('');
   const { toast } = useToast();
+
+  // Load available owners on mount
+  useEffect(() => {
+    const loadOwners = async () => {
+      const availableOwners = await getAvailableOwners();
+      const defaultOwner = await getDefaultOwner();
+      setOwners(availableOwners);
+      if (defaultOwner) {
+        setSelectedOwnerId(defaultOwner);
+      }
+    };
+    loadOwners();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +77,7 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
         priority: formData.priority,
         start_date: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
         due_date: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
+        owner_id: selectedOwnerId,
       };
 
       const goal = await goalsService.createGoal(goalData);
@@ -119,6 +137,13 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Owner Selection */}
+            <OwnerSelector
+              owners={owners}
+              selectedOwnerId={selectedOwnerId}
+              onOwnerChange={setSelectedOwnerId}
+            />
+
             {/* Title */}
             <div className="space-y-2">
               <Label htmlFor="title">Title *</Label>

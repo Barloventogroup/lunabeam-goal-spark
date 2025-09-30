@@ -146,6 +146,7 @@ export const goalsService = {
     if (!user.data.user) throw new Error('User not authenticated');
 
     const userId = user.data.user.id;
+    const ownerId = goalData.owner_id || userId;
 
 
     // Parse goal for TPP calculation if not provided
@@ -190,7 +191,7 @@ export const goalsService = {
       .insert({
         ...goalData,
         description: sanitizeDescription(goalData.description),
-        owner_id: goalData.owner_id || userId,
+        owner_id: ownerId,
         created_by: userId,
         priority: goalData.priority || 'medium',
         // Points system fields

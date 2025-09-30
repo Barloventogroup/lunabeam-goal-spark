@@ -55,29 +55,35 @@ export const BottomTabs: React.FC = () => {
   }, [activeTab, loadGoals]);
 
   const renderActiveTab = () => {
-    // Route supporters to supporter-specific interfaces
+    // Route supporters to regular home dashboard but with supporter context
     if (userContext?.userType === 'supporter') {
       switch (activeTab) {
         case 'home':
-          return <TabSupporterHome 
-            onNavigateToGoals={(individualId?: string) => {
+          return <TabHome 
+            onOpenChat={() => setShowChat(true)} 
+            onNavigateToGoals={(goalId?: string) => {
               setActiveTab('goals');
-              setSelectedGoalId(individualId || null);
+              setSelectedGoalId(goalId || null);
             }}
-            onNavigateToIndividual={(individualId: string) => {
-              setActiveTab('team');
+            onNavigateToNotifications={() => {
+              setYouTabInitialView('notifications');
+              setActiveTab('you');
             }}
           />;
         case 'goals':
-          return <TabSupporterGoals selectedIndividualId={selectedGoalId || undefined} />;
+          return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} />;
         case 'team':
           return <TabTeam />; // Show supporter's community view
         case 'you':
           return <TabYou initialView={youTabInitialView} />;
         default:
-          return <TabSupporterHome 
+          return <TabHome 
+            onOpenChat={() => setShowChat(true)} 
             onNavigateToGoals={() => setActiveTab('goals')}
-            onNavigateToIndividual={() => setActiveTab('team')}
+            onNavigateToNotifications={() => {
+              setYouTabInitialView('notifications');
+              setActiveTab('you');
+            }}
           />;
       }
     }

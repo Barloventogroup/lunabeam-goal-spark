@@ -33,10 +33,11 @@ import { ProgressBar } from './progress-bar';
 import { TodaysFocusCard } from './todays-focus-card';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/components/auth/auth-provider';
+import { getSupporterContext } from '@/utils/supporterUtils';
+import { supabase } from '@/integrations/supabase/client';
 import { format, addDays, isToday, parseISO } from 'date-fns';
 import type { Goal } from '@/types';
 import { getWelcomeMessage } from '@/utils/userTypeUtils';
-import { supabase } from '@/integrations/supabase/client';
 
 interface HomeDashboardProps {
   onNavigate: (view: string, data?: any) => void;
@@ -68,6 +69,20 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   
   const { user, signOut } = useAuth();
   const [profiles, setProfiles] = useState<Record<string, any>>({});
+  const [supporterContext, setSupporterContext] = useState<any>(null);
+
+  // Get supporter context for supporters
+  useEffect(() => {
+    if (userContext?.userType === 'supporter') {
+      const getCurrentUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          getSupporterContext(user.id).then(setSupporterContext);
+        }
+      };
+      getCurrentUser();
+    }
+  }, [userContext]);
 
   useEffect(() => {
     if (user) {

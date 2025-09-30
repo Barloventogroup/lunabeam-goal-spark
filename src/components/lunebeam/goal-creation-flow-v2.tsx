@@ -12,6 +12,8 @@ import { CalendarIcon, Clock, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { goalsService } from '@/services/goalsService';
 import type { GoalDomain, GoalPriority } from '@/types';
+import { OwnerSelector } from '@/components/ui/owner-selector';
+import { getAvailableOwners, getDefaultOwner, type OwnerOption } from '@/utils/ownerSelectionUtils';
 
 interface FlowData {
   timeframe?: 'short_term' | 'mid_term' | 'long_term';
@@ -37,7 +39,22 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState('18:00');
+  const [owners, setOwners] = useState<OwnerOption[]>([]);
+  const [selectedOwnerId, setSelectedOwnerId] = useState<string>('');
   const { toast } = useToast();
+
+  // Load available owners on mount
+  useEffect(() => {
+    const loadOwners = async () => {
+      const availableOwners = await getAvailableOwners();
+      const defaultOwner = await getDefaultOwner();
+      setOwners(availableOwners);
+      if (defaultOwner) {
+        setSelectedOwnerId(defaultOwner);
+      }
+    };
+    loadOwners();
+  }, []);
 
   // Save draft on data changes
   useEffect(() => {
@@ -99,7 +116,8 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
         description: `${flowData.timeframe?.replace('_', '-')} goal`,
         domain: 'general' as GoalDomain,
         priority: 'medium' as GoalPriority,
-        due_date: dueDate
+        due_date: dueDate,
+        owner_id: selectedOwnerId
       };
 
       await goalsService.createGoal(goalData);
@@ -131,9 +149,20 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
         <p className="text-muted-foreground">
           Let's set up your goal in a few quick steps. You can exit anytime — I'll save your progress.
         </p>
+        
+        {/* Owner Selection */}
+        <OwnerSelector
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+        />
       </div>
       <div className="flex gap-2">
-        <Button onClick={() => setCurrentStep('timeframe')} className="flex-1">
+        <Button 
+          onClick={() => setCurrentStep('timeframe')} 
+          className="flex-1"
+          disabled={!selectedOwnerId}
+        >
           Let's start
         </Button>
         <Button variant="outline" onClick={handleExit} size="icon">

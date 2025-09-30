@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { SITE_URL } from "@/services/config";
+import { getSupporterContext } from "@/utils/supporterUtils";
+import { useStore } from "@/store/useStore";
 
 interface SimpleInviteModalProps {
   trigger?: React.ReactNode;
@@ -21,7 +23,22 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
   const [inviteeEmail, setInviteeEmail] = useState('');
   const [role, setRole] = useState('friend');
   const [message, setMessage] = useState('');
+  const [supporterContext, setSupporterContext] = useState<any>(null);
   const { toast } = useToast();
+  const { userContext } = useStore();
+
+  // Get supporter context if user is a supporter
+  useEffect(() => {
+    if (userContext?.userType === 'supporter') {
+      const getCurrentUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          getSupporterContext(user.id).then(setSupporterContext);
+        }
+      };
+      getCurrentUser();
+    }
+  }, [userContext]);
 
   const handleSendInvite = async () => {
     if (!inviteeEmail.trim()) {
@@ -78,27 +95,58 @@ export function SimpleInviteModal({ trigger }: SimpleInviteModalProps) {
                       'A friend';
       }
 
-      // Send to Make.com webhook
-      const webhookResponse = await fetch('https://hook.us2.make.com/ibqi89r02525kqw8kqs4v1qh1winb398', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        mode: 'no-cors',
-        body: JSON.stringify({
-          secret: "LUNA2025",
-          email: inviteeEmail,
-          inviteeName: inviteeName || 'Friend',
-          role: role,
-          message: message || undefined,
-          inviterName
-        })
-      });
+      // For supporters, create a supporter invite request that requires admin approval
+      if (userContext?.userType === 'supporter' && supporterContext?.supportedIndividuals?.length > 0) {
+        const individualId = supporterContext.supportedIndividuals[0].id;
+        
+        // Create supporter invite request
+        const { error: inviteError } = await supabase
+          .from('supporter_invites')
+          .insert([{
+            individual_id: individualId,
+            invitee_email: inviteeEmail.trim(),
+            invitee_name: inviteeName || null,
+            role: role as any,
+            permission_level: 'viewer',
+            message: message || null,
+            status: 'pending_admin_approval',
+            requires_approval: true,
+            requested_by: currentUser.user?.id,
+            inviter_id: currentUser.user?.id,
+            invite_token: 'temp-token-' + Date.now()
+          }]);
 
-      toast({
-        title: "Invitation sent!",
-        description: `Email invitation sent to ${inviteeEmail}`,
-      });
+        if (inviteError) {
+          throw inviteError;
+        }
+
+        toast({
+          title: "Request submitted!",
+          description: `Your invitation request for ${inviteeEmail} has been sent to the admin for approval.`,
+        });
+      } else {
+        // Send to Make.com webhook for regular invites
+        const webhookResponse = await fetch('https://hook.us2.make.com/ibqi89r02525kqw8kqs4v1qh1winb398', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          mode: 'no-cors',
+          body: JSON.stringify({
+            secret: "LUNA2025",
+            email: inviteeEmail,
+            inviteeName: inviteeName || 'Friend',
+            role: role,
+            message: message || undefined,
+            inviterName
+          })
+        });
+
+        toast({
+          title: "Invitation sent!",
+          description: `Email invitation sent to ${inviteeEmail}`,
+        });
+      }
 
       // Reset form
       setInviteeName('');
