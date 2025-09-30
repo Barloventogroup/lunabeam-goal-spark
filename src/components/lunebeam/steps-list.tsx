@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { Fireworks } from '@/components/ui/fireworks';
+import { GoalCompletionCelebration } from './goal-completion-celebration';
 import type { Step, Goal, Substep, StepStatus, StepType } from '@/types';
 import { stepsService } from '@/services/goalsService';
 import { stepValidationService } from '@/services/stepValidationService';
@@ -103,6 +104,7 @@ export const StepsList: React.FC<StepsListProps> = ({
   const [showingQueuedSteps, setShowingQueuedSteps] = useState(false);
   const [awaitingStepUpdate, setAwaitingStepUpdate] = useState<string | null>(null);
   const [substepsMap, setSubstepsMap] = useState<Record<string, Substep[]>>({});
+  const [showGoalCelebration, setShowGoalCelebration] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
   const [showFireworks, setShowFireworks] = useState(false);
@@ -503,6 +505,9 @@ export const StepsList: React.FC<StepsListProps> = ({
             .neq('status', 'done');
 
           if ((remainingPlanned ?? 0) === 0) {
+            // Show celebration modal for the individual
+            setShowGoalCelebration(true);
+            
             for (const admin of adminSupporters) {
               try {
                 await notificationsService.createNotification({
@@ -1268,6 +1273,12 @@ export const StepsList: React.FC<StepsListProps> = ({
       <Fireworks 
         isVisible={showFireworks} 
         onComplete={() => setShowFireworks(false)} 
+      />
+      
+      <GoalCompletionCelebration
+        isOpen={showGoalCelebration}
+        onClose={() => setShowGoalCelebration(false)}
+        goalTitle={goal.title}
       />
     </Card>
   );
