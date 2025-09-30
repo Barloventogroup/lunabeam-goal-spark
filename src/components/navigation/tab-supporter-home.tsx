@@ -4,16 +4,19 @@ import { SupporterHomeDashboard } from '@/components/supporter/supporter-home-da
 interface TabSupporterHomeProps {
   onNavigateToGoals: (individualId?: string) => void;
   onNavigateToIndividual: (individualId: string) => void;
+  onNavigateToNotifications: () => void;
 }
 
 export const TabSupporterHome: React.FC<TabSupporterHomeProps> = ({
   onNavigateToGoals,
-  onNavigateToIndividual
+  onNavigateToIndividual,
+  onNavigateToNotifications
 }) => {
   return (
     <SupporterHomeDashboard 
       onNavigateToGoals={onNavigateToGoals}
       onNavigateToIndividual={onNavigateToIndividual}
+      onNavigateToNotifications={onNavigateToNotifications}
     />
   );
 };

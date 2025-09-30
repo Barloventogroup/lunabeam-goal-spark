@@ -55,15 +55,18 @@ export const BottomTabs: React.FC = () => {
   }, [activeTab, loadGoals]);
 
   const renderActiveTab = () => {
-    // Route supporters to regular home dashboard but with supporter context
+    // Route supporters to supporter-specific home dashboard
     if (userContext?.userType === 'supporter') {
       switch (activeTab) {
         case 'home':
-          return <TabHome 
-            onOpenChat={() => setShowChat(true)} 
+          return <TabSupporterHome 
             onNavigateToGoals={(goalId?: string) => {
               setActiveTab('goals');
               setSelectedGoalId(goalId || null);
+            }}
+            onNavigateToIndividual={(individualId: string) => {
+              // For now, navigate to team tab to see individual details
+              setActiveTab('team');
             }}
             onNavigateToNotifications={() => {
               setYouTabInitialView('notifications');

@@ -23,11 +23,13 @@ interface SupportedIndividual {
 interface SupporterHomeDashboardProps {
   onNavigateToGoals: (individualId?: string) => void;
   onNavigateToIndividual: (individualId: string) => void;
+  onNavigateToNotifications: () => void;
 }
 
 export const SupporterHomeDashboard: React.FC<SupporterHomeDashboardProps> = ({
   onNavigateToGoals,
-  onNavigateToIndividual
+  onNavigateToIndividual,
+  onNavigateToNotifications
 }) => {
   const { user } = useAuth();
   const [supportedIndividuals, setSupportedIndividuals] = useState<SupportedIndividual[]>([]);
