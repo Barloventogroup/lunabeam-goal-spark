@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { database } from '@/services/database';
-import { X } from 'lucide-react';
+import { X, ArrowLeft } from 'lucide-react';
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
   preferredName: string;
@@ -616,7 +616,7 @@ export function ParentOnboarding({
             {/* Navigation - Fixed position at bottom */}
             <div className="absolute bottom-6 left-6 right-6">
               <div className="flex gap-2">
-                {currentStep > 1 && <BackButton variant="text" onClick={handleBack} />}
+                {currentStep > 1 && <Button variant="outline" onClick={handleBack}><ArrowLeft className="h-4 w-4 mr-2" />Back</Button>}
                 <Button onClick={handleNext} className="flex-1">
                   {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
                 </Button>
