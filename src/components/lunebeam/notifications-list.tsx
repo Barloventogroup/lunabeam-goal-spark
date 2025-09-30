@@ -151,7 +151,6 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
             disabled={currentPage === 1}
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
           </Button>
           
           <div className="flex items-center gap-1">
@@ -187,7 +186,6 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={!hasMore}
           >
-            Next
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
