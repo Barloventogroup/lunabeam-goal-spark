@@ -292,6 +292,9 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
       </div>
 
       <div className="px-6 pt-6 pb-6">
+        {/* Pagination at the top */}
+        {renderPagination()}
+        
         {notifications.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
@@ -338,7 +341,6 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
            </div>
         )}
         
-        {renderPagination()}
       </div>
     </div>
   );
