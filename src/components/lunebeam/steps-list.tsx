@@ -459,10 +459,72 @@ export const StepsList: React.FC<StepsListProps> = ({
         description: `Great job! You've completed this step.`,
       });
 
-      // Send email notification to supporters
+      // Send notifications to supporters for step completion
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Email
         await notificationsService.notifyStepComplete(user.id, goal.id, stepId);
+
+        // In-app notifications to admin supporters
+        console.log('Fetching admin supporters for step completion notification...');
+        const { data: adminSupporters } = await supabase
+          .from('supporters')
+          .select('supporter_id')
+          .eq('individual_id', user.id)
+          .eq('is_admin', true);
+
+        if (adminSupporters && adminSupporters.length > 0) {
+          const stepTitle = steps.find(s => s.id === stepId)?.title || 'a step';
+          const userName = await supabase
+            .from('profiles')
+            .select('first_name')
+            .eq('user_id', user.id)
+            .maybeSingle()
+            .then(({ data }) => data?.first_name || 'User');
+
+          for (const admin of adminSupporters) {
+            try {
+              await notificationsService.createStepCompletionNotification(admin.supporter_id, {
+                individual_name: userName,
+                step_title: stepTitle,
+                goal_title: goal.title
+              });
+            } catch (err) {
+              console.error('Failed to create step completion notification for admin:', admin.supporter_id, err);
+            }
+          }
+
+          // If all planned steps are done, notify goal completion in-app
+          const { count: remainingPlanned } = await supabase
+            .from('steps')
+            .select('*', { count: 'exact', head: true })
+            .eq('goal_id', goal.id)
+            .eq('is_planned', true)
+            .neq('status', 'done');
+
+          if ((remainingPlanned ?? 0) === 0) {
+            for (const admin of adminSupporters) {
+              try {
+                await notificationsService.createNotification({
+                  user_id: admin.supporter_id,
+                  type: 'goal_complete',
+                  title: 'Goal Completed! 🎯',
+                  message: `${userName} completed goal "${goal.title}"`,
+                  data: { goal_id: goal.id, goal_title: goal.title }
+                });
+                // Optional email notification if supported
+                try {
+                  // @ts-ignore - method may not exist in older builds
+                  await (notificationsService as any).notifyGoalCompleted?.(user.id, goal.id);
+                } catch (_) {}
+              } catch (err) {
+                console.error('Failed to create goal completion notification for admin:', admin.supporter_id, err);
+              }
+            }
+          }
+        } else {
+          console.log('No admin supporters found for step completion notifications');
+        }
       }
     } catch (error) {
       console.error('Error completing step:', error);
@@ -681,10 +743,45 @@ export const StepsList: React.FC<StepsListProps> = ({
           description: "Great progress on breaking down this step.",
         });
 
-        // Send email notification to supporters for substep completion
+        // Send notifications to supporters for substep completion
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          // Email
           await notificationsService.notifyStepComplete(user.id, goal.id, stepId, substepId);
+
+          // In-app notifications to admin supporters
+          console.log('Fetching admin supporters for substep completion notification...');
+          const { data: adminSupporters } = await supabase
+            .from('supporters')
+            .select('supporter_id')
+            .eq('individual_id', user.id)
+            .eq('is_admin', true);
+
+          if (adminSupporters && adminSupporters.length > 0) {
+            const stepTitle = steps.find(s => s.id === stepId)?.title || 'a step';
+            const sub = (substepsMap[stepId] || []).find(s => s.id === substepId);
+            const substepTitle = sub?.title || 'a substep';
+            const userName = await supabase
+              .from('profiles')
+              .select('first_name')
+              .eq('user_id', user.id)
+              .maybeSingle()
+              .then(({ data }) => data?.first_name || 'User');
+
+            for (const admin of adminSupporters) {
+              try {
+                await notificationsService.createStepCompletionNotification(admin.supporter_id, {
+                  individual_name: userName,
+                  step_title: `${stepTitle} - ${substepTitle}`,
+                  goal_title: goal.title
+                });
+              } catch (err) {
+                console.error('Failed to create substep completion notification for admin:', admin.supporter_id, err);
+              }
+            }
+          } else {
+            console.log('No admin supporters found for substep completion notifications');
+          }
         }
       }
 

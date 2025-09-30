@@ -11,7 +11,7 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  type: 'check_in' | 'step_complete' | 'goal_created' | 'goal_assigned';
+  type: 'check_in' | 'step_complete' | 'goal_created' | 'goal_assigned' | 'goal_completed';
   userId: string;
   goalId?: string;
   stepId?: string;
@@ -161,9 +161,22 @@ serve(async (req) => {
           <p>A goal has been assigned to <strong>${userName}</strong>:</p>
           <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #0284c7;">
             <h3 style="margin: 0 0 10px 0; color: #0369a1;">${goalInfo?.title || 'Assigned Goal'}</h3>
-            ${goalInfo?.description ? `<p style="margin: 5px 0; color: #6b7280;">${goalInfo.description}</p>` : ''}
+            ${goalInfo?.description ? `<p style=\"margin: 5px 0; color: #6b7280;\">${goalInfo.description}</p>` : ''}
           </div>
           <p>Help ${userName} get started on this important goal! 🚀</p>
+        `;
+        break;
+
+      case 'goal_completed':
+        subject = `${userName} completed a goal!`;
+        htmlContent = `
+          <h2>🏁 Goal Completed</h2>
+          <p><strong>${userName}</strong> has completed the goal:</p>
+          <div style="background: #eef2ff; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #6366f1;">
+            <h3 style="margin: 0 0 10px 0; color: #4f46e5;">${goalInfo?.title || 'A Goal'}</h3>
+            ${goalInfo?.description ? `<p style=\"margin: 5px 0; color: #6b7280;\">${goalInfo.description}</p>` : ''}
+          </div>
+          <p>Celebrate this milestone with ${userName}! 🎉</p>
         `;
         break;
     }
@@ -172,14 +185,12 @@ serve(async (req) => {
     const emailPromises = supporters.map(async (supporter: any) => {
       // Get supporter's email from auth.users
       const { data: authUser } = await supabase.auth.admin.getUserById(supporter.supporter_id);
-      
       if (!authUser.user?.email) {
         console.log(`No email found for supporter ${supporter.supporter_id}`);
-        return null;
+        return false;
       }
 
-      const supporterName = supporter.profiles?.first_name || 'there';
-      
+      const supporterName = 'there';
       const personalizedContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <p>Hi ${supporterName},</p>
@@ -195,37 +206,51 @@ serve(async (req) => {
       const apiKey = Deno.env.get('RESEND_API_KEY');
       if (!apiKey) {
         console.error('RESEND_API_KEY not configured');
-        return null;
+        return false;
       }
-      const resp = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          from: Deno.env.get('RESEND_FROM_EMAIL') || 'LuneBeam <notifications@resend.dev>',
-          to: [authUser.user.email],
-          subject,
-          html: personalizedContent,
-        }),
-      });
-      if (!resp.ok) {
-        const errText = await resp.text();
-        console.error('Resend HTTP error:', resp.status, errText);
-        return null;
+
+      const sendWithFrom = async (from: string) => {
+        const resp = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            from,
+            to: [authUser.user.email],
+            subject,
+            html: personalizedContent,
+          }),
+        });
+        if (!resp.ok) {
+          const errText = await resp.text();
+          console.error('Resend HTTP error:', resp.status, errText);
+          return { ok: false, errText } as const;
+        }
+        return { ok: true } as const;
+      };
+
+      const primaryFrom = Deno.env.get('RESEND_FROM_EMAIL') || 'LuneBeam <notifications@resend.dev>';
+      let result = await sendWithFrom(primaryFrom);
+
+      // Retry with resend.dev sender if domain not verified
+      if (!result.ok && (result.errText?.includes('domain is not verified') || result.errText?.includes('domain') )) {
+        console.log('Retrying email send with resend.dev sender');
+        result = await sendWithFrom('LuneBeam <onboarding@resend.dev>');
       }
-      return await resp.json();
+
+      return result.ok;
     });
 
-    const results = await Promise.allSettled(emailPromises.filter(Boolean));
-    
-    console.log(`Sent ${results.length} notification emails for ${type} event`);
-    
+    const results = await Promise.all(emailPromises);
+    const successes = results.filter(Boolean).length;
+    console.log(`Email notifications: ${successes}/${results.length} sent for ${type} event`);
+
     return new Response(
       JSON.stringify({ 
-        success: true, 
-        emailsSent: results.filter(r => r.status === 'fulfilled').length 
+        success: successes > 0,
+        emailsSent: successes
       }),
       {
         status: 200,
