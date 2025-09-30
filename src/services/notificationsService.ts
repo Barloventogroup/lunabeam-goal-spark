@@ -12,16 +12,34 @@ export interface Notification {
 }
 
 export const notificationsService = {
-  // Get notifications for current user
-  async getNotifications(limit = 50): Promise<Notification[]> {
+  // Get notifications for current user with pagination
+  async getNotifications(page = 1, limit = 10): Promise<{ notifications: Notification[]; total: number; hasMore: boolean }> {
+    const offset = (page - 1) * limit;
+    
+    // Get total count
+    const { count, error: countError } = await supabase
+      .from('notifications')
+      .select('*', { count: 'exact', head: true });
+
+    if (countError) throw countError;
+    
+    // Get paginated notifications
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(limit);
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
-    return data || [];
+    
+    const total = count || 0;
+    const hasMore = (offset + limit) < total;
+    
+    return {
+      notifications: data || [],
+      total,
+      hasMore
+    };
   },
 
   // Create in-app notification

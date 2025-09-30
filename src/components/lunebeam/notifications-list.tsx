@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Bell, CheckCircle, Clock, Users, Target, Award } from 'lucide-react';
+import { ArrowLeft, Bell, CheckCircle, Clock, Users, Target, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 import { notificationsService, Notification } from '@/services/notificationsService';
 import { PermissionsService } from '@/services/permissionsService';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +16,12 @@ interface NotificationsListProps {
 export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const { toast } = useToast();
+
+  const notificationsPerPage = 10;
 
   useEffect(() => {
     loadNotifications();
@@ -28,7 +33,9 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
         event: 'INSERT',
         schema: 'public',
         table: 'notifications'
-      }, () => {
+       }, () => {
+        // Reset to first page when new notifications arrive
+        setCurrentPage(1);
         loadNotifications();
       })
       .subscribe();
@@ -36,12 +43,15 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [currentPage]);
 
   const loadNotifications = async () => {
     try {
-      const data = await notificationsService.getNotifications();
-      setNotifications(data);
+      setLoading(true);
+      const result = await notificationsService.getNotifications(currentPage, notificationsPerPage);
+      setNotifications(result.notifications);
+      setTotal(result.total);
+      setHasMore(result.hasMore);
     } catch (error) {
       console.error('Error loading notifications:', error);
       toast({
@@ -107,6 +117,75 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
         });
       }
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= Math.ceil(total / notificationsPerPage)) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const renderPagination = () => {
+    const totalPages = Math.ceil(total / notificationsPerPage);
+    
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-between mt-6 px-4 py-3 bg-card rounded-lg border">
+        <div className="text-sm text-muted-foreground">
+          Showing {(currentPage - 1) * notificationsPerPage + 1} to{' '}
+          {Math.min(currentPage * notificationsPerPage, total)} of {total} notifications
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNumber;
+              if (totalPages <= 5) {
+                pageNumber = i + 1;
+              } else if (currentPage <= 3) {
+                pageNumber = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNumber = totalPages - 4 + i;
+              } else {
+                pageNumber = currentPage - 2 + i;
+              }
+              
+              return (
+                <Button
+                  key={pageNumber}
+                  variant={currentPage === pageNumber ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(pageNumber)}
+                  className="w-8 h-8 p-0"
+                >
+                  {pageNumber}
+                </Button>
+              );
+            })}
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={!hasMore}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
   };
 
   const getNotificationIcon = (type: string) => {
@@ -249,8 +328,10 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
                 </CardContent>
               </Card>
             ))}
-          </div>
+           </div>
         )}
+        
+        {renderPagination()}
       </div>
     </div>
   );
