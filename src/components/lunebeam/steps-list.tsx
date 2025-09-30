@@ -505,12 +505,7 @@ export const StepsList: React.FC<StepsListProps> = ({
         console.log('Fetching admin supporters for check-in notification...');
         const { data: adminSupporters, error: supportersError } = await supabase
           .from('supporters')
-          .select(`
-            supporter_id,
-            profiles!inner (
-              first_name
-            )
-          `)
+          .select('supporter_id')
           .eq('individual_id', user.id)
           .eq('is_admin', true);
 
@@ -523,7 +518,7 @@ export const StepsList: React.FC<StepsListProps> = ({
             .from('profiles')
             .select('first_name')
             .eq('user_id', user.id)
-            .single()
+            .maybeSingle()
             .then(({ data }) => data?.first_name || 'User');
 
           console.log('Creating in-app notifications for admins:', adminSupporters.map(a => a.supporter_id));
@@ -576,12 +571,7 @@ export const StepsList: React.FC<StepsListProps> = ({
         console.log('Fetching admin supporters for substep check-in notification...');
         const { data: adminSupporters, error: supportersError } = await supabase
           .from('supporters')
-          .select(`
-            supporter_id,
-            profiles!inner (
-              first_name
-            )
-          `)
+          .select('supporter_id')
           .eq('individual_id', user.id)
           .eq('is_admin', true);
 
@@ -596,7 +586,7 @@ export const StepsList: React.FC<StepsListProps> = ({
             .from('profiles')
             .select('first_name')
             .eq('user_id', user.id)
-            .single()
+            .maybeSingle()
             .then(({ data }) => data?.first_name || 'User');
 
           console.log('Creating in-app notifications for substep check-in:', adminSupporters.map(a => a.supporter_id));

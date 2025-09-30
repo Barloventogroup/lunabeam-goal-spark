@@ -48,12 +48,7 @@ serve(async (req) => {
       console.log('Using provided supporter IDs:', supporterIds);
       const { data, error } = await supabase
         .from('supporters')
-        .select(`
-          supporter_id,
-          profiles!inner (
-            first_name
-          )
-        `)
+        .select('supporter_id')
         .in('supporter_id', supporterIds);
       
       if (error) {
@@ -64,13 +59,9 @@ serve(async (req) => {
       console.log('Fetching all supporters for individual:', userId);
       const { data, error } = await supabase
         .from('supporters')
-        .select(`
-          supporter_id,
-          profiles!inner (
-            first_name
-          )
-        `)
-        .eq('individual_id', userId);
+        .select('supporter_id')
+        .eq('individual_id', userId)
+        .eq('is_admin', true);
       
       if (error) {
         console.error('Error fetching all supporters:', error);
