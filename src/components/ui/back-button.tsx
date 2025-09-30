@@ -28,6 +28,7 @@ export const BackButton = React.forwardRef<HTMLButtonElement, BackButtonProps>(
             {...props}
           >
             <ArrowLeft className="h-4 w-4" />
+            Back
           </Button>
         )
       

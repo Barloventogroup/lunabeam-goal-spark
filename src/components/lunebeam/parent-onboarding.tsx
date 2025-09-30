@@ -614,10 +614,9 @@ export function ParentOnboarding({
 
 
             {/* Navigation - Fixed position at bottom */}
-            <div className="absolute bottom-6 left-6 right-6 space-y-2">
-              {currentStep > 1 && <BackButton variant="text" onClick={handleBack} className="w-full" />}
+            <div className="absolute bottom-6 left-6 right-6">
               <div className="flex gap-2">
-                {currentStep < totalSteps}
+                {currentStep > 1 && <BackButton variant="text" onClick={handleBack} />}
                 <Button onClick={handleNext} className="flex-1">
                   {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
                 </Button>
