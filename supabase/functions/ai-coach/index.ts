@@ -190,57 +190,6 @@ You MUST respond with ONLY a JSON array. No other text, no explanation. Just the
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-AVOID generic steps like:
-- "Break it down"
-- "Plan first step" 
-- "Take first action"
-- "Check your progress"
-
-Return a JSON array of step objects with:
-- title: "[specific actionable step related to the goal]"
-- notes: Brief explanation of why this step helps achieve the goal
-- points: 2-3 (most steps are worth 2-3 points)
-- estimated_effort_min: Realistic time estimate in minutes`;
-
-      console.log('Making OpenAI request for goal-specific step generation');
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: stepSystemPrompt },
-            { role: 'user', content: question }
-          ],
-          max_tokens: 1000,
-          temperature: 0.7,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('OpenAI API error:', errorData);
-        throw new Error(`OpenAI API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const guidance = data.choices[0].message.content;
-
-      console.log('Generated goal-specific steps successfully');
-
-      return new Response(JSON.stringify({ 
-        guidance,
-        response_text: guidance,
-        mode: 'assist',
-        timestamp: new Date().toISOString()
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
 
     // For other modes, use the original structured approach
     const globalSystemPrompt = `You are Lune, a supportive AI guide for teenagers and young adults aged 16-25.
