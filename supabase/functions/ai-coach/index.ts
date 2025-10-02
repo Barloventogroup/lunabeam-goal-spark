@@ -95,7 +95,9 @@ Please respond warmly and ask the next helpful question to learn about them.`;
     }
 
     // Handle step generation requests for any goal
-    if (mode === 'assist' && question && (question.includes('Generate') && (question.includes('milestone steps') || question.includes('steps for')))) {
+    if (mode === 'assist' && question && (question.includes('Generate') && question.includes('steps for'))) {
+      console.log('[ai-coach] Detected step generation request');
+      
       const stepSystemPrompt = `You are an expert AI that creates specific, actionable steps for any goal.
 
 Your job: Generate 4-6 concrete, goal-specific steps that directly help achieve the stated goal.
@@ -138,6 +140,56 @@ For "Drink Water":
 - "Start each day with one full glass"
 - "Track intake with simple tally marks"
 
+OUTPUT FORMAT (CRITICAL):
+You MUST respond with ONLY a JSON array. No other text, no explanation. Just the array.
+
+[
+  {
+    "title": "specific step title",
+    "notes": "brief explanation why this helps",
+    "points": 2,
+    "estimated_effort_min": 15
+  }
+]`;
+
+      console.log('Making OpenAI request for step generation');
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: stepSystemPrompt },
+            { role: 'user', content: question }
+          ],
+          max_tokens: 800,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('[ai-coach] OpenAI API error:', response.status);
+        throw new Error(`OpenAI API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const guidance = data.choices[0].message.content;
+
+      console.log('[ai-coach] Step generation response received');
+
+      return new Response(JSON.stringify({ 
+        guidance,
+        response_text: guidance,
+        mode: 'step_generation',
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 AVOID generic steps like:
 - "Break it down"
 - "Plan first step" 

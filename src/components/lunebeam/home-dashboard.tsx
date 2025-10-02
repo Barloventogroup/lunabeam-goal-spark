@@ -94,6 +94,18 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       loadFamilyCircles();
       loadPoints();
       updateUserContext(); // Ensure user context is loaded
+      
+      // Background job: Generate steps for goals without steps
+      const runBackgroundGeneration = async () => {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (currentUser?.id) {
+          const { backgroundStepGenerator } = await import('@/services/backgroundStepGenerator');
+          backgroundStepGenerator.processGoalsWithoutSteps(currentUser.id)
+            .catch(err => console.error('[Background] Step generation error:', err));
+        }
+      };
+      
+      setTimeout(runBackgroundGeneration, 2000);
     }
   }, [user, loadProfile, loadGoals, loadCheckIns, loadEvidence, loadFamilyCircles, loadPoints, updateUserContext]);
 

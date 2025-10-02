@@ -219,6 +219,28 @@ export const goalsService = {
       console.error('Failed to send goal creation notification:', notificationError);
     }
     
+    // Generate steps immediately after goal creation
+    try {
+      const { stepsGenerator } = await import('./stepsGenerator');
+      const generatedSteps = await stepsGenerator.generateSteps(data as Goal);
+      
+      if (generatedSteps.length > 0) {
+        for (const step of generatedSteps) {
+          await stepsService.createStep(data.id, {
+            title: step.title,
+            notes: step.notes,
+            estimated_effort_min: step.estimated_effort_min,
+            step_type: step.step_type || 'habit',
+            is_planned: true,
+            due_date: step.due_date
+          });
+        }
+        console.log(`[Goal Create] Generated ${generatedSteps.length} steps for goal ${data.id}`);
+      }
+    } catch (stepGenError) {
+      console.error('[Goal Create] Step generation failed (goal created successfully):', stepGenError);
+    }
+    
     return data as Goal;
   },
 
