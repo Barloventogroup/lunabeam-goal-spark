@@ -32,7 +32,6 @@ import { StepChatModal } from './step-chat-modal';
 import { ProgressBar } from './progress-bar';
 import { GoalEditModal } from './goal-edit-modal';
 import { CircularProgress } from '@/components/ui/circular-progress';
-import { stepsGenerator } from '@/services/stepsGenerator';
 import type { Goal, Step, GoalProgress } from '@/types';
 
 interface GoalDetailV2Props {
@@ -101,6 +100,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         
         // Use steps as-is, no auto-generation
         const finalSteps = stepsData || [];
+
         const progress = calculateProgress(finalSteps);
         setGoal({ ...goalData, progress });
         setSteps(finalSteps);
