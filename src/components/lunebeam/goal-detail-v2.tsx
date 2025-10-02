@@ -98,41 +98,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         
         setOwnerProfile(ownerData.data);
         setCreatorProfile(creatorData.data);
-        // Auto-generate steps if none exist
-        let finalSteps = stepsData || [];
         
-        if (!stepsData || stepsData.length === 0) {
-          try {
-            console.log('Generating steps for goal:', goalData.title);
-            const generatedSteps = await stepsGenerator.generateSteps(goalData);
-            
-            // Save each generated step to the database
-            const savedSteps: Step[] = [];
-            for (const stepData of generatedSteps) {
-              try {
-                const { step } = await stepsService.createStep(goalData.id, {
-                  title: stepData.title,
-                  notes: stepData.explainer,
-                  is_required: stepData.is_required,
-                  estimated_effort_min: stepData.estimated_effort_min,
-                  due_date: stepData.due_date,
-                });
-                savedSteps.push(step);
-              } catch (error) {
-                console.error('Failed to save generated step:', stepData.title, error);
-              }
-            }
-            
-            finalSteps = savedSteps;
-            
-            toast({
-              description: "Generated helpful steps to get you started! 🎯"
-            });
-          } catch (error) {
-            console.error('Failed to generate steps:', error);
-          }
-        }
-
+        // Use steps as-is, no auto-generation
+        const finalSteps = stepsData || [];
         const progress = calculateProgress(finalSteps);
         setGoal({ ...goalData, progress });
         setSteps(finalSteps);
