@@ -1437,12 +1437,14 @@ export type Database = {
         }[]
       }
       provision_individual_direct: {
-        Args: {
-          p_comm_pref?: string
-          p_first_name: string
-          p_interests?: string[]
-          p_strengths?: string[]
-        }
+        Args:
+          | {
+              p_comm_pref?: string
+              p_first_name: string
+              p_interests?: string[]
+              p_strengths?: string[]
+            }
+          | { p_first_name: string; p_user_type?: string }
         Returns: {
           individual_id: string
           placeholder_email: string

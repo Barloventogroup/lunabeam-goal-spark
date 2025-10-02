@@ -12,7 +12,7 @@ import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { database } from '@/services/database';
 import { useToast } from '@/hooks/use-toast';
-import { X, ArrowLeft } from 'lucide-react';
+import { X, ArrowLeft, Loader2 } from 'lucide-react';
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
   preferredName: string;
@@ -43,6 +43,7 @@ export function ParentOnboarding({
   onExit
 }: ParentOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
   const [data, setData] = useState<ParentOnboardingData>({
     adminName: '',
@@ -153,7 +154,13 @@ export function ParentOnboarding({
     setShowProfile(true);
   };
   const handleComplete = async () => {
-    console.log('🚀 Let\'s go button clicked - starting handleComplete');
+    if (isCreating) {
+      console.log('🔒 handleComplete blocked: already creating', { timestamp: Date.now() });
+      return;
+    }
+
+    console.log('🚀 Let\'s go button clicked - starting handleComplete', { timestamp: Date.now() });
+    setIsCreating(true);
 
     // For admin/parent flow, we need to create TWO things:
     // 1. Admin's own profile (for the authenticated user)
@@ -276,6 +283,8 @@ export function ParentOnboarding({
         console.error('❌ Completion also failed:', completionError);
       }
       onComplete();
+    } finally {
+      setIsCreating(false);
     }
   };
   if (showProfile) {
@@ -300,9 +309,16 @@ export function ParentOnboarding({
                 You can create goals and invite the team later. Ready to get started?
               </p>
               <div className="space-y-2">
-                <Button onClick={handleComplete} className="w-full">
-                  Let's go 🚀
-                </Button>
+            <Button onClick={handleComplete} className="w-full" disabled={isCreating}>
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Setting things up...
+                </>
+              ) : (
+                "Let's go 🚀"
+              )}
+            </Button>
                 <Button variant="outline" onClick={handleBack} className="w-full">
                   Skip for now
                 </Button>
