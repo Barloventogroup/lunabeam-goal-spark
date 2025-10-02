@@ -153,30 +153,51 @@ export const GoalCreationWizard: React.FC<GoalCreationWizardProps> = ({
 
         const goal = await goalsService.createGoal(goalData);
         
-        // Create starter steps for the goal
-        const stepCount = Math.min(data.frequency || 3, 3);
-        const effortMinutes = data.title.match(/(\d+)\s*min/i)?.[1] || '30';
-        
+        // Try AI-powered step generation
         try {
-          for (let i = 1; i <= stepCount; i++) {
+          const { stepsGenerator } = await import('@/services/stepsGenerator');
+          const generatedSteps = await stepsGenerator.generateSteps(goal);
+          
+          // Persist AI-generated steps
+          for (const step of generatedSteps) {
             await stepsService.createStep(goal.id, {
-              title: `Week 1, Session ${i}: ${data.title}`,
-              step_type: 'habit',
-              is_required: true,
-              estimated_effort_min: parseInt(effortMinutes),
-              is_planned: true
+              title: step.title,
+              step_type: 'action',
+              is_required: step.is_required ?? true,
+              estimated_effort_min: step.estimated_effort_min,
+              is_planned: true,
+              notes: step.explainer || step.notes
             });
           }
-        } catch (stepError) {
-          console.error('Failed to create starter steps:', stepError);
-          // Don't block goal creation if steps fail
-          if (data.forWhom === 'other') {
-            toast({
-              title: `Goal assigned to ${data.individualName}!`,
-              description: 'Steps will appear when they open the goal.',
-            });
-            setLoading(false);
-            return;
+        } catch (stepError: any) {
+          console.error('Failed to generate AI steps, using fallback:', stepError);
+          
+          // Create fallback steps with notes for help UI
+          const stepCount = Math.min(data.frequency || 3, 3);
+          const effortMinutes = data.title.match(/(\d+)\s*min/i)?.[1] || '30';
+          
+          try {
+            for (let i = 1; i <= stepCount; i++) {
+              await stepsService.createStep(goal.id, {
+                title: `Week 1, Session ${i}: ${data.title}`,
+                step_type: 'habit',
+                is_required: true,
+                estimated_effort_min: parseInt(effortMinutes),
+                is_planned: true,
+                notes: `Complete this session of ${data.title}. Expand for details or ask for help to break it down further.`
+              });
+            }
+          } catch (fallbackError) {
+            console.error('Fallback step creation failed:', fallbackError);
+            // Don't block goal creation if steps fail
+            if (data.forWhom === 'other') {
+              toast({
+                title: `Goal assigned to ${data.individualName}!`,
+                description: 'Steps will appear when they open the goal.',
+              });
+              setLoading(false);
+              return;
+            }
           }
         }
         

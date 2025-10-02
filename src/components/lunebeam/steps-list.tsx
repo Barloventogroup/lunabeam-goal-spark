@@ -126,22 +126,27 @@ export const StepsList: React.FC<StepsListProps> = ({
     setGenerating(true);
     
     try {
-      const stepCount = Math.min(goal.frequency_per_week || 3, 3);
-      const effortMinutes = goal.title.match(/(\d+)\s*min/i)?.[1] || '30';
+      // Import stepsGenerator
+      const { stepsGenerator } = await import('@/services/stepsGenerator');
       
-      for (let i = 1; i <= stepCount; i++) {
+      // Try AI-powered generation first
+      const generatedSteps = await stepsGenerator.generateSteps(goal);
+      
+      // Persist the steps to database
+      for (const step of generatedSteps) {
         await stepsService.createStep(goal.id, {
-          title: `Week 1, Session ${i}: ${goal.title}`,
-          step_type: 'habit',
-          is_required: true,
-          estimated_effort_min: parseInt(effortMinutes),
-          is_planned: true
+          title: step.title,
+          step_type: 'action',
+          is_required: step.is_required ?? true,
+          estimated_effort_min: step.estimated_effort_min,
+          is_planned: true,
+          notes: step.explainer || step.notes
         });
       }
       
       toast({
-        title: "Steps created!",
-        description: `Added ${stepCount} starter steps to your goal.`,
+        title: 'AI steps created! 🎯',
+        description: `Added ${generatedSteps.length} goal-specific steps. Expand any step to see details.`,
       });
       
       // Refresh steps - fetch updated data and notify parent
@@ -152,12 +157,49 @@ export const StepsList: React.FC<StepsListProps> = ({
       if (onStepsChange) {
         onStepsChange();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to generate steps:', error);
+      
+      // Handle specific AI errors
+      let errorMessage = 'Please try again or create steps manually.';
+      if (error?.message?.includes('429') || error?.status === 429) {
+        errorMessage = 'AI is temporarily busy. We\'ve created starter steps. Expand any step and click "Need more help?" to refine them.';
+      } else if (error?.message?.includes('402') || error?.status === 402) {
+        errorMessage = 'AI credits depleted. We\'ve created starter steps. Use "Need more help?" to customize them.';
+      }
+      
+      // Create fallback steps with notes so help UI is visible
+      try {
+        const stepCount = Math.min(goal.frequency_per_week || 3, 3);
+        const effortMinutes = goal.title.match(/(\d+)\s*min/i)?.[1] || '30';
+        
+        for (let i = 1; i <= stepCount; i++) {
+          await stepsService.createStep(goal.id, {
+            title: `Week 1, Session ${i}: ${goal.title}`,
+            step_type: 'habit',
+            is_required: true,
+            estimated_effort_min: parseInt(effortMinutes),
+            is_planned: true,
+            notes: `This is a ${goal.title} session. Click the arrow to expand and see details, or click "Need more help?" to break this down into smaller steps.`
+          });
+        }
+        
+        // Refresh after fallback creation
+        const updatedSteps = await stepsService.getSteps(goal.id);
+        if (onStepsUpdate) {
+          onStepsUpdate(updatedSteps, goal);
+        }
+        if (onStepsChange) {
+          onStepsChange();
+        }
+      } catch (fallbackError) {
+        console.error('Fallback step creation also failed:', fallbackError);
+      }
+      
       toast({
-        title: "Couldn't create steps",
-        description: "Please try again or contact support.",
-        variant: "destructive"
+        title: 'Created starter steps',
+        description: errorMessage,
+        variant: 'default'
       });
     } finally {
       setGenerating(false);
