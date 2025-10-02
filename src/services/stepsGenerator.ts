@@ -3,100 +3,48 @@ import type { Goal, Step, StepMetadata } from '@/types';
 // AI-powered step generation for all goals
 export const stepsGenerator = {
   async generateSteps(goal: Goal): Promise<Step[]> {
-    const startTime = Date.now();
-    const userId = goal.owner_id || goal.created_by;
-    const { stepGenerationAnalytics } = await import('./stepGenerationAnalytics');
-    
-    try {
-      // 1) Try to generate milestone steps from SMART-like description
-      const milestone = generateMilestoneSteps(goal);
-      if (milestone.length > 0) {
-        await stepGenerationAnalytics.logStepGeneration({
-          goalId: goal.id,
-          userId,
-          method: 'milestone',
-          success: true,
-          stepsGenerated: milestone.length,
-          timeMs: Date.now() - startTime
-        });
-        return milestone;
-      }
-
-      // 2) Use AI to generate goal-specific steps
-      try {
-        const aiSteps = await generateAISteps(goal);
-        if (aiSteps.length > 0) {
-          await stepGenerationAnalytics.logStepGeneration({
-            goalId: goal.id,
-            userId,
-            method: 'ai',
-            success: true,
-            stepsGenerated: aiSteps.length,
-            timeMs: Date.now() - startTime
-          });
-          return aiSteps;
-        }
-      } catch (aiError: any) {
-        await stepGenerationAnalytics.logStepGeneration({
-          goalId: goal.id,
-          userId,
-          method: 'ai',
-          success: false,
-          stepsGenerated: 0,
-          error: aiError.message,
-          timeMs: Date.now() - startTime
-        });
-        console.error('AI step generation failed, falling back to rules:', aiError);
-      }
-
-      // 3) Fallback to rules-based base steps
-      const baseSteps = getBaseStepsForGoal(goal);
-      await stepGenerationAnalytics.logStepGeneration({
-        goalId: goal.id,
-        userId,
-        method: 'rules',
-        success: true,
-        stepsGenerated: baseSteps.length,
-        timeMs: Date.now() - startTime
-      });
-      
-      return baseSteps.map((stepData, index) => ({
-        id: `step_${Date.now()}_${index}`,
-        goal_id: goal.id,
-        ...stepData,
-        order_index: index,
-        status: 'todo' as const,
-        type: 'action' as const,
-        hidden: false,
-        blocked: false,
-        aiGenerated: true,
-        dependency_step_ids: [],
-        notes: stepData.explainer,
-        explainer: stepData.explainer,
-        due_date: undefined,
-        points: undefined,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }));
-    } catch (error: any) {
-      await stepGenerationAnalytics.logStepGeneration({
-        goalId: goal.id,
-        userId,
-        method: 'rules',
-        success: false,
-        stepsGenerated: 0,
-        error: error.message,
-        timeMs: Date.now() - startTime
-      });
-      throw error;
+    // 1) Try to generate milestone steps from SMART-like description
+    const milestone = generateMilestoneSteps(goal);
+    if (milestone.length > 0) {
+      return milestone;
     }
+
+    // 2) Use AI to generate goal-specific steps
+    try {
+      const aiSteps = await generateAISteps(goal);
+      if (aiSteps.length > 0) {
+        return aiSteps;
+      }
+    } catch (error) {
+      console.error('AI step generation failed, falling back to rules:', error);
+    }
+
+    // 3) Fallback to rules-based base steps only if AI fails
+    const baseSteps = getBaseStepsForGoal(goal);
+    
+    return baseSteps.map((stepData, index) => ({
+      id: `step_${Date.now()}_${index}`,
+      goal_id: goal.id,
+      ...stepData,
+      order_index: index,
+      status: 'todo' as const,
+      type: 'action' as const,
+      hidden: false,
+      blocked: false,
+      aiGenerated: true,
+      dependency_step_ids: [],
+      notes: stepData.explainer,
+      explainer: stepData.explainer,
+      due_date: undefined,
+      points: undefined,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
   }
 };
 
 async function generateAISteps(goal: Goal): Promise<Step[]> {
   const { supabase } = await import('@/integrations/supabase/client');
-  
-  console.log(`[AI Step Gen] Starting for goal: ${goal.title} (${goal.id})`);
   
   const prompt = `Generate 4-6 specific steps for this goal:
 
@@ -112,43 +60,30 @@ Return a JSON array of step objects with these properties:
 
 Make each step directly related to achieving "${goal.title}". Be specific and practical.`;
 
+  const { data, error } = await supabase.functions.invoke('ai-coach', {
+    body: {
+      question: prompt,
+      mode: 'assist'
+    }
+  });
+
+  if (error) {
+    console.error('AI step generation error:', error);
+    return [];
+  }
+
   try {
-    const { data, error } = await supabase.functions.invoke('ai-coach', {
-      body: {
-        question: prompt,
-        mode: 'assist',
-        goalId: goal.id,
-        domain: goal.domain
-      }
-    });
-
-    if (error) {
-      console.error('[AI Step Gen] Edge function error:', error);
-      throw new Error(`Edge function failed: ${error.message}`);
-    }
-
-    if (!data) {
-      console.warn('[AI Step Gen] No data returned');
-      return [];
-    }
-
-    console.log('[AI Step Gen] Raw response received');
-
+    // Try to parse JSON from the AI response
     const responseText = data.guidance || data.response_text || '';
     
-    if (!responseText) {
-      console.warn('[AI Step Gen] Empty response text');
-      return [];
-    }
-
+    // Look for JSON array in the response
     const jsonMatch = responseText.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
-      console.warn('[AI Step Gen] No JSON array found in response:', responseText.substring(0, 200));
+      console.warn('No JSON array found in AI response');
       return [];
     }
 
     const stepsData = JSON.parse(jsonMatch[0]);
-    console.log(`[AI Step Gen] Successfully parsed ${stepsData.length} steps`);
     
     return stepsData.map((stepData: any, index: number) => ({
       id: `ai_step_${Date.now()}_${index}`,
@@ -177,7 +112,7 @@ Make each step directly related to achieving "${goal.title}". Be specific and pr
       updated_at: new Date().toISOString(),
     }));
   } catch (parseError) {
-    console.error('[AI Step Gen] Parse error:', parseError);
+    console.error('Failed to parse AI step response:', parseError);
     return [];
   }
 }

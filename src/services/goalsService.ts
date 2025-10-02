@@ -373,79 +373,59 @@ export const stepsService = {
       }
     }
 
-    try {
-      // Try using the secure function first (bypasses RLS safely)
-      const { data: stepId, error: rpcError } = await supabase
-        .rpc('create_step_secure', {
-          p_goal_id: goalId,
-          p_title: stepData.title,
-          p_notes: stepData.notes || null,
-          p_step_type: stepData.step_type || 'habit',
-          p_estimated_effort_min: stepData.estimated_effort_min || null,
-          p_is_planned: stepData.is_planned !== undefined ? stepData.is_planned : true,
-          p_due_date: stepData.due_date || null
-        });
+    // Get the next order index
+    const { count } = await supabase
+      .from('steps')
+      .select('*', { count: 'exact' })
+      .eq('goal_id', goalId);
 
-      if (rpcError) {
-        console.error('RPC error creating step:', rpcError);
-        throw rpcError;
-      }
+    const { data: newStep, error: stepError } = await supabase
+      .from('steps')
+      .insert({
+        ...stepData,
+        goal_id: goalId,
+        order_index: count || 0,
+        type: 'action', // ensure actionable by default
+        step_type: stepData.step_type || 'habit',
+        is_planned: stepData.is_planned !== undefined ? stepData.is_planned : true,
+      })
+      .select()
+      .single();
 
-      // Fetch the created step
-      const { data: newStep, error: fetchError } = await supabase
-        .from('steps')
-        .select('*')
-        .eq('id', stepId)
-        .single();
+    if (stepError) throw stepError;
 
-      if (fetchError) throw fetchError;
-
-      // Auto-schedule steps if this is the first step added
-      const { count } = await supabase
-        .from('steps')
-        .select('*', { count: 'exact' })
-        .eq('goal_id', goalId);
-
-      if (count === 1) {
-        const { smartSchedulingService } = await import('./smartSchedulingService');
-        setTimeout(() => {
-          smartSchedulingService.autoScheduleSteps(goalId).catch(console.error);
-        }, 100);
-      }
-
-      // Get updated goal with progress
-      const { data: goalData, error: goalError } = await supabase
-        .from('goals')
-        .select('*')
-        .eq('id', goalId)
-        .single();
-
-      if (goalError) throw goalError;
-
-      // Update goal status to active if it was planned
-      if (goalData.status === 'planned') {
-        const { data: updatedGoal, error: updateError } = await supabase
-          .from('goals')
-          .update({ status: 'active' })
-          .eq('id', goalId)
-          .select()
-          .single();
-
-        if (updateError) throw updateError;
-        return { step: newStep as Step, goal: updatedGoal as Goal };
-      }
-
-      return { step: newStep as Step, goal: goalData as Goal };
-    } catch (error: any) {
-      // Enhanced error logging
-      console.error('Failed to create step:', {
-        goalId,
-        stepData,
-        error: error.message,
-        code: error.code
-      });
-      throw error;
+    // Auto-schedule steps if this is the first step added
+    if (count === 0) {
+      // Import here to avoid circular dependency
+      const { smartSchedulingService } = await import('./smartSchedulingService');
+      setTimeout(() => {
+        smartSchedulingService.autoScheduleSteps(goalId).catch(console.error);
+      }, 100);
     }
+
+    // Get updated goal with progress
+    const { data: goalData, error: goalError } = await supabase
+      .from('goals')
+      .select('*')
+      .eq('id', goalId)
+      .single();
+
+    if (goalError) throw goalError;
+
+    // Update goal status to active if it was planned
+    if (goalData.status === 'planned') {
+      const { data: updatedGoal, error: updateError } = await supabase
+        .from('goals')
+        .update({ status: 'active' })
+        .eq('id', goalId)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+      return { step: newStep as Step, goal: updatedGoal as Goal };
+    }
+
+    return { step: newStep as Step, goal: goalData as Goal };
   },
 
   // Update step

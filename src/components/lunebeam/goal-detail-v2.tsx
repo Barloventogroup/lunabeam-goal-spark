@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit, Users, UserCheck, Sparkles } from 'lucide-react';
+import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit, Users, UserCheck } from 'lucide-react';
 import { BackButton } from '@/components/ui/back-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,6 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const [goal, setGoal] = useState<Goal | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isGeneratingSteps, setIsGeneratingSteps] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showStepChat, setShowStepChat] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -187,70 +186,6 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       ...updatedGoal,
       progress: goal?.progress // Preserve existing progress data
     });
-  };
-
-  const handleRetryStepGeneration = async () => {
-    if (!goal) return;
-    
-    setIsGeneratingSteps(true);
-    let successCount = 0;
-    let failCount = 0;
-    
-    try {
-      const generatedSteps = await stepsGenerator.generateSteps(goal);
-      
-      if (generatedSteps.length > 0) {
-        // Try to create each step individually with error handling
-        for (const step of generatedSteps) {
-          try {
-            await stepsService.createStep(goal.id, {
-              title: step.title,
-              notes: step.notes,
-              estimated_effort_min: step.estimated_effort_min,
-              step_type: step.step_type || 'habit',
-              is_planned: true,
-              due_date: step.due_date
-            });
-            successCount++;
-          } catch (stepError: any) {
-            console.error('Failed to create step:', {
-              step: step.title,
-              error: stepError.message,
-              code: stepError.code
-            });
-            failCount++;
-            
-            // If it's an RLS error, log more details
-            if (stepError.code === '42501') {
-              console.error('RLS policy violation - user may not have permission to create steps');
-            }
-          }
-        }
-        
-        if (successCount > 0) {
-          toast({
-            title: 'Steps generated! 🎯',
-            description: failCount > 0 
-              ? `Created ${successCount} steps (${failCount} failed)`
-              : `Created ${successCount} steps for your goal`
-          });
-          
-          // Refresh steps
-          loadGoalData();
-        } else {
-          throw new Error('All steps failed to create');
-        }
-      }
-    } catch (error: any) {
-      console.error('Step generation error:', error);
-      toast({
-        title: 'Step generation failed',
-        description: error.message || 'Please try again or add steps manually',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsGeneratingSteps(false);
-    }
   };
 
   const handleDeleteGoal = async () => {
@@ -461,41 +396,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       )}
 
       {/* Steps */}
-      {steps.length === 0 && !isGeneratingSteps && (
-        <Card>
-          <CardContent className="pt-6 pb-6 text-center">
-            <p className="text-muted-foreground mb-4">No steps created yet for this goal.</p>
-            <Button 
-              onClick={handleRetryStepGeneration}
-              variant="outline"
-              className="w-full"
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              Generate Steps with AI
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-      
-      {steps.length === 0 && isGeneratingSteps && (
-        <Card>
-          <CardContent className="pt-6 pb-6 text-center">
-            <div className="animate-pulse flex items-center justify-center gap-2 text-muted-foreground">
-              <Sparkles className="h-4 w-4" />
-              <span>Generating steps...</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      
-      {steps.length > 0 && (
-        <StepsList 
-          goal={goal}
-          steps={steps}
-          onStepsUpdate={handleStepsUpdate}
-          onOpenStepChat={handleOpenStepChat}
-        />
-      )}
+      <StepsList 
+        goal={goal}
+        steps={steps}
+        onStepsUpdate={handleStepsUpdate}
+        onOpenStepChat={handleOpenStepChat}
+      />
 
       {/* Step Chat Modal */}
       <StepChatModal

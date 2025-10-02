@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight, User, Shield, Users, UserCheck, Sparkles } from 'lucide-react';
+import { Plus, Calendar, Target, Flag, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight, User, Shield, Users, UserCheck } from 'lucide-react';
 import { goalsService, stepsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal, Step } from '@/types';
@@ -357,7 +357,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
               {currentGoals.map((goal) => {
                  const stepCount = stepsCount[goal.id] || { required: goal.progress?.actionable || 0, done: goal.progress?.done || 0 };
                 const progressPct = goal.progress_pct || (goal.progress ? goal.progress.percent : 0);
-                const hasNoSteps = stepCount.required === 0;
                 
                 // Determine ownership context
                 const isOwnGoal = goal.owner_id === currentUser?.id;
@@ -399,14 +398,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                               </Badge>
                             )}
                           </div>
-                          {hasNoSteps && (
-                            <div className="flex items-center gap-2 mt-2">
-                              <div className="animate-pulse flex items-center gap-2 text-sm text-muted-foreground">
-                                <Sparkles className="h-4 w-4" />
-                                <span>Generating steps...</span>
-                              </div>
-                            </div>
-                          )}
                           {goal.due_date && (
                             <div className="flex items-center gap-1 text-body-sm text-muted-foreground">
                               <Calendar className="h-4 w-4" />
