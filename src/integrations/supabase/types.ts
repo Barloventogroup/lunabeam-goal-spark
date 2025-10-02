@@ -1220,6 +1220,18 @@ export type Database = {
           magic_link_token: string
         }[]
       }
+      create_step_secure: {
+        Args: {
+          p_due_date?: string
+          p_estimated_effort_min?: number
+          p_goal_id: string
+          p_is_planned?: boolean
+          p_notes?: string
+          p_step_type?: string
+          p_title: string
+        }
+        Returns: string
+      }
       create_supporter_invite_secure: {
         Args:
           | {

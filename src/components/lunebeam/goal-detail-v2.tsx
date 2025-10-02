@@ -193,32 +193,59 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     if (!goal) return;
     
     setIsGeneratingSteps(true);
+    let successCount = 0;
+    let failCount = 0;
+    
     try {
       const generatedSteps = await stepsGenerator.generateSteps(goal);
       
       if (generatedSteps.length > 0) {
+        // Try to create each step individually with error handling
         for (const step of generatedSteps) {
-          await stepsService.createStep(goal.id, {
-            title: step.title,
-            notes: step.notes,
-            estimated_effort_min: step.estimated_effort_min,
-            step_type: step.step_type || 'habit',
-            is_planned: true
-          });
+          try {
+            await stepsService.createStep(goal.id, {
+              title: step.title,
+              notes: step.notes,
+              estimated_effort_min: step.estimated_effort_min,
+              step_type: step.step_type || 'habit',
+              is_planned: true,
+              due_date: step.due_date
+            });
+            successCount++;
+          } catch (stepError: any) {
+            console.error('Failed to create step:', {
+              step: step.title,
+              error: stepError.message,
+              code: stepError.code
+            });
+            failCount++;
+            
+            // If it's an RLS error, log more details
+            if (stepError.code === '42501') {
+              console.error('RLS policy violation - user may not have permission to create steps');
+            }
+          }
         }
         
-        toast({
-          title: 'Steps generated! 🎯',
-          description: `Created ${generatedSteps.length} steps for your goal`
-        });
-        
-        // Refresh steps
-        loadGoalData();
+        if (successCount > 0) {
+          toast({
+            title: 'Steps generated! 🎯',
+            description: failCount > 0 
+              ? `Created ${successCount} steps (${failCount} failed)`
+              : `Created ${successCount} steps for your goal`
+          });
+          
+          // Refresh steps
+          loadGoalData();
+        } else {
+          throw new Error('All steps failed to create');
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Step generation error:', error);
       toast({
         title: 'Step generation failed',
-        description: 'Please try again or add steps manually',
+        description: error.message || 'Please try again or add steps manually',
         variant: 'destructive'
       });
     } finally {
