@@ -144,8 +144,14 @@ export const StepsList: React.FC<StepsListProps> = ({
         description: `Added ${stepCount} starter steps to your goal.`,
       });
       
-      // Refresh steps
-      if (onStepsChange) onStepsChange();
+      // Refresh steps - fetch updated data and notify parent
+      const updatedSteps = await stepsService.getSteps(goal.id);
+      if (onStepsUpdate) {
+        onStepsUpdate(updatedSteps, goal);
+      }
+      if (onStepsChange) {
+        onStepsChange();
+      }
     } catch (error) {
       console.error('Failed to generate steps:', error);
       toast({
