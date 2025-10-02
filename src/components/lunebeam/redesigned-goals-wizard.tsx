@@ -13,7 +13,7 @@ import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { goalsService } from '@/services/goalsService';
+import { goalsService, stepsService } from '@/services/goalsService';
 import { goalProposalsService } from '@/services/goalProposalsService';
 import { supabase } from '@/integrations/supabase/client';
 import { PermissionsService } from '@/services/permissionsService';
@@ -435,7 +435,34 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         });
       } else {
         // Create goal directly
-        await goalsService.createGoal(goalData);
+        const createdGoal = await goalsService.createGoal(goalData);
+        
+        // Create starter steps for the goal
+        const stepCount = Math.min(data.frequency, 3);
+        const effortMinutes = data.goalTitle.match(/(\d+)\s*min/i)?.[1] || '30';
+        
+        try {
+          for (let i = 1; i <= stepCount; i++) {
+            await stepsService.createStep(createdGoal.id, {
+              title: `Week 1, Session ${i}: ${data.goalTitle}`,
+              step_type: 'habit',
+              is_required: true,
+              estimated_effort_min: parseInt(effortMinutes),
+              is_planned: true
+            });
+          }
+        } catch (stepError) {
+          console.error('Failed to create starter steps:', stepError);
+          // Don't block goal creation if steps fail (e.g., RLS for supporters)
+          if (data.recipient === 'other') {
+            toast({
+              title: `Goal assigned to ${data.supportedPersonName}! 🎯`,
+              description: 'Steps will appear when they open the goal.',
+            });
+            return; // Exit early to avoid duplicate toast
+          }
+        }
+        
         toast({
           title: data.recipient === 'self' ? 'Goal created! 🎯' : `Goal assigned to ${data.supportedPersonName}! 🎯`,
           description: 'Ready to start making progress!'

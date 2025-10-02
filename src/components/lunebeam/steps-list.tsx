@@ -108,7 +108,55 @@ export const StepsList: React.FC<StepsListProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
   const [showFireworks, setShowFireworks] = useState(false);
+  const [canGenerateSteps, setCanGenerateSteps] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
+
+  // Check if current user owns or can manage this goal
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCanGenerateSteps(!!user && (goal.owner_id === user.id || goal.created_by === user.id));
+    };
+    checkPermissions();
+  }, [goal]);
+
+  const handleGenerateSteps = async () => {
+    if (generating) return;
+    setGenerating(true);
+    
+    try {
+      const stepCount = Math.min(goal.frequency_per_week || 3, 3);
+      const effortMinutes = goal.title.match(/(\d+)\s*min/i)?.[1] || '30';
+      
+      for (let i = 1; i <= stepCount; i++) {
+        await stepsService.createStep(goal.id, {
+          title: `Week 1, Session ${i}: ${goal.title}`,
+          step_type: 'habit',
+          is_required: true,
+          estimated_effort_min: parseInt(effortMinutes),
+          is_planned: true
+        });
+      }
+      
+      toast({
+        title: "Steps created!",
+        description: `Added ${stepCount} starter steps to your goal.`,
+      });
+      
+      // Refresh steps
+      if (onStepsChange) onStepsChange();
+    } catch (error) {
+      console.error('Failed to generate steps:', error);
+      toast({
+        title: "Couldn't create steps",
+        description: "Please try again or contact support.",
+        variant: "destructive"
+      });
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   // Fetch substeps for all steps
   useEffect(() => {
@@ -930,31 +978,33 @@ export const StepsList: React.FC<StepsListProps> = ({
     return null;
   };
 
-    if (steps.length === 0) {
-      return (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-foreground">Recommended steps</CardTitle>
-            <p className="text-sm text-muted-foreground">AI-generated action items tailored to your goal. Click to mark progress, provide feedback, or get more help.</p>
-          </CardHeader>
-          <CardContent className="py-6">
-            <p className="text-muted-foreground mb-4">We're preparing a few quick wins for you…</p>
-            <div className="space-y-3">
-              {[1,2,3,4,5].map((i) => (
-                <div key={i} className="flex items-center gap-3 p-3 border border-border rounded-lg">
-                  <div className="w-5 h-5 rounded-full bg-muted animate-pulse" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-3 w-2/3 bg-muted rounded animate-pulse" />
-                    <div className="h-2 w-1/2 bg-muted rounded animate-pulse" />
-                  </div>
-                  <div className="w-16 h-6 bg-muted rounded animate-pulse" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      );
-    }
+  if (steps.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-foreground">No steps yet</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {canGenerateSteps 
+              ? "Get started by generating some initial steps for this goal."
+              : "Steps will appear here once the goal owner adds them."}
+          </p>
+        </CardHeader>
+        <CardContent className="py-6">
+          {canGenerateSteps && (
+            <Button onClick={handleGenerateSteps} disabled={generating} className="w-full">
+              <Plus className="h-4 w-4 mr-2" />
+              {generating ? "Creating steps..." : "Generate Starter Steps"}
+            </Button>
+          )}
+          {!canGenerateSteps && (
+            <p className="text-center text-muted-foreground py-8">
+              Waiting for steps to be added...
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

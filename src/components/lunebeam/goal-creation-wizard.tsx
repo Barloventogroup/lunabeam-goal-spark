@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ArrowRight, User, Users, Target, Calendar, Lightbulb } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { goalsService } from '@/services/goalsService';
+import { goalsService, stepsService } from '@/services/goalsService';
 import { goalProposalsService } from '@/services/goalProposalsService';
 import { PermissionsService } from '@/services/permissionsService';
 import { supabase } from '@/integrations/supabase/client';
@@ -152,6 +152,33 @@ export const GoalCreationWizard: React.FC<GoalCreationWizardProps> = ({
         };
 
         const goal = await goalsService.createGoal(goalData);
+        
+        // Create starter steps for the goal
+        const stepCount = Math.min(data.frequency || 3, 3);
+        const effortMinutes = data.title.match(/(\d+)\s*min/i)?.[1] || '30';
+        
+        try {
+          for (let i = 1; i <= stepCount; i++) {
+            await stepsService.createStep(goal.id, {
+              title: `Week 1, Session ${i}: ${data.title}`,
+              step_type: 'habit',
+              is_required: true,
+              estimated_effort_min: parseInt(effortMinutes),
+              is_planned: true
+            });
+          }
+        } catch (stepError) {
+          console.error('Failed to create starter steps:', stepError);
+          // Don't block goal creation if steps fail
+          if (data.forWhom === 'other') {
+            toast({
+              title: `Goal assigned to ${data.individualName}!`,
+              description: 'Steps will appear when they open the goal.',
+            });
+            setLoading(false);
+            return;
+          }
+        }
         
         toast({
           title: data.forWhom === 'self' ? 'Goal created!' : `Goal assigned to ${data.individualName}!`,
