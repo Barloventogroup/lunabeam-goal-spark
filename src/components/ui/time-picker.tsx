@@ -36,25 +36,24 @@ export function TimePicker({
     <div className={className}>
       {label && <Label className="text-sm font-medium mb-2 block">{label}</Label>}
       <div className="relative">
-        <Button
-          type="button"
-          variant="outline"
-          className={cn(
-            "w-full justify-start",
-            !time && "text-muted-foreground"
-          )}
-          onClick={handleButtonClick}
-        >
-          <Clock className="h-4 w-4 mr-2" />
-          {formatTime(time)}
-        </Button>
         <input
           ref={inputRef}
           type="time"
           value={time}
           onChange={(e) => onTimeChange(e.target.value)}
-          className="absolute inset-0 opacity-0 cursor-pointer"
+          className="absolute inset-0 opacity-0 cursor-pointer z-10"
         />
+        <Button
+          type="button"
+          variant="outline"
+          className={cn(
+            "w-full justify-start pointer-events-none",
+            !time && "text-muted-foreground"
+          )}
+        >
+          <Clock className="h-4 w-4 mr-2" />
+          {formatTime(time)}
+        </Button>
       </div>
     </div>
   )
