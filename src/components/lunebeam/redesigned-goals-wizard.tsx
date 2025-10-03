@@ -411,8 +411,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   const getStepTitle = () => {
-    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Which part of this activity feels the trickiest when you start it?', 'Prerequisites check', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context', 'Rewards'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Which part of this activity feels the trickiest when you start it?', 'Prerequisites check', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context'];
+    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context', 'Rewards'];
+    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context'];
     if (isSupporter) {
       return supporterTitles[currentStep] || '';
     } else {
@@ -833,7 +833,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderStep4 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">How familiar are you with this activity?</p>
+        <p className="text-muted-foreground">(Select up to two)</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -1065,7 +1065,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
           <CardTitle className="text-2xl">Confirm</CardTitle>
           <p className="text-muted-foreground">
-            Here's your action plan for this goal.
+            {isProposal ? `This will be sent to ${data.supportedPersonName}'s admins for approval` : 'Ready to start your goal?'}
           </p>
         </CardHeader>
         
