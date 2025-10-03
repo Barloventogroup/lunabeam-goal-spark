@@ -1127,8 +1127,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         >
           <CardContent className="p-6">
             <div className="flex items-start gap-3">
+              <Users className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               {data.supportContext === 'with_supporters' && (
-                <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
               )}
               <div className="text-left flex-1">
                 <div className="text-base font-semibold">Select an Ally</div>
