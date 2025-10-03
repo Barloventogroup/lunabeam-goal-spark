@@ -1167,7 +1167,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </div>;
   }
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
-      <div className="max-w-md mx-auto py-6 space-y-6">
+      <div className="max-w-md mx-auto py-6 flex flex-col" style={{ minHeight: 'calc(100vh - 2rem)' }}>
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button variant="ghost" size="sm" onClick={currentStep === (isSupporter ? 0 : 1) ? onCancel : prevStep} className="p-2">
@@ -1185,16 +1185,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
         
         {/* Progress Bar */}
-        <div className="w-full bg-muted rounded-full h-2">
+        <div className="w-full bg-muted rounded-full h-2 mb-6">
           <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{
           width: `${currentStepDisplay / totalSteps * 100}%`
         }} />
         </div>
         
-        {/* Current Step */}
-        {renderCurrentStep()}
+        {/* Current Step - with flex-1 to take available space */}
+        <div className="flex-1 mb-6">
+          {renderCurrentStep()}
+        </div>
         
-        {/* Navigation */}
+        {/* Navigation - fixed at bottom */}
         {!isLastStep && <Button onClick={nextStep} disabled={!canProceed()} className="w-full h-12 text-lg font-semibold">
             Continue
             <ArrowRight className="h-5 w-5 ml-2" />
