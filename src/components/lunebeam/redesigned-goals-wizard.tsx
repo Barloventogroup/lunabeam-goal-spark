@@ -366,8 +366,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   const getStepTitle = () => {
-    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Great! Do you have all your supplies and space ready to go?', 'Scheduling & timing', 'Support context', 'Rewards'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Great! Do you have all your supplies and space ready to go?', 'Scheduling & timing', 'Support context'];
+    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Great! Do you have all your supplies and space ready to go?', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context', 'Rewards'];
+    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Great! Do you have all your supplies and space ready to go?', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context'];
     if (isSupporter) {
       return supporterTitles[currentStep] || '';
     } else {
