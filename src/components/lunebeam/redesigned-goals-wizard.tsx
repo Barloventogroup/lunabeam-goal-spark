@@ -637,7 +637,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     if (period === "PM") H += 12;
     return `${H.toString().padStart(2, "0")}:${minute}`;
   };
-  const renderStep0 = () => <Card className="border-0 shadow-lg min-h-[500px]">
+  const renderStep0 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Users className="h-8 w-8 text-primary" />
@@ -700,7 +700,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep1 = () => <Card className="border-0 shadow-lg min-h-[500px]">
+  const renderStep1 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Sparkles className="h-8 w-8 text-primary" />
@@ -797,7 +797,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </CardContent>
     </Card>;
-  const renderStep2 = () => <Card className="border-0 shadow-lg min-h-[500px]">
+  const renderStep2 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
@@ -831,7 +831,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </CardContent>
     </Card>;
-  const renderStep3 = () => <Card className="border-0 shadow-lg min-h-[500px]">
+  const renderStep3 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">Let's figure out where you're starting from. This goal is which of the following:</p>
@@ -868,7 +868,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       }
     };
 
-    return <Card className="border-0 shadow-lg min-h-[500px]">
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">Select up to two</p>
@@ -892,7 +892,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardContent>
     </Card>;
   };
-  const renderStep5 = () => <Card className="border-0 shadow-lg min-h-[600px]">
+  const renderStep5 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Do you already have what you need?</CardTitle>
         <p className="text-muted-foreground">Equipment, knowledge, access, etc.</p>
@@ -942,7 +942,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </CardContent>
     </Card>;
-  const renderStep6 = () => <Card className="border-0 shadow-lg min-h-[500px]">
+  const renderStep6 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         
@@ -1031,7 +1031,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep7 = () => <Card className="border-0 shadow-lg min-h-[500px]">
+  const renderStep7 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Who's on your team?</CardTitle>
         <p className="text-muted-foreground">(It's great to have allies 🤝)</p>
@@ -1058,7 +1058,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </Button>
       </CardContent>
     </Card>;
-  const renderStep8 = () => <Card className="border-0 shadow-lg min-h-[500px]">
+  const renderStep8 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Gift className="h-8 w-8 text-primary" />
@@ -1115,7 +1115,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   const renderConfirmStep = () => {
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
-    return <Card className="border-0 shadow-lg min-h-[500px]">
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="text-center pb-4">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="h-8 w-8 text-green-600" />
@@ -1268,8 +1268,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </div>;
   }
-  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
-      <div className="max-w-md mx-auto py-6 space-y-4">
+  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col">
+      <div className="flex-1 flex flex-col p-4">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={currentStep === (isSupporter ? 0 : 1) ? onCancel : prevStep} className="p-2">
@@ -1293,18 +1293,20 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }} />
         </div>
         
-        {/* Current Step - fixed height container */}
-        <div style={{
-        minHeight: '500px'
-      }}>
+        {/* Current Step - fills remaining space */}
+        <div className="flex-1 overflow-auto pb-24">
           {renderCurrentStep()}
         </div>
         
-        {/* Navigation - right underneath */}
-        {!isLastStep && <Button onClick={nextStep} disabled={!canProceed()} className="w-full h-12 text-lg font-semibold">
-            Continue
-            <ArrowRight className="h-5 w-5 ml-2" />
-          </Button>}
+        {/* Continue button - fixed bottom-left */}
+        {!isLastStep && (
+          <div className="fixed bottom-4 left-4 z-50">
+            <Button onClick={nextStep} disabled={!canProceed()} className="h-12 px-8 text-lg font-semibold shadow-lg">
+              Continue
+              <ArrowRight className="h-5 w-5 ml-2" />
+            </Button>
+          </div>
+        )}
         
         {/* Category Selection Dialog */}
         <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
