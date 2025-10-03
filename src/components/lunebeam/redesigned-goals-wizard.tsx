@@ -107,22 +107,18 @@ const goalTypes = [{
 }];
 
 // Experience levels
-const challengeAreas = [{
-  id: 'initiation',
-  label: 'Just Starting',
-  description: 'Initiation'
+const experienceLevels = [{
+  id: 'first_time',
+  label: 'First time',
+  description: 'Brand new to this'
 }, {
-  id: 'attention',
-  label: 'Staying Focused',
-  description: 'Attention'
+  id: 'learning',
+  label: 'Learning',
+  description: 'Some experience, still figuring it out'
 }, {
-  id: 'time',
-  label: 'Remembering',
-  description: 'Time'
-}, {
-  id: 'planning',
-  label: 'Knowing What\'s Next',
-  description: 'Planning'
+  id: 'routine',
+  label: 'Routine',
+  description: 'Know how, just need consistency'
 }];
 
 // Support contexts
@@ -217,18 +213,15 @@ interface WizardData {
 
   // Step 2: Motivation
   goalMotivation?: string;
-  customMotivation?: string;
 
   // Step 3: Goal type
   goalType?: string;
 
-  // Step 4: Challenge areas (up to 2)
-  challengeAreas?: string[];
-  customChallenges?: string;
+  // Step 4: Experience level
+  experienceLevel?: string;
 
   // Step 5: Prerequisites
   hasPrerequisites: boolean;
-  customPrerequisites?: string;
 
   // Step 6: Scheduling & timing
   startDate: Date;
@@ -418,8 +411,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   const getStepTitle = () => {
-    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Which part usually feels the trickiest when you start this?', 'Prerequisites check', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context', 'Rewards'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Which part usually feels the trickiest when you start this?', 'Prerequisites check', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context'];
+    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context', 'Rewards'];
+    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context'];
     if (isSupporter) {
       return supporterTitles[currentStep] || '';
     } else {
@@ -441,8 +434,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Goal type
         return !!data.goalType;
       case 4:
-        // Challenge areas
-        return (data.challengeAreas?.length || 0) > 0;
+        // Experience level
+        return !!data.experienceLevel;
       case 5:
         // Prerequisites
         return true;
@@ -500,7 +493,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           timeline_start: goalData.start_date,
           timeline_end: goalData.due_date,
           frequency_per_week: data.frequency,
-          rationale: `Goal type: ${data.goalType}, Challenges: ${data.challengeAreas?.map(id => challengeAreas.find(c => c.id === id)?.label).join(', ')}, Support: ${data.supportContext}`
+          rationale: `Goal type: ${data.goalType}, Experience: ${data.experienceLevel}, Support: ${data.supportContext}`
         });
         toast({
           title: 'Proposal submitted! 📝',
@@ -591,13 +584,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const buildGoalDescription = () => {
     const category = categories.find(c => c.id === data.category);
     const type = goalTypes.find(t => t.id === data.goalType);
-    const challenges = data.challengeAreas?.map(id => challengeAreas.find(c => c.id === id)?.label).filter(Boolean);
+    const experience = experienceLevels.find(e => e.id === data.experienceLevel);
     const support = supportContexts.find(s => s.id === data.supportContext);
     const motivation = motivations.find(m => m.id === data.goalMotivation);
     let description = data.goalTitle;
     if (motivation) description += ` - Motivated by ${motivation.label.toLowerCase()}`;
     if (type) description += ` (${type.label})`;
-    if (challenges && challenges.length > 0) description += ` - Challenges: ${challenges.join(', ')}`;
+    if (experience) description += ` - ${experience.label}`;
     if (support) description += ` with ${support.label.toLowerCase()}`;
     if (data.frequency) description += ` ${data.frequency} times per week`;
     if (data.timeOfDay && data.timeOfDay !== 'custom') {
@@ -638,7 +631,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     if (period === "PM") H += 12;
     return `${H.toString().padStart(2, "0")}:${minute}`;
   };
-  const renderStep0 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep0 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Users className="h-8 w-8 text-primary" />
@@ -701,7 +694,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep1 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep1 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Sparkles className="h-8 w-8 text-primary" />
@@ -798,7 +791,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </CardContent>
     </Card>;
-  const renderStep2 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep2 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
@@ -818,21 +811,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               </div>
             </Button>)}
         </div>
-        
-        <div className="space-y-2 pt-4 border-t">
-          <Label htmlFor="custom-motivation">Say it in your own words</Label>
-          <Textarea
-            id="custom-motivation"
-            placeholder="Optional: describe your motivation in your own words..."
-            value={data.customMotivation || ''}
-            onChange={(e) => updateData({ customMotivation: e.target.value })}
-            className="min-h-[80px] resize-none"
-            rows={3}
-          />
-        </div>
       </CardContent>
     </Card>;
-  const renderStep3 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep3 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">Let's figure out where you're starting from. This goal is which of the following:</p>
@@ -849,63 +830,24 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </Button>)}
       </CardContent>
     </Card>;
-  const renderStep4 = () => {
-    const handleChallengeToggle = (challengeId: string) => {
-      const current = data.challengeAreas || [];
-      const isSelected = current.includes(challengeId);
-      
-      if (isSelected) {
-        // Deselect
-        updateData({
-          challengeAreas: current.filter(id => id !== challengeId)
-        });
-      } else {
-        // Select (limit to 2)
-        if (current.length < 2) {
-          updateData({
-            challengeAreas: [...current, challengeId]
-          });
-        }
-      }
-    };
-
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep4 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">Select up to two</p>
+        <p className="text-muted-foreground">(Select up to two)</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {challengeAreas.map(challenge => {
-          const isSelected = data.challengeAreas?.includes(challenge.id) || false;
-          return <Button 
-            key={challenge.id} 
-            variant={isSelected ? 'default' : 'outline'} 
-            className="w-full h-auto p-4 justify-start" 
-            onClick={() => handleChallengeToggle(challenge.id)}
-          >
+        {experienceLevels.map(level => <Button key={level.id} variant={data.experienceLevel === level.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        experienceLevel: level.id
+      })}>
             <div className="text-left">
-              <div className="font-semibold">{challenge.label}</div>
-              <div className="text-sm text-muted-foreground">({challenge.description})</div>
+              <div className="font-semibold">{level.label}</div>
+              <div className="text-sm text-muted-foreground">{level.description}</div>
             </div>
-          </Button>;
-        })}
-        
-        <div className="space-y-2 pt-4 border-t">
-          <Label htmlFor="custom-challenges">Say it in your own words</Label>
-          <Textarea
-            id="custom-challenges"
-            placeholder="Optional: describe your challenges in your own words..."
-            value={data.customChallenges || ''}
-            onChange={(e) => updateData({ customChallenges: e.target.value })}
-            className="min-h-[80px] resize-none"
-            rows={3}
-          />
-        </div>
+          </Button>)}
       </CardContent>
     </Card>;
-  };
-  const renderStep5 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep5 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Do you already have what you need?</CardTitle>
         <p className="text-muted-foreground">Equipment, knowledge, access, etc.</p>
@@ -941,21 +883,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               ✨ We'll auto-suggest prep steps to help you get ready!
             </p>
           </div>}
-        
-        <div className="space-y-2 pt-4 border-t">
-          <Label htmlFor="custom-prerequisites">Say it in your own words</Label>
-          <Textarea
-            id="custom-prerequisites"
-            placeholder="Optional: describe what you need or already have..."
-            value={data.customPrerequisites || ''}
-            onChange={(e) => updateData({ customPrerequisites: e.target.value })}
-            className="min-h-[80px] resize-none"
-            rows={3}
-          />
-        </div>
       </CardContent>
     </Card>;
-  const renderStep6 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep6 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         
@@ -965,15 +895,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         {/* Time picker */}
         <div className="space-y-2">
           <Label>Pick a starting time</Label>
-          <div className="grid grid-cols-2 gap-2">
-            <Button type="button" variant="outline" className={cn("justify-start", !data.customTime && "text-muted-foreground")} onClick={() => {
-            initTimeDialogFromValue(data.customTime || "08:00");
-            setShowTimePicker(true);
-          }}>
-              <Clock className="h-4 w-4 mr-2" />
-              {data.customTime ? formatDisplayTime(data.customTime) : "Pick a starting time"}
-            </Button>
-          </div>
+          <Button type="button" variant="outline" className={cn("w-full justify-start", !data.customTime && "text-muted-foreground")} onClick={() => {
+          initTimeDialogFromValue(data.customTime || "08:00");
+          setShowTimePicker(true);
+        }}>
+            <Clock className="h-4 w-4 mr-2" />
+            {data.customTime ? formatDisplayTime(data.customTime) : "Pick a starting time"}
+          </Button>
         </div>
         
         {/* Date range */}
@@ -1046,7 +974,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep7 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep7 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Who's on your team?</CardTitle>
         <p className="text-muted-foreground">(It's great to have allies 🤝)</p>
@@ -1073,7 +1001,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </Button>
       </CardContent>
     </Card>;
-  const renderStep8 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep8 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Gift className="h-8 w-8 text-primary" />
@@ -1130,7 +1058,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   const renderConfirmStep = () => {
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+    return <Card className="border-0 shadow-lg min-h-[500px]">
         <CardHeader className="text-center pb-4">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="h-8 w-8 text-green-600" />
@@ -1164,10 +1092,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </span>
                 </div>}
               
-              {data.challengeAreas && data.challengeAreas.length > 0 && <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-foreground">Challenges:</span>
+              {data.experienceLevel && <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-foreground">Level:</span>
                   <span className="text-sm text-primary font-medium">
-                    {data.challengeAreas.map(id => challengeAreas.find(c => c.id === id)?.label).join(', ')}
+                    {experienceLevels.find(e => e.id === data.experienceLevel)?.label}
                   </span>
                 </div>}
               
@@ -1283,15 +1211,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </div>;
   }
-  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col">
-      <div className="flex-1 flex flex-col p-4">
+  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+      <div className="max-w-md mx-auto py-6 space-y-4">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={currentStep === (isSupporter ? 0 : 1) ? onCancel : prevStep} className="p-2">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold">Goals Wizard</h1>
+            
             <p className="text-sm text-muted-foreground">
               Step {currentStepDisplay} of {totalSteps}
             </p>
@@ -1308,20 +1236,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }} />
         </div>
         
-        {/* Current Step - fills remaining space */}
-        <div className="flex-1 overflow-auto pb-24">
+        {/* Current Step - fixed height container */}
+        <div style={{
+        minHeight: '500px'
+      }}>
           {renderCurrentStep()}
         </div>
         
-        {/* Continue button - fixed bottom-right */}
-        {!isLastStep && (
-          <div className="fixed bottom-4 right-4 z-50">
-            <Button onClick={nextStep} disabled={!canProceed()} className="h-12 px-8 text-lg font-semibold shadow-lg">
-              Continue
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
-          </div>
-        )}
+        {/* Navigation - right underneath */}
+        {!isLastStep && <Button onClick={nextStep} disabled={!canProceed()} className="w-full h-12 text-lg font-semibold">
+            Continue
+            <ArrowRight className="h-5 w-5 ml-2" />
+          </Button>}
         
         {/* Category Selection Dialog */}
         <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
