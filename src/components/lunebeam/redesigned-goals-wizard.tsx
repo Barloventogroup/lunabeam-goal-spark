@@ -743,7 +743,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             {motivations.map(motivation => <Label key={motivation.id} htmlFor={motivation.id} className={cn("flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all", data.goalMotivation === motivation.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-primary/2")}>
                 <RadioGroupItem value={motivation.id} id={motivation.id} className="mt-1" />
                 <div className="flex-1">
-                  
+                  <div className="font-semibold text-foreground">{motivation.label}</div>
                   <div className="text-sm text-muted-foreground mt-1">{motivation.description}</div>
                 </div>
               </Label>)}
