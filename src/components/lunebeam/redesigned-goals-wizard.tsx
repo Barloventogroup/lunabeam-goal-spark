@@ -858,6 +858,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               )}
               <div className="text-left flex-1">
                 <div className="font-semibold">{type.label}</div>
+                <div className="text-sm text-muted-foreground mt-1">{type.description}</div>
               </div>
             </div>
           </CardContent>
