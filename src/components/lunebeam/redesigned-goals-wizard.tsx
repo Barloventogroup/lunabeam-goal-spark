@@ -345,17 +345,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       console.error('Failed to load supported people:', error);
     }
   };
-
   const loadUserSupporters = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) return;
-
-      const { data: supporters, error } = await supabase
-        .from('supporters')
-        .select('supporter_id')
-        .eq('individual_id', user.id);
-
+      const {
+        data: supporters,
+        error
+      } = await supabase.from('supporters').select('supporter_id').eq('individual_id', user.id);
       if (error) throw error;
       if (!supporters || supporters.length === 0) {
         setUserSupporters([]);
@@ -364,13 +365,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
       // Get profiles for the supporters
       const supporterIds = supporters.map(s => s.supporter_id);
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, first_name')
-        .in('user_id', supporterIds);
-
+      const {
+        data: profiles,
+        error: profilesError
+      } = await supabase.from('profiles').select('user_id, first_name').in('user_id', supporterIds);
       if (profilesError) throw profilesError;
-
       const allies = supporters.map(s => {
         const profile = profiles?.find(p => p.user_id === s.supporter_id);
         return {
@@ -978,15 +977,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderStep7 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Who's on your team?</CardTitle>
-        <p className="text-muted-foreground">Choose how you'd like to work on this goal</p>
+        <p className="text-muted-foreground">(It's great to have allies 🤝)</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Button
-          variant={data.supportContext === 'alone' ? "default" : "outline"}
-          className="w-full h-auto p-6 justify-start"
-          onClick={() => updateData({ supportContext: 'alone', selectedSupporters: [] })}
-        >
+        <Button variant={data.supportContext === 'alone' ? "default" : "outline"} className="w-full h-auto p-6 justify-start" onClick={() => updateData({
+        supportContext: 'alone',
+        selectedSupporters: []
+      })}>
           <div className="text-left flex items-start gap-4">
             <User className="h-8 w-8 mt-1" />
             <div>
@@ -996,19 +994,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
         </Button>
         
-        <Button
-          variant={data.supportContext === 'with_supporters' ? "default" : "outline"}
-          className="w-full h-auto p-6 justify-start"
-          onClick={() => setShowSupporterDialog(true)}
-        >
+        <Button variant={data.supportContext === 'with_supporters' ? "default" : "outline"} className="w-full h-auto p-6 justify-start" onClick={() => setShowSupporterDialog(true)}>
           <div className="text-left flex items-start gap-4">
             <Users className="h-8 w-8 mt-1" />
             <div>
               <div className="text-base font-semibold">Select an Ally</div>
               <div className="text-sm text-muted-foreground">
-                {data.selectedSupporters && data.selectedSupporters.length > 0
-                  ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected`
-                  : 'Choose your supporters'}
+                {data.selectedSupporters && data.selectedSupporters.length > 0 ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected` : 'Choose your supporters'}
               </div>
             </div>
           </div>
@@ -1255,7 +1247,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
         
         {/* Current Step - fixed height container */}
-        <div style={{ minHeight: '500px' }}>
+        <div style={{
+        minHeight: '500px'
+      }}>
           {renderCurrentStep()}
         </div>
         
@@ -1309,52 +1303,36 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <DialogTitle>Select Your Allies</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              {userSupporters.length === 0 ? (
-                <div className="text-center py-8 px-4">
+              {userSupporters.length === 0 ? <div className="text-center py-8 px-4">
                   <p className="text-muted-foreground mb-2">
                     You have no supporters yet.
                   </p>
                   <p className="text-sm text-muted-foreground">
                     You can invite people to cheer for you in the Community tab.
                   </p>
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {userSupporters.map(supporter => (
-                    <Button
-                      key={supporter.id}
-                      variant={(data.selectedSupporters || []).includes(supporter.id) ? 'default' : 'outline'}
-                      className="w-full justify-start"
-                      onClick={() => {
-                        const currentSelection = data.selectedSupporters || [];
-                        const isSelected = currentSelection.includes(supporter.id);
-                        const newSelection = isSelected
-                          ? currentSelection.filter(id => id !== supporter.id)
-                          : [...currentSelection, supporter.id];
-                        updateData({
-                          selectedSupporters: newSelection,
-                          supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone'
-                        });
-                      }}
-                    >
+                </div> : <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {userSupporters.map(supporter => <Button key={supporter.id} variant={(data.selectedSupporters || []).includes(supporter.id) ? 'default' : 'outline'} className="w-full justify-start" onClick={() => {
+                const currentSelection = data.selectedSupporters || [];
+                const isSelected = currentSelection.includes(supporter.id);
+                const newSelection = isSelected ? currentSelection.filter(id => id !== supporter.id) : [...currentSelection, supporter.id];
+                updateData({
+                  selectedSupporters: newSelection,
+                  supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone'
+                });
+              }}>
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                           <Users className="h-4 w-4" />
                         </div>
                         <span>{supporter.name}</span>
                       </div>
-                    </Button>
-                  ))}
-                </div>
-              )}
+                    </Button>)}
+                </div>}
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setShowSupporterDialog(false)}>
                   Cancel
                 </Button>
-                <Button 
-                  onClick={() => setShowSupporterDialog(false)}
-                  disabled={!data.selectedSupporters || data.selectedSupporters.length === 0}
-                >
+                <Button onClick={() => setShowSupporterDialog(false)} disabled={!data.selectedSupporters || data.selectedSupporters.length === 0}>
                   Confirm
                 </Button>
               </div>
