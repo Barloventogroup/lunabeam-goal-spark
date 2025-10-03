@@ -1129,7 +1129,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderStep7 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Who&apos;s on your team?</CardTitle>
-        <p className="text-muted-foreground">(It&apos;s great to haev allies!)</p>
+        <p className="text-muted-foreground">(It&apos;s great to have allies!)</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
