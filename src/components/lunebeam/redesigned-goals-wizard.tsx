@@ -977,21 +977,42 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   const renderStep7 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">Who's on your team? </CardTitle>
-        <p className="text-muted-foreground">(It is great to have allies 🤝)</p>
+        <CardTitle className="text-2xl">Who's on your team?</CardTitle>
+        <p className="text-muted-foreground">Choose how you'd like to work on this goal</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {supportContexts.map(context => <Button key={context.id} variant={data.supportContext === context.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => {
-        updateData({
-          supportContext: context.id
-        });
-      }}>
-            <div className="text-left">
-              <div className="font-semibold">{context.label}</div>
-              <div className="text-sm text-muted-foreground">{context.description}</div>
+        <Button
+          variant={data.supportContext === 'alone' ? "default" : "outline"}
+          className="w-full h-auto p-6 justify-start"
+          onClick={() => updateData({ supportContext: 'alone', selectedSupporters: [] })}
+        >
+          <div className="text-left flex items-start gap-4">
+            <User className="h-8 w-8 mt-1" />
+            <div>
+              <div className="text-base font-semibold">Alone</div>
+              <div className="text-sm text-muted-foreground">I'll work on this independently</div>
             </div>
-          </Button>)}
+          </div>
+        </Button>
+        
+        <Button
+          variant={data.supportContext === 'with_supporters' ? "default" : "outline"}
+          className="w-full h-auto p-6 justify-start"
+          onClick={() => setShowSupporterDialog(true)}
+        >
+          <div className="text-left flex items-start gap-4">
+            <Users className="h-8 w-8 mt-1" />
+            <div>
+              <div className="text-base font-semibold">Select an Ally</div>
+              <div className="text-sm text-muted-foreground">
+                {data.selectedSupporters && data.selectedSupporters.length > 0
+                  ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected`
+                  : 'Choose your supporters'}
+              </div>
+            </div>
+          </div>
+        </Button>
       </CardContent>
     </Card>;
   const renderStep8 = () => <Card className="border-0 shadow-lg min-h-[500px]">
