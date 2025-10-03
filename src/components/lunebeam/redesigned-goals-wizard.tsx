@@ -775,14 +775,35 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {experienceLevels.map(level => <Button key={level.id} variant={data.experienceLevel === level.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
-        experienceLevel: level.id
+        <Button variant={data.hasPrerequisites ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        hasPrerequisites: true
       })}>
+          <div className="flex items-center gap-3">
+            <Check className="h-5 w-5" />
             <div className="text-left">
-              
-              <div className="text-sm text-muted-foreground">{level.description}</div>
+              <div className="font-semibold">Yes, I'm ready</div>
+              <div className="text-sm text-muted-foreground">I have everything I need to start</div>
             </div>
-          </Button>)}
+          </div>
+        </Button>
+        
+        <Button variant={!data.hasPrerequisites ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        hasPrerequisites: false
+      })}>
+          <div className="flex items-center gap-3">
+            <X className="h-5 w-5" />
+            <div className="text-left">
+              <div className="font-semibold">No, I need help getting ready</div>
+              <div className="text-sm text-muted-foreground">I need prep steps first</div>
+            </div>
+          </div>
+        </Button>
+        
+        {!data.hasPrerequisites && <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-800">
+              ✨ We'll auto-suggest prep steps to help you get ready!
+            </p>
+          </div>}
       </CardContent>
     </Card>;
   const renderStep5 = () => <Card className="border-0 shadow-lg">
