@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { TimePicker } from '@/components/ui/time-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -355,7 +354,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }));
   };
   const nextStep = () => {
-    const maxStep = isSupporter ? 8 : 7;
+    const maxStep = isSupporter ? 9 : 8;
     if (currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
     }
@@ -367,8 +366,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   const getStepTitle = () => {
-    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Great! Do you have all your supplies and space ready to go?', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context', 'Rewards'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Great! Do you have all your supplies and space ready to go?', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context'];
+    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context', 'Rewards'];
+    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context'];
     if (isSupporter) {
       return supporterTitles[currentStep] || '';
     } else {
@@ -390,17 +389,22 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Goal type
         return !!data.goalType;
       case 4:
-        // Ready to start (has prerequisites)
-        return true; // Always can proceed
+        // Experience level
+        return !!data.experienceLevel;
       case 5:
+        // Prerequisites
+        return true;
+      // Always can proceed
+      case 6:
         // Scheduling
         return !!data.frequency && !!data.timeOfDay;
-      case 6:
+      case 7:
         // Support context
         return !!data.supportContext;
-      case 7:
+      case 8:
         // Rewards (supporters only)
-        return true; // Optional step
+        return true;
+      // Optional step
       default:
         return false;
     }
@@ -732,14 +736,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {motivations.map(motivation => <Button key={motivation.id} variant={data.goalMotivation === motivation.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
-        goalMotivation: motivation.id
+        <RadioGroup value={data.goalMotivation} onValueChange={value => updateData({
+        goalMotivation: value
       })}>
-            <div className="text-left">
-              <div className="font-semibold">{motivation.label}</div>
-              <div className="text-sm text-muted-foreground">{motivation.description}</div>
-            </div>
-          </Button>)}
+          <div className="space-y-3">
+            {motivations.map(motivation => <Label key={motivation.id} htmlFor={motivation.id} className={cn("flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all", data.goalMotivation === motivation.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-primary/2")}>
+                <RadioGroupItem value={motivation.id} id={motivation.id} className="mt-1" />
+                <div className="flex-1">
+                  <div className="font-semibold text-foreground">{motivation.label}</div>
+                  <div className="text-sm text-muted-foreground mt-1">{motivation.description}</div>
+                </div>
+              </Label>)}
+          </div>
+        </RadioGroup>
       </CardContent>
     </Card>;
   const renderStep3 = () => <Card className="border-0 shadow-lg">
@@ -762,7 +771,24 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderStep4 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        
+        <p className="text-muted-foreground">How familiar are you with this activity?</p>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        {experienceLevels.map(level => <Button key={level.id} variant={data.experienceLevel === level.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        experienceLevel: level.id
+      })}>
+            <div className="text-left">
+              <div className="font-semibold">{level.label}</div>
+              <div className="text-sm text-muted-foreground">{level.description}</div>
+            </div>
+          </Button>)}
+      </CardContent>
+    </Card>;
+  const renderStep5 = () => <Card className="border-0 shadow-lg">
+      <CardHeader className="text-center pb-4">
+        <CardTitle className="text-2xl">Do you already have what you need?</CardTitle>
+        <p className="text-muted-foreground">Equipment, knowledge, access, etc.</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -797,32 +823,52 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep5 = () => <Card className="border-0 shadow-lg">
+  const renderStep6 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">Set your schedule and timing</p>
+        
       </CardHeader>
       
       <CardContent className="space-y-6">
         {/* Frequency */}
         <div className="space-y-3">
           <Label>How often?</Label>
-          
+          <div className="grid grid-cols-1 gap-2">
+            {frequencies.map(freq => <Button key={freq.id} variant={data.frequency === freq.value ? 'default' : 'outline'} className="justify-start" onClick={() => updateData({
+            frequency: freq.value
+          })}>
+                {freq.label}
+              </Button>)}
+          </div>
         </div>
         
         {/* Time of day */}
         <div className="space-y-3">
-          <Label>Start Time:</Label>
+          <Label>When during the day?</Label>
           <div className="grid grid-cols-2 gap-2">
-            <TimePicker 
-              time={data.customTime || ''} 
-              onTimeChange={(time) => updateData({ 
-                customTime: time,
-                timeOfDay: 'custom'
-              })} 
-            />
+             {timesOfDay.map(time => <Button key={time.id} variant={data.timeOfDay === time.id ? 'default' : 'outline'} className="h-auto p-3" onClick={() => {
+            if (time.id === 'custom') {
+              setShowTimePicker(true);
+            } else {
+              updateData({
+                timeOfDay: time.id
+              });
+            }
+          }}>
+                 <div className="text-center">
+                   <div className="font-semibold">{time.label}</div>
+                   <div className="text-xs text-muted-foreground">{time.description}</div>
+                 </div>
+               </Button>)}
           </div>
-        </div>
+         </div>
+         
+         {/* Custom Time Display */}
+         {data.timeOfDay === 'custom' && data.customTime && <div className="mt-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
+             <div className="text-sm font-medium text-primary">
+               Selected time: {data.customTime}
+             </div>
+           </div>}
         
         {/* Date range */}
         <div className="space-y-3">
@@ -894,7 +940,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep6 = () => <Card className="border-0 shadow-lg">
+  const renderStep7 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Who supports this goal?</CardTitle>
         <p className="text-muted-foreground">Choose your support system</p>
@@ -913,7 +959,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </Button>)}
       </CardContent>
     </Card>;
-  const renderStep7 = () => <Card className="border-0 shadow-lg">
+  const renderStep8 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Gift className="h-8 w-8 text-primary" />
@@ -1059,7 +1105,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           
           {/* Actions */}
           <div className="flex gap-3 pt-4">
-            <Button variant="outline" onClick={() => setCurrentStep(isSupporter ? 6 : 5)} // Go back to previous step
+            <Button variant="outline" onClick={() => setCurrentStep(isSupporter ? 7 : 6)} // Go back to previous step
           className="flex-1">
               Edit
             </Button>
@@ -1092,25 +1138,28 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       // Goal type
       case 4:
         return renderStep4();
-      // Ready to start
+      // Experience level
       case 5:
         return renderStep5();
-      // Scheduling
+      // Prerequisites
       case 6:
         return renderStep6();
-      // Support context
+      // Scheduling
       case 7:
-        return isSupporter ? renderStep7() : renderConfirmStep();
-      // Rewards or confirm
+        return renderStep7();
+      // Support context
       case 8:
+        return isSupporter ? renderStep8() : renderConfirmStep();
+      // Rewards or confirm
+      case 9:
         return renderConfirmStep();
       // Final confirm (supporters only)
       default:
         return null;
     }
   };
-  const lastStepIndex = isSupporter ? 8 : 7;
-  const totalSteps = isSupporter ? 9 : 7;
+  const lastStepIndex = isSupporter ? 9 : 8;
+  const totalSteps = isSupporter ? 10 : 8;
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
 
