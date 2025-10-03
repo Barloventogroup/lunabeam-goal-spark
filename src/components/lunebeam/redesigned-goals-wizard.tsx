@@ -570,7 +570,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     };
     return mapping[categoryId || ''] || 'other' as GoalDomain;
   };
-
   const formatDisplayTime = (hhmm?: string) => {
     if (!hhmm) return "Pick a starting time";
     const [H, M] = hhmm.split(":").map(Number);
@@ -578,7 +577,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const hour12 = H % 12 || 12;
     return `${hour12}:${M.toString().padStart(2, "0")} ${period}`;
   };
-
   const initTimeDialogFromValue = (hhmm: string) => {
     const [H, M] = hhmm.split(":").map(Number);
     const period: "AM" | "PM" = H >= 12 ? "PM" : "AM";
@@ -587,7 +585,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     setTempMinute(M.toString().padStart(2, "0"));
     setTempPeriod(period);
   };
-
   const build24hTime = (hour12: number, minute: string, period: "AM" | "PM") => {
     let H = hour12 % 12;
     if (period === "PM") H += 12;
@@ -764,22 +761,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       
       <CardContent className="space-y-4">
         <div className="space-y-3">
-          {motivations.map(motivation => (
-            <Button
-              key={motivation.id}
-              type="button"
-              variant={data.goalMotivation === motivation.id ? 'default' : 'outline'}
-              className="w-full h-auto justify-start text-left p-4"
-              onClick={() => updateData({ goalMotivation: motivation.id })}
-            >
+          {motivations.map(motivation => <Button key={motivation.id} type="button" variant={data.goalMotivation === motivation.id ? 'default' : 'outline'} className="w-full h-auto justify-start text-left p-4" onClick={() => updateData({
+          goalMotivation: motivation.id
+        })}>
               <div className="flex items-start gap-3 w-full">
                 <div className="flex-1">
                   <div className="font-semibold">{motivation.label}</div>
                   <div className="text-sm mt-1 opacity-90">{motivation.description}</div>
                 </div>
               </div>
-            </Button>
-          ))}
+            </Button>)}
         </div>
       </CardContent>
     </Card>;
@@ -865,15 +856,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         {/* Time picker */}
         <div className="space-y-2">
           <Label>Pick a starting time</Label>
-          <Button
-            type="button"
-            variant="outline"
-            className={cn("w-full justify-start", !data.customTime && "text-muted-foreground")}
-            onClick={() => {
-              initTimeDialogFromValue(data.customTime || "08:00");
-              setShowTimePicker(true);
-            }}
-          >
+          <Button type="button" variant="outline" className={cn("w-full justify-start", !data.customTime && "text-muted-foreground")} onClick={() => {
+          initTimeDialogFromValue(data.customTime || "08:00");
+          setShowTimePicker(true);
+        }}>
             <Clock className="h-4 w-4 mr-2" />
             {data.customTime ? formatDisplayTime(data.customTime) : "Pick a starting time"}
           </Button>
@@ -951,8 +937,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   const renderStep7 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">Who supports this goal?</CardTitle>
-        <p className="text-muted-foreground">Choose your support system</p>
+        <CardTitle className="text-2xl">Who's on your team? </CardTitle>
+        <p className="text-muted-foreground">Select one</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -1270,9 +1256,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </SelectTrigger>
                   <SelectContent className="pointer-events-auto">
                     {[...Array(12)].map((_, i) => {
-                      const h = (i + 1).toString().padStart(2, "0");
-                      return <SelectItem key={h} value={h}>{h}</SelectItem>;
-                    })}
+                    const h = (i + 1).toString().padStart(2, "0");
+                    return <SelectItem key={h} value={h}>{h}</SelectItem>;
+                  })}
                   </SelectContent>
                 </Select>
 
@@ -1282,9 +1268,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     <SelectValue placeholder="MM" />
                   </SelectTrigger>
                   <SelectContent className="pointer-events-auto">
-                    {Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, "0")).map(m => (
-                      <SelectItem key={m} value={m}>{m}</SelectItem>
-                    ))}
+                    {Array.from({
+                    length: 12
+                  }, (_, i) => (i * 5).toString().padStart(2, "0")).map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                   </SelectContent>
                 </Select>
 
@@ -1302,16 +1288,22 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
               <div className="flex gap-2 pt-4">
                 <Button variant="outline" className="flex-1" onClick={() => {
-                  updateData({ customTime: '', timeOfDay: undefined });
-                  setShowTimePicker(false);
-                }}>
+                updateData({
+                  customTime: '',
+                  timeOfDay: undefined
+                });
+                setShowTimePicker(false);
+              }}>
                   Clear
                 </Button>
                 <Button className="flex-1" disabled={!tempHour || !tempMinute || !tempPeriod} onClick={() => {
-                  const time24 = build24hTime(parseInt(tempHour, 10), tempMinute, tempPeriod);
-                  updateData({ customTime: time24, timeOfDay: 'custom' });
-                  setShowTimePicker(false);
-                }}>
+                const time24 = build24hTime(parseInt(tempHour, 10), tempMinute, tempPeriod);
+                updateData({
+                  customTime: time24,
+                  timeOfDay: 'custom'
+                });
+                setShowTimePicker(false);
+              }}>
                   Confirm
                 </Button>
               </div>
