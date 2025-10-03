@@ -992,15 +992,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </Button>
         
         <Button variant={data.supportContext === 'with_supporters' ? "default" : "outline"} className="w-full h-auto p-6 justify-start" onClick={() => setShowSupporterDialog(true)}>
-          <div className="text-left flex items-start gap-4">
-            <Users className="h-8 w-8 mt-1" />
-            <div>
-              <div className="text-base font-semibold">Select an Ally</div>
-              <div className="text-sm text-muted-foreground">
-                {data.selectedSupporters && data.selectedSupporters.length > 0 ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected` : 'Choose your supporters'}
-              </div>
-            </div>
-          </div>
+      <div className="text-left">
+        <div className="text-base font-semibold">Select an Ally</div>
+        <div className="text-sm text-muted-foreground">
+          {data.selectedSupporters && data.selectedSupporters.length > 0 ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected` : 'Choose your supporters'}
+        </div>
+      </div>
         </Button>
       </CardContent>
     </Card>;
