@@ -965,13 +965,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         {/* Time picker */}
         <div className="space-y-2">
           <Label>Pick a starting time</Label>
-          <Button type="button" variant="outline" className={cn("w-full justify-start", !data.customTime && "text-muted-foreground")} onClick={() => {
-          initTimeDialogFromValue(data.customTime || "08:00");
-          setShowTimePicker(true);
-        }}>
-            <Clock className="h-4 w-4 mr-2" />
-            {data.customTime ? formatDisplayTime(data.customTime) : "Pick a starting time"}
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button type="button" variant="outline" className={cn("justify-start", !data.customTime && "text-muted-foreground")} onClick={() => {
+            initTimeDialogFromValue(data.customTime || "08:00");
+            setShowTimePicker(true);
+          }}>
+              <Clock className="h-4 w-4 mr-2" />
+              {data.customTime ? formatDisplayTime(data.customTime) : "Pick a starting time"}
+            </Button>
+          </div>
         </div>
         
         {/* Date range */}
