@@ -275,7 +275,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [selectedCategoryDetails, setSelectedCategoryDetails] = useState<any>(null);
   const [canAssignDirectly, setCanAssignDirectly] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [categoryPageIndex, setCategoryPageIndex] = useState(0);
+  
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -738,14 +738,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </p>
           </div>
           
-          {/* Category Carousel */}
+          {/* All Categories */}
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-2">
-              {(() => {
-              const sortedCategories = categories.sort((a, b) => a.title.localeCompare(b.title));
-              const startIndex = categoryPageIndex * 3;
-              const visibleCategories = sortedCategories.slice(startIndex, startIndex + 3);
-              return visibleCategories.map(category => <Card key={category.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.category === category.id ? "border-primary bg-primary/5" : expandedCategory === category.id ? "border-primary/50 bg-primary/2" : "border-border")} onClick={() => handleCategorySelect(category.id)}>
+              {categories.sort((a, b) => a.title.localeCompare(b.title)).map(category => <Card key={category.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.category === category.id ? "border-primary bg-primary/5" : expandedCategory === category.id ? "border-primary/50 bg-primary/2" : "border-border")} onClick={() => handleCategorySelect(category.id)}>
                     <CardContent className="p-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -790,20 +786,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           </div>
                         </div>}
                     </CardContent>
-                  </Card>);
-            })()}
+                  </Card>)}
             </div>
-            
-            {(() => {
-            const sortedCategories = categories.sort((a, b) => a.title.localeCompare(b.title));
-            const totalPages = Math.ceil(sortedCategories.length / 3);
-            const hasMore = categoryPageIndex < totalPages - 1;
-            return hasMore ? <Button variant="outline" size="sm" className="w-full" onClick={() => setCategoryPageIndex(prev => prev + 1)}>
-                  More categories
-                </Button> : <Button variant="outline" size="sm" className="w-full" onClick={() => setCategoryPageIndex(0)}>
-                  Show first categories
-                </Button>;
-          })()}
           </div>
         </div>
       </CardContent>
