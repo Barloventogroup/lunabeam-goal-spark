@@ -1120,7 +1120,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               {data.supportContext && <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-foreground">Support:</span>
                   <span className="text-sm text-primary font-medium">
-                    {supportContexts.find(s => s.id === data.supportContext)?.label}
+                    {data.supportContext === 'alone' && 'Working alone'}
+                    {data.supportContext === 'with_supporters' && data.selectedSupporters && data.selectedSupporters.length > 0 && (
+                      `With ${data.selectedSupporters.map(id => userSupporters.find(s => s.id === id)?.name || 'Unknown').join(', ')}`
+                    )}
+                    {data.supportContext === 'with_supporters' && (!data.selectedSupporters || data.selectedSupporters.length === 0) && 'With supporters'}
                   </span>
                 </div>}
             </div>
