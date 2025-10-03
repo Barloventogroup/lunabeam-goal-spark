@@ -224,6 +224,7 @@ interface WizardData {
 
   // Step 4: Challenge areas (up to 2)
   challengeAreas?: string[];
+  customChallenges?: string;
 
   // Step 5: Prerequisites
   hasPrerequisites: boolean;
@@ -889,6 +890,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>
           </Button>;
         })}
+        
+        <div className="space-y-2 pt-4 border-t">
+          <Label htmlFor="custom-challenges">Say it in your own words</Label>
+          <Textarea
+            id="custom-challenges"
+            placeholder="Optional: describe your challenges in your own words..."
+            value={data.customChallenges || ''}
+            onChange={(e) => updateData({ customChallenges: e.target.value })}
+            className="min-h-[80px] resize-none"
+            rows={3}
+          />
+        </div>
       </CardContent>
     </Card>;
   };
