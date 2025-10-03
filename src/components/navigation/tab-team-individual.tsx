@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Users, 
   MessageSquare, 
@@ -135,6 +135,9 @@ export const TabTeamIndividual: React.FC = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
+                      {supporter.profile?.avatar_url && (
+                        <AvatarImage src={supporter.profile.avatar_url} alt={supporter.profile?.first_name || 'Supporter'} />
+                      )}
                       <AvatarFallback className="bg-primary/10 text-primary">
                         {supporter.profile?.first_name?.charAt(0)?.toUpperCase() || 'S'}
                       </AvatarFallback>

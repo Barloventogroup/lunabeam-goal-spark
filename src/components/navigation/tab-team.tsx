@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, UserPlus, Crown, Eye, MessageSquare, Edit3, MoreHorizontal, Mail, Phone, UserMinus, Bell, Save, X, User } from 'lucide-react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { PermissionsService, type Supporter, type SupporterInvite } from '@/services/permissionsService';
@@ -868,6 +868,9 @@ export const TabTeam: React.FC = () => {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
+                              {member.profile?.avatar_url && (
+                                <AvatarImage src={member.profile.avatar_url} alt={member.profile?.first_name || 'User'} />
+                              )}
                               <AvatarFallback className="text-xs bg-primary/10 text-primary">
                                 {member.profile?.first_name?.charAt(0)?.toUpperCase() || '?'}
                               </AvatarFallback>
@@ -951,6 +954,9 @@ export const TabTeam: React.FC = () => {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
+                            {member.profile?.avatar_url && (
+                              <AvatarImage src={member.profile.avatar_url} alt={member.profile?.first_name || 'User'} />
+                            )}
                             <AvatarFallback className="text-xs bg-primary/10 text-primary">
                               {member.profile?.first_name?.charAt(0)?.toUpperCase() || '?'}
                             </AvatarFallback>
@@ -1069,6 +1075,9 @@ export const TabTeam: React.FC = () => {
                           <TableCell>
                             <div className="flex items-center gap-3 cursor-pointer hover:opacity-70" onClick={() => handleMemberClick(member, member.type)}>
                               <Avatar className="w-8 h-8">
+                                {member.type === 'supporter' && member.profile?.avatar_url && (
+                                  <AvatarImage src={member.profile.avatar_url} alt={name} />
+                                )}
                                 <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
                                   {initials}
                                 </AvatarFallback>
