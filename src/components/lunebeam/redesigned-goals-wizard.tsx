@@ -107,18 +107,22 @@ const goalTypes = [{
 }];
 
 // Experience levels
-const experienceLevels = [{
-  id: 'first_time',
-  label: 'First time',
-  description: 'Brand new to this'
+const challengeAreas = [{
+  id: 'initiation',
+  label: 'Just Starting',
+  description: 'Initiation'
 }, {
-  id: 'learning',
-  label: 'Learning',
-  description: 'Some experience, still figuring it out'
+  id: 'attention',
+  label: 'Staying Focused',
+  description: 'Attention'
 }, {
-  id: 'routine',
-  label: 'Routine',
-  description: 'Know how, just need consistency'
+  id: 'time',
+  label: 'Remembering',
+  description: 'Time'
+}, {
+  id: 'planning',
+  label: 'Knowing What\'s Next',
+  description: 'Planning'
 }];
 
 // Support contexts
@@ -217,8 +221,8 @@ interface WizardData {
   // Step 3: Goal type
   goalType?: string;
 
-  // Step 4: Experience level
-  experienceLevel?: string;
+  // Step 4: Challenge areas (up to 2)
+  challengeAreas?: string[];
 
   // Step 5: Prerequisites
   hasPrerequisites: boolean;
@@ -434,8 +438,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Goal type
         return !!data.goalType;
       case 4:
-        // Experience level
-        return !!data.experienceLevel;
+        // Challenge areas
+        return (data.challengeAreas?.length || 0) > 0;
       case 5:
         // Prerequisites
         return true;
@@ -493,7 +497,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           timeline_start: goalData.start_date,
           timeline_end: goalData.due_date,
           frequency_per_week: data.frequency,
-          rationale: `Goal type: ${data.goalType}, Experience: ${data.experienceLevel}, Support: ${data.supportContext}`
+          rationale: `Goal type: ${data.goalType}, Challenges: ${data.challengeAreas?.map(id => challengeAreas.find(c => c.id === id)?.label).join(', ')}, Support: ${data.supportContext}`
         });
         toast({
           title: 'Proposal submitted! 📝',
@@ -584,13 +588,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const buildGoalDescription = () => {
     const category = categories.find(c => c.id === data.category);
     const type = goalTypes.find(t => t.id === data.goalType);
-    const experience = experienceLevels.find(e => e.id === data.experienceLevel);
+    const challenges = data.challengeAreas?.map(id => challengeAreas.find(c => c.id === id)?.label).filter(Boolean);
     const support = supportContexts.find(s => s.id === data.supportContext);
     const motivation = motivations.find(m => m.id === data.goalMotivation);
     let description = data.goalTitle;
     if (motivation) description += ` - Motivated by ${motivation.label.toLowerCase()}`;
     if (type) description += ` (${type.label})`;
-    if (experience) description += ` - ${experience.label}`;
+    if (challenges && challenges.length > 0) description += ` - Challenges: ${challenges.join(', ')}`;
     if (support) description += ` with ${support.label.toLowerCase()}`;
     if (data.frequency) description += ` ${data.frequency} times per week`;
     if (data.timeOfDay && data.timeOfDay !== 'custom') {
@@ -830,23 +834,50 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </Button>)}
       </CardContent>
     </Card>;
-  const renderStep4 = () => <Card className="border-0 shadow-lg min-h-[500px]">
+  const renderStep4 = () => {
+    const handleChallengeToggle = (challengeId: string) => {
+      const current = data.challengeAreas || [];
+      const isSelected = current.includes(challengeId);
+      
+      if (isSelected) {
+        // Deselect
+        updateData({
+          challengeAreas: current.filter(id => id !== challengeId)
+        });
+      } else {
+        // Select (limit to 2)
+        if (current.length < 2) {
+          updateData({
+            challengeAreas: [...current, challengeId]
+          });
+        }
+      }
+    };
+
+    return <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">(Select up to two)</p>
+        <p className="text-muted-foreground">Select up to two</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {experienceLevels.map(level => <Button key={level.id} variant={data.experienceLevel === level.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
-        experienceLevel: level.id
-      })}>
+        {challengeAreas.map(challenge => {
+          const isSelected = data.challengeAreas?.includes(challenge.id) || false;
+          return <Button 
+            key={challenge.id} 
+            variant={isSelected ? 'default' : 'outline'} 
+            className="w-full h-auto p-4 justify-start" 
+            onClick={() => handleChallengeToggle(challenge.id)}
+          >
             <div className="text-left">
-              <div className="font-semibold">{level.label}</div>
-              <div className="text-sm text-muted-foreground">{level.description}</div>
+              <div className="font-semibold">{challenge.label}</div>
+              <div className="text-sm text-muted-foreground">({challenge.description})</div>
             </div>
-          </Button>)}
+          </Button>;
+        })}
       </CardContent>
     </Card>;
+  };
   const renderStep5 = () => <Card className="border-0 shadow-lg min-h-[500px]">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Do you already have what you need?</CardTitle>
@@ -1092,10 +1123,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </span>
                 </div>}
               
-              {data.experienceLevel && <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-foreground">Level:</span>
+              {data.challengeAreas && data.challengeAreas.length > 0 && <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-foreground">Challenges:</span>
                   <span className="text-sm text-primary font-medium">
-                    {experienceLevels.find(e => e.id === data.experienceLevel)?.label}
+                    {data.challengeAreas.map(id => challengeAreas.find(c => c.id === id)?.label).join(', ')}
                   </span>
                 </div>}
               
