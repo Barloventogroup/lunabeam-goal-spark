@@ -227,6 +227,7 @@ interface WizardData {
 
   // Step 5: Prerequisites
   hasPrerequisites: boolean;
+  customPrerequisites?: string;
 
   // Step 6: Scheduling & timing
   startDate: Date;
@@ -927,6 +928,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               ✨ We'll auto-suggest prep steps to help you get ready!
             </p>
           </div>}
+        
+        <div className="space-y-2 pt-4 border-t">
+          <Label htmlFor="custom-prerequisites">Say it in your own words</Label>
+          <Textarea
+            id="custom-prerequisites"
+            placeholder="Optional: describe what you need or already have..."
+            value={data.customPrerequisites || ''}
+            onChange={(e) => updateData({ customPrerequisites: e.target.value })}
+            className="min-h-[80px] resize-none"
+            rows={3}
+          />
+        </div>
       </CardContent>
     </Card>;
   const renderStep6 = () => <Card className="border-0 shadow-lg min-h-[500px]">
