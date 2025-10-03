@@ -731,19 +731,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <RadioGroup value={data.goalMotivation} onValueChange={value => updateData({
-        goalMotivation: value
+        {motivations.map(motivation => <Button key={motivation.id} variant={data.goalMotivation === motivation.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        goalMotivation: motivation.id
       })}>
-          <div className="space-y-3">
-            {motivations.map(motivation => <Label key={motivation.id} htmlFor={motivation.id} className={cn("flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all", data.goalMotivation === motivation.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-primary/2")}>
-                <RadioGroupItem value={motivation.id} id={motivation.id} className="mt-1" />
-                <div className="flex-1">
-                  
-                  <div className="text-sm text-muted-foreground mt-1">{motivation.description}</div>
-                </div>
-              </Label>)}
-          </div>
-        </RadioGroup>
+            <div className="text-left">
+              <div className="font-semibold">{motivation.label}</div>
+              <div className="text-sm text-muted-foreground">{motivation.description}</div>
+            </div>
+          </Button>)}
       </CardContent>
     </Card>;
   const renderStep3 = () => <Card className="border-0 shadow-lg">
