@@ -25,7 +25,6 @@ interface RedesignedGoalsWizardProps {
   initialIndividualId?: string;
   isSupporter?: boolean;
 }
-
 interface SupportedIndividual {
   user_id: string;
   first_name: string;
@@ -296,13 +295,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const loadSupportedPeople = async () => {
     try {
       // First, get the supporter relationships
-      const { data: supporters, error: supportersError } = await supabase
-        .from('supporters')
-        .select('individual_id')
-        .eq('supporter_id', (await supabase.auth.getUser()).data.user?.id);
-      
+      const {
+        data: supporters,
+        error: supportersError
+      } = await supabase.from('supporters').select('individual_id').eq('supporter_id', (await supabase.auth.getUser()).data.user?.id);
       if (supportersError) throw supportersError;
-      
       if (!supporters || supporters.length === 0) {
         setSupportedPeople([]);
         return;
@@ -310,11 +307,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
       // Then get the profile names for those individuals
       const individualIds = supporters.map(s => s.individual_id);
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, first_name')
-        .in('user_id', individualIds);
-      
+      const {
+        data: profiles,
+        error: profilesError
+      } = await supabase.from('profiles').select('user_id, first_name').in('user_id', individualIds);
       if (profilesError) throw profilesError;
 
       // Combine the data
@@ -325,7 +321,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           name: profile?.first_name || 'Unknown'
         };
       });
-      
       setSupportedPeople(people);
 
       // Set initial name if we have an ID
@@ -462,12 +457,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       } else {
         // Create goal directly
         const createdGoal = await goalsService.createGoal(goalData);
-        
+
         // Try AI-powered step generation
         try {
-          const { stepsGenerator } = await import('@/services/stepsGenerator');
+          const {
+            stepsGenerator
+          } = await import('@/services/stepsGenerator');
           const generatedSteps = await stepsGenerator.generateSteps(createdGoal);
-          
+
           // Persist AI-generated steps
           for (const step of generatedSteps) {
             await stepsService.createStep(createdGoal.id, {
@@ -481,11 +478,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           }
         } catch (stepError: any) {
           console.error('Failed to generate AI steps, using fallback:', stepError);
-          
+
           // Create fallback steps with notes for help UI
           const stepCount = Math.min(data.frequency, 3);
           const effortMinutes = data.goalTitle.match(/(\d+)\s*min/i)?.[1] || '30';
-          
           try {
             for (let i = 1; i <= stepCount; i++) {
               await stepsService.createStep(createdGoal.id, {
@@ -503,13 +499,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             if (data.recipient === 'other') {
               toast({
                 title: `Goal assigned to ${data.supportedPersonName}! 🎯`,
-                description: 'Steps will appear when they open the goal.',
+                description: 'Steps will appear when they open the goal.'
               });
               return; // Exit early to avoid duplicate toast
             }
           }
         }
-        
         toast({
           title: data.recipient === 'self' ? 'Goal created! 🎯' : `Goal assigned to ${data.supportedPersonName}! 🎯`,
           description: 'Ready to start making progress!'
@@ -520,10 +515,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       setTimeout(() => {
         onComplete({
           title: data.goalTitle,
-          description: data.goalTitle, // Use title as description for now
+          description: data.goalTitle,
+          // Use title as description for now
           category: data.category,
           frequency_per_week: data.frequency,
-          duration_weeks: Math.ceil((data.endDate ? (data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24 * 7) : 8)),
+          duration_weeks: Math.ceil(data.endDate ? (data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24 * 7) : 8),
           start_date: data.startDate.toISOString().split('T')[0],
           due_date: data.endDate?.toISOString().split('T')[0],
           assignedTo: data.recipient === 'other' ? data.supportedPersonId : undefined
@@ -561,11 +557,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const mapCategoryToDomain = (categoryId?: string) => {
     const mapping: Record<string, GoalDomain> = {
       'health': 'health',
-      'education': 'education', 
-      'employment': 'employment', 
-      'independent_living': 'independent_living', 
-      'social_skills': 'social_skills', 
-      'postsecondary': 'postsecondary', 
+      'education': 'education',
+      'employment': 'employment',
+      'independent_living': 'independent_living',
+      'social_skills': 'social_skills',
+      'postsecondary': 'postsecondary',
       'fun_recreation': 'fun_recreation'
     };
     return mapping[categoryId || ''] || 'other' as GoalDomain;
@@ -730,7 +726,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </CardContent>
     </Card>;
-  
   const renderStep2 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -741,31 +736,21 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <RadioGroup value={data.goalMotivation} onValueChange={(value) => updateData({ goalMotivation: value })}>
+        <RadioGroup value={data.goalMotivation} onValueChange={value => updateData({
+        goalMotivation: value
+      })}>
           <div className="space-y-3">
-            {motivations.map(motivation => (
-              <Label 
-                key={motivation.id}
-                htmlFor={motivation.id}
-                className={cn(
-                  "flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all",
-                  data.goalMotivation === motivation.id 
-                    ? "border-primary bg-primary/5" 
-                    : "border-border hover:border-primary/50 hover:bg-primary/2"
-                )}
-              >
+            {motivations.map(motivation => <Label key={motivation.id} htmlFor={motivation.id} className={cn("flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all", data.goalMotivation === motivation.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-primary/2")}>
                 <RadioGroupItem value={motivation.id} id={motivation.id} className="mt-1" />
                 <div className="flex-1">
                   <div className="font-semibold text-foreground">{motivation.label}</div>
                   <div className="text-sm text-muted-foreground mt-1">{motivation.description}</div>
                 </div>
-              </Label>
-            ))}
+              </Label>)}
           </div>
         </RadioGroup>
       </CardContent>
     </Card>;
-  
   const renderStep3 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
@@ -778,7 +763,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       })}>
             <div className="text-left">
               <div className="font-semibold">{type.label}</div>
-              <div className="text-sm text-muted-foreground">{type.description}</div>
+              
             </div>
           </Button>)}
       </CardContent>
@@ -1177,20 +1162,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const totalSteps = isSupporter ? 10 : 8;
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
-  
+
   // Show loading state while determining initial step
   if (currentStep === null) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+    return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
         <div className="max-w-md mx-auto py-6 space-y-6">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       <div className="max-w-md mx-auto py-6 space-y-6">
         {/* Header */}
@@ -1212,7 +1194,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         {/* Progress Bar */}
         <div className="w-full bg-muted rounded-full h-2">
           <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{
-          width: `${(currentStepDisplay) / totalSteps * 100}%`
+          width: `${currentStepDisplay / totalSteps * 100}%`
         }} />
         </div>
         
