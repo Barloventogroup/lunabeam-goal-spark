@@ -10,6 +10,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift } from 'lucide-react';
+import { TimePicker } from '@/components/ui/time-picker';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays } from 'date-fns';
@@ -830,33 +831,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-6">
-        {/* Time of day */}
-        <div className="space-y-3">
-          <Label>When during the day?</Label>
-          <div className="grid grid-cols-2 gap-2">
-             {timesOfDay.map(time => <Button key={time.id} variant={data.timeOfDay === time.id ? 'default' : 'outline'} className="h-auto p-3" onClick={() => {
-            if (time.id === 'custom') {
-              setShowTimePicker(true);
-            } else {
-              updateData({
-                timeOfDay: time.id
-              });
-            }
-          }}>
-                 <div className="text-center">
-                   <div className="font-semibold">{time.label}</div>
-                   <div className="text-xs text-muted-foreground">{time.description}</div>
-                 </div>
-               </Button>)}
-          </div>
-         </div>
-         
-         {/* Custom Time Display */}
-         {data.timeOfDay === 'custom' && data.customTime && <div className="mt-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
-             <div className="text-sm font-medium text-primary">
-               Selected time: {data.customTime}
-             </div>
-           </div>}
+        {/* Time picker */}
+        <TimePicker
+          label="Pick Time"
+          time={data.customTime || ''}
+          onTimeChange={(time) => updateData({ customTime: time, timeOfDay: 'custom' })}
+        />
         
         {/* Date range */}
         <div className="space-y-3">
