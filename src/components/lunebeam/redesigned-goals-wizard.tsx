@@ -366,8 +366,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   const getStepTitle = () => {
-    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context', 'Rewards'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context'];
+    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Do you already have what you need?', 'Scheduling & timing', 'Support context', 'Rewards'];
+    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Do you already have what you need?', 'Scheduling & timing', 'Support context'];
     if (isSupporter) {
       return supporterTitles[currentStep] || '';
     } else {
@@ -389,22 +389,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Goal type
         return !!data.goalType;
       case 4:
-        // Experience level
-        return !!data.experienceLevel;
+        // Prerequisites (was step 5)
+        return true; // Always can proceed
       case 5:
-        // Prerequisites
-        return true;
-      // Always can proceed
-      case 6:
-        // Scheduling
+        // Scheduling (was step 6)
         return !!data.frequency && !!data.timeOfDay;
-      case 7:
-        // Support context
+      case 6:
+        // Support context (was step 7)
         return !!data.supportContext;
-      case 8:
-        // Rewards (supporters only)
-        return true;
-      // Optional step
+      case 7:
+        // Rewards (supporters only) or confirm (was step 8)
+        return true; // Optional step
       default:
         return false;
     }
@@ -770,23 +765,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   const renderStep4 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">How familiar are you with this activity?</p>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {experienceLevels.map(level => <Button key={level.id} variant={data.experienceLevel === level.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
-        experienceLevel: level.id
-      })}>
-            <div className="text-left">
-              <div className="font-semibold">{level.label}</div>
-              <div className="text-sm text-muted-foreground">{level.description}</div>
-            </div>
-          </Button>)}
-      </CardContent>
-    </Card>;
-  const renderStep5 = () => <Card className="border-0 shadow-lg">
-      <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Do you already have what you need?</CardTitle>
         <p className="text-muted-foreground">Equipment, knowledge, access, etc.</p>
       </CardHeader>
@@ -823,7 +801,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep6 = () => <Card className="border-0 shadow-lg">
+  const renderStep5 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">Set your schedule and timing</p>
@@ -940,7 +918,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep7 = () => <Card className="border-0 shadow-lg">
+  const renderStep6 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Who supports this goal?</CardTitle>
         <p className="text-muted-foreground">Choose your support system</p>
@@ -959,7 +937,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </Button>)}
       </CardContent>
     </Card>;
-  const renderStep8 = () => <Card className="border-0 shadow-lg">
+  const renderStep7 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Gift className="h-8 w-8 text-primary" />
@@ -1105,7 +1083,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           
           {/* Actions */}
           <div className="flex gap-3 pt-4">
-            <Button variant="outline" onClick={() => setCurrentStep(isSupporter ? 7 : 6)} // Go back to previous step
+            <Button variant="outline" onClick={() => setCurrentStep(isSupporter ? 6 : 5)} // Go back to previous step
           className="flex-1">
               Edit
             </Button>
@@ -1138,28 +1116,25 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       // Goal type
       case 4:
         return renderStep4();
-      // Experience level
+      // Prerequisites (was step 5)
       case 5:
         return renderStep5();
-      // Prerequisites
+      // Scheduling (was step 6)
       case 6:
         return renderStep6();
-      // Scheduling
+      // Support context (was step 7)
       case 7:
-        return renderStep7();
-      // Support context
+        return isSupporter ? renderStep7() : renderConfirmStep();
+      // Rewards or confirm (was step 8)
       case 8:
-        return isSupporter ? renderStep8() : renderConfirmStep();
-      // Rewards or confirm
-      case 9:
         return renderConfirmStep();
-      // Final confirm (supporters only)
+      // Final confirm (supporters only - was step 9)
       default:
         return null;
     }
   };
-  const lastStepIndex = isSupporter ? 9 : 8;
-  const totalSteps = isSupporter ? 10 : 8;
+  const lastStepIndex = isSupporter ? 8 : 7;
+  const totalSteps = isSupporter ? 9 : 7;
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
 
