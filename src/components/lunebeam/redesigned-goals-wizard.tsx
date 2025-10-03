@@ -766,7 +766,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderStep4 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Which part usually feels the trickiest when you start this?</CardTitle>
-        <p className="text-muted-foreground">Equipment, knowledge, access, etc.</p>
+        <p className="text-muted-foreground">Challenges are just signals telling us what support you need. Which part usually feels the trickiest when you start this? (Select up to two)</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
