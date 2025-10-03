@@ -200,6 +200,25 @@ const motivations = [{
   label: 'Accountability',
   description: 'Keep myself on track and committed'
 }];
+
+const allyRoles = [
+  {
+    id: 'accountability',
+    label: 'Accountability Partner',
+    description: 'Keeps me on track with regular check-ins'
+  },
+  {
+    id: 'helper',
+    label: 'Hands-on Helper',
+    description: 'Helps me complete tasks and practice'
+  },
+  {
+    id: 'cheerleader',
+    label: 'Cheerleader',
+    description: 'Celebrates wins and motivates me'
+  }
+];
+
 interface WizardData {
   // Step 0: Who is this for (supporters only)
   recipient: 'self' | 'other';
@@ -233,6 +252,7 @@ interface WizardData {
   // Step 7: Context/Support
   supportContext?: string;
   selectedSupporters?: string[];
+  supporterRoles?: Record<string, string>; // Maps supporter ID to role ID
   sendReminderToMe?: boolean; // For supporters
 
   // Step 8: Rewards (supporters only)
@@ -995,7 +1015,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       <div className="text-left">
         <div className="text-base font-semibold">Select an Ally</div>
         <div className="text-sm text-muted-foreground">
-          {data.selectedSupporters && data.selectedSupporters.length > 0 ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected` : 'Choose your supporters'}
+          {data.selectedSupporters && data.selectedSupporters.length > 0 
+            ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected${data.supporterRoles && Object.keys(data.supporterRoles).length === data.selectedSupporters.length ? ' (roles assigned)' : ' (assign roles)'}` 
+            : 'Choose your supporters'}
         </div>
       </div>
         </Button>
@@ -1122,7 +1144,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   <span className="text-sm text-primary font-medium">
                     {data.supportContext === 'alone' && 'Working alone'}
                     {data.supportContext === 'with_supporters' && data.selectedSupporters && data.selectedSupporters.length > 0 && (
-                      `With ${data.selectedSupporters.map(id => userSupporters.find(s => s.id === id)?.name || 'Unknown').join(', ')}`
+                      `With ${data.selectedSupporters.map(id => {
+                        const supporter = userSupporters.find(s => s.id === id);
+                        const roleName = data.supporterRoles?.[id] 
+                          ? allyRoles.find(r => r.id === data.supporterRoles![id])?.label 
+                          : null;
+                        return supporter 
+                          ? `${supporter.name}${roleName ? ` (${roleName})` : ''}`
+                          : 'Unknown';
+                      }).join(', ')}`
                     )}
                     {data.supportContext === 'with_supporters' && (!data.selectedSupporters || data.selectedSupporters.length === 0) && 'With supporters'}
                   </span>
@@ -1290,11 +1320,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         {/* Supporter Selection Dialog */}
         <Dialog open={showSupporterDialog} onOpenChange={setShowSupporterDialog}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Select Your Allies</DialogTitle>
+              <p className="text-sm text-muted-foreground">Choose people to support you and assign their roles</p>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 py-4">
               {userSupporters.length === 0 ? <div className="text-center py-8 px-4">
                   <p className="text-muted-foreground mb-2">
                     You have no supporters yet.
@@ -1302,29 +1333,103 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   <p className="text-sm text-muted-foreground">
                     You can invite people to cheer for you in the Community tab.
                   </p>
-                </div> : <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {userSupporters.map(supporter => <Button key={supporter.id} variant={(data.selectedSupporters || []).includes(supporter.id) ? 'default' : 'outline'} className="w-full justify-start" onClick={() => {
-                const currentSelection = data.selectedSupporters || [];
-                const isSelected = currentSelection.includes(supporter.id);
-                const newSelection = isSelected ? currentSelection.filter(id => id !== supporter.id) : [...currentSelection, supporter.id];
-                updateData({
-                  selectedSupporters: newSelection,
-                  supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone'
-                });
-              }}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Users className="h-4 w-4" />
-                        </div>
-                        <span>{supporter.name}</span>
+                </div> : <div className="space-y-3">
+                  {userSupporters.map(supporter => {
+                    const isSelected = (data.selectedSupporters || []).includes(supporter.id);
+                    const selectedRole = data.supporterRoles?.[supporter.id];
+                    
+                    return (
+                      <div key={supporter.id} className="space-y-2">
+                        <button
+                          onClick={() => {
+                            const currentSelection = data.selectedSupporters || [];
+                            const newSelection = isSelected 
+                              ? currentSelection.filter(id => id !== supporter.id)
+                              : [...currentSelection, supporter.id];
+                            
+                            // Clear role if deselecting
+                            const newRoles = { ...data.supporterRoles };
+                            if (isSelected && newRoles[supporter.id]) {
+                              delete newRoles[supporter.id];
+                            }
+                            
+                            updateData({
+                              selectedSupporters: newSelection,
+                              supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone',
+                              supporterRoles: newRoles
+                            });
+                          }}
+                          className={cn(
+                            "w-full p-4 rounded-lg border text-left transition-all",
+                            isSelected
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:border-primary/50"
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={cn(
+                              "w-5 h-5 rounded border flex items-center justify-center shrink-0",
+                              isSelected ? "bg-primary border-primary" : "border-muted-foreground"
+                            )}>
+                              {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+                            </div>
+                            <div className="font-medium">{supporter.name}</div>
+                          </div>
+                        </button>
+                        
+                        {isSelected && (
+                          <div className="ml-8 space-y-2">
+                            <div className="text-sm font-medium text-muted-foreground mb-2">Select role:</div>
+                            {allyRoles.map((role) => (
+                              <button
+                                key={role.id}
+                                onClick={() => {
+                                  updateData({ 
+                                    supporterRoles: { 
+                                      ...data.supporterRoles, 
+                                      [supporter.id]: role.id 
+                                    } 
+                                  });
+                                }}
+                                className={cn(
+                                  "w-full p-3 rounded-lg border text-left transition-all",
+                                  selectedRole === role.id
+                                    ? "border-primary bg-primary/5"
+                                    : "border-border hover:border-primary/30"
+                                )}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className={cn(
+                                    "w-4 h-4 rounded-full border flex items-center justify-center shrink-0",
+                                    selectedRole === role.id ? "bg-primary border-primary" : "border-muted-foreground"
+                                  )}>
+                                    {selectedRole === role.id && <div className="w-2 h-2 rounded-full bg-primary-foreground" />}
+                                  </div>
+                                  <div>
+                                    <div className="font-medium text-sm">{role.label}</div>
+                                    <div className="text-xs text-muted-foreground">{role.description}</div>
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </Button>)}
+                    );
+                  })}
                 </div>}
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setShowSupporterDialog(false)}>
                   Cancel
                 </Button>
-                <Button onClick={() => setShowSupporterDialog(false)} disabled={!data.selectedSupporters || data.selectedSupporters.length === 0}>
+                <Button 
+                  onClick={() => setShowSupporterDialog(false)} 
+                  disabled={
+                    !data.selectedSupporters || 
+                    data.selectedSupporters.length === 0 ||
+                    data.selectedSupporters.some(id => !data.supporterRoles?.[id])
+                  }
+                >
                   Confirm
                 </Button>
               </div>
