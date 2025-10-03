@@ -19,6 +19,7 @@ import { goalsService, stepsService } from '@/services/goalsService';
 import { goalProposalsService } from '@/services/goalProposalsService';
 import { supabase } from '@/integrations/supabase/client';
 import { PermissionsService } from '@/services/permissionsService';
+import { generateMicroSteps, type MicroStep } from '@/services/microStepsGenerator';
 import type { GoalDomain } from '@/types';
 interface RedesignedGoalsWizardProps {
   onComplete: (goalData: any) => void;
@@ -282,6 +283,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [tempHour, setTempHour] = useState<string>("08");
   const [tempMinute, setTempMinute] = useState<string>("00");
   const [tempPeriod, setTempPeriod] = useState<"AM" | "PM">("AM");
+  const [generatedMicroSteps, setGeneratedMicroSteps] = useState<MicroStep[]>([]);
   const {
     toast
   } = useToast();
@@ -407,6 +409,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const nextStep = () => {
     const maxStep = isSupporter ? 9 : 8;
+    
+    // Generate micro-steps when moving FROM step 7 TO step 8
+    if (currentStep === 7 && currentStep + 1 === 8) {
+      const flow = data.recipient === 'other' ? 'supporter' : 'individual';
+      const microSteps = generateMicroSteps(data as any, flow);
+      setGeneratedMicroSteps(microSteps);
+    }
+    
     if (currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
     }
@@ -878,12 +888,20 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       <CardContent className="space-y-4">
         {challengeAreas.map(challenge => {
           const isSelected = data.challengeAreas?.includes(challenge.id) || false;
+          const selectionOrder = data.challengeAreas?.indexOf(challenge.id);
+          const priorityLabel = selectionOrder === 0 ? '1st Priority' : selectionOrder === 1 ? '2nd Priority' : null;
+          
           return <Button 
             key={challenge.id} 
             variant={isSelected ? 'default' : 'outline'} 
-            className="w-full h-auto p-4 justify-start" 
+            className="w-full h-auto p-4 justify-start relative" 
             onClick={() => handleChallengeToggle(challenge.id)}
           >
+            {isSelected && priorityLabel && (
+              <Badge className="absolute top-2 right-2 text-xs">
+                {priorityLabel}
+              </Badge>
+            )}
             <div className="text-left">
               <div className="font-semibold">{challenge.label}</div>
               <div className="text-sm text-muted-foreground">({challenge.description})</div>
@@ -1219,12 +1237,21 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="space-y-3">
             <h4 className="font-semibold text-foreground">First steps to get started:</h4>
             <div className="space-y-2">
-              {[`Set up your ${data.goalTitle.toLowerCase()} space`, `Plan your first session`, `Track your progress`].map((step, index) => <div key={index} className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg">
-                  <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-medium text-primary">{index + 1}</span>
+              {generatedMicroSteps.length > 0 ? (
+                generatedMicroSteps.map((step, index) => (
+                  <div key={index} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="w-7 h-7 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-medium text-primary">{index + 1}</span>
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <span className="text-sm font-medium text-foreground block">{step.title}</span>
+                      <span className="text-xs text-muted-foreground block">{step.description}</span>
+                    </div>
                   </div>
-                  <span className="text-sm text-foreground">{step}</span>
-                </div>)}
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">Generating personalized first steps...</p>
+              )}
             </div>
           </div>
           
