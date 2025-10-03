@@ -801,16 +801,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       
       <CardContent className="space-y-4">
         <div className="space-y-3">
-          {motivations.map(motivation => <Button key={motivation.id} type="button" variant={data.goalMotivation === motivation.id ? 'default' : 'outline'} className="w-full h-auto justify-start text-left p-4" onClick={() => updateData({
-          goalMotivation: motivation.id
-        })}>
+          {motivations.map(motivation => <Card 
+            key={motivation.id} 
+            className={cn(
+              "cursor-pointer hover:shadow-md transition-all border-2",
+              data.goalMotivation === motivation.id ? "border-primary bg-primary/5" : "border-border"
+            )}
+            onClick={() => updateData({ goalMotivation: motivation.id })}
+          >
+            <CardContent className="p-4">
               <div className="flex items-start gap-3 w-full">
+                {data.goalMotivation === motivation.id && (
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                )}
                 <div className="flex-1">
                   <div className="font-semibold">{motivation.label}</div>
-                  <div className="text-sm mt-1 opacity-90">{motivation.description}</div>
+                  <div className="text-sm mt-1 text-muted-foreground">{motivation.description}</div>
                 </div>
               </div>
-            </Button>)}
+            </CardContent>
+          </Card>)}
         </div>
         
         <div className="space-y-2 pt-4 border-t">
@@ -833,14 +843,25 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {goalTypes.map(type => <Button key={type.id} variant={data.goalType === type.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
-        goalType: type.id
-      })}>
-            <div className="text-left">
-              <div className="font-semibold">{type.label}</div>
-              
+        {goalTypes.map(type => <Card 
+          key={type.id} 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            data.goalType === type.id ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => updateData({ goalType: type.id })}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              {data.goalType === type.id && (
+                <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              )}
+              <div className="text-left flex-1">
+                <div className="font-semibold">{type.label}</div>
+              </div>
             </div>
-          </Button>)}
+          </CardContent>
+        </Card>)}
       </CardContent>
     </Card>;
   const renderStep4 = () => {
@@ -875,10 +896,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           const selectionOrder = data.challengeAreas?.indexOf(challenge.id);
           const priorityLabel = selectionOrder === 0 ? '1st Priority' : selectionOrder === 1 ? '2nd Priority' : null;
           
-          return <Button 
+          return <Card 
             key={challenge.id} 
-            variant={isSelected ? 'default' : 'outline'} 
-            className="w-full h-auto p-4 justify-start relative" 
+            className={cn(
+              "cursor-pointer hover:shadow-md transition-all border-2 relative",
+              isSelected ? "border-primary bg-primary/5" : "border-border"
+            )}
             onClick={() => handleChallengeToggle(challenge.id)}
           >
             {isSelected && priorityLabel && (
@@ -886,11 +909,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 {priorityLabel}
               </Badge>
             )}
-            <div className="text-left">
-              <div className="font-semibold">{challenge.label}</div>
-              <div className="text-sm text-muted-foreground">({challenge.description})</div>
-            </div>
-          </Button>;
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                {isSelected && (
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                )}
+                <div className="text-left flex-1">
+                  <div className="font-semibold">{challenge.label}</div>
+                  <div className="text-sm text-muted-foreground">({challenge.description})</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>;
         })}
         
         <div className="space-y-2 pt-4 border-t">
@@ -914,29 +944,41 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Button variant={data.hasPrerequisites ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
-        hasPrerequisites: true
-      })}>
-          <div className="flex items-center gap-3">
-            <Check className="h-5 w-5" />
-            <div className="text-left">
-              <div className="font-semibold">Yes, I'm ready</div>
-              <div className="text-sm text-muted-foreground">I have everything I need to start</div>
+        <Card 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => updateData({ hasPrerequisites: true })}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-primary" />
+              <div className="text-left flex-1">
+                <div className="font-semibold">Yes, I'm ready</div>
+                <div className="text-sm text-muted-foreground">I have everything I need to start</div>
+              </div>
             </div>
-          </div>
-        </Button>
+          </CardContent>
+        </Card>
         
-        <Button variant={!data.hasPrerequisites ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
-        hasPrerequisites: false
-      })}>
-          <div className="flex items-center gap-3">
-            <X className="h-5 w-5" />
-            <div className="text-left">
-              <div className="font-semibold">No, I need help getting ready</div>
-              <div className="text-sm text-muted-foreground">I need prep steps first</div>
+        <Card 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            !data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => updateData({ hasPrerequisites: false })}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <X className="h-5 w-5 text-primary" />
+              <div className="text-left flex-1">
+                <div className="font-semibold">No, I need help getting ready</div>
+                <div className="text-sm text-muted-foreground">I need prep steps first</div>
+              </div>
             </div>
-          </div>
-        </Button>
+          </CardContent>
+        </Card>
         
         {!data.hasPrerequisites && <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800">
@@ -1055,24 +1097,47 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Button variant={data.supportContext === 'alone' ? "default" : "outline"} className="w-full h-auto p-6 justify-start" onClick={() => updateData({
-        supportContext: 'alone',
-        selectedSupporters: []
-      })}>
-      <div className="text-left">
-        <div className="text-base font-semibold">Alone</div>
-        <div className="text-sm text-muted-foreground">I'll work on this independently</div>
-      </div>
-        </Button>
+        <Card 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            data.supportContext === 'alone' ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => updateData({ supportContext: 'alone', selectedSupporters: [] })}
+        >
+          <CardContent className="p-6">
+            <div className="flex items-start gap-3">
+              {data.supportContext === 'alone' && (
+                <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              )}
+              <div className="text-left flex-1">
+                <div className="text-base font-semibold">Alone</div>
+                <div className="text-sm text-muted-foreground">I'll work on this independently</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
-        <Button variant={data.supportContext === 'with_supporters' ? "default" : "outline"} className="w-full h-auto p-6 justify-start" onClick={() => setShowSupporterDialog(true)}>
-      <div className="text-left">
-        <div className="text-base font-semibold">Select an Ally</div>
-        <div className="text-sm text-muted-foreground">
-          {data.selectedSupporters && data.selectedSupporters.length > 0 ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected` : 'Choose your supporters'}
-        </div>
-      </div>
-        </Button>
+        <Card 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            data.supportContext === 'with_supporters' ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => setShowSupporterDialog(true)}
+        >
+          <CardContent className="p-6">
+            <div className="flex items-start gap-3">
+              {data.supportContext === 'with_supporters' && (
+                <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              )}
+              <div className="text-left flex-1">
+                <div className="text-base font-semibold">Select an Ally</div>
+                <div className="text-sm text-muted-foreground">
+                  {data.selectedSupporters && data.selectedSupporters.length > 0 ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected` : 'Choose your supporters'}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </CardContent>
     </Card>;
   const renderStep8 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
