@@ -101,7 +101,7 @@ const goalTypes = [{
   description: 'Improve an existing skill'
 }, {
   id: 'new_skill',
-  label: 'New Skill',
+  label: 'Brand New Skill',
   description: 'Learn something completely new'
 }];
 
