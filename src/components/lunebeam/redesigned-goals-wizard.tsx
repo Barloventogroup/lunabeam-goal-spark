@@ -812,7 +812,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         {/* Time of day */}
         <div className="space-y-3">
-          <Label>When during the day?</Label>
+          <Label>Start Time:</Label>
           <TimePicker 
             time={data.customTime || ''} 
             onTimeChange={(time) => updateData({ 
