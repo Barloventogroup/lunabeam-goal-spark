@@ -10,6 +10,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -180,6 +181,25 @@ const timesOfDay = [{
   label: 'Custom time',
   description: 'Pick specific time'
 }];
+
+// Motivation options
+const motivations = [{
+  id: 'confidence',
+  label: 'Confidence',
+  description: 'Build self-belief and prove I can do it'
+}, {
+  id: 'future_skill',
+  label: 'Future Skill',
+  description: 'Prepare for what comes next in life'
+}, {
+  id: 'tangible_reward',
+  label: 'Tangible Reward',
+  description: 'Earn something specific I want'
+}, {
+  id: 'accountability',
+  label: 'Accountability',
+  description: 'Keep myself on track and committed'
+}];
 interface WizardData {
   // Step 0: Who is this for (supporters only)
   recipient: 'self' | 'other';
@@ -191,27 +211,30 @@ interface WizardData {
   goalTitle: string;
   category?: string;
 
-  // Step 2: Goal type
+  // Step 2: Motivation
+  goalMotivation?: string;
+
+  // Step 3: Goal type
   goalType?: string;
 
-  // Step 3: Experience level
+  // Step 4: Experience level
   experienceLevel?: string;
 
-  // Step 4: Prerequisites
+  // Step 5: Prerequisites
   hasPrerequisites: boolean;
 
-  // Step 5: Scheduling & timing
+  // Step 6: Scheduling & timing
   startDate: Date;
   endDate?: Date;
   frequency: number;
   timeOfDay?: string;
   customTime?: string;
 
-  // Step 6: Context/Support
+  // Step 7: Context/Support
   supportContext?: string;
   sendReminderToMe?: boolean; // For supporters
 
-  // Step 7: Rewards (supporters only)
+  // Step 8: Rewards (supporters only)
   assignReward?: boolean;
   rewardType?: string;
   pointValue?: number;
@@ -336,7 +359,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }));
   };
   const nextStep = () => {
-    const maxStep = isSupporter ? 8 : 7;
+    const maxStep = isSupporter ? 9 : 8;
     if (currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
     }
@@ -348,8 +371,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   const getStepTitle = () => {
-    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context', 'Rewards'];
-    const nonSupporterTitles = ['What do you want to do?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context'];
+    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context', 'Rewards'];
+    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context'];
     if (isSupporter) {
       return supporterTitles[currentStep] || '';
     } else {
@@ -365,22 +388,25 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Goal description
         return data.goalTitle.trim().length > 0;
       case 2:
+        // Motivation
+        return !!data.goalMotivation;
+      case 3:
         // Goal type
         return !!data.goalType;
-      case 3:
+      case 4:
         // Experience level
         return !!data.experienceLevel;
-      case 4:
+      case 5:
         // Prerequisites
         return true;
       // Always can proceed
-      case 5:
+      case 6:
         // Scheduling
         return !!data.frequency && !!data.timeOfDay;
-      case 6:
+      case 7:
         // Support context
         return !!data.supportContext;
-      case 7:
+      case 8:
         // Rewards (supporters only)
         return true;
       // Optional step
@@ -519,7 +545,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const type = goalTypes.find(t => t.id === data.goalType);
     const experience = experienceLevels.find(e => e.id === data.experienceLevel);
     const support = supportContexts.find(s => s.id === data.supportContext);
+    const motivation = motivations.find(m => m.id === data.goalMotivation);
     let description = data.goalTitle;
+    if (motivation) description += ` - Motivated by ${motivation.label.toLowerCase()}`;
     if (type) description += ` (${type.label})`;
     if (experience) description += ` - ${experience.label}`;
     if (support) description += ` with ${support.label.toLowerCase()}`;
@@ -702,7 +730,43 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </CardContent>
     </Card>;
+  
   const renderStep2 = () => <Card className="border-0 shadow-lg">
+      <CardHeader className="text-center pb-4">
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Heart className="h-8 w-8 text-primary" />
+        </div>
+        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
+        <p className="text-muted-foreground">Understanding your motivation helps us support you better</p>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        <RadioGroup value={data.goalMotivation} onValueChange={(value) => updateData({ goalMotivation: value })}>
+          <div className="space-y-3">
+            {motivations.map(motivation => (
+              <Label 
+                key={motivation.id}
+                htmlFor={motivation.id}
+                className={cn(
+                  "flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all",
+                  data.goalMotivation === motivation.id 
+                    ? "border-primary bg-primary/5" 
+                    : "border-border hover:border-primary/50 hover:bg-primary/2"
+                )}
+              >
+                <RadioGroupItem value={motivation.id} id={motivation.id} className="mt-1" />
+                <div className="flex-1">
+                  <div className="font-semibold text-foreground">{motivation.label}</div>
+                  <div className="text-sm text-muted-foreground mt-1">{motivation.description}</div>
+                </div>
+              </Label>
+            ))}
+          </div>
+        </RadioGroup>
+      </CardContent>
+    </Card>;
+  
+  const renderStep3 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">This helps us provide better guidance</p>
@@ -719,7 +783,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </Button>)}
       </CardContent>
     </Card>;
-  const renderStep3 = () => <Card className="border-0 shadow-lg">
+  const renderStep4 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">How familiar are you with this activity?</p>
@@ -736,7 +800,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </Button>)}
       </CardContent>
     </Card>;
-  const renderStep4 = () => <Card className="border-0 shadow-lg">
+  const renderStep5 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Do you already have what you need?</CardTitle>
         <p className="text-muted-foreground">Equipment, knowledge, access, etc.</p>
@@ -774,7 +838,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep5 = () => <Card className="border-0 shadow-lg">
+  const renderStep6 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">Set your schedule and timing</p>
@@ -891,7 +955,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep6 = () => <Card className="border-0 shadow-lg">
+  const renderStep7 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Who supports this goal?</CardTitle>
         <p className="text-muted-foreground">Choose your support system</p>
@@ -910,7 +974,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </Button>)}
       </CardContent>
     </Card>;
-  const renderStep7 = () => <Card className="border-0 shadow-lg">
+  const renderStep8 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Gift className="h-8 w-8 text-primary" />
@@ -1056,7 +1120,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           
           {/* Actions */}
           <div className="flex gap-3 pt-4">
-            <Button variant="outline" onClick={() => setCurrentStep(isSupporter ? 6 : 5)} // Go back to previous step
+            <Button variant="outline" onClick={() => setCurrentStep(isSupporter ? 7 : 6)} // Go back to previous step
           className="flex-1">
               Edit
             </Button>
@@ -1083,31 +1147,34 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       // Goal description
       case 2:
         return renderStep2();
-      // Goal type
+      // Motivation
       case 3:
         return renderStep3();
-      // Experience level
+      // Goal type
       case 4:
         return renderStep4();
-      // Prerequisites
+      // Experience level
       case 5:
         return renderStep5();
-      // Scheduling
+      // Prerequisites
       case 6:
         return renderStep6();
-      // Support context
+      // Scheduling
       case 7:
-        return isSupporter ? renderStep7() : renderConfirmStep();
-      // Rewards or confirm
+        return renderStep7();
+      // Support context
       case 8:
+        return isSupporter ? renderStep8() : renderConfirmStep();
+      // Rewards or confirm
+      case 9:
         return renderConfirmStep();
       // Final confirm (supporters only)
       default:
         return null;
     }
   };
-  const lastStepIndex = isSupporter ? 8 : 7;
-  const totalSteps = isSupporter ? 9 : 7;
+  const lastStepIndex = isSupporter ? 9 : 8;
+  const totalSteps = isSupporter ? 10 : 8;
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
   
