@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle, Shield, HandHelping } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -188,6 +188,31 @@ const timesOfDay = [{
   description: 'Pick specific time'
 }];
 
+// Ally roles
+const allyRoles = [
+  {
+    value: 'cheerleader' as const,
+    title: 'Cheerleader',
+    icon: Sparkles,
+    description: 'Celebrates wins and provides encouragement',
+    color: 'text-pink-500'
+  },
+  {
+    value: 'accountability_partner' as const,
+    title: 'Accountability Partner',
+    icon: Shield,
+    description: 'Checks in regularly and helps stay on track',
+    color: 'text-blue-500'
+  },
+  {
+    value: 'hands_on_helper' as const,
+    title: 'Hands-on Helper',
+    icon: HandHelping,
+    description: 'Provides direct assistance and practical support',
+    color: 'text-green-500'
+  }
+];
+
 // Motivation options
 const motivations = [{
   id: 'confidence',
@@ -242,6 +267,7 @@ interface WizardData {
   // Step 7: Context/Support
   supportContext?: string;
   selectedSupporters?: string[];
+  allyRoles?: Record<string, 'cheerleader' | 'accountability_partner' | 'hands_on_helper'>;
   sendReminderToMe?: boolean; // For supporters
 
   // Step 8: Rewards (supporters only)
@@ -465,8 +491,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Scheduling
         return !!data.frequency && !!data.timeOfDay;
       case 7:
-        // Support context
-        return !!data.supportContext;
+        // Support context - also check ally roles if allies are selected
+        return !!data.supportContext && (
+          data.supportContext === 'alone' || 
+          (data.selectedSupporters && 
+           data.selectedSupporters.length > 0 && 
+           data.selectedSupporters.every(id => data.allyRoles?.[id]))
+        );
       case 8:
         // Rewards (supporters only)
         return true;
@@ -1143,6 +1174,79 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>
           </CardContent>
         </Card>
+        
+        {/* Ally Role Assignment - shown after allies are selected */}
+        {data.selectedSupporters && data.selectedSupporters.length > 0 && data.supportContext === 'with_supporters' && (
+          <div className="space-y-6 mt-6">
+            <div>
+              <h3 className="font-semibold mb-2">What's their job?</h3>
+              <p className="text-sm text-muted-foreground">
+                Choose a role for each ally to help you reach your goal
+              </p>
+            </div>
+            
+            {data.selectedSupporters.map(supporterId => {
+              const supporter = userSupporters.find(s => s.id === supporterId);
+              if (!supporter) return null;
+              
+              return (
+                <div key={supporterId} className="space-y-3">
+                  {/* Ally header */}
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={supporter.profile?.avatar_url} />
+                      <AvatarFallback className="text-xs">
+                        {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{supporter.name}</span>
+                  </div>
+                  
+                  {/* Role selection cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {allyRoles.map(role => {
+                      const isSelected = data.allyRoles?.[supporterId] === role.value;
+                      const RoleIcon = role.icon;
+                      
+                      return (
+                        <Card
+                          key={role.value}
+                          className={cn(
+                            "cursor-pointer hover:shadow-md transition-all border-2",
+                            isSelected ? "border-primary bg-primary/5" : "border-border"
+                          )}
+                          onClick={() => {
+                            updateData({
+                              allyRoles: {
+                                ...(data.allyRoles || {}),
+                                [supporterId]: role.value
+                              }
+                            });
+                          }}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              {isSelected && (
+                                <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                              )}
+                              <RoleIcon className={cn("h-5 w-5 flex-shrink-0", role.color)} />
+                              <div className="flex-1">
+                                <div className="font-medium text-sm">{role.title}</div>
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {role.description}
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>;
   const renderStep8 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
@@ -1483,9 +1587,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           const newSelection = isSelected 
                             ? currentSelection.filter(id => id !== supporter.id) 
                             : [...currentSelection, supporter.id];
+                          
+                          // Remove role if deselecting
+                          const updatedRoles = { ...(data.allyRoles || {}) };
+                          if (isSelected) {
+                            delete updatedRoles[supporter.id];
+                          }
+                          
                           updateData({
                             selectedSupporters: newSelection,
-                            supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone'
+                            supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone',
+                            allyRoles: updatedRoles
                           });
                         }}
                       >
