@@ -1185,7 +1185,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <p className="text-sm text-foreground">
                   {format(data.startDate, 'MMMM d, yyyy')}
                   {data.timeOfDay && data.timeOfDay !== 'custom' && ` - ${timesOfDay.find(t => t.id === data.timeOfDay)?.label}`}
-                  {data.timeOfDay === 'custom' && data.customTime && ` at ${data.customTime}`}
+                  {data.timeOfDay === 'custom' && data.customTime && ` at ${formatDisplayTime(data.customTime)}`}
                 </p>
               </CardContent>
             </Card>
