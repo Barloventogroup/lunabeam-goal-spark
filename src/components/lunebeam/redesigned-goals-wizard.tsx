@@ -1168,7 +1168,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <CardTitle className="text-base font-semibold">Goal Action</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm font-semibold text-foreground">{data.goalTitle}</p>
+                <p className="text-sm font-medium text-foreground">{data.goalTitle}</p>
               </CardContent>
             </Card>
 
@@ -1189,7 +1189,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </div>
                 )}
                 {data.customMotivation && (
-                  <p className="text-sm text-foreground italic">{data.customMotivation}</p>
+                  <p className="text-sm text-foreground font-medium italic">{data.customMotivation}</p>
                 )}
               </CardContent>
             </Card>
@@ -1200,7 +1200,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <CardTitle className="text-base font-semibold">Start Time</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-foreground">
+                <p className="text-sm font-medium text-foreground">
                   {format(data.startDate, 'MMMM d, yyyy')}
                   {data.timeOfDay && data.timeOfDay !== 'custom' && ` - ${timesOfDay.find(t => t.id === data.timeOfDay)?.label}`}
                   {data.timeOfDay === 'custom' && data.customTime && ` at ${formatDisplayTime(data.customTime)}`}
@@ -1219,7 +1219,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     {data.challengeAreas.map(id => {
                       const challenge = challengeAreas.find(c => c.id === id);
                       return challenge ? (
-                        <p key={id} className="text-sm text-foreground">
+                        <p key={id} className="text-sm font-medium text-foreground">
                           • {challenge.label}
                         </p>
                       ) : null;
@@ -1227,7 +1227,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </div>
                 )}
                 {data.customChallenges && (
-                  <p className="text-sm text-foreground italic">{data.customChallenges}</p>
+                  <p className="text-sm text-foreground font-medium italic">{data.customChallenges}</p>
                 )}
               </CardContent>
             </Card>
