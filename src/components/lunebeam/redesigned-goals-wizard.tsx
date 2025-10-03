@@ -830,18 +830,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-6">
-        {/* Frequency */}
-        <div className="space-y-3">
-          <Label>How often?</Label>
-          <div className="grid grid-cols-1 gap-2">
-            {frequencies.map(freq => <Button key={freq.id} variant={data.frequency === freq.value ? 'default' : 'outline'} className="justify-start" onClick={() => updateData({
-            frequency: freq.value
-          })}>
-                {freq.label}
-              </Button>)}
-          </div>
-        </div>
-        
         {/* Time of day */}
         <div className="space-y-3">
           <Label>When during the day?</Label>
