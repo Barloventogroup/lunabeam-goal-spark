@@ -232,6 +232,7 @@ interface WizardData {
 
   // Step 7: Context/Support
   supportContext?: string;
+  selectedSupporters?: string[];
   sendReminderToMe?: boolean; // For supporters
 
   // Step 8: Rewards (supporters only)
@@ -260,7 +261,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     isMyIdea: true
   });
   const [supportedPeople, setSupportedPeople] = useState<SupportedPerson[]>([]);
+  const [userSupporters, setUserSupporters] = useState<SupportedPerson[]>([]);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [showSupporterDialog, setShowSupporterDialog] = useState(false);
   const [selectedCategoryDetails, setSelectedCategoryDetails] = useState<any>(null);
   const [canAssignDirectly, setCanAssignDirectly] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -281,6 +284,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     if (isSupporter) {
       loadSupportedPeople();
     }
+    loadUserSupporters();
   }, [isSupporter]);
 
   // Check permissions when supported person changes
@@ -339,6 +343,44 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       }
     } catch (error) {
       console.error('Failed to load supported people:', error);
+    }
+  };
+
+  const loadUserSupporters = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: supporters, error } = await supabase
+        .from('supporters')
+        .select('supporter_id')
+        .eq('individual_id', user.id);
+
+      if (error) throw error;
+      if (!supporters || supporters.length === 0) {
+        setUserSupporters([]);
+        return;
+      }
+
+      // Get profiles for the supporters
+      const supporterIds = supporters.map(s => s.supporter_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, first_name')
+        .in('user_id', supporterIds);
+
+      if (profilesError) throw profilesError;
+
+      const allies = supporters.map(s => {
+        const profile = profiles?.find(p => p.user_id === s.supporter_id);
+        return {
+          id: s.supporter_id,
+          name: profile?.first_name || 'Supporter'
+        };
+      });
+      setUserSupporters(allies);
+    } catch (error) {
+      console.error('Failed to load user supporters:', error);
     }
   };
   const checkAssignPermissions = async () => {
@@ -1239,6 +1281,66 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </DialogContent>
         </Dialog>
         
+        {/* Supporter Selection Dialog */}
+        <Dialog open={showSupporterDialog} onOpenChange={setShowSupporterDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Select Your Allies</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {userSupporters.length === 0 ? (
+                <div className="text-center py-8 px-4">
+                  <p className="text-muted-foreground mb-2">
+                    You have no supporters yet.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    You can invite people to cheer for you in the Community tab.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {userSupporters.map(supporter => (
+                    <Button
+                      key={supporter.id}
+                      variant={(data.selectedSupporters || []).includes(supporter.id) ? 'default' : 'outline'}
+                      className="w-full justify-start"
+                      onClick={() => {
+                        const currentSelection = data.selectedSupporters || [];
+                        const isSelected = currentSelection.includes(supporter.id);
+                        const newSelection = isSelected
+                          ? currentSelection.filter(id => id !== supporter.id)
+                          : [...currentSelection, supporter.id];
+                        updateData({
+                          selectedSupporters: newSelection,
+                          supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone'
+                        });
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Users className="h-4 w-4" />
+                        </div>
+                        <span>{supporter.name}</span>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              )}
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setShowSupporterDialog(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => setShowSupporterDialog(false)}
+                  disabled={!data.selectedSupporters || data.selectedSupporters.length === 0}
+                >
+                  Confirm
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Custom Time Picker Dialog */}
         <Dialog open={showTimePicker} onOpenChange={setShowTimePicker}>
           <DialogContent className="max-w-sm">
