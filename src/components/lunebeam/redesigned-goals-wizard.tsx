@@ -621,7 +621,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           
           <Input id="goal-title" placeholder="e.g., Practice guitar for 30 minutes daily" value={data.goalTitle} onChange={e => updateData({
           goalTitle: e.target.value
-        })} className="text-lg py-4" />
+        })} className="text-lg py-6" />
         </div>
         
         <div className="space-y-4">
