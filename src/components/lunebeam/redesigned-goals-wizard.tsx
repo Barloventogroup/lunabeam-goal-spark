@@ -1145,30 +1145,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           {/* Four Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Goal Action Card */}
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+            <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
               <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-primary" />
-                  <CardTitle className="text-base font-semibold">Goal Action</CardTitle>
-                </div>
+                <CardTitle className="text-base font-semibold">Goal Action</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent>
                 <p className="text-sm font-semibold text-foreground">{data.goalTitle}</p>
-                {data.category && (
-                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                    {categories.find(c => c.id === data.category)?.emoji} {categories.find(c => c.id === data.category)?.title}
-                  </Badge>
-                )}
               </CardContent>
             </Card>
 
             {/* Why Card */}
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+            <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
               <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-primary" />
-                  <CardTitle className="text-base font-semibold">Why</CardTitle>
-                </div>
+                <CardTitle className="text-base font-semibold">Why</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {data.goalMotivation && (
@@ -1188,45 +1177,23 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </Card>
 
             {/* Start Time Card */}
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+            <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
               <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  <CardTitle className="text-base font-semibold">Start Time</CardTitle>
-                </div>
+                <CardTitle className="text-base font-semibold">Start Time</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="space-y-1">
-                  <p className="text-sm text-foreground">
-                    <span className="font-medium">Starts:</span> {format(data.startDate, 'MMM d, yyyy')}
-                  </p>
-                  <p className="text-sm text-foreground">
-                    <span className="font-medium">Ends:</span> {data.endDate ? format(data.endDate, 'MMM d, yyyy') : 'Ongoing'}
-                  </p>
-                  <p className="text-sm text-foreground">
-                    <span className="font-medium">Frequency:</span> {data.frequency} times per week
-                  </p>
-                  {data.timeOfDay && data.timeOfDay !== 'custom' && (
-                    <p className="text-sm text-foreground">
-                      <span className="font-medium">Time:</span> {timesOfDay.find(t => t.id === data.timeOfDay)?.label}
-                    </p>
-                  )}
-                  {data.timeOfDay === 'custom' && data.customTime && (
-                    <p className="text-sm text-foreground">
-                      <span className="font-medium">Time:</span> {data.customTime}
-                    </p>
-                  )}
-                </div>
+              <CardContent>
+                <p className="text-sm text-foreground">
+                  {format(data.startDate, 'MMMM d, yyyy')}
+                  {data.timeOfDay && data.timeOfDay !== 'custom' && ` - ${timesOfDay.find(t => t.id === data.timeOfDay)?.label}`}
+                  {data.timeOfDay === 'custom' && data.customTime && ` at ${data.customTime}`}
+                </p>
               </CardContent>
             </Card>
 
             {/* Core Barrier Card */}
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+            <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100">
               <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-primary" />
-                  <CardTitle className="text-base font-semibold">Core Barrier</CardTitle>
-                </div>
+                <CardTitle className="text-base font-semibold">Core Barrier</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {data.challengeAreas && data.challengeAreas.length > 0 && (
