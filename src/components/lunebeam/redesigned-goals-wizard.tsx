@@ -611,6 +611,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <Sparkles className="h-8 w-8 text-primary" />
         </div>
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
+        <p className="text-sm text-muted-foreground mt-2">
+          What's the one concrete action you're choosing to focus on? (Make it clear and specific!)
+        </p>
       </CardHeader>
       
       <CardContent className="space-y-6">
