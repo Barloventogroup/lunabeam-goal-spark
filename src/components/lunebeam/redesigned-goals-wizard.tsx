@@ -366,8 +366,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   const getStepTitle = () => {
-    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Great! Do you have all your supplies and space ready to go?', 'Prerequisites check', 'Scheduling & timing', 'Support context', 'Rewards'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Great! Do you have all your supplies and space ready to go?', 'Prerequisites check', 'Scheduling & timing', 'Support context'];
+    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context', 'Rewards'];
+    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context'];
     if (isSupporter) {
       return supporterTitles[currentStep] || '';
     } else {
@@ -743,7 +743,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             {motivations.map(motivation => <Label key={motivation.id} htmlFor={motivation.id} className={cn("flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all", data.goalMotivation === motivation.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-primary/2")}>
                 <RadioGroupItem value={motivation.id} id={motivation.id} className="mt-1" />
                 <div className="flex-1">
-                  <div className="font-semibold text-foreground">{motivation.label}</div>
+                  
                   <div className="text-sm text-muted-foreground mt-1">{motivation.description}</div>
                 </div>
               </Label>)}
@@ -771,6 +771,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderStep4 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
+        
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -778,7 +779,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         experienceLevel: level.id
       })}>
             <div className="text-left">
-              <div className="font-semibold">{level.label}</div>
+              
               <div className="text-sm text-muted-foreground">{level.description}</div>
             </div>
           </Button>)}
