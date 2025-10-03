@@ -139,30 +139,6 @@ const supportContexts = [{
   description: 'Friend or peer supports'
 }];
 
-// Challenge options for Step 4
-const challengeOptions = [{
-  id: 'initiation',
-  label: 'Just Starting',
-  sublabel: 'Initiation',
-  description: 'Getting started is the hardest part'
-}, {
-  id: 'attention',
-  label: 'Staying Focused',
-  sublabel: 'Attention',
-  description: 'Maintaining concentration throughout'
-}, {
-  id: 'time',
-  label: 'Remembering',
-  sublabel: 'Time',
-  description: 'Remembering to do it consistently'
-}, {
-  id: 'planning',
-  label: 'Knowing What\'s Next',
-  sublabel: 'Planning',
-  description: 'Understanding the next steps'
-}];
-
-
 // Frequency options
 const frequencies = [{
   id: 'daily',
@@ -240,8 +216,8 @@ interface WizardData {
   // Step 3: Goal type
   goalType?: string;
 
-  // Step 4: Challenges (multi-select, up to 2)
-  challenges?: string[];
+  // Step 4: Experience level
+  experienceLevel?: string;
 
   // Step 5: Prerequisites
   hasPrerequisites: boolean;
@@ -280,8 +256,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     hasPrerequisites: true,
     startDate: new Date(),
     frequency: 3,
-    isMyIdea: true,
-    challenges: []
+    isMyIdea: true
   });
   const [supportedPeople, setSupportedPeople] = useState<SupportedPerson[]>([]);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
@@ -391,8 +366,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   const getStepTitle = () => {
-    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'What feels tricky?', 'Do you already have what you need?', 'Scheduling & timing', 'Support context', 'Rewards'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'What feels tricky?', 'Do you already have what you need?', 'Scheduling & timing', 'Support context'];
+    const supporterTitles = ['Who is this goal for?', 'What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context', 'Rewards'];
+    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Experience level?', 'Prerequisites check', 'Scheduling & timing', 'Support context'];
     if (isSupporter) {
       return supporterTitles[currentStep] || '';
     } else {
@@ -414,21 +389,22 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Goal type
         return !!data.goalType;
       case 4:
-        // Challenges (multi-select, up to 2)
-        return true; // Can proceed with 0-2 selections
+        // Experience level
+        return !!data.experienceLevel;
       case 5:
-        // Prerequisites (was step 6)
-        return true; // Always can proceed
+        // Prerequisites
+        return true;
+      // Always can proceed
       case 6:
-        // Scheduling (was step 7)
+        // Scheduling
         return !!data.frequency && !!data.timeOfDay;
       case 7:
-        // Support context (was step 8)
+        // Support context
         return !!data.supportContext;
       case 8:
-      case 8:
-        // Rewards (supporters only) or confirm
-        return true; // Optional step
+        // Rewards (supporters only)
+        return true;
+      // Optional step
       default:
         return false;
     }
@@ -472,7 +448,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           timeline_start: goalData.start_date,
           timeline_end: goalData.due_date,
           frequency_per_week: data.frequency,
-          rationale: `Goal type: ${data.goalType}, Challenges: ${(data.challenges || []).join(', ')}, Support: ${data.supportContext}`
+          rationale: `Goal type: ${data.goalType}, Experience: ${data.experienceLevel}, Support: ${data.supportContext}`
         });
         toast({
           title: 'Proposal submitted! 📝',
@@ -489,7 +465,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           } = await import('@/services/stepsGenerator');
           const generatedSteps = await stepsGenerator.generateSteps(createdGoal);
 
-            // Persist AI-generated steps
+          // Persist AI-generated steps
           for (const step of generatedSteps) {
             await stepsService.createStep(createdGoal.id, {
               title: step.title,
@@ -563,19 +539,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const buildGoalDescription = () => {
     const category = categories.find(c => c.id === data.category);
     const type = goalTypes.find(t => t.id === data.goalType);
+    const experience = experienceLevels.find(e => e.id === data.experienceLevel);
     const support = supportContexts.find(s => s.id === data.supportContext);
     const motivation = motivations.find(m => m.id === data.goalMotivation);
     let description = data.goalTitle;
     if (motivation) description += ` - Motivated by ${motivation.label.toLowerCase()}`;
     if (type) description += ` (${type.label})`;
-    if (data.challenges && data.challenges.length > 0) {
-      const challengeLabels = data.challenges
-        .map(id => challengeOptions.find(c => c.id === id)?.label)
-        .filter(Boolean);
-      if (challengeLabels.length > 0) {
-        description += ` - Challenges: ${challengeLabels.join(', ')}`;
-      }
-    }
+    if (experience) description += ` - ${experience.label}`;
     if (support) description += ` with ${support.label.toLowerCase()}`;
     if (data.frequency) description += ` ${data.frequency} times per week`;
     if (data.timeOfDay && data.timeOfDay !== 'custom') {
@@ -798,54 +768,23 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </Button>)}
       </CardContent>
     </Card>;
-  const renderStep4 = () => {
-    const handleChallengeToggle = (challengeId: string) => {
-      const currentChallenges = data.challenges || [];
-      const isSelected = currentChallenges.includes(challengeId);
-      
-      if (isSelected) {
-        // Remove if already selected
-        updateData({
-          challenges: currentChallenges.filter(id => id !== challengeId)
-        });
-      } else if (currentChallenges.length < 2) {
-        // Add if less than 2 selected
-        updateData({
-          challenges: [...currentChallenges, challengeId]
-        });
-      }
-    };
-
-    return <Card className="border-0 shadow-lg">
+  const renderStep4 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">Which part usually feels the trickiest when you start this?</CardTitle>
-        <p className="text-muted-foreground">Challenges are just signals telling us what support you need. Which part usually feels the trickiest when you start this? (Select up to two)</p>
+        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
+        <p className="text-muted-foreground">How familiar are you with this activity?</p>
       </CardHeader>
       
-      <CardContent className="space-y-3">
-        {challengeOptions.map(challenge => {
-          const isSelected = (data.challenges || []).includes(challenge.id);
-          const isDisabled = !isSelected && (data.challenges || []).length >= 2;
-          
-          return <Label key={challenge.id} htmlFor={challenge.id} className={cn("flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all", isSelected ? "border-primary bg-primary/5" : isDisabled ? "border-border bg-muted/30 opacity-50 cursor-not-allowed" : "border-border hover:border-primary/50 hover:bg-primary/2")}>
-              <input type="checkbox" id={challenge.id} checked={isSelected} disabled={isDisabled} onChange={() => handleChallengeToggle(challenge.id)} className="mt-1 rounded" />
-              <div className="flex-1">
-                <div className="font-semibold text-foreground">
-                  {challenge.label} <span className="text-muted-foreground">({challenge.sublabel})</span>
-                </div>
-                <div className="text-sm text-muted-foreground mt-1">{challenge.description}</div>
-              </div>
-            </Label>;
-        })}
-        
-        <div className="text-xs text-muted-foreground text-center pt-2">
-          {(data.challenges || []).length === 0 && "Select up to 2 challenges"}
-          {(data.challenges || []).length === 1 && "1 selected - you can select 1 more"}
-          {(data.challenges || []).length === 2 && "2 selected (maximum reached)"}
-        </div>
+      <CardContent className="space-y-4">
+        {experienceLevels.map(level => <Button key={level.id} variant={data.experienceLevel === level.id ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
+        experienceLevel: level.id
+      })}>
+            <div className="text-left">
+              <div className="font-semibold">{level.label}</div>
+              <div className="text-sm text-muted-foreground">{level.description}</div>
+            </div>
+          </Button>)}
       </CardContent>
     </Card>;
-  };
   const renderStep5 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Do you already have what you need?</CardTitle>
@@ -886,6 +825,117 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   const renderStep6 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
+        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
+        <p className="text-muted-foreground">Set your schedule and timing</p>
+      </CardHeader>
+      
+      <CardContent className="space-y-6">
+        {/* Frequency */}
+        <div className="space-y-3">
+          <Label>How often?</Label>
+          
+        </div>
+        
+        {/* Time of day */}
+        <div className="space-y-3">
+          <Label>When during the day?</Label>
+          <div className="grid grid-cols-2 gap-2">
+             {timesOfDay.map(time => <Button key={time.id} variant={data.timeOfDay === time.id ? 'default' : 'outline'} className="h-auto p-3" onClick={() => {
+            if (time.id === 'custom') {
+              setShowTimePicker(true);
+            } else {
+              updateData({
+                timeOfDay: time.id
+              });
+            }
+          }}>
+                 <div className="text-center">
+                   <div className="font-semibold">{time.label}</div>
+                   <div className="text-xs text-muted-foreground">{time.description}</div>
+                 </div>
+               </Button>)}
+          </div>
+         </div>
+         
+         {/* Custom Time Display */}
+         {data.timeOfDay === 'custom' && data.customTime && <div className="mt-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
+             <div className="text-sm font-medium text-primary">
+               Selected time: {data.customTime}
+             </div>
+           </div>}
+        
+        {/* Date range */}
+        <div className="space-y-3">
+          <Label>Timeline</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs">Start date</Label>
+              <Popover open={showDatePicker && datePickerType === 'start'} onOpenChange={open => {
+              setShowDatePicker(open);
+              if (open) setDatePickerType('start');
+            }}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start">
+                    <CalendarIcon className="h-4 w-4 mr-2" />
+                    {format(data.startDate, 'MMM d')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={data.startDate} onSelect={date => {
+                  if (date) {
+                    updateData({
+                      startDate: date
+                    });
+                    setShowDatePicker(false);
+                  }
+                }} disabled={date => date < new Date()} />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div className="space-y-1">
+              <Label className="text-xs">End date (optional)</Label>
+              <Popover open={showDatePicker && datePickerType === 'end'} onOpenChange={open => {
+              setShowDatePicker(open);
+              if (open) setDatePickerType('end');
+            }}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start">
+                    <CalendarIcon className="h-4 w-4 mr-2" />
+                    {data.endDate ? format(data.endDate, 'MMM d') : 'Open'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={data.endDate} onSelect={date => {
+                  updateData({
+                    endDate: date
+                  });
+                  setShowDatePicker(false);
+                }} disabled={date => date < data.startDate} />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+          
+          <div className="text-xs text-muted-foreground">
+            Default: Start today, no end date. You can always adjust later.
+          </div>
+        </div>
+        
+        {isSupporter && data.recipient === 'other' && <div className="pt-4 border-t space-y-2">
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="reminder-me" checked={data.sendReminderToMe} onChange={e => updateData({
+            sendReminderToMe: e.target.checked
+          })} className="rounded" />
+              <Label htmlFor="reminder-me" className="text-sm">
+                Send reminder to me too
+              </Label>
+            </div>
+          </div>}
+      </CardContent>
+    </Card>;
+  const renderStep7 = () => <Card className="border-0 shadow-lg">
+      <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Who supports this goal?</CardTitle>
         <p className="text-muted-foreground">Choose your support system</p>
       </CardHeader>
@@ -901,61 +951,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <div className="text-sm text-muted-foreground">{context.description}</div>
             </div>
           </Button>)}
-      </CardContent>
-    </Card>;
-  const renderStep7 = () => <Card className="border-0 shadow-lg">
-      <CardHeader className="text-center pb-4">
-        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Gift className="h-8 w-8 text-primary" />
-        </div>
-        <CardTitle className="text-2xl">Rewards (Optional)</CardTitle>
-        <p className="text-muted-foreground">Add motivation from your Reward Bank</p>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <Button variant={!data.assignReward ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
-        assignReward: false
-      })}>
-          <div className="text-left">
-            <div className="font-semibold">No reward</div>
-            <div className="text-sm text-muted-foreground">Just the satisfaction of completing it</div>
-          </div>
-        </Button>
-        
-        <Button variant={data.assignReward ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
-        assignReward: true
-      })}>
-          <div className="text-left">
-            <div className="font-semibold">Add reward</div>
-            <div className="text-sm text-muted-foreground">Choose from Reward Bank or create new</div>
-          </div>
-        </Button>
-        
-        {data.assignReward && <div className="space-y-3 pt-4 border-t">
-            <Label>Point value</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {[{
-            value: 5,
-            label: 'Small',
-            desc: '5 pts'
-          }, {
-            value: 10,
-            label: 'Medium',
-            desc: '10 pts'
-          }, {
-            value: 20,
-            label: 'Large',
-            desc: '20 pts'
-          }].map(point => <Button key={point.value} variant={data.pointValue === point.value ? 'default' : 'outline'} className="h-auto p-3" onClick={() => updateData({
-            pointValue: point.value
-          })}>
-                  <div className="text-center">
-                    <div className="font-semibold">{point.label}</div>
-                    <div className="text-xs text-muted-foreground">{point.desc}</div>
-                  </div>
-                </Button>)}
-            </div>
-          </div>}
       </CardContent>
     </Card>;
   const renderStep8 = () => <Card className="border-0 shadow-lg">
@@ -1049,11 +1044,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </span>
                 </div>}
               
-              {data.challenges && data.challenges.length > 0 && <div className="flex justify-between items-start">
-                  <span className="text-sm font-medium text-foreground">Challenges:</span>
-                  <div className="text-sm text-primary font-medium text-right flex-1 ml-4">
-                    {data.challenges.map(id => challengeOptions.find(c => c.id === id)?.label).filter(Boolean).join(', ')}
-                  </div>
+              {data.experienceLevel && <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-foreground">Level:</span>
+                  <span className="text-sm text-primary font-medium">
+                    {experienceLevels.find(e => e.id === data.experienceLevel)?.label}
+                  </span>
                 </div>}
               
               <div className="flex justify-between items-center">
@@ -1104,7 +1099,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           
           {/* Actions */}
           <div className="flex gap-3 pt-4">
-            <Button variant="outline" onClick={() => setCurrentStep(isSupporter ? 6 : 5)} // Go back to previous step
+            <Button variant="outline" onClick={() => setCurrentStep(isSupporter ? 7 : 6)} // Go back to previous step
           className="flex-1">
               Edit
             </Button>
@@ -1137,20 +1132,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       // Goal type
       case 4:
         return renderStep4();
-      // Challenges (was prerequisites - step 5)
+      // Experience level
       case 5:
         return renderStep5();
-      // Prerequisites (was step 6)
+      // Prerequisites
       case 6:
         return renderStep6();
-      // Scheduling (was step 7)
+      // Scheduling
       case 7:
         return renderStep7();
-      // Support context (was step 8)
+      // Support context
       case 8:
         return isSupporter ? renderStep8() : renderConfirmStep();
       // Rewards or confirm
-      case 9:
       case 9:
         return renderConfirmStep();
       // Final confirm (supporters only)
