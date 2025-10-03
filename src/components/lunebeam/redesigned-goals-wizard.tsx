@@ -1309,7 +1309,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-2xl">Review and Confirm</CardTitle>
           <p className="text-muted-foreground">
-            Ready to start your goal? First review what we have so far. If everything look good click Confirm Goal.
+            Ready to start your goal? First review what we have so far. If everything looks good click Confirm Goal.
           </p>
         </CardHeader>
         
