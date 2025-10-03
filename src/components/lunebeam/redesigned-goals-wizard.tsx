@@ -10,8 +10,8 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift } from 'lucide-react';
-import { TimePicker } from '@/components/ui/time-picker';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -269,6 +269,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [datePickerType, setDatePickerType] = useState<'start' | 'end'>('start');
+  const [tempHour, setTempHour] = useState<string>("08");
+  const [tempMinute, setTempMinute] = useState<string>("00");
+  const [tempPeriod, setTempPeriod] = useState<"AM" | "PM">("AM");
   const {
     toast
   } = useToast();
@@ -567,6 +570,29 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     };
     return mapping[categoryId || ''] || 'other' as GoalDomain;
   };
+
+  const formatDisplayTime = (hhmm?: string) => {
+    if (!hhmm) return "Pick a starting time";
+    const [H, M] = hhmm.split(":").map(Number);
+    const period = H >= 12 ? "PM" : "AM";
+    const hour12 = H % 12 || 12;
+    return `${hour12}:${M.toString().padStart(2, "0")} ${period}`;
+  };
+
+  const initTimeDialogFromValue = (hhmm: string) => {
+    const [H, M] = hhmm.split(":").map(Number);
+    const period: "AM" | "PM" = H >= 12 ? "PM" : "AM";
+    const hour12 = H % 12 || 12;
+    setTempHour(hour12.toString().padStart(2, "0"));
+    setTempMinute(M.toString().padStart(2, "0"));
+    setTempPeriod(period);
+  };
+
+  const build24hTime = (hour12: number, minute: string, period: "AM" | "PM") => {
+    let H = hour12 % 12;
+    if (period === "PM") H += 12;
+    return `${H.toString().padStart(2, "0")}:${minute}`;
+  };
   const renderStep0 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -837,11 +863,21 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       
       <CardContent className="space-y-6">
         {/* Time picker */}
-        <TimePicker
-          label="Pick a starting time"
-          time={data.customTime || ''}
-          onTimeChange={(time) => updateData({ customTime: time, timeOfDay: 'custom' })}
-        />
+        <div className="space-y-2">
+          <Label>Pick a starting time</Label>
+          <Button
+            type="button"
+            variant="outline"
+            className={cn("w-full justify-start", !data.customTime && "text-muted-foreground")}
+            onClick={() => {
+              initTimeDialogFromValue(data.customTime || "08:00");
+              setShowTimePicker(true);
+            }}
+          >
+            <Clock className="h-4 w-4 mr-2" />
+            {data.customTime ? formatDisplayTime(data.customTime) : "Pick a starting time"}
+          </Button>
+        </div>
         
         {/* Date range */}
         <div className="space-y-3">
@@ -1225,56 +1261,57 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </DialogHeader>
             
             <div className="space-y-4 p-4">
-              {/* Time input */}
-              <div className="space-y-2">
-                <Label htmlFor="custom-time">Select time</Label>
-                <Input id="custom-time" type="time" value={data.customTime || ''} onChange={e => updateData({
-                customTime: e.target.value
-              })} className="w-full" />
+              <Label>Select time</Label>
+              <div className="grid grid-cols-3 gap-3">
+                {/* Hour */}
+                <Select value={tempHour} onValueChange={setTempHour}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="HH" />
+                  </SelectTrigger>
+                  <SelectContent className="pointer-events-auto">
+                    {[...Array(12)].map((_, i) => {
+                      const h = (i + 1).toString().padStart(2, "0");
+                      return <SelectItem key={h} value={h}>{h}</SelectItem>;
+                    })}
+                  </SelectContent>
+                </Select>
+
+                {/* Minute */}
+                <Select value={tempMinute} onValueChange={setTempMinute}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="MM" />
+                  </SelectTrigger>
+                  <SelectContent className="pointer-events-auto">
+                    {Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, "0")).map(m => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* AM/PM */}
+                <Select value={tempPeriod} onValueChange={(v: "AM" | "PM") => setTempPeriod(v)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="AM/PM" />
+                  </SelectTrigger>
+                  <SelectContent className="pointer-events-auto">
+                    <SelectItem value="AM">AM</SelectItem>
+                    <SelectItem value="PM">PM</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              
-              {/* Quick time options */}
-              <div className="space-y-2">
-                <Label>Or choose a common time:</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[{
-                  label: '7:00 AM',
-                  value: '07:00'
-                }, {
-                  label: '8:00 AM',
-                  value: '08:00'
-                }, {
-                  label: '12:00 PM',
-                  value: '12:00'
-                }, {
-                  label: '3:00 PM',
-                  value: '15:00'
-                }, {
-                  label: '6:00 PM',
-                  value: '18:00'
-                }, {
-                  label: '9:00 PM',
-                  value: '21:00'
-                }].map(timeOption => <Button key={timeOption.value} variant="outline" size="sm" onClick={() => updateData({
-                  customTime: timeOption.value
-                })} className="text-xs">
-                      {timeOption.label}
-                    </Button>)}
-                </div>
-              </div>
-              
+
               <div className="flex gap-2 pt-4">
-                <Button variant="outline" onClick={() => setShowTimePicker(false)} className="flex-1">
-                  Cancel
-                </Button>
-                <Button onClick={() => {
-                if (data.customTime) {
-                  updateData({
-                    timeOfDay: 'custom'
-                  });
+                <Button variant="outline" className="flex-1" onClick={() => {
+                  updateData({ customTime: '', timeOfDay: undefined });
                   setShowTimePicker(false);
-                }
-              }} disabled={!data.customTime} className="flex-1">
+                }}>
+                  Clear
+                </Button>
+                <Button className="flex-1" disabled={!tempHour || !tempMinute || !tempPeriod} onClick={() => {
+                  const time24 = build24hTime(parseInt(tempHour, 10), tempMinute, tempPeriod);
+                  updateData({ customTime: time24, timeOfDay: 'custom' });
+                  setShowTimePicker(false);
+                }}>
                   Confirm
                 </Button>
               </div>
