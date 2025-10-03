@@ -10,6 +10,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
@@ -251,6 +252,9 @@ interface WizardData {
 interface SupportedPerson {
   id: string;
   name: string;
+  profile?: {
+    avatar_url?: string;
+  };
 }
 export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   onComplete,
@@ -1127,7 +1131,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         >
           <CardContent className="p-6">
             <div className="flex items-start gap-3">
-              <Users className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               {data.supportContext === 'with_supporters' && (
                 <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
               )}
@@ -1474,9 +1477,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 });
               }}>
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Users className="h-4 w-4" />
-                        </div>
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={supporter.profile?.avatar_url || undefined} />
+                          <AvatarFallback className="text-xs">
+                            {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
                         <span>{supporter.name}</span>
                       </div>
                     </Button>)}
