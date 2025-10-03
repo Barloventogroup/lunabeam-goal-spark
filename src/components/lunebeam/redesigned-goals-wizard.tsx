@@ -1220,12 +1220,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>}
           
           {/* Actions */}
-          <div className="flex gap-3 pt-4">
-            <Button variant="outline" onClick={() => setCurrentStep(isSupporter ? 7 : 6)} // Go back to previous step
-          className="flex-1">
-              Edit
-            </Button>
-            <Button onClick={handleSubmit} disabled={loading} className="flex-1 h-12 text-lg font-semibold">
+          <div className="flex pt-4">
+            <Button onClick={handleSubmit} disabled={loading} className="w-full h-12 text-lg font-semibold">
               {loading ? 'Creating...' : isProposal ? 'Confirm Proposal' : 'Confirm Goal'}
             </Button>
           </div>
