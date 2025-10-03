@@ -193,21 +193,21 @@ const allyRoles = [
   {
     value: 'cheerleader' as const,
     title: 'Cheerleader',
-    icon: Sparkles,
+    emoji: '📣',
     description: 'Celebrates wins and provides encouragement',
     color: 'text-pink-500'
   },
   {
     value: 'accountability_partner' as const,
     title: 'Accountability Partner',
-    icon: Shield,
+    emoji: '🛡️',
     description: 'Checks in regularly and helps stay on track',
     color: 'text-blue-500'
   },
   {
     value: 'hands_on_helper' as const,
     title: 'Hands-on Helper',
-    icon: HandHelping,
+    emoji: '🤝',
     description: 'Provides direct assistance and practical support',
     color: 'text-green-500'
   }
@@ -1206,7 +1206,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {allyRoles.map(role => {
                       const isSelected = data.allyRoles?.[supporterId] === role.value;
-                      const RoleIcon = role.icon;
                       
                       return (
                         <Card
@@ -1229,7 +1228,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                               {isSelected && (
                                 <Check className="h-5 w-5 text-primary flex-shrink-0" />
                               )}
-                              <RoleIcon className={cn("h-5 w-5 flex-shrink-0", role.color)} />
+                              <span className="text-2xl flex-shrink-0">{role.emoji}</span>
                               <div className="flex-1">
                                 <div className="font-medium text-sm">{role.title}</div>
                                 <div className="text-xs text-muted-foreground mt-1">
