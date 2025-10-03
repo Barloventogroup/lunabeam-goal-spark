@@ -833,7 +833,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       <CardContent className="space-y-6">
         {/* Time picker */}
         <TimePicker
-          label="Pick Time"
+          label="Pick a starting time"
           time={data.customTime || ''}
           onTimeChange={(time) => updateData({ customTime: time, timeOfDay: 'custom' })}
         />
