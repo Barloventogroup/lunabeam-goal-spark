@@ -840,7 +840,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         {/* Date range */}
         <div className="space-y-3">
-          <Label>Timeline</Label>
+          <Label>Pick a starting date</Label>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label className="text-xs">Start date</Label>
