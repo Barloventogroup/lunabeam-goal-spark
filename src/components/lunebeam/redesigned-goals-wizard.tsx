@@ -985,13 +985,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         supportContext: 'alone',
         selectedSupporters: []
       })}>
-          <div className="text-left flex items-start gap-4">
-            <User className="h-8 w-8 mt-1" />
-            <div>
-              <div className="text-base font-semibold">Alone</div>
-              <div className="text-sm text-muted-foreground">I'll work on this independently</div>
-            </div>
-          </div>
+      <div className="text-left">
+        <div className="text-base font-semibold">Alone</div>
+        <div className="text-sm text-muted-foreground">I'll work on this independently</div>
+      </div>
         </Button>
         
         <Button variant={data.supportContext === 'with_supporters' ? "default" : "outline"} className="w-full h-auto p-6 justify-start" onClick={() => setShowSupporterDialog(true)}>
