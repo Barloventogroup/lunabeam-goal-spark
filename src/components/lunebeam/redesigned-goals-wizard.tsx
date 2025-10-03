@@ -94,7 +94,7 @@ const categories = [{
 // Goal types
 const goalTypes = [{
   id: 'reminder',
-  label: 'Reminder',
+  label: 'New Habit (consistency)',
   description: 'Remember to do something regularly'
 }, {
   id: 'practice',
