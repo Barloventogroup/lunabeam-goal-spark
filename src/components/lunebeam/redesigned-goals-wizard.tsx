@@ -232,6 +232,7 @@ interface WizardData {
 
   // Step 2: Motivation
   goalMotivation?: string;
+  whyDescription?: string; // User's own words for why they want this goal
 
   // Step 3: Goal type
   goalType?: string;
@@ -818,7 +819,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         <p className="text-muted-foreground">Understanding your motivation helps us support you better</p>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="space-y-3">
           {motivations.map(motivation => <Button key={motivation.id} type="button" variant={data.goalMotivation === motivation.id ? 'default' : 'outline'} className="w-full h-auto justify-start text-left p-4" onClick={() => updateData({
           goalMotivation: motivation.id
@@ -830,6 +831,20 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </div>
               </div>
             </Button>)}
+        </div>
+
+        {/* Say in your own words */}
+        <div className="space-y-2 pt-4 border-t">
+          <Label htmlFor="why-description" className="text-base font-semibold">Say it in your own words</Label>
+          <p className="text-xs text-muted-foreground">Tell us why this goal matters to you</p>
+          <Textarea 
+            id="why-description" 
+            placeholder="e.g., I want to learn guitar because it's something I've always dreamed of doing, and music helps me relax..." 
+            value={data.whyDescription || ''} 
+            onChange={e => updateData({ whyDescription: e.target.value })} 
+            className="min-h-[100px] resize-none" 
+            rows={4} 
+          />
         </div>
       </CardContent>
     </Card>;
@@ -1092,13 +1107,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* Goal Preview Card */}
-          <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
-            <div className="space-y-3">
-              <div className="flex justify-between items-start">
-                <span className="text-sm font-medium text-foreground">Goal:</span>
-                <span className="text-sm text-right flex-1 ml-4 font-semibold">{data.goalTitle}</span>
+          {/* Prominent Goal & Why Display */}
+          <div className="p-6 bg-gradient-to-br from-primary/10 via-primary/5 to-primary/10 rounded-xl border-2 border-primary/30 shadow-sm">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xs font-medium text-primary/70 uppercase tracking-wide mb-2">Your Goal</h3>
+                <p className="text-xl font-bold text-foreground leading-tight">{data.goalTitle}</p>
               </div>
+              
+              {data.whyDescription && (
+                <div className="pt-3 border-t border-primary/20">
+                  <h3 className="text-xs font-medium text-primary/70 uppercase tracking-wide mb-2">Why This Matters</h3>
+                  <p className="text-base text-foreground/90 leading-relaxed italic">{data.whyDescription}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Goal Details Card */}
+          <div className="p-4 bg-muted/30 rounded-lg border border-border">
+            <div className="space-y-3">
               
               {data.category && <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-foreground">Category:</span>
