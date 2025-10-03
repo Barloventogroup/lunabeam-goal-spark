@@ -892,7 +892,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardContent>
     </Card>;
   };
-  const renderStep5 = () => <Card className="border-0 shadow-lg min-h-[500px]">
+  const renderStep5 = () => <Card className="border-0 shadow-lg min-h-[600px]">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Do you already have what you need?</CardTitle>
         <p className="text-muted-foreground">Equipment, knowledge, access, etc.</p>
