@@ -1467,25 +1467,45 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     You can invite people to cheer for you in the Community tab.
                   </p>
                 </div> : <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {userSupporters.map(supporter => <Button key={supporter.id} variant={(data.selectedSupporters || []).includes(supporter.id) ? 'default' : 'outline'} className="w-full justify-start" onClick={() => {
-                const currentSelection = data.selectedSupporters || [];
-                const isSelected = currentSelection.includes(supporter.id);
-                const newSelection = isSelected ? currentSelection.filter(id => id !== supporter.id) : [...currentSelection, supporter.id];
-                updateData({
-                  selectedSupporters: newSelection,
-                  supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone'
-                });
-              }}>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="w-8 h-8">
-                          <AvatarImage src={supporter.profile?.avatar_url || undefined} />
-                          <AvatarFallback className="text-xs">
-                            {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{supporter.name}</span>
-                      </div>
-                    </Button>)}
+                  {userSupporters.map(supporter => {
+                    const isSelected = (data.selectedSupporters || []).includes(supporter.id);
+                    
+                    return (
+                      <Card 
+                        key={supporter.id}
+                        className={cn(
+                          "cursor-pointer hover:shadow-md transition-all border-2",
+                          isSelected ? "border-primary bg-primary/5" : "border-border"
+                        )}
+                        onClick={() => {
+                          const currentSelection = data.selectedSupporters || [];
+                          const isSelected = currentSelection.includes(supporter.id);
+                          const newSelection = isSelected 
+                            ? currentSelection.filter(id => id !== supporter.id) 
+                            : [...currentSelection, supporter.id];
+                          updateData({
+                            selectedSupporters: newSelection,
+                            supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone'
+                          });
+                        }}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            {isSelected && (
+                              <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                            )}
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={supporter.profile?.avatar_url || undefined} />
+                              <AvatarFallback className="text-xs">
+                                {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="flex-1">{supporter.name}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>}
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setShowSupporterDialog(false)}>
