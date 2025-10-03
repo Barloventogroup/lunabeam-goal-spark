@@ -1307,7 +1307,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl">Confirm</CardTitle>
+          <CardTitle className="text-2xl">Review and Confirm</CardTitle>
           <p className="text-muted-foreground">
             {isProposal ? `This will be sent to ${data.supportedPersonName}'s admins for approval` : 'Ready to start your goal?'}
           </p>
