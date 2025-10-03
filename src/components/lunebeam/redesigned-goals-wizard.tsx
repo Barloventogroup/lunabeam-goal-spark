@@ -1318,7 +1318,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         <CardContent className="space-y-6">
           {/* Four Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-4">
             {/* Goal Action Card */}
             <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
               <CardHeader className="pb-3">
