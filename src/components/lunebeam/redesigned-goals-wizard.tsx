@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
@@ -1142,62 +1142,110 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* Goal Preview Card */}
-          <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
-            <div className="space-y-3">
-              <div className="flex justify-between items-start">
-                <span className="text-sm font-medium text-foreground">Goal:</span>
-                <span className="text-sm text-right flex-1 ml-4 font-semibold">{data.goalTitle}</span>
-              </div>
-              
-              {data.category && <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-foreground">Category:</span>
+          {/* Four Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Goal Action Card */}
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-base font-semibold">Goal Action</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-sm font-semibold text-foreground">{data.goalTitle}</p>
+                {data.category && (
                   <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                     {categories.find(c => c.id === data.category)?.emoji} {categories.find(c => c.id === data.category)?.title}
                   </Badge>
-                </div>}
-              
-              {data.goalType && <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-foreground">Type:</span>
-                  <span className="text-sm text-primary font-medium">
-                    {goalTypes.find(t => t.id === data.goalType)?.label}
-                  </span>
-                </div>}
-              
-              {data.challengeAreas && data.challengeAreas.length > 0 && <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-foreground">Challenges:</span>
-                  <span className="text-sm text-primary font-medium">
-                    {data.challengeAreas.map(id => challengeAreas.find(c => c.id === id)?.label).join(', ')}
-                  </span>
-                </div>}
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-foreground">Action Plan</span>
-                <span className="text-sm text-primary font-medium">
-                  {data.frequency} times per week
-                  {data.timeOfDay && data.timeOfDay !== 'custom' && <span>, {timesOfDay.find(t => t.id === data.timeOfDay)?.label.toLowerCase()}</span>}
-                  {data.timeOfDay === 'custom' && data.customTime && <span>, at {data.customTime}</span>}
-                </span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-foreground">Timeline:</span>
-                <span className="text-sm text-primary font-medium">
-                  {format(data.startDate, 'MMM d')}
-                  {data.endDate && ` - ${format(data.endDate, 'MMM d, yyyy')}`}
-                  {!data.endDate && ' (ongoing)'}
-                </span>
-              </div>
-              
-              {data.supportContext && <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-foreground">Support:</span>
-                  <span className="text-sm text-primary font-medium">
-                    {data.supportContext === 'alone' && 'Working alone'}
-                    {data.supportContext === 'with_supporters' && data.selectedSupporters && data.selectedSupporters.length > 0 && `With ${data.selectedSupporters.map(id => userSupporters.find(s => s.id === id)?.name || 'Unknown').join(', ')}`}
-                    {data.supportContext === 'with_supporters' && (!data.selectedSupporters || data.selectedSupporters.length === 0) && 'With supporters'}
-                  </span>
-                </div>}
-            </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Why Card */}
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-base font-semibold">Why</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {data.goalMotivation && (
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {motivations.find(m => m.id === data.goalMotivation)?.label}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {motivations.find(m => m.id === data.goalMotivation)?.description}
+                    </p>
+                  </div>
+                )}
+                {data.customMotivation && (
+                  <p className="text-sm text-foreground italic">{data.customMotivation}</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Start Time Card */}
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-base font-semibold">Start Time</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="space-y-1">
+                  <p className="text-sm text-foreground">
+                    <span className="font-medium">Starts:</span> {format(data.startDate, 'MMM d, yyyy')}
+                  </p>
+                  <p className="text-sm text-foreground">
+                    <span className="font-medium">Ends:</span> {data.endDate ? format(data.endDate, 'MMM d, yyyy') : 'Ongoing'}
+                  </p>
+                  <p className="text-sm text-foreground">
+                    <span className="font-medium">Frequency:</span> {data.frequency} times per week
+                  </p>
+                  {data.timeOfDay && data.timeOfDay !== 'custom' && (
+                    <p className="text-sm text-foreground">
+                      <span className="font-medium">Time:</span> {timesOfDay.find(t => t.id === data.timeOfDay)?.label}
+                    </p>
+                  )}
+                  {data.timeOfDay === 'custom' && data.customTime && (
+                    <p className="text-sm text-foreground">
+                      <span className="font-medium">Time:</span> {data.customTime}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Core Barrier Card */}
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-base font-semibold">Core Barrier</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {data.challengeAreas && data.challengeAreas.length > 0 && (
+                  <div className="space-y-1">
+                    {data.challengeAreas.map(id => {
+                      const challenge = challengeAreas.find(c => c.id === id);
+                      return challenge ? (
+                        <p key={id} className="text-sm text-foreground">
+                          • {challenge.label}
+                        </p>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+                {data.customChallenges && (
+                  <p className="text-sm text-foreground italic">{data.customChallenges}</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
           
           {/* First Micro-steps Preview */}
