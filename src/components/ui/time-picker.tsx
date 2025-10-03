@@ -41,7 +41,7 @@ export function TimePicker({
           type="time"
           value={time}
           onChange={(e) => onTimeChange(e.target.value)}
-          className="absolute inset-0 opacity-0 cursor-pointer z-[60] pointer-events-auto w-full h-full"
+          className="absolute inset-0 opacity-0 cursor-pointer z-10"
         />
         <Button
           type="button"
