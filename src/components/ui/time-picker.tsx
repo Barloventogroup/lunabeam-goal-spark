@@ -1,5 +1,8 @@
 import * as React from "react"
 import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Clock } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface TimePickerProps {
   time?: string
@@ -14,15 +17,45 @@ export function TimePicker({
   label,
   className
 }: TimePickerProps) {
+  const inputRef = React.useRef<HTMLInputElement>(null)
+  
+  const handleButtonClick = () => {
+    inputRef.current?.showPicker()
+  }
+
+  const formatTime = (timeString: string) => {
+    if (!timeString) return "Pick a time"
+    const [hours, minutes] = timeString.split(':')
+    const hour = parseInt(hours)
+    const ampm = hour >= 12 ? 'PM' : 'AM'
+    const displayHour = hour % 12 || 12
+    return `${displayHour}:${minutes} ${ampm}`
+  }
+
   return (
     <div className={className}>
       {label && <Label className="text-sm font-medium mb-2 block">{label}</Label>}
-      <input
-        type="time"
-        value={time}
-        onChange={(e) => onTimeChange(e.target.value)}
-        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-      />
+      <div className="relative">
+        <Button
+          type="button"
+          variant="outline"
+          className={cn(
+            "w-full justify-start",
+            !time && "text-muted-foreground"
+          )}
+          onClick={handleButtonClick}
+        >
+          <Clock className="h-4 w-4 mr-2" />
+          {formatTime(time)}
+        </Button>
+        <input
+          ref={inputRef}
+          type="time"
+          value={time}
+          onChange={(e) => onTimeChange(e.target.value)}
+          className="absolute inset-0 opacity-0 cursor-pointer"
+        />
+      </div>
     </div>
   )
 }
