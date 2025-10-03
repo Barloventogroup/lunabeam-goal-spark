@@ -1298,9 +1298,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           {renderCurrentStep()}
         </div>
         
-        {/* Continue button - fixed bottom-left */}
+        {/* Continue button - fixed bottom-right */}
         {!isLastStep && (
-          <div className="fixed bottom-4 left-4 z-50">
+          <div className="fixed bottom-4 right-4 z-50">
             <Button onClick={nextStep} disabled={!canProceed()} className="h-12 px-8 text-lg font-semibold shadow-lg">
               Continue
               <ArrowRight className="h-5 w-5 ml-2" />
