@@ -1388,6 +1388,47 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 )}
               </CardContent>
             </Card>
+
+            {/* Support Card */}
+            <Card className="border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Support</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {data.supportContext === 'alone' ? (
+                  <p className="text-sm font-medium text-foreground">All by myself</p>
+                ) : data.selectedSupporters && data.selectedSupporters.length > 0 ? (
+                  <div className="space-y-2">
+                    {data.selectedSupporters.map(supporterId => {
+                      const supporter = userSupporters.find(s => s.id === supporterId);
+                      const roleValue = data.allyRoles?.[supporterId];
+                      const role = allyRoles.find(r => r.value === roleValue);
+                      
+                      if (!supporter || !role) return null;
+                      
+                      return (
+                        <div key={supporterId} className="flex items-center gap-2">
+                          <Avatar className="w-6 h-6">
+                            <AvatarImage src={supporter.profile?.avatar_url} />
+                            <AvatarFallback className="text-xs">
+                              {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm font-medium text-foreground">
+                            {supporter.name}
+                          </span>
+                          <span className="text-sm">
+                            {role.emoji} {role.title}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No support selected</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
           
           {/* First Micro-steps Preview */}
