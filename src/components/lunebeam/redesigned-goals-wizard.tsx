@@ -752,9 +752,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   const renderStep2 = () => <Card className="border-0 shadow-lg">
       <CardHeader className="text-center pb-4">
-        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          
-        </div>
+        
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">Understanding your motivation helps us support you better</p>
       </CardHeader>
