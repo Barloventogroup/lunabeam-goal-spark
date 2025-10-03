@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { TimePicker } from '@/components/ui/time-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -812,30 +813,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         {/* Time of day */}
         <div className="space-y-3">
           <Label>When during the day?</Label>
-          <div className="grid grid-cols-2 gap-2">
-             {timesOfDay.map(time => <Button key={time.id} variant={data.timeOfDay === time.id ? 'default' : 'outline'} className="h-auto p-3" onClick={() => {
-            if (time.id === 'custom') {
-              setShowTimePicker(true);
-            } else {
-              updateData({
-                timeOfDay: time.id
-              });
-            }
-          }}>
-                 <div className="text-center">
-                   <div className="font-semibold">{time.label}</div>
-                   <div className="text-xs text-muted-foreground">{time.description}</div>
-                 </div>
-               </Button>)}
-          </div>
-         </div>
-         
-         {/* Custom Time Display */}
-         {data.timeOfDay === 'custom' && data.customTime && <div className="mt-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
-             <div className="text-sm font-medium text-primary">
-               Selected time: {data.customTime}
-             </div>
-           </div>}
+          <TimePicker 
+            time={data.customTime || ''} 
+            onTimeChange={(time) => updateData({ 
+              customTime: time,
+              timeOfDay: 'custom'
+            })} 
+            className="w-full"
+          />
+        </div>
         
         {/* Date range */}
         <div className="space-y-3">
