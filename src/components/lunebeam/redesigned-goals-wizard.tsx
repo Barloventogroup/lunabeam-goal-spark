@@ -619,9 +619,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       <CardContent className="space-y-6">
         <div className="space-y-2">
           
-          <Input id="goal-title" placeholder="e.g., Practice guitar for 30 minutes daily" value={data.goalTitle} onChange={e => updateData({
+          <Textarea id="goal-title" placeholder="e.g., Practice guitar for 30 minutes daily" value={data.goalTitle} onChange={e => updateData({
           goalTitle: e.target.value
-        })} className="text-lg py-8 placeholder:align-top" />
+        })} className="text-lg py-3 min-h-[76px] resize-none" rows={3} />
         </div>
         
         <div className="space-y-4">
