@@ -217,6 +217,7 @@ interface WizardData {
 
   // Step 2: Motivation
   goalMotivation?: string;
+  customMotivation?: string;
 
   // Step 3: Goal type
   goalType?: string;
@@ -814,6 +815,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </div>
               </div>
             </Button>)}
+        </div>
+        
+        <div className="space-y-2 pt-4 border-t">
+          <Label htmlFor="custom-motivation">Say it in your own words</Label>
+          <Textarea
+            id="custom-motivation"
+            placeholder="Optional: describe your motivation in your own words..."
+            value={data.customMotivation || ''}
+            onChange={(e) => updateData({ customMotivation: e.target.value })}
+            className="min-h-[80px] resize-none"
+            rows={3}
+          />
         </div>
       </CardContent>
     </Card>;
