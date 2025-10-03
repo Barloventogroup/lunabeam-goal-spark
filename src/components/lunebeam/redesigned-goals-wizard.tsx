@@ -1321,20 +1321,20 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="flex flex-col gap-4">
             {/* Goal Action Card */}
             <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
-              <CardHeader className="pb-3">
+              <CardHeader className="p-3 pb-2">
                 <CardTitle className="text-base font-semibold">Goal Action</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 pt-0">
                 <p className="text-sm font-medium text-foreground">{data.goalTitle}</p>
               </CardContent>
             </Card>
 
             {/* Why Card */}
             <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
-              <CardHeader className="pb-3">
+              <CardHeader className="p-3 pb-2">
                 <CardTitle className="text-base font-semibold">Why</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="p-3 pt-0 space-y-2">
                 {data.goalMotivation && (
                   <div>
                     <p className="text-sm font-medium text-foreground">
@@ -1353,10 +1353,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
             {/* Start Time Card */}
             <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
-              <CardHeader className="pb-3">
+              <CardHeader className="p-3 pb-2">
                 <CardTitle className="text-base font-semibold">Start Time</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 pt-0">
                 <p className="text-sm font-medium text-foreground">
                   {format(data.startDate, 'MMMM d, yyyy')}
                   {data.timeOfDay && data.timeOfDay !== 'custom' && ` - ${timesOfDay.find(t => t.id === data.timeOfDay)?.label}`}
@@ -1367,10 +1367,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
             {/* Core Barrier Card */}
             <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100">
-              <CardHeader className="pb-3">
+              <CardHeader className="p-3 pb-2">
                 <CardTitle className="text-base font-semibold">Core Barrier</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="p-3 pt-0 space-y-2">
                 {data.challengeAreas && data.challengeAreas.length > 0 && (
                   <div className="space-y-1">
                     {data.challengeAreas.map(id => {
@@ -1391,10 +1391,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
             {/* Support Card */}
             <Card className="border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100">
-              <CardHeader className="pb-3">
+              <CardHeader className="p-3 pb-2">
                 <CardTitle className="text-base font-semibold">Support</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 pt-0">
                 {data.supportContext === 'alone' ? (
                   <p className="text-sm font-medium text-foreground">All by myself</p>
                 ) : data.selectedSupporters && data.selectedSupporters.length > 0 ? (
