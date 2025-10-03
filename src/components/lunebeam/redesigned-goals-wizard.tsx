@@ -1156,13 +1156,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               Edit
             </Button>
             <Button onClick={handleSubmit} disabled={loading} className="flex-1 h-12 text-lg font-semibold">
-              {loading ? 'Creating...' : isProposal ? <>
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Confirm Proposal
-                </> : <>
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Confirm Goal
-                </>}
+              {loading ? 'Creating...' : isProposal ? 'Confirm Proposal' : 'Confirm Goal'}
             </Button>
           </div>
         </CardContent>
