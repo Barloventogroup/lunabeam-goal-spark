@@ -1128,13 +1128,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="p-4 bg-muted/30 rounded-lg border border-border">
             <div className="space-y-3">
               
-              {data.category && <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-foreground">Category:</span>
-                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                    {categories.find(c => c.id === data.category)?.emoji} {categories.find(c => c.id === data.category)?.title}
-                  </Badge>
-                </div>}
-              
               {data.goalType && <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-foreground">Type:</span>
                   <span className="text-sm text-primary font-medium">
