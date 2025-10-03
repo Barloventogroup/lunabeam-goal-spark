@@ -1065,7 +1065,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
           <CardTitle className="text-2xl">Confirm</CardTitle>
           <p className="text-muted-foreground">
-            {isProposal ? `This will be sent to ${data.supportedPersonName}'s admins for approval` : 'Ready to start your goal?'}
+            Here's your action plan for this goal.
           </p>
         </CardHeader>
         
