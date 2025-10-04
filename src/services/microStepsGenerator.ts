@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { AIService } from './aiService';
 
 export interface MicroStep {
   title: string;
@@ -150,63 +151,125 @@ function getSupporterBarrierTemplate(
 }
 
 /**
- * Main generation function: produces exactly 3 micro-steps following the hierarchy
+ * Smart generation: attempts AI, falls back to theory-aligned templates
  */
-export function generateMicroSteps(
+export async function generateMicroStepsSmart(
+  data: WizardData,
+  flow: 'individual' | 'supporter'
+): Promise<MicroStep[]> {
+  try {
+    const payload = {
+      flow,
+      goalTitle: data.goalTitle,
+      category: data.category || 'general',
+      motivation: data.customMotivation || data.goalMotivation || '',
+      startDayOfWeek: format(data.startDate, 'EEEE'),
+      startTime: formatDisplayTime(data.customTime || '08:00'),
+      startDateTime: data.startDate.toISOString(),
+      hasPrerequisite: data.hasPrerequisites === true && !!data.customPrerequisites,
+      prerequisiteText: data.customPrerequisites || '',
+      barrier1: data.challengeAreas?.[0] || 'initiation',
+      barrier2: data.challengeAreas?.[1] || 'attention',
+    };
+
+    const { microSteps, error, useFallback } = await AIService.getMicroSteps(payload);
+    
+    if (error || useFallback || !microSteps || microSteps.length !== 3) {
+      console.warn('AI generation failed, using theory-aligned fallback');
+      return generateMicroStepsFallback(data, flow);
+    }
+    
+    return microSteps;
+  } catch (err) {
+    console.error('Smart generation error:', err);
+    return generateMicroStepsFallback(data, flow);
+  }
+}
+
+/**
+ * Fallback generation: theory-aligned templates
+ */
+export function generateMicroStepsFallback(
   data: WizardData,
   flow: 'individual' | 'supporter'
 ): MicroStep[] {
   const vars = translateToActionableVariables(data);
   const steps: MicroStep[] = [];
+  const primaryBarrier = vars.barrier1 || 'initiation';
+  const secondaryBarrier = vars.barrier2 || 'attention';
   
-  // SLOT 1: Prerequisite (Highest Priority)
+  // SLOT 1: Prerequisite or Environmental Setup
   if (vars.hasPrerequisite && vars.prerequisiteText) {
+    const prereqAction = parsePrerequisiteIntoAction(vars.prerequisiteText, vars.dayOfWeek, flow);
     steps.push({
-      title: `Before ${vars.dayOfWeek}, prepare what you need`,
-      description: vars.prerequisiteText
+      title: flow === 'supporter' ? 'Environmental prep' : `Get ready by ${vars.dayOfWeek}`,
+      description: prereqAction
     });
-  }
-  
-  // SLOT 2: Primary Barrier (Barrier 1)
-  if (vars.barrier1) {
+  } else {
+    // Use prep step from primary barrier
     const template = flow === 'supporter' 
-      ? getSupporterBarrierTemplate(vars.barrier1, vars)
-      : getIndividualBarrierTemplate(vars.barrier1, vars);
+      ? getSupporterBarrierTemplate(primaryBarrier, vars)
+      : getIndividualBarrierTemplate(primaryBarrier, vars);
     
-    steps.push({
-      title: getBarrierTitle(vars.barrier1, 'primary'),
-      description: template.activationStep
-    });
-    
-    // If we used a prep step and no prerequisite was filled, use it
-    if (template.prepStep && steps.length === 1) {
-      steps.unshift({
-        title: getBarrierTitle(vars.barrier1, 'prep'),
+    if (template.prepStep) {
+      steps.push({
+        title: getBarrierTitle(primaryBarrier, 'prep'),
         description: template.prepStep
       });
     }
   }
   
-  // SLOT 3: Secondary Barrier (Barrier 2) or Focus fallback
-  const barrier2 = vars.barrier2 || 'attention'; // Default to Focus if only one barrier selected
-  const template = flow === 'supporter'
-    ? getSupporterBarrierTemplate(barrier2, vars)
-    : getIndividualBarrierTemplate(barrier2, vars);
+  // SLOT 2: T-Zero Activation Cue (ALWAYS references START_TIME)
+  const activationTemplate = flow === 'supporter' 
+    ? getSupporterBarrierTemplate(primaryBarrier, vars)
+    : getIndividualBarrierTemplate(primaryBarrier, vars);
   
   steps.push({
-    title: getBarrierTitle(barrier2, 'secondary'),
-    description: template.activationStep
+    title: flow === 'supporter' ? 'Deliver the prompt' : `At ${vars.startTime}: Just start`,
+    description: activationTemplate.activationStep
   });
   
-  // Ensure we have exactly 3 steps
-  while (steps.length < 3) {
-    steps.push({
-      title: 'Track your progress',
-      description: `After each session, mark this step complete to build momentum and earn points.`
-    });
+  // SLOT 3: Primary Barrier Action
+  const barrierTemplate = flow === 'supporter'
+    ? getSupporterBarrierTemplate(secondaryBarrier, vars)
+    : getIndividualBarrierTemplate(secondaryBarrier, vars);
+  
+  steps.push({
+    title: getBarrierTitle(secondaryBarrier, 'primary'),
+    description: barrierTemplate.activationStep
+  });
+  
+  return steps.slice(0, 3);
+}
+
+/**
+ * Parses prerequisite text into 1-2 concrete actions
+ */
+function parsePrerequisiteIntoAction(prereqText: string, dayOfWeek: string, flow: 'individual' | 'supporter'): string {
+  const lower = prereqText.toLowerCase();
+  
+  if (flow === 'supporter') {
+    if (lower.includes('help') || lower.includes('someone')) {
+      return `Before ${dayOfWeek}, ensure they have identified 2 potential helpers. Place their names on a visible note.`;
+    }
+    if (lower.includes('material') || lower.includes('supplies')) {
+      return `Before ${dayOfWeek}, place all required materials in a designated spot (desk, table, counter).`;
+    }
+    return `Before ${dayOfWeek}, set up their environment: ${prereqText.slice(0, 100)}`;
   }
   
-  return steps.slice(0, 3); // Return exactly 3 steps
+  // Individual flow
+  if (lower.includes('help') || lower.includes('someone')) {
+    return `Action 1: Text or ask 2 people by Thursday who could help. Action 2: Confirm one helper by Friday evening.`;
+  }
+  if (lower.includes('material') || lower.includes('supplies') || lower.includes('book')) {
+    return `Action 1: By Wednesday, find all materials needed. Action 2: Place them on your desk by Thursday night.`;
+  }
+  if (lower.includes('permission') || lower.includes('approval')) {
+    return `Action 1: Ask for permission by Wednesday. Action 2: Get written confirmation by Thursday.`;
+  }
+  
+  return `Action 1: Complete this by Wednesday: ${prereqText.slice(0, 80)}. Action 2: Verify you have it by ${dayOfWeek} morning.`;
 }
 
 /**

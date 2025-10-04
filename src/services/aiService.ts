@@ -40,6 +40,25 @@ export interface CoachingRequest {
   context?: string;
 }
 
+export interface MicroStepsRequest {
+  flow: 'individual' | 'supporter';
+  goalTitle: string;
+  category: string;
+  motivation: string;
+  startDayOfWeek: string;
+  startTime: string;
+  startDateTime: string;
+  hasPrerequisite: boolean;
+  prerequisiteText: string;
+  barrier1: string;
+  barrier2: string;
+}
+
+export interface MicroStep {
+  title: string;
+  description: string;
+}
+
 export class AIService {
   static async getOnboardingGuidance(request: OnboardingGuidanceRequest) {
     try {
@@ -80,6 +99,28 @@ export class AIService {
     } catch (error) {
       console.error('Error getting coaching guidance:', error);
       throw new Error('Failed to get coaching guidance. Please try again.');
+    }
+  }
+
+  static async getMicroSteps(request: MicroStepsRequest): Promise<{ microSteps?: MicroStep[]; error?: string; useFallback?: boolean }> {
+    try {
+      const { data, error } = await supabase.functions.invoke('microsteps-scaffold', {
+        body: request
+      });
+
+      if (error) {
+        console.warn('Micro-steps AI generation error:', error);
+        return { error: error.message, useFallback: true };
+      }
+      
+      if (data?.useFallback) {
+        return { useFallback: true };
+      }
+
+      return { microSteps: data?.microSteps };
+    } catch (error) {
+      console.error('Error getting micro-steps:', error);
+      return { error: error.message, useFallback: true };
     }
   }
 }

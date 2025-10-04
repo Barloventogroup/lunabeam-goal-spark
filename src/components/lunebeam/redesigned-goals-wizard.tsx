@@ -20,7 +20,7 @@ import { goalsService, stepsService } from '@/services/goalsService';
 import { goalProposalsService } from '@/services/goalProposalsService';
 import { supabase } from '@/integrations/supabase/client';
 import { PermissionsService } from '@/services/permissionsService';
-import { generateMicroSteps, type MicroStep } from '@/services/microStepsGenerator';
+import { generateMicroStepsSmart, type MicroStep } from '@/services/microStepsGenerator';
 import type { GoalDomain } from '@/types';
 interface RedesignedGoalsWizardProps {
   onComplete: (goalData: any) => void;
@@ -314,6 +314,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [tempMinute, setTempMinute] = useState<string>("00");
   const [tempPeriod, setTempPeriod] = useState<"AM" | "PM">("AM");
   const [generatedMicroSteps, setGeneratedMicroSteps] = useState<MicroStep[]>([]);
+  const [generatingSteps, setGeneratingSteps] = useState(false);
   const {
     toast
   } = useToast();
@@ -437,14 +438,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       ...updates
     }));
   };
-  const nextStep = () => {
+  const nextStep = async () => {
     const maxStep = isSupporter ? 9 : 8;
     
     // Generate micro-steps when moving FROM step 7 TO step 8
     if (currentStep === 7 && currentStep + 1 === 8) {
-      const flow = data.recipient === 'other' ? 'supporter' : 'individual';
-      const microSteps = generateMicroSteps(data as any, flow);
-      setGeneratedMicroSteps(microSteps);
+      setGeneratingSteps(true);
+      try {
+        const flow = data.recipient === 'other' ? 'supporter' : 'individual';
+        const microSteps = await generateMicroStepsSmart(data as any, flow);
+        setGeneratedMicroSteps(microSteps);
+      } catch (error) {
+        console.error('Error generating micro-steps:', error);
+        toast({ 
+          title: "Using fallback templates",
+          description: "Could not personalize micro-steps. Using theory-based templates.",
+          variant: "default"
+        });
+      } finally {
+        setGeneratingSteps(false);
+      }
     }
     
     if (currentStep < maxStep) {
