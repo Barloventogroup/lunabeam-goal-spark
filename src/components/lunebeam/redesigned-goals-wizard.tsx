@@ -355,6 +355,7 @@ interface WizardData {
   selectedSupporters?: string[];
   allyRoles?: Record<string, 'cheerleader' | 'accountability_partner' | 'hands_on_helper'>;
   sendReminderToMe?: boolean; // For supporters
+  supporterRole?: string; // Parent/admin's support role
 
   // Step 8: Rewards (supporters only)
   assignReward?: boolean;
@@ -400,6 +401,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [tempMinute, setTempMinute] = useState<string>("00");
   const [tempPeriod, setTempPeriod] = useState<"AM" | "PM">("AM");
   const [generatedMicroSteps, setGeneratedMicroSteps] = useState<MicroStep[]>([]);
+  const [generatedCoachSteps, setGeneratedCoachSteps] = useState<MicroStep[]>([]);
   const [generatingSteps, setGeneratingSteps] = useState(false);
   const {
     toast
@@ -575,6 +577,32 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         const flow = data.recipient === 'other' ? 'supporter' : 'individual';
         const microSteps = await generateMicroStepsSmart(data as any, flow);
         setGeneratedMicroSteps(microSteps);
+
+        // Generate coach steps for supporter flow
+        if (data.recipient === 'other' && data.supportedPersonName && data.supporterRole) {
+          try {
+            const dayOfWeek = format(data.startDate, 'EEEE');
+            const { data: coachData, error: coachError } = await supabase.functions.invoke('supporter-microsteps-scaffold', {
+              body: {
+                individualName: data.supportedPersonName,
+                goalTitle: data.goalTitle,
+                prerequisiteDetail: data.customPrerequisites || 'necessary materials',
+                primaryMotivation: data.customMotivation || data.goalMotivation || 'personal growth',
+                startTime: data.customTime || data.timeOfDay || '08:00 AM',
+                startDay: dayOfWeek,
+                supporterRole: data.supporterRole
+              }
+            });
+
+            if (coachError) throw coachError;
+            if (coachData?.supporterSteps) {
+              setGeneratedCoachSteps(coachData.supporterSteps);
+            }
+          } catch (coachError) {
+            console.error('Error generating coach steps:', coachError);
+            // Don't block if coach steps fail
+          }
+        }
       } catch (error) {
         console.error('Error generating micro-steps:', error);
         toast({
@@ -703,8 +731,24 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 is_required: true,
                 estimated_effort_min: 15,
                 is_planned: true,
-                notes: microStep.description
-              });
+                notes: microStep.description,
+                is_supporter_step: false
+              } as any);
+            }
+
+            // Save coach steps if they exist (supporter flow)
+            if (generatedCoachSteps.length > 0 && data.recipient === 'other') {
+              for (const coachStep of generatedCoachSteps) {
+                await stepsService.createStep(createdGoal.id, {
+                  title: coachStep.title,
+                  step_type: 'action',
+                  is_required: true,
+                  estimated_effort_min: 10,
+                  is_planned: true,
+                  notes: coachStep.description,
+                  is_supporter_step: true
+                } as any);
+              }
             }
           } catch (microStepError) {
             console.error('Failed to save micro-steps:', microStepError);
@@ -1238,6 +1282,66 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </CardContent>
         </Card>
         
+        {/* Parent/Admin Support Role - shown when creating goal for someone else */}
+        {data.recipient === 'other' && <div className="space-y-3 mt-6 pt-6 border-t">
+            <div>
+              <h3 className="font-semibold mb-2">Your support role</h3>
+              <p className="text-sm text-muted-foreground">
+                How will you support {data.supportedPersonName || 'them'} during this action?
+              </p>
+            </div>
+            
+            <RadioGroup value={data.supporterRole} onValueChange={value => updateData({ supporterRole: value })}>
+              <Card className={cn("cursor-pointer hover:shadow-sm transition-all", data.supporterRole === 'Active Co-working (Side-by-side)' && "border-primary bg-primary/5")}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="Active Co-working (Side-by-side)" id="cowork" />
+                    <Label htmlFor="cowork" className="flex-1 cursor-pointer">
+                      <div className="font-medium">Active Co-working (Side-by-side)</div>
+                      <div className="text-xs text-muted-foreground">Working together on the task</div>
+                    </Label>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className={cn("cursor-pointer hover:shadow-sm transition-all", data.supporterRole === 'Proximity Support (Same room)' && "border-primary bg-primary/5")}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="Proximity Support (Same room)" id="proximity" />
+                    <Label htmlFor="proximity" className="flex-1 cursor-pointer">
+                      <div className="font-medium">Proximity Support (Same room)</div>
+                      <div className="text-xs text-muted-foreground">Nearby but not actively helping</div>
+                    </Label>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className={cn("cursor-pointer hover:shadow-sm transition-all", data.supporterRole === 'Check-in Support (Brief contact)' && "border-primary bg-primary/5")}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="Check-in Support (Brief contact)" id="checkin" />
+                    <Label htmlFor="checkin" className="flex-1 cursor-pointer">
+                      <div className="font-medium">Check-in Support (Brief contact)</div>
+                      <div className="text-xs text-muted-foreground">Quick check before and after</div>
+                    </Label>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className={cn("cursor-pointer hover:shadow-sm transition-all", data.supporterRole === 'Remote Support (Available if needed)' && "border-primary bg-primary/5")}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="Remote Support (Available if needed)" id="remote" />
+                    <Label htmlFor="remote" className="flex-1 cursor-pointer">
+                      <div className="font-medium">Remote Support (Available if needed)</div>
+                      <div className="text-xs text-muted-foreground">Available via text/call</div>
+                    </Label>
+                  </div>
+                </CardContent>
+              </Card>
+            </RadioGroup>
+          </div>}
+        
         {/* Ally Role Assignment - shown after allies are selected */}
         {data.selectedSupporters && data.selectedSupporters.length > 0 && data.supportContext === 'with_supporters' && <div className="space-y-6 mt-6">
             <div>
@@ -1489,6 +1593,30 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </div>) : <p className="text-sm text-muted-foreground">Generating personalized first steps...</p>}
             </div>
           </div>
+          
+          {/* Coach Steps - only for supporter flow */}
+          {data.recipient === 'other' && generatedCoachSteps.length > 0 && <div className="space-y-3 pt-6 border-t">
+            <div>
+              <h4 className="font-semibold text-foreground flex items-center gap-2">
+                <HandHelping className="h-5 w-5 text-primary" />
+                Step up steps
+              </h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Your actions to support {data.supportedPersonName}'s success
+              </p>
+            </div>
+            <div className="space-y-2">
+              {generatedCoachSteps.map((step, index) => <div key={index} className="flex items-start gap-3 p-3 bg-accent/30 rounded-lg border border-accent">
+                    <div className="w-7 h-7 bg-accent rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-medium text-accent-foreground">{index + 1}</span>
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <span className="text-sm font-medium text-foreground block">{step.title}</span>
+                      <span className="text-xs text-muted-foreground block">{step.description}</span>
+                    </div>
+                  </div>)}
+            </div>
+          </div>}
           
           {isProposal && <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800">

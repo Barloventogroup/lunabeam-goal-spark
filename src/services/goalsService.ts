@@ -360,6 +360,7 @@ export const stepsService = {
     step_type?: string;
     is_planned?: boolean;
     planned_week_index?: number;
+    is_supporter_step?: boolean;
   }): Promise<{ step: Step; goal: Goal }> {
     // Validate due date against goal's due date
     if (stepData.due_date) {
