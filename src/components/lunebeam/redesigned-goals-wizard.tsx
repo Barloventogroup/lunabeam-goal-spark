@@ -1729,7 +1729,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           {data.primarySupporterRole === 'hands_on_helper' && data.supporterDeliveryMethod && generatedCoachSteps.length > 0 && <div className="space-y-3 pt-6 border-t">
               <div>
                 <h4 className="font-semibold text-foreground flex items-center gap-2">
-                  <HandHelping className="h-5 w-5 text-primary" />
+                  <span className="text-xl">🤝</span>
                   Step up steps
                   {data.primarySupporterName && (
                     <span className="text-muted-foreground font-normal">
