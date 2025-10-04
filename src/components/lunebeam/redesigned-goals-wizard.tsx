@@ -731,29 +731,41 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Button variant={data.recipient === 'self' ? 'default' : 'outline'} className="w-full h-auto p-6 justify-start" onClick={() => updateData({
-        recipient: 'self'
-      })}>
-          <div className="flex items-center gap-4">
-            <User className="h-6 w-6" />
+        <Card 
+          className={cn(
+            "cursor-pointer transition-all border-2 p-6",
+            data.recipient === 'self' 
+              ? "border-primary bg-primary/5" 
+              : "border-border hover:border-primary/50"
+          )}
+          onClick={() => updateData({ recipient: 'self' })}
+        >
+          <div className="flex items-center justify-between">
             <div className="text-left">
               <div className="font-semibold">For myself</div>
               <div className="text-sm text-muted-foreground">Create a personal goal</div>
             </div>
+            {data.recipient === 'self' && <Check className="h-5 w-5 text-primary" />}
           </div>
-        </Button>
+        </Card>
         
-        <Button variant={data.recipient === 'other' ? 'default' : 'outline'} className="w-full h-auto p-6 justify-start" onClick={() => updateData({
-        recipient: 'other'
-      })}>
-          <div className="flex items-center gap-4">
-            <UserPlus className="h-6 w-6" />
+        <Card 
+          className={cn(
+            "cursor-pointer transition-all border-2 p-6",
+            data.recipient === 'other' 
+              ? "border-primary bg-primary/5" 
+              : "border-border hover:border-primary/50"
+          )}
+          onClick={() => updateData({ recipient: 'other' })}
+        >
+          <div className="flex items-center justify-between">
             <div className="text-left">
               <div className="font-semibold">For someone I support</div>
-              <div className="text-sm text-muted-light">Create or suggest a goal for them</div>
+              <div className="text-sm text-muted-foreground">Create or suggest a goal for them</div>
             </div>
+            {data.recipient === 'other' && <Check className="h-5 w-5 text-primary" />}
           </div>
-        </Button>
+        </Card>
         
         {data.recipient === 'other' && <div className="space-y-3 pt-4">
             <Label>Select person:</Label>
