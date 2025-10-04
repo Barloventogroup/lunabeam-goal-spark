@@ -579,7 +579,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       `What is the one clear, observable action ${isForOther ? (name || 'they') : 'you'} need${isForOther && name ? 's' : ''} to establish?`, 
       `Why does this matter${isForOther ? (name ? ` to ${name}` : ' to them') : ' to you'}?`, 
       'What type of goal?', 
-      `Which part usually feels the trickiest when ${isForOther ? (name || 'they') : 'you'} start${isForOther && name ? 's' : ''} this?`, 
+      `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`, 
       'Prerequisites check', 
       `Let\'s make this feel solid! When will ${isForOther ? (name || 'they') : 'you'} officially START this action?`, 
       'Support context', 
