@@ -1187,12 +1187,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </CardContent>
         </Card>
         
-        {data.hasPrerequisites && <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-800">
-              ✨ We'll auto-suggest prep steps to help you get ready!
-            </p>
-          </div>}
-        
         <div className="space-y-2 pt-4 border-t">
           <Label htmlFor="custom-prerequisites">Tell us more</Label>
           <Textarea
