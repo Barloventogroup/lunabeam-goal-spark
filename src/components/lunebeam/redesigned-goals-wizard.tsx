@@ -1291,7 +1291,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">Who&apos;s on your team?</CardTitle>
+        <CardTitle className="text-2xl">What is the necessary level of adult involvement during the action?</CardTitle>
         <p className="text-muted-foreground">{text.step7.subtitle}</p>
       </CardHeader>
       
