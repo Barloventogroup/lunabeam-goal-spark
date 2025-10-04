@@ -555,7 +555,25 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Create goal directly
         const createdGoal = await goalsService.createGoal(goalData);
 
-        // Try AI-powered step generation
+        // First, save the micro-steps that were previewed to the user
+        if (generatedMicroSteps.length > 0) {
+          try {
+            for (const microStep of generatedMicroSteps) {
+              await stepsService.createStep(createdGoal.id, {
+                title: microStep.title,
+                step_type: 'action',
+                is_required: false,
+                estimated_effort_min: 15,
+                is_planned: true,
+                notes: microStep.description
+              });
+            }
+          } catch (microStepError) {
+            console.error('Failed to save micro-steps:', microStepError);
+          }
+        }
+
+        // Then try AI-powered step generation for additional steps
         try {
           const {
             stepsGenerator
@@ -576,29 +594,31 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         } catch (stepError: any) {
           console.error('Failed to generate AI steps, using fallback:', stepError);
 
-          // Create fallback steps with notes for help UI
-          const stepCount = Math.min(data.frequency, 3);
-          const effortMinutes = data.goalTitle.match(/(\d+)\s*min/i)?.[1] || '30';
-          try {
-            for (let i = 1; i <= stepCount; i++) {
-              await stepsService.createStep(createdGoal.id, {
-                title: `Week 1, Session ${i}: ${data.goalTitle}`,
-                step_type: 'habit',
-                is_required: true,
-                estimated_effort_min: parseInt(effortMinutes),
-                is_planned: true,
-                notes: `Complete this session of ${data.goalTitle}. Expand for details or ask for help to break it down further.`
-              });
-            }
-          } catch (fallbackError) {
-            console.error('Fallback step creation failed:', fallbackError);
-            // Don't block goal creation if steps fail (e.g., RLS for supporters)
-            if (data.recipient === 'other') {
-              toast({
-                title: `Goal assigned to ${data.supportedPersonName}! 🎯`,
-                description: 'Steps will appear when they open the goal.'
-              });
-              return; // Exit early to avoid duplicate toast
+          // Only use fallback if micro-steps weren't already created
+          if (generatedMicroSteps.length === 0) {
+            const stepCount = Math.min(data.frequency, 3);
+            const effortMinutes = data.goalTitle.match(/(\d+)\s*min/i)?.[1] || '30';
+            try {
+              for (let i = 1; i <= stepCount; i++) {
+                await stepsService.createStep(createdGoal.id, {
+                  title: `Week 1, Session ${i}: ${data.goalTitle}`,
+                  step_type: 'habit',
+                  is_required: true,
+                  estimated_effort_min: parseInt(effortMinutes),
+                  is_planned: true,
+                  notes: `Complete this session of ${data.goalTitle}. Expand for details or ask for help to break it down further.`
+                });
+              }
+            } catch (fallbackError) {
+              console.error('Fallback step creation failed:', fallbackError);
+              // Don't block goal creation if steps fail (e.g., RLS for supporters)
+              if (data.recipient === 'other') {
+                toast({
+                  title: `Goal assigned to ${data.supportedPersonName}! 🎯`,
+                  description: 'Steps will appear when they open the goal.'
+                });
+                return; // Exit early to avoid duplicate toast
+              }
             }
           }
         }
