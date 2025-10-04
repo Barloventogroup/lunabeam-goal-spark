@@ -189,25 +189,29 @@ const timesOfDay = [{
 }];
 
 // Ally roles
-const allyRoles = [{
-  value: 'cheerleader' as const,
-  title: 'Cheerleader',
-  emoji: '📣',
-  description: 'Celebrates wins and provides encouragement',
-  color: 'text-pink-500'
-}, {
-  value: 'accountability_partner' as const,
-  title: 'Accountability Partner',
-  emoji: '🛡️',
-  description: 'Checks in regularly and helps stay on track',
-  color: 'text-blue-500'
-}, {
-  value: 'hands_on_helper' as const,
-  title: 'Hands-on Helper',
-  emoji: '🤝',
-  description: 'Provides direct assistance and practical support',
-  color: 'text-green-500'
-}];
+const allyRoles = [
+  {
+    value: 'cheerleader' as const,
+    title: 'Cheerleader',
+    emoji: '📣',
+    description: 'Celebrates wins and provides encouragement',
+    color: 'text-pink-500'
+  },
+  {
+    value: 'accountability_partner' as const,
+    title: 'Accountability Partner',
+    emoji: '🛡️',
+    description: 'Checks in regularly and helps stay on track',
+    color: 'text-blue-500'
+  },
+  {
+    value: 'hands_on_helper' as const,
+    title: 'Hands-on Helper',
+    emoji: '🤝',
+    description: 'Provides direct assistance and practical support',
+    color: 'text-green-500'
+  }
+];
 
 // Motivation options
 const motivations = [{
@@ -302,6 +306,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [selectedCategoryDetails, setSelectedCategoryDetails] = useState<any>(null);
   const [canAssignDirectly, setCanAssignDirectly] = useState(false);
   const [loading, setLoading] = useState(false);
+  
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -319,19 +324,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   useEffect(() => {
     const checkSupportsAnyone = async () => {
       try {
-        const {
-          data: {
-            user
-          }
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
           setActuallySupportsAnyone(false);
           return;
         }
-        const {
-          data: supporters,
-          error
-        } = await supabase.from('supporters').select('individual_id').eq('supporter_id', user.id).limit(1);
+        
+        const { data: supporters, error } = await supabase
+          .from('supporters')
+          .select('individual_id')
+          .eq('supporter_id', user.id)
+          .limit(1);
+        
         if (error) throw error;
         setActuallySupportsAnyone(supporters && supporters.length > 0);
       } catch (error) {
@@ -339,6 +343,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         setActuallySupportsAnyone(false);
       }
     };
+    
     checkSupportsAnyone();
   }, []);
 
@@ -363,10 +368,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       // Show step 0 if user actually supports anyone (regardless of user_type classification)
       setCurrentStep(actuallySupportsAnyone ? 0 : 1);
       if (!actuallySupportsAnyone) {
-        setData(prev => ({
-          ...prev,
-          recipient: 'self'
-        }));
+        setData(prev => ({ ...prev, recipient: 'self' }));
       }
     }
   }, [actuallySupportsAnyone, currentStep]);
@@ -470,7 +472,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const nextStep = async () => {
     const maxStep = isSupporter ? 9 : 8;
-
+    
     // Generate micro-steps when moving FROM step 7 TO step 8
     if (currentStep === 7 && currentStep + 1 === 8) {
       setGeneratingSteps(true);
@@ -480,7 +482,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         setGeneratedMicroSteps(microSteps);
       } catch (error) {
         console.error('Error generating micro-steps:', error);
-        toast({
+        toast({ 
           title: "Using fallback templates",
           description: "Could not personalize micro-steps. Using theory-based templates.",
           variant: "default"
@@ -489,6 +491,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         setGeneratingSteps(false);
       }
     }
+    
     if (currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
     }
@@ -501,10 +504,30 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const getStepTitle = () => {
     const isForOther = data.recipient === 'other';
-
+    
     // Use supporterTitles when step 0 exists (actuallySupportsAnyone), otherwise use nonSupporterTitles
-    const supporterTitles = [`${data.supportedPersonName ? `Who is this goal for: ${data.supportedPersonName}?` : 'Who is this goal for?'}`, `What is the one clear, observable action ${isForOther ? data.supportedPersonName || 'they' : 'you'} need${isForOther ? '' : ''} to establish?`, `Why does this matter${isForOther ? ' to them' : ' to you'}?`, 'What type of goal?', `Which part usually feels the trickiest when ${isForOther ? 'they' : 'you'} start this?`, 'Prerequisites check', `Let\'s make this feel solid! When will ${isForOther ? 'they' : 'you'} officially START this action?`, 'Support context', 'Review and Create'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter to you?', 'What type of goal?', 'Which part usually feels the trickiest when you start this?', 'Prerequisites check', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context', 'Review and Create'];
+    const supporterTitles = [
+      `${data.supportedPersonName ? `Who is this goal for: ${data.supportedPersonName}?` : 'Who is this goal for?'}`, 
+      `What is the one clear, observable action ${isForOther ? (data.supportedPersonName || 'they') : 'you'} need${isForOther ? '' : ''} to establish?`, 
+      `Why does this matter${isForOther ? ' to them' : ' to you'}?`, 
+      'What type of goal?', 
+      `Which part usually feels the trickiest when ${isForOther ? 'they' : 'you'} start this?`, 
+      'Prerequisites check', 
+      `Let\'s make this feel solid! When will ${isForOther ? 'they' : 'you'} officially START this action?`, 
+      'Support context', 
+      'Review and Create'
+    ];
+    const nonSupporterTitles = [
+      'What do you want to do?', 
+      'Why does this matter to you?', 
+      'What type of goal?', 
+      'Which part usually feels the trickiest when you start this?', 
+      'Prerequisites check', 
+      'Let\'s make this feel solid! When will you officially START this action?', 
+      'Support context',
+      'Review and Create'
+    ];
+    
     if (actuallySupportsAnyone) {
       return supporterTitles[currentStep] || '';
     } else {
@@ -537,7 +560,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         return !!data.frequency && !!data.timeOfDay;
       case 7:
         // Support context - also check ally roles if allies are selected
-        return !!data.supportContext && (data.supportContext === 'alone' || data.selectedSupporters && data.selectedSupporters.length > 0 && data.selectedSupporters.every(id => data.allyRoles?.[id]));
+        return !!data.supportContext && (
+          data.supportContext === 'alone' || 
+          (data.selectedSupporters && 
+           data.selectedSupporters.length > 0 && 
+           data.selectedSupporters.every(id => data.allyRoles?.[id]))
+        );
       case 8:
         // Rewards (supporters only)
         return true;
@@ -610,7 +638,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             }
           } catch (microStepError) {
             console.error('Failed to save micro-steps:', microStepError);
-
+            
             // Fallback if micro-step creation failed
             const stepCount = Math.min(data.frequency, 3);
             const effortMinutes = data.goalTitle.match(/(\d+)\s*min/i)?.[1] || '30';
@@ -726,9 +754,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Card className={cn("cursor-pointer transition-all border-2 p-6", data.recipient === 'self' ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")} onClick={() => updateData({
-        recipient: 'self'
-      })}>
+        <Card 
+          className={cn(
+            "cursor-pointer transition-all border-2 p-6",
+            data.recipient === 'self' 
+              ? "border-primary bg-primary/5" 
+              : "border-border hover:border-primary/50"
+          )}
+          onClick={() => updateData({ recipient: 'self' })}
+        >
           <div className="flex items-center justify-between">
             <div className="text-left">
               <div className="font-semibold">For myself</div>
@@ -738,9 +772,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
         </Card>
         
-        <Card className={cn("cursor-pointer transition-all border-2 p-6", data.recipient === 'other' ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")} onClick={() => updateData({
-        recipient: 'other'
-      })}>
+        <Card 
+          className={cn(
+            "cursor-pointer transition-all border-2 p-6",
+            data.recipient === 'other' 
+              ? "border-primary bg-primary/5" 
+              : "border-border hover:border-primary/50"
+          )}
+          onClick={() => updateData({ recipient: 'other' })}
+        >
           <div className="flex items-center justify-between">
             <div className="text-left">
               <div className="font-semibold">For someone I support</div>
@@ -782,7 +822,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderStep1 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        
+        <p className="text-muted-foreground mt-2">
+          What's the one concrete action you're choosing to focus on? (Make it clear and specific!)
+        </p>
       </CardHeader>
       
       <CardContent className="space-y-6">
@@ -825,13 +867,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           <p className="text-xs font-medium text-foreground mb-2">Goal ideas:</p>
                           <div className="grid grid-cols-1 gap-1">
                             {category.detailedExamples.map((example, index) => <div key={index} className="text-xs text-foreground p-2 bg-muted/20 rounded cursor-pointer hover:bg-muted/40 transition-colors" onClick={e => {
-                      e.stopPropagation();
-                      updateData({
-                        goalTitle: example,
-                        category: category.id
-                      });
-                      setExpandedCategory(null);
-                    }}>
+                        e.stopPropagation();
+                        updateData({
+                          goalTitle: example,
+                          category: category.id
+                        });
+                        setExpandedCategory(null);
+                      }}>
                       {example}
                             </div>)}
                         </div>
@@ -856,12 +898,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       
       <CardContent className="space-y-4">
         <div className="space-y-3">
-          {motivations.map(motivation => <Card key={motivation.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.goalMotivation === motivation.id ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-            goalMotivation: motivation.id
-          })}>
+          {motivations.map(motivation => <Card 
+            key={motivation.id} 
+            className={cn(
+              "cursor-pointer hover:shadow-md transition-all border-2",
+              data.goalMotivation === motivation.id ? "border-primary bg-primary/5" : "border-border"
+            )}
+            onClick={() => updateData({ goalMotivation: motivation.id })}
+          >
             <CardContent className="p-4">
               <div className="flex items-start gap-3 w-full">
-                {data.goalMotivation === motivation.id && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+                {data.goalMotivation === motivation.id && (
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                )}
                 <div className="flex-1">
                   <div className="font-semibold">{motivation.label}</div>
                   <div className="text-sm mt-1 text-muted-foreground">{motivation.description}</div>
@@ -873,9 +922,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         <div className="space-y-2 pt-4 border-t">
           <Label htmlFor="custom-motivation">Say it in your own words</Label>
-          <Textarea id="custom-motivation" placeholder="Optional: describe your motivation in your own words..." value={data.customMotivation || ''} onChange={e => updateData({
-            customMotivation: e.target.value
-          })} className="min-h-[80px] resize-none" rows={3} />
+          <Textarea
+            id="custom-motivation"
+            placeholder="Optional: describe your motivation in your own words..."
+            value={data.customMotivation || ''}
+            onChange={(e) => updateData({ customMotivation: e.target.value })}
+            className="min-h-[80px] resize-none"
+            rows={3}
+          />
         </div>
       </CardContent>
     </Card>;
@@ -887,12 +941,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {goalTypes.map(type => <Card key={type.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.goalType === type.id ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-        goalType: type.id
-      })}>
+        {goalTypes.map(type => <Card 
+          key={type.id} 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            data.goalType === type.id ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => updateData({ goalType: type.id })}
+        >
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              {data.goalType === type.id && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+              {data.goalType === type.id && (
+                <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              )}
               <div className="text-left flex-1">
                 <div className="font-semibold">{type.label}</div>
                 <div className="text-sm text-muted-foreground mt-1">{type.description}</div>
@@ -906,6 +967,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const handleChallengeToggle = (challengeId: string) => {
       const current = data.challengeAreas || [];
       const isSelected = current.includes(challengeId);
+      
       if (isSelected) {
         // Deselect
         updateData({
@@ -920,6 +982,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }
       }
     };
+
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
@@ -931,13 +994,25 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           const isSelected = data.challengeAreas?.includes(challenge.id) || false;
           const selectionOrder = data.challengeAreas?.indexOf(challenge.id);
           const priorityLabel = selectionOrder === 0 ? '1st Priority' : selectionOrder === 1 ? '2nd Priority' : null;
-          return <Card key={challenge.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2 relative", isSelected ? "border-primary bg-primary/5" : "border-border")} onClick={() => handleChallengeToggle(challenge.id)}>
-            {isSelected && priorityLabel && <Badge className="absolute top-2 right-2 text-xs">
+          
+          return <Card 
+            key={challenge.id} 
+            className={cn(
+              "cursor-pointer hover:shadow-md transition-all border-2 relative",
+              isSelected ? "border-primary bg-primary/5" : "border-border"
+            )}
+            onClick={() => handleChallengeToggle(challenge.id)}
+          >
+            {isSelected && priorityLabel && (
+              <Badge className="absolute top-2 right-2 text-xs">
                 {priorityLabel}
-              </Badge>}
+              </Badge>
+            )}
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+                {isSelected && (
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                )}
                 <div className="text-left flex-1">
                   <div className="font-semibold">{challenge.label}</div>
                   <div className="text-sm text-muted-foreground">({challenge.description})</div>
@@ -949,9 +1024,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         <div className="space-y-2 pt-4 border-t">
           <Label htmlFor="custom-challenges">Say it in your own words</Label>
-          <Textarea id="custom-challenges" placeholder="Optional: describe your challenges in your own words..." value={data.customChallenges || ''} onChange={e => updateData({
-            customChallenges: e.target.value
-          })} className="min-h-[80px] resize-none" rows={3} />
+          <Textarea
+            id="custom-challenges"
+            placeholder="Optional: describe your challenges in your own words..."
+            value={data.customChallenges || ''}
+            onChange={(e) => updateData({ customChallenges: e.target.value })}
+            className="min-h-[80px] resize-none"
+            rows={3}
+          />
         </div>
       </CardContent>
     </Card>;
@@ -963,9 +1043,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", !data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-        hasPrerequisites: false
-      })}>
+        <Card 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            !data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => updateData({ hasPrerequisites: false })}
+        >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Check className="h-5 w-5 text-primary" />
@@ -977,9 +1061,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </CardContent>
         </Card>
         
-        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-        hasPrerequisites: true
-      })}>
+        <Card 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => updateData({ hasPrerequisites: true })}
+        >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <X className="h-5 w-5 text-primary" />
@@ -999,9 +1087,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         <div className="space-y-2 pt-4 border-t">
           <Label htmlFor="custom-prerequisites">Say it in your own words</Label>
-          <Textarea id="custom-prerequisites" placeholder="Optional: describe what you need or already have..." value={data.customPrerequisites || ''} onChange={e => updateData({
-          customPrerequisites: e.target.value
-        })} className="min-h-[80px] resize-none" rows={3} />
+          <Textarea
+            id="custom-prerequisites"
+            placeholder="Optional: describe what you need or already have..."
+            value={data.customPrerequisites || ''}
+            onChange={(e) => updateData({ customPrerequisites: e.target.value })}
+            className="min-h-[80px] resize-none"
+            rows={3}
+          />
         </div>
       </CardContent>
     </Card>;
@@ -1103,13 +1196,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.supportContext === 'alone' ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-        supportContext: 'alone',
-        selectedSupporters: []
-      })}>
+        <Card 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            data.supportContext === 'alone' ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => updateData({ supportContext: 'alone', selectedSupporters: [] })}
+        >
           <CardContent className="p-6">
             <div className="flex items-start gap-3">
-              {data.supportContext === 'alone' && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+              {data.supportContext === 'alone' && (
+                <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              )}
               <div className="text-left flex-1">
                 <div className="text-base font-semibold">Alone</div>
                 <div className="text-sm text-muted-foreground">I'll work on this independently</div>
@@ -1118,10 +1216,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </CardContent>
         </Card>
         
-        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.supportContext === 'with_supporters' ? "border-primary bg-primary/5" : "border-border")} onClick={() => setShowSupporterDialog(true)}>
+        <Card 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            data.supportContext === 'with_supporters' ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => setShowSupporterDialog(true)}
+        >
           <CardContent className="p-6">
             <div className="flex items-start gap-3">
-              {data.supportContext === 'with_supporters' && <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />}
+              {data.supportContext === 'with_supporters' && (
+                <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+              )}
               <div className="text-left flex-1">
                 <div className="text-base font-semibold">Select an Ally</div>
                 <div className="text-sm text-muted-foreground">
@@ -1133,7 +1239,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </Card>
         
         {/* Ally Role Assignment - shown after allies are selected */}
-        {data.selectedSupporters && data.selectedSupporters.length > 0 && data.supportContext === 'with_supporters' && <div className="space-y-6 mt-6">
+        {data.selectedSupporters && data.selectedSupporters.length > 0 && data.supportContext === 'with_supporters' && (
+          <div className="space-y-6 mt-6">
             <div>
               <h3 className="font-semibold mb-2">What's their job?</h3>
               <p className="text-sm text-muted-foreground">
@@ -1142,9 +1249,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>
             
             {data.selectedSupporters.map(supporterId => {
-          const supporter = userSupporters.find(s => s.id === supporterId);
-          if (!supporter) return null;
-          return <div key={supporterId} className="space-y-3">
+              const supporter = userSupporters.find(s => s.id === supporterId);
+              if (!supporter) return null;
+              
+              return (
+                <div key={supporterId} className="space-y-3">
                   {/* Ally header */}
                   <div className="flex items-center gap-2">
                     <Avatar className="w-8 h-8">
@@ -1159,18 +1268,29 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   {/* Role selection cards */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {allyRoles.map(role => {
-                const isSelected = data.allyRoles?.[supporterId] === role.value;
-                return <Card key={role.value} className={cn("cursor-pointer hover:shadow-md transition-all border-2", isSelected ? "border-primary bg-primary/5" : "border-border")} onClick={() => {
-                  updateData({
-                    allyRoles: {
-                      ...(data.allyRoles || {}),
-                      [supporterId]: role.value
-                    }
-                  });
-                }}>
+                      const isSelected = data.allyRoles?.[supporterId] === role.value;
+                      
+                      return (
+                        <Card
+                          key={role.value}
+                          className={cn(
+                            "cursor-pointer hover:shadow-md transition-all border-2",
+                            isSelected ? "border-primary bg-primary/5" : "border-border"
+                          )}
+                          onClick={() => {
+                            updateData({
+                              allyRoles: {
+                                ...(data.allyRoles || {}),
+                                [supporterId]: role.value
+                              }
+                            });
+                          }}
+                        >
                           <CardContent className="p-4">
                             <div className="flex items-start gap-3">
-                              {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                              {isSelected && (
+                                <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                              )}
                               <span className="text-2xl flex-shrink-0">{role.emoji}</span>
                               <div className="flex-1">
                                 <div className="font-medium text-sm">{role.title}</div>
@@ -1180,12 +1300,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                               </div>
                             </div>
                           </CardContent>
-                        </Card>;
-              })}
+                        </Card>
+                      );
+                    })}
                   </div>
-                </div>;
-        })}
-          </div>}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>;
   const renderStep8 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
@@ -1272,15 +1395,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <CardTitle className="text-base font-semibold">Why</CardTitle>
               </CardHeader>
               <CardContent className="p-3 pt-0 space-y-2">
-                {data.goalMotivation && <div>
+                {data.goalMotivation && (
+                  <div>
                     <p className="text-sm font-medium text-foreground">
                       {motivations.find(m => m.id === data.goalMotivation)?.label}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {motivations.find(m => m.id === data.goalMotivation)?.description}
                     </p>
-                  </div>}
-                {data.customMotivation && <p className="text-sm text-foreground font-medium italic">{data.customMotivation}</p>}
+                  </div>
+                )}
+                {data.customMotivation && (
+                  <p className="text-sm text-foreground font-medium italic">{data.customMotivation}</p>
+                )}
               </CardContent>
             </Card>
 
@@ -1304,15 +1431,21 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <CardTitle className="text-base font-semibold">Core Barrier</CardTitle>
               </CardHeader>
               <CardContent className="p-3 pt-0 space-y-2">
-                {data.challengeAreas && data.challengeAreas.length > 0 && <div className="space-y-1">
+                {data.challengeAreas && data.challengeAreas.length > 0 && (
+                  <div className="space-y-1">
                     {data.challengeAreas.map(id => {
-                  const challenge = challengeAreas.find(c => c.id === id);
-                  return challenge ? <p key={id} className="text-sm font-medium text-foreground">
+                      const challenge = challengeAreas.find(c => c.id === id);
+                      return challenge ? (
+                        <p key={id} className="text-sm font-medium text-foreground">
                           • {challenge.label}
-                        </p> : null;
-                })}
-                  </div>}
-                {data.customChallenges && <p className="text-sm text-foreground font-medium italic">{data.customChallenges}</p>}
+                        </p>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+                {data.customChallenges && (
+                  <p className="text-sm text-foreground font-medium italic">{data.customChallenges}</p>
+                )}
               </CardContent>
             </Card>
 
@@ -1322,13 +1455,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <CardTitle className="text-base font-semibold">Support</CardTitle>
               </CardHeader>
               <CardContent className="p-3 pt-0">
-                {data.supportContext === 'alone' ? <p className="text-sm font-medium text-foreground">All by myself</p> : data.selectedSupporters && data.selectedSupporters.length > 0 ? <div className="space-y-2">
+                {data.supportContext === 'alone' ? (
+                  <p className="text-sm font-medium text-foreground">All by myself</p>
+                ) : data.selectedSupporters && data.selectedSupporters.length > 0 ? (
+                  <div className="space-y-2">
                     {data.selectedSupporters.map(supporterId => {
-                  const supporter = userSupporters.find(s => s.id === supporterId);
-                  const roleValue = data.allyRoles?.[supporterId];
-                  const role = allyRoles.find(r => r.value === roleValue);
-                  if (!supporter || !role) return null;
-                  return <div key={supporterId} className="flex items-center gap-2">
+                      const supporter = userSupporters.find(s => s.id === supporterId);
+                      const roleValue = data.allyRoles?.[supporterId];
+                      const role = allyRoles.find(r => r.value === roleValue);
+                      
+                      if (!supporter || !role) return null;
+                      
+                      return (
+                        <div key={supporterId} className="flex items-center gap-2">
                           <Avatar className="w-6 h-6">
                             <AvatarImage src={supporter.profile?.avatar_url} />
                             <AvatarFallback className="text-xs">
@@ -1341,9 +1480,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           <span className="text-sm">
                             {role.emoji} {role.title}
                           </span>
-                        </div>;
-                })}
-                  </div> : <p className="text-sm text-muted-foreground">No support selected</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No support selected</p>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -1352,7 +1495,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="space-y-3">
             <h4 className="font-semibold text-foreground">This is how you get started</h4>
             <div className="space-y-2">
-              {generatedMicroSteps.length > 0 ? generatedMicroSteps.map((step, index) => <div key={index} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+              {generatedMicroSteps.length > 0 ? (
+                generatedMicroSteps.map((step, index) => (
+                  <div key={index} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
                     <div className="w-7 h-7 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-medium text-primary">{index + 1}</span>
                     </div>
@@ -1360,7 +1505,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       <span className="text-sm font-medium text-foreground block">{step.title}</span>
                       <span className="text-xs text-muted-foreground block">{step.description}</span>
                     </div>
-                  </div>) : <p className="text-sm text-muted-foreground">Generating personalized first steps...</p>}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">Generating personalized first steps...</p>
+              )}
             </div>
           </div>
           
@@ -1461,12 +1610,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
         
         {/* Continue button - fixed bottom-right */}
-        {!isLastStep && <div className="fixed bottom-4 right-4 z-50">
+        {!isLastStep && (
+          <div className="fixed bottom-4 right-4 z-50">
             <Button onClick={nextStep} disabled={!canProceed()} className="h-12 px-8 text-lg font-semibold shadow-lg">
               Continue
               <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
-          </div>}
+          </div>
+        )}
         
         {/* Category Selection Dialog */}
         <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
@@ -1521,28 +1672,40 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </p>
                 </div> : <div className="space-y-2 max-h-[400px] overflow-y-auto">
                   {userSupporters.map(supporter => {
-                const isSelected = (data.selectedSupporters || []).includes(supporter.id);
-                return <Card key={supporter.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", isSelected ? "border-primary bg-primary/5" : "border-border")} onClick={() => {
-                  const currentSelection = data.selectedSupporters || [];
-                  const isSelected = currentSelection.includes(supporter.id);
-                  const newSelection = isSelected ? currentSelection.filter(id => id !== supporter.id) : [...currentSelection, supporter.id];
-
-                  // Remove role if deselecting
-                  const updatedRoles = {
-                    ...(data.allyRoles || {})
-                  };
-                  if (isSelected) {
-                    delete updatedRoles[supporter.id];
-                  }
-                  updateData({
-                    selectedSupporters: newSelection,
-                    supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone',
-                    allyRoles: updatedRoles
-                  });
-                }}>
+                    const isSelected = (data.selectedSupporters || []).includes(supporter.id);
+                    
+                    return (
+                      <Card 
+                        key={supporter.id}
+                        className={cn(
+                          "cursor-pointer hover:shadow-md transition-all border-2",
+                          isSelected ? "border-primary bg-primary/5" : "border-border"
+                        )}
+                        onClick={() => {
+                          const currentSelection = data.selectedSupporters || [];
+                          const isSelected = currentSelection.includes(supporter.id);
+                          const newSelection = isSelected 
+                            ? currentSelection.filter(id => id !== supporter.id) 
+                            : [...currentSelection, supporter.id];
+                          
+                          // Remove role if deselecting
+                          const updatedRoles = { ...(data.allyRoles || {}) };
+                          if (isSelected) {
+                            delete updatedRoles[supporter.id];
+                          }
+                          
+                          updateData({
+                            selectedSupporters: newSelection,
+                            supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone',
+                            allyRoles: updatedRoles
+                          });
+                        }}
+                      >
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
-                            {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+                            {isSelected && (
+                              <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                            )}
                             <Avatar className="w-8 h-8">
                               <AvatarImage src={supporter.profile?.avatar_url || undefined} />
                               <AvatarFallback className="text-xs">
@@ -1552,8 +1715,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                             <span className="flex-1">{supporter.name}</span>
                           </div>
                         </CardContent>
-                      </Card>;
-              })}
+                      </Card>
+                    );
+                  })}
                 </div>}
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setShowSupporterDialog(false)}>
