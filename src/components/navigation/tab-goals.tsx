@@ -161,6 +161,8 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
               onWizardStateChange?.(false);
             }}
             isSupporter={userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin'}
+            skipStep0={supporterContext?.skipStep0}
+            initialRecipient={supporterContext?.initialRecipient}
           />
         );
       case 'create-wizard-supporter':
@@ -172,6 +174,8 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
               onWizardStateChange?.(false);
             }}
             isSupporter={true}
+            skipStep0={supporterContext?.skipStep0}
+            initialRecipient={supporterContext?.initialRecipient}
           />
         );
       case 'supporter-wizard':
@@ -217,6 +221,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             className="w-full h-auto p-6 justify-start"
             onClick={() => {
               setShowFlowSelection(false);
+              setSupporterContext({ skipStep0: true, initialRecipient: 'self' });
               setCurrentView('create-wizard');
               onWizardStateChange?.(true);
             }}
@@ -233,6 +238,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             className="w-full h-auto p-6 justify-start"
             onClick={() => {
               setShowFlowSelection(false);
+              setSupporterContext({ skipStep0: true, initialRecipient: 'other' });
               setCurrentView('create-wizard-supporter');
               onWizardStateChange?.(true);
             }}

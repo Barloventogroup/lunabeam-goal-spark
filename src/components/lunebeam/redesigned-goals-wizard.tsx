@@ -27,6 +27,8 @@ interface RedesignedGoalsWizardProps {
   onCancel: () => void;
   initialIndividualId?: string;
   isSupporter?: boolean;
+  skipStep0?: boolean;
+  initialRecipient?: 'self' | 'other';
 }
 interface SupportedIndividual {
   user_id: string;
@@ -286,7 +288,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   onComplete,
   onCancel,
   initialIndividualId,
-  isSupporter = false
+  isSupporter = false,
+  skipStep0 = false,
+  initialRecipient
 }) => {
   const [currentStep, setCurrentStep] = useState<number | null>(null); // Start with null to indicate loading
   const [actuallySupportsAnyone, setActuallySupportsAnyone] = useState<boolean | null>(null);
@@ -365,10 +369,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   // Set initial step once we know if user supports anyone
   useEffect(() => {
     if (currentStep === null && actuallySupportsAnyone !== null) {
-      // Show step 0 if user actually supports anyone (regardless of user_type classification)
-      setCurrentStep(actuallySupportsAnyone ? 0 : 1);
+      // If skipStep0 is true, pre-populate recipient and start at step 1
+      if (skipStep0 && initialRecipient) {
+        setData(prev => ({ ...prev, recipient: initialRecipient }));
+        setCurrentStep(1);
+      } else {
+        // Show step 0 if user actually supports anyone (regardless of user_type classification)
+        setCurrentStep(actuallySupportsAnyone ? 0 : 1);
+        if (!actuallySupportsAnyone) {
+          setData(prev => ({ ...prev, recipient: 'self' }));
+        }
+      }
     }
-  }, [actuallySupportsAnyone, currentStep]);
+  }, [actuallySupportsAnyone, currentStep, skipStep0, initialRecipient]);
   const loadSupportedPeople = async () => {
     try {
       // First, get the supporter relationships
