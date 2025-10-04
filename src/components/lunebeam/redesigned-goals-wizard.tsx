@@ -1197,7 +1197,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <Label htmlFor="custom-prerequisites">Tell us more</Label>
           <Textarea
             id="custom-prerequisites"
-            placeholder="Optional: describe what you need or already have..."
+            placeholder="Optional: share any additional details here..."
             value={data.customPrerequisites || ''}
             onChange={(e) => updateData({ customPrerequisites: e.target.value })}
             className="min-h-[80px] resize-none"
