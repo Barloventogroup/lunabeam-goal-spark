@@ -140,6 +140,16 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Validate quality of generated steps
+    const validation = validateMicroSteps(microSteps);
+    if (!validation.valid) {
+      console.error('Quality validation failed:', validation.errors);
+      return new Response(
+        JSON.stringify({ error: 'Quality validation failed', useFallback: true }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ microSteps }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -165,22 +175,52 @@ CRITICAL RULES:
 
 ${flow === 'individual' ? `
 **For INDIVIDUAL flow:**
-- **Slot 1 (Prerequisite)**: If prerequisite exists, generate 1-2 CONCRETE actions to obtain/prepare it BEFORE the start time. Example: "Need help from someone who knows math" → "Text 2 classmates by Thursday to ask for a 30-min practice session this week."
-- **Slot 2 (T-Zero Activation Cue)**: Generate the EXACT action to take at START_TIME that is trivially simple (touch, open, press). Example: "At 6:30 PM Tuesday, your only job is to touch your algebra textbook for 15 seconds."
-- **Slot 3 (Primary Barrier)**: Address the #1 barrier with a step that references the goal specifically. Example for "attention" → "Set a 25-min timer; solve problems 1-10 from chapter 3; when it rings, stand and stretch for 5 minutes."
+- **Step 1 (Prerequisite)**: If prerequisite exists, generate 1-2 CONCRETE actions to obtain/prepare it BEFORE the start time. Example: "Need help from someone who knows math" → "Text 2 classmates by Thursday to ask for a 30-min practice session this week."
+- **Step 2 (Activation Cue)**: Generate the EXACT action to take at START_TIME that is trivially simple (touch, open, press). Example: "At 6:30 PM Tuesday, your only job is to touch your algebra textbook for 15 seconds."
+- **Step 3 (Primary Work)**: Address the #1 challenge with substantive work. Examples:
+  * Attention challenge: "Set a 25-minute timer. Work through algebra problems 1-10 from chapter 3. When the timer rings, stand up and stretch for 5 minutes before continuing."
+  * Planning challenge: "Spend 20 minutes breaking the goal into 3 smaller tasks. Write each task on a sticky note and arrange them in order on your desk."
+  * Time challenge: "Set your phone alarm for 20 minutes from now. Work on the goal until the alarm rings, then take a mandatory 5-minute break."
+  * Getting started: "Open your laptop and spend 15 minutes researching local options. Write down the names of 3 that interest you."
 ` : `
 **For SUPPORTER flow:**
-- **Slot 1 (Environmental Setup)**: What the supporter must do BEFORE START_TIME to remove obstacles. Example: "Before 6:30 PM Tuesday, place the algebra textbook open to chapter 3 on their desk."
-- **Slot 2 (T-Zero Cue for Supporter)**: What the supporter does AT START_TIME to deliver the prompt. Example: "At 6:30 PM, hand them the pencil and say: 'Just touch the textbook for 15 seconds.'"
-- **Slot 3 (Monitoring/Reinforcement)**: How the supporter monitors progress or delivers reinforcement. Example: "After 25 minutes, check in and ensure they take a 5-minute movement break."
+- **Step 1 (Environmental Setup)**: What the supporter must do BEFORE START_TIME to remove obstacles. Example: "Before 6:30 PM Tuesday, place the algebra textbook open to chapter 3 on their desk."
+- **Step 2 (Cue Delivery)**: What the supporter does AT START_TIME to deliver the prompt. Example: "At 6:30 PM, hand them the pencil and say: 'Just touch the textbook for 15 seconds.'"
+- **Step 3 (Monitoring/Reinforcement)**: How the supporter monitors progress or delivers reinforcement. Example: "After 25 minutes, check in and ensure they take a 5-minute movement break."
 `}
+
+**QUALITY VALIDATION RULES (NON-NEGOTIABLE):**
+
+1. **Time Realism**: 
+   - Step 2 (Activation Cue): 10-30 seconds ONLY (touch, open, press)
+   - Step 3 (Primary Work): 15-30 minutes minimum (actual task work)
+   - Never say "for X seconds" in Step 3
+
+2. **No Jargon**: 
+   - FORBIDDEN WORDS: "initiation", "barrier", "scaffolding", "activation", "slot", "T-Zero", "FBM"
+   - Use plain, everyday language: "start", "begin", "prepare", "work on", "focus"
+
+3. **Grammatical Sense**:
+   - Every sentence must be a complete, grammatically correct imperative
+   - Read each step aloud—if it sounds awkward, rewrite it
+   - Example: ❌ "Browse focusing on initiation" → ✅ "Browse and pick 2-3 teams that look interesting"
+
+4. **Logical Coherence**:
+   - Step 1: Must happen BEFORE start time (prep actions)
+   - Step 2: Must reference START_TIME exactly and be trivial (< 30 sec)
+   - Step 3: Must be substantive work (15+ min) tied to the primary challenge
+
+5. **Action Specificity**:
+   - Use concrete verbs: "text", "write", "open", "solve", "call", "search", "browse"
+   - Include measurable outcomes: "2-3 teams", "problems 1-10", "15 minutes", "3 names"
+   - Avoid vague instructions: ❌ "explore options" → ✅ "write down 3 team names and their practice times"
 
 FORMAT:
 - Keep titles under 8 words
 - Descriptions: 1-2 imperative sentences, specific to the goal
-- Reference START_TIME explicitly in Slot 2
+- Reference START_TIME explicitly in Step 2
 - Never echo the user's prerequisite—turn it into actions
-- Use domain-specific language when possible`;
+- Use domain-specific language from the goal (e.g., "chapter 3", "team practice times")`;
 }
 
 function buildUserPrompt(payload: MicroStepsRequest): string {
@@ -194,8 +234,41 @@ function buildUserPrompt(payload: MicroStepsRequest): string {
 **Flow**: ${payload.flow}
 **Has Prerequisite**: ${payload.hasPrerequisite ? 'Yes' : 'No'}
 ${payload.hasPrerequisite ? `**Prerequisite Text**: ${payload.prerequisiteText}` : ''}
-**Primary Barrier**: ${payload.barrier1}
-**Secondary Barrier**: ${payload.barrier2}
+**Primary Challenge**: ${payload.barrier1}
+**Secondary Challenge**: ${payload.barrier2}
 
-Generate exactly 3 micro-steps following the slot structure for ${payload.flow} flow.`;
+Generate exactly 3 micro-steps following the structure for ${payload.flow} flow.`;
+}
+
+function validateMicroSteps(steps: { title: string; description: string }[]): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  const forbiddenWords = ['initiation', 'barrier', 'scaffolding', 'activation', 'slot', 't-zero', 'fbm'];
+  
+  steps.forEach((step, i) => {
+    const text = (step.title + ' ' + step.description).toLowerCase();
+    
+    // Check for jargon
+    forbiddenWords.forEach(word => {
+      if (text.includes(word)) {
+        errors.push(`Step ${i+1} contains jargon: "${word}"`);
+      }
+    });
+    
+    // Check Step 2 time reference
+    if (i === 1 && !step.description.match(/\d{1,2}:\d{2}\s?(AM|PM)/i)) {
+      errors.push('Step 2 must reference the exact start time');
+    }
+    
+    // Check for nonsensical "X seconds" in Step 3
+    if (i === 2 && step.description.match(/\d+\s?seconds/i)) {
+      errors.push('Step 3 should not use "seconds" - use minutes for substantive work');
+    }
+    
+    // Check for minimum length (avoid trivial steps)
+    if (step.description.length < 30) {
+      errors.push(`Step ${i+1} description is too short (${step.description.length} chars)`);
+    }
+  });
+  
+  return { valid: errors.length === 0, errors };
 }

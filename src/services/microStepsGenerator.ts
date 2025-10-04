@@ -19,8 +19,8 @@ interface ActionableVariables {
 }
 
 interface BarrierTemplate {
-  activationStep: string;
-  prepStep?: string;
+  activationStep: MicroStep;
+  barrierStep: MicroStep;
 }
 
 interface WizardData {
@@ -71,83 +71,101 @@ function formatDisplayTime(time: string): string {
 /**
  * Returns barrier-specific templates for Individual flow
  */
-function getIndividualBarrierTemplate(
-  barrierId: string,
-  vars: ActionableVariables
-): BarrierTemplate {
-  switch (barrierId) {
-    case 'initiation':
-      return {
-        activationStep: `At ${vars.startTime} on ${vars.dayOfWeek}, your only job is to touch the item needed for ${vars.goalAction} for 15 seconds (e.g., put on your headphones or open the laptop).`,
-        prepStep: `Right now, find the single object you need for this task (e.g., your charging cable) and put it on the table.`
-      };
-    
-    case 'time':
-      return {
-        activationStep: `Set a recurring alarm on your phone for 5 minutes BEFORE ${vars.startTime}. Name the alarm: "SHIFT NOW."`,
-        prepStep: `Right now, put a sticky note on the last thing you usually look at before the start time (e.g., your lunch plate, your phone charger).`
-      };
-    
-    case 'attention':
-      return {
-        activationStep: `Set a timer for 25 minutes. Your goal is only to focus for that time. Do not look at anything else until the timer rings.`,
-        prepStep: `When the timer rings, you must stand up and stretch or walk away for 5 minutes. This is mandatory movement!`
-      };
-    
-    case 'planning':
-      return {
-        activationStep: `Your first action is only to write down the next three things you need to do for ${vars.goalAction} (e.g., 1. Open notebook, 2. Read prompt, 3. Get water). Stop there!`,
-        prepStep: `Before you finish your goal time, spend 2 minutes deciding what your first step will be for the next time you do this goal.`
-      };
-    
-    default:
-      // Fallback to focus template
-      return {
-        activationStep: `Set a timer for 25 minutes. Your goal is only to focus for that time. When it rings, stand up and move away for 5 minutes.`,
-        prepStep: undefined
-      };
-  }
+function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariables): BarrierTemplate {
+  const templates: Record<string, BarrierTemplate> = {
+    initiation: {
+      activationStep: {
+        title: `At ${vars.startTime}, just touch it`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, your ONLY job is to touch or open the main tool you need (e.g., laptop, textbook, app). That's all—just 15 seconds.`
+      },
+      barrierStep: {
+        title: `Work for 20 minutes`,
+        description: `Set a timer for 20 minutes and focus on ${vars.goalAction}. When the timer rings, stand up and stretch for 5 minutes. You must take this break.`
+      }
+    },
+    attention: {
+      activationStep: {
+        title: `At ${vars.startTime}, open one thing`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, open just one tool or page related to ${vars.goalAction}. Nothing more.`
+      },
+      barrierStep: {
+        title: `Use a focus timer`,
+        description: `Set a 25-minute timer and work on ${vars.goalAction}. When it rings, you must stand up and take a 5-minute movement break before continuing.`
+      }
+    },
+    planning: {
+      activationStep: {
+        title: `At ${vars.startTime}, grab a pen`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, grab a pen and paper. Your only job is to hold them for 15 seconds.`
+      },
+      barrierStep: {
+        title: `Break it into 3 steps`,
+        description: `Spend 20 minutes writing down 3 smaller steps to ${vars.goalAction}. Number them 1, 2, 3 and write what you'll do for each one.`
+      }
+    },
+    time: {
+      activationStep: {
+        title: `At ${vars.startTime}, set an alarm`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set an alarm for 20 minutes from now. That's your only task.`
+      },
+      barrierStep: {
+        title: `Work until the alarm`,
+        description: `Focus on ${vars.goalAction} until your alarm rings. When it does, stop immediately and take a 5-minute break.`
+      }
+    },
+  };
+
+  return templates[barrierId] || templates.initiation;
 }
 
 /**
  * Returns barrier-specific templates for Supporter flow
  */
-function getSupporterBarrierTemplate(
-  barrierId: string,
-  vars: ActionableVariables
-): BarrierTemplate {
-  switch (barrierId) {
-    case 'initiation':
-      return {
-        activationStep: `T-Zero Action: At ${vars.startTime}, their goal is only to establish physical contact with the required tool (e.g., open the book, press the play button).`,
-        prepStep: `Environmental Cue: Your task: Ensure the primary tool is on the work surface before ${vars.startTime} to eliminate the 'find-it' barrier.`
-      };
-    
-    case 'time':
-      return {
-        activationStep: `Reminder Action: At ${vars.startTime}, immediately set a visual timer (sand or digital) for 20 minutes to externalize the passage of time.`,
-        prepStep: `Pre-Cue Setup: Your task: Create a physical, visual cue (e.g., a colored piece of paper or a specific hat) and place it in their line of sight one hour before ${vars.startTime}.`
-      };
-    
-    case 'attention':
-      return {
-        activationStep: `Chunking Action: Their task: Complete one small, defined subsection of ${vars.goalAction} (e.g., only the introduction, only problems 1-5) then stop.`,
-        prepStep: `Mandatory Movement: Your task: Ensure they stand up and perform 5 jumping jacks/stretches when the 25-minute timer rings (or when you check in).`
-      };
-    
-    case 'planning':
-      return {
-        activationStep: `Start with the List: Their task: Begin by creating the 3-step sequence list on a whiteboard, not by starting the work itself.`,
-        prepStep: `Stop and Plan: Your task: Interrupt the work 5 minutes before the end time to coach them on planning the very first step for the next session.`
-      };
-    
-    default:
-      // Fallback to focus template
-      return {
-        activationStep: `Their task: Complete one small, defined subsection of ${vars.goalAction}, then take a mandatory 5-minute movement break.`,
-        prepStep: undefined
-      };
-  }
+function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariables): BarrierTemplate {
+  const templates: Record<string, BarrierTemplate> = {
+    initiation: {
+      activationStep: {
+        title: `At ${vars.startTime}, hand them the tool`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them the main tool they need and say: "Just hold this for 15 seconds."`
+      },
+      barrierStep: {
+        title: `Stay nearby for 20 minutes`,
+        description: `Remain in the same room while they work on ${vars.goalAction}. After 20 minutes, check in and celebrate any progress they made.`
+      }
+    },
+    attention: {
+      activationStep: {
+        title: `At ${vars.startTime}, start the timer`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a visible 25-minute timer and say: "Work until this rings."`
+      },
+      barrierStep: {
+        title: `Check in when timer rings`,
+        description: `When the 25-minute timer rings, check in with them. Make sure they take a 5-minute movement break before continuing with their work.`
+      }
+    },
+    planning: {
+      activationStep: {
+        title: `At ${vars.startTime}, provide materials`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them paper and pen and say: "Let's write down 3 small steps."`
+      },
+      barrierStep: {
+        title: `Help organize the steps`,
+        description: `Sit with them for 20 minutes to help write and number 3 smaller steps. Ask guiding questions like "What needs to happen first?" but let them decide the steps.`
+      }
+    },
+    time: {
+      activationStep: {
+        title: `At ${vars.startTime}, set the alarm together`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, help them set a 20-minute alarm and say: "Work until this goes off."`
+      },
+      barrierStep: {
+        title: `Monitor and celebrate`,
+        description: `Check in when the alarm rings. Celebrate what they completed and help them take a 5-minute break before starting the next work session.`
+      }
+    },
+  };
+
+  return templates[barrierId] || templates.initiation;
 }
 
 /**
@@ -205,18 +223,6 @@ export function generateMicroStepsFallback(
       title: flow === 'supporter' ? 'Environmental prep' : `Get ready by ${vars.dayOfWeek}`,
       description: prereqAction
     });
-  } else {
-    // Use prep step from primary barrier
-    const template = flow === 'supporter' 
-      ? getSupporterBarrierTemplate(primaryBarrier, vars)
-      : getIndividualBarrierTemplate(primaryBarrier, vars);
-    
-    if (template.prepStep) {
-      steps.push({
-        title: getBarrierTitle(primaryBarrier, 'prep'),
-        description: template.prepStep
-      });
-    }
   }
   
   // SLOT 2: T-Zero Activation Cue (ALWAYS references START_TIME)
@@ -224,20 +230,14 @@ export function generateMicroStepsFallback(
     ? getSupporterBarrierTemplate(primaryBarrier, vars)
     : getIndividualBarrierTemplate(primaryBarrier, vars);
   
-  steps.push({
-    title: flow === 'supporter' ? 'Deliver the prompt' : `At ${vars.startTime}: Just start`,
-    description: activationTemplate.activationStep
-  });
+  steps.push(activationTemplate.activationStep);
   
   // SLOT 3: Primary Barrier Action
   const barrierTemplate = flow === 'supporter'
     ? getSupporterBarrierTemplate(secondaryBarrier, vars)
     : getIndividualBarrierTemplate(secondaryBarrier, vars);
   
-  steps.push({
-    title: getBarrierTitle(secondaryBarrier, 'primary'),
-    description: barrierTemplate.activationStep
-  });
+  steps.push(barrierTemplate.barrierStep);
   
   return steps.slice(0, 3);
 }
