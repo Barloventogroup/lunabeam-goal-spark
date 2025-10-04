@@ -1194,7 +1194,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
         
         <div className="space-y-2 pt-4 border-t">
-          <Label htmlFor="custom-prerequisites">Say it in your own words</Label>
+          <Label htmlFor="custom-prerequisites">Tell us more</Label>
           <Textarea
             id="custom-prerequisites"
             placeholder="Optional: describe what you need or already have..."
