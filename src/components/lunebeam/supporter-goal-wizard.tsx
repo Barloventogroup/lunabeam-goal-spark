@@ -312,7 +312,9 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
   const renderStep2 = () => (
     <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">What do you want them to work on?</CardTitle>
+        <CardTitle className="text-2xl">
+          {`What is the one clear, observable action ${data.supportedPersonName || "[Individual's Name]"} needs to establish?`}
+        </CardTitle>
         <p className="text-muted-foreground">Describe the goal in a few words</p>
       </CardHeader>
       <CardContent className="space-y-4">
