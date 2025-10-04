@@ -502,6 +502,20 @@ export const StepsList: React.FC<StepsListProps> = ({
   const handleMarkComplete = async (stepId: string) => {
     if (awaitingStepUpdate === stepId) return;
 
+    // Check if all substeps are completed before allowing step completion
+    const stepSubsteps = substepsMap[stepId] || [];
+    if (stepSubsteps.length > 0) {
+      const allSubstepsCompleted = areAllSubStepsCompleted(stepSubsteps);
+      if (!allSubstepsCompleted) {
+        toast({
+          title: "Cannot complete step",
+          description: "Please complete all substeps before marking this step as done.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     console.log('[StepsList] handleMarkComplete START', {
       stepId,
       beforeStatus: steps.find(s => s.id === stepId)?.status
