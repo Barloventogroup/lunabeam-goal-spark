@@ -47,8 +47,6 @@ serve(async (req) => {
       : 0;
     console.log('assistantResponseCount:', assistantResponseCount);
 
-    // Check for similar steps in prior weeks that have substeps
-    const inheritedSubsteps = await checkForSimilarPriorSteps(step, goal);
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
@@ -89,8 +87,39 @@ serve(async (req) => {
       : `MAIN STEP MODE: Focus on \"${step.title}\" - may suggest substeps if needed`;
 
     const guidanceBlock = isSubstep
-      ? `\nSUBSTEP GUIDANCE RULES:\n- DO NOT suggest breaking \"${step.title}\" into smaller pieces\n- Provide direct, actionable advice for completing this specific task\n- Keep responses under 100 words\n- Focus on HOW to do this specific thing\n`
-      : `\nMAIN STEP GUIDANCE RULES:\nONLY suggest breaking THIS step into sub-steps if:\n- They ask for help with this step\n- They say this step feels overwhelming\n- They ask \"how do I start\" this step\n\nIf you do suggest sub-steps, they must ALL relate to \"${step.title}\" and format them like this:\n[SUB-STEPS]\n1. Sub-step Title | Brief description specific to \"${step.title}\" (estimated time)\n2. Another Sub-step | Another description for \"${step.title}\" (estimated time)\n[/SUB-STEPS]\n\nDE-DUPLICATION RULES (critical):\n- Do NOT include two sub-steps that achieve the same objective with different wording.\n- Merge near-duplicates into a single, clear action.\n- Examples of duplicates to avoid (pick only ONE phrasing):\n  - \"Choose a Simple Recipe\" vs \"Pick a Simple Recipe\"\n  - \"Follow the Steps\" vs \"Follow the Recipe Step-by-Step\"\n- Each title must represent a distinct action with a unique outcome.\n- Prefer concise, action-first titles; put nuance in the description.\n`;
+      ? `\nSUBSTEP GUIDANCE RULES:\n- DO NOT suggest breaking \"${step.title}\" into smaller pieces\n- Provide direct, actionable advice using Executive Function scaffolding principles\n- Keep responses under 100 words\n- If they're stuck, suggest a trivial activation cue (< 15 sec physical action) followed by a timed work sprint\n`
+      : `\nMAIN STEP GUIDANCE RULES:\n
+THEORETICAL FRAMEWORK (CRITICAL):
+When suggesting sub-steps, they MUST follow the Executive Function scaffolding model (exactly 3 steps):
+
+**3-STEP STRUCTURE (MANDATORY):**
+1. PREPARATION (before work session) - Gather materials, set up workspace (no time estimate needed)
+2. ACTIVATION CUE (< 15 seconds) - Trivial physical action at specific time: touch, open, tap, grab, place, hold
+   - BANNED VERBS: search, browse, research, find, read, write, call, text, boot, login
+   - MUST include exact time (e.g., "At 8:00 PM")
+3. FOCUSED WORK (15-30 min) - Substantive work with measurable outcome
+   - Must specify minutes (never seconds)
+   - Must include clear completion criteria
+
+**FORMAT (EXACTLY 3 STEPS):**
+[SUB-STEPS]
+1. Preparation Step | Gather/prepare materials for "${step.title}" before work session
+2. Activation Step | At [HH:MM AM/PM], [trivial physical action < 15 sec] for "${step.title}"
+3. Focused Work Step | Set a [15-30] minute timer. [Substantive work with measurable outcome]. When timer rings, take a 5-minute break
+[/SUB-STEPS]
+
+EXAMPLE:
+[SUB-STEPS]
+1. Gather Materials | By 7:00 PM, place your biology textbook, notes, and highlighter on your desk
+2. Start Work | At 7:30 PM, open your biology textbook to chapter 5
+3. Active Review | Set a 25-minute timer. Read and highlight key concepts from chapter 5. When timer rings, stand up and stretch for 5 minutes
+[/SUB-STEPS]
+
+ONLY suggest sub-steps if:
+- They ask for help with this step
+- They say this step feels overwhelming
+- They ask \"how do I start\" this step
+`;
 
     const systemPrompt = `You are Luna, a helpful AI assistant designed for teenagers and young adults (16-25) working on their goals.\n\nCurrent Goal: \"${goal.title}\"\nGoal Description: ${goal.description || 'No description provided'}\nGoal Domain: ${goal.domain || 'General'}\n\n${progressContext}\n\nCURRENT STEP FOCUS: \"${step.title}\"\nStep Description: ${step.notes || step.explainer || 'No description provided'}\nEstimated Time: ${step.estimated_effort_min ? `${step.estimated_effort_min} minutes` : 'Not specified'}\n\nYour communication style:\n- Be concise and focused - you have limited responses\n- Talk like a supportive friend who gets their struggles\n- Use relatable examples from their world: social media, gaming, apps\n- Keep responses under 150 words when possible\n\nUse quick analogies they'll connect with:\n- \"Like organizing your phone apps\"\n- \"Similar to learning a new game - start simple\"\n- \"Think of it like creating content - plan, create, share\"\n\nCRITICAL RULES:\n1. ${modeLine}\n2. Analyze what they've completed to understand their progress pattern\n3. ${isSubstep ? 'Provide direct action steps for this specific substep' : 'Provide sub-steps ONLY for the current step in question'}\n4. Stay laser-focused on the current ${isSubstep ? 'substep' : 'step'}\n\nYour role is to:\n1. Answer their specific questions about THIS ${isSubstep ? 'SUBSTEP' : 'STEP'} only\n2. ${isSubstep ? 'Give direct, specific guidance for completing this substep' : 'Break down THIS STEP into smaller, manageable sub-steps'}\n3. Give practical advice for completing THIS SPECIFIC ${isSubstep ? 'SUBSTEP' : 'STEP'}\n4. Stay laser-focused on the current ${isSubstep ? 'substep' : 'step'}\n\n${guidanceBlock}\n\nBe supportive but keep it brief and focused on THIS ${isSubstep ? 'SUBSTEP' : 'STEP'} ONLY.`;
 
@@ -124,24 +153,16 @@ serve(async (req) => {
     const data = await response.json();
     const assistantResponse = data.choices?.[0]?.message?.content || '';
 
-    // Parse potential sub-steps from the response
+    // Parse potential sub-steps from the response (must be exactly 3 steps following EF framework)
     const suggestedSteps = dedupeSubSteps(parseSubSteps(assistantResponse, step, goal));
-
-    // Combine AI suggested steps with inherited substeps from similar prior weeks
-    let allSteps = [...suggestedSteps];
-    if (inheritedSubsteps.length > 0 && suggestedSteps.length === 0) {
-      // Only auto-inherit if no new steps were suggested by AI
-      allSteps = inheritedSubsteps;
-      console.log(`Auto-inheriting ${inheritedSubsteps.length} substeps from similar prior week steps`);
-    }
 
     // Check if substeps already exist for this step
     const existingSubsteps = await checkExistingSubsteps(step.id);
-    
-    // If sub-steps were suggested or inherited, create them in the database (only if none exist)
+
+    // If sub-steps were suggested, create them in the database (only if none exist)
     let createdSteps: any[] = [];
-    if (allSteps.length > 0 && existingSubsteps.length === 0) {
-      createdSteps = await createSubSteps(allSteps, step, goal);
+    if (suggestedSteps.length > 0 && existingSubsteps.length === 0) {
+      createdSteps = await createSubSteps(suggestedSteps, step, goal);
     } else if (existingSubsteps.length > 0) {
       console.log(`Skipping substep creation - ${existingSubsteps.length} substeps already exist for step ${step.id}`);
       createdSteps = existingSubsteps;
@@ -239,7 +260,7 @@ function parseSubSteps(response: string, parentStep: any, goal: any): any[] {
   const subStepsText = subStepsMatch[1].trim();
   const lines = subStepsText.split('\n').filter((line) => line.trim());
 
-  return lines.map((line) => {
+  const parsedSteps = lines.map((line) => {
     const match = line.match(/^\d+\.\s*(.+?)\s*\|\s*(.+?)(?:\s*\((\d+)\s*minutes?\))?$/);
     if (!match) return null;
 
@@ -251,7 +272,53 @@ function parseSubSteps(response: string, parentStep: any, goal: any): any[] {
       step_id: parentStep.id,
       is_planned: false,
     };
-  }).filter(Boolean) as any[];
+  }).filter(Boolean);
+
+  // CRITICAL: Must have exactly 3 steps
+  if (parsedSteps.length !== 3) {
+    console.warn(`Substeps must be exactly 3 steps (got ${parsedSteps.length}) - rejecting all`);
+    return [];
+  }
+
+  // Validate each step against EF framework rules
+  for (let index = 0; index < parsedSteps.length; index++) {
+    const substep = parsedSteps[index];
+    
+    // Validate Step 2 (index 1) follows activation rules
+    if (index === 1) {
+      const bannedVerbs = ['search', 'browse', 'research', 'find', 'read', 'write', 'call', 'text', 'boot', 'login'];
+      const hasTimeBound = /\d{1,2}:\d{2}\s?(AM|PM)/i.test(substep.description);
+      const hasBannedVerb = bannedVerbs.some(verb => 
+        new RegExp(`\\b${verb}\\b`, 'i').test(substep.description)
+      );
+      
+      if (hasBannedVerb) {
+        console.warn(`Step 2 contains banned verb - rejecting all substeps`);
+        return [];
+      }
+      if (!hasTimeBound) {
+        console.warn(`Step 2 missing exact time anchor (HH:MM AM/PM) - rejecting all substeps`);
+        return [];
+      }
+    }
+    
+    // Validate Step 3 (index 2) is substantive work
+    if (index === 2) {
+      const hasMinutes = /\d+\s?minut/i.test(substep.description);
+      const hasSeconds = /\d+\s?seconds/i.test(substep.description);
+      
+      if (hasSeconds) {
+        console.warn(`Step 3 cannot use "seconds" - must be 15+ minutes - rejecting all substeps`);
+        return [];
+      }
+      if (!hasMinutes) {
+        console.warn(`Step 3 must specify duration in minutes - rejecting all substeps`);
+        return [];
+      }
+    }
+  }
+
+  return parsedSteps as any[];
 }
 
 async function createSubSteps(subSteps: any[], parentStep: any, goal: any) {
@@ -311,88 +378,3 @@ async function checkExistingSubsteps(stepId: string) {
   }
 }
 
-async function checkForSimilarPriorSteps(currentStep: any, goal: any): Promise<any[]> {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  if (!supabaseUrl || !supabaseKey) return [];
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  // Extract week info from current step title (e.g., "Week 3, Session 1: Walk")
-  const weekMatch = String(currentStep.title).match(/Week (\d+)/);
-  if (!weekMatch) return [];
-
-  const currentWeek = parseInt(weekMatch[1]);
-  if (currentWeek <= 1) return []; // No prior weeks to check
-
-  try {
-    // Get all steps for this goal
-    const { data: allSteps, error } = await supabase
-      .from('steps')
-      .select('*')
-      .eq('goal_id', goal.id)
-      .order('order_index');
-
-    if (error || !allSteps) {
-      console.error('Error fetching steps for similarity check:', error);
-      return [];
-    }
-
-    // Find similar steps from prior weeks
-    const baseActivity = String(currentStep.title).replace(/Week \d+, Session \d+:\s*/, '');
-    const similarPriorSteps = (allSteps as any[]).filter((step: any) => {
-      const stepWeekMatch = String(step.title).match(/Week (\d+)/);
-      if (!stepWeekMatch) return false;
-      
-      const stepWeek = parseInt(stepWeekMatch[1]);
-      const stepActivity = String(step.title).replace(/Week \d+, Session \d+:\s*/, '');
-      
-      return stepWeek < currentWeek && stepActivity === baseActivity;
-    });
-
-    if (similarPriorSteps.length === 0) return [];
-
-    // Find the most recent similar step that has substeps
-    const mostRecentSimilar = similarPriorSteps.reduce((latest: any, s: any) => {
-      const stepWeek = parseInt(String(s.title).match(/Week (\d+)/)?.[1] || '0');
-      const latestWeek = parseInt(String(latest.title).match(/Week (\d+)/)?.[1] || '0');
-      return stepWeek > latestWeek ? s : latest;
-    });
-
-    // Get substeps for the most recent similar step
-    const { data: substeps, error: substepsError } = await supabase
-      .from('steps')
-      .select('*')
-      .eq('goal_id', goal.id)
-      .gt('order_index', mostRecentSimilar.order_index)
-      .lt('order_index', mostRecentSimilar.order_index + 10)
-      .order('order_index');
-
-    if (substepsError || !substeps || substeps.length === 0) {
-      return [];
-    }
-
-    // Filter out main milestone steps, keep only substeps
-    const actualSubsteps = (substeps as any[]).filter((s: any) => 
-      !String(s.title).match(/Week \d+, Session \d+:/) && 
-      s.order_index > mostRecentSimilar.order_index
-    );
-
-    if (actualSubsteps.length === 0) return [];
-
-    console.log(`Found ${actualSubsteps.length} substeps from similar prior week step`);
-
-    // Convert substeps to the format expected by createSubSteps
-    return actualSubsteps.map((substep: any, index: number) => ({
-      title: substep.title,
-      notes: substep.notes || substep.explainer,
-      estimated_effort_min: substep.estimated_effort_min,
-      goal_id: goal.id,
-      is_required: substep.is_required,
-      order_index: (currentStep.order_index || 0) + index + 1
-    }));
-
-  } catch (error) {
-    console.error('Error in checkForSimilarPriorSteps:', error);
-    return [];
-  }
-}
