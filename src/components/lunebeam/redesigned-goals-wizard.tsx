@@ -1448,23 +1448,45 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Button variant={!data.assignReward ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
-        assignReward: false
-      })}>
-          <div className="text-left">
-            <div className="font-semibold">No reward</div>
-            <div className="text-sm text-muted-foreground">Just the satisfaction of completing it</div>
-          </div>
-        </Button>
+        <Card
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            !data.assignReward ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => updateData({ assignReward: false })}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              {!data.assignReward && (
+                <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              )}
+              <div className="text-left flex-1">
+                <div className="font-semibold">No reward</div>
+                <div className="text-sm text-muted-foreground">Just the satisfaction of completing it</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
-        <Button variant={data.assignReward ? 'default' : 'outline'} className="w-full h-auto p-4 justify-start" onClick={() => updateData({
-        assignReward: true
-      })}>
-          <div className="text-left">
-            <div className="font-semibold">Add reward</div>
-            <div className="text-sm text-muted-foreground">Choose from Reward Bank or create new</div>
-          </div>
-        </Button>
+        <Card
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2",
+            data.assignReward ? "border-primary bg-primary/5" : "border-border"
+          )}
+          onClick={() => updateData({ assignReward: true })}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              {data.assignReward && (
+                <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              )}
+              <div className="text-left flex-1">
+                <div className="font-semibold">Add reward</div>
+                <div className="text-sm text-muted-foreground">Choose from Reward Bank or create new</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
         {data.assignReward && <div className="space-y-3 pt-4 border-t">
             <Label>Point value</Label>
@@ -1481,14 +1503,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             value: 20,
             label: 'Large',
             desc: '20 pts'
-          }].map(point => <Button key={point.value} variant={data.pointValue === point.value ? 'default' : 'outline'} className="h-auto p-3" onClick={() => updateData({
-            pointValue: point.value
-          })}>
-                  <div className="text-center">
-                    <div className="font-semibold">{point.label}</div>
-                    <div className="text-xs text-muted-foreground">{point.desc}</div>
-                  </div>
-                </Button>)}
+          }].map(point => (
+                <Card
+                  key={point.value}
+                  className={cn(
+                    "cursor-pointer hover:shadow-md transition-all border-2",
+                    data.pointValue === point.value ? "border-primary bg-primary/5" : "border-border"
+                  )}
+                  onClick={() => updateData({ pointValue: point.value })}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      {data.pointValue === point.value && (
+                        <Check className="h-4 w-4 text-primary" />
+                      )}
+                      <div className="font-semibold text-center">{point.label}</div>
+                      <div className="text-xs text-muted-foreground">{point.desc}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>}
       </CardContent>
