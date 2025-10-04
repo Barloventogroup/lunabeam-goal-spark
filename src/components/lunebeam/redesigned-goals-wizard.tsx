@@ -601,7 +601,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       'What type of goal?', 
       `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`, 
       `Before ${isForOther ? (name || 'they') : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, 
-      `Let\'s make this feel solid! When will ${isForOther ? (name || 'they') : 'you'} officially START this action?`, 
+      `Let's build a reliable structure. When will ${isForOther ? (name || 'they') : 'you'} start this action?`, 
       'Support context', 
       'Review and Create'
     ];
