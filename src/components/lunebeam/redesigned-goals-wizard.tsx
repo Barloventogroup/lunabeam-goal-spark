@@ -1384,7 +1384,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
         
         {/* Delivery Method - only for hands-on helper */}
-        {data.primarySupporterRole === 'hands_on_helper' && <div className="space-y-4 mt-6 pt-6 border-t">
+         {data.primarySupporterRole === 'hands_on_helper' && <div className="space-y-4 mt-6 pt-6 border-t">
             <div>
               <h3 className="font-semibold mb-2">How will you deliver support?</h3>
               <p className="text-sm text-muted-foreground">
@@ -1392,55 +1392,79 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               </p>
             </div>
             
-            <RadioGroup value={data.supporterDeliveryMethod} onValueChange={value => updateData({ supporterDeliveryMethod: value })}>
-              <Card className={cn("cursor-pointer hover:shadow-sm transition-all", data.supporterDeliveryMethod === 'Active Co-working (Side-by-side)' && "border-primary bg-primary/5")}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="Active Co-working (Side-by-side)" id="cowork" />
-                    <Label htmlFor="cowork" className="flex-1 cursor-pointer">
-                      <div className="font-medium">Active Co-working (Side-by-side)</div>
-                      <div className="text-xs text-muted-foreground">Working together on the task</div>
-                    </Label>
+            <div className="grid gap-3">
+              <Card 
+                className={cn(
+                  "cursor-pointer hover:bg-muted/50 transition-all p-4",
+                  data.supporterDeliveryMethod === 'Active Co-working (Side-by-side)' && "border-2 border-primary bg-primary/5"
+                )}
+                onClick={() => updateData({ supporterDeliveryMethod: 'Active Co-working (Side-by-side)' })}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="font-medium mb-1">Active Co-working (Side-by-side)</div>
+                    <div className="text-sm text-muted-foreground">Working together on the task</div>
                   </div>
-                </CardContent>
+                  {data.supporterDeliveryMethod === 'Active Co-working (Side-by-side)' && (
+                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  )}
+                </div>
               </Card>
               
-              <Card className={cn("cursor-pointer hover:shadow-sm transition-all", data.supporterDeliveryMethod === 'Proximity Support (Same room)' && "border-primary bg-primary/5")}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="Proximity Support (Same room)" id="proximity" />
-                    <Label htmlFor="proximity" className="flex-1 cursor-pointer">
-                      <div className="font-medium">Proximity Support (Same room)</div>
-                      <div className="text-xs text-muted-foreground">Nearby but not actively helping</div>
-                    </Label>
+              <Card 
+                className={cn(
+                  "cursor-pointer hover:bg-muted/50 transition-all p-4",
+                  data.supporterDeliveryMethod === 'Proximity Support (Same room)' && "border-2 border-primary bg-primary/5"
+                )}
+                onClick={() => updateData({ supporterDeliveryMethod: 'Proximity Support (Same room)' })}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="font-medium mb-1">Proximity Support (Same room)</div>
+                    <div className="text-sm text-muted-foreground">Nearby but not actively helping</div>
                   </div>
-                </CardContent>
+                  {data.supporterDeliveryMethod === 'Proximity Support (Same room)' && (
+                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  )}
+                </div>
               </Card>
               
-              <Card className={cn("cursor-pointer hover:shadow-sm transition-all", data.supporterDeliveryMethod === 'Check-in Support (Brief contact)' && "border-primary bg-primary/5")}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="Check-in Support (Brief contact)" id="checkin" />
-                    <Label htmlFor="checkin" className="flex-1 cursor-pointer">
-                      <div className="font-medium">Check-in Support (Brief contact)</div>
-                      <div className="text-xs text-muted-foreground">Quick check before and after</div>
-                    </Label>
+              <Card 
+                className={cn(
+                  "cursor-pointer hover:bg-muted/50 transition-all p-4",
+                  data.supporterDeliveryMethod === 'Check-in Support (Brief contact)' && "border-2 border-primary bg-primary/5"
+                )}
+                onClick={() => updateData({ supporterDeliveryMethod: 'Check-in Support (Brief contact)' })}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="font-medium mb-1">Check-in Support (Brief contact)</div>
+                    <div className="text-sm text-muted-foreground">Quick check before and after</div>
                   </div>
-                </CardContent>
+                  {data.supporterDeliveryMethod === 'Check-in Support (Brief contact)' && (
+                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  )}
+                </div>
               </Card>
               
-              <Card className={cn("cursor-pointer hover:shadow-sm transition-all", data.supporterDeliveryMethod === 'Remote Support (Available if needed)' && "border-primary bg-primary/5")}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="Remote Support (Available if needed)" id="remote" />
-                    <Label htmlFor="remote" className="flex-1 cursor-pointer">
-                      <div className="font-medium">Remote Support (Available if needed)</div>
-                      <div className="text-xs text-muted-foreground">Available via text/call</div>
-                    </Label>
+              <Card 
+                className={cn(
+                  "cursor-pointer hover:bg-muted/50 transition-all p-4",
+                  data.supporterDeliveryMethod === 'Remote Support (Available if needed)' && "border-2 border-primary bg-primary/5"
+                )}
+                onClick={() => updateData({ supporterDeliveryMethod: 'Remote Support (Available if needed)' })}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="font-medium mb-1">Remote Support (Available if needed)</div>
+                    <div className="text-sm text-muted-foreground">Available via text/call</div>
                   </div>
-                </CardContent>
+                  {data.supporterDeliveryMethod === 'Remote Support (Available if needed)' && (
+                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  )}
+                </div>
               </Card>
-            </RadioGroup>
+            </div>
           </div>}
         
         {/* Additional Ally Roles - for non-primary supporters */}
