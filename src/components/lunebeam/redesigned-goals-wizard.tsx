@@ -820,7 +820,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <h3 className="text-muted-foreground">{text.step0.subtitle}</h3>
+        <p className="text-muted-foreground">{text.step0.subtitle}</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
