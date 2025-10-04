@@ -1140,7 +1140,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         })}
         
         <div className="space-y-2 pt-4 border-t">
-          <Label htmlFor="custom-challenges">Say it in your own words</Label>
+          <Label htmlFor="custom-challenges">Tell us more</Label>
           <Textarea
             id="custom-challenges"
             placeholder="Optional: describe your challenges in your own words..."
