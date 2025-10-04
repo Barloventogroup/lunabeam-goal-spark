@@ -251,16 +251,21 @@ const INDIVIDUAL_FLOW_TEXT = {
     subtitle: "Select up to two"
   },
   step5: {
-    subtitle: "Equipment, knowledge, access, etc.",
+    question: "Are you fully equipped to start right now?",
+    helperText: "If you're not sure, look at your space. Is there anything you'd have to find, clear, or buy before you can touch the work? If so, choose No.",
     options: {
       yes: {
-        title: "Yes, I'm ready",
+        title: "Yes, I'm ready to go.",
         description: "I have everything I need to start"
       },
       no: {
-        title: "No, I need help getting ready",
+        title: "No, I need to get one thing first.",
         description: "I need prep steps first"
       }
+    },
+    conditionalInput: {
+      label: "What is the one thing missing/in the way?",
+      placeholder: "e.g., guitar picks, clear desk space, permission to use kitchen"
     }
   },
   step6: {
@@ -293,16 +298,21 @@ const getSupporterFlowText = (name?: string) => ({
     subtitle: `Select up to two areas that typically feel challenging for ${name || 'them'}`
   },
   step5: {
-    subtitle: `Do${name ? 'es' : ''} ${name || 'they'} have what ${name ? name : 'they'} need${name ? 's' : ''} to begin?`,
+    question: "Is the environment completely prepared? (Tools, space, permissions)",
+    helperText: "If you're not sure, focus on the single non-negotiable item or space they need to begin. If that's missing, choose No.",
     options: {
       yes: {
-        title: name ? `Yes, ${name} is ready` : "Yes, they're ready",
+        title: "Yes, all prerequisites are met.",
         description: name ? `${name} has everything needed to start` : "They have everything needed to start"
       },
       no: {
-        title: name ? `No, ${name} needs preparation` : "No, they need preparation",
+        title: "No, a structural setup is still missing.",
         description: name ? `${name} needs prep steps first` : "They need prep steps first"
       }
+    },
+    conditionalInput: {
+      label: "What is the single most critical missing prerequisite?",
+      placeholder: "e.g., keyboard, quiet study area, parent approval for gym membership"
     }
   },
   step6: {
@@ -1130,11 +1140,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">{text.step5.subtitle}</p>
+        <CardTitle className="text-2xl">{text.step5.question}</CardTitle>
+        {/* Inline helper text - always visible */}
+        <p className="text-sm text-muted-foreground mt-3 italic">
+          {text.step5.helperText}
+        </p>
       </CardHeader>
       
       <CardContent className="space-y-4">
+        {/* Choice 1: Ready */}
         <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", !data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
           hasPrerequisites: false
         })}>
@@ -1149,12 +1163,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </CardContent>
         </Card>
         
+        {/* Choice 2: Need Something */}
         <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
           hasPrerequisites: true
         })}>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <X className="h-5 w-5 text-primary" />
+              <AlertCircle className="h-5 w-5 text-amber-500" />
               <div className="text-left flex-1">
                 <div className="font-semibold">{text.step5.options.no.title}</div>
                 <div className="text-sm text-muted-foreground">{text.step5.options.no.description}</div>
@@ -1163,12 +1178,25 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </CardContent>
         </Card>
         
-        <div className="space-y-2 pt-4 border-t">
-          <Label htmlFor="custom-prerequisites">Tell us more</Label>
-          <Textarea id="custom-prerequisites" placeholder="Share any additional details here..." value={data.customPrerequisites || ''} onChange={e => updateData({
-            customPrerequisites: e.target.value
-          })} className="min-h-[80px] resize-none" rows={3} />
-        </div>
+        {/* Conditional Input - only shows if "need something" is selected */}
+        {data.hasPrerequisites && (
+          <div className="space-y-2 pt-4 border-t animate-in fade-in slide-in-from-top-2 duration-300">
+            <Label htmlFor="prerequisite-item">
+              {text.step5.conditionalInput.label}
+            </Label>
+            <Input
+              id="prerequisite-item"
+              placeholder={text.step5.conditionalInput.placeholder}
+              value={data.customPrerequisites || ''}
+              onChange={(e) => updateData({ customPrerequisites: e.target.value })}
+              className="min-h-[44px]"
+              autoFocus
+            />
+            <p className="text-xs text-muted-foreground">
+              Focus on the single most important thing needed to begin
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>;
   };

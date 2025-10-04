@@ -50,8 +50,10 @@ export interface MicroStepsRequest {
   startDateTime: string;
   hasPrerequisite: boolean;
   prerequisiteText: string;
+  prerequisiteIsConcrete: boolean;
   barrier1: string;
   barrier2: string;
+  supportedPersonName?: string;
 }
 
 export interface MicroStep {

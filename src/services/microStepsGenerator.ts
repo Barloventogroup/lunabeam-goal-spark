@@ -33,6 +33,7 @@ interface WizardData {
   hasPrerequisites?: boolean;
   customPrerequisites?: string;
   challengeAreas?: string[];
+  supportedPersonName?: string;
 }
 
 /**
@@ -176,6 +177,13 @@ export async function generateMicroStepsSmart(
   flow: 'individual' | 'supporter'
 ): Promise<MicroStep[]> {
   try {
+    // Detect if prerequisite is concrete (single item) or uncertain
+    const prereqText = data.customPrerequisites || '';
+    const uncertaintyKeywords = ['not sure', 'don\'t know', 'need to find', 'where to', 'how to', 'unsure', 'no idea'];
+    const prerequisiteIsConcrete = prereqText.length > 0 && 
+                                   prereqText.length < 50 && // Short = likely concrete
+                                   !uncertaintyKeywords.some(kw => prereqText.toLowerCase().includes(kw));
+    
     const payload = {
       flow,
       goalTitle: data.goalTitle,
@@ -186,8 +194,10 @@ export async function generateMicroStepsSmart(
       startDateTime: data.startDate.toISOString(),
       hasPrerequisite: data.hasPrerequisites === true && !!data.customPrerequisites,
       prerequisiteText: data.customPrerequisites || '',
+      prerequisiteIsConcrete,
       barrier1: data.challengeAreas?.[0] || 'initiation',
       barrier2: data.challengeAreas?.[1] || 'attention',
+      supportedPersonName: data.supportedPersonName || '',
     };
 
     const { microSteps, error, useFallback } = await AIService.getMicroSteps(payload);

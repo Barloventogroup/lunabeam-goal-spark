@@ -17,8 +17,10 @@ interface MicroStepsRequest {
   startDateTime: string;
   hasPrerequisite: boolean;
   prerequisiteText: string;
+  prerequisiteIsConcrete: boolean; // Flag if it's a single item vs. vague uncertainty
   barrier1: string;
   barrier2: string;
+  supportedPersonName?: string; // For better supporter flow personalization
 }
 
 Deno.serve(async (req) => {
@@ -188,10 +190,29 @@ Step 1: PREPARATION (BEFORE [startTime])
 - **Purpose**: Address the [Prerequisite Text] if it exists, otherwise, generate a simple, non-mandatory organization step.
 - **Action**: 1-2 CONCRETE actions to obtain/prepare the workspace *before* the start time.
 - **MUST REFERENCE**: Specific tools, materials, or resources needed for [Goal Title]
+
+**PREREQUISITE HANDLING RULES:**
+
+**IF [prerequisiteIsConcrete] = true** (Single concrete item like "guitar picks", "textbook"):
+  - Step 1 should focus on OBTAINING that specific item
+  - Include WHERE to get it (store name, online, location)
+  - Include WHEN (by [specific day before start day])
+  - Examples:
+    * "guitar picks" → "By Thursday, buy guitar picks at Guitar Center or order online from Amazon ($5-10)"
+    * "algebra textbook" → "By Wednesday, borrow algebra textbook from school library or ask teacher for a copy"
+    * "clear desk space" → "By Thursday evening, clear your desk: move 3 items to storage box, place the box on shelf"
+
+**IF [prerequisiteIsConcrete] = false** (Vague/uncertain like "not sure where to find..."):
+  - Step 1 becomes a RESEARCH/DISCOVERY step
+  - MUST include specific search actions + specific people to ask
+  - MUST result in a list/decision
+  - Examples:
+    * "not sure where to find guitar teacher" → "By Wednesday, ask your music teacher AND search 'guitar lessons near me'. Write down 3 options with prices."
+    * "don't know what equipment I need" → "By Thursday, text 2 people who do [activity] and ask: 'What do I need to start?' Make a list."
+
 - **Examples**: 
-  * Goal: "Practice Spanish" + "Need help from someone who knows Spanish" → "Text 2 classmates by Thursday to ask for a 30-min practice session this week."
-  * Goal: "Learn guitar chords" + No prerequisite → "By Thursday evening, place your guitar and chord chart on your music stand."
-  * Goal: "Study algebra" + No prerequisite → "By Friday afternoon, gather your algebra textbook, notebook, and calculator on your desk."
+  * Goal: "Practice Spanish" + Concrete: "Spanish flashcards" → "By Thursday, buy Spanish verb flashcards at Target or order from Amazon. Place them on your desk."
+  * Goal: "Learn guitar" + Uncertain: "not sure what type of guitar" → "By Wednesday, watch 1 YouTube video: 'Beginner guitars for teens'. Write down 2 guitar types that interest you."
 
 Step 2: ACTIVATION CUE (AT EXACTLY [startTime])
 - **Purpose**: Trivial activation to defeat the inertia barrier.
@@ -224,10 +245,26 @@ Step 1: ENVIRONMENTAL SETUP (BEFORE [startTime])
 - **Purpose**: Remove all potential physical and material obstacles.
 - **Action**: What the supporter must do to ensure the workspace is ready (charging, clearing, providing materials).
 - **MUST REFERENCE**: Specific materials for [Goal Title]
+
+**PREREQUISITE HANDLING FOR SUPPORTERS:**
+
+**IF [prerequisiteIsConcrete] = true** (Single concrete item):
+  - Supporter's action: Facilitate obtaining/preparing that item
+  - Include specific facilitation action (drive, order, help find)
+  - Examples:
+    * "guitar picks" → "By Thursday, drive [Name] to Guitar Center to buy picks, or order online together from Amazon"
+    * "keyboard" → "By Wednesday, ensure keyboard is charged and placed on [Name]'s desk with fresh batteries nearby"
+
+**IF [prerequisiteIsConcrete] = false** (Uncertain):
+  - Supporter's action: Guide the discovery process together
+  - MUST include co-research or co-exploration
+  - Examples:
+    * "not sure where to practice" → "By Wednesday, help [Name] search 'practice spaces near me'. Sit together and write down 2 options."
+    * "don't know what materials needed" → "By Thursday, help [Name] text their teacher to ask: 'What materials do I need?' Write down the response together."
+
 - **Examples**: 
   * Goal: "Study algebra" → "Before 6:30 PM Tuesday, place the algebra textbook open to chapter 3 on their desk with a pencil and calculator."
   * Goal: "Learn Spanish" → "Before 7:00 PM Friday, ensure their Spanish flashcards and notebook are on the desk."
-  * Goal: "Practice guitar" → "Before 8:00 AM Saturday, place their guitar and chord chart on the music stand."
 
 Step 2: CUE DELIVERY (AT EXACTLY [startTime])
 - **Purpose**: Serve as the human prompt to initiate the activation step.
@@ -287,6 +324,15 @@ Step 3: REINFORCEMENT (DURING WORK/AFTER COMPLETION)
    - Never use generic language like "your work", "the task", "your materials"
    - Use domain-specific terms from the goal (e.g., "Spanish verbs", "algebra problems", "guitar chords")
 
+8. **Supporter Flow - Use Individual's Name**:
+   - When [supportedPersonName] is provided, use it consistently
+   - Replace generic "them", "they" with the person's name in Step 1 and Step 3
+   - Keep Step 2 (cue delivery) focused on what to say, can use "them"
+   - Examples:
+     ✅ "Before 6:30 PM, place Natalia's algebra textbook on her desk"
+     ✅ "After 25 minutes, check on Natalia and ensure she takes a movement break"
+     ❌ "Before 6:30 PM, place their textbook on their desk" (too generic)
+
 FORMAT:
 - Keep titles under 8 words
 - Descriptions: 1-2 imperative sentences, specific to the goal
@@ -296,6 +342,36 @@ FORMAT:
 }
 
 function buildUserPrompt(payload: MicroStepsRequest): string {
+  let prerequisiteContext = '';
+  
+  if (payload.hasPrerequisite && payload.prerequisiteText) {
+    // Detect if prerequisite text contains uncertainty keywords
+    const uncertaintyKeywords = ['not sure', 'don\'t know', 'need to find', 'where to', 'how to', 'unsure', 'no idea'];
+    const hasUncertainty = uncertaintyKeywords.some(kw => payload.prerequisiteText.toLowerCase().includes(kw));
+    
+    if (hasUncertainty) {
+      prerequisiteContext = `
+**Prerequisite Status**: ⚠️ UNCERTAIN - Individual doesn't know how to obtain prerequisite
+**Prerequisite Text**: ${payload.prerequisiteText}
+**CRITICAL**: Step 1 MUST be a RESEARCH/DISCOVERY step with specific actions:
+  - Include specific people to ask (by role, not name)
+  - Include specific search terms or platforms
+  - Must result in concrete output (list of 2-3 options, names, locations)
+  - Use phrases like "text 2 people", "search '[specific term]'", "ask [specific role]"`;
+    } else if (payload.prerequisiteIsConcrete) {
+      prerequisiteContext = `
+**Prerequisite Status**: ✅ CONCRETE - Single specific item needed
+**Prerequisite Item**: ${payload.prerequisiteText}
+**Step 1 Focus**: Generate an OBTAINING/PREPARING step for this specific item
+  - Include WHERE to get it (specific store, website, person)
+  - Include WHEN (by specific day before ${payload.startDayOfWeek})
+  - Keep action simple: buy, borrow, order, find, clear`;
+    } else {
+      prerequisiteContext = `
+**Prerequisite Text**: ${payload.prerequisiteText}`;
+    }
+  }
+
   return `Generate 3 micro-steps for this goal:
 
 **Goal**: ${payload.goalTitle}
@@ -304,9 +380,8 @@ function buildUserPrompt(payload: MicroStepsRequest): string {
 **Start Day (startDayOfWeek)**: ${payload.startDayOfWeek}
 **Start Time (startTime)**: ${payload.startTime}
 **Flow**: ${payload.flow}
-**Supporter Role**: ${payload.flow === 'supporter' ? 'Parent/Coach/Friend' : 'N/A'}
-**Has Prerequisite**: ${payload.hasPrerequisite ? 'Yes' : 'No'}
-${payload.hasPrerequisite ? `**Prerequisite Text**: ${payload.prerequisiteText}` : ''}
+${payload.flow === 'supporter' && payload.supportedPersonName ? `**Individual's Name**: ${payload.supportedPersonName}` : ''}
+${prerequisiteContext}
 **Primary Challenge**: ${payload.barrier1}
 **Secondary Challenge (IMPORTANT - use this for Step 3 Logic Mapping)**: ${payload.barrier2}
 
@@ -328,6 +403,36 @@ function validateMicroSteps(steps: { title: string; description: string }[], pay
         errors.push(`Step ${i+1} contains clinical jargon: "${word}"`);
       }
     });
+    
+    // NEW: Validate Step 1 if prerequisite involves uncertainty
+    if (i === 0 && payload?.prerequisiteText) {
+      const prereqLower = payload.prerequisiteText.toLowerCase();
+      const uncertaintyKeywords = ['not sure', 'don\'t know', 'need to find', 'where to', 'how to', 'unsure'];
+      const hasUncertainty = uncertaintyKeywords.some(kw => prereqLower.includes(kw));
+      
+      if (hasUncertainty) {
+        // Step 1 should be a research/discovery step
+        const researchVerbs = ['ask', 'text', 'search', 'google', 'look up', 'find out', 'watch', 'read', 'visit', 'call', 'email'];
+        const hasResearchAction = researchVerbs.some(verb => text.includes(verb));
+        
+        if (!hasResearchAction) {
+          errors.push('Step 1 must include a research/discovery action when prerequisite is uncertain (e.g., "ask 2 people", "search online")');
+        }
+        
+        // Should include measurable outcome for research
+        const hasMeasurableResearch = /\d+\s?(people|person|option|website|video|article|store|location)/i.test(text);
+        if (!hasMeasurableResearch) {
+          errors.push('Research step should include quantity (e.g., "ask 2 people", "find 3 options")');
+        }
+        
+        // Should NOT use vague terms
+        const vagueTerms = ['figure out', 'look into', 'explore options', 'do research'];
+        const hasVagueTerm = vagueTerms.some(term => text.includes(term));
+        if (hasVagueTerm) {
+          errors.push('Research step is too vague - use specific actions like "ask [role]", "search [specific term]", "watch [specific content]"');
+        }
+      }
+    }
     
     
     // Step 3 validations
