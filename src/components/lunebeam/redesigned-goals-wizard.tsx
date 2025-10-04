@@ -574,7 +574,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     
     // Use supporterTitles when step 0 exists (actuallySupportsAnyone), otherwise use nonSupporterTitles
     const supporterTitles = [
-      `${data.supportedPersonName ? `Who is this goal for: ${data.supportedPersonName}?` : 'Who is this goal for?'}`, 
+      'Who is this goal for?', 
       `What is the one clear, observable action ${isForOther ? (data.supportedPersonName || 'they') : 'you'} need${isForOther ? '' : ''} to establish?`, 
       `Why does this matter${isForOther ? ' to them' : ' to you'}?`, 
       'What type of goal?', 
