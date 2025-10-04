@@ -47,7 +47,7 @@ function translateToActionableVariables(data: WizardData): ActionableVariables {
     motivation: data.customMotivation || data.goalMotivation || 'this goal',
     startTime,
     dayOfWeek,
-    hasPrerequisite: data.hasPrerequisites === false && !!data.customPrerequisites,
+    hasPrerequisite: data.hasPrerequisites === true && !!data.customPrerequisites,
     prerequisiteText: data.customPrerequisites || '',
     barrier1: data.challengeAreas?.[0] || null,
     barrier2: data.challengeAreas?.[1] || null,
