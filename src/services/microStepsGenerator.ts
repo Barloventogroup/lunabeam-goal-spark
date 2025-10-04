@@ -75,42 +75,42 @@ function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariabl
   const templates: Record<string, BarrierTemplate> = {
     initiation: {
       activationStep: {
-        title: `At ${vars.startTime}, just touch it`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, your ONLY job is to touch or open the main tool you need (e.g., laptop, textbook, app). That's all—just 15 seconds.`
+        title: `At ${vars.startTime}, touch your tool`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, touch or open the main tool you need (laptop, textbook, or app).`
       },
       barrierStep: {
         title: `Work for 20 minutes`,
-        description: `Set a timer for 20 minutes and focus on ${vars.goalAction}. When the timer rings, stand up and stretch for 5 minutes. You must take this break.`
+        description: `Set a timer for 20 minutes and start working on ${vars.goalAction}. When the timer rings, stand up and stretch for 5 minutes before continuing.`
       }
     },
     attention: {
       activationStep: {
-        title: `At ${vars.startTime}, open one thing`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, open just one tool or page related to ${vars.goalAction}. Nothing more.`
+        title: `At ${vars.startTime}, open the app`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, open one tool or app related to ${vars.goalAction}.`
       },
       barrierStep: {
         title: `Use a focus timer`,
-        description: `Set a 25-minute timer and work on ${vars.goalAction}. When it rings, you must stand up and take a 5-minute movement break before continuing.`
+        description: `Set a 25-minute timer and work on ${vars.goalAction}. When it rings, stand up and take a 5-minute movement break before continuing.`
       }
     },
     planning: {
       activationStep: {
-        title: `At ${vars.startTime}, grab a pen`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, grab a pen and paper. Your only job is to hold them for 15 seconds.`
+        title: `At ${vars.startTime}, grab materials`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, grab a pen and paper.`
       },
       barrierStep: {
         title: `Break it into 3 steps`,
-        description: `Spend 20 minutes writing down 3 smaller steps to ${vars.goalAction}. Number them 1, 2, 3 and write what you'll do for each one.`
+        description: `Spend 20 minutes writing down 3 smaller steps for ${vars.goalAction}. Number them 1, 2, 3 and write what you'll do for each one.`
       }
     },
     time: {
       activationStep: {
-        title: `At ${vars.startTime}, set an alarm`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set an alarm for 20 minutes from now. That's your only task.`
+        title: `At ${vars.startTime}, set a timer`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a timer for 20 minutes.`
       },
       barrierStep: {
-        title: `Work until the alarm`,
-        description: `Focus on ${vars.goalAction} until your alarm rings. When it does, stop immediately and take a 5-minute break.`
+        title: `Work until the timer rings`,
+        description: `Focus on ${vars.goalAction} for 20 minutes until your timer rings. When it does, take a mandatory 5-minute break.`
       }
     },
   };
@@ -126,11 +126,11 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
     initiation: {
       activationStep: {
         title: `At ${vars.startTime}, hand them the tool`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them the main tool they need and say: "Just hold this for 15 seconds."`
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them the main tool they need (laptop, textbook, or materials).`
       },
       barrierStep: {
         title: `Stay nearby for 20 minutes`,
-        description: `Remain in the same room while they work on ${vars.goalAction}. After 20 minutes, check in and celebrate any progress they made.`
+        description: `Remain in the same room while they work on ${vars.goalAction} for 20 minutes. After 20 minutes, check in and celebrate any progress they made.`
       }
     },
     attention: {
@@ -140,27 +140,27 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
       },
       barrierStep: {
         title: `Check in when timer rings`,
-        description: `When the 25-minute timer rings, check in with them. Make sure they take a 5-minute movement break before continuing with their work.`
+        description: `When the 25-minute timer rings, check in with them. Make sure they take a 5-minute movement break before continuing.`
       }
     },
     planning: {
       activationStep: {
         title: `At ${vars.startTime}, provide materials`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them paper and pen and say: "Let's write down 3 small steps."`
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them paper and pen.`
       },
       barrierStep: {
         title: `Help organize the steps`,
-        description: `Sit with them for 20 minutes to help write and number 3 smaller steps. Ask guiding questions like "What needs to happen first?" but let them decide the steps.`
+        description: `Sit with them for 20 minutes to help write and number 3 smaller steps for ${vars.goalAction}. Ask guiding questions like "What needs to happen first?" but let them decide.`
       }
     },
     time: {
       activationStep: {
-        title: `At ${vars.startTime}, set the alarm together`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, help them set a 20-minute alarm and say: "Work until this goes off."`
+        title: `At ${vars.startTime}, set the timer together`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, help them set a 20-minute timer.`
       },
       barrierStep: {
         title: `Monitor and celebrate`,
-        description: `Check in when the alarm rings. Celebrate what they completed and help them take a 5-minute break before starting the next work session.`
+        description: `Check in when the timer rings after 20 minutes. Celebrate what they completed and help them take a 5-minute break before the next work session.`
       }
     },
   };

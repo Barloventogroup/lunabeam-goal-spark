@@ -191,29 +191,44 @@ ${flow === 'individual' ? `
 
 **QUALITY VALIDATION RULES (NON-NEGOTIABLE):**
 
-1. **Time Realism**: 
-   - Step 2 (Activation Cue): 10-30 seconds ONLY (touch, open, press)
-   - Step 3 (Primary Work): 15-30 minutes minimum (actual task work)
-   - Never say "for X seconds" in Step 3
+1. **Step 2 Workspace Setup Constraint** (CRITICAL):
+   - **ALLOWED VERBS ONLY**: touch, open, unlock, place, put on, lay out, tap (app icon), set (a single timer), grab, hold
+   - **EXPLICITLY BANNED**: search, browse, research, find, read, write (sentences), call, text, press power button, boot up, login
+   - **BANNED PHRASES**: "for X seconds" where X > 30, hardware actions (power button, reboot), time-consuming verbs
+   - **WHY**: Step 2 is workspace setup, NOT actual work. All research/browse/search tasks belong in Step 3.
+   - **TIME**: 10-30 seconds max (e.g., "touch your laptop", "open the app", "grab a pen")
+   - **EXAMPLES**: 
+     ✅ "At 8:00 PM Friday, open your laptop."
+     ✅ "At 10:00 AM Sunday, tap the Notes app icon."
+     ❌ "At 8:00 PM Friday, open your laptop and press the power button for 10 seconds." (hardware action)
+     ❌ "At 8:00 PM Friday, search for 'sports leagues near me' for 15 seconds." (research belongs in Step 3)
 
-2. **No Jargon**: 
-   - FORBIDDEN WORDS: "initiation", "barrier", "scaffolding", "activation", "slot", "T-Zero", "FBM"
-   - Use plain, everyday language: "start", "begin", "prepare", "work on", "focus"
+2. **Step 3 Substantive Work Constraint**:
+   - **MINIMUM TIME**: 15-30 minutes of focused work
+   - **MUST INCLUDE**: Measurable outcome (e.g., "write down 3 names", "solve problems 1-10", "browse 2-3 options")
+   - **MUST REFERENCE**: Minutes (15+), never seconds
+   - **EXAMPLES**:
+     ✅ "Set a 20-minute timer. Search for 'adult recreational sports leagues near me' and write down the names of 2-3 teams that interest you. When the timer rings, stand and stretch for 5 minutes."
+     ❌ "Set a 25-minute timer; browse results for 2-3 teams that interest you, focusing on initiation steps; when it rings, stand and stretch for 5 minutes." (contains jargon "initiation")
 
-3. **Grammatical Sense**:
+3. **No Jargon**: 
+   - **FORBIDDEN WORDS**: "initiation", "barrier", "scaffolding", "activation", "slot", "T-Zero", "FBM", "cue delivery", "prompt"
+   - **USE INSTEAD**: "start", "begin", "prepare", "work on", "focus", "search", "browse", "find"
+
+4. **Grammatical Sense**:
    - Every sentence must be a complete, grammatically correct imperative
-   - Read each step aloud—if it sounds awkward, rewrite it
-   - Example: ❌ "Browse focusing on initiation" → ✅ "Browse and pick 2-3 teams that look interesting"
+   - Read each step aloud—if it sounds awkward or confusing, rewrite it
+   - Example: ❌ "Browse focusing on initiation steps" → ✅ "Browse and write down 2-3 teams that look interesting"
 
-4. **Logical Coherence**:
+5. **Logical Coherence**:
    - Step 1: Must happen BEFORE start time (prep actions)
-   - Step 2: Must reference START_TIME exactly and be trivial (< 30 sec)
-   - Step 3: Must be substantive work (15+ min) tied to the primary challenge
+   - Step 2: Must reference START_TIME exactly and be trivial workspace setup (< 30 sec)
+   - Step 3: Must be substantive work (15+ min) with measurable outcome
 
-5. **Action Specificity**:
-   - Use concrete verbs: "text", "write", "open", "solve", "call", "search", "browse"
+6. **Action Specificity**:
+   - Use concrete verbs: "write down", "solve", "call", "text" (in Step 1 or 3), "search" (Step 3 only), "browse" (Step 3 only)
    - Include measurable outcomes: "2-3 teams", "problems 1-10", "15 minutes", "3 names"
-   - Avoid vague instructions: ❌ "explore options" → ✅ "write down 3 team names and their practice times"
+   - Avoid vague instructions: ❌ "explore options" → ✅ "search online for 20 minutes and write down 3 team names and their contact info"
 
 FORMAT:
 - Keep titles under 8 words
@@ -242,7 +257,9 @@ Generate exactly 3 micro-steps following the structure for ${payload.flow} flow.
 
 function validateMicroSteps(steps: { title: string; description: string }[]): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
-  const forbiddenWords = ['initiation', 'barrier', 'scaffolding', 'activation', 'slot', 't-zero', 'fbm'];
+  const forbiddenWords = ['initiation', 'barrier', 'scaffolding', 'activation', 'slot', 't-zero', 'fbm', 'cue delivery', 'prompt'];
+  const step2BannedVerbs = ['search', 'browse', 'research', 'find', 'read', 'write', 'call', 'text', 'login', 'boot'];
+  const step2BannedPhrases = ['power button', 'press the power', 'turn on', 'boot up', 'reboot'];
   
   steps.forEach((step, i) => {
     const text = (step.title + ' ' + step.description).toLowerCase();
@@ -254,19 +271,68 @@ function validateMicroSteps(steps: { title: string; description: string }[]): { 
       }
     });
     
-    // Check Step 2 time reference
-    if (i === 1 && !step.description.match(/\d{1,2}:\d{2}\s?(AM|PM)/i)) {
-      errors.push('Step 2 must reference the exact start time');
+    // Step 2 validations
+    if (i === 1) {
+      // Must reference exact start time
+      if (!step.description.match(/\d{1,2}:\d{2}\s?(AM|PM)/i)) {
+        errors.push('Step 2 must reference the exact start time');
+      }
+      
+      // Check for banned verbs (time-consuming actions)
+      step2BannedVerbs.forEach(verb => {
+        if (text.includes(verb)) {
+          errors.push(`Step 2 contains time-consuming verb "${verb}" - only workspace setup allowed (touch, open, grab)`);
+        }
+      });
+      
+      // Check for banned hardware phrases
+      step2BannedPhrases.forEach(phrase => {
+        if (text.includes(phrase)) {
+          errors.push(`Step 2 contains hardware action "${phrase}" - avoid power/boot operations`);
+        }
+      });
+      
+      // Check for excessive time (> 30 seconds)
+      const secondsMatch = step.description.match(/(\d+)\s?seconds/i);
+      if (secondsMatch && parseInt(secondsMatch[1]) > 30) {
+        errors.push(`Step 2 mentions ${secondsMatch[1]} seconds - must be 10-30 seconds only`);
+      }
     }
     
-    // Check for nonsensical "X seconds" in Step 3
-    if (i === 2 && step.description.match(/\d+\s?seconds/i)) {
-      errors.push('Step 3 should not use "seconds" - use minutes for substantive work');
+    // Step 3 validations
+    if (i === 2) {
+      // Must reference minutes, not seconds
+      if (step.description.match(/\d+\s?seconds/i)) {
+        errors.push('Step 3 should not use "seconds" - use minutes (15+) for substantive work');
+      }
+      
+      // Must mention minutes
+      if (!step.description.match(/\d+\s?minut/i)) {
+        errors.push('Step 3 must specify duration in minutes (e.g., "Set a 20-minute timer")');
+      }
+      
+      // Check for measurable outcome keywords
+      const hasOutcome = /write|list|solve|call|text|search|browse|find|note|name/.test(text);
+      if (!hasOutcome) {
+        errors.push('Step 3 must include measurable outcome (e.g., "write down 3 names", "solve problems 1-10")');
+      }
     }
     
     // Check for minimum length (avoid trivial steps)
-    if (step.description.length < 30) {
-      errors.push(`Step ${i+1} description is too short (${step.description.length} chars)`);
+    if (step.description.length < 40) {
+      errors.push(`Step ${i+1} description is too short (${step.description.length} chars) - be specific`);
+    }
+    
+    // Check title length
+    const titleWords = step.title.split(/\s+/).length;
+    if (titleWords > 10) {
+      errors.push(`Step ${i+1} title too long (${titleWords} words) - keep under 8 words`);
+    }
+    
+    // Check sentence count (1-2 sentences)
+    const sentenceCount = step.description.split(/[.!?]+/).filter(s => s.trim()).length;
+    if (sentenceCount > 3) {
+      errors.push(`Step ${i+1} has ${sentenceCount} sentences - keep to 1-2 imperative sentences`);
     }
   });
   
