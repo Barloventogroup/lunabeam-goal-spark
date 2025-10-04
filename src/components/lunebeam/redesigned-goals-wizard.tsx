@@ -568,14 +568,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Create goal directly
         const createdGoal = await goalsService.createGoal(goalData);
 
-        // First, save the micro-steps that were previewed to the user
+        // Save the micro-steps that were previewed to the user
         if (generatedMicroSteps.length > 0) {
           try {
             for (const microStep of generatedMicroSteps) {
               await stepsService.createStep(createdGoal.id, {
                 title: microStep.title,
                 step_type: 'action',
-                is_required: false,
+                is_required: true,
                 estimated_effort_min: 15,
                 is_planned: true,
                 notes: microStep.description
@@ -583,32 +583,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             }
           } catch (microStepError) {
             console.error('Failed to save micro-steps:', microStepError);
-          }
-        }
-
-        // Then try AI-powered step generation for additional steps
-        try {
-          const {
-            stepsGenerator
-          } = await import('@/services/stepsGenerator');
-          const generatedSteps = await stepsGenerator.generateSteps(createdGoal);
-
-          // Persist AI-generated steps
-          for (const step of generatedSteps) {
-            await stepsService.createStep(createdGoal.id, {
-              title: step.title,
-              step_type: 'action',
-              is_required: step.is_required ?? true,
-              estimated_effort_min: step.estimated_effort_min,
-              is_planned: true,
-              notes: step.explainer || step.notes
-            });
-          }
-        } catch (stepError: any) {
-          console.error('Failed to generate AI steps, using fallback:', stepError);
-
-          // Only use fallback if micro-steps weren't already created
-          if (generatedMicroSteps.length === 0) {
+            
+            // Fallback if micro-step creation failed
             const stepCount = Math.min(data.frequency, 3);
             const effortMinutes = data.goalTitle.match(/(\d+)\s*min/i)?.[1] || '30';
             try {
