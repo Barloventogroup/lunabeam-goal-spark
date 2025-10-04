@@ -1662,7 +1662,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           
           {/* First Micro-steps Preview */}
           <div className="space-y-3">
-            <h4 className="font-semibold text-foreground">This is how you get started</h4>
+            <h4 className="font-semibold text-foreground">
+              {data.recipient === 'other' && data.supportedPersonName 
+                ? `This is how ${data.supportedPersonName} gets started`
+                : 'This is how you get started'}
+            </h4>
             <div className="space-y-2">
               {generatedMicroSteps.length > 0 ? (
                 generatedMicroSteps.map((step, index) => (
