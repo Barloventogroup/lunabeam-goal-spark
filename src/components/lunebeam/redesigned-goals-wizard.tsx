@@ -723,9 +723,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const renderStep0 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
-        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Users className="h-8 w-8 text-primary" />
-        </div>
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">Choose who will be working on this goal</p>
       </CardHeader>
