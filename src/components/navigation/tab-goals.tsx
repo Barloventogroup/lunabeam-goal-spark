@@ -193,6 +193,50 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
     && supporterContext?.supportedIndividuals?.length > 0 
     && !isWizardView;
 
+  // Flow selection dialog (shared between both branches)
+  const flowSelectionDialog = (
+    <Dialog open={showFlowSelection} onOpenChange={setShowFlowSelection}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Who is this goal for?</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <Button 
+            variant="outline" 
+            className="w-full h-auto p-6 justify-start"
+            onClick={() => {
+              setShowFlowSelection(false);
+              setCurrentView('create-wizard');
+              onWizardStateChange?.(true);
+            }}
+          >
+            <User className="h-6 w-6 mr-3" />
+            <div className="text-left">
+              <div className="font-semibold">For myself</div>
+              <div className="text-sm text-muted-foreground">Create a personal goal</div>
+            </div>
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="w-full h-auto p-6 justify-start"
+            onClick={() => {
+              setShowFlowSelection(false);
+              setCurrentView('supporter-wizard');
+              onWizardStateChange?.(true);
+            }}
+          >
+            <UserPlus className="h-6 w-6 mr-3" />
+            <div className="text-left">
+              <div className="font-semibold">For someone I support</div>
+              <div className="text-sm text-muted-foreground">Create a goal for them</div>
+            </div>
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
   if (showTabs) {
     const supportedIndividual = supporterContext.supportedIndividuals[0];
     
@@ -224,6 +268,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             </TabsContent>
           </Tabs>
         </div>
+        {flowSelectionDialog}
       </div>
     );
   }
@@ -231,48 +276,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   return (
     <div className="min-h-screen bg-background">
       {renderCurrentView()}
-
-      {/* Flow selection dialog for supporters */}
-      <Dialog open={showFlowSelection} onOpenChange={setShowFlowSelection}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Who is this goal for?</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Button 
-              variant="outline" 
-              className="w-full h-auto p-6 justify-start"
-              onClick={() => {
-                setShowFlowSelection(false);
-                setCurrentView('create-wizard');
-                onWizardStateChange?.(true);
-              }}
-            >
-              <User className="h-6 w-6 mr-3" />
-              <div className="text-left">
-                <div className="font-semibold">For myself</div>
-                <div className="text-sm text-muted-foreground">Create a personal goal</div>
-              </div>
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              className="w-full h-auto p-6 justify-start"
-              onClick={() => {
-                setShowFlowSelection(false);
-                setCurrentView('supporter-wizard');
-                onWizardStateChange?.(true);
-              }}
-            >
-              <UserPlus className="h-6 w-6 mr-3" />
-              <div className="text-left">
-                <div className="font-semibold">For someone I support</div>
-                <div className="text-sm text-muted-foreground">Create a goal for them</div>
-              </div>
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {flowSelectionDialog}
     </div>
   );
 };
