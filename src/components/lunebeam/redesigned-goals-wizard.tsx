@@ -230,6 +230,10 @@ const motivations = [{
   id: 'accountability',
   label: 'Accountability',
   description: 'Keep myself on track and committed'
+}, {
+  id: 'personal_growth',
+  label: 'Personal Growth',
+  description: 'Develop as a person and reach my potential'
 }];
 
 // Text configuration for different flows
