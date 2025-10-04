@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
     }
 
     // Validate quality of generated steps
-    const validation = validateMicroSteps(microSteps);
+    const validation = validateMicroSteps(microSteps, payload);
     if (!validation.valid) {
       console.error('Quality validation failed:', validation.errors);
       return new Response(
@@ -165,75 +165,109 @@ Deno.serve(async (req) => {
 });
 
 function buildSystemPrompt(flow: 'individual' | 'supporter'): string {
-  return `You are a specialized micro-step generator for neurodivergent individuals based on three clinical frameworks:
+  return `You are a highly specialized micro-step generator for neurodivergent individuals. Your task is to generate exactly three, specific, non-judgmental action steps designed to compensate for Executive Function deficits.
 
-1. **Fogg Behavior Model (FBM)**: Each step must maximize Ability (simplicity) and deliver a Prompt at the precise moment needed.
-2. **Scaffolding Theory**: Steps externalize planning and reduce cognitive load by removing decision points.
-3. **Anchoring Theory**: Steps use the START_TIME as an external anchor to bypass time blindness.
+FRAMEWORK RULES:
+1. **Goal**: Reduce cognitive load and friction.
+2. **Language**: Use clear, user-facing, encouraging language. DO NOT use clinical terms like 'initiation,' 'barrier,' or 'scaffolding.'
+3. **Anchoring**: Use the provided [startTime] and [startDayOfWeek] to create external anchors.
 
-CRITICAL RULES:
-
+---
 ${flow === 'individual' ? `
-**For INDIVIDUAL flow:**
-- **Step 1 (Prerequisite)**: If prerequisite exists, generate 1-2 CONCRETE actions to obtain/prepare it BEFORE the start time. Example: "Need help from someone who knows math" → "Text 2 classmates by Thursday to ask for a 30-min practice session this week."
-- **Step 2 (Activation Cue)**: Generate the EXACT action to take at START_TIME that is trivially simple (touch, open, press). Example: "At 6:30 PM Tuesday, your only job is to touch your algebra textbook for 15 seconds."
-- **Step 3 (Primary Work)**: Address the #1 challenge with substantive work. Examples:
-  * Attention challenge: "Set a 25-minute timer. Work through algebra problems 1-10 from chapter 3. When the timer rings, stand up and stretch for 5 minutes before continuing."
-  * Planning challenge: "Spend 20 minutes breaking the goal into 3 smaller tasks. Write each task on a sticky note and arrange them in order on your desk."
-  * Time challenge: "Set your phone alarm for 20 minutes from now. Work on the goal until the alarm rings, then take a mandatory 5-minute break."
-  * Getting started: "Open your laptop and spend 15 minutes researching local options. Write down the names of 3 that interest you."
+[INDIVIDUAL FLOW STRUCTURE] (Focus: Trivial Activation & Focused Work)
+
+Step 1: PREPARATION (BEFORE [startTime])
+- **Purpose**: Address the [Prerequisite Text] if it exists, otherwise, generate a simple, non-mandatory organization step.
+- **Action**: 1-2 CONCRETE actions to obtain/prepare the workspace *before* the start time.
+- **Examples**: 
+  * "Need help from someone who knows math" → "Text 2 classmates by Thursday to ask for a 30-min practice session this week."
+  * No prerequisite → "By Thursday evening, clear your desk and have your notebook and pen ready."
+
+Step 2: ACTIVATION CUE (AT EXACTLY [startTime])
+- **Purpose**: Trivial activation to defeat the inertia barrier.
+- **Constraint**: The physical action must take **< 15 seconds** to complete. It must be an initial touch, tap, or switch.
+- **Allowed actions**: touch, open, unlock, tap (app icon), grab, hold, place, put on
+- **Examples**: 
+  * "At 7:00 PM, tap the app icon on your desktop."
+  * "At 8:00 AM Friday, open your notebook to a blank page."
+  * "At 6:30 PM Tuesday, touch your algebra textbook."
+
+Step 3: FOCUSED WORK (AFTER ACTIVATION)
+- **Purpose**: Address the second biggest challenge: [Secondary Challenge].
+- **Constraint**: Must be a measurable chunk of work (15-30 minutes).
+- **Logic Mapping**:
+  * If [Secondary Challenge] is **Focus** or **Attention**: Generate a 25-minute timer sprint with a mandatory movement break.
+    Example: "Set a 25-minute timer. Work through problems 1-10. When the timer rings, stand up and stretch for 5 minutes."
+  * If [Secondary Challenge] is **Planning**: Generate a sequencing step ("write down the first 3 sub-tasks").
+    Example: "Spend 20 minutes breaking the goal into 3 smaller tasks. Write each task on a sticky note and arrange them in order."
+  * If [Secondary Challenge] is **Time Blindness** or **Time**: Generate a goal to complete a specific sub-task within 20 minutes.
+    Example: "Set a 20-minute timer. Search for 'sports leagues near me' and write down 3 team names. When the timer rings, take a 5-minute break."
+  * If [Secondary Challenge] is **Getting started**: Generate a simple research/exploration task.
+    Example: "Spend 20 minutes searching online for local options. Write down the names of 3 that interest you."
 ` : `
-**For SUPPORTER flow:**
-- **Step 1 (Environmental Setup)**: What the supporter must do BEFORE START_TIME to remove obstacles. Example: "Before 6:30 PM Tuesday, place the algebra textbook open to chapter 3 on their desk."
-- **Step 2 (Cue Delivery)**: What the supporter does AT START_TIME to deliver the prompt. Example: "At 6:30 PM, hand them the pencil and say: 'Just touch the textbook for 15 seconds.'"
-- **Step 3 (Monitoring/Reinforcement)**: How the supporter monitors progress or delivers reinforcement. Example: "After 25 minutes, check in and ensure they take a 5-minute movement break."
+[SUPPORTER FLOW STRUCTURE] (Focus: Environmental Control & Accountability)
+
+Step 1: ENVIRONMENTAL SETUP (BEFORE [startTime])
+- **Purpose**: Remove all potential physical and material obstacles.
+- **Action**: What the supporter must do to ensure the workspace is ready (charging, clearing, providing materials).
+- **Examples**: 
+  * "Before 6:30 PM Tuesday, place the algebra textbook open to chapter 3 on their desk with a pencil."
+  * "Before 8:00 AM Friday, make sure their laptop is charged and on their desk."
+
+Step 2: CUE DELIVERY (AT EXACTLY [startTime])
+- **Purpose**: Serve as the human prompt to initiate the activation step.
+- **Action**: What the supporter says or does to trigger the individual's Step 2 (e.g., "Walk to the desk and put on your headphones"). Use language appropriate for the [Supporter Role].
+- **Examples**: 
+  * Parent: "At 6:30 PM, hand them the pencil and say: 'Just touch the textbook for 15 seconds.'"
+  * Coach: "At 7:00 PM, text them: 'Time to tap that app icon!'"
+  * Friend: "At 8:00 AM, send a message: 'Hey! Just open your notebook real quick.'"
+
+Step 3: REINFORCEMENT (DURING WORK/AFTER COMPLETION)
+- **Purpose**: Deliver positive, value-based reinforcement based on the [Motivation].
+- **Action**: Specific action for monitoring progress and providing reinforcement (e.g., "Check in after 20 minutes. Use the theme of [Motivation] to praise the effort, not the result.").
+- **Examples**: 
+  * "After 25 minutes, check in and ensure they take a 5-minute movement break. Say: 'You put in solid effort!'"
+  * "When they complete the task, connect it to [Motivation]: 'This brings you closer to [goal related to motivation].'"
 `}
 
 **QUALITY VALIDATION RULES (NON-NEGOTIABLE):**
 
 1. **Step 2 Workspace Setup Constraint** (CRITICAL):
-   - **ALLOWED VERBS ONLY**: touch, open, unlock, place, put on, lay out, tap (app icon), set (a single timer), grab, hold
+   - **ALLOWED VERBS ONLY**: touch, open, unlock, place, put on, lay out, tap (app icon), grab, hold
    - **EXPLICITLY BANNED**: search, browse, research, find, read, write (sentences), call, text, press power button, boot up, login
-   - **BANNED PHRASES**: "for X seconds" where X > 30, hardware actions (power button, reboot), time-consuming verbs
-   - **WHY**: Step 2 is workspace setup, NOT actual work. All research/browse/search tasks belong in Step 3.
-   - **TIME**: 10-30 seconds max (e.g., "touch your laptop", "open the app", "grab a pen")
+   - **TIME**: < 15 seconds (e.g., "touch your laptop", "open the app", "grab a pen")
    - **EXAMPLES**: 
      ✅ "At 8:00 PM Friday, open your laptop."
      ✅ "At 10:00 AM Sunday, tap the Notes app icon."
-     ❌ "At 8:00 PM Friday, open your laptop and press the power button for 10 seconds." (hardware action)
      ❌ "At 8:00 PM Friday, search for 'sports leagues near me' for 15 seconds." (research belongs in Step 3)
 
 2. **Step 3 Substantive Work Constraint**:
    - **MINIMUM TIME**: 15-30 minutes of focused work
-   - **MUST INCLUDE**: Measurable outcome (e.g., "write down 3 names", "solve problems 1-10", "browse 2-3 options")
+   - **MUST INCLUDE**: Measurable outcome (e.g., "write down 3 names", "solve problems 1-10")
    - **MUST REFERENCE**: Minutes (15+), never seconds
-   - **EXAMPLES**:
-     ✅ "Set a 20-minute timer. Search for 'adult recreational sports leagues near me' and write down the names of 2-3 teams that interest you. When the timer rings, stand and stretch for 5 minutes."
-     ❌ "Set a 25-minute timer; browse results for 2-3 teams that interest you, focusing on initiation steps; when it rings, stand and stretch for 5 minutes." (contains jargon "initiation")
+   - **MUST ALIGN WITH [Secondary Challenge]**: See Logic Mapping above
 
-3. **No Jargon**: 
-   - **FORBIDDEN WORDS**: "initiation", "barrier", "scaffolding", "activation", "slot", "T-Zero", "FBM", "cue delivery", "prompt"
+3. **No Clinical Jargon**: 
+   - **FORBIDDEN WORDS**: "initiation", "barrier", "scaffolding", "activation cue"
    - **USE INSTEAD**: "start", "begin", "prepare", "work on", "focus", "search", "browse", "find"
 
 4. **Grammatical Sense**:
    - Every sentence must be a complete, grammatically correct imperative
    - Read each step aloud—if it sounds awkward or confusing, rewrite it
-   - Example: ❌ "Browse focusing on initiation steps" → ✅ "Browse and write down 2-3 teams that look interesting"
 
 5. **Logical Coherence**:
    - Step 1: Must happen BEFORE start time (prep actions)
-   - Step 2: Must reference START_TIME exactly and be trivial workspace setup (< 30 sec)
-   - Step 3: Must be substantive work (15+ min) with measurable outcome
+   - Step 2: Must reference [startTime] exactly and be trivial workspace setup (< 15 sec)
+   - Step 3: Must be substantive work (15+ min) with measurable outcome aligned to [Secondary Challenge]
 
 6. **Action Specificity**:
    - Use concrete verbs: "write down", "solve", "call", "text" (in Step 1 or 3), "search" (Step 3 only), "browse" (Step 3 only)
    - Include measurable outcomes: "2-3 teams", "problems 1-10", "15 minutes", "3 names"
-   - Avoid vague instructions: ❌ "explore options" → ✅ "search online for 20 minutes and write down 3 team names and their contact info"
 
 FORMAT:
 - Keep titles under 8 words
 - Descriptions: 1-2 imperative sentences, specific to the goal
-- Reference START_TIME explicitly in Step 2
+- Reference [startTime] explicitly in Step 2
 - Never echo the user's prerequisite—turn it into actions
 - Use domain-specific language from the goal (e.g., "chapter 3", "team practice times")`;
 }
@@ -244,20 +278,21 @@ function buildUserPrompt(payload: MicroStepsRequest): string {
 **Goal**: ${payload.goalTitle}
 **Category**: ${payload.category}
 **Motivation**: ${payload.motivation || 'Not specified'}
-**Start Day**: ${payload.startDayOfWeek}
-**Start Time**: ${payload.startTime}
+**Start Day (startDayOfWeek)**: ${payload.startDayOfWeek}
+**Start Time (startTime)**: ${payload.startTime}
 **Flow**: ${payload.flow}
+**Supporter Role**: ${payload.flow === 'supporter' ? 'Parent/Coach/Friend' : 'N/A'}
 **Has Prerequisite**: ${payload.hasPrerequisite ? 'Yes' : 'No'}
 ${payload.hasPrerequisite ? `**Prerequisite Text**: ${payload.prerequisiteText}` : ''}
 **Primary Challenge**: ${payload.barrier1}
-**Secondary Challenge**: ${payload.barrier2}
+**Secondary Challenge (IMPORTANT - use this for Step 3 Logic Mapping)**: ${payload.barrier2}
 
-Generate exactly 3 micro-steps following the structure for ${payload.flow} flow.`;
+Generate exactly 3 micro-steps following the ${payload.flow.toUpperCase()} FLOW structure. Pay special attention to the [Secondary Challenge] when creating Step 3.`;
 }
 
-function validateMicroSteps(steps: { title: string; description: string }[]): { valid: boolean; errors: string[] } {
+function validateMicroSteps(steps: { title: string; description: string }[], payload?: MicroStepsRequest): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
-  const forbiddenWords = ['initiation', 'barrier', 'scaffolding', 'activation', 'slot', 't-zero', 'fbm', 'cue delivery', 'prompt'];
+  const forbiddenWords = ['initiation', 'barrier', 'scaffolding', 'activation cue'];
   const step2BannedVerbs = ['search', 'browse', 'research', 'find', 'read', 'write', 'call', 'text', 'login', 'boot'];
   const step2BannedPhrases = ['power button', 'press the power', 'turn on', 'boot up', 'reboot'];
   
@@ -267,7 +302,7 @@ function validateMicroSteps(steps: { title: string; description: string }[]): { 
     // Check for jargon
     forbiddenWords.forEach(word => {
       if (text.includes(word)) {
-        errors.push(`Step ${i+1} contains jargon: "${word}"`);
+        errors.push(`Step ${i+1} contains clinical jargon: "${word}"`);
       }
     });
     
@@ -292,10 +327,10 @@ function validateMicroSteps(steps: { title: string; description: string }[]): { 
         }
       });
       
-      // Check for excessive time (> 30 seconds)
+      // Check for excessive time (> 15 seconds)
       const secondsMatch = step.description.match(/(\d+)\s?seconds/i);
-      if (secondsMatch && parseInt(secondsMatch[1]) > 30) {
-        errors.push(`Step 2 mentions ${secondsMatch[1]} seconds - must be 10-30 seconds only`);
+      if (secondsMatch && parseInt(secondsMatch[1]) > 15) {
+        errors.push(`Step 2 mentions ${secondsMatch[1]} seconds - must be < 15 seconds only`);
       }
     }
     
@@ -315,6 +350,24 @@ function validateMicroSteps(steps: { title: string; description: string }[]): { 
       const hasOutcome = /write|list|solve|call|text|search|browse|find|note|name/.test(text);
       if (!hasOutcome) {
         errors.push('Step 3 must include measurable outcome (e.g., "write down 3 names", "solve problems 1-10")');
+      }
+      
+      // Validate logic mapping to secondary challenge (if payload provided)
+      if (payload?.barrier2) {
+        const barrier2Lower = payload.barrier2.toLowerCase();
+        const hasTimer = /timer|alarm|countdown/.test(text);
+        const hasSequencing = /write|list|break.*into|sub-task|smaller task/.test(text);
+        const hasTimeGoal = /\d+\s?minut.*complete|finish.*\d+\s?minut|write.*\d+/.test(text);
+        
+        if ((barrier2Lower.includes('focus') || barrier2Lower.includes('attention')) && !hasTimer) {
+          errors.push('Step 3 must include timer for Focus/Attention challenge');
+        }
+        if (barrier2Lower.includes('planning') && !hasSequencing) {
+          errors.push('Step 3 must include sequencing/breakdown for Planning challenge');
+        }
+        if (barrier2Lower.includes('time') && !hasTimeGoal) {
+          errors.push('Step 3 must include time-bound goal for Time Blindness challenge');
+        }
       }
     }
     
