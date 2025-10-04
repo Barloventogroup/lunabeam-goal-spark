@@ -988,9 +988,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         <Card 
           className={cn(
             "cursor-pointer hover:shadow-md transition-all border-2",
-            data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border"
+            !data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border"
           )}
-          onClick={() => updateData({ hasPrerequisites: true })}
+          onClick={() => updateData({ hasPrerequisites: false })}
         >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -1006,9 +1006,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         <Card 
           className={cn(
             "cursor-pointer hover:shadow-md transition-all border-2",
-            !data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border"
+            data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border"
           )}
-          onClick={() => updateData({ hasPrerequisites: false })}
+          onClick={() => updateData({ hasPrerequisites: true })}
         >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -1021,7 +1021,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </CardContent>
         </Card>
         
-        {!data.hasPrerequisites && <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        {data.hasPrerequisites && <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800">
               ✨ We'll auto-suggest prep steps to help you get ready!
             </p>
