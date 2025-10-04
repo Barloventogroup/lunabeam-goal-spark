@@ -1143,7 +1143,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <Label htmlFor="custom-challenges">Tell us more</Label>
           <Textarea
             id="custom-challenges"
-            placeholder="Share any additional details here"
+            placeholder="Share any additional details here..."
             value={data.customChallenges || ''}
             onChange={(e) => updateData({ customChallenges: e.target.value })}
             className="min-h-[80px] resize-none"
