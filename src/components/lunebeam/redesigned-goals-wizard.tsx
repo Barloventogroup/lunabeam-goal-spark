@@ -801,22 +801,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         });
                         setExpandedCategory(null);
                       }}>
-                                • {example}
-                              </div>)}
-                          </div>
-                          
-                          <div className="flex gap-2 mt-3">
-                            <Button size="sm" variant="default" className="flex-1" onClick={e => {
-                        e.stopPropagation();
-                        updateData({
-                          category: category.id
-                        });
-                        setExpandedCategory(null);
-                      }}>
-                              Choose this category
-                            </Button>
-                          </div>
-                        </div>}
+                      • {example}
+                            </div>)}
+                        </div>
+                      </div>}
                     </CardContent>
                   </Card>)}
             </div>
