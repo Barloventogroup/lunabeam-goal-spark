@@ -277,7 +277,7 @@ const getSupporterFlowText = (name?: string) => ({
     subtitle: `Understanding ${name ? `${name}'s` : 'their'} motivation helps us support ${name || 'them'} better`
   },
   step3: {
-    subtitle: `Let's figure out where ${name || 'they'}'${name ? '' : 're'} starting from. This goal is which of the following:`
+    subtitle: `Let's figure out where ${name || 'they'} ${name ? 'is' : 'are'} starting from. This goal is which of the following:`
   },
   step4: {
     subtitle: `Select up to two areas that typically feel challenging for ${name || 'them'}`
