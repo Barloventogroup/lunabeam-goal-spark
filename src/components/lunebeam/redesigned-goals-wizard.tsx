@@ -500,19 +500,32 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   const getStepTitle = () => {
+    const isForOther = data.recipient === 'other';
+    
+    // Use supporterTitles when step 0 exists (actuallySupportsAnyone), otherwise use nonSupporterTitles
     const supporterTitles = [
       `${data.supportedPersonName ? `Who is this goal for: ${data.supportedPersonName}?` : 'Who is this goal for?'}`, 
-      `What is the one clear, observable action ${data.supportedPersonName || '[Individual\'s Name]'} needs to establish?`, 
-      'Why does this matter?', 
+      `What is the one clear, observable action ${isForOther ? (data.supportedPersonName || 'they') : 'you'} need${isForOther ? '' : ''} to establish?`, 
+      `Why does this matter${isForOther ? ' to them' : ' to you'}?`, 
+      'What type of goal?', 
+      `Which part usually feels the trickiest when ${isForOther ? 'they' : 'you'} start this?`, 
+      'Prerequisites check', 
+      `Let\'s make this feel solid! When will ${isForOther ? 'they' : 'you'} officially START this action?`, 
+      'Support context', 
+      'Review and Create'
+    ];
+    const nonSupporterTitles = [
+      'What do you want to do?', 
+      'Why does this matter to you?', 
       'What type of goal?', 
       'Which part usually feels the trickiest when you start this?', 
       'Prerequisites check', 
       'Let\'s make this feel solid! When will you officially START this action?', 
-      'Support context', 
-      'Rewards'
+      'Support context',
+      'Review and Create'
     ];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter?', 'What type of goal?', 'Which part usually feels the trickiest when you start this?', 'Prerequisites check', 'Let\'s make this feel solid! When will you officially START this action?', 'Support context'];
-    if (isSupporter) {
+    
+    if (actuallySupportsAnyone) {
       return supporterTitles[currentStep] || '';
     } else {
       return nonSupporterTitles[currentStep - 1] || '';
@@ -869,11 +882,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </CardContent>
     </Card>;
-  const renderStep2 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep2 = () => {
+    const isForOther = data.recipient === 'other';
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">Understanding your motivation helps us support you better</p>
+        <p className="text-muted-foreground">
+          Understanding {isForOther ? 'their' : 'your'} motivation helps us support {isForOther ? 'them' : 'you'} better
+        </p>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -913,6 +930,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </CardContent>
     </Card>;
+  };
   const renderStep3 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>

@@ -16,7 +16,7 @@ import { getSupporterContext } from '@/utils/supporterUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wizard' | 'create-wizard' | 'supporter-wizard' | 'proposals';
+type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wizard' | 'create-wizard' | 'create-wizard-supporter' | 'supporter-wizard' | 'proposals';
 
 interface TabGoalsProps {
   onWizardStateChange?: (isWizardActive: boolean) => void;
@@ -163,6 +163,17 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             isSupporter={userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin'}
           />
         );
+      case 'create-wizard-supporter':
+        return (
+          <RedesignedGoalsWizard
+            onComplete={handleWizardGoalCreated}
+            onCancel={() => {
+              setCurrentView('list');
+              onWizardStateChange?.(false);
+            }}
+            isSupporter={true}
+          />
+        );
       case 'supporter-wizard':
         return (
           <SupporterGoalWizard
@@ -186,7 +197,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   };
 
   // Check if we're in a wizard view
-  const isWizardView = currentView === 'create-wizard' || currentView === 'supporter-wizard' || currentView === 'wizard';
+  const isWizardView = currentView === 'create-wizard' || currentView === 'create-wizard-supporter' || currentView === 'supporter-wizard' || currentView === 'wizard';
   
   // Show tabs for supporters and hybrids (but not in wizard views)
   const showTabs = (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') 
@@ -222,7 +233,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             className="w-full h-auto p-6 justify-start"
             onClick={() => {
               setShowFlowSelection(false);
-              setCurrentView('supporter-wizard');
+              setCurrentView('create-wizard-supporter');
               onWizardStateChange?.(true);
             }}
           >
