@@ -279,9 +279,10 @@ Step 3: REINFORCEMENT (DURING WORK/AFTER COMPLETION)
 - **Purpose**: Deliver positive, value-based reinforcement based on the [Motivation].
 - **Action**: Specific action for monitoring progress and providing reinforcement.
 - **MUST REFERENCE**: The specific goal action to connect praise to concrete accomplishment
+- **NATURAL LANGUAGE**: Write in conversational, grammatically correct sentences. Avoid rigid template prefixes like "Your Action (Framing):". Use natural phrasing that flows well when read aloud.
 - **Examples**: 
   * Goal: "Study algebra" → "After 25 minutes, check in and ensure they take a 5-minute movement break. Say: 'You worked through 10 algebra problems—solid effort!'"
-  * Goal: "Practice Spanish" → "When they complete the task, connect it to [Motivation]: 'You practiced those Spanish verbs! This brings you closer to speaking confidently with your Spanish-speaking friends.'"
+  * Goal: "Practice Spanish" → "When they complete the task, connect it to their motivation: 'You practiced those Spanish verbs! This brings you closer to speaking confidently with your Spanish-speaking friends.'"
   * Goal: "Learn guitar" → "After 20 minutes, check in and say: 'You practiced those chords! You're getting closer to playing your favorite songs.'"
 `}
 
