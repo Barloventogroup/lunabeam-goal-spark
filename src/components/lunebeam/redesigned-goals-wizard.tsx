@@ -1309,8 +1309,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               )}
               <div className="text-left flex-1">
-                <div className="text-base font-semibold">Alone</div>
-                <div className="text-sm text-muted-foreground">I'll work on this independently</div>
+                <div className="text-base font-semibold">
+                  {data.recipient === 'other' ? 'Independently' : 'Alone'}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {data.recipient === 'other' 
+                    ? `${data.supportedPersonName || 'They'} will work on this independently`
+                    : "I'll work on this independently"}
+                </div>
               </div>
             </div>
           </CardContent>
@@ -1329,9 +1335,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
               )}
               <div className="text-left flex-1">
-                <div className="text-base font-semibold">Select an Ally</div>
+                <div className="text-base font-semibold">
+                  {data.recipient === 'other' ? 'With Support' : 'Select an Ally'}
+                </div>
                 <div className="text-sm text-muted-foreground">
-                  {data.selectedSupporters && data.selectedSupporters.length > 0 ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected` : 'Choose your supporters'}
+                  {data.selectedSupporters && data.selectedSupporters.length > 0 
+                    ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected` 
+                    : data.recipient === 'other'
+                      ? `Choose allies to support ${data.supportedPersonName || 'them'}`
+                      : 'Choose your supporters'}
                 </div>
               </div>
             </div>
@@ -1344,7 +1356,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <div>
               <h3 className="font-semibold mb-2">What's their job?</h3>
               <p className="text-sm text-muted-foreground">
-                Choose a role for each ally to help you reach your goal
+                {data.recipient === 'other'
+                  ? `Choose a role for each ally to help ${data.supportedPersonName || 'them'} reach their goal`
+                  : 'Choose a role for each ally to help you reach your goal'}
               </p>
             </div>
             
