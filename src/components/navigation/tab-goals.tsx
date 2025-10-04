@@ -185,8 +185,15 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
     }
   };
 
-  // Show tabs for supporters and hybrids
-  if ((userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') && supporterContext?.supportedIndividuals?.length > 0) {
+  // Check if we're in a wizard view
+  const isWizardView = currentView === 'create-wizard' || currentView === 'supporter-wizard' || currentView === 'wizard';
+  
+  // Show tabs for supporters and hybrids (but not in wizard views)
+  const showTabs = (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') 
+    && supporterContext?.supportedIndividuals?.length > 0 
+    && !isWizardView;
+
+  if (showTabs) {
     const supportedIndividual = supporterContext.supportedIndividuals[0];
     
     return (
