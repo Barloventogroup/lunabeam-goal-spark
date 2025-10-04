@@ -440,7 +440,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       loadSupportedPeople();
     }
     loadUserSupporters();
-  }, [isSupporter, actuallySupportsAnyone]);
+  }, [isSupporter, actuallySupportsAnyone, data.recipient, data.supportedPersonId]);
 
   // Check permissions when supported person changes
   useEffect(() => {
@@ -512,10 +512,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }
       } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Determine whose supporters to fetch
+      const targetIndividualId = data.recipient === 'other' && data.supportedPersonId 
+        ? data.supportedPersonId 
+        : user.id;
+
       const {
         data: supporters,
         error
-      } = await supabase.from('supporters').select('supporter_id').eq('individual_id', user.id);
+      } = await supabase.from('supporters').select('supporter_id, role, permission_level').eq('individual_id', targetIndividualId);
       if (error) throw error;
       if (!supporters || supporters.length === 0) {
         setUserSupporters([]);
@@ -527,13 +533,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       const {
         data: profiles,
         error: profilesError
-      } = await supabase.from('profiles').select('user_id, first_name').in('user_id', supporterIds);
+      } = await supabase.from('profiles').select('user_id, first_name, avatar_url').in('user_id', supporterIds);
       if (profilesError) throw profilesError;
       const allies = supporters.map(s => {
         const profile = profiles?.find(p => p.user_id === s.supporter_id);
         return {
           id: s.supporter_id,
-          name: profile?.first_name || 'Supporter'
+          name: profile?.first_name || 'Supporter',
+          role: s.role,
+          profile: profile ? { avatar_url: profile.avatar_url } : undefined,
         };
       });
       setUserSupporters(allies);
