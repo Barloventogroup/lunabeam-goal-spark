@@ -75,18 +75,18 @@ function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariabl
   const templates: Record<string, BarrierTemplate> = {
     initiation: {
       activationStep: {
-        title: `At ${vars.startTime}, touch your tool`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, touch or open the main tool you need (laptop, textbook, or app).`
+        title: `At ${vars.startTime}, start`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, open or touch the first thing you need for ${vars.goalAction} (app, book, or materials).`
       },
       barrierStep: {
         title: `Work for 20 minutes`,
-        description: `Set a timer for 20 minutes and start working on ${vars.goalAction}. When the timer rings, stand up and stretch for 5 minutes before continuing.`
+        description: `Set a timer for 20 minutes and focus on ${vars.goalAction}. When the timer rings, stand up and stretch for 5 minutes before continuing.`
       }
     },
     attention: {
       activationStep: {
-        title: `At ${vars.startTime}, open the app`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, open one tool or app related to ${vars.goalAction}.`
+        title: `At ${vars.startTime}, open materials`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, open or grab one specific thing for ${vars.goalAction}.`
       },
       barrierStep: {
         title: `Use a focus timer`,
@@ -95,8 +95,8 @@ function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariabl
     },
     planning: {
       activationStep: {
-        title: `At ${vars.startTime}, grab materials`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, grab a pen and paper.`
+        title: `At ${vars.startTime}, grab pen and paper`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, grab a pen and paper to plan ${vars.goalAction}.`
       },
       barrierStep: {
         title: `Break it into 3 steps`,
@@ -106,7 +106,7 @@ function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariabl
     time: {
       activationStep: {
         title: `At ${vars.startTime}, set a timer`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a timer for 20 minutes.`
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a timer for 20 minutes for ${vars.goalAction}.`
       },
       barrierStep: {
         title: `Work until the timer rings`,
@@ -125,8 +125,8 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
   const templates: Record<string, BarrierTemplate> = {
     initiation: {
       activationStep: {
-        title: `At ${vars.startTime}, hand them the tool`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them the main tool they need (laptop, textbook, or materials).`
+        title: `At ${vars.startTime}, hand them materials`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them the first thing they need for ${vars.goalAction} (laptop, textbook, or materials).`
       },
       barrierStep: {
         title: `Stay nearby for 20 minutes`,
@@ -136,17 +136,17 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
     attention: {
       activationStep: {
         title: `At ${vars.startTime}, start the timer`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a visible 25-minute timer and say: "Work until this rings."`
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a visible 25-minute timer and say: "Work on ${vars.goalAction} until this rings."`
       },
       barrierStep: {
         title: `Check in when timer rings`,
-        description: `When the 25-minute timer rings, check in with them. Make sure they take a 5-minute movement break before continuing.`
+        description: `When the 25-minute timer rings, check in with them about ${vars.goalAction}. Make sure they take a 5-minute movement break before continuing.`
       }
     },
     planning: {
       activationStep: {
         title: `At ${vars.startTime}, provide materials`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them paper and pen.`
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them paper and pen to plan ${vars.goalAction}.`
       },
       barrierStep: {
         title: `Help organize the steps`,
@@ -156,11 +156,11 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
     time: {
       activationStep: {
         title: `At ${vars.startTime}, set the timer together`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, help them set a 20-minute timer.`
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, help them set a 20-minute timer for ${vars.goalAction}.`
       },
       barrierStep: {
         title: `Monitor and celebrate`,
-        description: `Check in when the timer rings after 20 minutes. Celebrate what they completed and help them take a 5-minute break before the next work session.`
+        description: `Check in when the timer rings after 20 minutes of ${vars.goalAction}. Celebrate what they completed and help them take a 5-minute break before the next work session.`
       }
     },
   };
@@ -248,28 +248,49 @@ export function generateMicroStepsFallback(
 function parsePrerequisiteIntoAction(prereqText: string, dayOfWeek: string, flow: 'individual' | 'supporter'): string {
   const lower = prereqText.toLowerCase();
   
+  // Detect uncertainty/confusion keywords
+  const uncertaintyKeywords = ['not sure', 'don\'t know', 'need to find', 'where to', 'how to', 'unsure'];
+  const hasUncertainty = uncertaintyKeywords.some(kw => lower.includes(kw));
+  
   if (flow === 'supporter') {
+    if (hasUncertainty || lower.includes('find') || lower.includes('locate')) {
+      return `Before ${dayOfWeek}, help them research options. Write down 2-3 possibilities on a sticky note.`;
+    }
     if (lower.includes('help') || lower.includes('someone')) {
-      return `Before ${dayOfWeek}, ensure they have identified 2 potential helpers. Place their names on a visible note.`;
+      return `Before ${dayOfWeek}, help them identify 2 potential helpers. Place their names on a visible note.`;
     }
     if (lower.includes('material') || lower.includes('supplies')) {
       return `Before ${dayOfWeek}, place all required materials in a designated spot (desk, table, counter).`;
     }
-    return `Before ${dayOfWeek}, set up their environment: ${prereqText.slice(0, 100)}`;
+    return `Before ${dayOfWeek}, help set up their environment for the goal.`;
   }
   
-  // Individual flow
+  // Individual flow - detect uncertainty and generate research/exploration steps
+  if (hasUncertainty || lower.includes('find') || lower.includes('locate')) {
+    // Generate research/exploration steps for uncertain prerequisites
+    if (lower.includes('friend') || lower.includes('people') || lower.includes('partner')) {
+      return `Action 1: By Wednesday, search online for relevant groups or ask 2 people for recommendations. Action 2: By ${dayOfWeek}, contact one group or person.`;
+    }
+    if (lower.includes('place') || lower.includes('location') || lower.includes('where')) {
+      return `Action 1: By Wednesday, search for locations online or ask 2 people for suggestions. Action 2: By ${dayOfWeek}, pick one location to visit.`;
+    }
+    return `Action 1: By Wednesday, research 3 possible options online. Action 2: By ${dayOfWeek}, choose one option to try.`;
+  }
+  
   if (lower.includes('help') || lower.includes('someone')) {
-    return `Action 1: Text or ask 2 people by Thursday who could help. Action 2: Confirm one helper by Friday evening.`;
-  }
-  if (lower.includes('material') || lower.includes('supplies') || lower.includes('book')) {
-    return `Action 1: By Wednesday, find all materials needed. Action 2: Place them on your desk by Thursday night.`;
-  }
-  if (lower.includes('permission') || lower.includes('approval')) {
-    return `Action 1: Ask for permission by Wednesday. Action 2: Get written confirmation by Thursday.`;
+    return `Action 1: By Wednesday, text or ask 2 people who could help. Action 2: By ${dayOfWeek}, confirm one helper.`;
   }
   
-  return `Action 1: Complete this by Wednesday: ${prereqText.slice(0, 80)}. Action 2: Verify you have it by ${dayOfWeek} morning.`;
+  if (lower.includes('material') || lower.includes('supplies') || lower.includes('book') || lower.includes('equipment')) {
+    return `Action 1: By Wednesday, find all materials needed. Action 2: By ${dayOfWeek}, place them in one spot.`;
+  }
+  
+  if (lower.includes('permission') || lower.includes('approval')) {
+    return `Action 1: By Wednesday, ask for permission. Action 2: By ${dayOfWeek}, get confirmation.`;
+  }
+  
+  // Catch-all for other prerequisites - focus on obtaining/preparing
+  return `Action 1: By Wednesday, take the first step to address: "${prereqText.slice(0, 60)}". Action 2: By ${dayOfWeek}, verify you're ready.`;
 }
 
 /**

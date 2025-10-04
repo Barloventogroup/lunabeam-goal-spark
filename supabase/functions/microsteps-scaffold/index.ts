@@ -331,8 +331,15 @@ function validateMicroSteps(steps: { title: string; description: string }[], pay
     
     // Check for goal-specific language (avoid generic references)
     if (payload?.goalTitle) {
-      const genericPhrases = ['your work', 'the task', 'your materials', 'the app', 'your workspace'];
-      const hasGenericLanguage = genericPhrases.some(phrase => text.includes(phrase));
+      // Use regex patterns to allow context-aware language while blocking truly vague terms
+      const genericPhrases = [
+        /\byour work\b/i,           // "your work" alone is vague
+        /\bthe task\b/i,            // "the task" alone is vague
+        /\byour materials\b/i,      // "your materials" alone is vague
+        /\bthe app\b(?! icon| name)/i,  // "the app" but allow "the app icon" or "the Duolingo app"
+        /\byour workspace\b/i       // "your workspace" alone is vague
+      ];
+      const hasGenericLanguage = genericPhrases.some(pattern => pattern.test(text));
       if (hasGenericLanguage) {
         errors.push(`Step ${i + 1} uses generic language instead of goal-specific terms from "${payload.goalTitle}"`);
       }
