@@ -30,7 +30,7 @@ export const StepCompletionAnimation: React.FC<StepCompletionAnimationProps> = (
       <div className="w-64 h-64">
         <DotLottieReact
           src="https://lottie.host/7c1bd857-f4a1-4db4-b81d-ec56c76570bc/jA4X2X4idt.lottie"
-          loop
+          loop={false}
           autoplay
         />
       </div>
