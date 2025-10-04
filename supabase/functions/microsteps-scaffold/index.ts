@@ -329,50 +329,6 @@ function validateMicroSteps(steps: { title: string; description: string }[], pay
       }
     });
     
-    // Check for goal-specific language (avoid generic references)
-    if (payload?.goalTitle) {
-      // Use regex patterns to allow context-aware language while blocking truly vague terms
-      const genericPhrases = [
-        /\byour work\b/i,           // "your work" alone is vague
-        /\bthe task\b/i,            // "the task" alone is vague
-        /\byour materials\b/i,      // "your materials" alone is vague
-        /\bthe app\b(?! icon| name)/i,  // "the app" but allow "the app icon" or "the Duolingo app"
-        /\byour workspace\b/i       // "your workspace" alone is vague
-      ];
-      const hasGenericLanguage = genericPhrases.some(pattern => pattern.test(text));
-      if (hasGenericLanguage) {
-        errors.push(`Step ${i + 1} uses generic language instead of goal-specific terms from "${payload.goalTitle}"`);
-      }
-    }
-    
-    // Step 2 validations
-    if (i === 1) {
-      // Must reference exact start time
-      if (!step.description.match(/\d{1,2}:\d{2}\s?(AM|PM)/i)) {
-        errors.push('Step 2 must reference the exact start time');
-      }
-      
-      // Check for banned verbs (time-consuming actions) - use word boundaries to avoid false positives
-      step2BannedVerbs.forEach(verb => {
-        const verbPattern = new RegExp(`\\b${verb}\\b`, 'i');
-        if (verbPattern.test(text)) {
-          errors.push(`Step 2 contains time-consuming verb "${verb}" - only workspace setup allowed (touch, open, grab)`);
-        }
-      });
-      
-      // Check for banned hardware phrases
-      step2BannedPhrases.forEach(phrase => {
-        if (text.includes(phrase)) {
-          errors.push(`Step 2 contains hardware action "${phrase}" - avoid power/boot operations`);
-        }
-      });
-      
-      // Check for excessive time (> 15 seconds)
-      const secondsMatch = step.description.match(/(\d+)\s?seconds/i);
-      if (secondsMatch && parseInt(secondsMatch[1]) > 15) {
-        errors.push(`Step 2 mentions ${secondsMatch[1]} seconds - must be < 15 seconds only`);
-      }
-    }
     
     // Step 3 validations
     if (i === 2) {
