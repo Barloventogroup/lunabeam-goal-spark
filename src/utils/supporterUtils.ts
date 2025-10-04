@@ -94,14 +94,17 @@ export async function getEnhancedUserType(profile: any): Promise<'individual' | 
   
   if (!userId) return 'individual';
 
+  // Check admin FIRST - admins are always admins regardless of supporter relationships
+  if (profile?.user_type === 'admin') {
+    return 'admin';
+  }
+
   const supporterContext = await getSupporterContext(userId);
 
   if (supporterContext.isHybrid) {
     return 'hybrid';
   } else if (supporterContext.isSupporterOnly) {
     return 'supporter';
-  } else if (profile.user_type === 'admin') {
-    return 'admin';
   } else {
     return 'individual';
   }
