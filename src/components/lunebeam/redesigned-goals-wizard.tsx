@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PermissionsService } from '@/services/permissionsService';
 import { generateMicroStepsSmart, type MicroStep } from '@/services/microStepsGenerator';
 import type { GoalDomain } from '@/types';
+import { cleanStepTitle } from '@/utils/stepUtils';
 interface RedesignedGoalsWizardProps {
   onComplete: (goalData: any) => void;
   onCancel: () => void;
@@ -1717,7 +1718,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       <span className="text-xs font-medium text-primary">{index + 1}</span>
                     </div>
                     <div className="flex-1 space-y-1">
-                      <span className="text-sm font-medium text-foreground block">{step.title}</span>
+                      <h4 className="text-sm font-medium text-foreground">{cleanStepTitle(step.title)}</h4>
                       <span className="text-xs text-muted-foreground block">{step.description}</span>
                     </div>
                   </div>) : <p className="text-sm text-muted-foreground">Generating personalized first steps...</p>}
@@ -1746,7 +1747,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         <span className="text-xs font-medium text-accent-foreground">{index + 1}</span>
                       </div>
                       <div className="flex-1 space-y-1">
-                        <span className="text-sm font-medium text-foreground block">{step.title}</span>
+                        <h4 className="text-sm font-medium text-foreground">{cleanStepTitle(step.title)}</h4>
                         <span className="text-xs text-muted-foreground block">{step.description}</span>
                       </div>
                     </div>)}
