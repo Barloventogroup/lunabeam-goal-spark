@@ -793,7 +793,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       {expandedCategory === category.id && <div className="mt-3 pt-3 border-t border-border animate-fade-in">
                           <p className="text-xs font-medium text-foreground mb-2">Goal ideas:</p>
                           <div className="grid grid-cols-1 gap-1">
-                            {category.detailedExamples.map((example, index) => <div key={index} className="text-xs text-foreground p-2 bg-white rounded cursor-pointer hover:border-blue-500 border-2 border-transparent transition-colors" onClick={e => {
+                            {category.detailedExamples.map((example, index) => <div key={index} className="text-xs text-foreground p-2 bg-white rounded cursor-pointer border-2 border-border hover:border-primary transition-colors" onClick={e => {
                         e.stopPropagation();
                         updateData({
                           goalTitle: example,
