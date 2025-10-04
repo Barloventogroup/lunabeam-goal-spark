@@ -289,6 +289,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   isSupporter = false
 }) => {
   const [currentStep, setCurrentStep] = useState<number | null>(null); // Start with null to indicate loading
+  const [actuallySupportsAnyone, setActuallySupportsAnyone] = useState<boolean | null>(null);
   const [data, setData] = useState<WizardData>({
     recipient: initialIndividualId ? 'other' : 'self',
     supportedPersonId: initialIndividualId,
@@ -319,13 +320,40 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     toast
   } = useToast();
 
+  // Check if current user actually supports anyone
+  useEffect(() => {
+    const checkSupportsAnyone = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setActuallySupportsAnyone(false);
+          return;
+        }
+        
+        const { data: supporters, error } = await supabase
+          .from('supporters')
+          .select('individual_id')
+          .eq('supporter_id', user.id)
+          .limit(1);
+        
+        if (error) throw error;
+        setActuallySupportsAnyone(supporters && supporters.length > 0);
+      } catch (error) {
+        console.error('Failed to check supporter status:', error);
+        setActuallySupportsAnyone(false);
+      }
+    };
+    
+    checkSupportsAnyone();
+  }, []);
+
   // Load supported people for supporters
   useEffect(() => {
-    if (isSupporter) {
+    if (isSupporter || actuallySupportsAnyone) {
       loadSupportedPeople();
     }
     loadUserSupporters();
-  }, [isSupporter]);
+  }, [isSupporter, actuallySupportsAnyone]);
 
   // Check permissions when supported person changes
   useEffect(() => {
@@ -334,12 +362,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   }, [data.supportedPersonId, data.recipient]);
 
-  // Set initial step once isSupporter is determined
+  // Set initial step once we know if user supports anyone
   useEffect(() => {
-    if (currentStep === null) {
-      setCurrentStep(isSupporter ? 0 : 1);
+    if (currentStep === null && actuallySupportsAnyone !== null) {
+      // Show step 0 if user actually supports anyone (regardless of user_type classification)
+      setCurrentStep(actuallySupportsAnyone ? 0 : 1);
     }
-  }, [isSupporter, currentStep]);
+  }, [actuallySupportsAnyone, currentStep]);
   const loadSupportedPeople = async () => {
     try {
       // First, get the supporter relationships
