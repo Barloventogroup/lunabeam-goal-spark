@@ -238,7 +238,7 @@ const INDIVIDUAL_FLOW_TEXT = {
     subtitle: "Choose who will be working on this goal"
   },
   step1: {
-    subtitle: "What's the one concrete action you're choosing to focus on?"
+    subtitle: "Describe the specific action you want to achieve. Be clear and concrete."
   },
   step2: {
     subtitle: "Understanding your motivation helps us support you better"
@@ -271,7 +271,7 @@ const SUPPORTER_FLOW_TEXT = {
     subtitle: "Choose who will be working on this goal"
   },
   step1: {
-    subtitle: "What's the one clear action they need to establish?"
+    subtitle: "Describe the specific action they need to achieve. Be clear and concrete."
   },
   step2: {
     subtitle: "Understanding their motivation helps us support them better"
