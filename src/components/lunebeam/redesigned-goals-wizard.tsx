@@ -266,24 +266,24 @@ const INDIVIDUAL_FLOW_TEXT = {
   }
 };
 
-const SUPPORTER_FLOW_TEXT = {
+const getSupporterFlowText = (name?: string) => ({
   step0: {
     subtitle: "Choose who will be working on this goal"
   },
   step1: {
-    subtitle: "Describe the specific action they need to achieve. Be clear and concrete."
+    subtitle: `Describe the specific action ${name || 'they'} need${name ? 's' : ''} to achieve. Be clear and concrete.`
   },
   step2: {
-    subtitle: "Understanding their motivation helps us support them better"
+    subtitle: `Understanding ${name ? `${name}'s` : 'their'} motivation helps us support ${name || 'them'} better`
   },
   step3: {
-    subtitle: "Let's figure out where they're starting from. This goal is which of the following:"
+    subtitle: `Let's figure out where ${name || 'they'}'${name ? '' : 're'} starting from. This goal is which of the following:`
   },
   step4: {
-    subtitle: "Select up to two areas that typically feel challenging for them"
+    subtitle: `Select up to two areas that typically feel challenging for ${name || 'them'}`
   },
   step5: {
-    subtitle: "Do they have what they need to begin?"
+    subtitle: `Do${name ? 'es' : ''} ${name || 'they'} have what ${name ? name : 'they'} need${name ? 's' : ''} to begin?`
   },
   step6: {
     subtitle: ""
@@ -297,7 +297,7 @@ const SUPPORTER_FLOW_TEXT = {
   confirm: {
     subtitle: "Ready to assign this goal? Review the details below and click Confirm when ready."
   }
-};
+});
 interface WizardData {
   // Step 0: Who is this for (supporters only)
   recipient: 'self' | 'other';
@@ -571,16 +571,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const getStepTitle = () => {
     const isForOther = data.recipient === 'other';
+    const name = data.supportedPersonName;
     
     // Use supporterTitles when step 0 exists (actuallySupportsAnyone), otherwise use nonSupporterTitles
     const supporterTitles = [
       'Who is this goal for?', 
-      `What is the one clear, observable action ${isForOther ? (data.supportedPersonName || 'they') : 'you'} need${isForOther ? '' : ''} to establish?`, 
-      `Why does this matter${isForOther ? ' to them' : ' to you'}?`, 
+      `What is the one clear, observable action ${isForOther ? (name || 'they') : 'you'} need${isForOther && name ? 's' : ''} to establish?`, 
+      `Why does this matter${isForOther ? (name ? ` to ${name}` : ' to them') : ' to you'}?`, 
       'What type of goal?', 
-      `Which part usually feels the trickiest when ${isForOther ? 'they' : 'you'} start this?`, 
+      `Which part usually feels the trickiest when ${isForOther ? (name || 'they') : 'you'} start${isForOther && name ? 's' : ''} this?`, 
       'Prerequisites check', 
-      `Let\'s make this feel solid! When will ${isForOther ? 'they' : 'you'} officially START this action?`, 
+      `Let\'s make this feel solid! When will ${isForOther ? (name || 'they') : 'you'} officially START this action?`, 
       'Support context', 
       'Review and Create'
     ];
@@ -815,7 +816,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return `${H.toString().padStart(2, "0")}:${minute}`;
   };
   const renderStep0 = () => {
-    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
@@ -892,7 +893,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   
   const renderStep1 = () => {
-    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
@@ -963,7 +964,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   
   const renderStep2 = () => {
-    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
@@ -1012,7 +1013,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   };
   const renderStep3 = () => {
-    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
@@ -1065,7 +1066,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       }
     };
 
-    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
@@ -1121,7 +1122,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   };
   const renderStep5 = () => {
-    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
@@ -1282,7 +1283,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   
   const renderStep7 = () => {
-    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
@@ -1409,7 +1410,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   
   const renderStep8 = () => {
-    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
@@ -1470,7 +1471,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   
   const renderConfirmStep = () => {
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
-    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="text-center pb-4">
