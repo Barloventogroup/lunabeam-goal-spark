@@ -273,7 +273,7 @@ const INDIVIDUAL_FLOW_TEXT = {
     subtitle: "(It's great to have allies!)"
   },
   step8: {
-    subtitle: "Add motivation from your Reward Bank"
+    subtitle: "Add an additional motivation for you to complete this goal"
   },
   confirm: {
     subtitle: "Ready to start your goal? First review what we have so far. If everything looks good click Confirm Goal."
@@ -316,7 +316,7 @@ const getSupporterFlowText = (name?: string) => ({
     subtitle: "(Having support makes a difference!)"
   },
   step8: {
-    subtitle: "Add motivation from your Reward Bank"
+    subtitle: `Add an additional motivation for ${name || 'them'} to complete this goal`
   },
   confirm: {
     subtitle: "Ready to assign this goal? Review the details below and click Confirm when ready."
