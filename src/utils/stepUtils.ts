@@ -11,5 +11,10 @@ export const cleanStepTitle = (title: string): string => {
     cleanTitle = cleanTitle.substring(0, lastColonIndex).trim();
   }
   
+  // Convert to sentence case: first letter uppercase, rest lowercase
+  if (cleanTitle.length > 0) {
+    cleanTitle = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1).toLowerCase();
+  }
+  
   return cleanTitle;
 };
