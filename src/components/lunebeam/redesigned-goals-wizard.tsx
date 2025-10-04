@@ -1454,7 +1454,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>}
           
           {/* Actions */}
-          <div className="flex pt-4">
+          <div className="flex pt-2">
             <Button onClick={handleSubmit} disabled={loading} className="w-full h-12 text-lg font-semibold">
               {loading ? 'Creating...' : isProposal ? 'Confirm Proposal' : 'Confirm Goal'}
             </Button>
