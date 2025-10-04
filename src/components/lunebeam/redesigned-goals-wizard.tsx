@@ -1282,16 +1282,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
         </div>
         
-        {isSupporter && data.recipient === 'other' && <div className="pt-4 border-t space-y-2">
-            <div className="flex items-center gap-2">
-              <input type="checkbox" id="reminder-me" checked={data.sendReminderToMe} onChange={e => updateData({
-            sendReminderToMe: e.target.checked
-          })} className="rounded" />
-              <Label htmlFor="reminder-me" className="text-sm">
-                Send reminder to me too
-              </Label>
-            </div>
-          </div>}
       </CardContent>
     </Card>;
   };
