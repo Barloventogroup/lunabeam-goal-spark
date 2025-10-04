@@ -231,6 +231,73 @@ const motivations = [{
   label: 'Accountability',
   description: 'Keep myself on track and committed'
 }];
+
+// Text configuration for different flows
+const INDIVIDUAL_FLOW_TEXT = {
+  step0: {
+    subtitle: "Choose who will be working on this goal"
+  },
+  step1: {
+    subtitle: "What's the one concrete action you're choosing to focus on?"
+  },
+  step2: {
+    subtitle: "Understanding your motivation helps us support you better"
+  },
+  step3: {
+    subtitle: "Let's figure out where you're starting from. This goal is which of the following:"
+  },
+  step4: {
+    subtitle: "Select up to two"
+  },
+  step5: {
+    subtitle: "Equipment, knowledge, access, etc."
+  },
+  step6: {
+    subtitle: ""
+  },
+  step7: {
+    subtitle: "(It's great to have allies!)"
+  },
+  step8: {
+    subtitle: "Add motivation from your Reward Bank"
+  },
+  confirm: {
+    subtitle: "Ready to start your goal? First review what we have so far. If everything looks good click Confirm Goal."
+  }
+};
+
+const SUPPORTER_FLOW_TEXT = {
+  step0: {
+    subtitle: "Choose who will be working on this goal"
+  },
+  step1: {
+    subtitle: "What's the one clear action they need to establish?"
+  },
+  step2: {
+    subtitle: "Understanding their motivation helps us support them better"
+  },
+  step3: {
+    subtitle: "Let's figure out where they're starting from. This goal is which of the following:"
+  },
+  step4: {
+    subtitle: "Select up to two areas that typically feel challenging for them"
+  },
+  step5: {
+    subtitle: "Do they have what they need to begin?"
+  },
+  step6: {
+    subtitle: ""
+  },
+  step7: {
+    subtitle: "(Having support makes a difference!)"
+  },
+  step8: {
+    subtitle: "Add motivation from your Reward Bank"
+  },
+  confirm: {
+    subtitle: "Ready to assign this goal? Review the details below and click Confirm when ready."
+  }
+};
 interface WizardData {
   // Step 0: Who is this for (supporters only)
   recipient: 'self' | 'other';
@@ -747,10 +814,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     if (period === "PM") H += 12;
     return `${H.toString().padStart(2, "0")}:${minute}`;
   };
-  const renderStep0 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep0 = () => {
+    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <h3 className="text-muted-foreground">Choose who will be working on this goal</h3>
+        <h3 className="text-muted-foreground">{text.step0.subtitle}</h3>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -819,11 +889,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep1 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  };
+  
+  const renderStep1 = () => {
+    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground mt-2">
-          What's the one concrete action you're choosing to focus on?
+          {text.step1.subtitle}
         </p>
       </CardHeader>
       
@@ -885,14 +960,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </CardContent>
     </Card>;
+  };
+  
   const renderStep2 = () => {
-    const isForOther = data.recipient === 'other';
+    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
-        
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">
-          Understanding {isForOther ? 'their' : 'your'} motivation helps us support {isForOther ? 'them' : 'you'} better
+          {text.step2.subtitle}
         </p>
       </CardHeader>
       
@@ -934,10 +1011,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardContent>
     </Card>;
   };
-  const renderStep3 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep3 = () => {
+    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">Let's figure out where you're starting from. This goal is which of the following:</p>
+        <p className="text-muted-foreground">{text.step3.subtitle}</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -963,6 +1043,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </Card>)}
       </CardContent>
     </Card>;
+  };
+  
   const renderStep4 = () => {
     const handleChallengeToggle = (challengeId: string) => {
       const current = data.challengeAreas || [];
@@ -983,10 +1065,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       }
     };
 
+    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">Select up to two</p>
+        <p className="text-muted-foreground">{text.step4.subtitle}</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -1036,10 +1120,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardContent>
     </Card>;
   };
-  const renderStep5 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  const renderStep5 = () => {
+    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Do you already have what you need?</CardTitle>
-        <p className="text-muted-foreground">Equipment, knowledge, access, etc.</p>
+        <p className="text-muted-foreground">{text.step5.subtitle}</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -1098,7 +1185,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
       </CardContent>
     </Card>;
-  const renderStep6 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  };
+  
+  const renderStep6 = () => {
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         
@@ -1189,10 +1279,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
-  const renderStep7 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  };
+  
+  const renderStep7 = () => {
+    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Who&apos;s on your team?</CardTitle>
-        <p className="text-muted-foreground">(It&apos;s great to have allies!)</p>
+        <p className="text-muted-foreground">{text.step7.subtitle}</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -1311,13 +1406,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         )}
       </CardContent>
     </Card>;
-  const renderStep8 = () => <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+  };
+  
+  const renderStep8 = () => {
+    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Gift className="h-8 w-8 text-primary" />
         </div>
         <CardTitle className="text-2xl">Rewards (Optional)</CardTitle>
-        <p className="text-muted-foreground">Add motivation from your Reward Bank</p>
+        <p className="text-muted-foreground">{text.step8.subtitle}</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -1366,13 +1466,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>}
       </CardContent>
     </Card>;
+  };
+  
   const renderConfirmStep = () => {
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
+    const text = data.recipient === 'other' ? SUPPORTER_FLOW_TEXT : INDIVIDUAL_FLOW_TEXT;
+    
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-2xl">Review and Confirm</CardTitle>
           <p className="text-muted-foreground">
-            Ready to start your goal? First review what we have so far. If everything looks good click Confirm Goal.
+            {text.confirm.subtitle}
           </p>
         </CardHeader>
         
