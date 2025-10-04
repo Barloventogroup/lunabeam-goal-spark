@@ -160,7 +160,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
               setCurrentView('list');
               onWizardStateChange?.(false);
             }}
-            isSupporter={(userContext?.userType && userContext.userType !== 'individual') || false}
+            isSupporter={userContext?.userType === 'supporter' || userContext?.userType === 'hybrid'}
           />
         );
       case 'supporter-wizard':
