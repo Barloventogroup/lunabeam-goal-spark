@@ -37,7 +37,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
 
   // Get supporter context for supporters and hybrids
   useEffect(() => {
-    if (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid') {
+    if (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') {
       const getCurrentUser = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
@@ -66,7 +66,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
         break;
       case 'create-goal':
         // Show flow selection for supporters
-        if (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid') {
+        if (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') {
           setShowFlowSelection(true);
         } else {
           setCurrentView('create-wizard');
@@ -160,7 +160,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
               setCurrentView('list');
               onWizardStateChange?.(false);
             }}
-            isSupporter={userContext?.userType === 'supporter' || userContext?.userType === 'hybrid'}
+            isSupporter={userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin'}
           />
         );
       case 'supporter-wizard':
@@ -186,7 +186,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   };
 
   // Show tabs for supporters and hybrids
-  if ((userContext?.userType === 'supporter' || userContext?.userType === 'hybrid') && supporterContext?.supportedIndividuals?.length > 0) {
+  if ((userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') && supporterContext?.supportedIndividuals?.length > 0) {
     const supportedIndividual = supporterContext.supportedIndividuals[0];
     
     return (
