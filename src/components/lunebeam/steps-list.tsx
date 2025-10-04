@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CircularProgress } from '@/components/ui/circular-progress';
-import { Fireworks } from '@/components/ui/fireworks';
+import { StepCompletionAnimation } from '@/components/ui/step-completion-animation';
 import { GoalCompletionCelebration } from './goal-completion-celebration';
 import type { Step, Goal, Substep, StepStatus, StepType } from '@/types';
 import { stepsService } from '@/services/goalsService';
@@ -1369,8 +1369,8 @@ export const StepsList: React.FC<StepsListProps> = ({
         />
       )}
 
-      {/* Fireworks Animation */}
-      <Fireworks 
+      {/* Step Completion Animation */}
+      <StepCompletionAnimation 
         isVisible={showFireworks} 
         onComplete={() => setShowFireworks(false)} 
       />
