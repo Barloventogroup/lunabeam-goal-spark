@@ -34,6 +34,77 @@ interface WizardData {
   customPrerequisites?: string;
   challengeAreas?: string[];
   supportedPersonName?: string;
+  goalType?: string;
+}
+
+/**
+ * Infers the second barrier based on goal type and primary barrier
+ * Uses neurodivergent-informed relationships between challenges
+ */
+function inferSecondBarrier(
+  barrier1: string, 
+  goalType: string, 
+  category: string
+): string {
+  // Barrier relationships based on goal type
+  const barrierInferenceMap: Record<string, Record<string, string>> = {
+    'reminder': {
+      'initiation': 'time',        // New habits need time management after starting
+      'attention': 'planning',      // If distracted, need next-step clarity
+      'time': 'attention',          // If forgetting, need focus strategies
+      'planning': 'initiation'      // If unclear on steps, need activation help
+    },
+    'practice': {
+      'initiation': 'planning',     // Practice needs clear structure after starting
+      'attention': 'time',          // Focus issues pair with time tracking
+      'time': 'planning',           // Remembering practice needs structure
+      'planning': 'attention'       // Structured practice needs focus maintenance
+    },
+    'new_skill': {
+      'initiation': 'planning',     // New skills need heavy planning after first step
+      'attention': 'planning',      // Complex learning needs structure
+      'time': 'planning',           // New skills need organized approach
+      'planning': 'initiation'      // Over-planning needs activation
+    }
+  };
+
+  // Category-specific overrides for edge cases
+  const categoryOverrides: Record<string, Record<string, string>> = {
+    'health': {
+      'initiation': 'time',         // Health habits are time-sensitive
+      'planning': 'time'            // Health routines need consistency
+    },
+    'employment': {
+      'initiation': 'planning',     // Job tasks need heavy structure
+      'attention': 'planning'       // Professional settings demand clarity
+    },
+    'postsecondary': {
+      'attention': 'planning',      // Academic work needs organization
+      'time': 'planning'            // College work is structure-heavy
+    }
+  };
+
+  // Check category override first
+  const categoryMap = categoryOverrides[category];
+  if (categoryMap && categoryMap[barrier1]) {
+    return categoryMap[barrier1];
+  }
+
+  // Use goal type inference
+  const typeMap = barrierInferenceMap[goalType];
+  if (typeMap && typeMap[barrier1]) {
+    return typeMap[barrier1];
+  }
+
+  // Fallback: Use most common pairings
+  const defaultFallbacks: Record<string, string> = {
+    'initiation': 'planning',
+    'attention': 'planning',
+    'time': 'attention',
+    'planning': 'initiation'
+  };
+
+  return defaultFallbacks[barrier1] || 'attention';
 }
 
 /**
@@ -184,6 +255,23 @@ export async function generateMicroStepsSmart(
                                    prereqText.length < 50 && // Short = likely concrete
                                    !uncertaintyKeywords.some(kw => prereqText.toLowerCase().includes(kw));
     
+    const barrier1 = data.challengeAreas?.[0] || 'initiation';
+    const barrier2 = data.challengeAreas?.[1] || inferSecondBarrier(
+      barrier1,
+      data.goalType || 'reminder',
+      data.category || 'general'
+    );
+
+    // Log inference for debugging
+    if (!data.challengeAreas?.[1]) {
+      console.log('[Barrier Inference]', {
+        barrier1,
+        inferredBarrier2: barrier2,
+        goalType: data.goalType,
+        category: data.category
+      });
+    }
+
     const payload = {
       flow,
       goalTitle: data.goalTitle,
@@ -195,8 +283,8 @@ export async function generateMicroStepsSmart(
       hasPrerequisite: data.hasPrerequisites === true && !!data.customPrerequisites,
       prerequisiteText: data.customPrerequisites || '',
       prerequisiteIsConcrete,
-      barrier1: data.challengeAreas?.[0] || 'initiation',
-      barrier2: data.challengeAreas?.[1] || 'attention',
+      barrier1,
+      barrier2,
       supportedPersonName: data.supportedPersonName || '',
     };
 
