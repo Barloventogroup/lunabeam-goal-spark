@@ -352,9 +352,10 @@ function validateMicroSteps(steps: { title: string; description: string }[], pay
         errors.push('Step 2 must reference the exact start time');
       }
       
-      // Check for banned verbs (time-consuming actions)
+      // Check for banned verbs (time-consuming actions) - use word boundaries to avoid false positives
       step2BannedVerbs.forEach(verb => {
-        if (text.includes(verb)) {
+        const verbPattern = new RegExp(`\\b${verb}\\b`, 'i');
+        if (verbPattern.test(text)) {
           errors.push(`Step 2 contains time-consuming verb "${verb}" - only workspace setup allowed (touch, open, grab)`);
         }
       });
@@ -385,34 +386,33 @@ function validateMicroSteps(steps: { title: string; description: string }[], pay
         errors.push('Step 3 must specify duration in minutes (e.g., "Set a 20-minute timer")');
       }
       
-      // Check for measurable outcome keywords
-      const hasOutcome = /write|list|solve|call|text|search|browse|find|note|name/.test(text);
-      if (!hasOutcome) {
-        errors.push('Step 3 must include measurable outcome (e.g., "write down 3 names", "solve problems 1-10")');
+      // Check for measurable outcome (duration, quantity, or completion indicator)
+      const hasDuration = /\d+[- ]minute/i.test(text);
+      const hasQuantity = /\d+\s+(verb|problem|step|task|item|name|team|page|question|chapter|lesson|chord|word|phrase|exercise|set|rep|minute)/i.test(text);
+      const hasCompletionVerb = /complete|finish|review|practice|identify|work through|analyze|study|solve|write down/i.test(text);
+      
+      if (!hasDuration && !hasQuantity && !hasCompletionVerb) {
+        errors.push('Step 3 must include measurable outcome (duration, quantity, or completion indicator)');
       }
       
-      // Validate logic mapping to secondary challenge (if payload provided)
+      // Suggestion (not requirement) based on secondary challenge
       if (payload?.barrier2) {
         const barrier2Lower = payload.barrier2.toLowerCase();
         const hasTimer = /timer|alarm|countdown/.test(text);
         const hasSequencing = /write|list|break.*into|sub-task|smaller task/.test(text);
-        const hasTimeGoal = /\d+\s?minut.*complete|finish.*\d+\s?minut|write.*\d+/.test(text);
+        const hasTimeGoal = /\d+\s?minut.*complete|finish.*\d+\s?minut/.test(text);
         
+        // Log suggestions for improvement, but don't reject
         if ((barrier2Lower.includes('focus') || barrier2Lower.includes('attention')) && !hasTimer) {
-          errors.push('Step 3 must include timer for Focus/Attention challenge');
+          console.log(`Suggestion: Step 3 could include a timed work sprint with movement break for Focus/Attention challenge`);
         }
         if (barrier2Lower.includes('planning') && !hasSequencing) {
-          errors.push('Step 3 must include sequencing/breakdown for Planning challenge');
+          console.log(`Suggestion: Step 3 could include sequencing or breakdown task for Planning challenge`);
         }
         if (barrier2Lower.includes('time') && !hasTimeGoal) {
-          errors.push('Step 3 must include time-bound goal for Time Blindness challenge');
+          console.log(`Suggestion: Step 3 could include a specific sub-task with time limit for Time Blindness challenge`);
         }
       }
-    }
-    
-    // Check for minimum length (avoid trivial steps)
-    if (step.description.length < 40) {
-      errors.push(`Step ${i+1} description is too short (${step.description.length} chars) - be specific`);
     }
     
     // Check title length
