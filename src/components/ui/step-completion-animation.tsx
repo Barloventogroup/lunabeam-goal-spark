@@ -18,7 +18,7 @@ export const StepCompletionAnimation: React.FC<StepCompletionAnimationProps> = (
       const timer = setTimeout(() => {
         setShow(false);
         onComplete?.();
-      }, 2000);
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [isVisible, onComplete]);
