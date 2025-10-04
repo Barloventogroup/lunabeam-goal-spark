@@ -172,6 +172,14 @@ FRAMEWORK RULES:
 2. **Language**: Use clear, user-facing, encouraging language. DO NOT use clinical terms like 'initiation,' 'barrier,' or 'scaffolding.'
 3. **Anchoring**: Use the provided [startTime] and [startDayOfWeek] to create external anchors.
 
+**CRITICAL REQUIREMENT FOR ALL STEPS:**
+Every step must explicitly reference the goal title or specific goal action. DO NOT use generic language like "your work", "the task", or "your materials."
+
+Examples:
+- ❌ "Prepare your workspace" → ✅ "Gather your Spanish flashcards and notebook"
+- ❌ "Tap the app icon" → ✅ "Tap the Duolingo app icon"
+- ❌ "Work for 20 minutes" → ✅ "Practice 10 Spanish verbs for 20 minutes"
+
 ---
 ${flow === 'individual' ? `
 [INDIVIDUAL FLOW STRUCTURE] (Focus: Trivial Activation & Focused Work)
@@ -179,55 +187,65 @@ ${flow === 'individual' ? `
 Step 1: PREPARATION (BEFORE [startTime])
 - **Purpose**: Address the [Prerequisite Text] if it exists, otherwise, generate a simple, non-mandatory organization step.
 - **Action**: 1-2 CONCRETE actions to obtain/prepare the workspace *before* the start time.
+- **MUST REFERENCE**: Specific tools, materials, or resources needed for [Goal Title]
 - **Examples**: 
-  * "Need help from someone who knows math" → "Text 2 classmates by Thursday to ask for a 30-min practice session this week."
-  * No prerequisite → "By Thursday evening, clear your desk and have your notebook and pen ready."
+  * Goal: "Practice Spanish" + "Need help from someone who knows Spanish" → "Text 2 classmates by Thursday to ask for a 30-min practice session this week."
+  * Goal: "Learn guitar chords" + No prerequisite → "By Thursday evening, place your guitar and chord chart on your music stand."
+  * Goal: "Study algebra" + No prerequisite → "By Friday afternoon, gather your algebra textbook, notebook, and calculator on your desk."
 
 Step 2: ACTIVATION CUE (AT EXACTLY [startTime])
 - **Purpose**: Trivial activation to defeat the inertia barrier.
 - **Constraint**: The physical action must take **< 15 seconds** to complete. It must be an initial touch, tap, or switch.
+- **MUST REFERENCE**: The specific tool, app, or material for [Goal Title]
 - **Allowed actions**: touch, open, unlock, tap (app icon), grab, hold, place, put on
 - **Examples**: 
-  * "At 7:00 PM, tap the app icon on your desktop."
-  * "At 8:00 AM Friday, open your notebook to a blank page."
-  * "At 6:30 PM Tuesday, touch your algebra textbook."
+  * Goal: "Practice Spanish" → "At 7:00 PM Friday, tap the Duolingo app icon."
+  * Goal: "Study algebra" → "At 8:00 AM Friday, open your algebra textbook to chapter 3."
+  * Goal: "Learn guitar" → "At 6:30 PM Tuesday, pick up your guitar."
+  * Goal: "Write a short story" → "At 9:00 AM Saturday, open your writing notebook to a blank page."
 
 Step 3: FOCUSED WORK (AFTER ACTIVATION)
 - **Purpose**: Address the second biggest challenge: [Secondary Challenge].
 - **Constraint**: Must be a measurable chunk of work (15-30 minutes).
+- **MUST INCLUDE**: The specific goal action in the work description
 - **Logic Mapping**:
   * If [Secondary Challenge] is **Focus** or **Attention**: Generate a 25-minute timer sprint with a mandatory movement break.
-    Example: "Set a 25-minute timer. Work through problems 1-10. When the timer rings, stand up and stretch for 5 minutes."
-  * If [Secondary Challenge] is **Planning**: Generate a sequencing step ("write down the first 3 sub-tasks").
-    Example: "Spend 20 minutes breaking the goal into 3 smaller tasks. Write each task on a sticky note and arrange them in order."
+    Example: Goal: "Study algebra" → "Set a 25-minute timer. Work through algebra problems 1-10 from chapter 3. When the timer rings, stand up and stretch for 5 minutes."
+  * If [Secondary Challenge] is **Planning**: Generate a sequencing step.
+    Example: Goal: "Learn Spanish" → "Spend 20 minutes breaking your Spanish learning goal into 3 smaller tasks (e.g., 'learn 10 verbs', 'practice pronunciation', 'complete one lesson'). Write each task on a sticky note and arrange them in order."
   * If [Secondary Challenge] is **Time Blindness** or **Time**: Generate a goal to complete a specific sub-task within 20 minutes.
-    Example: "Set a 20-minute timer. Search for 'sports leagues near me' and write down 3 team names. When the timer rings, take a 5-minute break."
+    Example: Goal: "Practice Spanish" → "Set a 20-minute timer. Practice conjugating 10 Spanish verbs from your list. When the timer rings, take a 5-minute break."
   * If [Secondary Challenge] is **Getting started**: Generate a simple research/exploration task.
-    Example: "Spend 20 minutes searching online for local options. Write down the names of 3 that interest you."
+    Example: Goal: "Join a soccer team" → "Spend 20 minutes searching for 'soccer leagues near me'. Write down the names of 3 teams that interest you and their practice times."
 ` : `
 [SUPPORTER FLOW STRUCTURE] (Focus: Environmental Control & Accountability)
 
 Step 1: ENVIRONMENTAL SETUP (BEFORE [startTime])
 - **Purpose**: Remove all potential physical and material obstacles.
 - **Action**: What the supporter must do to ensure the workspace is ready (charging, clearing, providing materials).
+- **MUST REFERENCE**: Specific materials for [Goal Title]
 - **Examples**: 
-  * "Before 6:30 PM Tuesday, place the algebra textbook open to chapter 3 on their desk with a pencil."
-  * "Before 8:00 AM Friday, make sure their laptop is charged and on their desk."
+  * Goal: "Study algebra" → "Before 6:30 PM Tuesday, place the algebra textbook open to chapter 3 on their desk with a pencil and calculator."
+  * Goal: "Learn Spanish" → "Before 7:00 PM Friday, ensure their Spanish flashcards and notebook are on the desk."
+  * Goal: "Practice guitar" → "Before 8:00 AM Saturday, place their guitar and chord chart on the music stand."
 
 Step 2: CUE DELIVERY (AT EXACTLY [startTime])
 - **Purpose**: Serve as the human prompt to initiate the activation step.
-- **Action**: What the supporter says or does to trigger the individual's Step 2 (e.g., "Walk to the desk and put on your headphones"). Use language appropriate for the [Supporter Role].
+- **Action**: What the supporter says or does to trigger the individual's Step 2. Use language appropriate for the [Supporter Role].
+- **MUST REFERENCE**: The specific tool/app/material for [Goal Title]
 - **Examples**: 
-  * Parent: "At 6:30 PM, hand them the pencil and say: 'Just touch the textbook for 15 seconds.'"
-  * Coach: "At 7:00 PM, text them: 'Time to tap that app icon!'"
-  * Friend: "At 8:00 AM, send a message: 'Hey! Just open your notebook real quick.'"
+  * Goal: "Study algebra" + Parent: "At 6:30 PM, hand them the pencil and say: 'Just touch the algebra textbook for 15 seconds.'"
+  * Goal: "Practice Spanish" + Coach: "At 7:00 PM, text them: 'Time to tap the Duolingo app icon!'"
+  * Goal: "Write a story" + Friend: "At 8:00 AM, send a message: 'Hey! Just open your writing notebook real quick.'"
 
 Step 3: REINFORCEMENT (DURING WORK/AFTER COMPLETION)
 - **Purpose**: Deliver positive, value-based reinforcement based on the [Motivation].
-- **Action**: Specific action for monitoring progress and providing reinforcement (e.g., "Check in after 20 minutes. Use the theme of [Motivation] to praise the effort, not the result.").
+- **Action**: Specific action for monitoring progress and providing reinforcement.
+- **MUST REFERENCE**: The specific goal action to connect praise to concrete accomplishment
 - **Examples**: 
-  * "After 25 minutes, check in and ensure they take a 5-minute movement break. Say: 'You put in solid effort!'"
-  * "When they complete the task, connect it to [Motivation]: 'This brings you closer to [goal related to motivation].'"
+  * Goal: "Study algebra" → "After 25 minutes, check in and ensure they take a 5-minute movement break. Say: 'You worked through 10 algebra problems—solid effort!'"
+  * Goal: "Practice Spanish" → "When they complete the task, connect it to [Motivation]: 'You practiced those Spanish verbs! This brings you closer to speaking confidently with your Spanish-speaking friends.'"
+  * Goal: "Learn guitar" → "After 20 minutes, check in and say: 'You practiced those chords! You're getting closer to playing your favorite songs.'"
 `}
 
 **QUALITY VALIDATION RULES (NON-NEGOTIABLE):**
@@ -263,6 +281,11 @@ Step 3: REINFORCEMENT (DURING WORK/AFTER COMPLETION)
 6. **Action Specificity**:
    - Use concrete verbs: "write down", "solve", "call", "text" (in Step 1 or 3), "search" (Step 3 only), "browse" (Step 3 only)
    - Include measurable outcomes: "2-3 teams", "problems 1-10", "15 minutes", "3 names"
+
+7. **Goal Action Specificity**:
+   - Every step must reference the specific goal title or action
+   - Never use generic language like "your work", "the task", "your materials"
+   - Use domain-specific terms from the goal (e.g., "Spanish verbs", "algebra problems", "guitar chords")
 
 FORMAT:
 - Keep titles under 8 words
@@ -305,6 +328,15 @@ function validateMicroSteps(steps: { title: string; description: string }[], pay
         errors.push(`Step ${i+1} contains clinical jargon: "${word}"`);
       }
     });
+    
+    // Check for goal-specific language (avoid generic references)
+    if (payload?.goalTitle) {
+      const genericPhrases = ['your work', 'the task', 'your materials', 'the app', 'your workspace'];
+      const hasGenericLanguage = genericPhrases.some(phrase => text.includes(phrase));
+      if (hasGenericLanguage) {
+        errors.push(`Step ${i + 1} uses generic language instead of goal-specific terms from "${payload.goalTitle}"`);
+      }
+    }
     
     // Step 2 validations
     if (i === 1) {
