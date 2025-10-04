@@ -66,6 +66,9 @@ verify_jwt = true
 [functions.microsteps-scaffold]
 verify_jwt = false
 
+[functions.supporter-microsteps-scaffold]
+verify_jwt = false
+
 # Make the invitation email functions public (no JWT required)
 [functions.send-invitation-email]
 verify_jwt = false

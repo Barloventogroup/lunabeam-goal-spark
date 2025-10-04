@@ -7,13 +7,16 @@ import { GoalCategories } from '../lunebeam/goal-categories';
 import { GoalsWizard } from '../lunebeam/goals-wizard';
 import { RedesignedGoalsWizard } from '../lunebeam/redesigned-goals-wizard';
 import { GoalProposalsView } from '../lunebeam/goal-proposals-view';
+import { SupporterGoalWizard } from '../lunebeam/supporter-goal-wizard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { User, Users, UserPlus } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { getSupporterContext } from '@/utils/supporterUtils';
 import { supabase } from '@/integrations/supabase/client';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wizard' | 'create-wizard' | 'proposals';
+type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wizard' | 'create-wizard' | 'supporter-wizard' | 'proposals';
 
 interface TabGoalsProps {
   onWizardStateChange?: (isWizardActive: boolean) => void;
@@ -28,6 +31,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTab, setActiveTab] = useState<'own' | 'individual'>('own');
   const [supporterContext, setSupporterContext] = useState<any>(null);
+  const [showFlowSelection, setShowFlowSelection] = useState(false);
 
   const { userContext } = useStore();
 
@@ -61,8 +65,13 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
         onWizardStateChange?.(false);
         break;
       case 'create-goal':
-        setCurrentView('create-wizard');
-        onWizardStateChange?.(true);
+        // Show flow selection for supporters
+        if (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid') {
+          setShowFlowSelection(true);
+        } else {
+          setCurrentView('create-wizard');
+          onWizardStateChange?.(true);
+        }
         break;
       case 'view-proposals':
         setCurrentView('proposals');
@@ -154,6 +163,16 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             isSupporter={(userContext?.userType && userContext.userType !== 'individual') || false}
           />
         );
+      case 'supporter-wizard':
+        return (
+          <SupporterGoalWizard
+            onComplete={handleWizardGoalCreated}
+            onCancel={() => {
+              setCurrentView('list');
+              onWizardStateChange?.(false);
+            }}
+          />
+        );
       case 'proposals':
         return (
           <GoalProposalsView 
@@ -205,6 +224,48 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   return (
     <div className="min-h-screen bg-background">
       {renderCurrentView()}
+
+      {/* Flow selection dialog for supporters */}
+      <Dialog open={showFlowSelection} onOpenChange={setShowFlowSelection}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Who is this goal for?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Button 
+              variant="outline" 
+              className="w-full h-auto p-6 justify-start"
+              onClick={() => {
+                setShowFlowSelection(false);
+                setCurrentView('create-wizard');
+                onWizardStateChange?.(true);
+              }}
+            >
+              <User className="h-6 w-6 mr-3" />
+              <div className="text-left">
+                <div className="font-semibold">For myself</div>
+                <div className="text-sm text-muted-foreground">Create a personal goal</div>
+              </div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="w-full h-auto p-6 justify-start"
+              onClick={() => {
+                setShowFlowSelection(false);
+                setCurrentView('supporter-wizard');
+                onWizardStateChange?.(true);
+              }}
+            >
+              <UserPlus className="h-6 w-6 mr-3" />
+              <div className="text-left">
+                <div className="font-semibold">For someone I support</div>
+                <div className="text-sm text-muted-foreground">Create a goal for them</div>
+              </div>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

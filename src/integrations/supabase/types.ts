@@ -731,6 +731,7 @@ export type Database = {
           initiated_at: string | null
           is_planned: boolean | null
           is_required: boolean
+          is_supporter_step: boolean
           notes: string | null
           order_index: number
           planned_week_index: number | null
@@ -753,6 +754,7 @@ export type Database = {
           initiated_at?: string | null
           is_planned?: boolean | null
           is_required?: boolean
+          is_supporter_step?: boolean
           notes?: string | null
           order_index?: number
           planned_week_index?: number | null
@@ -775,6 +777,7 @@ export type Database = {
           initiated_at?: string | null
           is_planned?: boolean | null
           is_required?: boolean
+          is_supporter_step?: boolean
           notes?: string | null
           order_index?: number
           planned_week_index?: number | null
