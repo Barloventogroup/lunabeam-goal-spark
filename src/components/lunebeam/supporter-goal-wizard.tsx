@@ -291,7 +291,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
   const renderStep1 = () => (
     <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">Who is this goal for?</CardTitle>
+        <CardTitle className="text-2xl">{data.supportedPersonName ? `Who is this goal for: ${data.supportedPersonName}?` : 'Who is this goal for?'}</CardTitle>
         <p className="text-muted-foreground">Select the person you're supporting</p>
       </CardHeader>
       <CardContent className="space-y-4">

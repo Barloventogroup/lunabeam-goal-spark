@@ -501,7 +501,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const getStepTitle = () => {
     const supporterTitles = [
-      'Who is this goal for?', 
+      `${data.supportedPersonName ? `Who is this goal for: ${data.supportedPersonName}?` : 'Who is this goal for?'}`, 
       `What is the one clear, observable action ${data.supportedPersonName || '[Individual\'s Name]'} needs to establish?`, 
       'Why does this matter?', 
       'What type of goal?', 
