@@ -250,7 +250,17 @@ const INDIVIDUAL_FLOW_TEXT = {
     subtitle: "Select up to two"
   },
   step5: {
-    subtitle: "Equipment, knowledge, access, etc."
+    subtitle: "Equipment, knowledge, access, etc.",
+    options: {
+      yes: {
+        title: "Yes, I'm ready",
+        description: "I have everything I need to start"
+      },
+      no: {
+        title: "No, I need help getting ready",
+        description: "I need prep steps first"
+      }
+    }
   },
   step6: {
     subtitle: ""
@@ -283,7 +293,17 @@ const getSupporterFlowText = (name?: string) => ({
     subtitle: `Select up to two areas that typically feel challenging for ${name || 'them'}`
   },
   step5: {
-    subtitle: `Do${name ? 'es' : ''} ${name || 'they'} have what ${name ? name : 'they'} need${name ? 's' : ''} to begin?`
+    subtitle: `Do${name ? 'es' : ''} ${name || 'they'} have what ${name ? name : 'they'} need${name ? 's' : ''} to begin?`,
+    options: {
+      yes: {
+        title: name ? `Yes, ${name} is ready` : "Yes, they're ready",
+        description: name ? `${name} has everything needed to start` : "They have everything needed to start"
+      },
+      no: {
+        title: name ? `No, ${name} needs preparation` : "No, they need preparation",
+        description: name ? `${name} needs prep steps first` : "They need prep steps first"
+      }
+    }
   },
   step6: {
     subtitle: ""
@@ -1142,8 +1162,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <div className="flex items-center gap-3">
               <Check className="h-5 w-5 text-primary" />
               <div className="text-left flex-1">
-                <div className="font-semibold">Yes, I'm ready</div>
-                <div className="text-sm text-muted-foreground">I have everything I need to start</div>
+                <div className="font-semibold">{text.step5.options.yes.title}</div>
+                <div className="text-sm text-muted-foreground">{text.step5.options.yes.description}</div>
               </div>
             </div>
           </CardContent>
@@ -1160,8 +1180,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <div className="flex items-center gap-3">
               <X className="h-5 w-5 text-primary" />
               <div className="text-left flex-1">
-                <div className="font-semibold">No, I need help getting ready</div>
-                <div className="text-sm text-muted-foreground">I need prep steps first</div>
+                <div className="font-semibold">{text.step5.options.no.title}</div>
+                <div className="text-sm text-muted-foreground">{text.step5.options.no.description}</div>
               </div>
             </div>
           </CardContent>
