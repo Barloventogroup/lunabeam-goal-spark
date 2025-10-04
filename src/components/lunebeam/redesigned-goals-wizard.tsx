@@ -978,7 +978,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         <div className="space-y-2 pt-4 border-t">
           <Label htmlFor="custom-motivation">Tell us more</Label>
-          <Textarea id="custom-motivation" placeholder="Optional: describe your motivation in your own words..." value={data.customMotivation || ''} onChange={e => updateData({
+          <Textarea id="custom-motivation" placeholder="Share any additional details..." value={data.customMotivation || ''} onChange={e => updateData({
             customMotivation: e.target.value
           })} className="min-h-[80px] resize-none" rows={3} />
         </div>
