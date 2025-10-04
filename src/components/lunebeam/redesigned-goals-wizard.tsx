@@ -823,7 +823,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground mt-2">
-          What's the one concrete action you're choosing to focus on? (Make it clear and specific!)
+          What's the one concrete action you're choosing to focus on?
         </p>
       </CardHeader>
       
