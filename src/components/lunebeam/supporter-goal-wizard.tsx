@@ -36,7 +36,6 @@ interface WizardData {
   goalMotivation: string;
   goalType: string;
   challengeAreas: string[];
-  barriers?: string[];
   customPrerequisites: string;
   startDate: Date;
   endDate?: Date;
@@ -167,41 +166,36 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
   const generateBothStepSets = async () => {
     setGeneratingSteps(true);
     try {
-      // Generate individual steps (for the supported person)
-      const individualMicroSteps = await generateMicroStepsSmart(data as any, 'individual');
+      // Generate individual steps
+      const individualMicroSteps = await generateMicroStepsSmart(data as any, 'supporter');
       setIndividualSteps(individualMicroSteps);
 
-      // Generate supporter setup steps (for the supporter)
-      const { AIService } = await import('@/services/aiService');
-      const supporterResponse = await AIService.getSupporterSetupSteps({
-        goalTitle: data.goalTitle,
-        category: data.category,
-        motivation: data.goalMotivation || 'independence',
-        supportedPersonName: data.supportedPersonName,
-        startDayOfWeek: format(data.startDate, 'EEEE'),
-        startTime: data.customTime || '18:00',
-        startDateTime: data.startDate.toISOString(),
-        hasPrerequisite: !!data.customPrerequisites,
-        prerequisiteText: data.customPrerequisites || '',
-        barrier1: data.barriers?.[0] || 'Getting started',
-        barrier2: data.barriers?.[1] || 'Focus'
-      });
+      // Generate supporter steps via edge function
+      const { data: supporterData, error } = await supabase.functions.invoke(
+        'supporter-microsteps-scaffold',
+        {
+          body: {
+            individualName: data.supportedPersonName,
+            prerequisiteDetail: data.customPrerequisites || 'necessary tools',
+            primaryMotivation: data.goalMotivation || 'independence',
+            startTime: data.customTime || '18:00',
+            startDay: format(data.startDate, 'EEEE'),
+            supporterRole: data.supporterRole,
+            goalTitle: data.goalTitle
+          }
+        }
+      );
 
-      if (supporterResponse.error) {
-        throw new Error(supporterResponse.error);
-      }
-
-      setSupporterSteps(supporterResponse.steps || []);
+      if (error) throw error;
+      setSupporterSteps(supporterData.supporterSteps || []);
 
     } catch (error) {
       console.error('Error generating steps:', error);
       toast({
-        title: "Could not generate steps",
-        description: "Please try rephrasing your goal or breaking it into smaller pieces.",
-        variant: "destructive"
+        title: "Using fallback templates",
+        description: "Could not personalize all steps.",
+        variant: "default"
       });
-      // Don't proceed - user needs to try again
-      setCurrentStep(7); // Stay on current step
     } finally {
       setGeneratingSteps(false);
     }
@@ -238,18 +232,15 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
         });
       }
 
-      // Create supporter setup steps (in new table)
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user && supporterSteps.length > 0) {
-        const { supporterSetupStepsService } = await import('@/services/supporterSetupStepsService');
-        const setupStepsData = supporterSteps.map((step, index) => ({
-          goal_id: createdGoal.id,
-          supporter_id: user.id,
+      // Create supporter steps
+      for (const step of supporterSteps) {
+        await stepsService.createStep(createdGoal.id, {
           title: step.title,
-          description: step.description,
-          order_index: index,
-        }));
-        await supporterSetupStepsService.bulkCreateSupporterSetupSteps(setupStepsData);
+          notes: step.description,
+          step_type: 'scaffolding',
+          is_required: true,
+          is_planned: true
+        });
       }
 
       toast({

@@ -104,39 +104,25 @@ export class AIService {
     }
   }
 
-  static async getMicroSteps(request: any): Promise<{ microSteps?: MicroStep[]; error?: string }> {
+  static async getMicroSteps(request: MicroStepsRequest): Promise<{ microSteps?: MicroStep[]; error?: string; useFallback?: boolean }> {
     try {
-      const { data, error } = await supabase.functions.invoke('individual-microsteps', {
+      const { data, error } = await supabase.functions.invoke('microsteps-scaffold', {
         body: request
       });
 
       if (error) {
-        console.error('Individual microsteps generation error:', error);
-        return { error: error.message };
+        console.warn('Micro-steps AI generation error:', error);
+        return { error: error.message, useFallback: true };
+      }
+      
+      if (data?.useFallback) {
+        return { useFallback: true };
       }
 
-      return { microSteps: data.microSteps };
-    } catch (err) {
-      console.error('Unexpected error calling individual-microsteps:', err);
-      return { error: 'Failed to generate micro-steps' };
-    }
-  }
-
-  static async getSupporterSetupSteps(request: any): Promise<{ steps?: MicroStep[]; error?: string }> {
-    try {
-      const { data, error } = await supabase.functions.invoke('supporter-setup-steps', {
-        body: request
-      });
-
-      if (error) {
-        console.error('Supporter setup steps generation error:', error);
-        return { error: error.message };
-      }
-
-      return { steps: data.steps };
-    } catch (err) {
-      console.error('Unexpected error calling supporter-setup-steps:', err);
-      return { error: 'Failed to generate supporter setup steps' };
+      return { microSteps: data?.microSteps };
+    } catch (error) {
+      console.error('Error getting micro-steps:', error);
+      return { error: error.message, useFallback: true };
     }
   }
 }

@@ -144,21 +144,6 @@ export interface Step {
   showOptions?: boolean;
 }
 
-export interface SupporterSetupStep {
-  id: string;
-  goal_id: string;
-  supporter_id: string;
-  title: string;
-  description?: string;
-  order_index: number;
-  status: 'not_started' | 'in_progress' | 'done' | 'skipped';
-  completed_at?: string;
-  due_date?: string;
-  estimated_effort_min?: number;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface Substep {
   id: string;
   step_id: string;

@@ -99,18 +99,6 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   };
 
   const renderCurrentView = () => {
-    // Determine filter based on active tab
-    let filterByOwnerId: string | undefined;
-    if (showTabs && supporterContext?.supportedIndividuals?.length > 0) {
-      const supportedIndividual = supporterContext.supportedIndividuals[0];
-      if (activeTab === 'own') {
-        // For "Your Goals" tab, filter by current user ID
-        filterByOwnerId = currentUserId;
-      } else if (activeTab === 'individual') {
-        filterByOwnerId = supportedIndividual.id;
-      }
-    }
-
     switch (currentView) {
       case 'detail':
         return selectedGoalId ? (
@@ -119,7 +107,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             onBack={() => handleNavigate('goals-list')}
           />
         ) : (
-          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} filterByOwnerId={filterByOwnerId} />
+          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />
         );
       case 'categories':
         return (
@@ -136,7 +124,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             onGoalCreated={handleAiGoalCreated}
           />
         ) : (
-          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} filterByOwnerId={filterByOwnerId} />
+          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />
         );
       case 'summary':
         return aiGoal ? (
@@ -146,7 +134,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             onComplete={() => setCurrentView('list')}
           />
         ) : (
-          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} filterByOwnerId={filterByOwnerId} />
+          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />
         );
       case 'wizard':
         return (
@@ -198,7 +186,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
         );
       case 'list':
       default:
-        return <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} filterByOwnerId={filterByOwnerId} />;
+        return <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />;
     }
   };
 
@@ -209,16 +197,6 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   const showTabs = (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') 
     && supporterContext?.supportedIndividuals?.length > 0 
     && !isWizardView;
-
-  // Get current user for filtering
-  const [currentUserId, setCurrentUserId] = React.useState<string | undefined>();
-  React.useEffect(() => {
-    const fetchUserId = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id);
-    };
-    fetchUserId();
-  }, []);
 
   if (showTabs) {
     const supportedIndividual = supporterContext.supportedIndividuals[0];

@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CircularProgress } from '@/components/ui/circular-progress';
-import { StepCompletionAnimation } from '@/components/ui/step-completion-animation';
+import { Fireworks } from '@/components/ui/fireworks';
 import { GoalCompletionCelebration } from './goal-completion-celebration';
 import type { Step, Goal, Substep, StepStatus, StepType } from '@/types';
 import { stepsService } from '@/services/goalsService';
@@ -501,20 +501,6 @@ export const StepsList: React.FC<StepsListProps> = ({
 
   const handleMarkComplete = async (stepId: string) => {
     if (awaitingStepUpdate === stepId) return;
-
-    // Check if all substeps are completed before allowing step completion
-    const stepSubsteps = substepsMap[stepId] || [];
-    if (stepSubsteps.length > 0) {
-      const allSubstepsCompleted = areAllSubStepsCompleted(stepSubsteps);
-      if (!allSubstepsCompleted) {
-        toast({
-          title: "Cannot complete step",
-          description: "Please complete all substeps before marking this step as done.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
 
     console.log('[StepsList] handleMarkComplete START', {
       stepId,
@@ -1383,8 +1369,8 @@ export const StepsList: React.FC<StepsListProps> = ({
         />
       )}
 
-      {/* Step Completion Animation */}
-      <StepCompletionAnimation 
+      {/* Fireworks Animation */}
+      <Fireworks 
         isVisible={showFireworks} 
         onComplete={() => setShowFireworks(false)} 
       />
