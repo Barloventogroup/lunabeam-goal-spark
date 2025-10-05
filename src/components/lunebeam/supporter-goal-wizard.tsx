@@ -232,15 +232,18 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
         });
       }
 
-      // Create supporter steps
-      for (const step of supporterSteps) {
-        await stepsService.createStep(createdGoal.id, {
+      // Create supporter setup steps (in new table)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && supporterSteps.length > 0) {
+        const { supporterSetupStepsService } = await import('@/services/supporterSetupStepsService');
+        const setupStepsData = supporterSteps.map((step, index) => ({
+          goal_id: createdGoal.id,
+          supporter_id: user.id,
           title: step.title,
-          notes: step.description,
-          step_type: 'scaffolding',
-          is_required: true,
-          is_planned: true
-        });
+          description: step.description,
+          order_index: index,
+        }));
+        await supporterSetupStepsService.bulkCreateSupporterSetupSteps(setupStepsData);
       }
 
       toast({

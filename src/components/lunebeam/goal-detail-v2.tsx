@@ -32,6 +32,7 @@ import { StepChatModal } from './step-chat-modal';
 import { ProgressBar } from './progress-bar';
 import { GoalEditModal } from './goal-edit-modal';
 import { CircularProgress } from '@/components/ui/circular-progress';
+import { SupporterSetupStepsList } from './supporter-setup-steps-list';
 import type { Goal, Step, GoalProgress } from '@/types';
 
 interface GoalDetailV2Props {
@@ -361,6 +362,14 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
             <p className="text-muted-foreground capitalize">{sanitizeDescription(goal.description)}</p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Supporter Setup Steps - Only shown to supporters */}
+      {currentUser && goal.owner_id !== currentUser.id && (
+        <SupporterSetupStepsList 
+          goalId={goal.id} 
+          supporterId={currentUser.id} 
+        />
       )}
 
       {/* Steps */}
