@@ -661,10 +661,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Support context validation
         if (data.supportContext === 'alone') return true;
         if (!data.primarySupporterId || !data.primarySupporterRole) return false;
-        // If hands-on helper, must have delivery method
-        if (data.primarySupporterRole === 'hands_on_helper' && !data.supporterDeliveryMethod) {
-          return false;
-        }
         return true;
       case 8:
         // Rewards (supporters only)
