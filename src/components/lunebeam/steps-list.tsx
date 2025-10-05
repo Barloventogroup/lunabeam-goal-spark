@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreHorizontal, Edit, Hourglass, Play } from 'lucide-react';
+import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreHorizontal, Edit, Hourglass, Play, Users } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,6 +108,7 @@ export const StepsList: React.FC<StepsListProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
   const [showFireworks, setShowFireworks] = useState(false);
+  const [showSetupSteps, setShowSetupSteps] = useState(true);
   const { toast } = useToast();
 
   // Fetch substeps for all steps
@@ -148,9 +149,17 @@ export const StepsList: React.FC<StepsListProps> = ({
     }
   }, [awaitingStepUpdate]);
 
-  // Compute sorted actionable steps and split into visible + queued
-  const sortedActionableSteps = steps
-    .filter(s => (!s.type || s.type === 'action') && !s.hidden)
+  // Separate individual steps from supporter steps
+  const individualSteps = steps
+    .filter(s => (!s.type || s.type === 'action') && !s.hidden && !s.is_supporter_step)
+    .sort((a, b) => (a.order_index ?? Number.POSITIVE_INFINITY) - (b.order_index ?? Number.POSITIVE_INFINITY));
+
+  const supporterSetupSteps = steps
+    .filter(s => (!s.type || s.type === 'action') && !s.hidden && s.is_supporter_step)
+    .sort((a, b) => (a.order_index ?? Number.POSITIVE_INFINITY) - (b.order_index ?? Number.POSITIVE_INFINITY));
+
+  // Compute sorted actionable steps (individual only) and split into visible + queued
+  const sortedActionableSteps = individualSteps
     .sort((a, b) => {
       // Parse week/session for main steps
       const aWeekMatch = a.title.match(/Week (\d+)/);
@@ -197,9 +206,9 @@ export const StepsList: React.FC<StepsListProps> = ({
   // Rest are queued
   const queuedSteps = sortedActionableSteps.slice(4);
 
-  // Calculate progress including substeps
+  // Calculate progress including substeps (individual steps only)
   const calculateProgress = () => {
-    const actionableSteps = steps.filter(s => (!s.type || s.type === 'action') && !s.hidden);
+    const actionableSteps = steps.filter(s => (!s.type || s.type === 'action') && !s.hidden && !s.is_supporter_step);
     let totalCompletableItems = 0;
     let completedItems = 0;
 
@@ -949,13 +958,235 @@ export const StepsList: React.FC<StepsListProps> = ({
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-4">
-        <div className="space-y-2">
-          <CardTitle className="text-lg font-semibold text-foreground">Recommended steps</CardTitle>
-          <p className="text-sm text-muted-foreground">Here's a short list of steps and things to keep in mind as you work on your goal.</p>
-        </div>
-      </CardHeader>
+    <>
+      {/* Supporter Set Up Steps Section - Only show if there are supporter steps */}
+      {supporterSetupSteps.length > 0 && (
+        <Card className="mb-4">
+          <CardHeader 
+            className="pb-4 cursor-pointer hover:bg-muted/20 transition-colors"
+            onClick={() => setShowSetupSteps(!showSetupSteps)}
+          >
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  Set Up Steps for Supporter
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Tasks for your supporter to prepare the environment and provide assistance.
+                </p>
+              </div>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                {showSetupSteps ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </Button>
+            </div>
+          </CardHeader>
+
+          {showSetupSteps && (
+            <CardContent className="space-y-4 pb-6">
+              <div className="rounded-lg border border-gray-200 overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b border-gray-200 bg-muted/20">
+                      <TableHead className="w-8"></TableHead>
+                      <TableHead>Task</TableHead>
+                      <TableHead className="w-20">Due</TableHead>
+                      <TableHead className="w-24 text-center">Status</TableHead>
+                      <TableHead className="w-32 text-center">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {supporterSetupSteps.map((step, index) => {
+                      const stepSubsteps = substepsMap[step.id] || [];
+                      const isExpanded = expandedSteps.has(step.id);
+                      const isBlocked = isStepBlocked(step);
+                      const precursorText = getPrecursorText(step);
+                      const allSubstepsCompleted = stepSubsteps.length > 0 && stepSubsteps.every(sub => sub.completed_at);
+                      const hasBeenInitiated = !!(step as any).initiated_at;
+
+                      return (
+                        <React.Fragment key={step.id}>
+                          {/* Main step row */}
+                          <TableRow className={`border-b border-gray-200 ${isBlocked ? 'opacity-40 bg-muted/20' : 'hover:bg-muted/50'}`}>
+                            <TableCell className="p-2 w-8">
+                              {(stepSubsteps.length > 0 || step.explainer || step.notes) && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => toggleStepExpanded(step.id)}
+                                  className={`p-1 h-auto ${isBlocked ? 'text-muted-foreground/50 hover:text-muted-foreground/70' : 'text-muted-foreground hover:text-foreground'}`}
+                                >
+                                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                </Button>
+                              )}
+                            </TableCell>
+                            
+                            <TableCell className="p-2">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-sm font-medium ${isBlocked ? 'text-muted-foreground/60' : 'text-foreground'}`}>
+                                    {cleanStepTitle(step.title)}
+                                  </span>
+                                  {getStepIcon(step)}
+                                </div>
+                                {precursorText && (
+                                  <p className="text-xs text-muted-foreground italic">
+                                    {precursorText}
+                                  </p>
+                                )}
+                              </div>
+                            </TableCell>
+                            
+                            <TableCell className="p-2 text-xs text-muted-foreground">
+                              {step.due_date ? formatDate(step.due_date) : '-'}
+                            </TableCell>
+                            
+                            <TableCell className="p-2 text-center">
+                              <Badge variant={step.status === 'done' ? 'default' : step.status === 'doing' ? 'secondary' : 'outline'} className="text-xs">
+                                {step.status === 'done' ? 'Done' : step.status === 'doing' ? 'In Progress' : 'To Do'}
+                              </Badge>
+                            </TableCell>
+                            
+                            <TableCell className="p-2 text-center">
+                              <div className="flex gap-1 justify-center">
+                                {step.status !== 'done' && !allSubstepsCompleted && (
+                                  <>
+                                    {!hasBeenInitiated && (
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline"
+                                        onClick={() => handleCheckInStep(step.id)}
+                                        disabled={isBlocked}
+                                        className="h-7 px-2 text-xs"
+                                      >
+                                        <Play className="h-3 w-3 mr-1" />
+                                        Start
+                                      </Button>
+                                    )}
+                                    <Button 
+                                      size="sm" 
+                                      variant="default"
+                                      onClick={() => handleMarkComplete(step.id)}
+                                      disabled={isBlocked}
+                                      className="h-7 px-2 text-xs"
+                                    >
+                                      Complete
+                                    </Button>
+                                  </>
+                                )}
+                                
+                                {(step.status === 'done' || allSubstepsCompleted) && (
+                                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                                )}
+
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleNeedHelp(step)}>
+                                      <MessageSquare className="mr-2 h-4 w-4" />
+                                      Need help?
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => {
+                                      setCurrentEditStep(step);
+                                      setShowEditModal(true);
+                                    }}>
+                                      <Edit className="mr-2 h-4 w-4" />
+                                      Edit step
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+
+                          {/* Expanded content row */}
+                          {isExpanded && (
+                            <TableRow className="border-b border-gray-200">
+                              <TableCell colSpan={5} className="p-4 bg-muted/10">
+                                <div className="space-y-3">
+                                  {step.explainer && (
+                                    <div className="text-sm text-muted-foreground">
+                                      <strong>Explainer:</strong> {step.explainer}
+                                    </div>
+                                  )}
+                                  
+                                  {step.notes && (
+                                    <div className="text-sm text-muted-foreground">
+                                      <strong>Notes:</strong> {step.notes}
+                                    </div>
+                                  )}
+
+                                  {stepSubsteps.length > 0 && (
+                                    <div className="space-y-2">
+                                      <div className="text-sm font-medium text-foreground">Sub-steps:</div>
+                                      <div className="space-y-1.5 pl-4">
+                                        {stepSubsteps.map((substep) => (
+                                          <div key={substep.id} className="flex items-center justify-between gap-3 p-2 rounded-md bg-background/50 border border-gray-200">
+                                            <div className="flex items-center gap-2 flex-1">
+                                              {substep.completed_at ? (
+                                                <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                              ) : (
+                                                <div className="h-4 w-4 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                                              )}
+                                              <span className={`text-sm ${substep.completed_at ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                                                {cleanStepTitle(substep.title)}
+                                              </span>
+                                            </div>
+                                            {!substep.completed_at && (
+                                              <div className="flex gap-1">
+                                                {!(substep as any).initiated_at && (
+                                                <Button
+                                                  size="sm"
+                                                  variant="outline"
+                                                  onClick={() => handleCheckInSubstep(substep.id, step.id)}
+                                                  className="h-6 px-2 text-xs"
+                                                >
+                                                  <Play className="h-3 w-3 mr-1" />
+                                                  Start
+                                                </Button>
+                                              )}
+                                              <Button
+                                                size="sm"
+                                                variant="default"
+                                                onClick={() => handleCompleteSubstep(substep.id, step.id)}
+                                                className="h-6 px-2 text-xs"
+                                              >
+                                                Complete
+                                              </Button>
+                                              </div>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
+
+      {/* Individual Recommended Steps Section */}
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="space-y-2">
+            <CardTitle className="text-lg font-semibold text-foreground">Recommended steps</CardTitle>
+            <p className="text-sm text-muted-foreground">Here's a short list of steps for you to work on as you progress toward your goal.</p>
+          </div>
+        </CardHeader>
 
       <CardContent className="space-y-4 pb-6">
         <div className="rounded-lg border border-gray-200 overflow-hidden">
@@ -1275,5 +1506,8 @@ export const StepsList: React.FC<StepsListProps> = ({
         goalTitle={goal.title}
       />
     </Card>
+
+    {/* Modals outside the Card components */}
+    </>
   );
 };

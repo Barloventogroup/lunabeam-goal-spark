@@ -126,6 +126,7 @@ export interface Step {
   planned_week_index?: number;
   points_awarded?: number;
   initiated_at?: string;
+  is_supporter_step?: boolean;
   
   // Legacy fields (kept for backwards compatibility)
   hidden?: boolean;
