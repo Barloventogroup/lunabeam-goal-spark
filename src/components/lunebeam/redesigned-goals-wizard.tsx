@@ -369,7 +369,6 @@ interface WizardData {
   primarySupporterId?: string;
   primarySupporterName?: string;
   primarySupporterRole?: 'cheerleader' | 'accountability_partner' | 'hands_on_helper';
-  supporterDeliveryMethod?: string; // Only for hands_on_helper
   sendReminderToMe?: boolean; // For supporters
 
   // Step 8: Rewards (supporters only)
@@ -1302,8 +1301,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           selectedSupporters: [],
           primarySupporterId: undefined,
           primarySupporterName: undefined,
-          primarySupporterRole: undefined,
-          supporterDeliveryMethod: undefined
+          primarySupporterRole: undefined
         })}>
           <CardContent className="p-6">
             <div className="flex items-start gap-3">
@@ -1392,9 +1390,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   key={role.value} 
                   className={cn("cursor-pointer hover:shadow-md transition-all border-2", isSelected ? "border-primary bg-primary/5" : "border-border")} 
                   onClick={() => updateData({
-                    primarySupporterRole: role.value,
-                    // Clear delivery method if switching away from hands-on helper
-                    supporterDeliveryMethod: role.value === 'hands_on_helper' ? data.supporterDeliveryMethod : undefined
+                    primarySupporterRole: role.value
                   })}
                 >
                   <CardContent className="p-4">
@@ -1675,7 +1671,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
           
           {/* Coach Steps - only for hands-on helper */}
-          {data.primarySupporterRole === 'hands_on_helper' && data.supporterDeliveryMethod && generatedCoachSteps.length > 0 && <div className="space-y-3 pt-6 border-t">
+          {data.primarySupporterRole === 'hands_on_helper' && generatedCoachSteps.length > 0 && <div className="space-y-3 pt-6 border-t">
               <div>
                 <h4 className="font-semibold text-foreground flex items-center gap-2">
                   <span className="text-xl">🤝</span>
