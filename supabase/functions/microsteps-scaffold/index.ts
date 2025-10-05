@@ -24,6 +24,10 @@ interface MicroStepsRequest {
   supportedPersonName?: string; // For better supporter flow personalization
 }
 
+// Verb constraints for Step 2 activation
+const STRICT_VERBS = ['touch', 'open', 'unlock', 'tap', 'grab', 'hold', 'place', 'put on'];
+const FALLBACK_VERBS = ['walk to', 'sit at', 'lift', 'plug in', 'move to', 'pick up', 'carry'];
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -47,114 +51,149 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Build system prompt based on flow
-    const systemPrompt = buildSystemPrompt(payload.flow);
+    // EXECUTIVE FUNCTION COACH: Two-attempt iterative refinement
+    // Attempt 1: Strict verbs (most trivial activation)
+    // Attempt 2: Fallback verbs (slightly more complex but still trivial)
+    
+    let microSteps = null;
+    let attemptNumber = 1;
+    const maxAttempts = 2;
+    const verbSets = [STRICT_VERBS, FALLBACK_VERBS];
+    
+    for (attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber++) {
+      const allowedVerbs = verbSets[attemptNumber - 1];
+      console.log(`\n=== ATTEMPT ${attemptNumber}/${maxAttempts} ===`);
+      console.log(`Allowed Step 2 verbs:`, allowedVerbs.join(', '));
+      
+      // Build prompts with verb constraints
+      const systemPrompt = buildSystemPrompt(payload.flow, allowedVerbs);
+      const userPrompt = buildUserPrompt(payload, attemptNumber);
 
-    // Build user prompt with goal context
-    const userPrompt = buildUserPrompt(payload);
-
-    // Call Lovable AI Gateway
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        tools: [{
-          type: "function",
-          function: {
-            name: "generate_microsteps",
-            description: "Generate exactly 3 theory-aligned micro-steps for the goal",
-            parameters: {
-              type: "object",
-              properties: {
-                microSteps: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      title: { type: "string", maxLength: 60 },
-                      description: { type: "string", maxLength: 300 }
-                    },
-                    required: ["title", "description"]
+      try {
+        // Call Lovable AI Gateway
+        const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            tools: [{
+              type: "function",
+              function: {
+                name: "generate_microsteps",
+                description: "Generate exactly 3 theory-aligned micro-steps for the goal",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    microSteps: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          title: { type: "string", maxLength: 60 },
+                          description: { type: "string", maxLength: 300 }
+                        },
+                        required: ["title", "description"]
+                      },
+                      minItems: 3,
+                      maxItems: 3
+                    }
                   },
-                  minItems: 3,
-                  maxItems: 3
+                  required: ["microSteps"]
                 }
-              },
-              required: ["microSteps"]
-            }
+              }
+            }],
+            tool_choice: { type: "function", function: { name: "generate_microsteps" } }
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Attempt ${attemptNumber} - AI Gateway error:`, response.status, errorText);
+          
+          if (response.status === 429) {
+            return new Response(
+              JSON.stringify({ error: 'Rate limit exceeded', useFallback: true }),
+              { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
           }
-        }],
-        tool_choice: { type: "function", function: { name: "generate_microsteps" } }
-      }),
-    });
+          
+          if (response.status === 402) {
+            return new Response(
+              JSON.stringify({ error: 'Credits required', useFallback: true }),
+              { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
-      
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded', useFallback: true }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+          // Continue to next attempt on other errors
+          console.log(`Attempt ${attemptNumber} failed, trying next attempt...`);
+          continue;
+        }
+
+        const data = await response.json();
+        console.log(`Attempt ${attemptNumber} - AI response received`);
+
+        // Extract tool call result
+        const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+        if (!toolCall || toolCall.function.name !== 'generate_microsteps') {
+          console.error(`Attempt ${attemptNumber} - No valid tool call in response`);
+          continue;
+        }
+
+        const candidateSteps = JSON.parse(toolCall.function.arguments).microSteps;
+
+        if (!Array.isArray(candidateSteps) || candidateSteps.length !== 3) {
+          console.error(`Attempt ${attemptNumber} - Invalid microSteps format:`, candidateSteps);
+          continue;
+        }
+
+        // Validate quality of generated steps
+        const validation = validateMicroSteps(candidateSteps, payload, allowedVerbs);
+        if (!validation.valid) {
+          console.error(`Attempt ${attemptNumber} - Quality validation failed:`, validation.errors);
+          
+          // If this is not the last attempt, try again
+          if (attemptNumber < maxAttempts) {
+            console.log(`Retrying with fallback verbs...`);
+            continue;
+          }
+          
+          // Last attempt failed
+          console.error('All attempts exhausted. Validation errors:', validation.errors);
+          break;
+        }
+
+        // SUCCESS! Valid steps generated
+        microSteps = candidateSteps;
+        console.log(`✅ Attempt ${attemptNumber} succeeded with valid micro-steps`);
+        break;
+
+      } catch (error) {
+        console.error(`Attempt ${attemptNumber} - Exception:`, error);
+        if (attemptNumber < maxAttempts) {
+          console.log(`Retrying with fallback verbs...`);
+          continue;
+        }
       }
-      
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Credits required', useFallback: true }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({ error: 'AI generation failed', useFallback: true }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
-
-    const data = await response.json();
-    console.log('AI response:', JSON.stringify(data));
-
-    // Extract tool call result
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall || toolCall.function.name !== 'generate_microsteps') {
-      console.error('No valid tool call in response');
+    
+    // Check if we got valid steps
+    if (!microSteps) {
+      console.error('Failed to generate valid micro-steps after all attempts');
       return new Response(
-        JSON.stringify({ error: 'Invalid AI response', useFallback: true }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const microSteps = JSON.parse(toolCall.function.arguments).microSteps;
-
-    if (!Array.isArray(microSteps) || microSteps.length !== 3) {
-      console.error('Invalid microSteps format:', microSteps);
-      return new Response(
-        JSON.stringify({ error: 'Invalid micro-steps format', useFallback: true }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Validate quality of generated steps
-    const validation = validateMicroSteps(microSteps, payload);
-    if (!validation.valid) {
-      console.error('Quality validation failed:', validation.errors);
-      return new Response(
-        JSON.stringify({ error: 'Quality validation failed', useFallback: true }),
+        JSON.stringify({ error: 'All AI generation attempts failed validation', useFallback: true }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     return new Response(
-      JSON.stringify({ microSteps }),
+      JSON.stringify({ microSteps, attemptUsed: attemptNumber }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
@@ -167,7 +206,7 @@ Deno.serve(async (req) => {
   }
 });
 
-function buildSystemPrompt(flow: 'individual' | 'supporter'): string {
+function buildSystemPrompt(flow: 'individual' | 'supporter', allowedVerbs: string[]): string {
   return `You are a highly specialized micro-step generator for neurodivergent individuals. Your task is to generate exactly three, specific, non-judgmental action steps designed to compensate for Executive Function deficits.
 
 FRAMEWORK RULES:
@@ -182,6 +221,10 @@ Examples:
 - ❌ "Prepare your workspace" → ✅ "Gather your Spanish flashcards and notebook"
 - ❌ "Tap the app icon" → ✅ "Tap the Duolingo app icon"
 - ❌ "Work for 20 minutes" → ✅ "Practice 10 Spanish verbs for 20 minutes"
+
+**STEP 2 ACTIVATION VERB CONSTRAINTS (THIS ATTEMPT):**
+For Step 2, you MUST use ONLY these verbs: ${allowedVerbs.join(', ')}
+DO NOT use: search, browse, research, find, read, write, call, text, login, boot, power on
 
 ---
 ${flow === 'individual' ? `
@@ -219,8 +262,8 @@ Step 2: ACTIVATION CUE (AT EXACTLY [startTime])
 - **Purpose**: Trivial activation to defeat the inertia barrier.
 - **Constraint**: The physical action must take **< 15 seconds** to complete. It must be an initial touch, tap, or switch.
 - **MUST REFERENCE**: The specific tool, app, or material for [Goal Title]
-- **Allowed actions**: touch, open, unlock, tap (app icon), grab, hold, place, put on
-- **Examples**: 
+- **CRITICAL CONSTRAINT FOR THIS ATTEMPT**: You MUST use ONLY these verbs for Step 2: ${allowedVerbs.join(', ')}
+- **Examples**:
   * Goal: "Practice Spanish" → "At 7:00 PM Friday, tap the Duolingo app icon."
   * Goal: "Study algebra" → "At 8:00 AM Friday, open your algebra textbook to chapter 3."
   * Goal: "Learn guitar" → "At 6:30 PM Tuesday, pick up your guitar."
@@ -271,7 +314,8 @@ Step 2: CUE DELIVERY (AT EXACTLY [startTime])
 - **Purpose**: Serve as the human prompt to initiate the activation step.
 - **Action**: What the supporter says or does to trigger the individual's Step 2. Use language appropriate for the [Supporter Role].
 - **MUST REFERENCE**: The specific tool/app/material for [Goal Title]
-- **Examples**: 
+- **CRITICAL CONSTRAINT FOR THIS ATTEMPT**: The action you suggest must use ONLY these verbs: ${allowedVerbs.join(', ')}
+- **Examples**:
   * Goal: "Study algebra" + Parent: "At 6:30 PM, hand them the pencil and say: 'Just touch the algebra textbook for 15 seconds.'"
   * Goal: "Practice Spanish" + Coach: "At 7:00 PM, text them: 'Time to tap the Duolingo app icon!'"
   * Goal: "Write a story" + Friend: "At 8:00 AM, send a message: 'Hey! Just open your writing notebook real quick.'"
@@ -343,7 +387,7 @@ FORMAT:
 - Use domain-specific language from the goal (e.g., "chapter 3", "team practice times")`;
 }
 
-function buildUserPrompt(payload: MicroStepsRequest): string {
+function buildUserPrompt(payload: MicroStepsRequest, attemptNumber: number = 1): string {
   let prerequisiteContext = '';
   
   if (payload.hasPrerequisite && payload.prerequisiteText) {
@@ -374,6 +418,10 @@ function buildUserPrompt(payload: MicroStepsRequest): string {
     }
   }
 
+  const attemptNote = attemptNumber > 1 
+    ? `\n\n🔄 **RETRY ATTEMPT ${attemptNumber}**: Previous attempt failed validation. You now have MORE FLEXIBILITY with Step 2 verbs. Use this opportunity to create slightly less trivial but still simple activation actions.`
+    : '';
+
   return `Generate 3 micro-steps for this goal:
 
 **Goal**: ${payload.goalTitle}
@@ -395,12 +443,16 @@ ${payload.barrierContext}
 - If they mention "noise sensitivity" → Include environmental prep in Step 1 (e.g., "Place noise-canceling headphones on desk")
 - If they mention "visual learner" → Include visual elements in Step 3 (e.g., "Draw a simple flowchart with 3 boxes")
 - If they mention "freezing when staring at X" → Step 2 should bypass that exact screen (e.g., "Tap icon—it will auto-load last lesson")
-` : ''}
+` : ''}${attemptNote}
 
 Generate exactly 3 micro-steps following the ${payload.flow.toUpperCase()} FLOW structure. Pay special attention to the [Secondary Challenge] when creating Step 3.`;
 }
 
-function validateMicroSteps(steps: { title: string; description: string }[], payload?: MicroStepsRequest): { valid: boolean; errors: string[] } {
+function validateMicroSteps(
+  steps: { title: string; description: string }[], 
+  payload?: MicroStepsRequest,
+  allowedVerbs?: string[]
+): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   const forbiddenWords = ['initiation', 'barrier', 'scaffolding', 'activation cue'];
   const step2BannedVerbs = ['search', 'browse', 'research', 'find', 'read', 'write', 'call', 'text', 'login', 'boot'];
@@ -415,6 +467,55 @@ function validateMicroSteps(steps: { title: string; description: string }[], pay
         errors.push(`Step ${i+1} contains clinical jargon: "${word}"`);
       }
     });
+    
+    // Step 2 validations - check against allowed verbs if provided
+    if (i === 1) {
+      // Check for banned verbs
+      step2BannedVerbs.forEach(verb => {
+        if (text.includes(verb)) {
+          errors.push(`Step 2 contains banned verb: "${verb}"`);
+        }
+      });
+      
+      // Check for banned phrases
+      step2BannedPhrases.forEach(phrase => {
+        if (text.includes(phrase)) {
+          errors.push(`Step 2 contains banned phrase: "${phrase}"`);
+        }
+      });
+      
+      // If allowedVerbs provided, enforce strict verb matching
+      if (allowedVerbs && allowedVerbs.length > 0) {
+        const hasAllowedVerb = allowedVerbs.some(verb => text.includes(verb.toLowerCase()));
+        if (!hasAllowedVerb) {
+          errors.push(`Step 2 must use one of the allowed verbs: ${allowedVerbs.join(', ')}`);
+        }
+      }
+      
+      // Check for barrier context-specific requirements
+      if (payload?.barrierContext) {
+        const contextLower = payload.barrierContext.toLowerCase();
+        
+        // If context mentions noise/environmental issues, Step 1 should address it
+        if (i === 0) {
+          const environmentalKeywords = ['noise', 'quiet', 'lighting', 'clutter', 'space', 'environment'];
+          const needsEnvironmental = environmentalKeywords.some(kw => contextLower.includes(kw));
+          if (needsEnvironmental) {
+            const step1Text = steps[0]?.description.toLowerCase() || '';
+            const addressesEnvironment = environmentalKeywords.some(kw => step1Text.includes(kw));
+            if (!addressesEnvironment) {
+              console.log('Suggestion: Step 1 could address environmental setup mentioned in barrier context');
+            }
+          }
+        }
+        
+        // If context mentions "freezing" or "blank page", Step 2 should be extra trivial
+        if (contextLower.includes('freeze') || contextLower.includes('blank page') || contextLower.includes('overwhelm')) {
+          // Step 2 should be even simpler - this is just a suggestion log
+          console.log('Note: Barrier context mentions freezing/overwhelm - Step 2 should be maximally trivial');
+        }
+      }
+    }
     
     // NEW: Validate Step 1 if prerequisite involves uncertainty
     if (i === 0 && payload?.prerequisiteText) {
