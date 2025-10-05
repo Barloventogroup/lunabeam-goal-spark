@@ -569,6 +569,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
       case 6: return renderStep6();
       case 7: return renderStep7();
       case 8: return renderStep8();
+      case 9: return renderStep9();
       default: return null;
     }
   };
@@ -610,7 +611,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
             </Button>
           )}
 
-          {currentStep < 8 ? (
+          {currentStep < 9 ? (
             <Button onClick={nextStep} disabled={!canProceed() || generatingSteps}>
               {generatingSteps ? (
                 <>
