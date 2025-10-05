@@ -63,7 +63,10 @@ verify_jwt = true
 [functions.ai-coach]
 verify_jwt = true
 
-[functions.microsteps-scaffold]
+[functions.individual-microsteps]
+verify_jwt = false
+
+[functions.supporter-setup-steps]
 verify_jwt = false
 
 # Make the invitation email functions public (no JWT required)

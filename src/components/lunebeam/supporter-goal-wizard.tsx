@@ -167,49 +167,41 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
   const generateBothStepSets = async () => {
     setGeneratingSteps(true);
     try {
-      // Generate individual steps
-      const individualMicroSteps = await generateMicroStepsSmart(data as any, 'supporter');
+      // Generate individual steps (for the supported person)
+      const individualMicroSteps = await generateMicroStepsSmart(data as any, 'individual');
       setIndividualSteps(individualMicroSteps);
 
-      // Generate supporter steps via edge function
-      const { data: supporterData, error } = await supabase.functions.invoke(
-        'microsteps-scaffold',
-        {
-          body: {
-            flow: 'supporter',
-            goalTitle: data.goalTitle,
-            category: data.category,
-            motivation: data.goalMotivation || 'independence',
-            startDayOfWeek: format(data.startDate, 'EEEE'),
-            startTime: data.customTime || '18:00',
-            startDateTime: data.startDate.toISOString(),
-            hasPrerequisite: !!data.customPrerequisites,
-            prerequisiteText: data.customPrerequisites || '',
-            prerequisiteIsConcrete: true,
-            barrier1: data.barriers?.[0] || 'Getting started',
-            barrier2: data.barriers?.[1] || 'Focus',
-            supportedPersonName: data.supportedPersonName
-          }
-        }
-      );
+      // Generate supporter setup steps (for the supporter)
+      const { AIService } = await import('@/services/aiService');
+      const supporterResponse = await AIService.getSupporterSetupSteps({
+        goalTitle: data.goalTitle,
+        category: data.category,
+        motivation: data.goalMotivation || 'independence',
+        supportedPersonName: data.supportedPersonName,
+        startDayOfWeek: format(data.startDate, 'EEEE'),
+        startTime: data.customTime || '18:00',
+        startDateTime: data.startDate.toISOString(),
+        hasPrerequisite: !!data.customPrerequisites,
+        prerequisiteText: data.customPrerequisites || '',
+        barrier1: data.barriers?.[0] || 'Getting started',
+        barrier2: data.barriers?.[1] || 'Focus'
+      });
 
-      if (error) {
-        console.error('Error generating supporter steps:', error);
-        toast({
-          title: "Could not generate supporter steps",
-          description: "Using fallback templates for supporter actions.",
-          variant: "default"
-        });
+      if (supporterResponse.error) {
+        throw new Error(supporterResponse.error);
       }
-      setSupporterSteps(supporterData?.microSteps || []);
+
+      setSupporterSteps(supporterResponse.steps || []);
 
     } catch (error) {
       console.error('Error generating steps:', error);
       toast({
-        title: "Using fallback templates",
-        description: "Could not personalize all steps.",
-        variant: "default"
+        title: "Could not generate steps",
+        description: "Please try rephrasing your goal or breaking it into smaller pieces.",
+        variant: "destructive"
       });
+      // Don't proceed - user needs to try again
+      setCurrentStep(7); // Stay on current step
     } finally {
       setGeneratingSteps(false);
     }
