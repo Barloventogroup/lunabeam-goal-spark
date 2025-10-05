@@ -1049,56 +1049,50 @@ export const StepsList: React.FC<StepsListProps> = ({
                             
                             <TableCell className="p-2 text-center">
                               <div className="flex gap-1 justify-center">
-                                {step.status !== 'done' && !allSubstepsCompleted && (
-                                  <>
-                                    {!hasBeenInitiated && (
+                                {!isStepDone(step) && !isBlocked && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
                                       <Button 
+                                        variant="ghost" 
                                         size="sm" 
-                                        variant="outline"
-                                        onClick={() => handleCheckInStep(step.id)}
-                                        disabled={isBlocked}
-                                        className="h-7 px-2 text-xs"
+                                        className="h-7 w-7 p-0 hover:bg-muted"
                                       >
-                                        <Play className="h-3 w-3 mr-1" />
-                                        Start
+                                        <MoreHorizontal className="h-4 w-4" />
                                       </Button>
-                                    )}
-                                    <Button 
-                                      size="sm" 
-                                      variant="default"
-                                      onClick={() => handleMarkComplete(step.id)}
-                                      disabled={isBlocked}
-                                      className="h-7 px-2 text-xs"
-                                    >
-                                      Complete
-                                    </Button>
-                                  </>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="bg-background border border-border shadow-lg z-50">
+                                      {!hasBeenInitiated && (
+                                        <DropdownMenuItem onClick={() => handleCheckInStep(step.id)}>
+                                          <Play className="h-4 w-4 mr-2" />
+                                          Check In / Start Working
+                                        </DropdownMenuItem>
+                                      )}
+                                      <DropdownMenuItem onClick={() => {
+                                        if (stepSubsteps.length > 0 && !allSubstepsCompleted) {
+                                          const proceed = window.confirm('Some substeps are not complete. Mark this step complete anyway?');
+                                          if (!proceed) return;
+                                        }
+                                        handleMarkComplete(step.id);
+                                      }}>
+                                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                                        Mark Complete
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => {
+                                        setCurrentEditStep(step);
+                                        setShowEditModal(true);
+                                      }}>
+                                        <Edit className="h-4 w-4 mr-2" />
+                                        Edit
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 )}
-                                
+                                {isBlocked && (
+                                  <span className="text-xs text-muted-foreground/70 px-2">Not available yet</span>
+                                )}
                                 {(step.status === 'done' || allSubstepsCompleted) && (
                                   <CheckCircle2 className="h-5 w-5 text-green-600" />
                                 )}
-
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleNeedHelp(step)}>
-                                      <MessageSquare className="mr-2 h-4 w-4" />
-                                      Need help?
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => {
-                                      setCurrentEditStep(step);
-                                      setShowEditModal(true);
-                                    }}>
-                                      <Edit className="mr-2 h-4 w-4" />
-                                      Edit step
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
                               </div>
                             </TableCell>
                           </TableRow>
