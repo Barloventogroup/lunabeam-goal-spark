@@ -615,7 +615,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }
 
         // Always generate individual steps first
-        const individualSteps = await generateMicroStepsSmart(enrichedData as any, 'individual');
+        const individualEnrichedData = {
+          ...enrichedData,
+          supporterName: data.primarySupporterName // Pass supporter name for individual flow
+        };
+        const individualSteps = await generateMicroStepsSmart(individualEnrichedData as any, 'individual');
         setGeneratedMicroSteps(individualSteps);
         console.info('[Wizard] Generated individual steps:', individualSteps.length);
 

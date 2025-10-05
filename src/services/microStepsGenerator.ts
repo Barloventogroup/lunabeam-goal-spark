@@ -35,6 +35,7 @@ interface WizardData {
   challengeAreas?: string[];
   barrierContext?: string;
   supportedPersonName?: string;
+  supporterName?: string;
   goalType?: string;
 }
 
@@ -288,6 +289,7 @@ export async function generateMicroStepsSmart(
       barrier2,
       barrierContext: data.barrierContext || '',
       supportedPersonName: data.supportedPersonName || '',
+      supporterName: data.supporterName || '',
     };
 
     const { microSteps, error, useFallback } = await AIService.getMicroSteps(payload);

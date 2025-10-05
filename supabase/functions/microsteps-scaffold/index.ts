@@ -22,6 +22,7 @@ interface MicroStepsRequest {
   barrier2: string;
   barrierContext?: string; // Specific details about how challenges manifest
   supportedPersonName?: string; // For better supporter flow personalization
+  supporterName?: string; // For individual flow - name of the person helping
   supporterTimingOffset?: string; // e.g., "2 hours before", "by 8:00 AM on" - for supporter preparation
 }
 
@@ -235,6 +236,7 @@ Step 1: PREPARATION (BEFORE [startTime])
 - **Purpose**: Address the [Prerequisite Text] if it exists, otherwise, generate a simple, non-mandatory organization step.
 - **Action**: 1-2 CONCRETE actions to obtain/prepare the workspace *before* the start time.
 - **MUST REFERENCE**: Specific tools, materials, or resources needed for [Goal Title]
+- **SUPPORTER REFERENCE**: When [supporterName] is provided, use it when asking for help instead of generic "trusted adult" or "someone"
 
 **PREREQUISITE HANDLING RULES:**
 
@@ -242,21 +244,23 @@ Step 1: PREPARATION (BEFORE [startTime])
   - Step 1 should focus on OBTAINING that specific item
   - Include WHERE to get it (store name, online, location)
   - Include WHEN (by [specific day before start day])
+  - **If help is needed**: Use [supporterName] if provided: "By Thursday, ask [supporterName] to..."
   - Examples:
-    * "guitar picks" → "By Thursday, buy guitar picks at Guitar Center or order online from Amazon ($5-10)"
+    * "guitar picks" + supporterName="Carlos" → "By Thursday, ask Carlos to buy guitar picks at Guitar Center or order online from Amazon ($5-10)"
     * "algebra textbook" → "By Wednesday, borrow algebra textbook from school library or ask teacher for a copy"
     * "clear desk space" → "By Thursday evening, clear your desk: move 3 items to storage box, place the box on shelf"
 
 **IF [prerequisiteIsConcrete] = false** (Vague/uncertain like "not sure where to find..."):
   - Step 1 becomes a RESEARCH/DISCOVERY step
   - MUST include specific search actions + specific people to ask
+  - **CRITICAL**: If [supporterName] is provided, use it as the first person to ask: "ask [supporterName] AND search..."
   - MUST result in a list/decision
   - Examples:
-    * "not sure where to find guitar teacher" → "By Wednesday, ask your music teacher AND search 'guitar lessons near me'. Write down 3 options with prices."
-    * "don't know what equipment I need" → "By Thursday, text 2 people who do [activity] and ask: 'What do I need to start?' Make a list."
+    * "not sure where to find guitar teacher" + supporterName="Carlos" → "By Wednesday, ask Carlos for recommendations AND search 'guitar lessons near me'. Write down 3 options with prices."
+    * "don't know what equipment I need" + supporterName="Maria" → "By Thursday, ask Maria: 'What do I need to start?' AND text 1 other person. Make a list."
 
 - **Examples**: 
-  * Goal: "Practice Spanish" + Concrete: "Spanish flashcards" → "By Thursday, buy Spanish verb flashcards at Target or order from Amazon. Place them on your desk."
+  * Goal: "Practice Spanish" + Concrete: "Spanish flashcards" + supporterName="Carlos" → "By Thursday, ask Carlos to buy Spanish verb flashcards at Target or order from Amazon. Place them on your desk."
   * Goal: "Learn guitar" + Uncertain: "not sure what type of guitar" → "By Wednesday, watch 1 YouTube video: 'Beginner guitars for teens'. Write down 2 guitar types that interest you."
 
 Step 2: ACTIVATION CUE (AT EXACTLY [startTime])
@@ -440,6 +444,7 @@ function buildUserPrompt(payload: MicroStepsRequest, attemptNumber: number = 1):
 **Start Day (startDayOfWeek)**: ${payload.startDayOfWeek}
 **Start Time (startTime)**: ${payload.startTime}
 **Flow**: ${payload.flow}
+${payload.flow === 'individual' && payload.supporterName ? `**Supporter's Name**: ${payload.supporterName} (Use this name when asking for help instead of "trusted adult" or "someone")` : ''}
 ${payload.flow === 'supporter' && payload.supportedPersonName ? `**Individual's Name**: ${payload.supportedPersonName}` : ''}
 ${payload.flow === 'supporter' && payload.supporterTimingOffset ? `**[Supporter Timing Offset]**: ${payload.supporterTimingOffset}
 
