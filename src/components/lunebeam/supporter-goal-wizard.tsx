@@ -36,6 +36,7 @@ interface WizardData {
   goalMotivation: string;
   goalType: string;
   challengeAreas: string[];
+  barriers?: string[];
   customPrerequisites: string;
   startDate: Date;
   endDate?: Date;
@@ -172,22 +173,35 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
 
       // Generate supporter steps via edge function
       const { data: supporterData, error } = await supabase.functions.invoke(
-        'supporter-microsteps-scaffold',
+        'microsteps-scaffold',
         {
           body: {
-            individualName: data.supportedPersonName,
-            prerequisiteDetail: data.customPrerequisites || 'necessary tools',
-            primaryMotivation: data.goalMotivation || 'independence',
+            flow: 'supporter',
+            goalTitle: data.goalTitle,
+            category: data.category,
+            motivation: data.goalMotivation || 'independence',
+            startDayOfWeek: format(data.startDate, 'EEEE'),
             startTime: data.customTime || '18:00',
-            startDay: format(data.startDate, 'EEEE'),
-            supporterRole: data.supporterRole,
-            goalTitle: data.goalTitle
+            startDateTime: data.startDate.toISOString(),
+            hasPrerequisite: !!data.customPrerequisites,
+            prerequisiteText: data.customPrerequisites || '',
+            prerequisiteIsConcrete: true,
+            barrier1: data.barriers?.[0] || 'Getting started',
+            barrier2: data.barriers?.[1] || 'Focus',
+            supportedPersonName: data.supportedPersonName
           }
         }
       );
 
-      if (error) throw error;
-      setSupporterSteps(supporterData.supporterSteps || []);
+      if (error) {
+        console.error('Error generating supporter steps:', error);
+        toast({
+          title: "Could not generate supporter steps",
+          description: "Using fallback templates for supporter actions.",
+          variant: "default"
+        });
+      }
+      setSupporterSteps(supporterData?.microSteps || []);
 
     } catch (error) {
       console.error('Error generating steps:', error);
