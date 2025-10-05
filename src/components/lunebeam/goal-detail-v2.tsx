@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { goalsService, stepsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import { supabase } from '@/integrations/supabase/client';
+import { generateMicroStepsSmart } from '@/services/microStepsGenerator';
 import { StepsList } from './steps-list';
 import { StepsChat } from './steps-chat';
 import { StepChatModal } from './step-chat-modal';
@@ -51,11 +52,20 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [ownerProfile, setOwnerProfile] = useState<any>(null);
   const [creatorProfile, setCreatorProfile] = useState<any>(null);
+  const [generatingSteps, setGeneratingSteps] = useState(false);
+  const [generationError, setGenerationError] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     loadGoalData();
   }, [goalId]);
+
+  useEffect(() => {
+    // Auto-generate steps for new goals
+    if (goal && steps.length === 0 && (goal as any).metadata?.wizardContext && !generatingSteps && !generationError) {
+      generateStepsForNewGoal();
+    }
+  }, [goal, steps]);
 
   const calculateProgress = (goalSteps: Step[]): GoalProgress => {
     const actionableSteps = goalSteps.filter(s => (!s.type || s.type === 'action') && !s.hidden && s.status !== 'skipped');
@@ -230,6 +240,102 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     return out;
   };
 
+  const generateStepsForNewGoal = async () => {
+    const goalMetadata = (goal as any)?.metadata;
+    if (!goalMetadata?.wizardContext) return;
+    
+    setGeneratingSteps(true);
+    setGenerationError(false);
+    
+    try {
+      const wizardData = goalMetadata.wizardContext;
+      
+      // Build enriched data for step generation
+      const enrichedData = {
+        goalTitle: wizardData.goalTitle,
+        goalMotivation: wizardData.goalMotivation,
+        customMotivation: wizardData.customMotivation,
+        goalType: wizardData.goalType,
+        challengeAreas: wizardData.challengeAreas,
+        customChallenges: wizardData.customChallenges,
+        prerequisite: wizardData.prerequisite,
+        startDate: wizardData.startDate,
+        timeOfDay: wizardData.timeOfDay,
+        customTime: wizardData.customTime,
+        supportContext: wizardData.supportContext,
+        primarySupporterName: wizardData.primarySupporterName,
+        primarySupporterRole: wizardData.primarySupporterRole
+      };
+      
+      // Generate individual steps
+      const individualEnrichedData = {
+        ...enrichedData,
+        supporterName: wizardData.primarySupporterName
+      };
+      
+      const individualSteps = await generateMicroStepsSmart(individualEnrichedData, 'individual');
+      
+      // Save individual steps
+      for (const microStep of individualSteps) {
+        await stepsService.createStep(goal!.id, {
+          title: microStep.title,
+          step_type: 'action',
+          is_required: true,
+          estimated_effort_min: 15,
+          is_planned: true,
+          notes: microStep.description,
+          is_supporter_step: false
+        });
+      }
+      
+      // Generate supporter steps if needed
+      if (wizardData.primarySupporterRole === 'hands_on_helper') {
+        const startHour = parseInt(wizardData.customTime?.split(':')[0] || wizardData.timeOfDay?.split(':')[0] || '20');
+        const supporterTimingOffset = startHour <= 10 ? 'by 8:00 AM on' : '2 hours before';
+        
+        const supporterEnrichedData = {
+          ...enrichedData,
+          supporterTimingOffset
+        };
+        
+        const supporterSteps = await generateMicroStepsSmart(supporterEnrichedData, 'supporter');
+        
+        // Save supporter steps
+        for (const coachStep of supporterSteps) {
+          await stepsService.createStep(goal!.id, {
+            title: coachStep.title,
+            step_type: 'action',
+            is_required: true,
+            estimated_effort_min: 10,
+            is_planned: true,
+            notes: coachStep.description,
+            is_supporter_step: true
+          });
+        }
+      }
+      
+      // Reload steps
+      await loadGoalData();
+      
+      toast({
+        title: "Micro-steps ready! 🎯",
+        description: "Your personalized steps have been generated."
+      });
+      
+    } catch (error) {
+      console.error('Failed to generate steps:', error);
+      setGenerationError(true);
+      
+      toast({
+        title: "Step generation failed",
+        description: "We couldn't generate your micro-steps at this time. Use the Generate Steps button to try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setGeneratingSteps(false);
+    }
+  };
+
   if (loading || !goal) {
     return (
       <div className="space-y-6">
@@ -243,6 +349,35 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
   return (
     <div className="min-h-screen bg-background px-4 py-6 space-y-6">
+      {/* Loading overlay for step generation */}
+      {generatingSteps && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <Card className="w-80">
+            <CardContent className="pt-6 text-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+              <div>
+                <h3 className="font-semibold text-lg">Creating your micro-steps</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  🎯 Personalizing your journey...
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Error state with retry button */}
+      {!generatingSteps && steps.length === 0 && generationError && (goal as any)?.metadata?.wizardContext && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-800 mb-3">
+            We couldn't generate your micro-steps at this time. If you want to try again, click below.
+          </p>
+          <Button onClick={generateStepsForNewGoal} variant="outline" className="w-full">
+            Generate Steps
+          </Button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-1">

@@ -92,9 +92,17 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
     setCurrentView('summary');
   };
 
-  const handleWizardGoalCreated = () => {
-    setCurrentView('list');
-    setRefreshTrigger(prev => prev + 1); // Trigger refresh when new goal created
+  const handleWizardGoalCreated = (goalData?: any) => {
+    setRefreshTrigger(prev => prev + 1);
+    
+    // If goalId is provided, navigate to goal detail
+    if (goalData?.goalId) {
+      handleNavigate('goal-detail', goalData.goalId);
+    } else {
+      // Fallback to list view
+      setCurrentView('list');
+    }
+    
     onWizardStateChange?.(false);
   };
 

@@ -415,9 +415,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [tempHour, setTempHour] = useState<string>("08");
   const [tempMinute, setTempMinute] = useState<string>("00");
   const [tempPeriod, setTempPeriod] = useState<"AM" | "PM">("AM");
-  const [generatedMicroSteps, setGeneratedMicroSteps] = useState<MicroStep[]>([]);
-  const [generatedCoachSteps, setGeneratedCoachSteps] = useState<MicroStep[]>([]);
-  const [generatingSteps, setGeneratingSteps] = useState(false);
   const {
     toast
   } = useToast();
@@ -585,78 +582,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const nextStep = async () => {
     const maxStep = isSupporter ? 9 : 8;
 
-    // Generate micro-steps when moving FROM step 7 TO step 8
-    if (currentStep === 7 && currentStep + 1 === 8) {
-      setGeneratingSteps(true);
-      try {
-        // Detect household tasks and add context hints
-        const goalTitleLower = data.goalTitle.toLowerCase();
-        const householdTasks = {
-          laundry: 'Laundry requires multiple phases: 1) Gathering dirty clothes into one basket, 2) Sorting by color (whites vs colors), 3) Loading washer with detergent, 4) Starting the wash cycle',
-          cleaning: 'Cleaning involves: 1) Gathering supplies (cleaner, cloth, trash bag), 2) Clearing surfaces or floor, 3) Wiping/sweeping/vacuuming specific area, 4) Disposing of trash',
-          cooking: 'Cooking requires: 1) Gathering ingredients and tools, 2) Preparing ingredients (wash, chop, measure), 3) Following recipe steps in order, 4) Plating and cleanup',
-          dishes: 'Washing dishes involves: 1) Clearing table and gathering dirty dishes, 2) Scraping food into trash, 3) Washing with soap and water, 4) Drying and putting away',
-          grocery: 'Grocery shopping requires: 1) Making a shopping list, 2) Getting to the store, 3) Finding items on the list, 4) Checking out and bringing groceries home'
-        };
-
-        // Add household context if detected
-        let enrichedData = { ...data };
-        for (const [task, context] of Object.entries(householdTasks)) {
-          if (goalTitleLower.includes(task)) {
-            enrichedData = {
-              ...enrichedData,
-              barrierContext: enrichedData.barrierContext 
-                ? `${enrichedData.barrierContext}. ${context}`
-                : context
-            };
-            console.info(`[Wizard] Added household task context for: ${task}`);
-            break;
-          }
-        }
-
-        // Always generate individual steps first
-        const individualEnrichedData = {
-          ...enrichedData,
-          supporterName: data.primarySupporterName // Pass supporter name for individual flow
-        };
-        const individualSteps = await generateMicroStepsSmart(individualEnrichedData as any, 'individual');
-        setGeneratedMicroSteps(individualSteps);
-        console.info('[Wizard] Generated individual steps:', individualSteps.length);
-
-        // Separately generate supporter steps if needed with timing offset
-        if (data.primarySupporterRole === 'hands_on_helper') {
-          // Calculate when supporter should prepare (2 hours before, or morning of if early start)
-          const startHour = parseInt(data.customTime?.split(':')[0] || data.timeOfDay?.split(':')[0] || '20');
-          const supporterTimingOffset = startHour <= 10 
-            ? `by 8:00 AM on` 
-            : `2 hours before`;
-          
-          const supporterEnrichedData = {
-            ...enrichedData,
-            supporterTimingOffset
-          };
-          
-          const supporterSteps = await generateMicroStepsSmart(
-            supporterEnrichedData as any, 
-            'supporter'
-          );
-          setGeneratedCoachSteps(supporterSteps);
-          console.info('[Wizard] Generated supporter steps with offset:', supporterTimingOffset);
-        }
-      } catch (error) {
-        console.error('Error generating micro-steps:', error);
-        toast({
-          title: "Using fallback templates",
-          description: "Could not personalize micro-steps. Using theory-based templates.",
-          variant: "default"
-        });
-      } finally {
-        setGeneratingSteps(false);
-      }
-    }
-    if (currentStep < maxStep) {
-      setCurrentStep(currentStep + 1);
-    }
+    setCurrentStep(currentStep + 1);
   };
   const prevStep = () => {
     const minStep = isSupporter ? 0 : 1;
@@ -760,93 +686,66 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           description: `Sent for review by ${data.supportedPersonName}'s admins.`
         });
       } else {
-        // Create goal directly
-        const createdGoal = await goalsService.createGoal(goalData);
-
-        // Save the micro-steps that were previewed to the user
-        if (generatedMicroSteps.length > 0) {
-          try {
-            for (const microStep of generatedMicroSteps) {
-              await stepsService.createStep(createdGoal.id, {
-                title: microStep.title,
-                step_type: 'action',
-                is_required: true,
-                estimated_effort_min: 15,
-                is_planned: true,
-                notes: microStep.description,
-                is_supporter_step: false
-              } as any);
-            }
-
-            // Save coach steps if they exist (hands-on helper flow)
-            if (generatedCoachSteps.length > 0 && data.primarySupporterRole === 'hands_on_helper') {
-              const { data: { user } } = await supabase.auth.getUser();
-              const isPrimarySupporterCurrentUser = data.primarySupporterId === user?.id;
-              
-              for (const coachStep of generatedCoachSteps) {
-                await stepsService.createStep(createdGoal.id, {
-                  title: coachStep.title,
-                  step_type: 'action',
-                  is_required: true,
-                  estimated_effort_min: 10,
-                  is_planned: true,
-                  notes: isPrimarySupporterCurrentUser 
-                    ? coachStep.description 
-                    : `For: ${data.primarySupporterName}\n\n${coachStep.description}`,
-                  is_supporter_step: true
-                } as any);
-              }
-            }
-          } catch (microStepError) {
-            console.error('Failed to save micro-steps:', microStepError);
-
-            // Fallback if micro-step creation failed
-            const stepCount = Math.min(data.frequency, 3);
-            const effortMinutes = data.goalTitle.match(/(\d+)\s*min/i)?.[1] || '30';
-            try {
-              for (let i = 1; i <= stepCount; i++) {
-                await stepsService.createStep(createdGoal.id, {
-                  title: `Week 1, Session ${i}: ${data.goalTitle}`,
-                  step_type: 'habit',
-                  is_required: true,
-                  estimated_effort_min: parseInt(effortMinutes),
-                  is_planned: true,
-                  notes: `Complete this session of ${data.goalTitle}. Expand for details or ask for help to break it down further.`
-                });
-              }
-            } catch (fallbackError) {
-              console.error('Fallback step creation failed:', fallbackError);
-              // Don't block goal creation if steps fail (e.g., RLS for supporters)
-              if (data.recipient === 'other') {
-                toast({
-                  title: `Goal assigned to ${data.supportedPersonName}! 🎯`,
-                  description: 'Steps will appear when they open the goal.'
-                });
-                return; // Exit early to avoid duplicate toast
-              }
+        // Create goal directly with metadata
+        const {data: {user: currentUser}} = await supabase.auth.getUser();
+        const finalOwnerId = data.recipient === 'other' ? data.supportedPersonId : currentUser?.id;
+        
+        const goalDataWithMetadata = {
+          title: data.goalTitle,
+          description: buildGoalDescription(),
+          domain: mapCategoryToDomain(data.category) as GoalDomain,
+          status: 'active' as const,
+          priority: 'medium' as const,
+          frequency_per_week: data.frequency,
+          duration_weeks: 4,
+          start_date: format(data.startDate, 'yyyy-MM-dd'),
+          due_date: data.endDate ? format(data.endDate, 'yyyy-MM-dd') : undefined,
+          owner_id: finalOwnerId,
+          created_by: currentUser?.id,
+          tags: data.challengeAreas || [],
+          metadata: {
+            wizardContext: {
+              goalTitle: data.goalTitle,
+              goalMotivation: data.goalMotivation,
+              customMotivation: data.customMotivation,
+              goalType: data.goalType,
+              challengeAreas: data.challengeAreas,
+              customChallenges: data.customChallenges,
+              prerequisite: data.customPrerequisites,
+              startDate: data.startDate,
+              timeOfDay: data.timeOfDay,
+              customTime: data.customTime,
+              supportContext: data.supportContext,
+              selectedSupporters: data.selectedSupporters,
+              primarySupporterId: data.primarySupporterId,
+              primarySupporterName: data.primarySupporterName,
+              primarySupporterRole: data.primarySupporterRole,
+              allyRoles: data.allyRoles,
+              supportedPersonName: data.supportedPersonName,
+              supportedPersonId: data.supportedPersonId,
+              recipient: data.recipient
             }
           }
-        }
+        };
+
+        const createdGoal = await goalsService.createGoal(goalDataWithMetadata);
+
         toast({
           title: data.recipient === 'self' ? 'Goal created! 🎯' : `Goal assigned to ${data.supportedPersonName}! 🎯`,
-          description: 'Ready to start making progress!'
+          description: 'Your personalized micro-steps are being generated.'
         });
+        
+        // Celebration animation
+        setTimeout(() => {
+          onComplete({
+            success: true,
+            goalTitle: data.goalTitle,
+            finalOwnerId,
+            isSupporter: data.recipient === 'other',
+            goalId: createdGoal.id
+          });
+        }, 500);
       }
-
-      // Celebration animation
-      setTimeout(() => {
-        onComplete({
-          title: data.goalTitle,
-          description: data.goalTitle,
-          // Use title as description for now
-          category: data.category,
-          frequency_per_week: data.frequency,
-          duration_weeks: Math.ceil(data.endDate ? (data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24 * 7) : 8),
-          start_date: data.startDate.toISOString().split('T')[0],
-          due_date: data.endDate?.toISOString().split('T')[0],
-          assignedTo: data.recipient === 'other' ? data.supportedPersonId : undefined
-        });
-      }, 1000);
     } catch (error) {
       console.error('Failed to create goal:', error);
       toast({
@@ -1671,52 +1570,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             )}
           </div>
           
-          {/* First Micro-steps Preview */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-foreground">
-              {data.recipient === 'other' && data.supportedPersonName ? `This is how ${data.supportedPersonName} gets started` : 'This is how you get started'}
-            </h4>
-            <div className="space-y-2">
-              {generatedMicroSteps.length > 0 ? generatedMicroSteps.map((step, index) => <div key={index} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
-                    <div className="w-7 h-7 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-medium text-primary">{index + 1}</span>
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <h4 className="text-sm font-medium text-foreground">{cleanStepTitle(step.title)}</h4>
-                      <span className="text-xs text-muted-foreground block">{step.description}</span>
-                    </div>
-                  </div>) : <p className="text-sm text-muted-foreground">Generating personalized first steps...</p>}
-            </div>
+          {/* Message about step generation */}
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mt-6">
+            <p className="text-sm text-blue-800 text-center">
+              ✨ Once you confirm, we'll generate personalized micro-steps to help you get started!
+            </p>
           </div>
-          
-          {/* Coach Steps - only for hands-on helper */}
-          {data.primarySupporterRole === 'hands_on_helper' && generatedCoachSteps.length > 0 && <div className="space-y-3 pt-6 border-t">
-              <div>
-                <h4 className="font-semibold text-foreground flex items-center gap-2">
-                  <span className="text-xl">🤝</span>
-                  Supporter setup steps
-                  {data.primarySupporterName && (
-                    <span className="text-muted-foreground font-normal">
-                      for {data.primarySupporterName}
-                    </span>
-                  )}
-                </h4>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Actions for {data.primarySupporterName} to support {data.recipient === 'other' ? data.supportedPersonName : 'you'}
-                </p>
-              </div>
-              <div className="space-y-2">
-                {generatedCoachSteps.map((step, index) => <div key={index} className="flex items-start gap-3 p-3 bg-accent/30 rounded-lg border border-accent">
-                      <div className="w-7 h-7 bg-accent rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs font-medium text-accent-foreground">{index + 1}</span>
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <h4 className="text-sm font-medium text-foreground">{cleanStepTitle(step.title)}</h4>
-                        <span className="text-xs text-muted-foreground block">{step.description}</span>
-                      </div>
-                    </div>)}
-              </div>
-            </div>}
           
           {isProposal && <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800">

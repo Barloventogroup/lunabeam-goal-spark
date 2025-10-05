@@ -428,6 +428,7 @@ export type Database = {
           frequency_per_week: number | null
           goal_completion_bonus: number | null
           id: string
+          metadata: Json | null
           owner_id: string
           planned_milestones_count: number | null
           planned_scaffold_count: number | null
@@ -456,6 +457,7 @@ export type Database = {
           frequency_per_week?: number | null
           goal_completion_bonus?: number | null
           id?: string
+          metadata?: Json | null
           owner_id: string
           planned_milestones_count?: number | null
           planned_scaffold_count?: number | null
@@ -484,6 +486,7 @@ export type Database = {
           frequency_per_week?: number | null
           goal_completion_bonus?: number | null
           id?: string
+          metadata?: Json | null
           owner_id?: string
           planned_milestones_count?: number | null
           planned_scaffold_count?: number | null
@@ -939,6 +942,59 @@ export type Database = {
           supporter_setup_token?: string | null
         }
         Relationships: []
+      }
+      supporter_setup_steps: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          estimated_effort_min: number | null
+          goal_id: string
+          id: string
+          order_index: number
+          status: string
+          supporter_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          estimated_effort_min?: number | null
+          goal_id: string
+          id?: string
+          order_index?: number
+          status?: string
+          supporter_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          estimated_effort_min?: number | null
+          goal_id?: string
+          id?: string
+          order_index?: number
+          status?: string
+          supporter_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supporter_setup_steps_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       supporters: {
         Row: {
