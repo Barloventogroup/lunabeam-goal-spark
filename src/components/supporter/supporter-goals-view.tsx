@@ -25,10 +25,12 @@ interface Goal {
 
 interface SupporterGoalsViewProps {
   selectedIndividualId?: string;
+  onNavigate?: (view: string, goalId?: string) => void;
 }
 
 export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
-  selectedIndividualId
+  selectedIndividualId,
+  onNavigate
 }) => {
   const { user } = useAuth();
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -206,7 +208,11 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
       ) : (
         <div className="grid gap-4">
           {goals.map((goal) => (
-            <Card key={goal.id} className="hover:shadow-md transition-shadow">
+            <Card 
+              key={goal.id} 
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => onNavigate?.('goal-detail', goal.id)}
+            >
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {/* Header */}

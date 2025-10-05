@@ -116,7 +116,29 @@ export const StepsList: React.FC<StepsListProps> = ({
   useEffect(() => {
     const checkPermissions = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setCanGenerateSteps(!!user && (goal.owner_id === user.id || goal.created_by === user.id));
+      if (!user) {
+        setCanGenerateSteps(false);
+        return;
+      }
+
+      // Check if user owns or created the goal
+      if (goal.owner_id === user.id || goal.created_by === user.id) {
+        setCanGenerateSteps(true);
+        return;
+      }
+
+      // Check if user is a supporter with collaborator or admin permissions
+      const { data: supporterRelation } = await supabase
+        .from('supporters')
+        .select('permission_level, is_admin')
+        .eq('individual_id', goal.owner_id)
+        .eq('supporter_id', user.id)
+        .single();
+
+      const hasPermission = supporterRelation && 
+        (supporterRelation.is_admin || supporterRelation.permission_level === 'collaborator');
+      
+      setCanGenerateSteps(!!hasPermission);
     };
     checkPermissions();
   }, [goal]);
