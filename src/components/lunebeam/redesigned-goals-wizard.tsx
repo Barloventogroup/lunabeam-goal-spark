@@ -1847,10 +1847,27 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   if (isSelected) {
                     delete updatedRoles[supporter.id];
                   }
+
+                  // Auto-select primary supporter if only one is selected
+                  let primarySupporterId = data.primarySupporterId;
+                  let primarySupporterName = data.primarySupporterName;
+
+                  if (newSelection.length === 1) {
+                    // Auto-set as primary if only one supporter selected
+                    primarySupporterId = newSelection[0];
+                    primarySupporterName = userSupporters.find(s => s.id === newSelection[0])?.name;
+                  } else if (isSelected && supporter.id === data.primarySupporterId) {
+                    // Clear primary if deselecting the current primary
+                    primarySupporterId = undefined;
+                    primarySupporterName = undefined;
+                  }
+
                   updateData({
                     selectedSupporters: newSelection,
                     supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone',
-                    allyRoles: updatedRoles
+                    allyRoles: updatedRoles,
+                    primarySupporterId,
+                    primarySupporterName
                   });
                 }}>
                         <CardContent className="p-4">
