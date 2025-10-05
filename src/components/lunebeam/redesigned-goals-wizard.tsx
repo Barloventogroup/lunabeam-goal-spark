@@ -594,7 +594,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         console.info('[Wizard] Generated individual steps:', individualSteps.length);
 
         // Separately generate supporter steps if needed
-        if (data.primarySupporterRole === 'hands_on_helper' && data.supporterDeliveryMethod) {
+        if (data.primarySupporterRole === 'hands_on_helper') {
           const supporterSteps = await generateMicroStepsSmart(data as any, 'supporter');
           setGeneratedCoachSteps(supporterSteps);
           console.info('[Wizard] Generated supporter steps:', supporterSteps.length);
