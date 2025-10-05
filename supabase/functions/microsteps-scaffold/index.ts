@@ -482,12 +482,6 @@ function validateMicroSteps(steps: { title: string; description: string }[], pay
     if (titleWords > 10) {
       errors.push(`Step ${i+1} title too long (${titleWords} words) - keep under 8 words`);
     }
-    
-    // Check sentence count (1-2 sentences)
-    const sentenceCount = step.description.split(/[.!?]+/).filter(s => s.trim()).length;
-    if (sentenceCount > 3) {
-      errors.push(`Step ${i+1} has ${sentenceCount} sentences - keep to 1-2 imperative sentences`);
-    }
   });
   
   return { valid: errors.length === 0, errors };
