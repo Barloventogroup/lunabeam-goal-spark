@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit, Users, UserCheck } from 'lucide-react';
+import { format } from 'date-fns';
 import { BackButton } from '@/components/ui/back-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -258,13 +259,26 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         goalType: wizardData.goalType,
         challengeAreas: wizardData.challengeAreas,
         customChallenges: wizardData.customChallenges,
-        prerequisite: wizardData.prerequisite,
-        startDate: wizardData.startDate,
+        
+        // Fix: Map prerequisite correctly
+        hasPrerequisites: !!wizardData.prerequisite,
+        customPrerequisites: wizardData.prerequisite || '',
+        
+        // Fix: Ensure Date object
+        startDate: new Date(wizardData.startDate),
+        
         timeOfDay: wizardData.timeOfDay,
         customTime: wizardData.customTime,
         supportContext: wizardData.supportContext,
         primarySupporterName: wizardData.primarySupporterName,
-        primarySupporterRole: wizardData.primarySupporterRole
+        primarySupporterRole: wizardData.primarySupporterRole,
+        
+        // Fix: Add category (required by templates)
+        category: goal!.domain || 'general',
+        
+        // Fix: Add person names for context
+        supportedPersonName: ownerProfile?.first_name || 'them',
+        supporterName: wizardData.primarySupporterName
       };
       
       // Generate individual steps
@@ -275,42 +289,144 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       
       const individualSteps = await generateMicroStepsSmart(individualEnrichedData, 'individual');
       
-      // Save individual steps
-      for (const microStep of individualSteps) {
-        await stepsService.createStep(goal!.id, {
+      // Save individual steps with timing and dependencies
+      const savedIndividualSteps: any[] = [];
+      const goalStartDate = new Date(wizardData.startDate);
+      const startTime = wizardData.customTime || wizardData.timeOfDay || '08:00';
+      const [startHour, startMin] = startTime.split(':').map(Number);
+      goalStartDate.setHours(startHour, startMin || 0, 0, 0);
+      
+      for (let i = 0; i < individualSteps.length; i++) {
+        const microStep = individualSteps[i];
+        
+        // Calculate due date based on step position
+        let stepDueDate: Date = new Date(goalStartDate);
+        if (i === 0 && microStep.title.toLowerCase().includes('get ready by')) {
+          // Prerequisite step: due day before at 8 PM
+          stepDueDate.setDate(stepDueDate.getDate() - 1);
+          stepDueDate.setHours(20, 0, 0, 0);
+        } else if (i === 1 || microStep.title.toLowerCase().includes('at ')) {
+          // Activation step: due at exact start time
+          stepDueDate = new Date(goalStartDate);
+        } else {
+          // Follow-up steps: due 1 hour after start
+          stepDueDate = new Date(goalStartDate);
+          stepDueDate.setHours(startHour + 1, 0, 0, 0);
+        }
+        
+        const { step } = await stepsService.createStep(goal!.id, {
           title: microStep.title,
           step_type: 'action',
           is_required: true,
           estimated_effort_min: 15,
           is_planned: true,
           notes: microStep.description,
-          is_supporter_step: false
+          is_supporter_step: false,
+          due_date: stepDueDate.toISOString()
         });
+        
+        savedIndividualSteps.push(step);
+        
+        // Set dependency on previous step (if exists)
+        if (i > 0 && savedIndividualSteps[i - 1]) {
+          await supabase
+            .from('steps')
+            .update({ dependency_step_ids: [savedIndividualSteps[i - 1].id] })
+            .eq('id', step.id);
+        }
       }
       
       // Generate supporter steps if needed
       if (wizardData.primarySupporterRole === 'hands_on_helper') {
-        const startHour = parseInt(wizardData.customTime?.split(':')[0] || wizardData.timeOfDay?.split(':')[0] || '20');
-        const supporterTimingOffset = startHour <= 10 ? 'by 8:00 AM on' : '2 hours before';
+        // Parse individual's start time
+        const [startHourStr, startMinStr] = startTime.split(':');
+        const startHourNum = parseInt(startHourStr);
+        const startMinNum = parseInt(startMinStr || '0');
+        
+        // Calculate supporter prep time (2 hours BEFORE individual starts)
+        let prepHour: number;
+        let prepMin: number = 0;
+        
+        if (startHourNum <= 10) {
+          // Early morning goals: supporter preps at 8 AM (or earlier if goal is before 10 AM)
+          prepHour = Math.min(8, startHourNum - 2);
+          prepMin = 0;
+        } else {
+          // Later goals: supporter preps exactly 2 hours before
+          prepHour = startHourNum - 2;
+          prepMin = startMinNum;
+        }
+        
+        // Format prep time with proper AM/PM
+        const prepPeriod = prepHour >= 12 ? 'PM' : 'AM';
+        const prepDisplayHour = prepHour % 12 || 12;
+        const prepTimeFormatted = `${prepDisplayHour}:${prepMin.toString().padStart(2, '0')} ${prepPeriod}`;
         
         const supporterEnrichedData = {
           ...enrichedData,
-          supporterTimingOffset
+          supporterTimingOffset: `by ${prepTimeFormatted}`,
+          // Add context for supporter templates
+          individualStartTime: startTime,
+          individualStartDay: format(new Date(wizardData.startDate), 'EEEE')
         };
         
         const supporterSteps = await generateMicroStepsSmart(supporterEnrichedData, 'supporter');
+        const savedSupporterSteps: any[] = [];
         
-        // Save supporter steps
-        for (const coachStep of supporterSteps) {
-          await stepsService.createStep(goal!.id, {
+        // Save supporter steps with dependencies
+        for (let i = 0; i < supporterSteps.length; i++) {
+          const coachStep = supporterSteps[i];
+          
+          // Calculate supporter step due dates
+          let stepDueDate: Date;
+          if (i === 0 && coachStep.title.toLowerCase().includes('prep')) {
+            // Environmental prep: due at prep time (calculated above)
+            stepDueDate = new Date(goalStartDate);
+            stepDueDate.setHours(prepHour, prepMin, 0, 0);
+          } else if (i === 1 || coachStep.title.toLowerCase().includes('at ')) {
+            // Activation assist: due at individual's start time
+            stepDueDate = new Date(goalStartDate);
+          } else {
+            // Monitoring steps: due 30 min after individual starts
+            stepDueDate = new Date(goalStartDate);
+            stepDueDate.setMinutes(startMinNum + 30);
+          }
+          
+          const { step } = await stepsService.createStep(goal!.id, {
             title: coachStep.title,
             step_type: 'action',
             is_required: true,
             estimated_effort_min: 10,
             is_planned: true,
             notes: coachStep.description,
-            is_supporter_step: true
+            is_supporter_step: true,
+            due_date: stepDueDate.toISOString()
           });
+          
+          savedSupporterSteps.push(step);
+          
+          // Set dependencies:
+          // - Supporter step 1: depends on individual step 1 (prerequisite)
+          // - Supporter step 2: depends on supporter step 1 AND individual step 2
+          // - Supporter step 3: depends on supporter step 2
+          let dependencyIds: string[] = [];
+          if (i === 0 && savedIndividualSteps[0]) {
+            dependencyIds = [savedIndividualSteps[0].id];
+          } else if (i === 1) {
+            dependencyIds = [savedSupporterSteps[0].id];
+            if (savedIndividualSteps[1]) {
+              dependencyIds.push(savedIndividualSteps[1].id);
+            }
+          } else if (i > 1 && savedSupporterSteps[i - 1]) {
+            dependencyIds = [savedSupporterSteps[i - 1].id];
+          }
+          
+          if (dependencyIds.length > 0) {
+            await supabase
+              .from('steps')
+              .update({ dependency_step_ids: dependencyIds })
+              .eq('id', step.id);
+          }
         }
       }
       
