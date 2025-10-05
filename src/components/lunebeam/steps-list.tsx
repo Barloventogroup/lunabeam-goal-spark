@@ -970,8 +970,7 @@ export const StepsList: React.FC<StepsListProps> = ({
           >
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg font-semibold text-foreground">
                   Set Up Steps for Supporter
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
