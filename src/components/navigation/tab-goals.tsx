@@ -214,12 +214,10 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
         <div className="p-4">
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'own' | 'individual')}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="own" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
+              <TabsTrigger value="own">
                 Your Goals
               </TabsTrigger>
-              <TabsTrigger value="individual" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
+              <TabsTrigger value="individual">
                 {supportedIndividual.name}'s Goals
               </TabsTrigger>
             </TabsList>
