@@ -25,8 +25,8 @@ interface MicroStepsRequest {
 }
 
 // Verb constraints for Step 2 activation
-const STRICT_VERBS = ['touch', 'open', 'unlock', 'tap', 'grab', 'hold', 'place', 'put on'];
-const FALLBACK_VERBS = ['walk to', 'sit at', 'lift', 'plug in', 'move to', 'pick up', 'carry'];
+const STRICT_VERBS = ['touch', 'open', 'unlock', 'tap', 'grab', 'hold', 'place', 'put on', 'gather', 'sort', 'collect'];
+const FALLBACK_VERBS = ['walk to', 'sit at', 'lift', 'plug in', 'move to', 'pick up', 'carry', 'load', 'fill', 'set up'];
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -532,10 +532,10 @@ function validateMicroSteps(
           errors.push('Step 1 must include a research/discovery action when prerequisite is uncertain (e.g., "ask 2 people", "search online")');
         }
         
-        // Should include measurable outcome for research
+        // Suggest measurable outcome for research (warning, not error)
         const hasMeasurableResearch = /\d+\s?(people|person|option|website|video|article|store|location)/i.test(text);
         if (!hasMeasurableResearch) {
-          errors.push('Research step should include quantity (e.g., "ask 2 people", "find 3 options")');
+          console.log('Suggestion: Research step could include quantity (e.g., "ask 2 people", "find 3 options")');
         }
         
         // Should NOT use vague terms
@@ -595,10 +595,10 @@ function validateMicroSteps(
       errors.push(`Step ${i+1} title too long (${titleWords} words) - keep under 8 words`);
     }
     
-    // Check sentence count (1-2 sentences)
+    // Check sentence count (1-3 sentences allowed, warn if > 3)
     const sentenceCount = step.description.split(/[.!?]+/).filter(s => s.trim()).length;
     if (sentenceCount > 3) {
-      errors.push(`Step ${i+1} has ${sentenceCount} sentences - keep to 1-2 imperative sentences`);
+      console.log(`Suggestion: Step ${i+1} has ${sentenceCount} sentences - consider keeping to 2-3 for clarity`);
     }
   });
   

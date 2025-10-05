@@ -349,6 +349,7 @@ interface WizardData {
   // Step 4: Challenge areas (up to 2)
   challengeAreas?: string[];
   customChallenges?: string;
+  barrierContext?: string; // Additional context about barriers for AI generation
 
   // Step 5: Prerequisites
   hasPrerequisites: boolean;
@@ -588,14 +589,39 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     if (currentStep === 7 && currentStep + 1 === 8) {
       setGeneratingSteps(true);
       try {
+        // Detect household tasks and add context hints
+        const goalTitleLower = data.goalTitle.toLowerCase();
+        const householdTasks = {
+          laundry: 'Laundry requires multiple phases: 1) Gathering dirty clothes into one basket, 2) Sorting by color (whites vs colors), 3) Loading washer with detergent, 4) Starting the wash cycle',
+          cleaning: 'Cleaning involves: 1) Gathering supplies (cleaner, cloth, trash bag), 2) Clearing surfaces or floor, 3) Wiping/sweeping/vacuuming specific area, 4) Disposing of trash',
+          cooking: 'Cooking requires: 1) Gathering ingredients and tools, 2) Preparing ingredients (wash, chop, measure), 3) Following recipe steps in order, 4) Plating and cleanup',
+          dishes: 'Washing dishes involves: 1) Clearing table and gathering dirty dishes, 2) Scraping food into trash, 3) Washing with soap and water, 4) Drying and putting away',
+          grocery: 'Grocery shopping requires: 1) Making a shopping list, 2) Getting to the store, 3) Finding items on the list, 4) Checking out and bringing groceries home'
+        };
+
+        // Add household context if detected
+        let enrichedData = { ...data };
+        for (const [task, context] of Object.entries(householdTasks)) {
+          if (goalTitleLower.includes(task)) {
+            enrichedData = {
+              ...enrichedData,
+              barrierContext: enrichedData.barrierContext 
+                ? `${enrichedData.barrierContext}. ${context}`
+                : context
+            };
+            console.info(`[Wizard] Added household task context for: ${task}`);
+            break;
+          }
+        }
+
         // Always generate individual steps first
-        const individualSteps = await generateMicroStepsSmart(data as any, 'individual');
+        const individualSteps = await generateMicroStepsSmart(enrichedData as any, 'individual');
         setGeneratedMicroSteps(individualSteps);
         console.info('[Wizard] Generated individual steps:', individualSteps.length);
 
         // Separately generate supporter steps if needed
         if (data.primarySupporterRole === 'hands_on_helper') {
-          const supporterSteps = await generateMicroStepsSmart(data as any, 'supporter');
+          const supporterSteps = await generateMicroStepsSmart(enrichedData as any, 'supporter');
           setGeneratedCoachSteps(supporterSteps);
           console.info('[Wizard] Generated supporter steps:', supporterSteps.length);
         }
