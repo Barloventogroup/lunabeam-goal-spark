@@ -49,113 +49,162 @@ Deno.serve(async (req) => {
     // Build system prompt based on flow
     const systemPrompt = buildSystemPrompt(payload.flow);
 
-    // Build user prompt with goal context
-    const userPrompt = buildUserPrompt(payload);
+    // Iterative refinement: Try up to 2 attempts
+    let attempts = 0;
+    let bestMicroSteps: any[] | null = null;
+    let bestValidation = { valid: false, errors: ['No attempts made'] };
+    let currentUserPrompt = buildUserPrompt(payload);
 
-    // Call Lovable AI Gateway
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        tools: [{
-          type: "function",
-          function: {
-            name: "generate_microsteps",
-            description: "Generate exactly 3 theory-aligned micro-steps for the goal",
-            parameters: {
-              type: "object",
-              properties: {
-                microSteps: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      title: { type: "string", maxLength: 60 },
-                      description: { type: "string", maxLength: 300 }
+    while (attempts < 2) {
+      attempts++;
+      console.log(`Attempt ${attempts}: Generating micro-steps`);
+
+      // Call Lovable AI Gateway
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: currentUserPrompt }
+          ],
+          tools: [{
+            type: "function",
+            function: {
+              name: "generate_microsteps",
+              description: "Generate exactly 3 theory-aligned micro-steps for the goal",
+              parameters: {
+                type: "object",
+                properties: {
+                  microSteps: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string", maxLength: 60 },
+                        description: { type: "string", maxLength: 300 }
+                      },
+                      required: ["title", "description"]
                     },
-                    required: ["title", "description"]
-                  },
-                  minItems: 3,
-                  maxItems: 3
-                }
-              },
-              required: ["microSteps"]
+                    minItems: 3,
+                    maxItems: 3
+                  }
+                },
+                required: ["microSteps"]
+              }
             }
-          }
-        }],
-        tool_choice: { type: "function", function: { name: "generate_microsteps" } }
-      }),
-    });
+          }],
+          tool_choice: { type: "function", function: { name: "generate_microsteps" } }
+        }),
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
-      
-      if (response.status === 429) {
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('AI Gateway error:', response.status, errorText);
+        
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({ error: 'Rate limit exceeded', useFallback: true }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        if (response.status === 402) {
+          return new Response(
+            JSON.stringify({ error: 'Credits required', useFallback: true }),
+            { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Other errors: try fallback immediately
         return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded', useFallback: true }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'AI generation failed', useFallback: true }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      const data = await response.json();
+      console.log(`Attempt ${attempts} - AI response received`);
+
+      // Extract tool call result
+      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall || toolCall.function.name !== 'generate_microsteps') {
+        console.error('No valid tool call in response');
+        if (attempts >= 2) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid AI response', useFallback: true }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        continue; // Try again
+      }
+
+      const microSteps = JSON.parse(toolCall.function.arguments).microSteps;
+
+      if (!Array.isArray(microSteps) || microSteps.length !== 3) {
+        console.error('Invalid microSteps format:', microSteps);
+        if (attempts >= 2) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid micro-steps format', useFallback: true }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        continue; // Try again
+      }
+
+      // Validate quality of generated steps
+      const validation = validateMicroSteps(microSteps, payload);
       
-      if (response.status === 402) {
+      // Track best attempt
+      if (!bestMicroSteps || validation.errors.length < bestValidation.errors.length) {
+        bestMicroSteps = microSteps;
+        bestValidation = validation;
+      }
+
+      if (validation.valid) {
+        // Success! Return immediately
+        console.log(`Attempt ${attempts}: Validation passed`);
         return new Response(
-          JSON.stringify({ error: 'Credits required', useFallback: true }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ microSteps }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
+      console.log(`Attempt ${attempts}: Validation failed with ${validation.errors.length} errors:`, validation.errors);
+
+      // If this was the last attempt, break
+      if (attempts >= 2) {
+        break;
+      }
+
+      // Build refinement prompt for next attempt
+      currentUserPrompt = buildRefinementPrompt(payload, microSteps, validation.errors);
+    }
+
+    // After 2 attempts, decide whether to accept best result or trigger fallback
+    if (bestValidation.errors.length <= 2) {
+      // Minor issues - accept best attempt
+      console.log('Accepting best attempt with minor issues:', bestValidation.errors);
       return new Response(
-        JSON.stringify({ error: 'AI generation failed', useFallback: true }),
+        JSON.stringify({ microSteps: bestMicroSteps }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } else {
+      // Major issues - trigger fallback
+      console.error('Quality validation failed after 2 attempts. Triggering fallback.');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Quality validation failed after refinement', 
+          useFallback: true,
+          validationErrors: bestValidation.errors 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    const data = await response.json();
-    console.log('AI response:', JSON.stringify(data));
-
-    // Extract tool call result
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall || toolCall.function.name !== 'generate_microsteps') {
-      console.error('No valid tool call in response');
-      return new Response(
-        JSON.stringify({ error: 'Invalid AI response', useFallback: true }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const microSteps = JSON.parse(toolCall.function.arguments).microSteps;
-
-    if (!Array.isArray(microSteps) || microSteps.length !== 3) {
-      console.error('Invalid microSteps format:', microSteps);
-      return new Response(
-        JSON.stringify({ error: 'Invalid micro-steps format', useFallback: true }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Validate quality of generated steps
-    const validation = validateMicroSteps(microSteps, payload);
-    if (!validation.valid) {
-      console.error('Quality validation failed:', validation.errors);
-      return new Response(
-        JSON.stringify({ error: 'Quality validation failed', useFallback: true }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({ microSteps }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
 
   } catch (error) {
     console.error('Error in microsteps-scaffold:', error);
@@ -389,11 +438,30 @@ ${prerequisiteContext}
 Generate exactly 3 micro-steps following the ${payload.flow.toUpperCase()} FLOW structure. Pay special attention to the [Secondary Challenge] when creating Step 3.`;
 }
 
+function buildRefinementPrompt(
+  originalPayload: MicroStepsRequest,
+  failedSteps: any[],
+  validationErrors: string[]
+): string {
+  const originalContext = buildUserPrompt(originalPayload);
+  
+  return `The previous micro-steps need adjustments. Please regenerate them addressing the specific issues below while keeping the good elements.
+
+ORIGINAL GOAL CONTEXT:
+${originalContext}
+
+PREVIOUS STEPS (that need improvement):
+${JSON.stringify(failedSteps, null, 2)}
+
+ISSUES TO FIX:
+${validationErrors.map((e, i) => `${i+1}. ${e}`).join('\n')}
+
+Please regenerate all 3 micro-steps addressing these specific validation errors. Keep the goal-specific language and structure that worked well, but fix the identified issues.`;
+}
+
 function validateMicroSteps(steps: { title: string; description: string }[], payload?: MicroStepsRequest): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   const forbiddenWords = ['initiation', 'barrier', 'scaffolding', 'activation cue'];
-  const step2BannedVerbs = ['search', 'browse', 'research', 'find', 'read', 'write', 'call', 'text', 'login', 'boot'];
-  const step2BannedPhrases = ['power button', 'press the power', 'turn on', 'boot up', 'reboot'];
   
   steps.forEach((step, i) => {
     const text = (step.title + ' ' + step.description).toLowerCase();
