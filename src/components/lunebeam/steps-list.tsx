@@ -108,103 +108,7 @@ export const StepsList: React.FC<StepsListProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
   const [showFireworks, setShowFireworks] = useState(false);
-  const [canGenerateSteps, setCanGenerateSteps] = useState(false);
-  const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
-
-  // Check if current user owns or can manage this goal
-  useEffect(() => {
-    const checkPermissions = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCanGenerateSteps(!!user && (goal.owner_id === user.id || goal.created_by === user.id));
-    };
-    checkPermissions();
-  }, [goal]);
-
-  const handleGenerateSteps = async () => {
-    if (generating) return;
-    setGenerating(true);
-    
-    try {
-      // Import stepsGenerator
-      const { stepsGenerator } = await import('@/services/stepsGenerator');
-      
-      // Try AI-powered generation first
-      const generatedSteps = await stepsGenerator.generateSteps(goal);
-      
-      // Persist the steps to database
-      for (const step of generatedSteps) {
-        await stepsService.createStep(goal.id, {
-          title: step.title,
-          step_type: 'action',
-          is_required: step.is_required ?? true,
-          estimated_effort_min: step.estimated_effort_min,
-          is_planned: true,
-          notes: step.explainer || step.notes
-        });
-      }
-      
-      toast({
-        title: 'AI steps created! 🎯',
-        description: `Added ${generatedSteps.length} goal-specific steps. Expand any step to see details.`,
-      });
-      
-      // Refresh steps - fetch updated data and notify parent
-      const updatedSteps = await stepsService.getSteps(goal.id);
-      if (onStepsUpdate) {
-        onStepsUpdate(updatedSteps, goal);
-      }
-      if (onStepsChange) {
-        onStepsChange();
-      }
-    } catch (error: any) {
-      console.error('Failed to generate steps:', error);
-      
-      // Handle specific AI errors
-      let errorMessage = 'Please try again or create steps manually.';
-      if (error?.message?.includes('429') || error?.status === 429) {
-        errorMessage = 'AI is temporarily busy. We\'ve created starter steps. Expand any step and click "Need more help?" to refine them.';
-      } else if (error?.message?.includes('402') || error?.status === 402) {
-        errorMessage = 'AI credits depleted. We\'ve created starter steps. Use "Need more help?" to customize them.';
-      }
-      
-      // Create fallback steps with notes so help UI is visible
-      try {
-        const stepCount = Math.min(goal.frequency_per_week || 3, 3);
-        const effortMinutes = goal.title.match(/(\d+)\s*min/i)?.[1] || '30';
-        
-        for (let i = 1; i <= stepCount; i++) {
-          await stepsService.createStep(goal.id, {
-            title: `Week 1, Session ${i}: ${goal.title}`,
-            step_type: 'habit',
-            is_required: true,
-            estimated_effort_min: parseInt(effortMinutes),
-            is_planned: true,
-            notes: `This is a ${goal.title} session. Click the arrow to expand and see details, or click "Need more help?" to break this down into smaller steps.`
-          });
-        }
-        
-        // Refresh after fallback creation
-        const updatedSteps = await stepsService.getSteps(goal.id);
-        if (onStepsUpdate) {
-          onStepsUpdate(updatedSteps, goal);
-        }
-        if (onStepsChange) {
-          onStepsChange();
-        }
-      } catch (fallbackError) {
-        console.error('Fallback step creation also failed:', fallbackError);
-      }
-      
-      toast({
-        title: 'Created starter steps',
-        description: errorMessage,
-        variant: 'default'
-      });
-    } finally {
-      setGenerating(false);
-    }
-  };
 
   // Fetch substeps for all steps
   useEffect(() => {
@@ -1032,23 +936,13 @@ export const StepsList: React.FC<StepsListProps> = ({
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-foreground">No steps yet</CardTitle>
           <p className="text-sm text-muted-foreground">
-            {canGenerateSteps 
-              ? "Get started by generating some initial steps for this goal."
-              : "Steps will appear here once the goal owner adds them."}
+            Steps are created when you set up your goal. You can also add steps manually or use "Need more help?" to break down existing steps.
           </p>
         </CardHeader>
         <CardContent className="py-6">
-          {canGenerateSteps && (
-            <Button onClick={handleGenerateSteps} disabled={generating} className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
-              {generating ? "Creating steps..." : "Generate Starter Steps"}
-            </Button>
-          )}
-          {!canGenerateSteps && (
-            <p className="text-center text-muted-foreground py-8">
-              Waiting for steps to be added...
-            </p>
-          )}
+          <p className="text-center text-muted-foreground py-8">
+            No steps to display
+          </p>
         </CardContent>
       </Card>
     );
