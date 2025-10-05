@@ -33,6 +33,7 @@ interface WizardData {
   hasPrerequisites?: boolean;
   customPrerequisites?: string;
   challengeAreas?: string[];
+  barrierContext?: string;
   supportedPersonName?: string;
   goalType?: string;
 }
@@ -285,6 +286,7 @@ export async function generateMicroStepsSmart(
       prerequisiteIsConcrete,
       barrier1,
       barrier2,
+      barrierContext: data.barrierContext || '',
       supportedPersonName: data.supportedPersonName || '',
     };
 

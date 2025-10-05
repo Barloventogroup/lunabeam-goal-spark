@@ -20,6 +20,7 @@ interface MicroStepsRequest {
   prerequisiteIsConcrete: boolean; // Flag if it's a single item vs. vague uncertainty
   barrier1: string;
   barrier2: string;
+  barrierContext?: string; // Specific details about how challenges manifest
   supportedPersonName?: string; // For better supporter flow personalization
 }
 
@@ -385,6 +386,16 @@ ${payload.flow === 'supporter' && payload.supportedPersonName ? `**Individual's 
 ${prerequisiteContext}
 **Primary Challenge**: ${payload.barrier1}
 **Secondary Challenge (IMPORTANT - use this for Step 3 Logic Mapping)**: ${payload.barrier2}
+${payload.barrierContext ? `
+**ADDITIONAL CONTEXT ABOUT THESE CHALLENGES**: 
+${payload.barrierContext}
+
+⚠️ CRITICAL: Use this specific context to tailor your micro-steps. For example:
+- If they mention "blank page overwhelm" → Make Step 2 even MORE trivial (e.g., "Type your name at the top")
+- If they mention "noise sensitivity" → Include environmental prep in Step 1 (e.g., "Place noise-canceling headphones on desk")
+- If they mention "visual learner" → Include visual elements in Step 3 (e.g., "Draw a simple flowchart with 3 boxes")
+- If they mention "freezing when staring at X" → Step 2 should bypass that exact screen (e.g., "Tap icon—it will auto-load last lesson")
+` : ''}
 
 Generate exactly 3 micro-steps following the ${payload.flow.toUpperCase()} FLOW structure. Pay special attention to the [Secondary Challenge] when creating Step 3.`;
 }

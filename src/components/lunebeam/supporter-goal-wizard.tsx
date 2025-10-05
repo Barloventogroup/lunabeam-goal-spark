@@ -36,6 +36,7 @@ interface WizardData {
   goalMotivation: string;
   goalType: string;
   challengeAreas: string[];
+  barrierContext?: string;
   customPrerequisites: string;
   startDate: Date;
   endDate?: Date;
@@ -93,6 +94,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
     goalMotivation: '',
     goalType: 'reminder',
     challengeAreas: [],
+    barrierContext: '',
     customPrerequisites: '',
     startDate: new Date(),
     frequency: 3,
@@ -153,12 +155,12 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
   };
 
   const nextStep = async () => {
-    // Generate steps when moving from step 7 to step 8
-    if (currentStep === 7) {
+    // Generate steps when moving from step 8 to step 9
+    if (currentStep === 8) {
       await generateBothStepSets();
     }
 
-    if (currentStep < 8) {
+    if (currentStep < 9) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -276,7 +278,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center gap-2 mb-6">
-      {[1, 2, 3, 4, 5, 6, 7, 8].map((step) => (
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((step) => (
         <div
           key={step}
           className={cn(
@@ -372,6 +374,28 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
   const renderStep4 = () => (
     <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
+        <CardTitle className="text-2xl">Tell me more about these challenges</CardTitle>
+        <p className="text-muted-foreground">
+          How does {data.supportedPersonName || 'your individual'} experience these specific challenges?
+        </p>
+      </CardHeader>
+      <CardContent>
+        <Textarea
+          placeholder="e.g., 'They freeze when staring at a blank page' or 'Background noise makes it impossible to focus' or 'They need to see all steps written out visually'"
+          value={data.barrierContext || ''}
+          onChange={(e) => updateData({ barrierContext: e.target.value })}
+          rows={5}
+        />
+        <p className="text-xs text-muted-foreground mt-2">
+          Optional: Any specific details help us create more personalized steps
+        </p>
+      </CardContent>
+    </Card>
+  );
+
+  const renderStep5 = () => (
+    <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+      <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">What do they need to get started?</CardTitle>
         <p className="text-muted-foreground">What materials, space, or prerequisites are needed?</p>
       </CardHeader>
@@ -386,7 +410,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
     </Card>
   );
 
-  const renderStep5 = () => (
+  const renderStep6 = () => (
     <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">When should they start?</CardTitle>
@@ -430,7 +454,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
     </Card>
   );
 
-  const renderStep6 = () => (
+  const renderStep7 = () => (
     <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">What time works best?</CardTitle>
@@ -449,7 +473,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
     </Card>
   );
 
-  const renderStep7 = () => (
+  const renderStep8 = () => (
     <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">How will you support them?</CardTitle>
@@ -473,7 +497,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
     </Card>
   );
 
-  const renderStep8 = () => (
+  const renderStep9 = () => (
     <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Review and Confirm</CardTitle>
