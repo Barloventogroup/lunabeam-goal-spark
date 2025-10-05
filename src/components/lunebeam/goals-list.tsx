@@ -17,11 +17,12 @@ import { supabase } from '@/integrations/supabase/client';
 interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
   refreshTrigger?: number; // Optional prop to trigger refresh
+  filterByOwnerId?: string; // Filter to show only goals owned by specific user
 }
 
 type GoalsTab = 'active' | 'completed';
 
-export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger }) => {
+export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger, filterByOwnerId }) => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [stepsCount, setStepsCount] = useState<Record<string, { required: number; done: number }>>({});
   const [loading, setLoading] = useState(true);
@@ -55,6 +56,11 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
         goalsData = allGoals.filter(goal => 
           goal.status !== 'completed' && goal.status !== 'archived'
         );
+      }
+
+      // Apply filterByOwnerId if provided - takes precedence over other filters
+      if (filterByOwnerId) {
+        goalsData = goalsData.filter(goal => goal.owner_id === filterByOwnerId);
       }
       
       // Build profiles lookup by fetching profiles separately
