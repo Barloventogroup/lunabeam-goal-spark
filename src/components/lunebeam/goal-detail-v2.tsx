@@ -55,6 +55,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const [creatorProfile, setCreatorProfile] = useState<any>(null);
   const [generatingSteps, setGeneratingSteps] = useState(false);
   const [generationError, setGenerationError] = useState(false);
+  const [isViewerSupporter, setIsViewerSupporter] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -100,14 +101,16 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       setCurrentUser(user);
 
       if (goalData) {
-        // Fetch owner and creator profiles
-        const [ownerData, creatorData] = await Promise.all([
+        // Fetch owner and creator profiles, and check if viewer is a supporter
+        const [ownerData, creatorData, supporterRelationship] = await Promise.all([
           supabase.from('profiles').select('first_name, user_id').eq('user_id', goalData.owner_id).single(),
-          supabase.from('profiles').select('first_name, user_id').eq('user_id', goalData.created_by).single()
+          supabase.from('profiles').select('first_name, user_id').eq('user_id', goalData.created_by).single(),
+          user ? supabase.from('supporters').select('id, role, permission_level').eq('individual_id', goalData.owner_id).eq('supporter_id', user.id).maybeSingle() : Promise.resolve({ data: null })
         ]);
         
         setOwnerProfile(ownerData.data);
         setCreatorProfile(creatorData.data);
+        setIsViewerSupporter(!!supporterRelationship.data);
         
         // Use steps as-is, no auto-generation
         const finalSteps = stepsData || [];
@@ -615,12 +618,13 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       )}
 
       {/* Steps */}
-      <StepsList 
-        goal={goal}
-        steps={steps}
-        onStepsUpdate={handleStepsUpdate}
-        onOpenStepChat={handleOpenStepChat}
-      />
+          <StepsList 
+            goal={goal}
+            steps={steps}
+            isViewerSupporter={isViewerSupporter}
+            onStepsUpdate={handleStepsUpdate}
+            onOpenStepChat={handleOpenStepChat}
+          />
 
       {/* Step Chat Modal */}
       <StepChatModal

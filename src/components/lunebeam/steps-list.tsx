@@ -71,6 +71,7 @@ const dedupeSubsteps = (subs: Substep[]): Substep[] => {
 interface StepsListProps {
   steps: Step[];
   goal: Goal;
+  isViewerSupporter?: boolean;
   onStepsChange?: () => void;
   onStepsUpdate?: (updatedSteps: Step[], updatedGoal: Goal) => void;
   onOpenStepChat?: (step: Step) => void;
@@ -91,6 +92,7 @@ interface StepGroup {
 export const StepsList: React.FC<StepsListProps> = ({
   steps,
   goal,
+  isViewerSupporter = false,
   onStepsChange,
   onStepsUpdate,
   onOpenStepChat
@@ -960,7 +962,7 @@ export const StepsList: React.FC<StepsListProps> = ({
   return (
     <>
       {/* Supporter Set Up Steps Section - Only show if there are supporter steps */}
-      {supporterSetupSteps.length > 0 && (
+      {isViewerSupporter && supporterSetupSteps.length > 0 && (
         <Card className="mb-4">
           <CardHeader 
             className="pb-4 cursor-pointer hover:bg-muted/20 transition-colors"
