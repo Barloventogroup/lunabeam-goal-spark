@@ -22,6 +22,7 @@ interface MicroStepsRequest {
   barrier2: string;
   barrierContext?: string; // Specific details about how challenges manifest
   supportedPersonName?: string; // For better supporter flow personalization
+  supporterTimingOffset?: string; // e.g., "2 hours before", "by 8:00 AM on" - for supporter preparation
 }
 
 // Verb constraints for Step 2 activation
@@ -285,10 +286,17 @@ Step 3: FOCUSED WORK (AFTER ACTIVATION)
 ` : `
 [SUPPORTER FLOW STRUCTURE] (Focus: Environmental Control & Accountability)
 
-Step 1: ENVIRONMENTAL SETUP (BEFORE [startTime])
-- **Purpose**: Remove all potential physical and material obstacles.
-- **Action**: What the supporter must do to ensure the workspace is ready (charging, clearing, providing materials).
+Step 1: ENVIRONMENTAL SETUP (WELL BEFORE [startTime])
+- **CRITICAL TIMING**: This step must happen WELL BEFORE [startTime] - specifically: ${allowedVerbs.length > 0 ? '[supporterTimingOffset]' : 'at least 2 hours before'}
+- **PURPOSE**: Remove all potential physical and material obstacles BEFORE the individual begins
+- **ACTION**: What the supporter must do to ensure the workspace is ready (charging, clearing, providing materials)
+- **MUST SPECIFY EXACT TIME**: Convert the timing offset to an explicit time in the step
 - **MUST REFERENCE**: Specific materials for [Goal Title]
+- **Examples**:
+  * If [startTime] = "8:00 PM Saturday" and offset = "2 hours before"
+    → "By 6:00 PM Saturday, gather all laundry supplies (detergent, basket, quarters) and place them next to the washing machine"
+  * If [startTime] = "9:00 AM Sunday" and offset = "by 8:00 AM on"  
+    → "By 8:00 AM Sunday, ensure their study materials are on the desk with pencils and calculator"
 
 **PREREQUISITE HANDLING FOR SUPPORTERS:**
 
@@ -310,9 +318,10 @@ Step 1: ENVIRONMENTAL SETUP (BEFORE [startTime])
   * Goal: "Study algebra" → "Before 6:30 PM Tuesday, place the algebra textbook open to chapter 3 on their desk with a pencil and calculator."
   * Goal: "Learn Spanish" → "Before 7:00 PM Friday, ensure their Spanish flashcards and notebook are on the desk."
 
-Step 2: CUE DELIVERY (AT EXACTLY [startTime])
-- **Purpose**: Serve as the human prompt to initiate the activation step.
-- **Action**: What the supporter says or does to trigger the individual's Step 2. Use language appropriate for the [Supporter Role].
+Step 2: CUE DELIVERY (EXACTLY AT [startTime])
+- **TIMING**: This must happen precisely at [startTime], AFTER Step 1 is complete
+- **PURPOSE**: Serve as the human prompt to initiate the activation step
+- **ACTION**: What the supporter says or does to trigger the individual's Step 2. Use language appropriate for the [Supporter Role]
 - **MUST REFERENCE**: The specific tool/app/material for [Goal Title]
 - **CRITICAL CONSTRAINT FOR THIS ATTEMPT**: The action you suggest must use ONLY these verbs: ${allowedVerbs.join(', ')}
 - **Examples**:
@@ -320,11 +329,12 @@ Step 2: CUE DELIVERY (AT EXACTLY [startTime])
   * Goal: "Practice Spanish" + Coach: "At 7:00 PM, text them: 'Time to tap the Duolingo app icon!'"
   * Goal: "Write a story" + Friend: "At 8:00 AM, send a message: 'Hey! Just open your writing notebook real quick.'"
 
-Step 3: REINFORCEMENT (DURING WORK/AFTER COMPLETION)
-- **Purpose**: Deliver positive, value-based reinforcement based on the [Motivation].
-- **Action**: Specific action for monitoring progress and providing reinforcement.
+Step 3: REINFORCEMENT (AFTER [duration] OR WHEN COMPLETE)
+- **TIMING**: Check in after the expected work duration or upon completion signal
+- **PURPOSE**: Deliver positive, value-based reinforcement based on the [Motivation]
+- **ACTION**: Specific action for monitoring progress and providing reinforcement
 - **MUST REFERENCE**: The specific goal action to connect praise to concrete accomplishment
-- **NATURAL LANGUAGE**: Write in conversational, grammatically correct sentences. Avoid rigid template prefixes like "Your Action (Framing):". Use natural phrasing that flows well when read aloud.
+- **NATURAL LANGUAGE**: Write in conversational, grammatically correct sentences. Avoid rigid template prefixes like "Your Action (Framing):". Use natural phrasing that flows well when read aloud
 - **Examples**: 
   * Goal: "Study algebra" → "After 25 minutes, check in and ensure they take a 5-minute movement break. Say: 'You worked through 10 algebra problems—solid effort!'"
   * Goal: "Practice Spanish" → "When they complete the task, connect it to their motivation: 'You practiced those Spanish verbs! This brings you closer to speaking confidently with your Spanish-speaking friends.'"
@@ -431,6 +441,9 @@ function buildUserPrompt(payload: MicroStepsRequest, attemptNumber: number = 1):
 **Start Time (startTime)**: ${payload.startTime}
 **Flow**: ${payload.flow}
 ${payload.flow === 'supporter' && payload.supportedPersonName ? `**Individual's Name**: ${payload.supportedPersonName}` : ''}
+${payload.flow === 'supporter' && payload.supporterTimingOffset ? `**[Supporter Timing Offset]**: ${payload.supporterTimingOffset}
+
+⚠️ CRITICAL: Step 1 must specify the exact time based on this offset from [startTime]. For example, if offset is "2 hours before" and startTime is "8:00 PM Saturday", Step 1 should say "By 6:00 PM Saturday..."\n` : ''}
 ${prerequisiteContext}
 **Primary Challenge**: ${payload.barrier1}
 **Secondary Challenge (IMPORTANT - use this for Step 3 Logic Mapping)**: ${payload.barrier2}
@@ -544,6 +557,18 @@ function validateMicroSteps(
         if (hasVagueTerm) {
           errors.push('Research step is too vague - use specific actions like "ask [role]", "search [specific term]", "watch [specific content]"');
         }
+      }
+    }
+    
+    // NEW: For supporter flow, validate Step 1 has explicit timing
+    if (i === 0 && payload?.flow === 'supporter') {
+      const step1Text = step.title + ' ' + step.description;
+      const hasExplicitTime = /\d+:\d+\s*(am|pm)/i.test(step1Text) || 
+                             /by\s+\d+:\d+/i.test(step1Text) ||
+                             /before\s+\d+:\d+/i.test(step1Text);
+      
+      if (!hasExplicitTime) {
+        console.log('Suggestion: Supporter Step 1 should specify an explicit preparation time (e.g., "By 6:00 PM")');
       }
     }
     

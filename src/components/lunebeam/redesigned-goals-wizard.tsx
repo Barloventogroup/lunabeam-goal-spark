@@ -369,6 +369,7 @@ interface WizardData {
   primarySupporterId?: string;
   primarySupporterName?: string;
   primarySupporterRole?: 'cheerleader' | 'accountability_partner' | 'hands_on_helper';
+  supporterTimingOffset?: string; // e.g., "2 hours before", "by 8:00 AM on" - for supporter preparation timing
   sendReminderToMe?: boolean; // For supporters
 
   // Step 8: Rewards (supporters only)
@@ -618,11 +619,25 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         setGeneratedMicroSteps(individualSteps);
         console.info('[Wizard] Generated individual steps:', individualSteps.length);
 
-        // Separately generate supporter steps if needed
+        // Separately generate supporter steps if needed with timing offset
         if (data.primarySupporterRole === 'hands_on_helper') {
-          const supporterSteps = await generateMicroStepsSmart(enrichedData as any, 'supporter');
+          // Calculate when supporter should prepare (2 hours before, or morning of if early start)
+          const startHour = parseInt(data.customTime?.split(':')[0] || data.timeOfDay?.split(':')[0] || '20');
+          const supporterTimingOffset = startHour <= 10 
+            ? `by 8:00 AM on` 
+            : `2 hours before`;
+          
+          const supporterEnrichedData = {
+            ...enrichedData,
+            supporterTimingOffset
+          };
+          
+          const supporterSteps = await generateMicroStepsSmart(
+            supporterEnrichedData as any, 
+            'supporter'
+          );
           setGeneratedCoachSteps(supporterSteps);
-          console.info('[Wizard] Generated supporter steps:', supporterSteps.length);
+          console.info('[Wizard] Generated supporter steps with offset:', supporterTimingOffset);
         }
       } catch (error) {
         console.error('Error generating micro-steps:', error);
