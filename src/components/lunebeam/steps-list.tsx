@@ -247,7 +247,19 @@ export const StepsList: React.FC<StepsListProps> = ({
 
   // Define isStepBlocked before using it
   const isStepBlocked = (step: Step): boolean => {
-    // Strict sequential gating: only allow the earliest incomplete required step
+    // Supporter steps are exempt from sequential gating - they're just reminders/guidelines
+    // They only respect explicit dependencies
+    if (step.is_supporter_step) {
+      if (step.dependency_step_ids && step.dependency_step_ids.length > 0) {
+        return step.dependency_step_ids.some(depId => {
+          const depStep = steps.find(s => s.id === depId);
+          return depStep && depStep.status !== 'done' && depStep.status !== 'skipped';
+        });
+      }
+      return false; // Supporter steps are never blocked by sequential rules
+    }
+
+    // Strict sequential gating for individual steps: only allow the earliest incomplete required step
     const currentIdx = sortedActionableSteps.findIndex(s => s.id === step.id);
     if (currentIdx > -1) {
       for (let i = 0; i < currentIdx; i++) {
@@ -266,7 +278,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       }
     }
 
-    // Check explicit dependencies first
+    // Check explicit dependencies for individual steps
     if (step.dependency_step_ids && step.dependency_step_ids.length > 0) {
       return step.dependency_step_ids.some(depId => {
         const depStep = steps.find(s => s.id === depId);
