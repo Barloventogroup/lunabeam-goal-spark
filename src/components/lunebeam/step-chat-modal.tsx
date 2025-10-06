@@ -37,6 +37,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [shouldHideInput, setShouldHideInput] = useState(false);
+  const [showGoalResetOptions, setShowGoalResetOptions] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -62,6 +63,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
       setIsInitialized(false);
       setMessages([]);
       setShouldHideInput(false);
+      setShowGoalResetOptions(false);
     }
   }, [isOpen, step, isInitialized]);
 
@@ -119,6 +121,21 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
 
       if (error) throw error;
 
+      // Handle GOAL_DRIFT classification - show goal reset options
+      if (data.classification === 'GOAL_DRIFT' && data.requiresGoalReset) {
+        const assistantMessage: ChatMessage = {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: data.response,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+        setShowGoalResetOptions(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // Handle UNRELATED classification - just display redirect message
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
@@ -128,7 +145,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
 
       setMessages(prev => [...prev, assistantMessage]);
 
-      // Check if new steps were suggested
+      // Check if new steps were suggested (only for RELEVANT queries)
       if (data.suggestedSteps && data.suggestedSteps.length > 0) {
         toast({
           title: "New sub-steps suggested!",
@@ -138,12 +155,6 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
         if (onStepsUpdate) {
           onStepsUpdate(data.suggestedSteps);
         }
-      }
-
-      // Check if we should redirect (reached chat limit)
-      if (data.shouldRedirect) {
-        setShouldHideInput(true);
-        // Don't auto-close - let user close manually when ready
       }
 
     } catch (error) {
@@ -251,31 +262,64 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
           </ScrollArea>
 
           <div className="border-t pt-3 mt-4 flex-shrink-0">
-            <div className="flex gap-2 items-end">
-              <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Ask Luna for help..."
-                disabled={isLoading}
-                className="flex-1 text-sm"
-                autoFocus
-                ref={inputRef}
-              />
-              <Button
-                onClick={sendMessage}
-                disabled={isLoading || !inputValue.trim()}
-                size="sm"
-                className="px-3 py-2 h-9 w-auto min-w-[40px] flex-shrink-0"
-              >
-                <Send className="h-4 w-4" />
-                <span className="sr-only">Send message</span>
-              </Button>
-            </div>
-            {shouldHideInput && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Chat session completed. Close this window to return to your steps.
-              </p>
+            {showGoalResetOptions ? (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Would you like to exit and create a new goal?
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowGoalResetOptions(false);
+                      onClose();
+                    }}
+                    className="flex-1"
+                  >
+                    Stay on Current Goal
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      window.location.href = '/';
+                      onClose();
+                    }}
+                    className="flex-1"
+                  >
+                    Exit to Goals Wizard
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2 items-end">
+                  <Input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    placeholder="Ask Luna for help..."
+                    disabled={isLoading}
+                    className="flex-1 text-sm"
+                    autoFocus
+                    ref={inputRef}
+                  />
+                  <Button
+                    onClick={sendMessage}
+                    disabled={isLoading || !inputValue.trim()}
+                    size="sm"
+                    className="px-3 py-2 h-9 w-auto min-w-[40px] flex-shrink-0"
+                  >
+                    <Send className="h-4 w-4" />
+                    <span className="sr-only">Send message</span>
+                  </Button>
+                </div>
+                {shouldHideInput && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Chat session completed. Close this window to return to your steps.
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>

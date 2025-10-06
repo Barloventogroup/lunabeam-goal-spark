@@ -41,13 +41,6 @@ serve(async (req) => {
       userMessage: typeof userMessage === 'string' ? userMessage.substring(0, 100) : ''
     });
 
-    // Count assistant responses in conversation history (ignore system and error messages)
-    const assistantResponseCount = Array.isArray(conversationHistory)
-      ? conversationHistory.filter((msg: any) => msg.role === 'assistant' && !(typeof msg.id === 'string' && msg.id.startsWith('error-'))).length
-      : 0;
-    console.log('assistantResponseCount:', assistantResponseCount);
-
-
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not found');
@@ -79,6 +72,88 @@ serve(async (req) => {
       console.log('Could not fetch progress context:', error);
     }
 
+    // CONTEXTUAL GATEKEEPER: Classify user intent before processing
+    const classificationPrompt = `You are a contextual classifier.
+
+FIXED CONTEXT:
+- Goal: "${goal.title}"
+- Current Step: "${step.title}"
+- Original Barrier: ${goal.barrier_1 || 'Planning/Organization'}
+
+CONVERSATION HISTORY:
+${conversationHistory.slice(-3).map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}
+
+USER'S LATEST QUERY: "${userMessage}"
+
+Classify this query as ONE of:
+- RELEVANT: Question is about the current step, goal, or how to complete it
+- UNRELATED: General question unrelated to the goal (weather, jokes, trivia, random topics)
+- GOAL_DRIFT: User wants to change, abandon, or switch goals
+
+Respond with ONLY the classification word (RELEVANT, UNRELATED, or GOAL_DRIFT).`;
+
+    console.log('Running classification check...');
+    const classificationResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4.1-mini-2025-04-14',
+        messages: [{ role: 'user', content: classificationPrompt }],
+        max_completion_tokens: 10,
+      }),
+    });
+
+    if (!classificationResponse.ok) {
+      console.error('Classification API error:', await classificationResponse.text());
+      throw new Error(`Classification API error: ${classificationResponse.status}`);
+    }
+
+    const classificationData = await classificationResponse.json();
+    const classification = classificationData.choices?.[0]?.message?.content?.trim().toUpperCase() || 'RELEVANT';
+    console.log('Classification result:', classification);
+
+    // Handle UNRELATED queries - redirect back to task
+    if (classification === 'UNRELATED') {
+      const redirectResponse = `That's an interesting question! I'd love to help you with that another time.
+
+Right now, let's stay focused on "${step.title}" so you can ${goal.motivation || 'complete your goal'}.
+
+Where were we? ${conversationHistory.length > 0 ? 'How can I help you with this step?' : 'What specifically would you like help with?'}`;
+      
+      return new Response(JSON.stringify({
+        response: redirectResponse,
+        suggestedSteps: [],
+        classification: 'UNRELATED'
+      }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
+
+    // Handle GOAL_DRIFT - offer to exit to Goals Wizard
+    if (classification === 'GOAL_DRIFT') {
+      const goalDriftResponse = `I see you want to change your goal! That's totally valid.
+
+To make sure your new plan is set up for success, we need to restart the Goals Wizard to define:
+- Your new goal and motivation
+- Potential barriers
+- Schedule and timing
+
+Would you like to exit this coaching session and start fresh with a new goal?`;
+      
+      return new Response(JSON.stringify({
+        response: goalDriftResponse,
+        suggestedSteps: [],
+        classification: 'GOAL_DRIFT',
+        requiresGoalReset: true
+      }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
+
+    // If RELEVANT, proceed with normal coaching logic
     // Build context for the AI (avoid nested template literals)
     const isSubstep = !!(step.explainer && String(step.explainer).includes('This is a substep of'));
 
@@ -121,7 +196,47 @@ ONLY suggest sub-steps if:
 - They ask \"how do I start\" this step
 `;
 
-    const systemPrompt = `You are Luna, a helpful AI assistant designed for teenagers and young adults (16-25) working on their goals.\n\nCurrent Goal: \"${goal.title}\"\nGoal Description: ${goal.description || 'No description provided'}\nGoal Domain: ${goal.domain || 'General'}\n\n${progressContext}\n\nCURRENT STEP FOCUS: \"${step.title}\"\nStep Description: ${step.notes || step.explainer || 'No description provided'}\nEstimated Time: ${step.estimated_effort_min ? `${step.estimated_effort_min} minutes` : 'Not specified'}\n\nYour communication style:\n- Be concise and focused - you have limited responses\n- Talk like a supportive friend who gets their struggles\n- Use relatable examples from their world: social media, gaming, apps\n- Keep responses under 150 words when possible\n\nUse quick analogies they'll connect with:\n- \"Like organizing your phone apps\"\n- \"Similar to learning a new game - start simple\"\n- \"Think of it like creating content - plan, create, share\"\n\nCRITICAL RULES:\n1. ${modeLine}\n2. Analyze what they've completed to understand their progress pattern\n3. ${isSubstep ? 'Provide direct action steps for this specific substep' : 'Provide sub-steps ONLY for the current step in question'}\n4. Stay laser-focused on the current ${isSubstep ? 'substep' : 'step'}\n\nYour role is to:\n1. Answer their specific questions about THIS ${isSubstep ? 'SUBSTEP' : 'STEP'} only\n2. ${isSubstep ? 'Give direct, specific guidance for completing this substep' : 'Break down THIS STEP into smaller, manageable sub-steps'}\n3. Give practical advice for completing THIS SPECIFIC ${isSubstep ? 'SUBSTEP' : 'STEP'}\n4. Stay laser-focused on the current ${isSubstep ? 'substep' : 'step'}\n\n${guidanceBlock}\n\nBe supportive but keep it brief and focused on THIS ${isSubstep ? 'SUBSTEP' : 'STEP'} ONLY.`;
+    const systemPrompt = `You are Luna, a helpful AI assistant designed for teenagers and young adults (16-25) working on their goals.
+
+Current Goal: "${goal.title}"
+Goal Description: ${goal.description || 'No description provided'}
+Goal Domain: ${goal.domain || 'General'}
+PRIMARY BARRIER: ${goal.barrier_1 || 'Not specified'}
+SECONDARY BARRIER: ${goal.barrier_2 || 'Not specified'}
+USER MOTIVATION: ${goal.motivation || 'Not specified'}
+
+${progressContext}
+
+CURRENT STEP FOCUS: "${step.title}"
+Step Description: ${step.notes || step.explainer || 'No description provided'}
+Estimated Time: ${step.estimated_effort_min ? `${step.estimated_effort_min} minutes` : 'Not specified'}
+
+Your communication style:
+- Be concise and focused - you have limited responses
+- Talk like a supportive friend who gets their struggles
+- Use relatable examples from their world: social media, gaming, apps
+- Keep responses under 150 words when possible
+
+Use quick analogies they'll connect with:
+- "Like organizing your phone apps"
+- "Similar to learning a new game - start simple"
+- "Think of it like creating content - plan, create, share"
+
+CRITICAL RULES:
+1. ${modeLine}
+2. Analyze what they've completed to understand their progress pattern
+3. ${isSubstep ? 'Provide direct action steps for this specific substep' : 'Provide sub-steps ONLY for the current step in question'}
+4. Stay laser-focused on the current ${isSubstep ? 'substep' : 'step'}
+
+Your role is to:
+1. Answer their specific questions about THIS ${isSubstep ? 'SUBSTEP' : 'STEP'} only
+2. ${isSubstep ? 'Give direct, specific guidance for completing this substep' : 'Break down THIS STEP into smaller, manageable sub-steps'}
+3. Give practical advice for completing THIS SPECIFIC ${isSubstep ? 'SUBSTEP' : 'STEP'}
+4. Stay laser-focused on the current ${isSubstep ? 'substep' : 'step'}
+
+${guidanceBlock}
+
+Be supportive but keep it brief and focused on THIS ${isSubstep ? 'SUBSTEP' : 'STEP'} ONLY.`;
 
     // Prepare conversation history for context
     const history = Array.isArray(conversationHistory) ? conversationHistory : [];
@@ -377,4 +492,3 @@ async function checkExistingSubsteps(stepId: string) {
     return [];
   }
 }
-
