@@ -395,41 +395,24 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
             stepDueDate.setMinutes(startMinNum + 30);
           }
           
+          // Format timing context for notes
+          const timingHint = i === 0 
+            ? `\n\nℹ️ Recommended timing: Before individual starts at ${startTime}`
+            : `\n\nℹ️ Recommended timing: Around ${stepDueDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+          
           const { step } = await stepsService.createStep(goal!.id, {
             title: coachStep.title,
             step_type: 'action',
-            is_required: true,
+            is_required: false, // Supporter steps are guidelines, not blocking requirements
             estimated_effort_min: 10,
             is_planned: true,
-            notes: coachStep.description,
+            notes: coachStep.description + timingHint,
             is_supporter_step: true,
             due_date: stepDueDate.toISOString()
           });
           
           savedSupporterSteps.push(step);
-          
-          // Set dependencies:
-          // - Supporter step 1: depends on individual step 1 (prerequisite)
-          // - Supporter step 2: depends on supporter step 1 AND individual step 2
-          // - Supporter step 3: depends on supporter step 2
-          let dependencyIds: string[] = [];
-          if (i === 0 && savedIndividualSteps[0]) {
-            dependencyIds = [savedIndividualSteps[0].id];
-          } else if (i === 1) {
-            dependencyIds = [savedSupporterSteps[0].id];
-            if (savedIndividualSteps[1]) {
-              dependencyIds.push(savedIndividualSteps[1].id);
-            }
-          } else if (i > 1 && savedSupporterSteps[i - 1]) {
-            dependencyIds = [savedSupporterSteps[i - 1].id];
-          }
-          
-          if (dependencyIds.length > 0) {
-            await supabase
-              .from('steps')
-              .update({ dependency_step_ids: dependencyIds })
-              .eq('id', step.id);
-          }
+          // No dependencies set - supporter steps are independent but contextually timed
         }
       }
       
