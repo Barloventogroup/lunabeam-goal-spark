@@ -26,9 +26,22 @@ interface MicroStepsRequest {
   supporterTimingOffset?: string; // e.g., "2 hours before", "by 8:00 AM on" - for supporter preparation
 }
 
-// Verb constraints for Step 2 activation
-const STRICT_VERBS = ['touch', 'open', 'unlock', 'tap', 'grab', 'hold', 'place', 'put on', 'gather', 'sort', 'collect'];
-const FALLBACK_VERBS = ['walk to', 'sit at', 'lift', 'plug in', 'move to', 'pick up', 'carry', 'load', 'fill', 'set up'];
+interface JudgeRequest {
+  microSteps: Array<{ title: string; description: string }>;
+  originalInput: MicroStepsRequest;
+}
+
+interface JudgeResponse {
+  total_score: number;
+  pass_fail: 'PASS' | 'FAIL';
+  critique_for_user: string;
+  critique_for_retry: string;
+  scoring_breakdown: {
+    A_priority_score: number;
+    B_quality_score: number;
+    C_timing_score: number;
+  };
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -53,23 +66,19 @@ Deno.serve(async (req) => {
       );
     }
 
-    // EXECUTIVE FUNCTION COACH: Two-attempt iterative refinement
-    // Attempt 1: Strict verbs (most trivial activation)
-    // Attempt 2: Fallback verbs (slightly more complex but still trivial)
+    // GEMINI JUDGE SERVICE: Up to 5 attempts with AI-guided refinement
     
     let microSteps = null;
     let attemptNumber = 1;
-    const maxAttempts = 2;
-    const verbSets = [STRICT_VERBS, FALLBACK_VERBS];
+    const maxAttempts = 5;
+    let retryGuidance = '';
     
     for (attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber++) {
-      const allowedVerbs = verbSets[attemptNumber - 1];
       console.log(`\n=== ATTEMPT ${attemptNumber}/${maxAttempts} ===`);
-      console.log(`Allowed Step 2 verbs:`, allowedVerbs.join(', '));
       
-      // Build prompts with verb constraints
-      const systemPrompt = buildSystemPrompt(payload.flow, allowedVerbs);
-      const userPrompt = buildUserPrompt(payload, attemptNumber);
+      // Build prompts (no verb constraints - removed)
+      const systemPrompt = buildSystemPrompt(payload.flow);
+      const userPrompt = buildUserPrompt(payload, attemptNumber, retryGuidance);
 
       try {
         // Call Lovable AI Gateway
@@ -155,31 +164,57 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Validate quality of generated steps
-        const validation = validateMicroSteps(candidateSteps, payload, allowedVerbs);
-        if (!validation.valid) {
-          console.error(`Attempt ${attemptNumber} - Quality validation failed:`, validation.errors);
+        // LAYER 1: Hardcoded Guards (Basic Format)
+        const basicChecks = validateBasicFormat(candidateSteps, payload);
+        if (!basicChecks.valid) {
+          console.error(`Attempt ${attemptNumber} - Basic format failed:`, basicChecks.errors);
+          continue;
+        }
+
+        // LAYER 2: Gemini Judge Service (Semantic Validation)
+        const judgeResult = await callGeminiJudge({
+          microSteps: candidateSteps,
+          originalInput: payload
+        });
+
+        if (judgeResult.error) {
+          console.error('❌ Gemini Judge service unavailable');
+          return new Response(
+            JSON.stringify({ 
+              error: 'We cannot provide micro-steps at this time. Let\'s try again later.',
+              useFallback: true 
+            }),
+            { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        if (judgeResult.pass_fail === 'FAIL') {
+          console.error(`Attempt ${attemptNumber} - Gemini Judge FAIL (score: ${judgeResult.total_score}/100)`);
+          console.log('📝 Critique for retry:', judgeResult.critique_for_retry);
           
-          // If this is not the last attempt, try again
+          retryGuidance = judgeResult.critique_for_retry;
+          
           if (attemptNumber < maxAttempts) {
-            console.log(`Retrying with fallback verbs...`);
+            console.log(`🔄 Retrying with Gemini guidance...`);
             continue;
           }
           
-          // Last attempt failed
-          console.error('All attempts exhausted. Validation errors:', validation.errors);
+          console.error('All attempts exhausted');
           break;
         }
 
         // SUCCESS! Valid steps generated
         microSteps = candidateSteps;
-        console.log(`✅ Attempt ${attemptNumber} succeeded with valid micro-steps`);
+        console.log(`✅ Attempt ${attemptNumber} - Gemini Judge PASS (score: ${judgeResult.total_score}/100)`);
+        console.log(`   A (Priority): ${judgeResult.scoring_breakdown.A_priority_score}/50`);
+        console.log(`   B (Quality): ${judgeResult.scoring_breakdown.B_quality_score}/35`);
+        console.log(`   C (Timing): ${judgeResult.scoring_breakdown.C_timing_score}/15`);
         break;
 
       } catch (error) {
         console.error(`Attempt ${attemptNumber} - Exception:`, error);
         if (attemptNumber < maxAttempts) {
-          console.log(`Retrying with fallback verbs...`);
+          console.log(`🔄 Retrying after exception...`);
           continue;
         }
       }
@@ -189,7 +224,10 @@ Deno.serve(async (req) => {
     if (!microSteps) {
       console.error('Failed to generate valid micro-steps after all attempts');
       return new Response(
-        JSON.stringify({ error: 'All AI generation attempts failed validation', useFallback: true }),
+        JSON.stringify({ 
+          error: 'We cannot provide micro-steps at this time. Let\'s try again later.',
+          useFallback: true 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -208,7 +246,7 @@ Deno.serve(async (req) => {
   }
 });
 
-function buildSystemPrompt(flow: 'individual' | 'supporter', allowedVerbs: string[]): string {
+function buildSystemPrompt(flow: 'individual' | 'supporter'): string {
   return `You are a highly specialized micro-step generator for neurodivergent individuals. Your task is to generate exactly three, specific, non-judgmental action steps designed to compensate for Executive Function deficits.
 
 FRAMEWORK RULES:
@@ -223,10 +261,6 @@ Examples:
 - ❌ "Prepare your workspace" → ✅ "Gather your Spanish flashcards and notebook"
 - ❌ "Tap the app icon" → ✅ "Tap the Duolingo app icon"
 - ❌ "Work for 20 minutes" → ✅ "Practice 10 Spanish verbs for 20 minutes"
-
-**STEP 2 ACTIVATION VERB CONSTRAINTS (THIS ATTEMPT):**
-For Step 2, you MUST use ONLY these verbs: ${allowedVerbs.join(', ')}
-DO NOT use: search, browse, research, find, read, write, call, text, login, boot, power on
 
 ---
 ${flow === 'individual' ? `
@@ -267,7 +301,6 @@ Step 2: ACTIVATION CUE (AT EXACTLY [startTime])
 - **Purpose**: Trivial activation to defeat the inertia barrier.
 - **Constraint**: The physical action must take **< 15 seconds** to complete. It must be an initial touch, tap, or switch.
 - **MUST REFERENCE**: The specific tool, app, or material for [Goal Title]
-- **CRITICAL CONSTRAINT FOR THIS ATTEMPT**: You MUST use ONLY these verbs for Step 2: ${allowedVerbs.join(', ')}
 - **Examples**:
   * Goal: "Practice Spanish" → "At 7:00 PM Friday, tap the Duolingo app icon."
   * Goal: "Study algebra" → "At 8:00 AM Friday, open your algebra textbook to chapter 3."
@@ -291,7 +324,7 @@ Step 3: FOCUSED WORK (AFTER ACTIVATION)
 [SUPPORTER FLOW STRUCTURE] (Focus: Environmental Control & Accountability)
 
 Step 1: ENVIRONMENTAL SETUP (WELL BEFORE [startTime])
-- **CRITICAL TIMING**: This step must happen WELL BEFORE [startTime] - specifically: ${allowedVerbs.length > 0 ? '[supporterTimingOffset]' : 'at least 2 hours before'}
+- **CRITICAL TIMING**: This step must happen WELL BEFORE [startTime] - specifically: at least 2 hours before
 - **PURPOSE**: Remove all potential physical and material obstacles BEFORE the individual begins
 - **ACTION**: What the supporter must do to ensure the workspace is ready (charging, clearing, providing materials)
 - **MUST SPECIFY EXACT TIME**: Convert the timing offset to an explicit time in the step
@@ -327,7 +360,6 @@ Step 2: CUE DELIVERY (EXACTLY AT [startTime])
 - **PURPOSE**: Serve as the human prompt to initiate the activation step
 - **ACTION**: What the supporter says or does to trigger the individual's Step 2. Use language appropriate for the [Supporter Role]
 - **MUST REFERENCE**: The specific tool/app/material for [Goal Title]
-- **CRITICAL CONSTRAINT FOR THIS ATTEMPT**: The action you suggest must use ONLY these verbs: ${allowedVerbs.join(', ')}
 - **Examples**:
   * Goal: "Study algebra" + Parent: "At 6:30 PM, hand them the pencil and say: 'Just touch the algebra textbook for 15 seconds.'"
   * Goal: "Practice Spanish" + Coach: "At 7:00 PM, text them: 'Time to tap the Duolingo app icon!'"
@@ -401,7 +433,7 @@ FORMAT:
 - Use domain-specific language from the goal (e.g., "chapter 3", "team practice times")`;
 }
 
-function buildUserPrompt(payload: MicroStepsRequest, attemptNumber: number = 1): string {
+function buildUserPrompt(payload: MicroStepsRequest, attemptNumber: number = 1, retryGuidance: string = ''): string {
   let prerequisiteContext = '';
   
   if (payload.hasPrerequisite && payload.prerequisiteText) {
@@ -461,176 +493,109 @@ ${payload.barrierContext}
 - If they mention "noise sensitivity" → Include environmental prep in Step 1 (e.g., "Place noise-canceling headphones on desk")
 - If they mention "visual learner" → Include visual elements in Step 3 (e.g., "Draw a simple flowchart with 3 boxes")
 - If they mention "freezing when staring at X" → Step 2 should bypass that exact screen (e.g., "Tap icon—it will auto-load last lesson")
-` : ''}${attemptNote}
+` : ''}${attemptNote}${retryGuidance ? `\n\n**CRITICAL FEEDBACK FROM PREVIOUS ATTEMPT:**\n${retryGuidance}\n\nYou MUST address this feedback in your revised micro-steps.` : ''}
 
 Generate exactly 3 micro-steps following the ${payload.flow.toUpperCase()} FLOW structure. Pay special attention to the [Secondary Challenge] when creating Step 3.`;
 }
 
-function validateMicroSteps(
+// LAYER 1: Basic Format Validation (Hardcoded Guards)
+function validateBasicFormat(
   steps: { title: string; description: string }[], 
-  payload?: MicroStepsRequest,
-  allowedVerbs?: string[]
+  payload: MicroStepsRequest
 ): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
-  const forbiddenWords = ['initiation', 'barrier', 'scaffolding', 'activation cue'];
-  const step2BannedVerbs = ['search', 'browse', 'research', 'find', 'read', 'write', 'call', 'text', 'login', 'boot'];
-  const step2BannedPhrases = ['power button', 'press the power', 'turn on', 'boot up', 'reboot'];
-  
+
+  // 1. Check step count
+  if (steps.length !== 3) {
+    errors.push(`Expected exactly 3 steps, got ${steps.length}`);
+    return { valid: false, errors };
+  }
+
+  // 2. Check format (title + description present)
   steps.forEach((step, i) => {
-    const text = (step.title + ' ' + step.description).toLowerCase();
-    
-    // Check for jargon
-    forbiddenWords.forEach(word => {
-      if (text.includes(word)) {
-        errors.push(`Step ${i+1} contains clinical jargon: "${word}"`);
-      }
-    });
-    
-    // Step 2 validations - check against allowed verbs if provided
-    if (i === 1) {
-      // Check for banned verbs
-      step2BannedVerbs.forEach(verb => {
-        if (text.includes(verb)) {
-          errors.push(`Step 2 contains banned verb: "${verb}"`);
-        }
-      });
-      
-      // Check for banned phrases
-      step2BannedPhrases.forEach(phrase => {
-        if (text.includes(phrase)) {
-          errors.push(`Step 2 contains banned phrase: "${phrase}"`);
-        }
-      });
-      
-      // If allowedVerbs provided, enforce strict verb matching
-      if (allowedVerbs && allowedVerbs.length > 0) {
-        const hasAllowedVerb = allowedVerbs.some(verb => text.includes(verb.toLowerCase()));
-        if (!hasAllowedVerb) {
-          errors.push(`Step 2 must use one of the allowed verbs: ${allowedVerbs.join(', ')}`);
-        }
-      }
-      
-      // Check for barrier context-specific requirements
-      if (payload?.barrierContext) {
-        const contextLower = payload.barrierContext.toLowerCase();
-        
-        // If context mentions noise/environmental issues, Step 1 should address it
-        if (i === 0) {
-          const environmentalKeywords = ['noise', 'quiet', 'lighting', 'clutter', 'space', 'environment'];
-          const needsEnvironmental = environmentalKeywords.some(kw => contextLower.includes(kw));
-          if (needsEnvironmental) {
-            const step1Text = steps[0]?.description.toLowerCase() || '';
-            const addressesEnvironment = environmentalKeywords.some(kw => step1Text.includes(kw));
-            if (!addressesEnvironment) {
-              console.log('Suggestion: Step 1 could address environmental setup mentioned in barrier context');
-            }
-          }
-        }
-        
-        // If context mentions "freezing" or "blank page", Step 2 should be extra trivial
-        if (contextLower.includes('freeze') || contextLower.includes('blank page') || contextLower.includes('overwhelm')) {
-          // Step 2 should be even simpler - this is just a suggestion log
-          console.log('Note: Barrier context mentions freezing/overwhelm - Step 2 should be maximally trivial');
-        }
-      }
+    if (!step.title || step.title.trim().length === 0) {
+      errors.push(`Step ${i+1} missing title`);
     }
-    
-    // NEW: Validate Step 1 if prerequisite involves uncertainty
-    if (i === 0 && payload?.prerequisiteText) {
-      const prereqLower = payload.prerequisiteText.toLowerCase();
-      const uncertaintyKeywords = ['not sure', 'don\'t know', 'need to find', 'where to', 'how to', 'unsure'];
-      const hasUncertainty = uncertaintyKeywords.some(kw => prereqLower.includes(kw));
-      
-      if (hasUncertainty) {
-        // Step 1 should be a research/discovery step
-        const researchVerbs = ['ask', 'text', 'search', 'google', 'look up', 'find out', 'watch', 'read', 'visit', 'call', 'email'];
-        const hasResearchAction = researchVerbs.some(verb => text.includes(verb));
-        
-        if (!hasResearchAction) {
-          errors.push('Step 1 must include a research/discovery action when prerequisite is uncertain (e.g., "ask 2 people", "search online")');
-        }
-        
-        // Suggest measurable outcome for research (warning, not error)
-        const hasMeasurableResearch = /\d+\s?(people|person|option|website|video|article|store|location)/i.test(text);
-        if (!hasMeasurableResearch) {
-          console.log('Suggestion: Research step could include quantity (e.g., "ask 2 people", "find 3 options")');
-        }
-        
-        // Should NOT use vague terms
-        const vagueTerms = ['figure out', 'look into', 'explore options', 'do research'];
-        const hasVagueTerm = vagueTerms.some(term => text.includes(term));
-        if (hasVagueTerm) {
-          errors.push('Research step is too vague - use specific actions like "ask [role]", "search [specific term]", "watch [specific content]"');
-        }
-      }
+    if (!step.description || step.description.trim().length === 0) {
+      errors.push(`Step ${i+1} missing description`);
     }
-    
-    // NEW: For supporter flow, validate Step 1 has explicit timing
-    if (i === 0 && payload?.flow === 'supporter') {
-      const step1Text = step.title + ' ' + step.description;
-      const hasExplicitTime = /\d+:\d+\s*(am|pm)/i.test(step1Text) || 
-                             /by\s+\d+:\d+/i.test(step1Text) ||
-                             /before\s+\d+:\d+/i.test(step1Text);
-      
-      if (!hasExplicitTime) {
-        console.log('Suggestion: Supporter Step 1 should specify an explicit preparation time (e.g., "By 6:00 PM")');
-      }
+    if (step.title && (step.title.length < 10 || step.title.length > 80)) {
+      errors.push(`Step ${i+1} title length invalid: ${step.title.length} chars (should be 10-80)`);
     }
-    
-    
-    // Step 3 validations
-    if (i === 2) {
-      // Must reference minutes, not seconds
-      if (step.description.match(/\d+\s?seconds/i)) {
-        errors.push('Step 3 should not use "seconds" - use minutes (15+) for substantive work');
-      }
-      
-      // Must mention minutes
-      if (!step.description.match(/\d+\s?minut/i)) {
-        errors.push('Step 3 must specify duration in minutes (e.g., "Set a 20-minute timer")');
-      }
-      
-      // Check for measurable outcome (duration, quantity, or completion indicator)
-      const hasDuration = /\d+[- ]minute/i.test(text);
-      const hasQuantity = /\d+\s+(verb|problem|step|task|item|name|team|page|question|chapter|lesson|chord|word|phrase|exercise|set|rep|minute)/i.test(text);
-      const hasCompletionVerb = /complete|finish|review|practice|identify|work through|analyze|study|solve|write down/i.test(text);
-      
-      if (!hasDuration && !hasQuantity && !hasCompletionVerb) {
-        errors.push('Step 3 must include measurable outcome (duration, quantity, or completion indicator)');
-      }
-      
-      // Suggestion (not requirement) based on secondary challenge
-      if (payload?.barrier2) {
-        const barrier2Lower = payload.barrier2.toLowerCase();
-        const hasTimer = /timer|alarm|countdown/.test(text);
-        const hasSequencing = /write|list|break.*into|sub-task|smaller task/.test(text);
-        const hasTimeGoal = /\d+\s?minut.*complete|finish.*\d+\s?minut/.test(text);
-        
-        // Log suggestions for improvement, but don't reject
-        if ((barrier2Lower.includes('focus') || barrier2Lower.includes('attention')) && !hasTimer) {
-          console.log(`Suggestion: Step 3 could include a timed work sprint with movement break for Focus/Attention challenge`);
-        }
-        if (barrier2Lower.includes('planning') && !hasSequencing) {
-          console.log(`Suggestion: Step 3 could include sequencing or breakdown task for Planning challenge`);
-        }
-        if (barrier2Lower.includes('time') && !hasTimeGoal) {
-          console.log(`Suggestion: Step 3 could include a specific sub-task with time limit for Time Blindness challenge`);
-        }
-      }
-    }
-    
-    // Check title length
-    const titleWords = step.title.split(/\s+/).length;
-    if (titleWords > 10) {
-      errors.push(`Step ${i+1} title too long (${titleWords} words) - keep under 8 words`);
-    }
-    
-    // Check sentence count (1-3 sentences allowed, warn if > 3)
-    const sentenceCount = step.description.split(/[.!?]+/).filter(s => s.trim()).length;
-    if (sentenceCount > 3) {
-      console.log(`Suggestion: Step ${i+1} has ${sentenceCount} sentences - consider keeping to 2-3 for clarity`);
+    if (step.description && (step.description.length < 30 || step.description.length > 400)) {
+      errors.push(`Step ${i+1} description length invalid: ${step.description.length} chars (should be 30-400)`);
     }
   });
+
+  // 3. Placeholder detection
+  const placeholderPatterns = [
+    /\[your [^\]]+\]/gi,
+    /\[Goal Action\]/gi,
+    /\[washing machine model\]/gi,
+    /\[START_TIME\]/gi,
+    /\[Day of Week\]/gi,
+    /\[item name\]/gi,
+    /\[app name\]/gi,
+    /\[tool\]/gi,
+    /\[task\]/gi
+  ];
+
+  steps.forEach((step, i) => {
+    for (const pattern of placeholderPatterns) {
+      if (pattern.test(step.title) || pattern.test(step.description)) {
+        errors.push(`Step ${i+1} contains unresolved placeholder`);
+        break;
+      }
+    }
+  });
+
+  // 4. Goal reference check (at least 2 steps must mention goal action/title)
+  const goalWords = payload.goalTitle.toLowerCase().split(' ').filter(w => w.length > 3);
+  let stepsReferencingGoal = 0;
   
+  steps.forEach(step => {
+    const stepText = (step.title + ' ' + step.description).toLowerCase();
+    const hasGoalReference = goalWords.some(word => stepText.includes(word));
+    if (hasGoalReference) stepsReferencingGoal++;
+  });
+
+  if (stepsReferencingGoal < 2) {
+    errors.push(`Only ${stepsReferencingGoal}/3 steps reference the goal. At least 2 steps must explicitly mention the goal action.`);
+  }
+
   return { valid: errors.length === 0, errors };
+}
+
+// LAYER 2: Gemini Judge Service Call
+async function callGeminiJudge(input: JudgeRequest): Promise<JudgeResponse | { error: string }> {
+  try {
+    const response = await fetch(
+      `https://soyiqjdwnhtvopvwvfkq.supabase.co/functions/v1/gemini-judge-microsteps`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`
+        },
+        body: JSON.stringify(input)
+      }
+    );
+
+    if (!response.ok) {
+      console.error('Gemini Judge HTTP error:', response.status);
+      return { error: 'Judge service unavailable' };
+    }
+
+    const result = await response.json();
+    
+    // Check if result has error property
+    if (result.error) {
+      return { error: result.error };
+    }
+
+    return result as JudgeResponse;
+  } catch (error) {
+    console.error('Gemini Judge exception:', error);
+    return { error: 'Judge service failed' };
+  }
 }
