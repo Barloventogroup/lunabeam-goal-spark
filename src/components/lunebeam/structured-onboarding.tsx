@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Lottie from 'lottie-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
@@ -11,8 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { useStore } from '@/store/useStore';
 import { AIService } from '@/services/aiService';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
+import confettiAnimation from '@/assets/confetti-animation.json';
 
 interface OnboardingData {
   role: 'individual' | 'parent' | '';
@@ -97,6 +99,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const [showProfile, setShowProfile] = useState(false);
   const [generatedProfile, setGeneratedProfile] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const { completeOnboarding, setProfile } = useStore();
 
   const getTotalSteps = () => {
@@ -297,69 +301,63 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   };
 
   if (showProfile) {
-    const getEmojiForTag = (tag: string) => {
-      const emojiMap: { [key: string]: string } = {
-        'Problem solver': '🧩', 'Creative': '🎨', 'Kind/helper': '🤝', 'Detail-oriented': '🔍',
-        'Curious': '🤔', 'Organizer': '📋', 'Hands-on': '🛠️', 'Techie': '💻', 'Outdoorsy': '🌲',
-        'Patient': '⏳', 'Leader': '👑', 'Communicator': '💬', 'Animals': '🐾', 'Art/Design': '🎨',
-        'Building/Making': '🔨', 'Games': '🎮', 'Music': '🎵', 'Sports/Fitness': '⚽',
-        'Cooking': '👨‍🍳', 'Nature': '🌿', 'Cars': '🚗', 'Reading/Writing': '📚',
-        'Tech/Coding': '💻', 'Volunteering/Helping': '🤝', 'Money/Business': '💼',
-        'Puzzles': '🧩', 'Spirituality': '🙏'
-      };
-      return emojiMap[tag] || '⭐';
-    };
-
-    return (
-      <div className="min-h-screen p-4 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #E8F0F3 0%, #f0f8fb 100%)' }}>
-        <Card className="w-full max-w-md shadow-card border-0">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-xl">✨</span>
-            </div>
-            <CardTitle className="text-2xl">Here's your Starter Profile</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-card-soft rounded-lg p-4">
-              <p className="text-sm text-black leading-relaxed">{generatedProfile}</p>
-            </div>
-            
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Your tags:</p>
-              <div className="flex flex-wrap gap-2">
-                {[...data.superpowers, ...data.interests].map(tag => (
-                  <div 
-                    key={tag} 
-                    className="flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1 text-sm"
-                    title={tag}
-                  >
-                    <span>{getEmojiForTag(tag)}</span>
-                    <span>{tag}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="text-center space-y-3">
-              <p className="text-sm text-black">
-                Did I get that right? Don't worry, you can continue adding information to your profile 
-                so we can further personalize your goals and help you shine.
-              </p>
-              <Button 
-                onClick={handleBack} 
-                className="w-full mb-2 rounded-full text-white" 
-                style={{ backgroundColor: '#87CEEB' }}
-              >
-                Back
-              </Button>
-              <Button onClick={handleComplete} className="w-full">
-                Let's get started
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+    return <div className="min-h-screen flex flex-col">
+      {/* Exit button */}
+      <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
+        <X className="h-4 w-4" />
+      </Button>
+      
+      {/* HEADER - 50vh */}
+      <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+        <div className="max-w-2xl mx-auto w-full">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-semibold">Your Profile</h2>
+            <p className="text-foreground-soft">
+              Here's a summary of what you've shared. You'll be able to set goals and invite supporters after setup is complete.
+            </p>
+          </div>
+        </div>
       </div>
-    );
+      
+      {/* BODY - 43.75vh */}
+      <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6 flex items-center justify-center">
+        <div className="max-w-2xl mx-auto w-full">
+          <div className="bg-white rounded-lg p-8 shadow-md space-y-4">
+            <p className="text-foreground leading-relaxed">
+              {generatedProfile}
+            </p>
+            <p className="text-sm text-foreground-soft leading-relaxed">
+              Did I get that right? Don't worry, you can continue adding information to your profile so we can further personalize your goals and help you shine.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      {/* FOOTER - 6.25vh */}
+      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)]">
+        <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
+        <div className="flex items-center gap-3">
+          <BackButton onClick={handleBack} variant="text" />
+          <Button onClick={handleComplete} disabled={isCreating}>
+            {isCreating ? <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Setting up...
+              </> : "Let's go 🚀"}
+          </Button>
+        </div>
+      </div>
+      
+      {/* Confetti Animation */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50">
+          <Lottie 
+            animationData={confettiAnimation} 
+            loop={false}
+            onComplete={() => setShowConfetti(false)}
+          />
+        </div>
+      )}
+    </div>;
   }
 
   return (
