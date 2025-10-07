@@ -52,6 +52,7 @@ Guidelines:
 - Prioritize the most distinctive and important aspects
 - Weave details together naturally - don't list them
 - Use the correct pronouns throughout (${pronouns})
+- If pronouns are "you", write in second person addressing the individual directly
 - Avoid templated phrases like "shines at" or "drawn to"
 - Make it sound genuine and personal
 - Focus on the person's key strengths and interests`;
@@ -66,7 +67,9 @@ Work environment preference: ${workStyleDesc.environment} spaces
 Activity preference: ${workStyleDesc.activity} activities
 Social preference: ${workStyleDesc.social} settings
 Focus for next two weeks: ${nextTwoWeeks || 'getting started'}
-Sharing preference: ${sharingSupport === 'private' ? 'keeps progress private' : sharingSupport === 'summary' ? 'likes sharing summaries with supporters' : 'comfortable sharing details with supporters'}`;
+Sharing preference: ${sharingSupport === 'private' ? 'keeps progress private' : sharingSupport === 'summary' ? 'likes sharing summaries with supporters' : 'comfortable sharing details with supporters'}
+
+${pronouns === 'you' ? 'Write this in second person, addressing the individual as "you".' : ''}`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

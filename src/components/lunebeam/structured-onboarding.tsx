@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { useStore } from '@/store/useStore';
+import { supabase } from '@/integrations/supabase/client';
 import { AIService } from '@/services/aiService';
 import { X, Loader2 } from 'lucide-react';
 import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
@@ -236,37 +237,32 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const generateProfile = async () => {
     setIsGenerating(true);
     try {
-      const strengths = data.superpowers.slice(0, 3);
-      const topInterests = data.interests.slice(0, 3);
-      
-      // Convert numeric slider values to descriptive text
-      const socialPref = data.workStyle.socialPreference > 50 ? 'working with others' : 'working solo';
-      const envPref = data.workStyle.environment > 50 ? 'lively' : 'quiet';
-      const activityPref = data.workStyle.activity > 50 ? 'hands-on' : 'screen-based';
-      const durationPref = data.workStyle.duration > 50 ? 'longer' : 'shorter';
-      
-      const workPrefs = `${envPref} environments, ${activityPref} activities`;
-      const barriers = data.barriers.length > 0 ? data.barriers.join(' and ') : null;
-      const timePreference = data.bestTime ? `in the ${data.bestTime.toLowerCase()}` : '';
-      const goalHint = data.goalSeed ? `They want to try: ${data.goalSeed}` : '';
-      
-      let summary = `${data.name || 'This person'} shines at being ${strengths.join(', ')}. `;
-      summary += `They're drawn to ${topInterests.join(', ')} and thrive in ${workPrefs} ${timePreference}. `;
-      if (barriers) {
-        summary += `What sometimes gets in their way: ${barriers}. `;
+      const { data: summaryData, error } = await supabase.functions.invoke('generate-profile-summary', {
+        body: {
+          name: 'You',
+          pronouns: 'you',
+          age: data.age,
+          strengths: data.superpowers,
+          interests: data.interests,
+          workStyle: data.workStyle,
+          nextTwoWeeks: data.goalSeed,
+          sharingSupport: data.sharingPrefs.shareScope
+        }
+      });
+
+      if (error) {
+        console.error('Error generating profile:', error);
+        setGeneratedProfile("You're ready to start your journey with your unique strengths and interests!");
+      } else {
+        setGeneratedProfile(summaryData.summary);
       }
-      if (data.goalSeed) {
-        summary += `Their next tiny step: ${data.goalSeed}. `;
-      }
-      
-      setGeneratedProfile(summary);
-      setShowProfile(true);
     } catch (error) {
       console.error('Error generating profile:', error);
-      setGeneratedProfile("We've captured your preferences and you're ready to start your journey!");
+      setGeneratedProfile("You're ready to start your journey with your unique strengths and interests!");
+    } finally {
+      setIsGenerating(false);
       setShowProfile(true);
     }
-    setIsGenerating(false);
   };
 
   const handleComplete = async () => {
@@ -321,15 +317,15 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       
       {/* BODY - 43.75vh */}
       <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6 flex items-center justify-center">
-        <div className="max-w-2xl mx-auto w-full">
-          <div className="bg-white rounded-lg p-8 shadow-md space-y-4">
+        <div className="max-w-2xl mx-auto w-full space-y-4">
+          <div className="bg-white rounded-lg p-8 shadow-md">
             <p className="text-foreground leading-relaxed">
               {generatedProfile}
             </p>
-            <p className="text-sm text-foreground-soft leading-relaxed">
-              Did I get that right? Don't worry, you can continue adding information to your profile so we can further personalize your goals and help you shine.
-            </p>
           </div>
+          <p className="text-sm text-foreground-soft leading-relaxed text-center px-4">
+            Did I get that right? Don't worry, you can continue adding information to your profile so we can further personalize your goals and help you shine.
+          </p>
         </div>
       </div>
       
