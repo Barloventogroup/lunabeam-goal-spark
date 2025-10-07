@@ -596,7 +596,7 @@ export function ParentOnboarding({
       
       {/* FOOTER - 6.25vh */}
       <div className="h-[6.25vh] bg-white flex items-center justify-end px-6 gap-3">
-        {currentStep > 1 && <BackButton onClick={handleBack} variant="text" />}
+        {currentStep >= 1 && <BackButton onClick={handleBack} variant="text" />}
         <Button onClick={handleNext}>
           {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
         </Button>
