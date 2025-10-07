@@ -64,6 +64,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         first_name: profile?.first_name || '',
         email: profile?.email || ''
       });
+    } else if (section === 'password') {
+      setEditedData({ 
+        newPassword: '',
+        confirmPassword: ''
+      });
     } else if (section === 'tags') {
       setEditedData({
         strengths: profile?.strengths || [],
@@ -76,6 +81,42 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
   const handleSave = async (section: string) => {
     try {
       if (!profile) return;
+
+      if (section === 'password') {
+        // Validate passwords
+        if (!editedData.newPassword || editedData.newPassword.length < 6) {
+          toast({
+            title: "Error",
+            description: "Password must be at least 6 characters long.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        if (editedData.newPassword !== editedData.confirmPassword) {
+          toast({
+            title: "Error",
+            description: "Passwords do not match.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Update password using Supabase Auth
+        const { error } = await supabase.auth.updateUser({
+          password: editedData.newPassword
+        });
+
+        if (error) throw error;
+
+        setEditingSection(null);
+        setEditedData({});
+        toast({
+          title: "Password updated",
+          description: "Your password has been changed successfully."
+        });
+        return;
+      }
 
       const { data, error } = await supabase
         .from('profiles')
@@ -303,6 +344,68 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                 >
                   <Edit className="h-4 w-4 mr-1" />
                   Edit
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Security Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <CardTitle>Security</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {editingSection === 'password' ? (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">New Password</label>
+                  <Input
+                    type="password"
+                    value={editedData.newPassword || ''}
+                    onChange={(e) => setEditedData({...editedData, newPassword: e.target.value})}
+                    placeholder="Enter new password"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Must be at least 6 characters</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Confirm Password</label>
+                  <Input
+                    type="password"
+                    value={editedData.confirmPassword || ''}
+                    onChange={(e) => setEditedData({...editedData, confirmPassword: e.target.value})}
+                    placeholder="Confirm new password"
+                  />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button size="sm" onClick={() => handleSave('password')}>
+                    <Check className="h-4 w-4 mr-1" />
+                    Update Password
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleCancel}>
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">Password</p>
+                    <p className="text-sm text-muted-foreground">••••••••</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleStartEdit('password')}
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Change Password
                 </Button>
               </div>
             )}
