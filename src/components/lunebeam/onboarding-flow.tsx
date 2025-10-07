@@ -7,6 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/components/auth/auth-provider';
 import { X } from 'lucide-react';
+import { BackButton } from '@/components/ui/back-button';
 import { supabase } from '@/integrations/supabase/client';
 import { useStore } from '@/store/useStore';
 import { updateUserRole } from '@/utils/roleUtils';
@@ -93,6 +94,10 @@ export function OnboardingFlow() {
               </div>
             </div>
           </CardContent>
+          
+          <div className="absolute bottom-6 left-6">
+            <BackButton onClick={() => setShowInterstitial(false)} variant="text" />
+          </div>
           
           <div className="absolute bottom-6 right-6">
             <Button onClick={handleInterstitialNext}>

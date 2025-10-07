@@ -339,23 +339,27 @@ export function ParentOnboarding({
             <div className="flex-1 overflow-y-auto">
             
             {/* Step 1: Admin Name */}
-            {currentStep === 1 && <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-4">What should I call you?</h2>
-                  <p className="text-foreground-soft leading-relaxed mb-6">
-                    First, let me know your name so I can greet you properly!
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="adminName" className="text-sm font-medium">Your name</Label>
-                    <Input id="adminName" placeholder="Enter your name" value={data.adminName} onChange={e => setData(prev => ({
-                    ...prev,
-                    adminName: e.target.value
-                  }))} className="mt-1" />
+            {currentStep === 1 && (
+              <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold mb-4">What should I call you?</h2>
+                    <p className="text-foreground-soft leading-relaxed mb-6">
+                      First, let me know your name so I can greet you properly!
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="adminName" className="text-sm font-medium">Your name</Label>
+                      <Input id="adminName" placeholder="Enter your name" value={data.adminName} onChange={e => setData(prev => ({
+                      ...prev,
+                      adminName: e.target.value
+                    }))} className="mt-1" />
+                    </div>
                   </div>
                 </div>
-              </div>}
+              </div>
+            )}
 
             {/* Step 2: Introduction */}
             {currentStep === 2 && <div className="space-y-6 text-center">
