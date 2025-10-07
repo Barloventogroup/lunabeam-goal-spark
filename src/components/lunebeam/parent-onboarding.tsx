@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { database } from '@/services/database';
 import { useToast } from '@/hooks/use-toast';
 import { X, ArrowLeft, Loader2 } from 'lucide-react';
-import lunabeamIcon from '@/assets/lunabeam-icon.png';
+import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
   preferredName: string;

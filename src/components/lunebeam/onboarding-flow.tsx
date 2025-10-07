@@ -10,7 +10,7 @@ import { BackButton } from '@/components/ui/back-button';
 import { supabase } from '@/integrations/supabase/client';
 import { useStore } from '@/store/useStore';
 import { updateUserRole } from '@/utils/roleUtils';
-import lunabeamIcon from '@/assets/lunabeam-icon.png';
+import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
 export function OnboardingFlow() {
   const navigate = useNavigate();
   const {
