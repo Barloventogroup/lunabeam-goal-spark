@@ -142,6 +142,9 @@ export function ParentOnboarding({
     const pronoun = getDisplayPronouns();
     const possessive = getPossessivePronouns();
     
+    // Helper function to capitalize first letter
+    const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+    
     // Helper functions to convert slider values to text
     const getEnvironmentText = (value: number) => {
       if (value < 33) return 'quiet';
@@ -161,23 +164,35 @@ export function ParentOnboarding({
       return 'flexible';
     };
     
+    const getAgeDescription = (age: string) => {
+      switch(age) {
+        case '5-12': return 'As a child';
+        case '13-17': return 'As a teenager';
+        case '18-25': return 'As a young adult';
+        case '26-40': return 'As an adult';
+        case '41-60': return 'In their middle years';
+        case '60+': return 'As a senior';
+        default: return '';
+      }
+    };
+    
     let summary = `${name} `;
     if (data.strengths.length > 0) {
       summary += `shines at being ${data.strengths.slice(0, 3).join(', ')}. `;
     }
     if (data.interests.length > 0) {
-      summary += `${pronoun === 'they' ? 'They are' : `${pronoun} is`} drawn to ${data.interests.slice(0, 3).join(', ')}. `;
+      summary += `${capitalize(pronoun)} ${pronoun === 'they' ? 'are' : 'is'} drawn to ${data.interests.slice(0, 3).join(', ')}. `;
     }
     if (data.age && data.age !== 'Prefer not to say') {
-      summary += `At ${data.age}, `;
+      summary += `${getAgeDescription(data.age)}, `;
+      summary += `${pronoun} ${pronoun === 'they' ? 'prefer' : 'prefers'} ${getEnvironmentText(data.workStyle.environment)} spaces and ${getActivityText(data.workStyle.activity)} activities. `;
     } else {
-      summary += `${pronoun === 'they' ? 'They' : pronoun} `;
+      summary += `${capitalize(pronoun)} ${pronoun === 'they' ? 'prefer' : 'prefers'} ${getEnvironmentText(data.workStyle.environment)} spaces and ${getActivityText(data.workStyle.activity)} activities. `;
     }
-    summary += `${pronoun === 'they' ? 'prefer' : 'prefers'} ${getEnvironmentText(data.workStyle.environment)} spaces and ${getActivityText(data.workStyle.activity)} activities. `;
-    summary += `${pronoun === 'they' ? 'They work' : `${pronoun} works`} best in ${getSocialText(data.workStyle.socialPreference)} settings. `;
+    summary += `${capitalize(pronoun)} ${pronoun === 'they' ? 'work' : 'works'} best in ${getSocialText(data.workStyle.socialPreference)} settings. `;
     
     const sharing = data.sharingSupport === 'private' ? 'keeping things private' : data.sharingSupport === 'summary' ? 'sharing summaries with supporters' : 'sharing details with supporters';
-    summary += `${pronoun === 'they' ? 'They prefer' : `${pronoun} prefers`} ${sharing}.`;
+    summary += `${capitalize(pronoun)} ${pronoun === 'they' ? 'prefer' : 'prefers'} ${sharing}.`;
     setGeneratedProfile(summary);
     setShowProfile(true);
   };
