@@ -496,17 +496,15 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
 
           {/* Step 2: Age */}
           {currentStep === 2 && (
-            <div className="flex justify-center">
-              <Input
-                value={data.age}
-                onChange={(e) => setData(prev => ({ ...prev, age: e.target.value }))}
-                placeholder={data.role === 'parent' ? "Their age" : "Your age"}
-                className="text-center text-lg max-w-xs"
-                type="number"
-                min="1"
-                max="100"
-              />
-            </div>
+            <Input
+              value={data.age}
+              onChange={(e) => setData(prev => ({ ...prev, age: e.target.value }))}
+              placeholder={data.role === 'parent' ? "Their age" : "Your age"}
+              className="text-center text-lg"
+              type="number"
+              min="1"
+              max="100"
+            />
           )}
 
           {/* Step 3: Superpowers */}
