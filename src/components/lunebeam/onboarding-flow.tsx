@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { OnboardingConversation } from './onboarding-conversation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/components/auth/auth-provider';
 import { X } from 'lucide-react';
@@ -11,6 +10,7 @@ import { BackButton } from '@/components/ui/back-button';
 import { supabase } from '@/integrations/supabase/client';
 import { useStore } from '@/store/useStore';
 import { updateUserRole } from '@/utils/roleUtils';
+import lunabeamIcon from '@/assets/lunabeam-icon.png';
 export function OnboardingFlow() {
   const navigate = useNavigate();
   const {
@@ -78,6 +78,9 @@ export function OnboardingFlow() {
   if (showInterstitial) {
     const isParent = roleData.role === 'parent';
     return <div className="min-h-screen flex flex-col">
+        {/* Logo */}
+        <img src={lunabeamIcon} alt="Lunabeam" className="absolute top-4 left-4 h-8 w-8" />
+        
         {/* Exit button */}
         <Button variant="ghost" size="sm" onClick={handleExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
           <X className="h-4 w-4" />
@@ -109,6 +112,9 @@ export function OnboardingFlow() {
   }
   if (showRoleSelection) {
     return <div className="min-h-screen flex flex-col">
+        {/* Logo */}
+        <img src={lunabeamIcon} alt="Lunabeam" className="absolute top-4 left-4 h-8 w-8" />
+        
         {/* Exit button */}
         <Button variant="ghost" size="sm" onClick={handleExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
           <X className="h-4 w-4" />
@@ -127,37 +133,43 @@ export function OnboardingFlow() {
         {/* BODY - 43.75% */}
         <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
           <div className="max-w-2xl mx-auto">
-            <RadioGroup value={selectedRole} onValueChange={v => setSelectedRole(v as 'parent' | 'individual')} className="space-y-4">
-              <div className="space-y-3">
-                <div className="w-full p-4 rounded-lg border-2 border-primary bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => setSelectedRole('parent')}>
-                  <div className="flex items-center space-x-3">
-                    <RadioGroupItem value="parent" id="parent" />
-                    <div className="flex-1">
-                      <Label htmlFor="parent" className="text-sm font-medium cursor-pointer">
-                        I am a parent/caregiver signing up on behalf of someone else
-                      </Label>
-                      <p className="text-xs text-foreground-soft mt-1">
-                        You'll manage the account and can invite others to join the team
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="w-full p-4 rounded-lg border border-border cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => setSelectedRole('individual')}>
-                  <div className="flex items-center space-x-3">
-                    <RadioGroupItem value="individual" id="individual" />
-                    <div className="flex-1">
-                      <Label htmlFor="individual" className="text-sm font-medium cursor-pointer">
-                        I am signing up for myself
-                      </Label>
-                      <p className="text-xs text-foreground-soft mt-1">
-                        You'll have full control of your own account
-                      </p>
-                    </div>
-                  </div>
+            <div className="space-y-4">
+              <div 
+                className={`w-full p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  selectedRole === 'parent' 
+                    ? 'border-primary bg-white shadow-md' 
+                    : 'border-border bg-transparent hover:border-primary/50'
+                }`}
+                onClick={() => setSelectedRole('parent')}
+              >
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium cursor-pointer">
+                    I am a parent/caregiver signing up on behalf of someone else
+                  </Label>
+                  <p className="text-xs text-foreground-soft">
+                    You'll manage the account and can invite others to join the team
+                  </p>
                 </div>
               </div>
-            </RadioGroup>
+              
+              <div 
+                className={`w-full p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  selectedRole === 'individual' 
+                    ? 'border-primary bg-white shadow-md' 
+                    : 'border-border bg-transparent hover:border-primary/50'
+                }`}
+                onClick={() => setSelectedRole('individual')}
+              >
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium cursor-pointer">
+                    I am signing up for myself
+                  </Label>
+                  <p className="text-xs text-foreground-soft">
+                    You'll have full control of your own account
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         

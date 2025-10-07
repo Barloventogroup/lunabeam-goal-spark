@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { database } from '@/services/database';
 import { useToast } from '@/hooks/use-toast';
 import { X, ArrowLeft, Loader2 } from 'lucide-react';
+import lunabeamIcon from '@/assets/lunabeam-icon.png';
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
   preferredName: string;
@@ -306,6 +307,9 @@ export function ParentOnboarding({
     </div>;
   }
   return <div className="min-h-screen flex flex-col">
+      {/* Logo */}
+      <img src={lunabeamIcon} alt="Lunabeam" className="absolute top-4 left-4 h-8 w-8" />
+      
       {/* Exit button */}
       <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
         <X className="h-4 w-4" />
