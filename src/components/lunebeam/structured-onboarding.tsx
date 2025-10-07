@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { useStore } from '@/store/useStore';
 import { AIService } from '@/services/aiService';
 import { X } from 'lucide-react';
@@ -21,10 +22,10 @@ interface OnboardingData {
   superpowers: string[];
   interests: string[];
   workStyle: {
-    socialPreference: 'solo' | 'with-others';
-    environment: 'quiet' | 'lively';
-    activity: 'screens' | 'hands-on';
-    duration: 'short-bursts' | 'longer-sessions';
+    socialPreference: number;
+    environment: number;
+    activity: number;
+    duration: number;
   };
   bestTime: string;
   barriers: string[];
@@ -74,10 +75,10 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
     superpowers: [],
     interests: [],
     workStyle: {
-      socialPreference: 'solo',
-      environment: 'quiet',
-      activity: 'hands-on',
-      duration: 'short-bursts'
+      socialPreference: 50,
+      environment: 50,
+      activity: 50,
+      duration: 50
     },
     bestTime: '',
     barriers: [],
@@ -232,7 +233,14 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
     try {
       const strengths = data.superpowers.slice(0, 3);
       const topInterests = data.interests.slice(0, 3);
-      const workPrefs = `${data.workStyle.environment}, ${data.workStyle.activity} activities`;
+      
+      // Convert numeric slider values to descriptive text
+      const socialPref = data.workStyle.socialPreference > 50 ? 'working with others' : 'working solo';
+      const envPref = data.workStyle.environment > 50 ? 'lively' : 'quiet';
+      const activityPref = data.workStyle.activity > 50 ? 'hands-on' : 'screen-based';
+      const durationPref = data.workStyle.duration > 50 ? 'longer' : 'shorter';
+      
+      const workPrefs = `${envPref} environments, ${activityPref} activities`;
       const barriers = data.barriers.length > 0 ? data.barriers.join(' and ') : null;
       const timePreference = data.bestTime ? `in the ${data.bestTime.toLowerCase()}` : '';
       const goalHint = data.goalSeed ? `They want to try: ${data.goalSeed}` : '';
@@ -407,7 +415,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
               <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "How do they like doing things?" : "How do you like doing things?"}
               </h2>
-              <p className="text-sm text-black">Tap one from each pair</p>
+              <p className="text-sm text-black">Slide to show your preferences</p>
             </div>
           )}
           
@@ -530,30 +538,82 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
 
           {/* Step 4: Work Style */}
           {currentStep === 4 && (
-            <div className="space-y-4">
-              {[
-                { key: 'socialPreference', options: ['solo', 'with-others'], labels: ['Solo', 'With others'] },
-                { key: 'environment', options: ['quiet', 'lively'], labels: ['Quiet spaces', 'Lively spaces'] },
-                { key: 'activity', options: ['screens', 'hands-on'], labels: ['Screens', 'Hands-on'] },
-                { key: 'duration', options: ['short-bursts', 'longer-sessions'], labels: ['Short bursts', 'Longer sessions'] }
-              ].map(({ key, options, labels }) => (
-                <div key={key} className="flex gap-2">
-                  {options.map((option, index) => (
-                    <Button
-                      key={option}
-                      variant={data.workStyle[key as keyof typeof data.workStyle] === option ? "default" : "outline"}
-                      onClick={() => setData(prev => ({
-                        ...prev,
-                        workStyle: { ...prev.workStyle, [key]: option }
-                      }))}
-                      className="flex-1 border-0 text-sm"
-                      style={{ backgroundColor: data.workStyle[key as keyof typeof data.workStyle] === option ? undefined : '#E0E0E0' }}
-                    >
-                      {labels[index]}
-                    </Button>
-                  ))}
+            <div className="space-y-6">
+              {/* Social Preference Slider */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Solo</span>
+                  <span className="text-sm text-muted-foreground">With others</span>
                 </div>
-              ))}
+                <Slider
+                  value={[data.workStyle.socialPreference]}
+                  onValueChange={(value) => setData(prev => ({
+                    ...prev,
+                    workStyle: { ...prev.workStyle, socialPreference: value[0] }
+                  }))}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Environment Slider */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Quiet spaces</span>
+                  <span className="text-sm text-muted-foreground">Lively spaces</span>
+                </div>
+                <Slider
+                  value={[data.workStyle.environment]}
+                  onValueChange={(value) => setData(prev => ({
+                    ...prev,
+                    workStyle: { ...prev.workStyle, environment: value[0] }
+                  }))}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Activity Slider */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Screens</span>
+                  <span className="text-sm text-muted-foreground">Hands-on</span>
+                </div>
+                <Slider
+                  value={[data.workStyle.activity]}
+                  onValueChange={(value) => setData(prev => ({
+                    ...prev,
+                    workStyle: { ...prev.workStyle, activity: value[0] }
+                  }))}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Duration Slider */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Short bursts</span>
+                  <span className="text-sm text-muted-foreground">Longer sessions</span>
+                </div>
+                <Slider
+                  value={[data.workStyle.duration]}
+                  onValueChange={(value) => setData(prev => ({
+                    ...prev,
+                    workStyle: { ...prev.workStyle, duration: value[0] }
+                  }))}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
             </div>
           )}
 
