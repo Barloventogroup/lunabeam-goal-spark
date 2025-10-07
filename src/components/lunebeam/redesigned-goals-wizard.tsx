@@ -1779,120 +1779,128 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <CardContent className="p-3">
                 <div className="grid grid-cols-2 gap-4">
                   {/* The Goal */}
-                  <div className="space-y-1.5">
-                    <h4 className="text-sm font-semibold text-primary mb-2">The Goal</h4>
-                    <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Goal:</span>{' '}
-                      <span className="font-semibold">{data.goalTitle}</span>
-                    </p>
-                    {categoryLabel && (
+                  <div className="rounded-2xl border-2 border-blue-200/40 bg-blue-50/50 p-4">
+                    <h4 className="text-sm font-semibold text-blue-700 mb-2 text-center">The Goal</h4>
+                    <div className="space-y-1.5">
                       <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Category:</span>{' '}
-                        <span className="font-medium">{categoryLabel}</span>
+                        <span className="text-muted-foreground text-xs">Goal:</span>{' '}
+                        <span className="font-semibold">{data.goalTitle}</span>
                       </p>
-                    )}
-                    {motivationLabel && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Why:</span>{' '}
-                        <span className="font-medium">{truncate(motivationLabel, 40)}</span>
-                      </p>
-                    )}
-                    {goalTypeLabel && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Type:</span>{' '}
-                        <span className="font-medium">{goalTypeLabel}</span>
-                      </p>
-                    )}
+                      {categoryLabel && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Category:</span>{' '}
+                          <span className="font-medium">{categoryLabel}</span>
+                        </p>
+                      )}
+                      {motivationLabel && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Why:</span>{' '}
+                          <span className="font-medium">{truncate(motivationLabel, 40)}</span>
+                        </p>
+                      )}
+                      {goalTypeLabel && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Type:</span>{' '}
+                          <span className="font-medium">{goalTypeLabel}</span>
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {/* Challenges */}
-                  <div className="space-y-1.5">
-                    <h4 className="text-sm font-semibold text-primary mb-2">Challenges</h4>
-                    {challengeLabels && challengeLabels.length > 0 && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Primary:</span>{' '}
-                        <span className="font-medium">
-                          {challengeLabels.join(', ')}
-                          {data.challengeAreas && data.challengeAreas.length > 2 && ' +1 more'}
-                        </span>
-                      </p>
-                    )}
-                    {data.customChallenges && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Details:</span>{' '}
-                        <span className="font-medium">{truncate(data.customChallenges, 50)}</span>
-                      </p>
-                    )}
-                    {data.hasPrerequisites !== undefined && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Prerequisites:</span>{' '}
-                        <span className="font-medium">
-                          {data.hasPrerequisites ? 'Yes' : 'No'}
-                          {data.hasPrerequisites && data.customPrerequisites && ` - ${truncate(data.customPrerequisites, 30)}`}
-                        </span>
-                      </p>
-                    )}
+                  <div className="rounded-2xl border-2 border-orange-200/40 bg-orange-50/50 p-4">
+                    <h4 className="text-sm font-semibold text-orange-700 mb-2 text-center">Challenges</h4>
+                    <div className="space-y-1.5">
+                      {challengeLabels && challengeLabels.length > 0 && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Primary:</span>{' '}
+                          <span className="font-medium">
+                            {challengeLabels.join(', ')}
+                            {data.challengeAreas && data.challengeAreas.length > 2 && ' +1 more'}
+                          </span>
+                        </p>
+                      )}
+                      {data.customChallenges && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Details:</span>{' '}
+                          <span className="font-medium">{truncate(data.customChallenges, 50)}</span>
+                        </p>
+                      )}
+                      {data.hasPrerequisites !== undefined && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Prerequisites:</span>{' '}
+                          <span className="font-medium">
+                            {data.hasPrerequisites ? 'Yes' : 'No'}
+                            {data.hasPrerequisites && data.customPrerequisites && ` - ${truncate(data.customPrerequisites, 30)}`}
+                          </span>
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {/* When and How Often */}
-                  <div className="space-y-1.5">
-                    <h4 className="text-sm font-semibold text-primary mb-2">When & How Often</h4>
-                    {data.startDate && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Starts:</span>{' '}
-                        <span className="font-medium">{new Date(data.startDate).toLocaleDateString()}</span>
-                      </p>
-                    )}
-                    {data.endDate && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Ends:</span>{' '}
-                        <span className="font-medium">{new Date(data.endDate).toLocaleDateString()}</span>
-                      </p>
-                    )}
-                    {frequencyLabel && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Frequency:</span>{' '}
-                        <span className="font-medium">{frequencyLabel}</span>
-                      </p>
-                    )}
-                    {abbreviatedDays && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Days:</span>{' '}
-                        <span className="font-medium">{abbreviatedDays}</span>
-                      </p>
-                    )}
-                    {(data.timeOfDay || data.customTime) && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Time:</span>{' '}
-                        <span className="font-medium">{data.customTime || data.timeOfDay}</span>
-                      </p>
-                    )}
+                  <div className="rounded-2xl border-2 border-emerald-200/40 bg-emerald-50/50 p-4">
+                    <h4 className="text-sm font-semibold text-emerald-700 mb-2 text-center">When & How Often</h4>
+                    <div className="space-y-1.5">
+                      {data.startDate && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Starts:</span>{' '}
+                          <span className="font-medium">{new Date(data.startDate).toLocaleDateString()}</span>
+                        </p>
+                      )}
+                      {data.endDate && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Ends:</span>{' '}
+                          <span className="font-medium">{new Date(data.endDate).toLocaleDateString()}</span>
+                        </p>
+                      )}
+                      {frequencyLabel && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Frequency:</span>{' '}
+                          <span className="font-medium">{frequencyLabel}</span>
+                        </p>
+                      )}
+                      {abbreviatedDays && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Days:</span>{' '}
+                          <span className="font-medium">{abbreviatedDays}</span>
+                        </p>
+                      )}
+                      {(data.timeOfDay || data.customTime) && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Time:</span>{' '}
+                          <span className="font-medium">{data.customTime || data.timeOfDay}</span>
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {/* The Team */}
-                  <div className="space-y-1.5">
-                    <h4 className="text-sm font-semibold text-primary mb-2">The Team</h4>
-                    {supportContextLabel && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Working:</span>{' '}
-                        <span className="font-medium">{supportContextLabel}</span>
-                      </p>
-                    )}
-                    {data.supportContext !== 'alone' && data.primarySupporterName && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Supporter:</span>{' '}
-                        <span className="font-medium">
-                          {data.primarySupporterName}
-                          {primarySupporterRoleLabel && ` (${primarySupporterRoleLabel})`}
-                        </span>
-                      </p>
-                    )}
-                    {data.selectedSupporters && data.selectedSupporters.length > 0 && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Additional:</span>{' '}
-                        <span className="font-medium">{data.selectedSupporters.length} supporters</span>
-                      </p>
-                    )}
+                  <div className="rounded-2xl border-2 border-purple-200/40 bg-purple-50/50 p-4">
+                    <h4 className="text-sm font-semibold text-purple-700 mb-2 text-center">The Team</h4>
+                    <div className="space-y-1.5">
+                      {supportContextLabel && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Working:</span>{' '}
+                          <span className="font-medium">{supportContextLabel}</span>
+                        </p>
+                      )}
+                      {data.supportContext !== 'alone' && data.primarySupporterName && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Supporter:</span>{' '}
+                          <span className="font-medium">
+                            {data.primarySupporterName}
+                            {primarySupporterRoleLabel && ` (${primarySupporterRoleLabel})`}
+                          </span>
+                        </p>
+                      )}
+                      {data.selectedSupporters && data.selectedSupporters.length > 0 && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Additional:</span>{' '}
+                          <span className="font-medium">{data.selectedSupporters.length} supporters</span>
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
