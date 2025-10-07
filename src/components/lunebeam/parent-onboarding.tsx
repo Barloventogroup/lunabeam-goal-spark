@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { database } from '@/services/database';
@@ -22,10 +23,10 @@ interface ParentOnboardingData {
   strengths: string[];
   interests: string[];
   workStyle: {
-    socialPreference: 'solo' | 'with-others';
-    environment: 'quiet' | 'lively';
-    activity: 'screens' | 'hands-on';
-    duration: 'short-bursts' | 'longer-sessions';
+    socialPreference: number; // 0-100 scale
+    environment: number; // 0-100 scale
+    activity: number; // 0-100 scale
+    duration: number; // 0-100 scale
   };
   nextTwoWeeks: string;
   sharingSupport: 'private' | 'summary' | 'details';
@@ -58,10 +59,10 @@ export function ParentOnboarding({
     strengths: [],
     interests: [],
     workStyle: {
-      socialPreference: 'solo',
-      environment: 'quiet',
-      activity: 'hands-on',
-      duration: 'short-bursts'
+      socialPreference: 50,
+      environment: 50,
+      activity: 50,
+      duration: 50
     },
     nextTwoWeeks: '',
     sharingSupport: 'private'
@@ -340,9 +341,11 @@ export function ParentOnboarding({
               </p>
             </div>}
           {currentStep === 5 && <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">Work Style</h2>
+              <h2 className="text-3xl font-semibold">
+                How does {data.preferredName || 'they'} usually like to do things?
+              </h2>
               <p className="text-foreground-soft">
-                How does {data.preferredName || 'this person'} like to work?
+                Move each slider to show their preferences
               </p>
             </div>}
           {currentStep === 6 && <div className="space-y-2">
@@ -413,106 +416,77 @@ export function ParentOnboarding({
                 className="w-full"
               />}
             </div>}
-          {currentStep === 5 && <div className="space-y-4">
-              <div>
-                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Social Preference
-                </Label>
-                <RadioGroup defaultValue={data.workStyle.socialPreference} onValueChange={value => setData({
+          {currentStep === 5 && <div className="space-y-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Solo</span>
+                  <span className="text-sm text-muted-foreground">With Others</span>
+                </div>
+                <Slider
+                  value={[data.workStyle.socialPreference]}
+                  onValueChange={(value) => setData({
                     ...data,
-                    workStyle: {
-                      ...data.workStyle,
-                      socialPreference: value as 'solo' | 'with-others'
-                    }
-                  })} className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="solo" id="solo" className="cursor-pointer" />
-                    <Label htmlFor="solo" className="cursor-pointer">
-                      Solo
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="with-others" id="with-others" className="cursor-pointer" />
-                    <Label htmlFor="with-others" className="cursor-pointer">
-                      With Others
-                    </Label>
-                  </div>
-                </RadioGroup>
+                    workStyle: { ...data.workStyle, socialPreference: value[0] }
+                  })}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
               </div>
-              <div>
-                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Environment
-                </Label>
-                <RadioGroup defaultValue={data.workStyle.environment} onValueChange={value => setData({
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Quiet</span>
+                  <span className="text-sm text-muted-foreground">Lively</span>
+                </div>
+                <Slider
+                  value={[data.workStyle.environment]}
+                  onValueChange={(value) => setData({
                     ...data,
-                    workStyle: {
-                      ...data.workStyle,
-                      environment: value as 'quiet' | 'lively'
-                    }
-                  })} className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="quiet" id="quiet" className="cursor-pointer" />
-                    <Label htmlFor="quiet" className="cursor-pointer">
-                      Quiet
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="lively" id="lively" className="cursor-pointer" />
-                    <Label htmlFor="lively" className="cursor-pointer">
-                      Lively
-                    </Label>
-                  </div>
-                </RadioGroup>
+                    workStyle: { ...data.workStyle, environment: value[0] }
+                  })}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
               </div>
-              <div>
-                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Activity
-                </Label>
-                <RadioGroup defaultValue={data.workStyle.activity} onValueChange={value => setData({
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Screens</span>
+                  <span className="text-sm text-muted-foreground">Hands-on</span>
+                </div>
+                <Slider
+                  value={[data.workStyle.activity]}
+                  onValueChange={(value) => setData({
                     ...data,
-                    workStyle: {
-                      ...data.workStyle,
-                      activity: value as 'screens' | 'hands-on'
-                    }
-                  })} className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="screens" id="screens" className="cursor-pointer" />
-                    <Label htmlFor="screens" className="cursor-pointer">
-                      Screens
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="hands-on" id="hands-on" className="cursor-pointer" />
-                    <Label htmlFor="hands-on" className="cursor-pointer">
-                      Hands-on
-                    </Label>
-                  </div>
-                </RadioGroup>
+                    workStyle: { ...data.workStyle, activity: value[0] }
+                  })}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
               </div>
-              <div>
-                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Duration
-                </Label>
-                <RadioGroup defaultValue={data.workStyle.duration} onValueChange={value => setData({
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Short bursts</span>
+                  <span className="text-sm text-muted-foreground">Longer sessions</span>
+                </div>
+                <Slider
+                  value={[data.workStyle.duration]}
+                  onValueChange={(value) => setData({
                     ...data,
-                    workStyle: {
-                      ...data.workStyle,
-                      duration: value as 'short-bursts' | 'longer-sessions'
-                    }
-                  })} className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="short-bursts" id="short-bursts" className="cursor-pointer" />
-                    <Label htmlFor="short-bursts" className="cursor-pointer">
-                      Short bursts
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="longer-sessions" id="longer-sessions" className="cursor-pointer" />
-                    <Label htmlFor="longer-sessions" className="cursor-pointer">
-                      Longer sessions
-                    </Label>
-                  </div>
-                </RadioGroup>
+                    workStyle: { ...data.workStyle, duration: value[0] }
+                  })}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
               </div>
             </div>}
           {currentStep === 6 && <Textarea placeholder="Next small step" value={data.nextTwoWeeks} onChange={e => setData({
