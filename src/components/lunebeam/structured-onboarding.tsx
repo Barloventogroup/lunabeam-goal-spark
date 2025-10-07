@@ -371,7 +371,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
         <div className="max-w-2xl mx-auto w-full">
           {currentStep === 1 && (
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "What would they like to be called?" : "What would you like to be called?"}
               </h2>
               <p className="text-sm text-black">
@@ -382,7 +382,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           
           {currentStep === 2 && (
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "What are their top 3 \"superpowers\"?" : "What are your top 3 \"superpowers\"?"}
               </h2>
               <p className="text-sm text-black">
@@ -393,7 +393,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           
           {currentStep === 3 && (
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "Choose 3–5 interests they might want to explore" : "Choose 3–5 interests to explore"}
               </h2>
               <p className="text-sm text-black">
@@ -404,7 +404,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           
           {currentStep === 4 && (
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "How do they like doing things?" : "How do you like doing things?"}
               </h2>
               <p className="text-sm text-black">Tap one from each pair</p>
@@ -413,7 +413,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           
           {currentStep === 5 && (
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "When do they feel at their best?" : "When do you feel at your best?"}
               </h2>
               <p className="text-sm text-black">
@@ -424,7 +424,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           
           {currentStep === 6 && (
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "What gets in their way most?" : "What gets in your way most?"}
               </h2>
               <p className="text-sm text-black">Choose up to 2 things that make activities harder</p>
@@ -433,7 +433,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           
           {currentStep === 7 && (
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "One small thing they'd like to try" : "One small thing you'd like to try"}
               </h2>
               <p className="text-sm text-black">In the next 2 weeks (optional, 120 characters)</p>
