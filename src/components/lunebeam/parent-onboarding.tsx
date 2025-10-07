@@ -332,10 +332,7 @@ export function ParentOnboarding({
               </p>
             </div>}
           {currentStep === 4 && <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">Strengths</h2>
-              <p className="text-foreground-soft">
-                What are {data.preferredName || 'their'} strengths?
-              </p>
+              <h2 className="text-3xl font-semibold">What are 2-3 things {data.preferredName || 'they'}'re great at?</h2>
             </div>}
           {currentStep === 5 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Interests</h2>
@@ -395,7 +392,7 @@ export function ParentOnboarding({
                   </Label>
                 </div>)}
             </RadioGroup>}
-          {currentStep === 4 && <div className="grid grid-cols-2 gap-2">
+          {currentStep === 4 && <div className="flex flex-col gap-2">
               {STRENGTHS_OPTIONS.map(option => <Badge key={option} variant={data.strengths.includes(option) ? 'default' : 'outline'} onClick={() => setData({
                     ...data,
                     strengths: toggleSelection(data.strengths, option, 3)
