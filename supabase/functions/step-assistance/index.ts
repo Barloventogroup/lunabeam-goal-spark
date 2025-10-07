@@ -7,6 +7,91 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// ============= HELPER FUNCTIONS =============
+
+// Get or create cooldown state for user/step
+async function getCooldownState(supabase: any, userId: string, stepId: string) {
+  const { data, error } = await supabase
+    .from('chat_cooldown_state')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('step_id', stepId)
+    .maybeSingle();
+  
+  if (error && error.code !== 'PGRST116') {
+    console.error('Error fetching cooldown state:', error);
+  }
+  
+  return data || {
+    user_id: userId,
+    step_id: stepId,
+    irrelevance_count: 0,
+    cooldown_level: 0,
+    cooldown_attempts_total: 0,
+    is_locked: false,
+    reflection_submitted: false
+  };
+}
+
+// Update cooldown state
+async function updateCooldownState(supabase: any, state: any) {
+  const { error } = await supabase
+    .from('chat_cooldown_state')
+    .upsert({
+      ...state,
+      updated_at: new Date().toISOString()
+    }, {
+      onConflict: 'user_id,step_id'
+    });
+  
+  if (error) {
+    console.error('Error updating cooldown state:', error);
+  }
+}
+
+// Log cooldown event for analytics
+async function logCooldownEvent(
+  supabase: any, 
+  userId: string, 
+  stepId: string, 
+  goalId: string | null,
+  eventType: string, 
+  metadata?: any
+) {
+  await supabase
+    .from('cooldown_event_log')
+    .insert({
+      user_id: userId,
+      step_id: stepId,
+      goal_id: goalId,
+      event_type: eventType,
+      metadata: metadata || {}
+    });
+}
+
+// Get user authentication and profile
+async function getUserContext(supabase: any, authHeader: string | null) {
+  if (!authHeader) return null;
+  
+  try {
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user } } = await supabase.auth.getUser(token);
+    
+    if (!user) return null;
+    
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_type, is_self_registered, first_name')
+      .eq('user_id', user.id)
+      .single();
+    
+    return { user, profile };
+  } catch (e) {
+    console.error('Error getting user context:', e);
+    return null;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -25,13 +110,214 @@ serve(async (req) => {
       });
     }
 
-    const { step, goal, userMessage, conversationHistory = [] } = requestBody;
+    const { step, goal, userMessage, conversationHistory = [], action } = requestBody;
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Get user context
+    const authHeader = req.headers.get('authorization');
+    const userContext = await getUserContext(supabase, authHeader);
+    
+    if (!userContext) {
+      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const { user, profile } = userContext;
+    const userId = user.id;
+    const isSelfRegisteredAdmin = profile?.is_self_registered === true && profile?.user_type === 'admin';
+
+    // ============= HANDLE SPECIAL ACTIONS =============
+    
+    // SUBMIT REFLECTION ACTION
+    if (action === 'submit_reflection') {
+      const { reflection_q1, reflection_q2, stepId } = requestBody;
+      
+      if (!reflection_q1 || !reflection_q2 || !stepId) {
+        return new Response(
+          JSON.stringify({ error: 'Missing reflection data' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const cooldownState = await getCooldownState(supabase, userId, stepId);
+      
+      // Generate reframing statement using OpenAI
+      const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+      const reframingPrompt = `Based on the user's reflection, generate a ONE-SENTENCE supportive reframing statement that helps them re-engage with the task.
+
+**User's Reflections:**
+Q1 (What felt hardest): ${reflection_q1}
+Q2 (What would you change): ${reflection_q2}
+
+**Current Task:**
+Goal: ${goal?.title || 'Current goal'}
+Step: ${step?.title || 'Current step'}
+
+Generate a brief, actionable, supportive statement (max 30 words).`;
+
+      const reframingResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4.1-mini-2025-04-14',
+          messages: [{ role: 'user', content: reframingPrompt }],
+          max_completion_tokens: 100
+        })
+      });
+      
+      const reframingData = await reframingResponse.json();
+      const reframingStatement = reframingData.choices[0].message.content.trim();
+      
+      await updateCooldownState(supabase, {
+        ...cooldownState,
+        reflection_q1,
+        reflection_q2,
+        reflection_submitted: true,
+        reframing_statement: reframingStatement
+      });
+      
+      await logCooldownEvent(supabase, userId, stepId, goal?.id, 'reflection_submitted', {
+        reflection_q1,
+        reflection_q2,
+        reframing_statement: reframingStatement
+      });
+      
+      return new Response(JSON.stringify({
+        response: reframingStatement,
+        classification: 'REFLECTION_COMPLETE',
+        can_unlock: true,
+        reframing_statement: reframingStatement
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // UNLOCK CHAT ACTION
+    if (action === 'unlock_chat') {
+      const { stepId } = requestBody;
+      const cooldownState = await getCooldownState(supabase, userId, stepId);
+      
+      await updateCooldownState(supabase, {
+        ...cooldownState,
+        is_locked: false,
+        cooldown_level: 0,
+        cooldown_until: null,
+        irrelevance_count: 0,
+        cooldown_attempts_total: 0,
+        unlocked_at: new Date().toISOString()
+      });
+      
+      await logCooldownEvent(supabase, userId, stepId, goal?.id, 'chat_unlocked');
+      
+      return new Response(JSON.stringify({
+        response: 'Chat unlocked! You can now continue with your task.',
+        classification: 'UNLOCKED'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // ============= NORMAL CHAT FLOW =============
 
     if (!step || !goal || !userMessage) {
       console.error('Missing required fields:', { step: !!step, goal: !!goal, userMessage: !!userMessage });
       return new Response(JSON.stringify({ error: 'Missing required fields: step, goal, or userMessage' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Get cooldown state
+    const cooldownState = await getCooldownState(supabase, userId, step.id);
+
+    // ENFORCE PERSISTENT LOCK
+    if (cooldownState.is_locked && !cooldownState.reflection_submitted) {
+      if (isSelfRegisteredAdmin) {
+        return new Response(JSON.stringify({
+          response: `This task is proving to be complex. We need to reset the plan.\n\nBefore we continue, please reflect on these questions:\n\n**Q1: What felt the hardest in the last 5 minutes?**\n\n**Q2: If you could change one thing about the original Micro-Step, what would it be?**`,
+          classification: 'REQUIRES_REFLECTION',
+          is_locked: true,
+          lock_reason: cooldownState.lock_reason || 'Multiple decomposition attempts'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } else {
+        // Notify supporters
+        const { data: supporters } = await supabase
+          .from('supporters')
+          .select('supporter_id, profiles!supporters_supporter_id_fkey(first_name)')
+          .eq('individual_id', userId)
+          .eq('is_admin', true);
+        
+        if (supporters && supporters.length > 0) {
+          for (const supporter of supporters) {
+            await supabase.from('notifications').insert({
+              user_id: supporter.supporter_id,
+              type: 'chat_locked',
+              title: '🔒 Chat Session Locked',
+              message: `${profile.first_name} has reached the coaching limit on step "${step.title}". They may need hands-on support.`,
+              data: {
+                individual_id: userId,
+                individual_name: profile.first_name,
+                step_id: step.id,
+                step_title: step.title,
+                goal_id: goal.id,
+                goal_title: goal.title
+              }
+            });
+          }
+          
+          await supabase.functions.invoke('send-notification-email', {
+            body: {
+              type: 'chat_locked',
+              userId: userId,
+              stepId: step.id,
+              goalId: goal.id,
+              supporterIds: supporters.map((s: any) => s.supporter_id)
+            }
+          });
+        }
+        
+        return new Response(JSON.stringify({
+          response: `This step might be too complex right now. It is time for a Supporter Check-in. Your plan has been paused.\n\nA notification has been sent to your supporter.`,
+          classification: 'SUPPORTER_REQUIRED',
+          is_locked: true,
+          lock_reason: cooldownState.lock_reason || 'Multiple decomposition attempts'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    // ENFORCE ACTIVE COOLDOWN (1-min or 5-min)
+    if (cooldownState.cooldown_until && new Date(cooldownState.cooldown_until) > new Date()) {
+      const secondsRemaining = Math.ceil((new Date(cooldownState.cooldown_until).getTime() - Date.now()) / 1000);
+      const minutesRemaining = Math.ceil(secondsRemaining / 60);
+      
+      let cooldownMessage = '';
+      if (cooldownState.cooldown_level === 1) {
+        cooldownMessage = `We've had a few questions outside of the goal, and that means we might be getting distracted. I need to terminate this session.\n\nPlease take ${secondsRemaining} seconds to look at your Micro-Step on the screen and try the action. I'll be back here in 1 minute if you're ready to focus on the task.`;
+      } else if (cooldownState.cooldown_level === 2) {
+        cooldownMessage = `Time for a quick physical reset. Step away, stretch, and come back in ${minutesRemaining} minutes after trying the step again.\n\nThis cooldown helps you refocus and prevents burnout.`;
+      }
+      
+      return new Response(JSON.stringify({
+        response: cooldownMessage,
+        classification: 'COOLDOWN_ACTIVE',
+        cooldown_until: cooldownState.cooldown_until,
+        cooldown_level: cooldownState.cooldown_level,
+        seconds_remaining: secondsRemaining
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
@@ -45,14 +331,6 @@ serve(async (req) => {
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not found');
     }
-
-    // Get completed and remaining steps for this goal to provide context
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase environment not configured');
-    }
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     let progressContext = '';
     try {
@@ -115,18 +393,49 @@ Respond with ONLY the classification word (RELEVANT, UNRELATED, or GOAL_DRIFT).`
     const classification = classificationData.choices?.[0]?.message?.content?.trim().toUpperCase() || 'RELEVANT';
     console.log('Classification result:', classification);
 
-    // Handle UNRELATED queries - redirect back to task
+    // Handle UNRELATED queries - Increment irrelevance counter
     if (classification === 'UNRELATED') {
-      const redirectResponse = `That's an interesting question! I'd love to help you with that another time.
-
-Right now, let's stay focused on "${step.title}" so you can ${goal.motivation || 'complete your goal'}.
-
-Where were we? ${conversationHistory.length > 0 ? 'How can I help you with this step?' : 'What specifically would you like help with?'}`;
+      const newIrrelevanceCount = cooldownState.irrelevance_count + 1;
+      
+      let redirectResponse = '';
+      let newCooldownLevel = cooldownState.cooldown_level;
+      let cooldownUntil = null;
+      let eventType = '';
+      
+      if (newIrrelevanceCount === 1) {
+        redirectResponse = `That's a fun question! I'm here to help you focus on "${step.title}" right now. Let's stick to the task at hand.`;
+        eventType = 'unrelated_warning_1';
+      } else if (newIrrelevanceCount === 2) {
+        redirectResponse = `I'm strictly focused on making your goal successful. Please ask me a question about "${step.title}".`;
+        eventType = 'unrelated_warning_2';
+      } else if (newIrrelevanceCount >= 3) {
+        redirectResponse = `We've had a few questions outside of the goal, and that means we might be getting distracted. I need to terminate this session.\n\nPlease take 60 seconds to look at your Micro-Step on the screen and try the action. I'll be back here in 1 minute if you're ready to focus on the task.`;
+        newCooldownLevel = 1;
+        cooldownUntil = new Date(Date.now() + 60 * 1000).toISOString();
+        eventType = 'cooldown_1min_triggered';
+      }
+      
+      await updateCooldownState(supabase, {
+        ...cooldownState,
+        irrelevance_count: newIrrelevanceCount,
+        last_unrelated_at: new Date().toISOString(),
+        cooldown_level: newCooldownLevel,
+        cooldown_until: cooldownUntil,
+        cooldown_attempts_total: newCooldownLevel > cooldownState.cooldown_level ? 
+          cooldownState.cooldown_attempts_total + 1 : cooldownState.cooldown_attempts_total
+      });
+      
+      await logCooldownEvent(supabase, userId, step.id, goal.id, eventType, {
+        irrelevance_count: newIrrelevanceCount,
+        user_message: userMessage
+      });
       
       return new Response(JSON.stringify({
         response: redirectResponse,
         suggestedSteps: [],
-        classification: 'UNRELATED'
+        classification: 'UNRELATED',
+        irrelevance_count: newIrrelevanceCount,
+        cooldown_until: cooldownUntil
       }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
@@ -278,6 +587,47 @@ Be supportive but keep it brief and focused on THIS ${isSubstep ? 'SUBSTEP' : 'S
     let createdSteps: any[] = [];
     if (suggestedSteps.length > 0 && existingSubsteps.length === 0) {
       createdSteps = await createSubSteps(suggestedSteps, step, goal);
+      
+      // After successful substep generation: reset irrelevance counter and check for escalation
+      const newCooldownAttemptsTotal = cooldownState.cooldown_attempts_total;
+      
+      let shouldLock = false;
+      let newCooldownLevel = cooldownState.cooldown_level;
+      let cooldownUntil = null;
+      
+      if (newCooldownAttemptsTotal >= 6) {
+        shouldLock = true;
+        await updateCooldownState(supabase, {
+          ...cooldownState,
+          irrelevance_count: 0,
+          is_locked: true,
+          locked_at: new Date().toISOString(),
+          lock_reason: 'Exceeded 6 total cooldown attempts'
+        });
+        
+        await logCooldownEvent(supabase, userId, step.id, goal.id, 'persistent_lock_triggered', {
+          total_cooldown_attempts: newCooldownAttemptsTotal
+        });
+      } else if (newCooldownAttemptsTotal >= 3 && cooldownState.cooldown_level < 2) {
+        newCooldownLevel = 2;
+        cooldownUntil = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+        
+        await updateCooldownState(supabase, {
+          ...cooldownState,
+          irrelevance_count: 0,
+          cooldown_level: newCooldownLevel,
+          cooldown_until: cooldownUntil
+        });
+        
+        await logCooldownEvent(supabase, userId, step.id, goal.id, 'cooldown_5min_triggered', {
+          total_cooldown_attempts: newCooldownAttemptsTotal
+        });
+      } else {
+        await updateCooldownState(supabase, {
+          ...cooldownState,
+          irrelevance_count: 0
+        });
+      }
     } else if (existingSubsteps.length > 0) {
       console.log(`Skipping substep creation - ${existingSubsteps.length} substeps already exist for step ${step.id}`);
       createdSteps = existingSubsteps;

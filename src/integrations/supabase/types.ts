@@ -125,6 +125,69 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_cooldown_state: {
+        Row: {
+          cooldown_attempts_total: number
+          cooldown_level: number
+          cooldown_until: string | null
+          created_at: string
+          id: string
+          irrelevance_count: number
+          is_locked: boolean
+          last_unrelated_at: string | null
+          lock_reason: string | null
+          locked_at: string | null
+          reflection_q1: string | null
+          reflection_q2: string | null
+          reflection_submitted: boolean | null
+          reframing_statement: string | null
+          step_id: string
+          unlocked_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cooldown_attempts_total?: number
+          cooldown_level?: number
+          cooldown_until?: string | null
+          created_at?: string
+          id?: string
+          irrelevance_count?: number
+          is_locked?: boolean
+          last_unrelated_at?: string | null
+          lock_reason?: string | null
+          locked_at?: string | null
+          reflection_q1?: string | null
+          reflection_q2?: string | null
+          reflection_submitted?: boolean | null
+          reframing_statement?: string | null
+          step_id: string
+          unlocked_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cooldown_attempts_total?: number
+          cooldown_level?: number
+          cooldown_until?: string | null
+          created_at?: string
+          id?: string
+          irrelevance_count?: number
+          is_locked?: boolean
+          last_unrelated_at?: string | null
+          lock_reason?: string | null
+          locked_at?: string | null
+          reflection_q1?: string | null
+          reflection_q2?: string | null
+          reflection_submitted?: boolean | null
+          reframing_statement?: string | null
+          step_id?: string
+          unlocked_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       check_ins: {
         Row: {
           confidence_1_5: number | null
@@ -299,6 +362,44 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
+      }
+      cooldown_event_log: {
+        Row: {
+          created_at: string
+          event_type: string
+          goal_id: string | null
+          id: string
+          metadata: Json | null
+          step_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          goal_id?: string | null
+          id?: string
+          metadata?: Json | null
+          step_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          goal_id?: string | null
+          id?: string
+          metadata?: Json | null
+          step_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cooldown_event_log_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       evidence: {
         Row: {
@@ -588,6 +689,7 @@ export type Database = {
           guardian_locked_until: string | null
           id: string
           interests: string[] | null
+          is_self_registered: boolean
           onboarding_complete: boolean
           password_set: boolean | null
           strengths: string[] | null
@@ -609,6 +711,7 @@ export type Database = {
           guardian_locked_until?: string | null
           id?: string
           interests?: string[] | null
+          is_self_registered?: boolean
           onboarding_complete?: boolean
           password_set?: boolean | null
           strengths?: string[] | null
@@ -630,6 +733,7 @@ export type Database = {
           guardian_locked_until?: string | null
           id?: string
           interests?: string[] | null
+          is_self_registered?: boolean
           onboarding_complete?: boolean
           password_set?: boolean | null
           strengths?: string[] | null

@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, User, Loader2, X } from 'lucide-react';
+import { Send, User, Loader2, X, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getLunaIcon } from '@/utils/iconGenerator';
 import type { Step, Goal } from '@/types';
@@ -38,6 +39,17 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [shouldHideInput, setShouldHideInput] = useState(false);
   const [showGoalResetOptions, setShowGoalResetOptions] = useState(false);
+  
+  // Cooldown system state
+  const [irrelevanceCount, setIrrelevanceCount] = useState(0);
+  const [cooldownUntil, setCooldownUntil] = useState<string | null>(null);
+  const [cooldownLevel, setCooldownLevel] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const [requiresReflection, setRequiresReflection] = useState(false);
+  const [reflectionQ1, setReflectionQ1] = useState('');
+  const [reflectionQ2, setReflectionQ2] = useState('');
+  const [reframingStatement, setReframingStatement] = useState('');
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -64,8 +76,31 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
       setMessages([]);
       setShouldHideInput(false);
       setShowGoalResetOptions(false);
+      // Reset cooldown state
+      setIrrelevanceCount(0);
+      setCooldownUntil(null);
+      setCooldownLevel(0);
+      setIsLocked(false);
+      setRequiresReflection(false);
+      setReflectionQ1('');
+      setReflectionQ2('');
+      setReframingStatement('');
     }
   }, [isOpen, step, isInitialized]);
+
+  // Reset cooldown state when step changes
+  useEffect(() => {
+    if (step) {
+      setIrrelevanceCount(0);
+      setCooldownUntil(null);
+      setCooldownLevel(0);
+      setIsLocked(false);
+      setRequiresReflection(false);
+      setReflectionQ1('');
+      setReflectionQ2('');
+      setReframingStatement('');
+    }
+  }, [step?.id]);
 
   useEffect(() => {
     if (isOpen && !shouldHideInput) {
@@ -115,34 +150,59 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
             domain: goal.domain
           },
           userMessage: inputValue.trim(),
-          conversationHistory: messages.slice(-6) // Last 6 messages for context
+          conversationHistory: messages.slice(-6)
         }
       });
 
       if (error) throw error;
 
-      // Handle GOAL_DRIFT classification - show goal reset options
-      if (data.classification === 'GOAL_DRIFT' && data.requiresGoalReset) {
-        const assistantMessage: ChatMessage = {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: data.response,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-        setShowGoalResetOptions(true);
-        setIsLoading(false);
-        return;
+      // Handle COOLDOWN_ACTIVE classification
+      if (data.classification === 'COOLDOWN_ACTIVE') {
+        setCooldownUntil(data.cooldown_until);
+        setCooldownLevel(data.cooldown_level);
+        
+        // Start countdown timer
+        const checkCooldown = setInterval(() => {
+          if (new Date(data.cooldown_until) <= new Date()) {
+            clearInterval(checkCooldown);
+            setCooldownUntil(null);
+          }
+        }, 1000);
       }
 
-      // Handle UNRELATED classification - just display redirect message
+      // Handle REQUIRES_REFLECTION classification
+      if (data.classification === 'REQUIRES_REFLECTION') {
+        setIsLocked(true);
+        setRequiresReflection(true);
+      }
+
+      // Handle SUPPORTER_REQUIRED classification
+      if (data.classification === 'SUPPORTER_REQUIRED') {
+        setIsLocked(true);
+        toast({
+          title: "Supporter Notified",
+          description: "Your supporter has been notified that you need assistance.",
+          variant: "default"
+        });
+      }
+
+      // Handle GOAL_DRIFT classification
+      if (data.classification === 'GOAL_DRIFT' && data.requiresGoalReset) {
+        setShowGoalResetOptions(true);
+      }
+
+      // Update irrelevance count
+      if (data.irrelevance_count !== undefined) {
+        setIrrelevanceCount(data.irrelevance_count);
+      }
+
+      // Add assistant message
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
         content: data.response,
         timestamp: new Date()
       };
-
       setMessages(prev => [...prev, assistantMessage]);
 
       // Check if new steps were suggested (only for RELEVANT queries)
@@ -169,6 +229,99 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmitReflection = async () => {
+    if (!reflectionQ1.trim() || !reflectionQ2.trim() || !step) {
+      toast({
+        title: "Incomplete Reflection",
+        description: "Please answer both reflection questions.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('step-assistance', {
+        body: {
+          action: 'submit_reflection',
+          reflection_q1: reflectionQ1,
+          reflection_q2: reflectionQ2,
+          stepId: step.id,
+          step,
+          goal
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.reframing_statement) {
+        setReframingStatement(data.reframing_statement);
+        toast({
+          title: "Reflection Submitted",
+          description: "Thank you for reflecting. You can now unlock the chat.",
+          variant: "default"
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting reflection:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit reflection. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUnlockChat = async () => {
+    if (!step) return;
+    
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('step-assistance', {
+        body: {
+          action: 'unlock_chat',
+          stepId: step.id
+        }
+      });
+
+      if (error) throw error;
+
+      setIsLocked(false);
+      setRequiresReflection(false);
+      setReflectionQ1('');
+      setReflectionQ2('');
+      setReframingStatement('');
+      setCooldownUntil(null);
+      setCooldownLevel(0);
+      setIrrelevanceCount(0);
+
+      toast({
+        title: "Chat Unlocked",
+        description: "You can now continue with your coaching session.",
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Error unlocking chat:', error);
+      toast({
+        title: "Error",
+        description: "Failed to unlock chat. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getTimeRemaining = (until: string): string => {
+    const seconds = Math.ceil((new Date(until).getTime() - Date.now()) / 1000);
+    if (seconds <= 0) return '0s';
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.ceil(seconds / 60);
+    return `${minutes}m`;
   };
 
   const stripMarkup = (text: string): string => {
@@ -216,6 +369,57 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
         </DialogHeader>
 
         <div className="flex-1 flex flex-col min-h-0">
+          {/* Cooldown Timer Display */}
+          {cooldownUntil && new Date(cooldownUntil) > new Date() && (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2 mb-2">
+              <Clock className="h-4 w-4 text-amber-600" />
+              <span className="text-sm text-amber-900">
+                Cooldown active: {getTimeRemaining(cooldownUntil)} remaining
+              </span>
+            </div>
+          )}
+
+          {/* Reflection Form */}
+          {requiresReflection && !reframingStatement && (
+            <div className="p-4 space-y-4 bg-muted rounded-lg mb-4">
+              <h3 className="font-semibold">Mandatory Reflection</h3>
+              <div>
+                <label className="text-sm font-medium">Q1: What felt the hardest in the last 5 minutes?</label>
+                <Textarea 
+                  value={reflectionQ1} 
+                  onChange={(e) => setReflectionQ1(e.target.value)}
+                  placeholder="Describe what was difficult..."
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Q2: If you could change one thing about the original Micro-Step, what would it be?</label>
+                <Textarea 
+                  value={reflectionQ2} 
+                  onChange={(e) => setReflectionQ2(e.target.value)}
+                  placeholder="What would you change..."
+                  className="mt-1"
+                />
+              </div>
+              <Button 
+                onClick={handleSubmitReflection}
+                disabled={!reflectionQ1.trim() || !reflectionQ2.trim() || isLoading}
+              >
+                Submit Reflection
+              </Button>
+            </div>
+          )}
+
+          {/* Reframing Statement & Unlock Button */}
+          {reframingStatement && (
+            <div className="p-4 space-y-4 bg-green-50 rounded-lg mb-4">
+              <p className="text-sm">{reframingStatement}</p>
+              <Button onClick={handleUnlockChat} disabled={isLoading}>
+                Reset Chat
+              </Button>
+            </div>
+          )}
+
           <ScrollArea className="flex-1 pr-4">
             <div className="space-y-4 py-4">
               {messages.map((message) => (
@@ -299,14 +503,14 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyPress}
                     placeholder="Ask Luna for help..."
-                    disabled={isLoading}
+                    disabled={isLoading || !!cooldownUntil || isLocked}
                     className="flex-1 text-sm"
                     autoFocus
                     ref={inputRef}
                   />
                   <Button
                     onClick={sendMessage}
-                    disabled={isLoading || !inputValue.trim()}
+                    disabled={isLoading || !inputValue.trim() || !!cooldownUntil || isLocked}
                     size="sm"
                     className="px-3 py-2 h-9 w-auto min-w-[40px] flex-shrink-0"
                   >

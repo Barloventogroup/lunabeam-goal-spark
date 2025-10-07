@@ -11,7 +11,7 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  type: 'check_in' | 'step_complete' | 'goal_created' | 'goal_assigned' | 'goal_completed';
+  type: 'check_in' | 'step_complete' | 'goal_created' | 'goal_assigned' | 'goal_completed' | 'chat_locked';
   userId: string;
   goalId?: string;
   stepId?: string;
@@ -177,6 +177,19 @@ serve(async (req) => {
             ${goalInfo?.description ? `<p style=\"margin: 5px 0; color: #6b7280;\">${goalInfo.description}</p>` : ''}
           </div>
           <p>Celebrate this milestone with ${userName}! 🎉</p>
+        `;
+        break;
+
+      case 'chat_locked':
+        subject = `${userName} needs assistance with a step`;
+        htmlContent = `
+          <h2>🔒 Coaching Session Locked</h2>
+          <p><strong>${userName}</strong> has reached the coaching limit on:</p>
+          <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #f59e0b;">
+            <h3 style="margin: 0 0 10px 0; color: #d97706;">${stepInfo?.title || 'A step'}</h3>
+            ${goalInfo ? `<p style="margin: 5px 0; color: #6b7280;"><strong>Goal:</strong> ${goalInfo.title}</p>` : ''}
+          </div>
+          <p>${userName} may need hands-on support to complete this task. Consider checking in with them! 💛</p>
         `;
         break;
     }

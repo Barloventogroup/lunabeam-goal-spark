@@ -165,7 +165,7 @@ export const notificationsService = {
 
   // Email notification functionality
   async sendNotificationEmail(request: {
-    type: 'check_in' | 'step_complete' | 'goal_created' | 'goal_assigned' | 'goal_completed';
+    type: 'check_in' | 'step_complete' | 'goal_created' | 'goal_assigned' | 'goal_completed' | 'chat_locked';
     userId: string;
     goalId?: string;
     stepId?: string;
@@ -232,6 +232,16 @@ export const notificationsService = {
     await this.sendNotificationEmail({
       type: 'goal_completed',
       userId,
+      goalId,
+      supporterIds,
+    });
+  },
+
+  async notifyChatLocked(userId: string, stepId: string, goalId: string, supporterIds?: string[]): Promise<void> {
+    await this.sendNotificationEmail({
+      type: 'chat_locked',
+      userId,
+      stepId,
       goalId,
       supporterIds,
     });
