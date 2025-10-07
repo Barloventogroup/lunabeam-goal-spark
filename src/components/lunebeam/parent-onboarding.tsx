@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { database } from '@/services/database';
@@ -22,10 +23,10 @@ interface ParentOnboardingData {
   strengths: string[];
   interests: string[];
   workStyle: {
-    socialPreference: 'solo' | 'with-others';
-    environment: 'quiet' | 'lively';
-    activity: 'screens' | 'hands-on';
-    duration: 'short-bursts' | 'longer-sessions';
+    socialPreference: number; // 0-100 scale
+    environment: number; // 0-100 scale
+    activity: number; // 0-100 scale
+    duration: number; // 0-100 scale
   };
   nextTwoWeeks: string;
   sharingSupport: 'private' | 'summary' | 'details';
@@ -33,6 +34,7 @@ interface ParentOnboardingData {
 interface ParentOnboardingProps {
   onComplete: () => void;
   onExit: () => Promise<void>;
+  onBack?: () => void;
 }
 const PRONOUNS_OPTIONS = ['she/her', 'he/him', 'they/them', 'she/they', 'he/they', 'name only', 'Prefer not to say', 'Custom'];
 const AGE_OPTIONS = ['13–15', '16–18', '19–22', '23–26', '27+', 'Prefer not to say'];
@@ -41,9 +43,10 @@ const INTERESTS_OPTIONS = ['Animals', 'Art/Design', 'Building/Making', 'Games', 
 const SUGGESTIONS = ['Join a club', 'Cook a new dish', 'Short daily walk', 'Visit the library'];
 export function ParentOnboarding({
   onComplete,
-  onExit
+  onExit,
+  onBack
 }: ParentOnboardingProps) {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(2);
   const [isCreating, setIsCreating] = useState(false);
   const {
     toast
@@ -56,22 +59,25 @@ export function ParentOnboarding({
     strengths: [],
     interests: [],
     workStyle: {
-      socialPreference: 'solo',
-      environment: 'quiet',
-      activity: 'hands-on',
-      duration: 'short-bursts'
+      socialPreference: 50,
+      environment: 50,
+      activity: 50,
+      duration: 50
     },
     nextTwoWeeks: '',
     sharingSupport: 'private'
   });
   const [customPronouns, setCustomPronouns] = useState('');
+  const [showOtherStrength, setShowOtherStrength] = useState(false);
+  const [otherStrength, setOtherStrength] = useState('');
   const [showProfile, setShowProfile] = useState(false);
   const [generatedProfile, setGeneratedProfile] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
   const {
     completeOnboarding,
     setProfile
   } = useStore();
-  const totalSteps = 9;
+  const totalSteps = 6;
 
   // Get pronouns for display
   const getDisplayPronouns = () => {
@@ -94,8 +100,8 @@ export function ParentOnboarding({
     return 'them';
   };
   const handleNext = async () => {
-    // Step 3: Name is mandatory - validate before continuing
-    if (currentStep === 3) {
+    // Step 2: Name is mandatory - validate before continuing
+    if (currentStep === 2) {
       if (!data.preferredName.trim()) {
         toast({
           title: "Name Required",
@@ -115,8 +121,10 @@ export function ParentOnboarding({
     if (showProfile) {
       setShowProfile(false);
       setCurrentStep(totalSteps);
-    } else if (currentStep > 1) {
+    } else if (currentStep > 2) {
       setCurrentStep(currentStep - 1);
+    } else if (currentStep === 2 && onBack) {
+      onBack();
     }
   };
   const handleSkip = () => {
@@ -130,30 +138,44 @@ export function ParentOnboarding({
     }
     return array;
   };
-  const generateProfile = () => {
-    const name = data.preferredName || 'The person you are helping';
+  const generateProfile = async () => {
+    const name = data.preferredName || 'This individual';
     const pronoun = getDisplayPronouns();
-    const possessive = getPossessivePronouns();
-    let summary = `${name} `;
-    if (data.strengths.length > 0) {
-      summary += `shines at being ${data.strengths.slice(0, 3).join(', ')}. `;
+    
+    setIsGenerating(true);
+    
+    try {
+      const { data: summaryData, error } = await supabase.functions.invoke('generate-profile-summary', {
+        body: {
+          name,
+          pronouns: pronoun,
+          age: data.age,
+          strengths: data.strengths,
+          interests: data.interests,
+          workStyle: data.workStyle,
+          nextTwoWeeks: data.nextTwoWeeks,
+          sharingSupport: data.sharingSupport
+        }
+      });
+
+      if (error) {
+        console.error('Error generating profile:', error);
+        toast({
+          title: "Using basic summary",
+          description: "AI profile generation unavailable, showing simple overview.",
+          variant: "default"
+        });
+        setGeneratedProfile(`${name} is focusing on building their strengths and pursuing their interests. They're working on goals that matter to them.`);
+      } else {
+        setGeneratedProfile(summaryData.summary);
+      }
+    } catch (error) {
+      console.error('Failed to generate profile:', error);
+      setGeneratedProfile(`${name} is focusing on building their strengths and pursuing their interests. They're working on goals that matter to them.`);
+    } finally {
+      setIsGenerating(false);
+      setShowProfile(true);
     }
-    if (data.interests.length > 0) {
-      summary += `${pronoun === 'they' ? 'They are' : `${pronoun} is`} drawn to ${data.interests.slice(0, 3).join(', ')}. `;
-    }
-    if (data.age && data.age !== 'Prefer not to say') {
-      summary += `At ${data.age}, `;
-    } else {
-      summary += `${pronoun === 'they' ? 'They' : pronoun} `;
-    }
-    summary += `${pronoun === 'they' ? 'prefer' : 'prefers'} ${data.workStyle.environment} spaces and ${data.workStyle.activity} activities. `;
-    if (data.nextTwoWeeks) {
-      summary += `${possessive} next small step: ${data.nextTwoWeeks}. `;
-    }
-    const sharing = data.sharingSupport === 'private' ? 'keeping things private' : data.sharingSupport === 'summary' ? 'sharing summaries with supporters' : 'sharing details with supporters';
-    summary += `${pronoun === 'they' ? 'They prefer' : `${pronoun} prefers`} ${sharing}.`;
-    setGeneratedProfile(summary);
-    setShowProfile(true);
   };
   const handleComplete = async () => {
     if (isCreating) {
@@ -270,40 +292,49 @@ export function ParentOnboarding({
     }
   };
   if (showProfile) {
-    return <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
-      <Card className="w-full max-w-md shadow-card border-0">
-        <CardHeader className="text-center">
-          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-xl">✨</span>
-          </div>
-          <CardTitle className="text-2xl">Your Admin Profile</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="bg-card-soft rounded-lg p-4">
-            <p className="text-foreground-soft leading-relaxed">
-              {data.adminName ? `Welcome ${data.adminName}! ` : 'Welcome! '}
-              As the admin, you'll be able to manage goals, invite supporters, and track progress for {data.preferredName || 'the person you\'re helping'}.
+    return <div className="min-h-screen flex flex-col">
+      {/* Exit button */}
+      <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
+        <X className="h-4 w-4" />
+      </Button>
+      
+      {/* HEADER - 50vh */}
+      <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+        <div className="max-w-2xl mx-auto w-full">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-semibold">{data.preferredName}'s Profile</h2>
+            <p className="text-foreground-soft">
+              Here's a summary of what you've shared. You can create goals and invite supporters after setup is complete.
             </p>
           </div>
-
-          <div className="text-center space-y-3">
-            <p className="text-sm text-foreground-soft">
-              You can create goals and invite the team later. Ready to get started?
+        </div>
+      </div>
+      
+      {/* BODY - 43.75vh */}
+      <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
+        <div className="max-w-2xl mx-auto space-y-3">
+          <h3 className="text-xl font-semibold text-center">Summary</h3>
+          <div className="bg-white rounded-lg p-8 shadow-glow">
+            <p className="text-foreground leading-relaxed">
+              {generatedProfile}
             </p>
-            <div className="space-y-2">
-              <Button onClick={handleComplete} className="w-full" disabled={isCreating}>
-                {isCreating ? <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Setting things up...
-                  </> : "Let's go 🚀"}
-              </Button>
-              <Button variant="outline" onClick={handleBack} className="w-full">
-                Skip for now
-              </Button>
-            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+      
+      {/* FOOTER - 6.25vh */}
+      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)]">
+        <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
+        <div className="flex items-center gap-3">
+          <BackButton onClick={handleBack} variant="text" />
+          <Button onClick={handleComplete} disabled={isCreating}>
+            {isCreating ? <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Setting up...
+              </> : "Let's go 🚀"}
+          </Button>
+        </div>
+      </div>
     </div>;
   }
   return <div className="min-h-screen flex flex-col">
@@ -313,29 +344,73 @@ export function ParentOnboarding({
       </Button>
       
       {/* HEADER - 50vh */}
-      
+      <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+        <div className="max-w-2xl mx-auto w-full">
+          {currentStep === 2 && <div className="space-y-2">
+              <h2 className="text-3xl font-semibold">Who are you helping?</h2>
+              <p className="text-foreground-soft">
+                What name do they prefer and what are their pronouns?
+              </p>
+            </div>}
+          {currentStep === 3 && <div className="space-y-2">
+              <h2 className="text-3xl font-semibold">Age</h2>
+              <p className="text-foreground-soft">
+                How old is {data.preferredName || 'this person'}?
+              </p>
+            </div>}
+          {currentStep === 4 && <div className="space-y-2">
+              <h2 className="text-3xl font-semibold">What are 2-3 things {data.preferredName || 'they'} {data.preferredName ? 'is' : 'are'} great at?</h2>
+              <p className="text-foreground-soft">
+                Select up to 3 strengths
+              </p>
+            </div>}
+          {currentStep === 5 && <div className="space-y-2">
+              <h2 className="text-3xl font-semibold">
+                How does {data.preferredName || 'they'} usually like to do things?
+              </h2>
+              <p className="text-foreground-soft">
+                Move each slider to show their preferences
+              </p>
+            </div>}
+          {currentStep === 6 && <div className="space-y-2">
+              <h2 className="text-3xl font-semibold">Sharing and Support</h2>
+              <p className="text-foreground-soft">
+                How would you like to share {data.preferredName || 'their'} progress with supporters?
+              </p>
+            </div>}
+        </div>
+      </div>
       
       {/* BODY - 43.75vh */}
       <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto">
-          {currentStep === 3 && <RadioGroup defaultValue={data.pronouns} onValueChange={value => setData({
-          ...data,
-          pronouns: value
-        })} className="space-y-2">
-              {PRONOUNS_OPTIONS.map(option => {
-            const isCustom = option === 'Custom';
-            return <div key={option} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option} id={`pronoun-${option}`} className="cursor-pointer" />
-                    <Label htmlFor={`pronoun-${option}`} className="cursor-pointer">
-                      {isCustom ? <Input type="text" placeholder="Custom pronouns" value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} /> : option}
-                    </Label>
-                  </div>;
-          })}
-            </RadioGroup>}
-          {currentStep === 4 && <RadioGroup defaultValue={data.age} onValueChange={value => setData({
-          ...data,
-          age: value
-        })} className="space-y-2">
+          {currentStep === 2 && <div className="space-y-4">
+              <Input type="text" placeholder="Preferred name" value={data.preferredName} onChange={e => setData({
+                  ...data,
+                  preferredName: e.target.value
+                })} />
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Pronouns</Label>
+                <RadioGroup defaultValue={data.pronouns} onValueChange={value => setData({
+                    ...data,
+                    pronouns: value
+                  })} className="space-y-2">
+                  {PRONOUNS_OPTIONS.map(option => {
+                    const isCustom = option === 'Custom';
+                    return <div key={option} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option} id={`pronoun-${option}`} />
+                        <Label htmlFor={`pronoun-${option}`} className="cursor-pointer">
+                          {isCustom ? <Input type="text" placeholder="Custom pronouns" value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} /> : option}
+                        </Label>
+                      </div>;
+                  })}
+                </RadioGroup>
+              </div>
+            </div>}
+          {currentStep === 3 && <RadioGroup defaultValue={data.age} onValueChange={value => setData({
+              ...data,
+              age: value
+            })} className="space-y-2">
               {AGE_OPTIONS.map(option => <div key={option} className="flex items-center space-x-2">
                   <RadioGroupItem value={option} id={`age-${option}`} className="cursor-pointer" />
                   <Label htmlFor={`age-${option}`} className="cursor-pointer">
@@ -343,161 +418,148 @@ export function ParentOnboarding({
                   </Label>
                 </div>)}
             </RadioGroup>}
-          {currentStep === 5 && <div className="grid grid-cols-2 gap-2">
-              {STRENGTHS_OPTIONS.map(option => <Badge key={option} variant={data.strengths.includes(option) ? 'default' : 'outline'} onClick={() => setData({
-            ...data,
-            strengths: toggleSelection(data.strengths, option, 3)
-          })} className="cursor-pointer">
+          {currentStep === 4 && <div className="flex flex-col gap-2">
+              {STRENGTHS_OPTIONS.filter(opt => opt !== 'Other').map(option => <Badge key={option} variant="outline" onClick={() => setData({
+                    ...data,
+                    strengths: toggleSelection(data.strengths, option, 3)
+                  })} className={`cursor-pointer w-[140px] justify-center text-sm ${data.strengths.includes(option) ? 'bg-primary text-primary-foreground border-primary' : 'bg-white'}`}>
                   {option}
                 </Badge>)}
+              <Badge 
+                variant="outline"
+                onClick={() => setShowOtherStrength(!showOtherStrength)} 
+                className={`cursor-pointer w-[140px] justify-center text-sm ${showOtherStrength ? 'bg-primary text-primary-foreground border-primary' : 'bg-white'}`}
+              >
+                Other
+              </Badge>
+              {showOtherStrength && <Input 
+                type="text" 
+                placeholder="type strength" 
+                value={otherStrength}
+                onChange={(e) => setOtherStrength(e.target.value)}
+                className="w-full"
+              />}
             </div>}
-          {currentStep === 6 && <div className="grid grid-cols-2 gap-2">
-              {INTERESTS_OPTIONS.map(option => <Badge key={option} variant={data.interests.includes(option) ? 'default' : 'outline'} onClick={() => setData({
-            ...data,
-            interests: toggleSelection(data.interests, option, 3)
-          })} className="cursor-pointer">
-                  {option}
-                </Badge>)}
-            </div>}
-          {currentStep === 7 && <div className="space-y-4">
-              <div>
-                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Social Preference
-                </Label>
-                <RadioGroup defaultValue={data.workStyle.socialPreference} onValueChange={value => setData({
-              ...data,
-              workStyle: {
-                ...data.workStyle,
-                socialPreference: value as 'solo' | 'with-others'
-              }
-            })} className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="solo" id="solo" className="cursor-pointer" />
-                    <Label htmlFor="solo" className="cursor-pointer">
-                      Solo
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="with-others" id="with-others" className="cursor-pointer" />
-                    <Label htmlFor="with-others" className="cursor-pointer">
-                      With Others
-                    </Label>
-                  </div>
-                </RadioGroup>
+          {currentStep === 5 && <div className="space-y-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Solo</span>
+                  <span className="text-sm text-muted-foreground">With Others</span>
+                </div>
+                <Slider
+                  value={[data.workStyle.socialPreference]}
+                  onValueChange={(value) => setData({
+                    ...data,
+                    workStyle: { ...data.workStyle, socialPreference: value[0] }
+                  })}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
               </div>
-              <div>
-                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Environment
-                </Label>
-                <RadioGroup defaultValue={data.workStyle.environment} onValueChange={value => setData({
-              ...data,
-              workStyle: {
-                ...data.workStyle,
-                environment: value as 'quiet' | 'lively'
-              }
-            })} className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="quiet" id="quiet" className="cursor-pointer" />
-                    <Label htmlFor="quiet" className="cursor-pointer">
-                      Quiet
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="lively" id="lively" className="cursor-pointer" />
-                    <Label htmlFor="lively" className="cursor-pointer">
-                      Lively
-                    </Label>
-                  </div>
-                </RadioGroup>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Quiet</span>
+                  <span className="text-sm text-muted-foreground">Lively</span>
+                </div>
+                <Slider
+                  value={[data.workStyle.environment]}
+                  onValueChange={(value) => setData({
+                    ...data,
+                    workStyle: { ...data.workStyle, environment: value[0] }
+                  })}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
               </div>
-              <div>
-                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Activity
-                </Label>
-                <RadioGroup defaultValue={data.workStyle.activity} onValueChange={value => setData({
-              ...data,
-              workStyle: {
-                ...data.workStyle,
-                activity: value as 'screens' | 'hands-on'
-              }
-            })} className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="screens" id="screens" className="cursor-pointer" />
-                    <Label htmlFor="screens" className="cursor-pointer">
-                      Screens
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="hands-on" id="hands-on" className="cursor-pointer" />
-                    <Label htmlFor="hands-on" className="cursor-pointer">
-                      Hands-on
-                    </Label>
-                  </div>
-                </RadioGroup>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Screens</span>
+                  <span className="text-sm text-muted-foreground">Hands-on</span>
+                </div>
+                <Slider
+                  value={[data.workStyle.activity]}
+                  onValueChange={(value) => setData({
+                    ...data,
+                    workStyle: { ...data.workStyle, activity: value[0] }
+                  })}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
               </div>
-              <div>
-                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Duration
-                </Label>
-                <RadioGroup defaultValue={data.workStyle.duration} onValueChange={value => setData({
-              ...data,
-              workStyle: {
-                ...data.workStyle,
-                duration: value as 'short-bursts' | 'longer-sessions'
-              }
-            })} className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="short-bursts" id="short-bursts" className="cursor-pointer" />
-                    <Label htmlFor="short-bursts" className="cursor-pointer">
-                      Short bursts
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="longer-sessions" id="longer-sessions" className="cursor-pointer" />
-                    <Label htmlFor="longer-sessions" className="cursor-pointer">
-                      Longer sessions
-                    </Label>
-                  </div>
-                </RadioGroup>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Short bursts</span>
+                  <span className="text-sm text-muted-foreground">Longer sessions</span>
+                </div>
+                <Slider
+                  value={[data.workStyle.duration]}
+                  onValueChange={(value) => setData({
+                    ...data,
+                    workStyle: { ...data.workStyle, duration: value[0] }
+                  })}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
               </div>
             </div>}
-          {currentStep === 8 && <Textarea placeholder="Next small step" value={data.nextTwoWeeks} onChange={e => setData({
-          ...data,
-          nextTwoWeeks: e.target.value
-        })} />}
-          {currentStep === 9 && <RadioGroup defaultValue={data.sharingSupport} onValueChange={value => setData({
-          ...data,
-          sharingSupport: value as 'private' | 'summary' | 'details'
-        })} className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="private" id="private" className="cursor-pointer" />
-                <Label htmlFor="private" className="cursor-pointer">
-                  Keep everything private
-                </Label>
+          {currentStep === 6 && <div className="space-y-3">
+              <div 
+                onClick={() => setData({ ...data, sharingSupport: 'private' })}
+                className={`cursor-pointer p-4 rounded-full border-2 transition-all ${
+                  data.sharingSupport === 'private' 
+                    ? 'border-primary bg-white' 
+                    : 'border-border bg-white'
+                }`}
+              >
+                <div className="font-medium">Keep it private</div>
+                <div className="text-sm text-muted-foreground">Only you can see progress</div>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="summary" id="summary" className="cursor-pointer" />
-                <Label htmlFor="summary" className="cursor-pointer">
-                  Share summaries with supporters
-                </Label>
+              
+              <div 
+                onClick={() => setData({ ...data, sharingSupport: 'summary' })}
+                className={`cursor-pointer p-4 rounded-full border-2 transition-all ${
+                  data.sharingSupport === 'summary' 
+                    ? 'border-primary bg-white' 
+                    : 'border-border bg-white'
+                }`}
+              >
+                <div className="font-medium">Share summaries</div>
+                <div className="text-sm text-muted-foreground">Supporters see high-level updates</div>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="details" id="details" className="cursor-pointer" />
-                <Label htmlFor="details" className="cursor-pointer">
-                  Share details with supporters
-                </Label>
+              
+              <div 
+                onClick={() => setData({ ...data, sharingSupport: 'details' })}
+                className={`cursor-pointer p-4 rounded-full border-2 transition-all ${
+                  data.sharingSupport === 'details' 
+                    ? 'border-primary bg-white' 
+                    : 'border-border bg-white'
+                }`}
+              >
+                <div className="font-medium">Share details</div>
+                <div className="text-sm text-muted-foreground">Supporters see detailed progress</div>
               </div>
-            </RadioGroup>}
+            </div>}
         </div>
       </div>
       
       {/* FOOTER - 6.25vh */}
-      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3">
+      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)]">
         <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
         <div className="flex items-center gap-3">
-          {currentStep >= 1 && <BackButton onClick={handleBack} variant="text" />}
-          <Button onClick={handleNext}>
-            {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
+          <BackButton onClick={handleBack} variant="text" />
+          <Button onClick={handleNext} disabled={isGenerating}>
+            {isGenerating ? 'Generating Profile...' : currentStep === totalSteps ? 'Create Profile' : 'Continue'}
           </Button>
         </div>
       </div>
