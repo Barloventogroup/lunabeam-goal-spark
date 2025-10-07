@@ -371,9 +371,11 @@ export function ParentOnboarding({
               </div>}
 
             {/* Step 3: Name and Pronouns */}
-            {currentStep === 3 && <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-2">What should we call them?</h2>
+            {currentStep === 3 && <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold mb-2">What should we call them?</h2>
+                  </div>
                   <div className="space-y-4">
                     <div>
                       <Label className="text-sm font-medium">Preferred name <span className="text-red-500">*</span></Label>
@@ -406,10 +408,12 @@ export function ParentOnboarding({
               </div>}
 
             {/* Step 4: Age */}
-            {currentStep === 4 && <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">How old are they?</h2>
-                  <div className="flex flex-wrap gap-2">
+            {currentStep === 4 && <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold mb-4">How old are they?</h2>
+                  </div>
+                  <div className="flex flex-wrap gap-2 justify-center">
                     {AGE_OPTIONS.map(age => <Button key={age} variant={data.age === age ? "default" : "outline"} onClick={() => setData(prev => ({
                     ...prev,
                     age
@@ -421,10 +425,12 @@ export function ParentOnboarding({
               </div>}
 
             {/* Step 5: Strengths */}
-            {currentStep === 5 && <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-2">What are 2–3 things they're great at?</h2>
-                  <div className="flex flex-wrap gap-2 mt-4">
+            {currentStep === 5 && <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold mb-2">What are 2–3 things they're great at?</h2>
+                  </div>
+                  <div className="flex flex-wrap gap-2 justify-center">
                     {STRENGTHS_OPTIONS.map(strength => <Button key={strength} variant={data.strengths.includes(strength) ? "default" : "outline"} onClick={() => setData(prev => ({
                     ...prev,
                     strengths: toggleSelection(prev.strengths, strength, 3)
@@ -436,10 +442,15 @@ export function ParentOnboarding({
               </div>}
 
             {/* Step 6: Interests */}
-            {currentStep === 6 && <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-2">Pick a few interests to explore</h2>
-                  <div className="flex flex-wrap gap-2 mt-4">
+            {currentStep === 6 && <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold mb-2">Pick a few interests to explore</h2>
+                    <p className="text-xs text-foreground-soft">
+                      Choose 3–5 to start. "Other" lets you type your own.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 justify-center">
                     {INTERESTS_OPTIONS.map(interest => <Button key={interest} variant={data.interests.includes(interest) ? "default" : "outline"} onClick={() => setData(prev => ({
                     ...prev,
                     interests: toggleSelection(prev.interests, interest, 5)
@@ -447,16 +458,15 @@ export function ParentOnboarding({
                         {interest}
                       </Button>)}
                   </div>
-                  <p className="text-xs text-foreground-soft mt-2">
-                    Choose 3–5 to start. "Other" lets you type your own.
-                  </p>
                 </div>
               </div>}
 
             {/* Step 7: Work Style */}
-            {currentStep === 7 && <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">How do they usually like to do things?</h2>
+            {currentStep === 7 && <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold mb-4">How do they usually like to do things?</h2>
+                  </div>
                   
                   <div className="space-y-6">
                     <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
@@ -563,16 +573,18 @@ export function ParentOnboarding({
               </div>}
 
             {/* Step 8: Next Two Weeks */}
-            {currentStep === 8 && <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-2">One small thing they might try in the next two weeks</h2>
+            {currentStep === 8 && <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold mb-2">One small thing they might try in the next two weeks</h2>
+                  </div>
                   <Textarea value={data.nextTwoWeeks} onChange={e => setData(prev => ({
                   ...prev,
                   nextTwoWeeks: e.target.value
                 }))} placeholder="Optional - describe something small they could try" className="mt-2" rows={3} />
                   <div className="mt-4">
                     <p className="text-sm font-medium mb-2">Suggestions:</p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 justify-center">
                       {SUGGESTIONS.map(suggestion => <Button key={suggestion} variant="outline" size="sm" onClick={() => setData(prev => ({
                       ...prev,
                       nextTwoWeeks: suggestion
@@ -585,9 +597,11 @@ export function ParentOnboarding({
               </div>}
 
             {/* Step 9: Sharing and Support */}
-            {currentStep === 9 && <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Sharing and support</h2>
+            {currentStep === 9 && <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold mb-4">Sharing and support</h2>
+                  </div>
                   <RadioGroup value={data.sharingSupport} onValueChange={value => setData(prev => ({
                   ...prev,
                   sharingSupport: value as any

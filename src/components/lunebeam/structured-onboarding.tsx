@@ -405,258 +405,272 @@ export function StructuredOnboarding({ onComplete, roleData, onExit }: Structure
             <div className="flex-1 overflow-y-auto">
             {/* Step 1: Name & Pronouns */}
             {currentStep === 1 && (
-              <div className="space-y-6">
-                <div className="text-left">
-                  <h2 className="text-lg font-semibold mb-2">
-                    {data.role === 'parent' ? "What would they like to be called?" : "What would you like to be called?"}
-                  </h2>
-                  <p className="text-sm text-black">
-                    Just {data.role === 'parent' ? 'their' : 'your'} first name or nickname is perfect
-                  </p>
-                </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
-                <div className="space-y-4">
-                  <Input
-                    value={data.name}
-                    onChange={(e) => setData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder={data.role === 'parent' ? "Their name" : "Your name"}
-                    className="text-left text-sm"
-                    maxLength={30}
-                  />
-                   <div>
-                     <p className="text-sm font-medium mb-2">Pronouns (optional)</p>
-                     <div className="flex flex-wrap gap-2">
-                       {['she/her', 'he/him', 'they/them'].map(pronoun => (
-                         <Button
-                           key={pronoun}
-                           variant={data.pronouns === pronoun ? "default" : "outline"}
-                           onClick={() => setData(prev => ({ ...prev, pronouns: pronoun }))}
-                           className="text-sm border-0"
-                           style={{ backgroundColor: data.pronouns === pronoun ? undefined : '#E0E0E0' }}
-                         >
-                           {pronoun}
-                         </Button>
-                       ))}
+              <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-lg font-semibold mb-2">
+                      {data.role === 'parent' ? "What would they like to be called?" : "What would you like to be called?"}
+                    </h2>
+                    <p className="text-sm text-black">
+                      Just {data.role === 'parent' ? 'their' : 'your'} first name or nickname is perfect
+                    </p>
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
+                  <div className="space-y-4">
+                    <Input
+                      value={data.name}
+                      onChange={(e) => setData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder={data.role === 'parent' ? "Their name" : "Your name"}
+                      className="text-left text-sm"
+                      maxLength={30}
+                    />
+                     <div>
+                       <p className="text-sm font-medium mb-2">Pronouns (optional)</p>
+                       <div className="flex flex-wrap gap-2">
+                         {['she/her', 'he/him', 'they/them'].map(pronoun => (
+                           <Button
+                             key={pronoun}
+                             variant={data.pronouns === pronoun ? "default" : "outline"}
+                             onClick={() => setData(prev => ({ ...prev, pronouns: pronoun }))}
+                             className="text-sm border-0"
+                             style={{ backgroundColor: data.pronouns === pronoun ? undefined : '#E0E0E0' }}
+                           >
+                             {pronoun}
+                           </Button>
+                         ))}
+                       </div>
                      </div>
-                   </div>
-                   <div>
-                     <p className="text-sm font-medium mb-2">Age</p>
-                     <Input
-                       value={data.age}
-                       onChange={(e) => setData(prev => ({ ...prev, age: e.target.value }))}
-                       placeholder={data.role === 'parent' ? "Their age" : "Your age"}
-                       className="text-left text-sm"
-                       type="number"
-                       min="1"
-                       max="100"
-                     />
-                   </div>
+                     <div>
+                       <p className="text-sm font-medium mb-2">Age</p>
+                       <Input
+                         value={data.age}
+                         onChange={(e) => setData(prev => ({ ...prev, age: e.target.value }))}
+                         placeholder={data.role === 'parent' ? "Their age" : "Your age"}
+                         className="text-left text-sm"
+                         type="number"
+                         min="1"
+                         max="100"
+                       />
+                     </div>
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
             {/* Step 2: Superpowers */}
             {currentStep === 2 && (
-              <div className="space-y-6">
-                <div className="text-left">
-                  <h2 className="text-lg font-semibold mb-2">
-                    {data.role === 'parent' ? "What are their top 3 \"superpowers\"?" : "What are your top 3 \"superpowers\"?"}
-                  </h2>
-                  <p className="text-sm text-black">
-                    Choose up to 3 things {data.role === 'parent' ? "they're" : "you're"} naturally good at
-                  </p>
+              <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-lg font-semibold mb-2">
+                      {data.role === 'parent' ? "What are their top 3 \"superpowers\"?" : "What are your top 3 \"superpowers\"?"}
+                    </h2>
+                    <p className="text-sm text-black">
+                      Choose up to 3 things {data.role === 'parent' ? "they're" : "you're"} naturally good at
+                    </p>
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {SUPERPOWERS.map(power => (
+                      <Button
+                        key={power}
+                        variant={data.superpowers.includes(power) ? "default" : "outline"}
+                        onClick={() => setData(prev => ({
+                          ...prev,
+                          superpowers: toggleSelection(prev.superpowers, power, 3)
+                        }))}
+                        className="text-sm h-auto py-2 px-3 border-0"
+                        style={{ backgroundColor: data.superpowers.includes(power) ? undefined : '#E0E0E0' }}
+                        disabled={!data.superpowers.includes(power) && data.superpowers.length >= 3}
+                      >
+                        {power}
+                      </Button>
+                    ))}
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
-                <div className="flex flex-wrap gap-2">
-                  {SUPERPOWERS.map(power => (
-                    <Button
-                      key={power}
-                      variant={data.superpowers.includes(power) ? "default" : "outline"}
-                      onClick={() => setData(prev => ({
-                        ...prev,
-                        superpowers: toggleSelection(prev.superpowers, power, 3)
-                      }))}
-                      className="text-sm h-auto py-2 px-3 border-0"
-                      style={{ backgroundColor: data.superpowers.includes(power) ? undefined : '#E0E0E0' }}
-                      disabled={!data.superpowers.includes(power) && data.superpowers.length >= 3}
-                    >
-                      {power}
-                    </Button>
-                  ))}
-                </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
             {/* Step 3: Interests */}
             {currentStep === 3 && (
-              <div className="space-y-6">
-                <div className="text-left">
-                  <h2 className="text-lg font-semibold mb-2">
-                    {data.role === 'parent' ? "Choose 3–5 interests they might want to explore" : "Choose 3–5 interests to explore"}
-                  </h2>
-                  <p className="text-sm text-black">
-                    What sounds fun or interesting to {data.role === 'parent' ? 'them' : 'you'}?
-                  </p>
+              <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-lg font-semibold mb-2">
+                      {data.role === 'parent' ? "Choose 3–5 interests they might want to explore" : "Choose 3–5 interests to explore"}
+                    </h2>
+                    <p className="text-sm text-black">
+                      What sounds fun or interesting to {data.role === 'parent' ? 'them' : 'you'}?
+                    </p>
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {INTERESTS.map(interest => (
+                      <Button
+                        key={interest}
+                        variant={data.interests.includes(interest) ? "default" : "outline"}
+                        onClick={() => setData(prev => ({
+                          ...prev,
+                          interests: toggleSelection(prev.interests, interest, 5)
+                        }))}
+                        className="text-sm h-auto py-2 px-3 border-0"
+                        style={{ backgroundColor: data.interests.includes(interest) ? undefined : '#E0E0E0' }}
+                        disabled={!data.interests.includes(interest) && data.interests.length >= 5}
+                      >
+                        {interest}
+                      </Button>
+                    ))}
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
-                <div className="flex flex-wrap gap-2">
-                  {INTERESTS.map(interest => (
-                    <Button
-                      key={interest}
-                      variant={data.interests.includes(interest) ? "default" : "outline"}
-                      onClick={() => setData(prev => ({
-                        ...prev,
-                        interests: toggleSelection(prev.interests, interest, 5)
-                      }))}
-                      className="text-sm h-auto py-2 px-3 border-0"
-                      style={{ backgroundColor: data.interests.includes(interest) ? undefined : '#E0E0E0' }}
-                      disabled={!data.interests.includes(interest) && data.interests.length >= 5}
-                    >
-                      {interest}
-                    </Button>
-                  ))}
-                </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
             {/* Step 4: Work Style */}
             {currentStep === 4 && (
-              <div className="space-y-6">
-                <div className="text-left">
-                  <h2 className="text-lg font-semibold mb-2">
-                    {data.role === 'parent' ? "How do they like doing things?" : "How do you like doing things?"}
-                  </h2>
-                  <p className="text-sm text-black">Tap one from each pair</p>
+              <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-lg font-semibold mb-2">
+                      {data.role === 'parent' ? "How do they like doing things?" : "How do you like doing things?"}
+                    </h2>
+                    <p className="text-sm text-black">Tap one from each pair</p>
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
+                  <div className="space-y-4">
+                    {[
+                      { key: 'socialPreference', options: ['solo', 'with-others'], labels: ['Solo', 'With others'] },
+                      { key: 'environment', options: ['quiet', 'lively'], labels: ['Quiet spaces', 'Lively spaces'] },
+                      { key: 'activity', options: ['screens', 'hands-on'], labels: ['Screens', 'Hands-on'] },
+                      { key: 'duration', options: ['short-bursts', 'longer-sessions'], labels: ['Short bursts', 'Longer sessions'] }
+                    ].map(({ key, options, labels }) => (
+                      <div key={key} className="flex gap-2">
+                        {options.map((option, index) => (
+                          <Button
+                            key={option}
+                            variant={data.workStyle[key as keyof typeof data.workStyle] === option ? "default" : "outline"}
+                            onClick={() => setData(prev => ({
+                              ...prev,
+                              workStyle: { ...prev.workStyle, [key]: option }
+                            }))}
+                            className="flex-1 border-0 text-sm"
+                            style={{ backgroundColor: data.workStyle[key as keyof typeof data.workStyle] === option ? undefined : '#E0E0E0' }}
+                          >
+                            {labels[index]}
+                          </Button>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
-                <div className="space-y-4">
-                  {[
-                    { key: 'socialPreference', options: ['solo', 'with-others'], labels: ['Solo', 'With others'] },
-                    { key: 'environment', options: ['quiet', 'lively'], labels: ['Quiet spaces', 'Lively spaces'] },
-                    { key: 'activity', options: ['screens', 'hands-on'], labels: ['Screens', 'Hands-on'] },
-                    { key: 'duration', options: ['short-bursts', 'longer-sessions'], labels: ['Short bursts', 'Longer sessions'] }
-                  ].map(({ key, options, labels }) => (
-                    <div key={key} className="flex gap-2">
-                      {options.map((option, index) => (
-                        <Button
-                          key={option}
-                          variant={data.workStyle[key as keyof typeof data.workStyle] === option ? "default" : "outline"}
-                          onClick={() => setData(prev => ({
-                            ...prev,
-                            workStyle: { ...prev.workStyle, [key]: option }
-                          }))}
-                          className="flex-1 border-0 text-sm"
-                          style={{ backgroundColor: data.workStyle[key as keyof typeof data.workStyle] === option ? undefined : '#E0E0E0' }}
-                        >
-                          {labels[index]}
-                        </Button>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
             {/* Step 5: Best Time */}
             {currentStep === 5 && (
-              <div className="space-y-6">
-                <div className="text-left">
-                  <h2 className="text-lg font-semibold mb-2">
-                    {data.role === 'parent' ? "When do they feel at their best?" : "When do you feel at your best?"}
-                  </h2>
-                  <p className="text-sm text-black">
-                    Choose {data.role === 'parent' ? 'their' : 'your'} peak energy time
-                  </p>
+              <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-lg font-semibold mb-2">
+                      {data.role === 'parent' ? "When do they feel at their best?" : "When do you feel at your best?"}
+                    </h2>
+                    <p className="text-sm text-black">
+                      Choose {data.role === 'parent' ? 'their' : 'your'} peak energy time
+                    </p>
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
+                  <div className="space-y-2">
+                    {['Early morning', 'Late morning', 'Afternoon', 'Evening', 'It varies'].map(time => (
+                      <Button
+                        key={time}
+                        variant={data.bestTime === time ? "default" : "outline"}
+                        onClick={() => setData(prev => ({ ...prev, bestTime: time }))}
+                        className="w-full justify-start border-0 text-sm"
+                        style={{ backgroundColor: data.bestTime === time ? undefined : '#E0E0E0' }}
+                      >
+                        {time}
+                      </Button>
+                    ))}
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
-                <div className="space-y-2">
-                  {['Early morning', 'Late morning', 'Afternoon', 'Evening', 'It varies'].map(time => (
-                    <Button
-                      key={time}
-                      variant={data.bestTime === time ? "default" : "outline"}
-                      onClick={() => setData(prev => ({ ...prev, bestTime: time }))}
-                      className="w-full justify-start border-0 text-sm"
-                      style={{ backgroundColor: data.bestTime === time ? undefined : '#E0E0E0' }}
-                    >
-                      {time}
-                    </Button>
-                  ))}
-                </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
             {/* Step 6: Barriers */}
             {currentStep === 6 && (
-              <div className="space-y-6">
-                <div className="text-left">
-                  <h2 className="text-lg font-semibold mb-2">
-                    {data.role === 'parent' ? "What gets in their way most?" : "What gets in your way most?"}
-                  </h2>
-                  <p className="text-sm text-black">Choose up to 2 things that make activities harder</p>
+              <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-lg font-semibold mb-2">
+                      {data.role === 'parent' ? "What gets in their way most?" : "What gets in your way most?"}
+                    </h2>
+                    <p className="text-sm text-black">Choose up to 2 things that make activities harder</p>
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {BARRIERS.map(barrier => (
+                      <Button
+                        key={barrier}
+                        variant={data.barriers.includes(barrier) ? "default" : "outline"}
+                        onClick={() => setData(prev => ({
+                          ...prev,
+                          barriers: toggleSelection(prev.barriers, barrier, 2)
+                        }))}
+                        className="text-sm h-auto py-2 px-3 border-0"
+                        style={{ backgroundColor: data.barriers.includes(barrier) ? undefined : '#E0E0E0' }}
+                        disabled={!data.barriers.includes(barrier) && data.barriers.length >= 2}
+                      >
+                        {barrier}
+                      </Button>
+                    ))}
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
-                <div className="flex flex-wrap gap-2">
-                  {BARRIERS.map(barrier => (
-                    <Button
-                      key={barrier}
-                      variant={data.barriers.includes(barrier) ? "default" : "outline"}
-                      onClick={() => setData(prev => ({
-                        ...prev,
-                        barriers: toggleSelection(prev.barriers, barrier, 2)
-                      }))}
-                      className="text-sm h-auto py-2 px-3 border-0"
-                      style={{ backgroundColor: data.barriers.includes(barrier) ? undefined : '#E0E0E0' }}
-                      disabled={!data.barriers.includes(barrier) && data.barriers.length >= 2}
-                    >
-                      {barrier}
-                    </Button>
-                  ))}
-                </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
             {/* Step 7: Goal Seed */}
             {currentStep === 7 && (
-              <div className="space-y-6">
-                <div className="text-left">
-                  <h2 className="text-lg font-semibold mb-2">
-                    {data.role === 'parent' ? "One small thing they'd like to try" : "One small thing you'd like to try"}
-                  </h2>
-                  <p className="text-sm text-black">In the next 2 weeks (optional, 120 characters)</p>
-                </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
-                <Textarea
-                  value={data.goalSeed}
-                  onChange={(e) => setData(prev => ({ ...prev, goalSeed: e.target.value }))}
-                  placeholder={data.role === 'parent' ? "What would they like to try?" : "What would you like to try?"}
-                  maxLength={120}
-                  rows={3}
-                />
-                <div className="text-xs text-foreground-soft text-center">
-                  {data.goalSeed.length}/120 characters
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Need ideas?</p>
-                  <div className="flex flex-wrap gap-2">
-                    {GOAL_HELPERS.map(helper => (
-                      <Button
-                        key={helper}
-                        variant="ghost"
-                        onClick={() => setData(prev => ({ ...prev, goalSeed: helper }))}
-                        className="text-sm h-auto py-2 px-3 border-0"
-                        style={{ backgroundColor: '#E0E0E0' }}
-                      >
-                        {helper}
-                      </Button>
-                    ))}
+              <div className="flex-1 flex flex-col justify-center items-center">
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-lg font-semibold mb-2">
+                      {data.role === 'parent' ? "One small thing they'd like to try" : "One small thing you'd like to try"}
+                    </h2>
+                    <p className="text-sm text-black">In the next 2 weeks (optional, 120 characters)</p>
                   </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
+                  <Textarea
+                    value={data.goalSeed}
+                    onChange={(e) => setData(prev => ({ ...prev, goalSeed: e.target.value }))}
+                    placeholder={data.role === 'parent' ? "What would they like to try?" : "What would you like to try?"}
+                    maxLength={120}
+                    rows={3}
+                  />
+                  <div className="text-xs text-foreground-soft text-center">
+                    {data.goalSeed.length}/120 characters
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-center">Need ideas?</p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {GOAL_HELPERS.map(helper => (
+                        <Button
+                          key={helper}
+                          variant="ghost"
+                          onClick={() => setData(prev => ({ ...prev, goalSeed: helper }))}
+                          className="text-sm h-auto py-2 px-3 border-0"
+                          style={{ backgroundColor: '#E0E0E0' }}
+                        >
+                          {helper}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
                 </div>
-                <hr style={{ borderColor: '#E0E0E0', backgroundColor: '#E0E0E0', height: '1px', border: 'none' }} />
               </div>
             )}
 
