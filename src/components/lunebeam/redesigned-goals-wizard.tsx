@@ -963,7 +963,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           <span className="text-2xl">{category.emoji}</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold truncate">{category.title}</h3>
+                          <div className="font-semibold truncate">{category.title}</div>
                           <p className="text-sm text-muted-foreground line-clamp-2">{category.description}</p>
                         </div>
                         <div className="flex items-center gap-2">
