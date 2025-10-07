@@ -71,8 +71,9 @@ export function ParentOnboarding({
     sharingSupport: 'private'
   });
   const [customPronouns, setCustomPronouns] = useState('');
-  const [showOtherStrength, setShowOtherStrength] = useState(false);
-  const [otherStrength, setOtherStrength] = useState('');
+  const [customStrength, setCustomStrength] = useState('');
+  const [validationMessages, setValidationMessages] = useState<{[key: string]: string}>({});
+  const [suggestions, setSuggestions] = useState<{[key: string]: string[]}>({});
   const [showProfile, setShowProfile] = useState(false);
   const [generatedProfile, setGeneratedProfile] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -141,6 +142,81 @@ export function ParentOnboarding({
     }
     return array;
   };
+
+  const validateWord = (word: string, field: 'strengths') => {
+    const commonWords: { [key: string]: string[] } = {
+      strengths: ['Smart', 'Fast', 'Strong', 'Friendly', 'Helpful', 'Artistic', 'Musical', 'Athletic']
+    };
+
+    if (word.length >= 2) {
+      const hasInvalidChars = /[^a-zA-Z\s/-]/.test(word);
+      
+      if (hasInvalidChars) {
+        setValidationMessages(prev => ({
+          ...prev,
+          [field]: "Are you sure that's a word?"
+        }));
+        setSuggestions(prev => ({
+          ...prev,
+          [field]: commonWords[field].filter(w => w.toLowerCase().includes(word.toLowerCase().substring(0, 2)))
+        }));
+      } else {
+        setValidationMessages(prev => {
+          const { [field]: _, ...rest } = prev;
+          return rest;
+        });
+        setSuggestions(prev => {
+          const { [field]: _, ...rest } = prev;
+          return rest;
+        });
+      }
+    } else {
+      setValidationMessages(prev => {
+        const { [field]: _, ...rest } = prev;
+        return rest;
+      });
+      setSuggestions(prev => {
+        const { [field]: _, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
+  const addCustomStrength = () => {
+    if (customStrength.trim()) {
+      const hasInvalidChars = /[^a-zA-Z\s/-]/.test(customStrength.trim());
+      
+      if (hasInvalidChars) {
+        setValidationMessages(prev => ({
+          ...prev,
+          strengths: "Are you sure that's a word?"
+        }));
+        
+        const commonWords = ['Smart', 'Fast', 'Strong', 'Friendly', 'Helpful', 'Artistic', 'Musical', 'Athletic'];
+        setSuggestions(prev => ({
+          ...prev,
+          strengths: commonWords.filter(w => w.toLowerCase().includes(customStrength.toLowerCase().substring(0, 2)))
+        }));
+        return;
+      }
+      
+      setData(prev => ({
+        ...prev,
+        strengths: [...prev.strengths, customStrength.trim()]
+      }));
+      setCustomStrength('');
+      
+      setValidationMessages(prev => {
+        const { strengths: _, ...rest } = prev;
+        return rest;
+      });
+      setSuggestions(prev => {
+        const { strengths: _, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
   const generateProfile = async () => {
     const name = data.preferredName || 'This individual';
     const pronoun = getDisplayPronouns();
@@ -435,28 +511,100 @@ export function ParentOnboarding({
                   </Label>
                 </div>)}
             </RadioGroup>}
-          {currentStep === 4 && <div className="flex flex-col gap-2">
-              {STRENGTHS_OPTIONS.filter(opt => opt !== 'Other').map(option => <Badge key={option} variant="outline" onClick={() => setData({
-                    ...data,
-                    strengths: toggleSelection(data.strengths, option, 3)
-                  })} className={`cursor-pointer w-[140px] justify-center text-sm ${data.strengths.includes(option) ? 'bg-primary text-primary-foreground border-primary' : 'bg-white'}`}>
-                  {option}
-                </Badge>)}
-              <Badge 
-                variant="outline"
-                onClick={() => setShowOtherStrength(!showOtherStrength)} 
-                className={`cursor-pointer w-[140px] justify-center text-sm ${showOtherStrength ? 'bg-primary text-primary-foreground border-primary' : 'bg-white'}`}
-              >
-                Other
-              </Badge>
-              {showOtherStrength && <Input 
-                type="text" 
-                placeholder="type strength" 
-                value={otherStrength}
-                onChange={(e) => setOtherStrength(e.target.value)}
-                className="w-full"
-              />}
-            </div>}
+          {currentStep === 4 && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {STRENGTHS_OPTIONS.filter(opt => opt !== 'Other').map(option => (
+                  <Button
+                    key={option}
+                    variant={data.strengths.includes(option) ? "default" : "outline"}
+                    onClick={() => setData({
+                      ...data,
+                      strengths: toggleSelection(data.strengths, option, 3)
+                    })}
+                    className="text-sm h-auto py-2 px-3 border-0"
+                    style={{ backgroundColor: data.strengths.includes(option) ? undefined : '#E0E0E0' }}
+                    disabled={!data.strengths.includes(option) && data.strengths.length >= 3}
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </div>
+              
+              {/* Custom strengths as pills */}
+              {data.strengths.filter(s => !STRENGTHS_OPTIONS.includes(s)).length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {data.strengths.filter(s => !STRENGTHS_OPTIONS.includes(s)).map(customStr => (
+                    <div 
+                      key={customStr}
+                      className="flex items-center gap-1 bg-primary text-primary-foreground rounded-full px-3 py-1 text-sm"
+                    >
+                      <span>{customStr}</span>
+                      <button
+                        onClick={() => setData(prev => ({
+                          ...prev,
+                          strengths: prev.strengths.filter(s => s !== customStr)
+                        }))}
+                        className="ml-1 hover:opacity-70"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Other input */}
+              <div className="space-y-2">
+                <Input
+                  value={customStrength}
+                  onChange={(e) => {
+                    setCustomStrength(e.target.value);
+                    validateWord(e.target.value, 'strengths');
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCustomStrength();
+                    }
+                  }}
+                  placeholder="Other..."
+                  className="text-sm"
+                  disabled={data.strengths.length >= 3}
+                  maxLength={30}
+                />
+                {validationMessages.strengths && (
+                  <p className="text-xs text-destructive">{validationMessages.strengths}</p>
+                )}
+                {suggestions.strengths && suggestions.strengths.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    <p className="text-xs text-muted-foreground w-full">Did you mean:</p>
+                    {suggestions.strengths.map(suggestion => (
+                      <Button
+                        key={suggestion}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setCustomStrength(suggestion);
+                          setValidationMessages(prev => {
+                            const { strengths: _, ...rest } = prev;
+                            return rest;
+                          });
+                          setSuggestions(prev => {
+                            const { strengths: _, ...rest } = prev;
+                            return rest;
+                          });
+                        }}
+                        className="text-xs h-auto py-1 px-2"
+                      >
+                        {suggestion}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           {currentStep === 5 && <div className="space-y-6">
               <div className="space-y-3">
                 <div className="flex justify-between items-center mb-2">
