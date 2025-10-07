@@ -338,7 +338,7 @@ export function ParentOnboarding({
         <X className="h-4 w-4" />
       </Button>
       
-      {/* HEADER - 50% */}
+      {/* HEADER - 50vh */}
       <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
         <div className="max-w-2xl mx-auto w-full">
           {currentStep === 1 && (
@@ -362,275 +362,326 @@ export function ParentOnboarding({
             </div>
           )}
           
-          {/* Step 3: Name and Pronouns */}
-          {currentStep === 3 && <div className="flex-1 flex flex-col justify-center items-center">
-                <div className="w-full max-w-2xl space-y-6">
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold mb-2">What should we call them?</h2>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium">Preferred name <span className="text-red-500">*</span></Label>
-                      <Input value={data.preferredName} onChange={e => setData(prev => ({
-                      ...prev,
-                      preferredName: e.target.value
-                    }))} placeholder="Enter their preferred name" className="mt-1" required />
-                      <p className="text-xs text-foreground-soft mt-1">
-                        This is how we'll address them in the app. Initials or a nickname are okay.
-                      </p>
-                    </div>
+          {currentStep === 3 && (
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">What should we call them?</h2>
+              <p className="text-foreground-soft">
+                This is how we'll address them in the app. Initials or a nickname are okay.
+              </p>
+            </div>
+          )}
 
-                    <div>
-                      <Label className="text-sm font-medium">What are this person's pronouns?</Label>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {PRONOUNS_OPTIONS.map(pronoun => <Button key={pronoun} variant={data.pronouns === pronoun ? "default" : "outline"} onClick={() => setData(prev => ({
-                        ...prev,
-                        pronouns: pronoun
-                      }))} className="text-sm h-auto py-1 px-3">
-                            {pronoun}
-                          </Button>)}
-                      </div>
-                      {data.pronouns === 'Custom' && <Input value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} placeholder="Enter custom pronouns" className="mt-2" />}
-                      <p className="text-xs text-foreground-soft mt-1">
-                        We ask so we can be respectful. You can change this later.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>}
+          {currentStep === 4 && (
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">How old are they?</h2>
+            </div>
+          )}
 
-            {/* Step 4: Age */}
-            {currentStep === 4 && <div className="flex-1 flex flex-col justify-center items-center">
-                <div className="w-full max-w-2xl space-y-6">
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold mb-4">How old are they?</h2>
-                  </div>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {AGE_OPTIONS.map(age => <Button key={age} variant={data.age === age ? "default" : "outline"} onClick={() => setData(prev => ({
-                    ...prev,
-                    age
-                  }))} className="text-sm h-auto py-2 px-3">
-                        {age}
-                      </Button>)}
-                  </div>
-                </div>
-              </div>}
+          {currentStep === 5 && (
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">What are 2–3 things they're great at?</h2>
+            </div>
+          )}
 
-            {/* Step 5: Strengths */}
-            {currentStep === 5 && <div className="flex-1 flex flex-col justify-center items-center">
-                <div className="w-full max-w-2xl space-y-6">
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold mb-2">What are 2–3 things they're great at?</h2>
-                  </div>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {STRENGTHS_OPTIONS.map(strength => <Button key={strength} variant={data.strengths.includes(strength) ? "default" : "outline"} onClick={() => setData(prev => ({
-                    ...prev,
-                    strengths: toggleSelection(prev.strengths, strength, 3)
-                  }))} className="text-sm h-auto py-2 px-3" disabled={!data.strengths.includes(strength) && data.strengths.length >= 3}>
-                        {strength}
-                      </Button>)}
-                  </div>
-                </div>
-              </div>}
+          {currentStep === 6 && (
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">What draws their interest?</h2>
+              <p className="text-foreground-soft">Choose up to 5 areas</p>
+            </div>
+          )}
 
-            {/* Step 6: Interests */}
-            {currentStep === 6 && <div className="flex-1 flex flex-col justify-center items-center">
-                <div className="w-full max-w-2xl space-y-6">
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold mb-2">Pick a few interests to explore</h2>
-                    <p className="text-xs text-foreground-soft">
-                      Choose 3–5 to start. "Other" lets you type your own.
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {INTERESTS_OPTIONS.map(interest => <Button key={interest} variant={data.interests.includes(interest) ? "default" : "outline"} onClick={() => setData(prev => ({
-                    ...prev,
-                    interests: toggleSelection(prev.interests, interest, 5)
-                  }))} className="text-sm h-auto py-2 px-3" disabled={!data.interests.includes(interest) && data.interests.length >= 5}>
-                        {interest}
-                      </Button>)}
-                  </div>
-                </div>
-              </div>}
+          {currentStep === 7 && (
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">How do they usually like to do things?</h2>
+              <p className="text-foreground-soft">Tap one from each pair</p>
+            </div>
+          )}
 
-            {/* Step 7: Work Style */}
-            {currentStep === 7 && <div className="flex-1 flex flex-col justify-center items-center">
-                <div className="w-full max-w-2xl space-y-6">
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold mb-4">How do they usually like to do things?</h2>
-                  </div>
-                  
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                      <span className="font-medium">Solo</span>
-                      <div className="flex gap-1">
-                        <Button variant={data.workStyle.socialPreference === 'solo' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                        ...prev,
-                        workStyle: {
-                          ...prev.workStyle,
-                          socialPreference: 'solo'
-                        }
-                      }))}>
-                          Solo
-                        </Button>
-                        <Button variant={data.workStyle.socialPreference === 'with-others' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                        ...prev,
-                        workStyle: {
-                          ...prev.workStyle,
-                          socialPreference: 'with-others'
-                        }
-                      }))}>
-                          With others
-                        </Button>
-                      </div>
-                      <span className="font-medium">With others</span>
-                    </div>
+          {currentStep === 8 && (
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">One small thing they might try in the next two weeks</h2>
+            </div>
+          )}
 
-                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                      <span className="font-medium">Quiet spaces</span>
-                      <div className="flex gap-1">
-                        <Button variant={data.workStyle.environment === 'quiet' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                        ...prev,
-                        workStyle: {
-                          ...prev.workStyle,
-                          environment: 'quiet'
-                        }
-                      }))}>
-                          Quiet
-                        </Button>
-                        <Button variant={data.workStyle.environment === 'lively' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                        ...prev,
-                        workStyle: {
-                          ...prev.workStyle,
-                          environment: 'lively'
-                        }
-                      }))}>
-                          Lively
-                        </Button>
-                      </div>
-                      <span className="font-medium">Lively spaces</span>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                      <span className="font-medium">Screens</span>
-                      <div className="flex gap-1">
-                        <Button variant={data.workStyle.activity === 'screens' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                        ...prev,
-                        workStyle: {
-                          ...prev.workStyle,
-                          activity: 'screens'
-                        }
-                      }))}>
-                          Screens
-                        </Button>
-                        <Button variant={data.workStyle.activity === 'hands-on' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                        ...prev,
-                        workStyle: {
-                          ...prev.workStyle,
-                          activity: 'hands-on'
-                        }
-                      }))}>
-                          Hands-on
-                        </Button>
-                      </div>
-                      <span className="font-medium">Hands-on</span>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                      <span className="font-medium">Short bursts</span>
-                      <div className="flex gap-1">
-                        <Button variant={data.workStyle.duration === 'short-bursts' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                        ...prev,
-                        workStyle: {
-                          ...prev.workStyle,
-                          duration: 'short-bursts'
-                        }
-                      }))}>
-                          Short bursts
-                        </Button>
-                        <Button variant={data.workStyle.duration === 'longer-sessions' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                        ...prev,
-                        workStyle: {
-                          ...prev.workStyle,
-                          duration: 'longer-sessions'
-                        }
-                      }))}>
-                          Longer sessions
-                        </Button>
-                      </div>
-                      <span className="font-medium">Longer sessions</span>
-                    </div>
-                  </div>
-                </div>
-              </div>}
-
-            {/* Step 8: Next Two Weeks */}
-            {currentStep === 8 && <div className="flex-1 flex flex-col justify-center items-center">
-                <div className="w-full max-w-2xl space-y-6">
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold mb-2">One small thing they might try in the next two weeks</h2>
-                  </div>
-                  <Textarea value={data.nextTwoWeeks} onChange={e => setData(prev => ({
-                  ...prev,
-                  nextTwoWeeks: e.target.value
-                }))} placeholder="Optional - describe something small they could try" className="mt-2" rows={3} />
-                  <div className="mt-4">
-                    <p className="text-sm font-medium mb-2">Suggestions:</p>
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      {SUGGESTIONS.map(suggestion => <Button key={suggestion} variant="outline" size="sm" onClick={() => setData(prev => ({
-                      ...prev,
-                      nextTwoWeeks: suggestion
-                    }))} className="text-xs">
-                          {suggestion}
-                        </Button>)}
-                    </div>
-                  </div>
-                </div>
-              </div>}
-
-            {/* Step 9: Sharing and Support */}
-            {currentStep === 9 && <div className="flex-1 flex flex-col justify-center items-center">
-                <div className="w-full max-w-2xl space-y-6">
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold mb-4">Sharing and support</h2>
-                  </div>
-                  <RadioGroup value={data.sharingSupport} onValueChange={value => setData(prev => ({
-                  ...prev,
-                  sharingSupport: value as any
-                }))}>
-                    <div className="space-y-3">
-                      <div className="flex items-start space-x-2 p-3 border rounded-lg">
-                        <RadioGroupItem value="private" id="private" className="mt-1" />
-                        <Label htmlFor="private" className="flex-1 cursor-pointer">
-                          <div className="font-medium">Keep private</div>
-                          <div className="text-sm text-foreground-soft">No sharing with supporters</div>
-                        </Label>
-                      </div>
-                      <div className="flex items-start space-x-2 p-3 border rounded-lg">
-                        <RadioGroupItem value="summary" id="summary" className="mt-1" />
-                        <Label htmlFor="summary" className="flex-1 cursor-pointer">
-                          <div className="font-medium">Share a summary with me</div>
-                          <div className="text-sm text-foreground-soft">Basic progress updates</div>
-                        </Label>
-                      </div>
-                      <div className="flex items-start space-x-2 p-3 border rounded-lg">
-                        <RadioGroupItem value="details" id="details" className="mt-1" />
-                        <Label htmlFor="details" className="flex-1 cursor-pointer">
-                          <div className="font-medium">Share details with me</div>
-                          <div className="text-sm text-foreground-soft">Detailed progress and insights</div>
-                        </Label>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                  <p className="text-xs text-foreground-soft mt-2">
-                    Controls what you see as a supporter. You can change this anytime.
-                  </p>
-                </div>
-              </div>}
+          {currentStep === 9 && (
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Sharing and support</h2>
+              <p className="text-foreground-soft">
+                Controls what you see as a supporter. You can change this anytime.
+              </p>
+            </div>
+          )}
         </div>
       </div>
       
-      {/* FOOTER - 6.25% */}
+      {/* BODY - 43.75vh */}
+      <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
+        <div className="max-w-2xl mx-auto">
+          {/* Step 1: Admin Name */}
+          {currentStep === 1 && (
+            <div className="space-y-4">
+              <Input
+                value={data.adminName}
+                onChange={(e) => setData(prev => ({ ...prev, adminName: e.target.value }))}
+                placeholder="Your name"
+                className="text-left text-sm"
+              />
+            </div>
+          )}
+
+          {/* Step 2: Intro (no inputs) */}
+          {currentStep === 2 && (
+            <div className="text-center">
+              {/* No inputs - just the header message */}
+            </div>
+          )}
+
+          {/* Step 3: Name and Pronouns */}
+          {currentStep === 3 && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium">Preferred name <span className="text-red-500">*</span></Label>
+                <Input 
+                  value={data.preferredName} 
+                  onChange={e => setData(prev => ({ ...prev, preferredName: e.target.value }))} 
+                  placeholder="Enter their preferred name" 
+                  className="mt-1" 
+                  required 
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">What are this person's pronouns?</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {PRONOUNS_OPTIONS.map(pronoun => (
+                    <Button 
+                      key={pronoun} 
+                      variant={data.pronouns === pronoun ? "default" : "outline"} 
+                      onClick={() => setData(prev => ({ ...prev, pronouns: pronoun }))} 
+                      className="text-sm h-auto py-1 px-3"
+                    >
+                      {pronoun}
+                    </Button>
+                  ))}
+                </div>
+                {data.pronouns === 'Custom' && (
+                  <Input 
+                    value={customPronouns} 
+                    onChange={e => setCustomPronouns(e.target.value)} 
+                    placeholder="Enter custom pronouns" 
+                    className="mt-2" 
+                  />
+                )}
+                <p className="text-xs text-foreground-soft mt-1">
+                  We ask so we can be respectful. You can change this later.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Age */}
+          {currentStep === 4 && (
+            <div className="flex flex-wrap gap-2">
+              {AGE_OPTIONS.map(age => (
+                <Button 
+                  key={age} 
+                  variant={data.age === age ? "default" : "outline"} 
+                  onClick={() => setData(prev => ({ ...prev, age }))} 
+                  className="text-sm h-auto py-2 px-3"
+                >
+                  {age}
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {/* Step 5: Strengths */}
+          {currentStep === 5 && (
+            <div className="flex flex-wrap gap-2">
+              {STRENGTHS_OPTIONS.map(strength => (
+                <Button 
+                  key={strength} 
+                  variant={data.strengths.includes(strength) ? "default" : "outline"} 
+                  onClick={() => setData(prev => ({ ...prev, strengths: toggleSelection(prev.strengths, strength, 3) }))} 
+                  className="text-sm h-auto py-2 px-3" 
+                  disabled={!data.strengths.includes(strength) && data.strengths.length >= 3}
+                >
+                  {strength}
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {/* Step 6: Interests */}
+          {currentStep === 6 && (
+            <div className="flex flex-wrap gap-2">
+              {INTERESTS_OPTIONS.map(interest => (
+                <Button 
+                  key={interest} 
+                  variant={data.interests.includes(interest) ? "default" : "outline"} 
+                  onClick={() => setData(prev => ({ ...prev, interests: toggleSelection(prev.interests, interest, 5) }))} 
+                  className="text-sm h-auto py-2 px-3" 
+                  disabled={!data.interests.includes(interest) && data.interests.length >= 5}
+                >
+                  {interest}
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {/* Step 7: Work Style */}
+          {currentStep === 7 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                <span className="font-medium">Solo</span>
+                <div className="flex gap-1">
+                  <Button 
+                    variant={data.workStyle.socialPreference === 'solo' ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, socialPreference: 'solo' } }))}
+                  >
+                    Solo
+                  </Button>
+                  <Button 
+                    variant={data.workStyle.socialPreference === 'with-others' ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, socialPreference: 'with-others' } }))}
+                  >
+                    With others
+                  </Button>
+                </div>
+                <span className="font-medium">With others</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                <span className="font-medium">Quiet spaces</span>
+                <div className="flex gap-1">
+                  <Button 
+                    variant={data.workStyle.environment === 'quiet' ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, environment: 'quiet' } }))}
+                  >
+                    Quiet
+                  </Button>
+                  <Button 
+                    variant={data.workStyle.environment === 'lively' ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, environment: 'lively' } }))}
+                  >
+                    Lively
+                  </Button>
+                </div>
+                <span className="font-medium">Lively spaces</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                <span className="font-medium">Screens</span>
+                <div className="flex gap-1">
+                  <Button 
+                    variant={data.workStyle.activity === 'screens' ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, activity: 'screens' } }))}
+                  >
+                    Screens
+                  </Button>
+                  <Button 
+                    variant={data.workStyle.activity === 'hands-on' ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, activity: 'hands-on' } }))}
+                  >
+                    Hands-on
+                  </Button>
+                </div>
+                <span className="font-medium">Hands-on</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                <span className="font-medium">Short bursts</span>
+                <div className="flex gap-1">
+                  <Button 
+                    variant={data.workStyle.duration === 'short-bursts' ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, duration: 'short-bursts' } }))}
+                  >
+                    Short bursts
+                  </Button>
+                  <Button 
+                    variant={data.workStyle.duration === 'longer-sessions' ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, duration: 'longer-sessions' } }))}
+                  >
+                    Longer sessions
+                  </Button>
+                </div>
+                <span className="font-medium">Longer sessions</span>
+              </div>
+            </div>
+          )}
+
+          {/* Step 8: Next Two Weeks */}
+          {currentStep === 8 && (
+            <div className="space-y-4">
+              <Textarea 
+                value={data.nextTwoWeeks} 
+                onChange={e => setData(prev => ({ ...prev, nextTwoWeeks: e.target.value }))} 
+                placeholder="Optional - describe something small they could try" 
+                className="mt-2" 
+                rows={3} 
+              />
+              <div>
+                <p className="text-sm font-medium mb-2">Suggestions:</p>
+                <div className="flex flex-wrap gap-2">
+                  {SUGGESTIONS.map(suggestion => (
+                    <Button 
+                      key={suggestion} 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setData(prev => ({ ...prev, nextTwoWeeks: suggestion }))} 
+                      className="text-xs"
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 9: Sharing and Support */}
+          {currentStep === 9 && (
+            <RadioGroup 
+              value={data.sharingSupport} 
+              onValueChange={value => setData(prev => ({ ...prev, sharingSupport: value as any }))}
+            >
+              <div className="space-y-3">
+                <div className="flex items-start space-x-2 p-3 border rounded-lg">
+                  <RadioGroupItem value="private" id="private" className="mt-1" />
+                  <Label htmlFor="private" className="flex-1 cursor-pointer">
+                    <div className="font-medium">Keep private</div>
+                    <div className="text-sm text-foreground-soft">No sharing with supporters</div>
+                  </Label>
+                </div>
+                <div className="flex items-start space-x-2 p-3 border rounded-lg">
+                  <RadioGroupItem value="summary" id="summary" className="mt-1" />
+                  <Label htmlFor="summary" className="flex-1 cursor-pointer">
+                    <div className="font-medium">Share a summary with me</div>
+                    <div className="text-sm text-foreground-soft">Basic progress updates</div>
+                  </Label>
+                </div>
+                <div className="flex items-start space-x-2 p-3 border rounded-lg">
+                  <RadioGroupItem value="details" id="details" className="mt-1" />
+                  <Label htmlFor="details" className="flex-1 cursor-pointer">
+                    <div className="font-medium">Share details with me</div>
+                    <div className="text-sm text-foreground-soft">Detailed progress and insights</div>
+                  </Label>
+                </div>
+              </div>
+            </RadioGroup>
+          )}
+        </div>
+      </div>
+      
+      {/* FOOTER - 6.25vh */}
       <div className="h-[6.25vh] bg-white flex items-center justify-end px-6 gap-3">
         {currentStep > 1 && <BackButton onClick={handleBack} variant="text" />}
         <Button onClick={handleNext}>
