@@ -73,7 +73,7 @@ export function ParentOnboarding({
     completeOnboarding,
     setProfile
   } = useStore();
-  const totalSteps = 8;
+  const totalSteps = 7;
 
   // Get pronouns for display
   const getDisplayPronouns = () => {
@@ -96,8 +96,8 @@ export function ParentOnboarding({
     return 'them';
   };
   const handleNext = async () => {
-    // Step 3: Name is mandatory - validate before continuing
-    if (currentStep === 3) {
+    // Step 2: Name is mandatory - validate before continuing
+    if (currentStep === 2) {
       if (!data.preferredName.trim()) {
         toast({
           title: "Name Required",
@@ -322,53 +322,37 @@ export function ParentOnboarding({
           {currentStep === 2 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Who are you helping?</h2>
               <p className="text-foreground-soft">
-                What name do they prefer?
+                What name do they prefer and what are their pronouns?
               </p>
-              <Input type="text" placeholder="Preferred name" value={data.preferredName} onChange={e => setData({
-                ...data,
-                preferredName: e.target.value
-              })} />
             </div>}
           {currentStep === 3 && <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">Pronouns</h2>
-              <p className="text-foreground-soft">
-                How should we refer to {data.preferredName || 'them'}?
-              </p>
-            </div>}
-          {currentStep === 4 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Age</h2>
               <p className="text-foreground-soft">
                 How old is {data.preferredName || 'this person'}?
               </p>
             </div>}
-          {currentStep === 5 && <div className="space-y-2">
+          {currentStep === 4 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Strengths</h2>
               <p className="text-foreground-soft">
                 What are {data.preferredName || 'their'} strengths?
               </p>
             </div>}
-          {currentStep === 6 && <div className="space-y-2">
+          {currentStep === 5 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Interests</h2>
               <p className="text-foreground-soft">
                 What does {data.preferredName || 'this person'} enjoy?
               </p>
             </div>}
-          {currentStep === 7 && <div className="space-y-2">
+          {currentStep === 6 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Work Style</h2>
               <p className="text-foreground-soft">
                 How does {data.preferredName || 'this person'} like to work?
               </p>
             </div>}
-          {currentStep === 8 && <div className="space-y-2">
+          {currentStep === 7 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Next Two Weeks</h2>
               <p className="text-foreground-soft">
                 What's one small step {data.preferredName || 'they'} can take in the next two weeks?
-              </p>
-            </div>}
-          {currentStep === 9 && <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">Sharing & Support</h2>
-              <p className="text-foreground-soft">
-                How much do you want to share with supporters?
               </p>
             </div>}
         </div>
@@ -377,21 +361,38 @@ export function ParentOnboarding({
       {/* BODY - 43.75vh */}
       <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto">
-          {currentStep === 3 && <RadioGroup defaultValue={data.pronouns} onValueChange={value => setData({
-              ...data,
-              pronouns: value
-            })} className="space-y-2">
-              {PRONOUNS_OPTIONS.map(option => {
-                const isCustom = option === 'Custom';
-                return <div key={option} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option} id={`pronoun-${option}`} className="cursor-pointer" />
-                    <Label htmlFor={`pronoun-${option}`} className="cursor-pointer">
-                      {isCustom ? <Input type="text" placeholder="Custom pronouns" value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} /> : option}
-                    </Label>
-                  </div>;
-              })}
-            </RadioGroup>}
-          {currentStep === 4 && <RadioGroup defaultValue={data.age} onValueChange={value => setData({
+          {currentStep === 2 && <div className="space-y-4">
+              <Input type="text" placeholder="Preferred name" value={data.preferredName} onChange={e => setData({
+                  ...data,
+                  preferredName: e.target.value
+                })} />
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Pronouns</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {PRONOUNS_OPTIONS.map(option => {
+                    const isCustom = option === 'Custom';
+                    if (isCustom) {
+                      return <div key={option} className="col-span-2">
+                          <Badge variant={data.pronouns === option ? 'default' : 'outline'} onClick={() => setData({
+                              ...data,
+                              pronouns: option
+                            })} className="cursor-pointer w-full justify-center">
+                            {option}
+                          </Badge>
+                          {data.pronouns === 'Custom' && <Input type="text" placeholder="Custom pronouns" value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} className="mt-2" />}
+                        </div>;
+                    }
+                    return <Badge key={option} variant={data.pronouns === option ? 'default' : 'outline'} onClick={() => setData({
+                        ...data,
+                        pronouns: option
+                      })} className="cursor-pointer">
+                        {option}
+                      </Badge>;
+                  })}
+                </div>
+              </div>
+            </div>}
+          {currentStep === 3 && <RadioGroup defaultValue={data.age} onValueChange={value => setData({
               ...data,
               age: value
             })} className="space-y-2">
@@ -402,7 +403,7 @@ export function ParentOnboarding({
                   </Label>
                 </div>)}
             </RadioGroup>}
-          {currentStep === 5 && <div className="grid grid-cols-2 gap-2">
+          {currentStep === 4 && <div className="grid grid-cols-2 gap-2">
               {STRENGTHS_OPTIONS.map(option => <Badge key={option} variant={data.strengths.includes(option) ? 'default' : 'outline'} onClick={() => setData({
                     ...data,
                     strengths: toggleSelection(data.strengths, option, 3)
@@ -410,7 +411,7 @@ export function ParentOnboarding({
                   {option}
                 </Badge>)}
             </div>}
-          {currentStep === 6 && <div className="grid grid-cols-2 gap-2">
+          {currentStep === 5 && <div className="grid grid-cols-2 gap-2">
               {INTERESTS_OPTIONS.map(option => <Badge key={option} variant={data.interests.includes(option) ? 'default' : 'outline'} onClick={() => setData({
                     ...data,
                     interests: toggleSelection(data.interests, option, 3)
@@ -418,7 +419,7 @@ export function ParentOnboarding({
                   {option}
                 </Badge>)}
             </div>}
-          {currentStep === 7 && <div className="space-y-4">
+          {currentStep === 6 && <div className="space-y-4">
               <div>
                 <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   Social Preference
@@ -520,33 +521,10 @@ export function ParentOnboarding({
                 </RadioGroup>
               </div>
             </div>}
-          {currentStep === 8 && <Textarea placeholder="Next small step" value={data.nextTwoWeeks} onChange={e => setData({
+          {currentStep === 7 && <Textarea placeholder="Next small step" value={data.nextTwoWeeks} onChange={e => setData({
               ...data,
               nextTwoWeeks: e.target.value
             })} />}
-          {currentStep === 9 && <RadioGroup defaultValue={data.sharingSupport} onValueChange={value => setData({
-              ...data,
-              sharingSupport: value as 'private' | 'summary' | 'details'
-            })} className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="private" id="private" className="cursor-pointer" />
-                <Label htmlFor="private" className="cursor-pointer">
-                  Keep everything private
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="summary" id="summary" className="cursor-pointer" />
-                <Label htmlFor="summary" className="cursor-pointer">
-                  Share summaries with supporters
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="details" id="details" className="cursor-pointer" />
-                <Label htmlFor="details" className="cursor-pointer">
-                  Share details with supporters
-                </Label>
-              </div>
-            </RadioGroup>}
         </div>
       </div>
       
