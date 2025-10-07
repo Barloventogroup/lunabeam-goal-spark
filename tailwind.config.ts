@@ -106,7 +106,8 @@ export default {
 			boxShadow: {
 				'soft': 'var(--shadow-soft)',
 				'card': 'var(--shadow-card)',
-				'elevated': 'var(--shadow-elevated)'
+				'elevated': 'var(--shadow-elevated)',
+				'gradient': 'var(--shadow-gradient)'
 			},
 			transitionTimingFunction: {
 				'smooth': 'var(--transition-smooth)',

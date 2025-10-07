@@ -102,6 +102,7 @@
     --shadow-soft: 0 4px 15px -3px hsl(var(--primary) / 0.12);
     --shadow-card: 0 6px 25px -5px hsl(var(--primary) / 0.18);
     --shadow-elevated: 0 12px 35px -10px hsl(var(--primary) / 0.25);
+    --shadow-gradient: 0 10px 30px -5px hsl(204 67% 45% / 0.4), 0 20px 40px -10px hsl(146 65% 40% / 0.3);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -216,6 +217,7 @@
     --shadow-soft: 0 4px 15px -3px hsl(var(--primary) / 0.15);
     --shadow-card: 0 6px 25px -5px hsl(var(--primary) / 0.22);
     --shadow-elevated: 0 12px 35px -10px hsl(var(--primary) / 0.3);
+    --shadow-gradient: 0 10px 30px -5px hsl(204 67% 45% / 0.5), 0 20px 40px -10px hsl(146 65% 40% / 0.4);
   }
 }
 
