@@ -751,7 +751,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       </div>
       
       {/* FOOTER - 6.25% */}
-      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6">
+      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)]">
         <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
         <div className="flex items-center gap-3">
           {currentStep >= 1 && <BackButton variant="text" onClick={handleBack} />}
