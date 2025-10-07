@@ -341,9 +341,6 @@ export function ParentOnboarding({
             {/* Step 1: Admin Name */}
             {currentStep === 1 && <div className="space-y-6">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white text-xl">👋</span>
-                  </div>
                   <h2 className="text-xl font-semibold mb-4">What should I call you?</h2>
                   <p className="text-foreground-soft leading-relaxed mb-6">
                     First, let me know your name so I can greet you properly!
