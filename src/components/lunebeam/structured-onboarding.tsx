@@ -509,22 +509,97 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
 
           {/* Step 3: Superpowers */}
           {currentStep === 3 && (
-            <div className="flex flex-wrap gap-2">
-              {SUPERPOWERS.map(power => (
-                <Button
-                  key={power}
-                  variant={data.superpowers.includes(power) ? "default" : "outline"}
-                  onClick={() => setData(prev => ({
-                    ...prev,
-                    superpowers: toggleSelection(prev.superpowers, power, 3)
-                  }))}
-                  className="text-sm h-auto py-2 px-3 border-0"
-                  style={{ backgroundColor: data.superpowers.includes(power) ? undefined : '#E0E0E0' }}
-                  disabled={!data.superpowers.includes(power) && data.superpowers.length >= 3}
-                >
-                  {power}
-                </Button>
-              ))}
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {SUPERPOWERS.map(power => (
+                  <Button
+                    key={power}
+                    variant={data.superpowers.includes(power) ? "default" : "outline"}
+                    onClick={() => setData(prev => ({
+                      ...prev,
+                      superpowers: toggleSelection(prev.superpowers, power, 3)
+                    }))}
+                    className="text-sm h-auto py-2 px-3 border-0"
+                    style={{ backgroundColor: data.superpowers.includes(power) ? undefined : '#E0E0E0' }}
+                    disabled={!data.superpowers.includes(power) && data.superpowers.length >= 3}
+                  >
+                    {power}
+                  </Button>
+                ))}
+              </div>
+              
+              {/* Custom superpowers as pills */}
+              {data.superpowers.filter(sp => !SUPERPOWERS.includes(sp)).length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {data.superpowers.filter(sp => !SUPERPOWERS.includes(sp)).map(customPower => (
+                    <div 
+                      key={customPower}
+                      className="flex items-center gap-1 bg-primary text-primary-foreground rounded-full px-3 py-1 text-sm"
+                    >
+                      <span>{customPower}</span>
+                      <button
+                        onClick={() => setData(prev => ({
+                          ...prev,
+                          superpowers: prev.superpowers.filter(sp => sp !== customPower)
+                        }))}
+                        className="ml-1 hover:opacity-70"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Other input */}
+              <div className="space-y-2">
+                <Input
+                  value={customSuperpower}
+                  onChange={(e) => {
+                    setCustomSuperpower(e.target.value);
+                    validateWord(e.target.value, 'superpowers');
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCustomOption('superpowers', customSuperpower, setCustomSuperpower);
+                    }
+                  }}
+                  placeholder="Other..."
+                  className="text-sm"
+                  disabled={data.superpowers.length >= 3}
+                  maxLength={30}
+                />
+                {validationMessages.superpowers && (
+                  <p className="text-xs text-destructive">{validationMessages.superpowers}</p>
+                )}
+                {suggestions.superpowers && suggestions.superpowers.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    <p className="text-xs text-muted-foreground w-full">Did you mean:</p>
+                    {suggestions.superpowers.map(suggestion => (
+                      <Button
+                        key={suggestion}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setCustomSuperpower(suggestion);
+                          setValidationMessages(prev => {
+                            const { superpowers: _, ...rest } = prev;
+                            return rest;
+                          });
+                          setSuggestions(prev => {
+                            const { superpowers: _, ...rest } = prev;
+                            return rest;
+                          });
+                        }}
+                        className="text-xs h-auto py-1 px-2"
+                      >
+                        {suggestion}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
