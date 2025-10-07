@@ -113,6 +113,41 @@ function inferSecondBarrier(
 }
 
 /**
+ * Converts goal title into a grammatically correct action phrase
+ */
+function convertToActionPhrase(goalTitle: string): string {
+  if (!goalTitle) return 'your goal';
+  
+  const lowerTitle = goalTitle.toLowerCase().trim();
+  
+  // Remove time qualifiers (every morning, daily, etc.)
+  const withoutTime = lowerTitle
+    .replace(/\s+(every\s+(morning|day|night|evening|week|afternoon))/gi, '')
+    .replace(/\s+(daily|weekly|nightly)/gi, '')
+    .replace(/\s+for\s+\d+\s+(minutes?|hours?|weeks?|months?)/gi, '')
+    .replace(/\s+\d+x?\s*\/?\s*(per\s+)?(week|day|month)/gi, '')
+    .trim();
+  
+  // Common action verbs that work well in gerund form (-ing)
+  const gerundVerbs = ['stretch', 'walk', 'run', 'practice', 'clean', 'exercise', 'read', 'write', 'study', 'cook', 'meditate'];
+  
+  for (const verb of gerundVerbs) {
+    if (withoutTime.startsWith(verb)) {
+      // Convert to gerund (stretching, walking, etc.)
+      return withoutTime.replace(new RegExp(`^${verb}`), verb + 'ing');
+    }
+  }
+  
+  // For "do X" phrases, convert to "doing X"
+  if (withoutTime.startsWith('do ')) {
+    return withoutTime.replace(/^do /, 'doing ');
+  }
+  
+  // Default: return cleaned version
+  return withoutTime || goalTitle.toLowerCase();
+}
+
+/**
  * Translates wizard data into actionable variables for template rendering
  */
 function translateToActionableVariables(data: WizardData): ActionableVariables {
@@ -120,7 +155,7 @@ function translateToActionableVariables(data: WizardData): ActionableVariables {
   const startTime = data.customTime ? formatDisplayTime(data.customTime) : '8:00 AM';
   
   return {
-    goalAction: data.goalTitle || 'your goal',
+    goalAction: convertToActionPhrase(data.goalTitle || 'your goal'),
     category: data.category || 'general',
     motivation: data.customMotivation || data.goalMotivation || 'this goal',
     startTime,
