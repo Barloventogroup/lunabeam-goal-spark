@@ -106,22 +106,31 @@ export class AIService {
 
   static async getMicroSteps(request: MicroStepsRequest): Promise<{ microSteps?: MicroStep[]; error?: string; useFallback?: boolean }> {
     try {
+      console.log('[AIService.getMicroSteps] Invoking edge function with:', request);
+      
       const { data, error } = await supabase.functions.invoke('microsteps-scaffold', {
         body: request
       });
 
+      console.log('[AIService.getMicroSteps] Response:', { data, error, hasData: !!data, hasError: !!error });
+
       if (error) {
-        console.warn('Micro-steps AI generation error:', error);
+        console.error('[AIService.getMicroSteps] Edge function error:', {
+          message: error.message,
+          status: error.status,
+          details: error
+        });
         return { error: error.message, useFallback: true };
       }
       
       if (data?.useFallback) {
+        console.log('[AIService.getMicroSteps] AI requested fallback');
         return { useFallback: true };
       }
 
       return { microSteps: data?.microSteps };
     } catch (error) {
-      console.error('Error getting micro-steps:', error);
+      console.error('[AIService.getMicroSteps] Exception:', error);
       return { error: error.message, useFallback: true };
     }
   }

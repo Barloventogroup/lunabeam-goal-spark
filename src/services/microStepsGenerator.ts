@@ -392,10 +392,12 @@ export async function generateMicroStepsSmart(
       supporterName: data.supporterName || '',
     };
 
+    console.log('[generateMicroStepsSmart] Calling AI service with payload:', payload);
     const { microSteps, error, useFallback } = await AIService.getMicroSteps(payload);
+    console.log('[generateMicroStepsSmart] AI response:', { microSteps, error, useFallback, stepCount: microSteps?.length });
     
     if (error || useFallback || !microSteps || microSteps.length !== 3) {
-      console.warn('AI generation failed, using theory-aligned fallback');
+      console.warn('AI generation failed, using theory-aligned fallback. Reason:', { error, useFallback, stepCount: microSteps?.length });
       return generateMicroStepsFallback(data, flow);
     }
     

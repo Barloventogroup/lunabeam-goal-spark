@@ -131,6 +131,13 @@ Deno.serve(async (req) => {
   try {
     const payload: MicroStepsRequest = await req.json();
     
+    console.log('[microsteps-scaffold] Request received:', {
+      goalTitle: payload.goalTitle,
+      category: payload.category,
+      flow: payload.flow,
+      timestamp: new Date().toISOString()
+    });
+    
     // Extract user ID from auth header
     const authHeader = req.headers.get('authorization');
     let userId: string | null = null;
