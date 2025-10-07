@@ -1672,10 +1672,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
-        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Gift className="h-8 w-8 text-primary" />
-        </div>
-        <CardTitle className="text-2xl">Rewards (Optional)</CardTitle>
+        <CardTitle className="text-2xl">🎁 Rewards (Optional)</CardTitle>
         <p className="text-muted-foreground">{text.step8.subtitle}</p>
       </CardHeader>
       
