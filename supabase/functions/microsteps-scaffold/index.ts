@@ -119,6 +119,7 @@ interface JudgeResponse {
     A_priority_score: number;
     B_quality_score: number;
     C_timing_score: number;
+    D_coherence_score: number;
   };
 }
 
@@ -410,8 +411,24 @@ Deno.serve(async (req) => {
           );
         }
 
+        // Check for coherence failure (hard blocker)
+        if (judgeResult.scoring_breakdown.D_coherence_score === 0) {
+          console.error(`Attempt ${attemptNumber} - COHERENCE FAILURE (D score: 0/10)`);
+          console.log('⚠️ Step flagged as pragmatically nonsensical:', judgeResult.critique_for_retry);
+          
+          retryGuidance = `${judgeResult.critique_for_retry}\n\nIMPORTANT: Previous step was flagged as pragmatically nonsensical or unhygienic. Focus on actions people naturally do in real life. Avoid touching trash, staring at objects, or any awkward/unhygienic actions.`;
+          
+          if (attemptNumber < maxAttempts) {
+            console.log(`🔄 Retrying with enhanced coherence guidance...`);
+            continue;
+          }
+          
+          console.error('All attempts exhausted (coherence failure)');
+          break;
+        }
+
         if (judgeResult.pass_fail === 'FAIL' && judgeResult.total_score < 70) {
-          console.error(`Attempt ${attemptNumber} - Gemini Judge FAIL (score: ${judgeResult.total_score}/100)`);
+          console.error(`Attempt ${attemptNumber} - Gemini Judge FAIL (score: ${judgeResult.total_score}/110)`);
           console.log('📝 Critique for retry:', judgeResult.critique_for_retry);
           
           retryGuidance = judgeResult.critique_for_retry;
@@ -427,10 +444,11 @@ Deno.serve(async (req) => {
 
         // SUCCESS! Valid steps generated
         microSteps = candidateSteps;
-        console.log(`✅ Attempt ${attemptNumber} - Gemini Judge PASS (score: ${judgeResult.total_score}/100)`);
+        console.log(`✅ Attempt ${attemptNumber} - Gemini Judge PASS (score: ${judgeResult.total_score}/110)`);
         console.log(`   A (Priority): ${judgeResult.scoring_breakdown.A_priority_score}/50`);
         console.log(`   B (Quality): ${judgeResult.scoring_breakdown.B_quality_score}/35`);
         console.log(`   C (Timing): ${judgeResult.scoring_breakdown.C_timing_score}/15`);
+        console.log(`   D (Coherence): ${judgeResult.scoring_breakdown.D_coherence_score}/10`);
         break;
 
       } catch (error) {

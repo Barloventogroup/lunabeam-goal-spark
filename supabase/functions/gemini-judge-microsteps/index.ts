@@ -38,6 +38,7 @@ interface JudgeResponse {
     A_priority_score: number;
     B_quality_score: number;
     C_timing_score: number;
+    D_coherence_score: number;
   };
 }
 
@@ -123,19 +124,29 @@ SCORING for each slot:
 **B1. Low Effort (15 Points)** - Physical Activation Cues
 
 The first action step (Step 2 if prereq present, Step 1 if not) MUST:
-- Use physical, tangible verbs: grab, touch, set, put on, open, ask
+- Use physical, tangible verbs: grab, pick up, set, put on, open, ask, place
 - Require < 15 seconds of effort
 - NOT use cognitive verbs: think, plan, contemplate, decide
+- MUST make pragmatic sense in real-world context
 
-Examples:
-- VALID: "Grab the laundry basket" (initiation barrier)
-- VALID: "Set timer for 8:00 PM" (time barrier)
-- INVALID: "Think about doing laundry" (cognitive, not physical)
+**Pragmatic Sensibility Check:**
+For each domain, the cue must be something people naturally do:
 
-SCORING:
-- 15 pts: Perfect low-effort physical cue
-- 8 pts: Physical action but too complex
-- 0 pts: Cognitive verb or high-effort action
+✅ GOOD cues by domain:
+- Independent Living / Hygiene: "Pick up your toothbrush", "Grab the laundry basket", "Set out clean clothes"
+- Education: "Open your textbook", "Pick up your pencil", "Grab your flashcards"
+- Recreation: "Pick up your guitar", "Open your art supplies", "Put on your running shoes"
+
+❌ BAD cues (awkward/unhygienic/nonsensical):
+- "Touch the trash bag", "Touch the toilet brush", "Stare at laundry"
+- "Tap the dirty dishes", "Pet the vacuum cleaner"
+- Any action that is unhygienic, socially awkward, or doesn't naturally lead to the goal
+
+SCORING (4-tier system):
+- 15 pts: Perfect low-effort physical cue that makes pragmatic sense
+- 8 pts: Physical action but awkward/unusual (e.g., "touch trash bag")
+- 5 pts: Too complex or multi-step for initiation
+- 0 pts: Cognitive verb, high-effort, or completely nonsensical
 
 **B2. Tone & Specificity (10 Points)**
 
@@ -191,13 +202,36 @@ SCORING:
 - 2 pts: Mostly logical with minor issues
 - 0 pts: Illogical or random order
 
+### D. PRAGMATIC COHERENCE (10 Points) - HARD BLOCKER
+
+This is a safety net for real-world sensibility. Even if steps score well on theory alignment, they must make sense in practice.
+
+**Red Flags (0 points, FORCE FAIL):**
+- Unhygienic actions: touching trash, toilet items, bodily fluids without safety context
+- Socially awkward actions: staring at objects, petting cleaning tools, talking to inanimate objects
+- Physically impossible: actions that violate physics or human anatomy
+- Nonsensical sequences: steps that don't logically connect to the goal
+
+**Examples:**
+❌ "Touch the trash bag" for room cleaning (unhygienic, awkward)
+❌ "Stare at the laundry pile for 10 seconds" (nonsensical)
+❌ "Pet the vacuum cleaner" (socially awkward)
+✅ "Pick up 3 items from your floor" (natural, pragmatic)
+✅ "Set out your cleaning supplies" (logical preparation)
+
+SCORING:
+- 10 pts: All steps are pragmatically coherent and natural
+- 5 pts: One step is slightly awkward but not harmful
+- 0 pts: ANY step is unhygienic, nonsensical, or socially inappropriate → **FORCE FAIL**
+
 ## SCORING INSTRUCTIONS
 
 1. Award full points ONLY if criteria are EXACTLY met
 2. Deduct proportionally for partial alignment
 3. Score = 0 if criterion is completely missing
-4. Total = A + B + C (max 100)
-5. Pass threshold: 85/100
+4. Total = A + B + C + D (max 110)
+5. Pass threshold: 85/110
+6. **CRITICAL: If D_coherence_score = 0, set pass_fail = "FAIL" regardless of total score**
 
 ## OUTPUT REQUIREMENTS
 
@@ -279,7 +313,9 @@ ${originalInput.hasPrerequisite ? `- **Prerequisite Is Concrete:** ${originalInp
 
 ## YOUR TASK:
 
-Score these 3 micro-steps against the 100-point rubric. Return a JSON response with total_score, pass_fail (PASS if >= 85), critique_for_user, critique_for_retry, and scoring_breakdown.`;
+Score these 3 micro-steps against the 110-point rubric. Return a JSON response with total_score, pass_fail (PASS if >= 85 AND D_coherence_score > 0), critique_for_user, critique_for_retry, and scoring_breakdown.
+
+**CRITICAL: If D_coherence_score = 0, you MUST set pass_fail = "FAIL" regardless of total score.**`;
 
     // Call Google AI API with function calling for structured output
     const response = await fetch(
@@ -302,7 +338,7 @@ Score these 3 micro-steps against the 100-point rubric. Return a JSON response w
               properties: {
                 total_score: {
                   type: "integer",
-                  description: "Final score 0-100"
+                  description: "Final score 0-110"
                 },
                 pass_fail: {
                   type: "string",
@@ -321,9 +357,10 @@ Score these 3 micro-steps against the 100-point rubric. Return a JSON response w
                   properties: {
                     A_priority_score: { type: "integer" },
                     B_quality_score: { type: "integer" },
-                    C_timing_score: { type: "integer" }
+                    C_timing_score: { type: "integer" },
+                    D_coherence_score: { type: "integer" }
                   },
-                  required: ["A_priority_score", "B_quality_score", "C_timing_score"]
+                  required: ["A_priority_score", "B_quality_score", "C_timing_score", "D_coherence_score"]
                 }
               },
               required: ["total_score", "pass_fail", "critique_for_retry", "scoring_breakdown"]
@@ -355,10 +392,11 @@ Score these 3 micro-steps against the 100-point rubric. Return a JSON response w
 
     const judgeResult: JudgeResponse = JSON.parse(resultText);
     
-    console.log(`📊 Judge Result: ${judgeResult.pass_fail} (${judgeResult.total_score}/100)`);
+    console.log(`📊 Judge Result: ${judgeResult.pass_fail} (${judgeResult.total_score}/110)`);
     console.log(`   A (Priority): ${judgeResult.scoring_breakdown.A_priority_score}/50`);
     console.log(`   B (Quality): ${judgeResult.scoring_breakdown.B_quality_score}/35`);
     console.log(`   C (Timing): ${judgeResult.scoring_breakdown.C_timing_score}/15`);
+    console.log(`   D (Coherence): ${judgeResult.scoring_breakdown.D_coherence_score}/10`);
     
     if (judgeResult.pass_fail === 'FAIL') {
       console.log(`💬 Critique: ${judgeResult.critique_for_retry}`);
