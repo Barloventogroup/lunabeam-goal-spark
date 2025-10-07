@@ -1144,7 +1144,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                                               </span>
                                             </div>
                                             {!substep.completed_at && (
-                                              <div className="flex gap-1">
+                                              <div className="flex items-center justify-end gap-1">
                                                 {!(substep as any).initiated_at && (
                                                 <Button
                                                   size="sm"
