@@ -59,8 +59,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
 
   const handleStartEdit = (section: string) => {
     setEditingSection(section);
-    if (section === 'name') {
-      setEditedData({ first_name: profile?.first_name || '' });
+    if (section === 'basic') {
+      setEditedData({ 
+        first_name: profile?.first_name || '',
+        email: profile?.email || ''
+      });
     } else if (section === 'tags') {
       setEditedData({
         strengths: profile?.strengths || [],
@@ -232,43 +235,77 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
 
               {/* Name Section */}
               <div className="flex-1">
-                {editingSection === 'name' ? (
-                  <div className="space-y-2">
-                    <Input
-                      value={editedData.first_name || ''}
-                      onChange={(e) => setEditedData({...editedData, first_name: e.target.value})}
-                      className="text-xl font-bold"
-                      placeholder="First name"
-                    />
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleSave('name')}>
-                        <Check className="h-4 w-4 mr-1" />
-                        Save
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={handleCancel}>
-                        <X className="h-4 w-4 mr-1" />
-                        Cancel
-                      </Button>
-                    </div>
+                <div className="flex items-center gap-2">
+                  <div>
+                    <h2 className="text-xl font-bold">{profile?.first_name || 'User'}</h2>
+                    <p className="text-muted-foreground">Lunabeam Member</p>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <div>
-                      <h2 className="text-xl font-bold">{profile?.first_name || 'User'}</h2>
-                      <p className="text-muted-foreground">Lunabeam Member</p>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleStartEdit('name')}
-                      className="ml-2"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
+
+            {/* Basic Information */}
+            {editingSection === 'basic' ? (
+              <div className="space-y-3 pt-4 border-t">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Name</label>
+                  <Input
+                    value={editedData.first_name || ''}
+                    onChange={(e) => setEditedData({...editedData, first_name: e.target.value})}
+                    placeholder="First name"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Email</label>
+                  <Input
+                    type="email"
+                    value={editedData.email || ''}
+                    onChange={(e) => setEditedData({...editedData, email: e.target.value})}
+                    placeholder="Email address"
+                  />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button size="sm" onClick={() => handleSave('basic')}>
+                    <Check className="h-4 w-4 mr-1" />
+                    Save
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleCancel}>
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">Name</p>
+                    <p className="text-sm text-muted-foreground">{profile?.first_name || 'Not set'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">Email</p>
+                    <p className="text-sm text-muted-foreground">{profile?.email || 'Not set'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">Age</p>
+                    <p className="text-sm text-muted-foreground">{profile?.age || 'Not set'}</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleStartEdit('basic')}
+                  className="mt-2"
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
