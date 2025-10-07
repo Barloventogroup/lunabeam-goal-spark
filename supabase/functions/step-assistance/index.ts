@@ -489,14 +489,14 @@ When suggesting sub-steps, they MUST follow the Executive Function scaffolding m
 [SUB-STEPS]
 1. Preparation Step | Gather/prepare materials for "${step.title}" before work session
 2. Activation Step | At [HH:MM AM/PM], [trivial physical action < 15 sec] for "${step.title}"
-3. Focused Work Step | Set a [15-30] minute timer. [Substantive work with measurable outcome]. When timer rings, take a 5-minute break
+3. Focused Work Step | [Substantive work with measurable outcome] for [15-30] minutes (CRITICAL: MUST include "minutes" in description)
 [/SUB-STEPS]
 
 EXAMPLE:
 [SUB-STEPS]
 1. Gather Materials | By 7:00 PM, place your biology textbook, notes, and highlighter on your desk
 2. Start Work | At 7:30 PM, open your biology textbook to chapter 5
-3. Active Review | Set a 25-minute timer. Read and highlight key concepts from chapter 5. When timer rings, stand up and stretch for 5 minutes
+3. Active Review | Read and highlight key concepts from chapter 5 for 25 minutes. When timer rings, stand up and stretch
 [/SUB-STEPS]
 
 ONLY suggest sub-steps if:
