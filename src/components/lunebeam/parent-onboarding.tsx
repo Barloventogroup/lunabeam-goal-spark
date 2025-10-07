@@ -398,16 +398,16 @@ export function ParentOnboarding({
                 </div>)}
             </RadioGroup>}
           {currentStep === 4 && <div className="flex flex-col gap-2">
-              {STRENGTHS_OPTIONS.filter(opt => opt !== 'Other').map(option => <Badge key={option} variant={data.strengths.includes(option) ? 'default' : 'outline'} onClick={() => setData({
+              {STRENGTHS_OPTIONS.filter(opt => opt !== 'Other').map(option => <Badge key={option} variant="outline" onClick={() => setData({
                     ...data,
                     strengths: toggleSelection(data.strengths, option, 3)
-                  })} className="cursor-pointer w-[140px] justify-center bg-white text-sm">
+                  })} className={`cursor-pointer w-[140px] justify-center text-sm ${data.strengths.includes(option) ? 'bg-primary text-primary-foreground border-primary' : 'bg-white'}`}>
                   {option}
                 </Badge>)}
               <Badge 
-                variant={showOtherStrength ? 'default' : 'outline'} 
+                variant="outline"
                 onClick={() => setShowOtherStrength(!showOtherStrength)} 
-                className="cursor-pointer w-[140px] justify-center bg-white text-sm"
+                className={`cursor-pointer w-[140px] justify-center text-sm ${showOtherStrength ? 'bg-primary text-primary-foreground border-primary' : 'bg-white'}`}
               >
                 Other
               </Badge>
