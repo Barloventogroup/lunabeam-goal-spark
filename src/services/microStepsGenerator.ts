@@ -143,6 +143,66 @@ function formatDisplayTime(time: string): string {
 }
 
 /**
+ * Generates context-aware activation cues for Individual flow
+ */
+function getSmartActivationCue(goalAction: string, startTime: string, dayOfWeek: string): string {
+  const lower = goalAction.toLowerCase();
+  
+  // Cleaning/organizing tasks
+  if (lower.includes('clean') || lower.includes('tidy') || lower.includes('organize')) {
+    return `At ${startTime} on ${dayOfWeek}, clear one surface (desk or nightstand) and place one item where it belongs for ${goalAction}.`;
+  }
+  
+  // Physical/exercise tasks
+  if (lower.includes('exercise') || lower.includes('walk') || lower.includes('run') || lower.includes('workout')) {
+    return `At ${startTime} on ${dayOfWeek}, put on your shoes and lace them up for ${goalAction}.`;
+  }
+  
+  // Creative tasks
+  if (lower.includes('draw') || lower.includes('write') || lower.includes('practice') || lower.includes('paint')) {
+    return `At ${startTime} on ${dayOfWeek}, open your materials and place them in front of you for ${goalAction}.`;
+  }
+  
+  // Learning/study tasks
+  if (lower.includes('study') || lower.includes('homework') || lower.includes('read') || lower.includes('learn')) {
+    return `At ${startTime} on ${dayOfWeek}, open your textbook or laptop to the right page or app for ${goalAction}.`;
+  }
+  
+  // Default: generic but sensible
+  return `At ${startTime} on ${dayOfWeek}, prepare one thing you need to begin ${goalAction}.`;
+}
+
+/**
+ * Generates context-aware activation cues for Supporter flow
+ */
+function getSmartSupporterActivationCue(goalAction: string, startTime: string, dayOfWeek: string): string {
+  const lower = goalAction.toLowerCase();
+  
+  // Cleaning/organizing tasks
+  if (lower.includes('clean') || lower.includes('tidy') || lower.includes('organize')) {
+    return `At ${startTime} on ${dayOfWeek}, help them clear one surface and place one item where it belongs for ${goalAction}.`;
+  }
+  
+  // Physical/exercise tasks
+  if (lower.includes('exercise') || lower.includes('walk') || lower.includes('run') || lower.includes('workout')) {
+    return `At ${startTime} on ${dayOfWeek}, hand them their shoes and encourage them to put them on for ${goalAction}.`;
+  }
+  
+  // Creative tasks
+  if (lower.includes('draw') || lower.includes('write') || lower.includes('practice') || lower.includes('paint')) {
+    return `At ${startTime} on ${dayOfWeek}, place their materials in front of them for ${goalAction}.`;
+  }
+  
+  // Learning/study tasks
+  if (lower.includes('study') || lower.includes('homework') || lower.includes('read') || lower.includes('learn')) {
+    return `At ${startTime} on ${dayOfWeek}, help them open their textbook or laptop to the right page or app for ${goalAction}.`;
+  }
+  
+  // Default: generic but sensible
+  return `At ${startTime} on ${dayOfWeek}, hand them the first thing they need for ${goalAction}.`;
+}
+
+/**
  * Returns barrier-specific templates for Individual flow
  */
 function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariables): BarrierTemplate {
@@ -150,7 +210,7 @@ function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariabl
     initiation: {
       activationStep: {
         title: `At ${vars.startTime}, start`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, open or touch the first thing you need for ${vars.goalAction} (app, book, or materials).`
+        description: getSmartActivationCue(vars.goalAction, vars.startTime, vars.dayOfWeek)
       },
       barrierStep: {
         title: `Work for 20 minutes`,
@@ -200,7 +260,7 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
     initiation: {
       activationStep: {
         title: `At ${vars.startTime}, hand them materials`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them the first thing they need for ${vars.goalAction} (laptop, textbook, or materials).`
+        description: getSmartSupporterActivationCue(vars.goalAction, vars.startTime, vars.dayOfWeek)
       },
       barrierStep: {
         title: `Stay nearby for 20 minutes`,

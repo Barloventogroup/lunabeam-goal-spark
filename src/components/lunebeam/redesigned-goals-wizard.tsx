@@ -1611,30 +1611,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardContent>
     </Card>;
   };
-  // Action Cue Loading State Component
-  const ActionCueLoadingState = ({ actionCue }: { actionCue: string }) => (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-      <Card className="max-w-md w-full mx-4">
-        <CardContent className="p-8 space-y-6 text-center">
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary"></div>
-          </div>
-          
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold">Generating Your Personalized Plan...</h3>
-            <p className="text-muted-foreground">Your micro-steps are being tailored just for you</p>
-          </div>
-          
-          <div className="p-4 bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200 dark:border-blue-800 rounded-lg">
-            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">🚀 Don't forget:</p>
-            <p className="text-sm text-blue-800 dark:text-blue-200">{actionCue}</p>
-          </div>
-          
-          <p className="text-xs text-muted-foreground">This usually takes 10-15 seconds</p>
-        </CardContent>
-      </Card>
-    </div>
-  );
 
   const renderConfirmStep = () => {
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
@@ -1642,8 +1618,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const primaryBarrierLabel = data.challengeAreas?.[0] ? challengeAreas.find(c => c.id === data.challengeAreas[0])?.label : null;
 
     return <>
-      {loading && <ActionCueLoadingState actionCue={actionCue} />}
-      
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-2xl">Commitment & Activation</CardTitle>
