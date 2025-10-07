@@ -12,6 +12,7 @@ import { Slider } from '@/components/ui/slider';
 import { useStore } from '@/store/useStore';
 import { AIService } from '@/services/aiService';
 import { X } from 'lucide-react';
+import lunabeamLogo from '@/assets/lunabeam-logo.png';
 
 interface OnboardingData {
   role: 'individual' | 'parent' | '';
@@ -750,14 +751,17 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       </div>
       
       {/* FOOTER - 6.25% */}
-      <div className="h-[6.25vh] bg-white flex items-center justify-end px-6 gap-3">
-        {currentStep >= 1 && <BackButton variant="text" onClick={handleBack} />}
-        <Button 
-          onClick={handleNext} 
-          disabled={!canProceed() || isGenerating}
-        >
-          {isGenerating ? 'Creating...' : currentStep === getTotalSteps() ? 'Create Profile' : 'Continue'}
-        </Button>
+      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6">
+        <img src={lunabeamLogo} alt="Lunabeam" className="h-8" />
+        <div className="flex items-center gap-3">
+          {currentStep >= 1 && <BackButton variant="text" onClick={handleBack} />}
+          <Button 
+            onClick={handleNext} 
+            disabled={!canProceed() || isGenerating}
+          >
+            {isGenerating ? 'Creating...' : currentStep === getTotalSteps() ? 'Create Profile' : 'Continue'}
+          </Button>
+        </div>
       </div>
     </div>
   );
