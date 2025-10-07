@@ -374,10 +374,10 @@ export function ParentOnboarding({
                   })} className="space-y-2">
                   {PRONOUNS_OPTIONS.map(option => {
                     const isCustom = option === 'Custom';
-                    return <div key={option} className="flex items-center space-x-2 bg-white p-3 rounded-lg">
-                        <RadioGroupItem value={option} id={`pronoun-${option}`} className="cursor-pointer" />
-                        <Label htmlFor={`pronoun-${option}`} className="cursor-pointer flex-1">
-                          {isCustom ? <Input type="text" placeholder="Custom pronouns" value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} className="bg-gray-100" /> : option}
+                    return <div key={option} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option} id={`pronoun-${option}`} />
+                        <Label htmlFor={`pronoun-${option}`} className="cursor-pointer">
+                          {isCustom ? <Input type="text" placeholder="Custom pronouns" value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} /> : option}
                         </Label>
                       </div>;
                   })}
