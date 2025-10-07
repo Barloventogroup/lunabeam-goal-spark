@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Lottie from 'lottie-react';
 import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback } from '../ui/avatar';
@@ -21,6 +22,7 @@ import { useAuth } from '../auth/auth-provider';
 import { goalsService, stepsService } from '../../services/goalsService';
 import { normalizeDomainForDisplay } from '../../utils/domainUtils';
 import { getWelcomeMessage } from '../../utils/userTypeUtils';
+import confettiAnimation from '@/assets/confetti-animation.json';
 import type { Goal } from '../../types';
 
 interface TabHomeProps {
@@ -41,6 +43,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [goalsLoaded, setGoalsLoaded] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const { user, signOut } = useAuth();
   const {
@@ -83,6 +86,12 @@ export const TabHome: React.FC<TabHomeProps> = ({
       if (!isMounted) return;
       setProfileLoaded(true);
       setGoalsLoaded(true);
+      
+      // Check if first-time user and show confetti
+      const isFirstTime = goals.length === 0;
+      if (isFirstTime && profile?.onboarding_complete) {
+        setShowConfetti(true);
+      }
       // Steps will be loaded once goals are available in a separate effect
     })();
     return () => { isMounted = false; };
@@ -452,6 +461,17 @@ export const TabHome: React.FC<TabHomeProps> = ({
           goal={selectedGoal}
           weekOf={new Date().toISOString().split('T')[0]} 
         />
+      )}
+      
+      {/* Confetti Animation for First-Time Users */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50">
+          <Lottie 
+            animationData={confettiAnimation} 
+            loop={false}
+            onComplete={() => setShowConfetti(false)}
+          />
+        </div>
       )}
     </>;
 };
