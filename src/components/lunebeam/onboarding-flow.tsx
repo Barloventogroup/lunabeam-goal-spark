@@ -86,7 +86,7 @@ export function OnboardingFlow() {
         {/* HEADER - 50% */}
         <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
           <div className="space-y-2 text-center">
-            <h1 className="text-3xl font-medium text-black">
+            <h1 className="text-3xl font-semibold text-black">
               {isParent ? 'Perfect! You\'ll be set as the Admin.' : 'Great! Let\'s personalize your experience.'}
             </h1>
             <p className="text-sm text-foreground-soft">
