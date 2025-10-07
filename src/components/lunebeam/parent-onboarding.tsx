@@ -332,7 +332,10 @@ export function ParentOnboarding({
               </p>
             </div>}
           {currentStep === 4 && <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">What are 2-3 things {data.preferredName || 'they'}'re great at?</h2>
+              <h2 className="text-3xl font-semibold">What are 2-3 things {data.preferredName || 'they'} {data.preferredName ? 'is' : 'are'} great at?</h2>
+              <p className="text-foreground-soft">
+                Select up to 3 strengths
+              </p>
             </div>}
           {currentStep === 5 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Interests</h2>
@@ -393,12 +396,17 @@ export function ParentOnboarding({
                 </div>)}
             </RadioGroup>}
           {currentStep === 4 && <div className="flex flex-col gap-2">
-              {STRENGTHS_OPTIONS.map(option => <Badge key={option} variant={data.strengths.includes(option) ? 'default' : 'outline'} onClick={() => setData({
+              {STRENGTHS_OPTIONS.filter(opt => opt !== 'Other').map(option => <Badge key={option} variant={data.strengths.includes(option) ? 'default' : 'outline'} onClick={() => setData({
                     ...data,
                     strengths: toggleSelection(data.strengths, option, 3)
-                  })} className="cursor-pointer">
+                  })} className="cursor-pointer w-[140px] justify-center">
                   {option}
                 </Badge>)}
+              <Input 
+                type="text" 
+                placeholder="Other" 
+                className="w-[140px]"
+              />
             </div>}
           {currentStep === 5 && <div className="grid grid-cols-2 gap-2">
               {INTERESTS_OPTIONS.map(option => <Badge key={option} variant={data.interests.includes(option) ? 'default' : 'outline'} onClick={() => setData({
