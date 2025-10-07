@@ -99,7 +99,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const { completeOnboarding, setProfile } = useStore();
 
   const getTotalSteps = () => {
-    return 7;
+    return 6;
   };
 
   const handleNext = () => {
@@ -291,7 +291,6 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       case 1: return data.name.trim().length > 0;
       case 2: return data.age.trim().length > 0;
       case 3: return data.superpowers.length > 0;
-      case 5: return data.bestTime !== '';
       default: return true;
     }
   };
@@ -422,24 +421,13 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           {currentStep === 5 && (
             <div className="space-y-2">
               <h2 className="text-3xl font-semibold">
-                {data.role === 'parent' ? "When do they feel at their best?" : "When do you feel at your best?"}
-              </h2>
-              <p className="text-sm text-black">
-                Choose {data.role === 'parent' ? 'their' : 'your'} peak energy time
-              </p>
-            </div>
-          )}
-          
-          {currentStep === 6 && (
-            <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "What gets in their way most?" : "What gets in your way most?"}
               </h2>
               <p className="text-sm text-black">Choose up to 2 things that make activities harder</p>
             </div>
           )}
           
-          {currentStep === 7 && (
+          {currentStep === 6 && (
             <div className="space-y-2">
               <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "One small thing they'd like to try" : "One small thing you'd like to try"}
@@ -672,25 +660,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
             </div>
           )}
 
-          {/* Step 5: Best Time */}
+          {/* Step 5: Barriers */}
           {currentStep === 5 && (
-            <div className="space-y-2">
-              {['Early morning', 'Late morning', 'Afternoon', 'Evening', 'It varies'].map(time => (
-                <Button
-                  key={time}
-                  variant={data.bestTime === time ? "default" : "outline"}
-                  onClick={() => setData(prev => ({ ...prev, bestTime: time }))}
-                  className="w-full justify-start border-0 text-sm"
-                  style={{ backgroundColor: data.bestTime === time ? undefined : '#E0E0E0' }}
-                >
-                  {time}
-                </Button>
-              ))}
-            </div>
-          )}
-
-          {/* Step 6: Barriers */}
-          {currentStep === 6 && (
             <div className="flex flex-wrap gap-2">
               {BARRIERS.map(barrier => (
                 <Button
@@ -710,8 +681,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
             </div>
           )}
 
-          {/* Step 7: Goal Seed */}
-          {currentStep === 7 && (
+          {/* Step 6: Goal Seed */}
+          {currentStep === 6 && (
             <div className="space-y-4">
               <Textarea
                 value={data.goalSeed}
