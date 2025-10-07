@@ -320,13 +320,13 @@ export function ParentOnboarding({
       <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
         <div className="max-w-2xl mx-auto w-full">
           {currentStep === 1 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">What should I call you?</h2>
+              <h2 className="text-3xl font-semibold">What should I call you?</h2>
               <p className="text-foreground-soft">
                 This will be the name on your admin account.
               </p>
             </div>}
           {currentStep === 2 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Who are you helping?</h2>
+              <h2 className="text-3xl font-semibold">Who are you helping?</h2>
               <p className="text-foreground-soft">
                 What name do they prefer?
               </p>
@@ -336,43 +336,43 @@ export function ParentOnboarding({
               })} />
             </div>}
           {currentStep === 3 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Pronouns</h2>
+              <h2 className="text-3xl font-semibold">Pronouns</h2>
               <p className="text-foreground-soft">
                 How should we refer to {data.preferredName || 'them'}?
               </p>
             </div>}
           {currentStep === 4 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Age</h2>
+              <h2 className="text-3xl font-semibold">Age</h2>
               <p className="text-foreground-soft">
                 How old is {data.preferredName || 'this person'}?
               </p>
             </div>}
           {currentStep === 5 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Strengths</h2>
+              <h2 className="text-3xl font-semibold">Strengths</h2>
               <p className="text-foreground-soft">
                 What are {data.preferredName || 'their'} strengths?
               </p>
             </div>}
           {currentStep === 6 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Interests</h2>
+              <h2 className="text-3xl font-semibold">Interests</h2>
               <p className="text-foreground-soft">
                 What does {data.preferredName || 'this person'} enjoy?
               </p>
             </div>}
           {currentStep === 7 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Work Style</h2>
+              <h2 className="text-3xl font-semibold">Work Style</h2>
               <p className="text-foreground-soft">
                 How does {data.preferredName || 'this person'} like to work?
               </p>
             </div>}
           {currentStep === 8 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Next Two Weeks</h2>
+              <h2 className="text-3xl font-semibold">Next Two Weeks</h2>
               <p className="text-foreground-soft">
                 What's one small step {data.preferredName || 'they'} can take in the next two weeks?
               </p>
             </div>}
           {currentStep === 9 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Sharing & Support</h2>
+              <h2 className="text-3xl font-semibold">Sharing & Support</h2>
               <p className="text-foreground-soft">
                 How much do you want to share with supporters?
               </p>
