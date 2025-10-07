@@ -39,6 +39,7 @@ interface StructuredOnboardingProps {
   onComplete: () => void;
   roleData?: { role: 'parent' | 'individual'; isAdmin?: boolean };
   onExit: () => Promise<void>;
+  onBack?: () => void;
 }
 
 const SUPERPOWERS = [
@@ -62,7 +63,7 @@ const GOAL_HELPERS = [
   'Learn 3 guitar chords', 'Organize one drawer', 'Text a friend'
 ];
 
-export function StructuredOnboarding({ onComplete, roleData, onExit }: StructuredOnboardingProps) {
+export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: StructuredOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<OnboardingData>({
     role: roleData?.role || 'individual',
@@ -113,6 +114,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit }: Structure
     if (showProfile) {
       setShowProfile(false);
       setCurrentStep(getTotalSteps());
+    } else if (currentStep === 1 && onBack) {
+      onBack();
     } else if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
@@ -628,7 +631,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit }: Structure
       
       {/* FOOTER - 6.25% */}
       <div className="h-[6.25vh] bg-white flex items-center justify-end px-6 gap-3">
-        {currentStep > 1 && <BackButton variant="text" onClick={handleBack} />}
+        {currentStep >= 1 && <BackButton variant="text" onClick={handleBack} />}
         <Button 
           onClick={handleNext} 
           disabled={!canProceed() || isGenerating}
