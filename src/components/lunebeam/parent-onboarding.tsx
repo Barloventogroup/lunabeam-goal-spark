@@ -457,9 +457,9 @@ export function ParentOnboarding({
               </p>
             </div>}
           {currentStep === 3 && <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">Birthday</h2>
+              <h2 className="text-3xl font-semibold">How old is {data.preferredName || 'they'}?</h2>
               <p className="text-foreground-soft">
-                When is {data.preferredName || 'their'} birthday?
+                We'll use this to personalize their experience
               </p>
             </div>}
           {currentStep === 4 && <div className="space-y-2">

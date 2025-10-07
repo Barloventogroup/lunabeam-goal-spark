@@ -395,10 +395,10 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           {currentStep === 2 && (
             <div className="space-y-2">
               <h2 className="text-3xl font-semibold">
-                {data.role === 'parent' ? "When is their birthday?" : "When is your birthday?"}
+                {data.role === 'parent' ? `How old is ${data.name || 'they'}?` : "How old are you?"}
               </h2>
               <p className="text-sm text-black">
-                This helps us personalize your experience
+                We'll use this to personalize your experience
               </p>
             </div>
           )}
