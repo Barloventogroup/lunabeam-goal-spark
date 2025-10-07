@@ -345,6 +345,7 @@ interface WizardData {
 
   // Step 3: Goal type
   goalType?: string;
+  difficultyArea?: string;
 
   // Step 4: Challenge areas (up to 2)
   challengeAreas?: string[];
@@ -1054,6 +1055,20 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>
           </CardContent>
         </Card>)}
+
+        {data.goalType === 'practice' && (
+          <div className="space-y-2 pt-4 border-t">
+            <Label htmlFor="difficulty-area">What is the area of difficulty?</Label>
+            <Textarea 
+              id="difficulty-area" 
+              placeholder="Describe the specific area where you want to improve..." 
+              value={data.difficultyArea || ''} 
+              onChange={e => updateData({ difficultyArea: e.target.value })} 
+              className="min-h-[80px] resize-none" 
+              rows={3} 
+            />
+          </div>
+        )}
       </CardContent>
     </Card>;
   };
