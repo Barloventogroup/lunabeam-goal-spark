@@ -482,7 +482,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal",
+                    "w-auto justify-start text-left font-normal",
                     !data.birthday && "text-muted-foreground"
                   )}
                 >

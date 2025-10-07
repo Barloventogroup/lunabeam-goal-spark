@@ -525,7 +525,7 @@ export function ParentOnboarding({
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal",
+                    "w-auto justify-start text-left font-normal",
                     !data.birthday && "text-muted-foreground"
                   )}
                 >
