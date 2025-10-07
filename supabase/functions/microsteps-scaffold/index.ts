@@ -379,7 +379,7 @@ Deno.serve(async (req) => {
         }
 
         // ============= LAYER 3: JUDGE SAFETY VIOLATION =============
-        if (judgeResult.pass_fail === 'SAFETY_VIOLATION') {
+        if (judgeResult.pass_fail === 'SAFETY_VIOLATION' || judgeResult.total_score === 0) {
           console.error('⚠️ LAYER 3 SAFETY VIOLATION flagged by Gemini Judge');
           
           if (userId) {
@@ -409,7 +409,7 @@ Deno.serve(async (req) => {
           );
         }
 
-        if (judgeResult.pass_fail === 'FAIL') {
+        if (judgeResult.pass_fail === 'FAIL' && judgeResult.total_score < 70) {
           console.error(`Attempt ${attemptNumber} - Gemini Judge FAIL (score: ${judgeResult.total_score}/100)`);
           console.log('📝 Critique for retry:', judgeResult.critique_for_retry);
           
