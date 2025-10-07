@@ -368,28 +368,20 @@ export function ParentOnboarding({
                 })} />
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Pronouns</Label>
-                <div className="grid grid-cols-2 gap-2">
+                <RadioGroup defaultValue={data.pronouns} onValueChange={value => setData({
+                    ...data,
+                    pronouns: value
+                  })} className="space-y-2">
                   {PRONOUNS_OPTIONS.map(option => {
                     const isCustom = option === 'Custom';
-                    if (isCustom) {
-                      return <div key={option} className="col-span-2">
-                          <Badge variant={data.pronouns === option ? 'default' : 'outline'} onClick={() => setData({
-                              ...data,
-                              pronouns: option
-                            })} className="cursor-pointer w-full justify-center">
-                            {option}
-                          </Badge>
-                          {data.pronouns === 'Custom' && <Input type="text" placeholder="Custom pronouns" value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} className="mt-2" />}
-                        </div>;
-                    }
-                    return <Badge key={option} variant={data.pronouns === option ? 'default' : 'outline'} onClick={() => setData({
-                        ...data,
-                        pronouns: option
-                      })} className="cursor-pointer">
-                        {option}
-                      </Badge>;
+                    return <div key={option} className="flex items-center space-x-2 bg-white p-3 rounded-lg">
+                        <RadioGroupItem value={option} id={`pronoun-${option}`} className="cursor-pointer" />
+                        <Label htmlFor={`pronoun-${option}`} className="cursor-pointer flex-1">
+                          {isCustom ? <Input type="text" placeholder="Custom pronouns" value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} className="bg-gray-100" /> : option}
+                        </Label>
+                      </div>;
                   })}
-                </div>
+                </RadioGroup>
               </div>
             </div>}
           {currentStep === 3 && <RadioGroup defaultValue={data.age} onValueChange={value => setData({
