@@ -1676,7 +1676,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
                 {primaryBarrierLabel && (
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0" />
                     <div className="space-y-1">
                       <p className="text-sm font-semibold text-muted-foreground">Primary Barrier</p>
                       <p className="font-medium">{primaryBarrierLabel}</p>
