@@ -67,6 +67,8 @@ export function ParentOnboarding({
     sharingSupport: 'private'
   });
   const [customPronouns, setCustomPronouns] = useState('');
+  const [showOtherStrength, setShowOtherStrength] = useState(false);
+  const [otherStrength, setOtherStrength] = useState('');
   const [showProfile, setShowProfile] = useState(false);
   const [generatedProfile, setGeneratedProfile] = useState('');
   const {
@@ -399,14 +401,23 @@ export function ParentOnboarding({
               {STRENGTHS_OPTIONS.filter(opt => opt !== 'Other').map(option => <Badge key={option} variant={data.strengths.includes(option) ? 'default' : 'outline'} onClick={() => setData({
                     ...data,
                     strengths: toggleSelection(data.strengths, option, 3)
-                  })} className="cursor-pointer w-[140px] justify-center">
+                  })} className="cursor-pointer w-[140px] justify-center bg-white text-sm">
                   {option}
                 </Badge>)}
-              <Input 
+              <Badge 
+                variant={showOtherStrength ? 'default' : 'outline'} 
+                onClick={() => setShowOtherStrength(!showOtherStrength)} 
+                className="cursor-pointer w-[140px] justify-center bg-white text-sm"
+              >
+                Other
+              </Badge>
+              {showOtherStrength && <Input 
                 type="text" 
-                placeholder="Other" 
-                className="w-[140px]"
-              />
+                placeholder="Type your strength" 
+                value={otherStrength}
+                onChange={(e) => setOtherStrength(e.target.value)}
+                className="w-full"
+              />}
             </div>}
           {currentStep === 5 && <div className="grid grid-cols-2 gap-2">
               {INTERESTS_OPTIONS.map(option => <Badge key={option} variant={data.interests.includes(option) ? 'default' : 'outline'} onClick={() => setData({
