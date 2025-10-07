@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Lottie from 'lottie-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
@@ -15,6 +16,7 @@ import { database } from '@/services/database';
 import { useToast } from '@/hooks/use-toast';
 import { X, ArrowLeft, Loader2 } from 'lucide-react';
 import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
+import confettiAnimation from '@/assets/confetti-animation.json';
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
   preferredName: string;
@@ -48,6 +50,7 @@ export function ParentOnboarding({
 }: ParentOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(2);
   const [isCreating, setIsCreating] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const {
     toast
   } = useToast();
@@ -187,6 +190,10 @@ export function ParentOnboarding({
     console.log('🚀 Let\'s go button clicked - starting handleComplete', {
       timestamp: Date.now()
     });
+    
+    // Show confetti animation
+    setShowConfetti(true);
+    
     setIsCreating(true);
     const adminProfile = {
       first_name: data.adminName.trim() || 'Admin',
@@ -334,6 +341,17 @@ export function ParentOnboarding({
           </Button>
         </div>
       </div>
+      
+      {/* Confetti Animation */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50">
+          <Lottie 
+            animationData={confettiAnimation} 
+            loop={false}
+            onComplete={() => setShowConfetti(false)}
+          />
+        </div>
+      )}
     </div>;
   }
   return <div className="min-h-screen flex flex-col">
