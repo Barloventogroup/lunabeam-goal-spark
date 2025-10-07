@@ -477,29 +477,37 @@ export function ParentOnboarding({
       {/* BODY - 43.75vh */}
       <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto">
-          {currentStep === 2 && <div className="space-y-4">
-              <Input type="text" placeholder="Preferred name" value={data.preferredName} onChange={e => setData({
+          {currentStep === 2 && (
+            <div className="space-y-4">
+              <Input 
+                type="text" 
+                placeholder="Their preferred name" 
+                value={data.preferredName} 
+                onChange={e => setData({
                   ...data,
                   preferredName: e.target.value
-                })} />
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Pronouns</Label>
-                <RadioGroup defaultValue={data.pronouns} onValueChange={value => setData({
-                    ...data,
-                    pronouns: value
-                  })} className="space-y-2">
-                  {PRONOUNS_OPTIONS.map(option => {
-                    const isCustom = option === 'Custom';
-                    return <div key={option} className="flex items-center space-x-2">
-                        <RadioGroupItem value={option} id={`pronoun-${option}`} />
-                        <Label htmlFor={`pronoun-${option}`} className="cursor-pointer">
-                          {isCustom ? <Input type="text" placeholder="Custom pronouns" value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} /> : option}
-                        </Label>
-                      </div>;
-                  })}
-                </RadioGroup>
+                })}
+                className="text-left text-sm"
+                maxLength={30}
+              />
+              <div>
+                <p className="text-sm font-medium mb-2">Pronouns (optional)</p>
+                <div className="flex flex-wrap gap-2">
+                  {['she/her', 'he/him', 'they/them'].map(pronoun => (
+                    <Button
+                      key={pronoun}
+                      variant={data.pronouns === pronoun ? "default" : "outline"}
+                      onClick={() => setData(prev => ({ ...prev, pronouns: pronoun }))}
+                      className="text-sm border-0"
+                      style={{ backgroundColor: data.pronouns === pronoun ? undefined : '#E0E0E0' }}
+                    >
+                      {pronoun}
+                    </Button>
+                  ))}
+                </div>
               </div>
-            </div>}
+            </div>
+          )}
           {currentStep === 3 && (
             <Input
               value={data.age}
