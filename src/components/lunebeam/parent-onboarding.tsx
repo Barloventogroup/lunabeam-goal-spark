@@ -409,7 +409,7 @@ export function ParentOnboarding({
                 </div>)}
             </RadioGroup>}
           {currentStep === 5 && <div className="grid grid-cols-2 gap-2">
-              {STRENGTHS_OPTIONS.map(option => <Badge key={option} variant={data.strengths.includes(option) ? 'primary' : 'secondary'} onClick={() => setData({
+              {STRENGTHS_OPTIONS.map(option => <Badge key={option} variant={data.strengths.includes(option) ? 'default' : 'outline'} onClick={() => setData({
                     ...data,
                     strengths: toggleSelection(data.strengths, option, 3)
                   })} className="cursor-pointer">
@@ -417,7 +417,7 @@ export function ParentOnboarding({
                 </Badge>)}
             </div>}
           {currentStep === 6 && <div className="grid grid-cols-2 gap-2">
-              {INTERESTS_OPTIONS.map(option => <Badge key={option} variant={data.interests.includes(option) ? 'primary' : 'secondary'} onClick={() => setData({
+              {INTERESTS_OPTIONS.map(option => <Badge key={option} variant={data.interests.includes(option) ? 'default' : 'outline'} onClick={() => setData({
                     ...data,
                     interests: toggleSelection(data.interests, option, 3)
                   })} className="cursor-pointer">
