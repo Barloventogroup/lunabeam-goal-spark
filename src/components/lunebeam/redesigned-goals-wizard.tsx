@@ -1869,7 +1869,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       {(data.timeOfDay || data.customTime) && (
                         <p className="text-sm">
                           <span className="text-muted-foreground text-xs">Time:</span>{' '}
-                          <span className="font-medium">{data.customTime || data.timeOfDay}</span>
+                          <span className="font-medium">{data.customTime ? formatDisplayTime(data.customTime) : data.timeOfDay}</span>
                         </p>
                       )}
                     </div>
