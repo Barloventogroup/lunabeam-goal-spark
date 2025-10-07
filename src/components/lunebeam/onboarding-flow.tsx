@@ -122,7 +122,7 @@ export function OnboardingFlow() {
         
         {/* HEADER - 50% */}
         <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
-          <div className="text-center space-y-2">
+          <div className="text-left space-y-2">
             <CardTitle className="text-2xl">Welcome to lunabeam!</CardTitle>
             <p className="text-foreground">
               Who are you creating this account for?
