@@ -409,6 +409,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [selectedCategoryDetails, setSelectedCategoryDetails] = useState<any>(null);
   const [canAssignDirectly, setCanAssignDirectly] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [actionCue, setActionCue] = useState<string>('');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -475,6 +476,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       }
     }
   }, [actuallySupportsAnyone, currentStep]);
+
+  // Generate action cue when arriving at final step
+  useEffect(() => {
+    const steps = actuallySupportsAnyone ? 
+      [0, 1, 2, 3, 4, 5, 6, 7, 8] : 
+      [1, 2, 3, 4, 5, 6, 7, 8];
+    const lastStepIndex = steps[steps.length - 1];
+    
+    if (currentStep === lastStepIndex && !actionCue && data.goalTitle && data.challengeAreas && data.challengeAreas.length > 0) {
+      setActionCue(generateActionCue());
+    }
+  }, [currentStep, data.goalTitle, data.challengeAreas, actionCue, actuallySupportsAnyone]);
   const loadSupportedPeople = async () => {
     try {
       // First, get the supporter relationships
@@ -617,7 +630,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         return !!data.goalMotivation;
       case 3:
         // Goal type
-        return !!data.goalType;
+        if (!data.goalType) return false;
+        if (data.goalType === 'practice' && !data.difficultyArea?.trim()) return false;
+        return true;
       case 4:
         // Challenge areas
         return (data.challengeAreas?.length || 0) > 0;
@@ -705,11 +720,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           created_by: currentUser?.id,
           tags: data.challengeAreas || [],
           metadata: {
+            generationStatus: 'pending',
+            actionCue: actionCue,
             wizardContext: {
               goalTitle: data.goalTitle,
               goalMotivation: data.goalMotivation,
               customMotivation: data.customMotivation,
               goalType: data.goalType,
+              difficultyArea: data.difficultyArea,
               challengeAreas: data.challengeAreas,
               customChallenges: data.customChallenges,
               prerequisite: data.customPrerequisites,
@@ -824,6 +842,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     let description = data.goalTitle;
     if (motivation) description += ` - Motivated by ${motivation.label.toLowerCase()}`;
     if (type) description += ` (${type.label})`;
+    if (data.difficultyArea && data.goalType === 'practice') {
+      description += ` - Area of difficulty: ${data.difficultyArea}`;
+    }
     if (challenges && challenges.length > 0) description += ` - Challenges: ${challenges.join(', ')}`;
     if (support) description += ` with ${support.label.toLowerCase()}`;
     if (data.frequency) description += ` ${data.frequency} times per week`;
@@ -832,6 +853,62 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       if (timeLabel) description += ` in the ${timeLabel.toLowerCase()}`;
     }
     return description;
+  };
+
+  const generateActionCue = (): string => {
+    const primaryBarrier = data.challengeAreas?.[0];
+    const goalTitle = data.goalTitle || 'this task';
+    
+    // Category-specific cues based on barrier type
+    const cueTemplates: Record<string, Record<string, string>> = {
+      'independent_living': {
+        'initiation': `Go to the area where you'll do "${goalTitle}", pick up one item you'll need, and place it in the starting position.`,
+        'attention': `Clear the space where you'll do "${goalTitle}" and remove any distractions within arm's reach.`,
+        'planning': `Write down the first 3 items you'll need for "${goalTitle}" on a sticky note and place it where you'll work.`,
+        'time': `Set a timer for 5 minutes and place it next to where you'll do "${goalTitle}".`
+      },
+      'health': {
+        'initiation': `Put on or lay out the first piece of equipment or clothing you'll need for "${goalTitle}".`,
+        'attention': `Go to the space where you'll do "${goalTitle}" and take 3 deep breaths.`,
+        'planning': `Open your calendar or planner and mark the time you'll start "${goalTitle}".`,
+        'time': `Set a reminder on your phone for when you'll do "${goalTitle}".`
+      },
+      'education': {
+        'initiation': `Open your materials for "${goalTitle}" and place them in front of you.`,
+        'attention': `Clear your workspace and place only what you need for "${goalTitle}" in front of you.`,
+        'planning': `Write the first step of "${goalTitle}" on the top of a blank page.`,
+        'time': `Check your schedule and write down when you'll work on "${goalTitle}" today.`
+      },
+      'employment': {
+        'initiation': `Gather the materials you'll need for "${goalTitle}" and place them on your desk.`,
+        'attention': `Turn off notifications and close unnecessary tabs before starting "${goalTitle}".`,
+        'planning': `List the 3 most important tasks for "${goalTitle}" in order of priority.`,
+        'time': `Block 30 minutes in your calendar specifically for "${goalTitle}".`
+      },
+      'social_skills': {
+        'initiation': `Write down one specific thing you'll say or do for "${goalTitle}".`,
+        'attention': `Find a quiet space and practice saying your greeting for "${goalTitle}" out loud once.`,
+        'planning': `Choose the exact time and place where you'll practice "${goalTitle}".`,
+        'time': `Set a daily reminder for when you'll work on "${goalTitle}".`
+      },
+      'postsecondary': {
+        'initiation': `Open the application or materials for "${goalTitle}" and review the first section.`,
+        'attention': `Close all distracting apps and set your phone aside before working on "${goalTitle}".`,
+        'planning': `Make a list of the 3 main steps needed to complete "${goalTitle}".`,
+        'time': `Schedule a 45-minute block in your calendar for "${goalTitle}".`
+      },
+      'fun_recreation': {
+        'initiation': `Get your equipment or materials for "${goalTitle}" and place them in your practice area.`,
+        'attention': `Find a comfortable spot and take a moment to visualize yourself enjoying "${goalTitle}".`,
+        'planning': `Write down what you want to accomplish during today's "${goalTitle}" session.`,
+        'time': `Set a reminder for your next "${goalTitle}" practice time.`
+      }
+    };
+    
+    // Get cue based on category and barrier, with fallback
+    const categoryCues = cueTemplates[data.category || ''] || cueTemplates['independent_living'];
+    return categoryCues[primaryBarrier || 'initiation'] || 
+      `Take a moment to prepare the space where you'll work on "${goalTitle}".`;
   };
   const mapCategoryToDomain = (categoryId?: string) => {
     const mapping: Record<string, GoalDomain> = {
@@ -1534,135 +1611,136 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardContent>
     </Card>;
   };
+  // Action Cue Loading State Component
+  const ActionCueLoadingState = ({ actionCue }: { actionCue: string }) => (
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <Card className="max-w-md w-full mx-4">
+        <CardContent className="p-8 space-y-6 text-center">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary"></div>
+          </div>
+          
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold">Generating Your Personalized Plan...</h3>
+            <p className="text-muted-foreground">Your micro-steps are being tailored just for you</p>
+          </div>
+          
+          <div className="p-4 bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200 dark:border-blue-800 rounded-lg">
+            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">🚀 Don't forget:</p>
+            <p className="text-sm text-blue-800 dark:text-blue-200">{actionCue}</p>
+          </div>
+          
+          <p className="text-xs text-muted-foreground">This usually takes 10-15 seconds</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   const renderConfirmStep = () => {
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
-    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+    const motivationLabel = motivations.find(m => m.id === data.goalMotivation)?.label || data.customMotivation;
+    const primaryBarrierLabel = data.challengeAreas?.[0] ? challengeAreas.find(c => c.id === data.challengeAreas[0])?.label : null;
+
+    return <>
+      {loading && <ActionCueLoadingState actionCue={actionCue} />}
+      
+      <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl">Review and Confirm</CardTitle>
-          <p className="text-muted-foreground">
-            {text.confirm.subtitle}
-          </p>
+          <CardTitle className="text-2xl">Commitment & Activation</CardTitle>
         </CardHeader>
-        
         <CardContent className="space-y-6">
-          {/* Four Summary Cards */}
-          <div className="flex flex-col gap-4">
-            {/* Goal Action Card */}
-            <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
-              <CardHeader className="p-3 pb-2">
-                <CardTitle className="text-base font-semibold">Goal Action</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
-                <p className="text-sm font-medium text-foreground">{data.goalTitle}</p>
+          {/* Section 1: Your Personalized Strategy Summary */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <span>✨</span>
+              <span>This is the Goal We Built Together</span>
+            </h3>
+            
+            <Card className="border-2">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-start gap-3">
+                  <Target className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-muted-foreground">Goal</p>
+                    <p className="font-semibold text-lg">{data.goalTitle}</p>
+                  </div>
+                </div>
+
+                {motivationLabel && (
+                  <div className="flex items-start gap-3">
+                    <Heart className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-muted-foreground">Motivation</p>
+                      <p className="font-medium">{motivationLabel}</p>
+                    </div>
+                  </div>
+                )}
+
+                {primaryBarrierLabel && (
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-muted-foreground">Primary Barrier</p>
+                      <p className="font-medium">{primaryBarrierLabel}</p>
+                    </div>
+                  </div>
+                )}
+
+                {data.supportContext !== 'alone' && data.primarySupporterName && (
+                  <div className="flex items-start gap-3">
+                    <Users className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-muted-foreground">Supporter</p>
+                      <p className="font-medium">{data.primarySupporterName}</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
-
-            {/* Why Card */}
-            <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
-              <CardHeader className="p-3 pb-2">
-                <CardTitle className="text-base font-semibold">Why</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0 space-y-2">
-                {data.goalMotivation && <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {motivations.find(m => m.id === data.goalMotivation)?.label}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {motivations.find(m => m.id === data.goalMotivation)?.description}
-                    </p>
-                  </div>}
-                {data.customMotivation && <p className="text-sm text-foreground font-medium italic">{data.customMotivation}</p>}
-              </CardContent>
-            </Card>
-
-            {/* Start Time Card */}
-            <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
-              <CardHeader className="p-3 pb-2">
-                <CardTitle className="text-base font-semibold">Start Time</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
-                <p className="text-sm font-medium text-foreground">
-                  {format(data.startDate, 'MMMM d, yyyy')}
-                  {data.timeOfDay && data.timeOfDay !== 'custom' && ` - ${timesOfDay.find(t => t.id === data.timeOfDay)?.label}`}
-                  {data.timeOfDay === 'custom' && data.customTime && ` at ${formatDisplayTime(data.customTime)}`}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Core Barrier Card */}
-            <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100">
-              <CardHeader className="p-3 pb-2">
-                <CardTitle className="text-base font-semibold">Core Barrier</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0 space-y-2">
-                {data.challengeAreas && data.challengeAreas.length > 0 && <div className="space-y-1">
-                    {data.challengeAreas.map(id => {
-                  const challenge = challengeAreas.find(c => c.id === id);
-                  return challenge ? <p key={id} className="text-sm font-medium text-foreground">
-                          • {challenge.label}
-                        </p> : null;
-                })}
-                  </div>}
-                {data.customChallenges && <p className="text-sm text-foreground font-medium italic">{data.customChallenges}</p>}
-              </CardContent>
-            </Card>
-
-            {/* Support Card - only show for individuals creating their own goals */}
-            {data.recipient === 'self' && (
-              <Card className="border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100">
-                <CardHeader className="p-3 pb-2">
-                  <CardTitle className="text-base font-semibold">Support</CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 pt-0">
-                  {data.supportContext === 'alone' ? <p className="text-sm font-medium text-foreground">All by myself</p> : data.selectedSupporters && data.selectedSupporters.length > 0 ? <div className="space-y-2">
-                      {data.selectedSupporters.map(supporterId => {
-                    const supporter = userSupporters.find(s => s.id === supporterId);
-                    const roleValue = data.allyRoles?.[supporterId];
-                    const role = allyRoles.find(r => r.value === roleValue);
-                    if (!supporter || !role) return null;
-                    return <div key={supporterId} className="flex items-center gap-2">
-                            <Avatar className="w-6 h-6">
-                              <AvatarImage src={supporter.profile?.avatar_url} />
-                              <AvatarFallback className="text-xs">
-                                {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm font-medium text-foreground">
-                              {supporter.name}
-                            </span>
-                            <span className="text-sm">
-                              {role.emoji} {role.title}
-                            </span>
-                          </div>;
-                  })}
-                    </div> : <p className="text-sm text-muted-foreground">No support selected</p>}
-                </CardContent>
-              </Card>
-            )}
           </div>
-          
-          {/* Message about step generation */}
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mt-6">
-            <p className="text-sm text-blue-800 text-center">
-              ✨ Once you confirm, we'll generate personalized micro-steps to help you get started!
+
+          {/* Section 2: The Pre-Action Cue */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <span>🚀</span>
+              <span>Your First Step: Get Ready to Act!</span>
+            </h3>
+            
+            <p className="text-sm text-muted-foreground">
+              We know starting is the hardest part. While the plan is being designed, please complete this 1-minute action cue.
+            </p>
+
+            <div className="p-4 bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">➡️ Action Cue:</p>
+              <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">{actionCue}</p>
+            </div>
+
+            <p className="text-xs text-muted-foreground italic">
+              This sends a signal to your brain that the task is real.
             </p>
           </div>
-          
-          {isProposal && <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
+
+          {/* Proposal notice if needed */}
+          {isProposal && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
                 💡 This goal will be sent as a proposal since you don't have direct assignment permissions for {data.supportedPersonName}.
               </p>
-            </div>}
-          
-          {/* Actions */}
-          <div className="flex pt-2">
-            <Button onClick={handleSubmit} disabled={loading} className="w-full h-12 text-lg font-semibold">
-              {loading ? 'Creating...' : isProposal ? 'Confirm Proposal' : 'Confirm Goal'}
+            </div>
+          )}
+
+          {/* Section 3: Call-to-Action */}
+          <div className="flex gap-3 pt-4">
+            <Button variant="outline" onClick={() => setCurrentStep(currentStep - 1)} className="flex-1" disabled={loading}>
+              Review and Edit Answers
+            </Button>
+            <Button onClick={handleSubmit} disabled={loading} className="flex-1">
+              Activate Plan & Design My Steps
             </Button>
           </div>
         </CardContent>
-      </Card>;
+      </Card>
+    </>;
   };
   const renderCurrentStep = () => {
     switch (currentStep) {
