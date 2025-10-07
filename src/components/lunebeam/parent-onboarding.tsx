@@ -304,7 +304,7 @@ export function ParentOnboarding({
           <div className="space-y-2">
             <h2 className="text-3xl font-semibold">{data.preferredName}'s Profile</h2>
             <p className="text-foreground-soft">
-              Here's a summary of what you've shared
+              Here's a summary of what you've shared. You can create goals and invite supporters after setup is complete.
             </p>
           </div>
         </div>
@@ -313,15 +313,12 @@ export function ParentOnboarding({
       {/* BODY - 43.75vh */}
       <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto space-y-3">
+          <h3 className="text-xl font-semibold text-center">Summary</h3>
           <div className="bg-white rounded-lg p-8 shadow-glow">
             <p className="text-foreground leading-relaxed">
               {generatedProfile}
             </p>
           </div>
-          
-          <p className="text-sm text-muted-foreground px-2">
-            You can create goals and invite supporters after setup is complete.
-          </p>
         </div>
       </div>
       
