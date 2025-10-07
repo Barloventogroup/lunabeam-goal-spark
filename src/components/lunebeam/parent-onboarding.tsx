@@ -10,18 +10,23 @@ import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { database } from '@/services/database';
 import { useToast } from '@/hooks/use-toast';
-import { X, ArrowLeft, Loader2 } from 'lucide-react';
+import { X, ArrowLeft, Loader2, CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
 import confettiAnimation from '@/assets/confetti-animation.json';
+
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
   preferredName: string;
   pronouns: string;
-  age: string;
+  birthday: Date | undefined;
   strengths: string[];
   interests: string[];
   workStyle: {
@@ -58,7 +63,7 @@ export function ParentOnboarding({
     adminName: '',
     preferredName: '',
     pronouns: '',
-    age: '',
+    birthday: undefined,
     strengths: [],
     interests: [],
     workStyle: {
@@ -224,11 +229,17 @@ export function ParentOnboarding({
     setIsGenerating(true);
     
     try {
+      // Calculate age from birthday
+      const age = data.birthday 
+        ? Math.floor((new Date().getTime() - data.birthday.getTime()) / (1000 * 60 * 60 * 24 * 365.25))
+        : undefined;
+
       const { data: summaryData, error } = await supabase.functions.invoke('generate-profile-summary', {
         body: {
           name,
           pronouns: pronoun,
-          age: data.age,
+          age: age?.toString() || '',
+          birthday: data.birthday?.toISOString(),
           strengths: data.strengths,
           interests: data.interests,
           workStyle: data.workStyle,
@@ -446,9 +457,9 @@ export function ParentOnboarding({
               </p>
             </div>}
           {currentStep === 3 && <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">Age</h2>
+              <h2 className="text-3xl font-semibold">Birthday</h2>
               <p className="text-foreground-soft">
-                How old is {data.preferredName || 'this person'}?
+                When is {data.preferredName || 'their'} birthday?
               </p>
             </div>}
           {currentStep === 4 && <div className="space-y-2">
@@ -509,18 +520,35 @@ export function ParentOnboarding({
             </div>
           )}
           {currentStep === 3 && (
-            <Input
-              value={data.age}
-              onChange={(e) => setData({
-                ...data,
-                age: e.target.value
-              })}
-              placeholder="Their age"
-              className="text-center text-lg w-1/4"
-              type="number"
-              min="1"
-              max="100"
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !data.birthday && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {data.birthday ? format(data.birthday, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={data.birthday}
+                  onSelect={(date) => setData({
+                    ...data,
+                    birthday: date
+                  })}
+                  disabled={(date) =>
+                    date > new Date() || date < new Date("1900-01-01")
+                  }
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
           )}
           {currentStep === 4 && (
             <div className="space-y-4">

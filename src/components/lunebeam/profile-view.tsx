@@ -5,6 +5,7 @@ import { BackButton } from '@/components/ui/back-button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { format } from 'date-fns';
 import { 
   ArrowLeft, 
   Edit, 
@@ -332,8 +333,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Age</p>
-                    <p className="text-sm text-muted-foreground">{profile?.age || 'Not set'}</p>
+                    <p className="text-sm font-medium text-foreground">Birthday</p>
+                    <p className="text-sm text-muted-foreground">
+                      {profile?.birthday ? format(new Date(profile.birthday), "PPP") : 'Not set'}
+                    </p>
                   </div>
                 </div>
                 <Button 

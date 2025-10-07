@@ -10,10 +10,14 @@ import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { AIService } from '@/services/aiService';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
 import confettiAnimation from '@/assets/confetti-animation.json';
 
@@ -22,7 +26,7 @@ interface OnboardingData {
   invitePending?: boolean;
   name: string;
   pronouns: string;
-  age: string;
+  birthday: Date | undefined;
   superpowers: string[];
   interests: string[];
   workStyle: {
@@ -75,7 +79,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
     invitePending: false,
     name: '',
     pronouns: '',
-    age: '',
+    birthday: undefined,
     superpowers: [],
     interests: [],
     workStyle: {
@@ -237,11 +241,17 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const generateProfile = async () => {
     setIsGenerating(true);
     try {
+      // Calculate age from birthday
+      const age = data.birthday 
+        ? Math.floor((new Date().getTime() - data.birthday.getTime()) / (1000 * 60 * 60 * 24 * 365.25))
+        : undefined;
+
       const { data: summaryData, error } = await supabase.functions.invoke('generate-profile-summary', {
         body: {
           name: 'You',
           pronouns: 'you',
-          age: data.age,
+          age: age?.toString() || '',
+          birthday: data.birthday?.toISOString(),
           strengths: data.superpowers,
           interests: data.interests,
           workStyle: data.workStyle,
@@ -290,7 +300,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const canProceed = () => {
     switch (currentStep) {
       case 1: return data.name.trim().length > 0;
-      case 2: return data.age.trim().length > 0;
+      case 2: return data.birthday !== undefined;
       case 3: return data.superpowers.length > 0;
       default: return true;
     }
@@ -385,7 +395,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           {currentStep === 2 && (
             <div className="space-y-2">
               <h2 className="text-3xl font-semibold">
-                {data.role === 'parent' ? "How old are they?" : "How old are you?"}
+                {data.role === 'parent' ? "When is their birthday?" : "When is your birthday?"}
               </h2>
               <p className="text-sm text-black">
                 This helps us personalize your experience
@@ -465,17 +475,34 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
             </div>
           )}
 
-          {/* Step 2: Age */}
+          {/* Step 2: Birthday */}
           {currentStep === 2 && (
-            <Input
-              value={data.age}
-              onChange={(e) => setData(prev => ({ ...prev, age: e.target.value }))}
-              placeholder={data.role === 'parent' ? "Their age" : "Your age"}
-              className="text-center text-lg w-1/4"
-              type="number"
-              min="1"
-              max="100"
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !data.birthday && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {data.birthday ? format(data.birthday, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={data.birthday}
+                  onSelect={(date) => setData(prev => ({ ...prev, birthday: date }))}
+                  disabled={(date) =>
+                    date > new Date() || date < new Date("1900-01-01")
+                  }
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
           )}
 
           {/* Step 3: Superpowers */}

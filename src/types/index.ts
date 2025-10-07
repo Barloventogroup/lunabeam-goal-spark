@@ -5,7 +5,7 @@ export interface Profile {
   user_id?: string;
   first_name: string;
   email?: string;
-  age?: string;
+  birthday?: string;
   strengths: string[];
   interests: string[];
   challenges: string[];
