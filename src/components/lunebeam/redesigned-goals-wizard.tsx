@@ -1742,7 +1742,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderConfirmStep = () => {
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
     const motivationLabel = motivations.find(m => m.id === data.goalMotivation)?.label || data.customMotivation;
-    const primaryBarrierLabel = data.challengeAreas?.[0] ? challengeAreas.find(c => c.id === data.challengeAreas[0])?.label : null;
+    const categoryLabel = categories.find(c => c.id === data.category)?.title;
+    const goalTypeLabel = goalTypes.find(g => g.id === data.goalType)?.label;
+    const challengeLabels = data.challengeAreas?.slice(0, 2).map(id => challengeAreas.find(c => c.id === id)?.label).filter(Boolean);
+    const frequencyLabel = frequencies.find(f => f.value === data.frequency)?.label;
+    const supportContextLabel = supportContexts.find(s => s.id === data.supportContext)?.label;
+    const primarySupporterRoleLabel = data.primarySupporterRole ? allyRoles.find(r => r.value === data.primarySupporterRole)?.title : null;
 
     return <>
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
@@ -1750,48 +1755,140 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <CardTitle className="text-2xl">Commitment & Activation</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Section 1: Your Personalized Strategy Summary */}
+          {/* Section 1: Goal Summary in 4 Groups */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <span>✨</span>
               <span>This is the Goal We Built Together</span>
             </h3>
             
+            {/* The Goal */}
             <Card className="border-2">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-muted-foreground">Goal</p>
-                    <p className="font-semibold text-lg">{data.goalTitle}</p>
+              <CardContent className="p-4 space-y-3">
+                <h4 className="font-semibold text-primary">The Goal</h4>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Goal</p>
+                    <p className="font-semibold">{data.goalTitle}</p>
                   </div>
-                </div>
-
-                {motivationLabel && (
-                  <div className="flex items-start gap-3">
-                    <div className="space-y-1">
-                      <p className="text-sm font-semibold text-muted-foreground">Motivation</p>
+                  {categoryLabel && (
+                    <div>
+                      <p className="text-muted-foreground">Category</p>
+                      <p className="font-medium">{categoryLabel}</p>
+                    </div>
+                  )}
+                  {motivationLabel && (
+                    <div>
+                      <p className="text-muted-foreground">Motivation</p>
                       <p className="font-medium">{motivationLabel}</p>
                     </div>
-                  </div>
-                )}
-
-                {primaryBarrierLabel && (
-                  <div className="flex items-start gap-3">
-                    <div className="space-y-1">
-                      <p className="text-sm font-semibold text-muted-foreground">Primary Barrier</p>
-                      <p className="font-medium">{primaryBarrierLabel}</p>
+                  )}
+                  {goalTypeLabel && (
+                    <div>
+                      <p className="text-muted-foreground">Type</p>
+                      <p className="font-medium">{goalTypeLabel}</p>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-                {data.supportContext !== 'alone' && data.primarySupporterName && (
-                  <div className="flex items-start gap-3">
-                    <div className="space-y-1">
-                      <p className="text-sm font-semibold text-muted-foreground">Supporter</p>
-                      <p className="font-medium">{data.primarySupporterName}</p>
+            {/* Challenges */}
+            <Card className="border-2">
+              <CardContent className="p-4 space-y-3">
+                <h4 className="font-semibold text-primary">Challenges</h4>
+                <div className="space-y-2 text-sm">
+                  {challengeLabels && challengeLabels.length > 0 && (
+                    <div>
+                      <p className="text-muted-foreground">Primary Challenges</p>
+                      <p className="font-medium">{challengeLabels.join(', ')}</p>
                     </div>
-                  </div>
-                )}
+                  )}
+                  {data.customChallenges && (
+                    <div>
+                      <p className="text-muted-foreground">Additional Details</p>
+                      <p className="font-medium">{data.customChallenges}</p>
+                    </div>
+                  )}
+                  {data.hasPrerequisites !== undefined && (
+                    <div>
+                      <p className="text-muted-foreground">Prerequisites</p>
+                      <p className="font-medium">
+                        {data.hasPrerequisites ? 'Yes' : 'No'}
+                        {data.hasPrerequisites && data.customPrerequisites && ` - ${data.customPrerequisites}`}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* When and How Often */}
+            <Card className="border-2">
+              <CardContent className="p-4 space-y-3">
+                <h4 className="font-semibold text-primary">When and How Often</h4>
+                <div className="space-y-2 text-sm">
+                  {data.startDate && (
+                    <div>
+                      <p className="text-muted-foreground">Starts</p>
+                      <p className="font-medium">{new Date(data.startDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {data.endDate && (
+                    <div>
+                      <p className="text-muted-foreground">Ends</p>
+                      <p className="font-medium">{new Date(data.endDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {frequencyLabel && (
+                    <div>
+                      <p className="text-muted-foreground">Frequency</p>
+                      <p className="font-medium">{frequencyLabel}</p>
+                    </div>
+                  )}
+                  {data.selectedDays && data.selectedDays.length > 0 && (
+                    <div>
+                      <p className="text-muted-foreground">Days</p>
+                      <p className="font-medium">{data.selectedDays.join(', ')}</p>
+                    </div>
+                  )}
+                  {(data.timeOfDay || data.customTime) && (
+                    <div>
+                      <p className="text-muted-foreground">Time</p>
+                      <p className="font-medium">{data.customTime || data.timeOfDay}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* The Team */}
+            <Card className="border-2">
+              <CardContent className="p-4 space-y-3">
+                <h4 className="font-semibold text-primary">The Team</h4>
+                <div className="space-y-2 text-sm">
+                  {supportContextLabel && (
+                    <div>
+                      <p className="text-muted-foreground">Working</p>
+                      <p className="font-medium">{supportContextLabel}</p>
+                    </div>
+                  )}
+                  {data.supportContext !== 'alone' && data.primarySupporterName && (
+                    <div>
+                      <p className="text-muted-foreground">Primary Supporter</p>
+                      <p className="font-medium">
+                        {data.primarySupporterName}
+                        {primarySupporterRoleLabel && ` (${primarySupporterRoleLabel})`}
+                      </p>
+                    </div>
+                  )}
+                  {data.selectedSupporters && data.selectedSupporters.length > 0 && (
+                    <div>
+                      <p className="text-muted-foreground">Additional Supporters</p>
+                      <p className="font-medium">{data.selectedSupporters.length} selected</p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
