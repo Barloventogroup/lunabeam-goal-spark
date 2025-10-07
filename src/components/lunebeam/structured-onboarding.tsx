@@ -99,7 +99,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const { completeOnboarding, setProfile } = useStore();
 
   const getTotalSteps = () => {
-    return 6;
+    return 5;
   };
 
   const handleNext = () => {
@@ -426,15 +426,6 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
               <p className="text-sm text-black">Choose up to 2 things that make activities harder</p>
             </div>
           )}
-          
-          {currentStep === 6 && (
-            <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">
-                {data.role === 'parent' ? "One small thing they'd like to try" : "One small thing you'd like to try"}
-              </h2>
-              <p className="text-sm text-black">In the next 2 weeks (optional, 120 characters)</p>
-            </div>
-          )}
         </div>
       </div>
       
@@ -678,38 +669,6 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
                   {barrier}
                 </Button>
               ))}
-            </div>
-          )}
-
-          {/* Step 6: Goal Seed */}
-          {currentStep === 6 && (
-            <div className="space-y-4">
-              <Textarea
-                value={data.goalSeed}
-                onChange={(e) => setData(prev => ({ ...prev, goalSeed: e.target.value }))}
-                placeholder={data.role === 'parent' ? "What would they like to try?" : "What would you like to try?"}
-                maxLength={120}
-                rows={3}
-              />
-              <div className="text-xs text-foreground-soft text-center">
-                {data.goalSeed.length}/120 characters
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-center">Need ideas?</p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {GOAL_HELPERS.map(helper => (
-                    <Button
-                      key={helper}
-                      variant="ghost"
-                      onClick={() => setData(prev => ({ ...prev, goalSeed: helper }))}
-                      className="text-sm h-auto py-2 px-3 border-0"
-                      style={{ backgroundColor: '#E0E0E0' }}
-                    >
-                      {helper}
-                    </Button>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
         </div>
