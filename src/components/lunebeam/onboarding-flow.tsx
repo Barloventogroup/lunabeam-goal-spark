@@ -80,9 +80,6 @@ export function OnboardingFlow() {
           
           <CardContent className="p-6 h-full flex flex-col justify-center text-center">
             <div className="flex-1 flex flex-col justify-center space-y-6">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto">
-                <span className="text-white text-xl">{isParent ? '👨‍👩‍👧‍👦' : '🙋‍♂️'}</span>
-              </div>
               <div>
                 <h1 className="text-xl font-medium text-black mb-4">
                   {isParent ? 'Perfect! You\'ll be set as the Admin.' : 'Great! Let\'s personalize your experience.'}
