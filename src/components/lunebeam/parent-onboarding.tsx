@@ -72,6 +72,7 @@ export function ParentOnboarding({
   const [otherStrength, setOtherStrength] = useState('');
   const [showProfile, setShowProfile] = useState(false);
   const [generatedProfile, setGeneratedProfile] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
   const {
     completeOnboarding,
     setProfile
@@ -137,64 +138,44 @@ export function ParentOnboarding({
     }
     return array;
   };
-  const generateProfile = () => {
-    const name = data.preferredName || 'The person you are helping';
+  const generateProfile = async () => {
+    const name = data.preferredName || 'This individual';
     const pronoun = getDisplayPronouns();
-    const possessive = getPossessivePronouns();
     
-    // Helper function to capitalize first letter
-    const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+    setIsGenerating(true);
     
-    // Helper functions to convert slider values to text
-    const getEnvironmentText = (value: number) => {
-      if (value < 33) return 'quiet';
-      if (value > 66) return 'lively';
-      return 'moderately active';
-    };
-    
-    const getActivityText = (value: number) => {
-      if (value < 33) return 'screen-based';
-      if (value > 66) return 'hands-on';
-      return 'mixed';
-    };
-    
-    const getSocialText = (value: number) => {
-      if (value < 33) return 'solo';
-      if (value > 66) return 'social';
-      return 'flexible';
-    };
-    
-    const getAgeDescription = (age: string) => {
-      switch(age) {
-        case '5-12': return 'As a child';
-        case '13-17': return 'As a teenager';
-        case '18-25': return 'As a young adult';
-        case '26-40': return 'As an adult';
-        case '41-60': return 'In their middle years';
-        case '60+': return 'As a senior';
-        default: return '';
+    try {
+      const { data: summaryData, error } = await supabase.functions.invoke('generate-profile-summary', {
+        body: {
+          name,
+          pronouns: pronoun,
+          age: data.age,
+          strengths: data.strengths,
+          interests: data.interests,
+          workStyle: data.workStyle,
+          nextTwoWeeks: data.nextTwoWeeks,
+          sharingSupport: data.sharingSupport
+        }
+      });
+
+      if (error) {
+        console.error('Error generating profile:', error);
+        toast({
+          title: "Using basic summary",
+          description: "AI profile generation unavailable, showing simple overview.",
+          variant: "default"
+        });
+        setGeneratedProfile(`${name} is focusing on building their strengths and pursuing their interests. They're working on goals that matter to them.`);
+      } else {
+        setGeneratedProfile(summaryData.summary);
       }
-    };
-    
-    let summary = `${name} `;
-    if (data.strengths.length > 0) {
-      summary += `shines at being ${data.strengths.slice(0, 3).join(', ')}. `;
+    } catch (error) {
+      console.error('Failed to generate profile:', error);
+      setGeneratedProfile(`${name} is focusing on building their strengths and pursuing their interests. They're working on goals that matter to them.`);
+    } finally {
+      setIsGenerating(false);
+      setShowProfile(true);
     }
-    if (data.interests.length > 0) {
-      summary += `${capitalize(pronoun)} ${pronoun === 'they' ? 'are' : 'is'} drawn to ${data.interests.slice(0, 3).join(', ')}. `;
-    }
-    if (data.age && data.age !== 'Prefer not to say') {
-      summary += `${getAgeDescription(data.age)}, `;
-      summary += `${pronoun} ${pronoun === 'they' ? 'prefer' : 'prefers'} ${getEnvironmentText(data.workStyle.environment)} spaces and ${getActivityText(data.workStyle.activity)} activities. `;
-    } else {
-      summary += `${capitalize(pronoun)} ${pronoun === 'they' ? 'prefer' : 'prefers'} ${getEnvironmentText(data.workStyle.environment)} spaces and ${getActivityText(data.workStyle.activity)} activities. `;
-    }
-    summary += `${capitalize(pronoun)} ${pronoun === 'they' ? 'work' : 'works'} best in ${getSocialText(data.workStyle.socialPreference)} settings. `;
-    
-    const sharing = data.sharingSupport === 'private' ? 'keeping things private' : data.sharingSupport === 'summary' ? 'sharing summaries with supporters' : 'sharing details with supporters';
-    summary += `${capitalize(pronoun)} ${pronoun === 'they' ? 'prefer' : 'prefers'} ${sharing}.`;
-    setGeneratedProfile(summary);
-    setShowProfile(true);
   };
   const handleComplete = async () => {
     if (isCreating) {
@@ -580,8 +561,8 @@ export function ParentOnboarding({
         <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
         <div className="flex items-center gap-3">
           <BackButton onClick={handleBack} variant="text" />
-          <Button onClick={handleNext}>
-            {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
+          <Button onClick={handleNext} disabled={isGenerating}>
+            {isGenerating ? 'Generating Profile...' : currentStep === totalSteps ? 'Create Profile' : 'Continue'}
           </Button>
         </div>
       </div>

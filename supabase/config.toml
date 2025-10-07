@@ -92,6 +92,9 @@ verify_jwt = true
 [functions.schedule-adjustment]
 verify_jwt = true
 
+[functions.generate-profile-summary]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 inspector_port = 8083
