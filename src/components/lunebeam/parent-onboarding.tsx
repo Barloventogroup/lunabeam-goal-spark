@@ -312,8 +312,8 @@ export function ParentOnboarding({
       
       {/* BODY - 43.75vh */}
       <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6 flex items-center justify-center">
-        <div className="inline-block bg-white/90 dark:bg-white/10 backdrop-blur-sm px-6 py-4 rounded-full shadow-glow border border-white/20">
-          <p className="text-sm text-foreground/90 leading-relaxed">
+        <div className="bg-white rounded-lg p-8 shadow-md">
+          <p className="text-foreground leading-relaxed">
             {generatedProfile}
           </p>
         </div>
