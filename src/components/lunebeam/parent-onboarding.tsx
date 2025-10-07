@@ -349,9 +349,9 @@ export function ParentOnboarding({
               </p>
             </div>}
           {currentStep === 6 && <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">Next Two Weeks</h2>
+              <h2 className="text-3xl font-semibold">Sharing and Support</h2>
               <p className="text-foreground-soft">
-                What's one small step {data.preferredName || 'they'} can take in the next two weeks?
+                How would you like to share {data.preferredName || 'their'} progress with supporters?
               </p>
             </div>}
         </div>
@@ -489,10 +489,38 @@ export function ParentOnboarding({
                 />
               </div>
             </div>}
-          {currentStep === 6 && <Textarea placeholder="Next small step" value={data.nextTwoWeeks} onChange={e => setData({
-              ...data,
-              nextTwoWeeks: e.target.value
-            })} />}
+          {currentStep === 6 && <RadioGroup 
+              defaultValue={data.sharingSupport} 
+              onValueChange={(value) => setData({
+                ...data, 
+                sharingSupport: value as 'private' | 'summary' | 'details'
+              })}
+              className="space-y-4"
+            >
+              <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-white/50 transition-colors">
+                <RadioGroupItem value="private" id="sharing-private" className="mt-1" />
+                <Label htmlFor="sharing-private" className="cursor-pointer flex-1">
+                  <div className="font-medium">Keep it private</div>
+                  <div className="text-sm text-muted-foreground">Only you can see progress</div>
+                </Label>
+              </div>
+              
+              <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-white/50 transition-colors">
+                <RadioGroupItem value="summary" id="sharing-summary" className="mt-1" />
+                <Label htmlFor="sharing-summary" className="cursor-pointer flex-1">
+                  <div className="font-medium">Share summaries</div>
+                  <div className="text-sm text-muted-foreground">Supporters see high-level updates</div>
+                </Label>
+              </div>
+              
+              <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-white/50 transition-colors">
+                <RadioGroupItem value="details" id="sharing-details" className="mt-1" />
+                <Label htmlFor="sharing-details" className="cursor-pointer flex-1">
+                  <div className="font-medium">Share details</div>
+                  <div className="text-sm text-muted-foreground">Supporters see detailed progress</div>
+                </Label>
+              </div>
+            </RadioGroup>}
         </div>
       </div>
       
