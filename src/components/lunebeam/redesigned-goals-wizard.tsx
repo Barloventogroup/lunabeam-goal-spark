@@ -1880,6 +1880,28 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
 
+  // Get current section information based on step and role
+  const getStepSection = () => {
+    if (actuallySupportsAnyone) {
+      // Supporter flow
+      if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
+      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenges', index: 2, total: 5 };
+      if (currentStep === 6) return { label: 'When and How Often', index: 3, total: 5 };
+      if (currentStep === 7) return { label: 'The Team', index: 4, total: 5 };
+      if (currentStep! >= 8) return { label: 'Your First Steps', index: 5, total: 5 };
+    } else {
+      // Non-supporter flow
+      if (currentStep! >= 1 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
+      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenges', index: 2, total: 5 };
+      if (currentStep === 6) return { label: 'When and How Often', index: 3, total: 5 };
+      if (currentStep === 7) return { label: 'The Team', index: 4, total: 5 };
+      if (currentStep === 8) return { label: 'Your First Steps', index: 5, total: 5 };
+    }
+    return { label: '', index: 0, total: 5 };
+  };
+
+  const section = getStepSection();
+
   // Show loading state while determining initial step
   if (currentStep === null) {
     return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
@@ -1898,9 +1920,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold">Goals Wizard</h1>
+            <h1 className="text-xl font-bold">{section.label}</h1>
             <p className="text-sm text-muted-foreground">
-              Step {currentStepDisplay} of {totalSteps}
+              Section {section.index} of {section.total}
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={onCancel}>
@@ -1911,7 +1933,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         {/* Progress Bar */}
         <div className="w-full bg-muted rounded-full h-2">
           <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{
-          width: `${currentStepDisplay / totalSteps * 100}%`
+          width: `${section.index / section.total * 100}%`
         }} />
         </div>
         
