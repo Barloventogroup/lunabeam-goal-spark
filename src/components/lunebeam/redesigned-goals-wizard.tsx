@@ -1930,14 +1930,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           )}
 
           {/* Call-to-Action */}
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setCurrentStep(currentStep - 1)} className="flex-1" disabled={loading}>
-              Review & Edit
-            </Button>
-            <Button onClick={handleSubmit} disabled={loading} className="flex-1">
-              Activate Plan
-            </Button>
-          </div>
+              <div className="flex gap-3">
+                <Button onClick={handleSubmit} disabled={loading} className="w-full">
+                  Activate Plan
+                </Button>
+              </div>
         </CardContent>
       </Card>
     </>;
