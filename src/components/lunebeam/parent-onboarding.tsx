@@ -45,7 +45,7 @@ export function ParentOnboarding({
   onExit,
   onBack
 }: ParentOnboardingProps) {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(2);
   const [isCreating, setIsCreating] = useState(false);
   const {
     toast
@@ -73,7 +73,7 @@ export function ParentOnboarding({
     completeOnboarding,
     setProfile
   } = useStore();
-  const totalSteps = 9;
+  const totalSteps = 8;
 
   // Get pronouns for display
   const getDisplayPronouns = () => {
@@ -117,9 +117,9 @@ export function ParentOnboarding({
     if (showProfile) {
       setShowProfile(false);
       setCurrentStep(totalSteps);
-    } else if (currentStep > 1) {
+    } else if (currentStep > 2) {
       setCurrentStep(currentStep - 1);
-    } else if (currentStep === 1 && onBack) {
+    } else if (currentStep === 2 && onBack) {
       onBack();
     }
   };
@@ -319,12 +319,6 @@ export function ParentOnboarding({
       {/* HEADER - 50vh */}
       <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
         <div className="max-w-2xl mx-auto w-full">
-          {currentStep === 1 && <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">What should I call you?</h2>
-              <p className="text-foreground-soft">
-                This will be the name on your admin account.
-              </p>
-            </div>}
           {currentStep === 2 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Who are you helping?</h2>
               <p className="text-foreground-soft">
@@ -383,10 +377,6 @@ export function ParentOnboarding({
       {/* BODY - 43.75vh */}
       <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto">
-          {currentStep === 1 && <Input type="text" placeholder="Your name" value={data.adminName} onChange={e => setData({
-              ...data,
-              adminName: e.target.value
-            })} />}
           {currentStep === 3 && <RadioGroup defaultValue={data.pronouns} onValueChange={value => setData({
               ...data,
               pronouns: value
