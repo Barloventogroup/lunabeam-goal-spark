@@ -83,6 +83,15 @@ verify_jwt = false
 [functions.validate-claim-token]
 verify_jwt = false
 
+[functions.send-notification-email]
+verify_jwt = false
+
+[functions.step-assistance]
+verify_jwt = true
+
+[functions.schedule-adjustment]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 inspector_port = 8083

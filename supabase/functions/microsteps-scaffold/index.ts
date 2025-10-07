@@ -7,6 +7,85 @@ const corsHeaders = {
 
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
+// ============= SAFETY VIOLATION NOTIFICATION =============
+async function notifySafetyViolation(
+  supabase: any, 
+  userId: string, 
+  goalTitle: string, 
+  layer: string, 
+  reason: string
+) {
+  try {
+    // Get user profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name, email, is_self_registered')
+      .eq('user_id', userId)
+      .single();
+    
+    // Get supporters (if any)
+    const { data: supporters } = await supabase
+      .from('supporters')
+      .select('supporter_id, is_admin')
+      .eq('individual_id', userId)
+      .eq('is_admin', true);
+    
+    // Update log with notification status
+    await supabase
+      .from('safety_violations_log')
+      .update({
+        compliance_notified: true,
+        supporter_notified: supporters && supporters.length > 0,
+        user_email: profile?.email
+      })
+      .eq('user_id', userId)
+      .eq('goal_title', goalTitle)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    
+    // Send in-app notification to supporters
+    if (supporters && supporters.length > 0) {
+      for (const supporter of supporters) {
+        await supabase.from('notifications').insert({
+          user_id: supporter.supporter_id,
+          type: 'safety_violation',
+          title: '⚠️ Safety Alert',
+          message: `${profile?.first_name || 'An individual'} attempted to create a goal that violated safety guidelines. The goal has been blocked.`,
+          data: {
+            individual_id: userId,
+            individual_name: profile?.first_name,
+            goal_title: goalTitle,
+            layer: layer,
+            reason: reason
+          }
+        });
+      }
+    }
+    
+    // Send email to compliance team and supporters
+    try {
+      await supabase.functions.invoke('send-notification-email', {
+        body: {
+          type: 'safety_violation',
+          userId: userId,
+          userName: profile?.first_name || 'Unknown',
+          userEmail: profile?.email || 'No email',
+          goalTitle: goalTitle,
+          layer: layer,
+          reason: reason,
+          supporterIds: supporters?.map(s => s.supporter_id) || []
+        }
+      });
+    } catch (emailError) {
+      console.error('Failed to send safety violation email:', emailError);
+    }
+    
+  } catch (error) {
+    console.error('Error sending safety violation notification:', error);
+    // Don't throw - notification failure shouldn't block the safety response
+  }
+}
+
 interface MicroStepsRequest {
   flow: 'individual' | 'supporter';
   goalTitle: string;
@@ -33,7 +112,7 @@ interface JudgeRequest {
 
 interface JudgeResponse {
   total_score: number;
-  pass_fail: 'PASS' | 'FAIL';
+  pass_fail: 'PASS' | 'FAIL' | 'SAFETY_VIOLATION';
   critique_for_user: string;
   critique_for_retry: string;
   scoring_breakdown: {
@@ -50,6 +129,26 @@ Deno.serve(async (req) => {
 
   try {
     const payload: MicroStepsRequest = await req.json();
+    
+    // Extract user ID from auth header
+    const authHeader = req.headers.get('authorization');
+    let userId: string | null = null;
+    
+    if (authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '');
+        const { createClient } = await import('jsr:@supabase/supabase-js@2');
+        const supabase = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+          { global: { headers: { Authorization: authHeader } } }
+        );
+        const { data: { user } } = await supabase.auth.getUser(token);
+        userId = user?.id || null;
+      } catch (e) {
+        console.error('Error extracting user ID:', e);
+      }
+    }
 
     // Validate inputs
     if (!payload.goalTitle || payload.goalTitle.length > 200) {
@@ -66,12 +165,71 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ============= LAYER 1: FAST KEYWORD REJECTION =============
+    const dangerousKeywords = [
+      'kill', 'suicide', 'self-harm', 'self harm', 'cut myself', 'hurt myself',
+      'trafficking', 'illegal', 'steal', 'theft', 'fraud', 'scam',
+      'cocaine', 'heroin', 'meth', 'methamphetamine', 'weed', 'marijuana', 
+      'sell drugs', 'buy drugs', 'drug deal', 'black market',
+      'hack', 'bypass security', 'break into', 'weapon', 'bomb', 'gun',
+      'sexually explicit', 'porn', 'xxx', 'sex tape',
+      'revenge', 'harm someone', 'hurt someone', 'get back at'
+    ];
+
+    const goalLower = payload.goalTitle.toLowerCase();
+    const motivationLower = (payload.motivation || '').toLowerCase();
+    const combinedInput = `${goalLower} ${motivationLower}`;
+
+    const triggeredKeywords = dangerousKeywords.filter(keyword => 
+      combinedInput.includes(keyword)
+    );
+
+    if (triggeredKeywords.length > 0 && userId) {
+      console.error('⚠️ LAYER 1 SAFETY VIOLATION: Dangerous keywords detected:', triggeredKeywords);
+      
+      const { createClient } = await import('jsr:@supabase/supabase-js@2');
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      
+      // Log to database
+      await supabase.from('safety_violations_log').insert({
+        user_id: userId,
+        violation_layer: 'layer_1_keywords',
+        goal_title: payload.goalTitle,
+        goal_category: payload.category,
+        motivation: payload.motivation,
+        barriers: `${payload.barrier1}, ${payload.barrier2}`,
+        triggered_keywords: triggeredKeywords,
+        violation_reason: `Explicit dangerous keywords: ${triggeredKeywords.join(', ')}`
+      });
+      
+      // Notify compliance & supporter
+      await notifySafetyViolation(supabase, userId, payload.goalTitle, 'layer_1_keywords', triggeredKeywords.join(', '));
+      
+      return new Response(
+        JSON.stringify({ 
+          error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
+          safety_violation: true,
+          no_retry: true
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // GEMINI JUDGE SERVICE: Up to 5 attempts with AI-guided refinement
     
     let microSteps = null;
     let attemptNumber = 1;
     const maxAttempts = 5;
     let retryGuidance = '';
+    
+    const { createClient } = await import('jsr:@supabase/supabase-js@2');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
     
     for (attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber++) {
       console.log(`\n=== ATTEMPT ${attemptNumber}/${maxAttempts} ===`);
@@ -158,6 +316,38 @@ Deno.serve(async (req) => {
         }
 
         const candidateSteps = JSON.parse(toolCall.function.arguments).microSteps;
+        
+        // ============= LAYER 2: SAFETY SIGNAL DETECTION =============
+        const stepsJSON = JSON.stringify(candidateSteps);
+        if (stepsJSON.includes('[SAFETY_VIOLATION_SIGNAL]')) {
+          console.error(`⚠️ LAYER 2 SAFETY VIOLATION detected at attempt ${attemptNumber}`);
+          
+          if (userId) {
+            // Log to database
+            await supabase.from('safety_violations_log').insert({
+              user_id: userId,
+              violation_layer: 'layer_2_generation',
+              goal_title: payload.goalTitle,
+              goal_category: payload.category,
+              motivation: payload.motivation,
+              barriers: `${payload.barrier1}, ${payload.barrier2}`,
+              ai_response: stepsJSON,
+              violation_reason: 'AI model detected nuanced safety violation during generation'
+            });
+            
+            // Notify compliance & supporter
+            await notifySafetyViolation(supabase, userId, payload.goalTitle, 'layer_2_generation', 'Nuanced content violation');
+          }
+          
+          return new Response(
+            JSON.stringify({ 
+              error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
+              safety_violation: true,
+              no_retry: true
+            }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
 
         if (!Array.isArray(candidateSteps) || candidateSteps.length !== 3) {
           console.error(`Attempt ${attemptNumber} - Invalid microSteps format:`, candidateSteps);
@@ -185,6 +375,37 @@ Deno.serve(async (req) => {
               useFallback: true 
             }),
             { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // ============= LAYER 3: JUDGE SAFETY VIOLATION =============
+        if (judgeResult.pass_fail === 'SAFETY_VIOLATION') {
+          console.error('⚠️ LAYER 3 SAFETY VIOLATION flagged by Gemini Judge');
+          
+          if (userId) {
+            // Log to database
+            await supabase.from('safety_violations_log').insert({
+              user_id: userId,
+              violation_layer: 'layer_3_judge',
+              goal_title: payload.goalTitle,
+              goal_category: payload.category,
+              motivation: payload.motivation,
+              barriers: `${payload.barrier1}, ${payload.barrier2}`,
+              ai_response: JSON.stringify(candidateSteps),
+              violation_reason: judgeResult.critique_for_retry
+            });
+            
+            // Notify compliance & supporter
+            await notifySafetyViolation(supabase, userId, payload.goalTitle, 'layer_3_judge', judgeResult.critique_for_retry);
+          }
+          
+          return new Response(
+            JSON.stringify({ 
+              error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
+              safety_violation: true,
+              no_retry: true
+            }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
@@ -247,7 +468,32 @@ Deno.serve(async (req) => {
 });
 
 function buildSystemPrompt(flow: 'individual' | 'supporter'): string {
-  return `You are a highly specialized micro-step generator for neurodivergent individuals. Your task is to generate exactly three, specific, non-judgmental action steps designed to compensate for Executive Function deficits.
+  return `SYSTEM INSTRUCTION: CRITICAL SAFETY AND INTEGRITY AGENT
+
+ROLE: You are the final safety and ethical compliance agent for a self-improvement platform. Your primary objective is to prevent the generation of content related to illegal, harmful, or unethical activities.
+
+FAILURE PROTOCOL (CRITICAL): If any content violates the rules below, you MUST IMMEDIATELY output only: [SAFETY_VIOLATION_SIGNAL]. Do not offer context, explanation, or apology.
+
+RULE 1: ABSOLUTE EXPLICIT CONTENT REFUSAL
+You MUST refuse to generate micro-steps for goals containing explicit references to:
+- Illegal Activities: Human trafficking, theft, fraud, illegal drug production/distribution, or any law violation.
+- Self-Harm/Violence: Suicide, self-mutilation, violence directed at self or others, or instructions for creating weapons.
+- Prohibited Substances: Use, acquisition, or distribution of illegal drugs, non-prescription narcotics, or promotion of tobacco use.
+- Sexually Explicit Content: Any sexually explicit or graphic material.
+
+RULE 2: NUANCE AND SUGGESTIVE LANGUAGE AUDIT
+Analyze the entire context (Goal Action, Motivation, and Barriers) for subtle violations:
+- Code Words & Emojis: Interpret slang, vague terminology, or emojis (🤫, 💰, 💊, 🚬) in the context of harmful goals.
+- Unethical Goals: Any goal related to manipulating or harming others emotionally, financial exploitation, or avoiding core legal/social responsibilities.
+- Vague High-Risk: Goals that demand access to restricted areas, bypassing security, or other dangerous actions.
+
+MANDATORY OUTPUT PROTOCOL:
+- If safe and passes all checks: proceed to generate micro-steps using the framework below.
+- If ANY rule is violated: OUTPUT ONLY: [SAFETY_VIOLATION_SIGNAL]
+
+---
+
+You are a highly specialized micro-step generator for neurodivergent individuals. Your task is to generate exactly three, specific, non-judgmental action steps designed to compensate for Executive Function deficits.
 
 FRAMEWORK RULES:
 1. **Goal**: Reduce cognitive load and friction.

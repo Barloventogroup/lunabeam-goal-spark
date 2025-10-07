@@ -11,12 +11,17 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  type: 'check_in' | 'step_complete' | 'goal_created' | 'goal_assigned' | 'goal_completed' | 'chat_locked';
+  type: 'check_in' | 'step_complete' | 'goal_created' | 'goal_assigned' | 'goal_completed' | 'chat_locked' | 'safety_violation';
   userId: string;
   goalId?: string;
   stepId?: string;
   substepId?: string;
   supporterIds?: string[];
+  userName?: string;
+  userEmail?: string;
+  goalTitle?: string;
+  layer?: string;
+  reason?: string;
 }
 
 serve(async (req) => {
@@ -190,6 +195,59 @@ serve(async (req) => {
             ${goalInfo ? `<p style="margin: 5px 0; color: #6b7280;"><strong>Goal:</strong> ${goalInfo.title}</p>` : ''}
           </div>
           <p>${userName} may need hands-on support to complete this task. Consider checking in with them! 💛</p>
+        `;
+        break;
+
+      case 'safety_violation':
+        const { userName: safetyUserName, userEmail, goalTitle, layer, reason } = req.body as any;
+        subject = `[SAFETY ALERT] Violation detected - ${layer}`;
+        
+        // Email for compliance team
+        const complianceHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #dc2626;">⚠️ Safety Violation Detected</h2>
+            <div style="background: #fef2f2; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #dc2626;">
+              <p><strong>User:</strong> ${safetyUserName || 'Unknown'} (${userEmail || 'No email'})</p>
+              <p><strong>User ID:</strong> ${userId}</p>
+              <p><strong>Layer:</strong> ${layer}</p>
+              <p><strong>Goal Title:</strong> ${goalTitle}</p>
+              <p><strong>Reason:</strong> ${reason}</p>
+              <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+            </div>
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+            <p style="color: #d97706;">This requires manual review. Please check the safety_violations_log table for full details.</p>
+          </div>
+        `;
+        
+        // Send to compliance team
+        const resendApiKey = Deno.env.get('RESEND_API_KEY');
+        const emailResponse = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: 'LunaBeam Safety <safety@lunabeam.app>',
+            to: ['lunabeambeta@gmail.com'],
+            subject: subject,
+            html: complianceHtml
+          })
+        });
+        
+        if (!emailResponse.ok) {
+          console.error('Failed to send compliance email:', await emailResponse.text());
+        }
+        
+        // Send notification to supporters with different message
+        htmlContent = `
+          <h2 style="color: #d97706;">⚠️ Safety Alert</h2>
+          <p><strong>${safetyUserName || userName}</strong> attempted to create a goal that violated safety guidelines.</p>
+          <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #f59e0b;">
+            <p style="margin: 5px 0;"><strong>Goal:</strong> ${goalTitle}</p>
+            <p style="margin: 5px 0; color: #6b7280;">The goal has been blocked automatically by our safety system.</p>
+          </div>
+          <p>Please check in with ${safetyUserName || userName} if you have concerns. 💛</p>
         `;
         break;
     }

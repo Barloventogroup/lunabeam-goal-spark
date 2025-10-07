@@ -414,6 +414,32 @@ Example:
 ]`
         });
 
+        // ============= SAFETY VIOLATION HANDLING =============
+        if (response?.safety_violation || response?.error?.includes('cannot process that request')) {
+          toast({
+            title: "Goal Cannot Be Created",
+            description: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
+            variant: "destructive",
+            duration: 10000,
+          });
+          
+          // Reset the wizard
+          setState({ 
+            step: 1, 
+            goalName: undefined,
+            category: undefined,
+            goal: undefined,
+            purpose: undefined,
+            details: undefined,
+            amount: undefined,
+            timing: undefined,
+            supports: undefined 
+          });
+          
+          setIsCreatingGoal(false);
+          return;
+        }
+
         if (response?.steps && Array.isArray(response.steps)) {
           // Create each step with due dates distributed evenly
           for (let i = 0; i < response.steps.length; i++) {

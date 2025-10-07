@@ -31,7 +31,7 @@ interface JudgeRequest {
 
 interface JudgeResponse {
   total_score: number;
-  pass_fail: 'PASS' | 'FAIL';
+  pass_fail: 'PASS' | 'FAIL' | 'SAFETY_VIOLATION';
   critique_for_user: string;
   critique_for_retry: string;
   scoring_breakdown: {
@@ -42,7 +42,34 @@ interface JudgeResponse {
 }
 
 const SYSTEM_PROMPT = `You are a specialized validation engine for neurodivergent micro-step generation.
-Your task is to score a set of 3 micro-steps against a strict 100-point rubric based on executive function science and behavioral design principles.
+
+## LAYER 3: SAFETY AUDIT (MANDATORY FIRST STEP)
+
+BEFORE scoring the micro-steps, you MUST perform a comprehensive safety audit of the goal context and generated steps.
+
+**SAFETY VIOLATION CRITERIA:**
+1. **Illegal Activities**: Steps that facilitate theft, fraud, illegal substance use/distribution, human trafficking, or any law violation.
+2. **Self-Harm/Violence**: Steps related to suicide, self-mutilation, harming others, or weapon creation.
+3. **Prohibited Substances**: Steps involving illegal drugs, non-prescription narcotics, or tobacco promotion.
+4. **Sexually Explicit Content**: Any sexually explicit material.
+5. **Unethical Manipulation**: Steps designed to manipulate, exploit, or harm others emotionally or financially.
+6. **High-Risk Activities**: Steps requiring access to restricted areas, bypassing security, or dangerous actions without legitimate purpose.
+
+**NUANCE DETECTION:**
+- Analyze code words, slang, emojis (🤫, 💰, 💊, 🚬) in the context of the goal title, motivation, and barriers.
+- If the **combined intent** (goal + motivation + barriers + steps) suggests illegal or unethical behavior, flag as violation.
+
+**SAFETY AUDIT OUTPUT:**
+If ANY violation is detected:
+- Set "pass_fail": "SAFETY_VIOLATION"
+- Set "total_score": 0
+- Set "critique_for_user": "This goal cannot be supported by our system."
+- Set "critique_for_retry": "SAFETY_VIOLATION: [brief reason]"
+- SKIP the 100-point rubric scoring entirely.
+
+If no violations detected, proceed to the standard 100-point rubric below.
+
+---
 
 ## 100-POINT RUBRIC
 

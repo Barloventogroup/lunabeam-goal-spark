@@ -826,6 +826,60 @@ export type Database = {
         }
         Relationships: []
       }
+      safety_violations_log: {
+        Row: {
+          ai_response: string | null
+          barriers: string | null
+          compliance_notified: boolean | null
+          created_at: string
+          goal_category: string | null
+          goal_title: string
+          id: string
+          is_self_registered: boolean | null
+          motivation: string | null
+          supporter_notified: boolean | null
+          triggered_keywords: string[] | null
+          user_email: string | null
+          user_id: string
+          violation_layer: string
+          violation_reason: string | null
+        }
+        Insert: {
+          ai_response?: string | null
+          barriers?: string | null
+          compliance_notified?: boolean | null
+          created_at?: string
+          goal_category?: string | null
+          goal_title: string
+          id?: string
+          is_self_registered?: boolean | null
+          motivation?: string | null
+          supporter_notified?: boolean | null
+          triggered_keywords?: string[] | null
+          user_email?: string | null
+          user_id: string
+          violation_layer: string
+          violation_reason?: string | null
+        }
+        Update: {
+          ai_response?: string | null
+          barriers?: string | null
+          compliance_notified?: boolean | null
+          created_at?: string
+          goal_category?: string | null
+          goal_title?: string
+          id?: string
+          is_self_registered?: boolean | null
+          motivation?: string | null
+          supporter_notified?: boolean | null
+          triggered_keywords?: string[] | null
+          user_email?: string | null
+          user_id?: string
+          violation_layer?: string
+          violation_reason?: string | null
+        }
+        Relationships: []
+      }
       steps: {
         Row: {
           created_at: string
