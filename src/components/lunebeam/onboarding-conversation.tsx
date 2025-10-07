@@ -16,5 +16,5 @@ export function OnboardingConversation({ roleData, onComplete, onExit, onBack }:
   }
   
   // Use regular onboarding for individuals
-  return <StructuredOnboarding onComplete={onComplete} roleData={roleData} onExit={onExit} />;
+  return <StructuredOnboarding onComplete={onComplete} roleData={roleData} onExit={onExit} onBack={onBack} />;
 }
