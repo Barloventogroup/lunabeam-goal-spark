@@ -66,8 +66,8 @@ export function OnboardingFlow() {
   if (showInterstitial) {
     const isParent = roleData.role === 'parent';
     return (
-      <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
-        <Card className="w-full max-w-md shadow-card border-0 relative h-[720px]">
+      <div className="min-h-screen bg-gradient-soft">
+        <Card className="shadow-none border-0 h-screen w-full rounded-none relative">
           {/* Exit button */}
           <Button
             variant="ghost"
@@ -78,8 +78,8 @@ export function OnboardingFlow() {
             <X className="h-4 w-4" />
           </Button>
           
-          <CardContent className="p-6 h-full flex flex-col">
-            <div className="flex-1 flex flex-col justify-center text-center space-y-6">
+          <CardContent className="p-6 h-full flex flex-col justify-center text-center">
+            <div className="flex-1 flex flex-col justify-center space-y-6">
               <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto">
                 <span className="text-white text-xl">{isParent ? '👨‍👩‍👧‍👦' : '🙋‍♂️'}</span>
               </div>
@@ -95,16 +95,13 @@ export function OnboardingFlow() {
                 </p>
               </div>
             </div>
-            
-            <div className="mt-6">
-              <Button
-                onClick={handleInterstitialNext}
-                className="w-full"
-              >
-                Continue
-              </Button>
-            </div>
           </CardContent>
+          
+          <div className="absolute bottom-6 right-6">
+            <Button onClick={handleInterstitialNext}>
+              Continue
+            </Button>
+          </div>
         </Card>
       </div>
     );
@@ -112,8 +109,8 @@ export function OnboardingFlow() {
 
   if (showRoleSelection) {
     return (
-      <div className="min-h-screen p-4 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #E8F0F3 0%, #f0f8fb 100%)' }}>
-        <Card className="w-full max-w-md shadow-card border-0 relative h-[720px]">
+      <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #E8F0F3 0%, #f0f8fb 100%)' }}>
+        <Card className="shadow-none border-0 h-screen w-full rounded-none relative">
           {/* Exit button */}
           <Button
             variant="ghost"
@@ -124,7 +121,7 @@ export function OnboardingFlow() {
             <X className="h-4 w-4" />
           </Button>
           
-          <CardContent className="p-6 h-full flex flex-col">
+          <CardContent className="p-6 h-full flex flex-col overflow-y-auto">
             <div className="flex-1 flex flex-col justify-center">
               <div className="text-center mb-8">
                 <CardTitle className="text-2xl mb-4">Welcome to lunabeam!</CardTitle>
@@ -182,16 +179,15 @@ export function OnboardingFlow() {
                 </div>
               </div>
             </div>
-            
-            <div className="mt-6">
-              <Button 
-                onClick={() => handleRoleSelection(selectedRole)} 
-                className="w-full"
-              >
-                Continue
-              </Button>
-            </div>
           </CardContent>
+          
+          <div className="absolute bottom-6 right-6">
+            <Button 
+              onClick={() => handleRoleSelection(selectedRole)}
+            >
+              Continue
+            </Button>
+          </div>
         </Card>
       </div>
     );

@@ -37,41 +37,27 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
   // Show interstitial screen
   if (showInterstitial) {
     return (
-      <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
-        <div className="max-w-md mx-auto text-center">
-          <h1 className="text-xl font-medium text-black mb-8">
-            The next questions will help me suggest goals and personalize your experience. Ready?
-          </h1>
-          <Button
-            onClick={handleInterstitialNext}
-            className="w-full"
-          >
-            Next
-          </Button>
-        </div>
+      <div className="min-h-screen bg-gradient-soft">
+        <Card className="shadow-none border-0 h-screen w-full rounded-none relative">
+          <CardContent className="p-6 h-full flex flex-col items-center justify-center">
+            <h1 className="text-xl font-medium text-black mb-8 text-center">
+              The next questions will help me suggest goals and personalize your experience. Ready?
+            </h1>
+          </CardContent>
+          <div className="absolute bottom-6 right-6">
+            <Button onClick={handleInterstitialNext}>
+              Next
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-soft p-4">
-      <div className="max-w-md mx-auto py-8">
-        {/* Progress */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-foreground-soft">Step 1 of 2</span>
-            <span className="text-sm text-foreground-soft">50%</span>
-          </div>
-          <div className="w-full bg-border rounded-full h-2">
-            <div 
-              className="bg-gradient-primary h-2 rounded-full transition-all duration-500" 
-              style={{ width: '50%' }}
-            />
-          </div>
-        </div>
-
-        <Card className="p-6 shadow-card border-0">
-          <CardContent className="p-0 space-y-6">
+    <div className="min-h-screen bg-gradient-soft">
+        <Card className="shadow-none border-0 h-screen w-full rounded-none relative">
+          <CardContent className="p-6 h-full flex flex-col overflow-y-auto">
             <div className="text-center">
               <h1 className="text-2xl font-bold mb-2">Welcome to Lunabeam</h1>
               <p className="text-black">
@@ -102,34 +88,39 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
                 </button>
               </div>
 
-              {role === 'parent' && (
-                <div className="space-y-2 mt-4 p-4 bg-muted/30 rounded-lg">
-                  <Label htmlFor="individual-email" className="text-sm font-semibold">
-                    Individual's Email Address
-                  </Label>
-                  <Input
-                    id="individual-email"
-                    type="email"
-                    placeholder="Enter your child's email address"
-                    value={individualEmail}
-                    onChange={(e) => setIndividualEmail(e.target.value)}
-                  />
-                  <p className="text-xs text-foreground-soft">
-                    We'll send an email invitation for them to join Lunebeam.
-                  </p>
-                  <Button
-                    onClick={handleParentContinue}
-                    disabled={!canParentContinue}
-                    className="w-full mt-4"
-                  >
-                    Continue
-                  </Button>
-                </div>
-              )}
             </div>
           </CardContent>
+          
+          {role === 'parent' && (
+            <div className="absolute bottom-6 left-6 right-6 p-4 bg-muted/30 rounded-lg">
+              <Label htmlFor="individual-email" className="text-sm font-semibold">
+                Individual's Email Address
+              </Label>
+              <Input
+                id="individual-email"
+                type="email"
+                placeholder="Enter your child's email address"
+                value={individualEmail}
+                onChange={(e) => setIndividualEmail(e.target.value)}
+                className="mt-2"
+              />
+              <p className="text-xs text-foreground-soft mt-2">
+                We'll send an email invitation for them to join Lunebeam.
+              </p>
+            </div>
+          )}
+          
+          {role === 'parent' && (
+            <div className="absolute bottom-6 right-6">
+              <Button
+                onClick={handleParentContinue}
+                disabled={!canParentContinue}
+              >
+                Continue
+              </Button>
+            </div>
+          )}
         </Card>
-      </div>
     </div>
   );
 }
