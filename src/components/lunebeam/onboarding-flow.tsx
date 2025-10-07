@@ -78,9 +78,6 @@ export function OnboardingFlow() {
   if (showInterstitial) {
     const isParent = roleData.role === 'parent';
     return <div className="min-h-screen flex flex-col">
-        {/* Logo */}
-        <img src={lunabeamIcon} alt="Lunabeam" className="absolute bottom-4 left-4 h-16 w-16" />
-        
         {/* Exit button */}
         <Button variant="ghost" size="sm" onClick={handleExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
           <X className="h-4 w-4" />
@@ -102,19 +99,19 @@ export function OnboardingFlow() {
         <div className="h-[43.75vh] bg-gray-100"></div>
         
         {/* FOOTER - 6.25% */}
-        <div className="h-[6.25vh] bg-white flex items-center justify-end px-6 gap-3">
-          <BackButton onClick={() => setShowInterstitial(false)} variant="text" />
-          <Button onClick={handleInterstitialNext}>
-            Continue
-          </Button>
+        <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3">
+          <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
+          <div className="flex items-center gap-3">
+            <BackButton onClick={() => setShowInterstitial(false)} variant="text" />
+            <Button onClick={handleInterstitialNext}>
+              Continue
+            </Button>
+          </div>
         </div>
       </div>;
   }
   if (showRoleSelection) {
     return <div className="min-h-screen flex flex-col">
-        {/* Logo */}
-        <img src={lunabeamIcon} alt="Lunabeam" className="absolute bottom-4 left-4 h-16 w-16" />
-        
         {/* Exit button */}
         <Button variant="ghost" size="sm" onClick={handleExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
           <X className="h-4 w-4" />
@@ -174,7 +171,8 @@ export function OnboardingFlow() {
         </div>
         
         {/* FOOTER - 6.25% */}
-        <div className="h-[6.25vh] bg-white flex items-center justify-end px-6">
+        <div className="h-[6.25vh] bg-white flex items-center justify-between px-6">
+          <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
           <Button onClick={() => handleRoleSelection(selectedRole)}>
             Continue
           </Button>

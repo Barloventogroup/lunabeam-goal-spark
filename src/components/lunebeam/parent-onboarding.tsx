@@ -307,9 +307,6 @@ export function ParentOnboarding({
     </div>;
   }
   return <div className="min-h-screen flex flex-col">
-      {/* Logo */}
-      <img src={lunabeamIcon} alt="Lunabeam" className="absolute bottom-4 left-4 h-16 w-16" />
-      
       {/* Exit button */}
       <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
         <X className="h-4 w-4" />
@@ -321,51 +318,63 @@ export function ParentOnboarding({
           {currentStep === 1 && <div className="space-y-2">
               <h2 className="text-xl font-semibold">What should I call you?</h2>
               <p className="text-foreground-soft">
-                First, let me know your name so I can greet you properly!
+                This will be the name on your admin account.
               </p>
+              <Input type="text" placeholder="Your name" value={data.adminName} onChange={e => setData({
+                ...data,
+                adminName: e.target.value
+              })} />
             </div>}
-          
-          {currentStep === 2 && <div className="text-center space-y-2">
-              
-              <h2 className="text-xl font-semibold">Let's get to know them</h2>
+          {currentStep === 2 && <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Who are you helping?</h2>
               <p className="text-foreground-soft">
-                A few quick questions help me suggest better goals. Use a nickname if you want - you can change anything later.
+                What name do they prefer?
               </p>
+              <Input type="text" placeholder="Preferred name" value={data.preferredName} onChange={e => setData({
+                ...data,
+                preferredName: e.target.value
+              })} />
             </div>}
-          
           {currentStep === 3 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">What should we call them?</h2>
+              <h2 className="text-xl font-semibold">Pronouns</h2>
               <p className="text-foreground-soft">
-                This is how we'll address them in the app. Initials or a nickname are okay.
+                How should we refer to {data.preferredName || 'them'}?
               </p>
             </div>}
-
           {currentStep === 4 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">How old are they?</h2>
-            </div>}
-
-          {currentStep === 5 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">What are 2–3 things they're great at?</h2>
-            </div>}
-
-          {currentStep === 6 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">What draws their interest?</h2>
-              <p className="text-foreground-soft">Choose up to 5 areas</p>
-            </div>}
-
-          {currentStep === 7 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">How do they usually like to do things?</h2>
-              <p className="text-foreground-soft">Tap one from each pair</p>
-            </div>}
-
-          {currentStep === 8 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">One small thing they might try in the next two weeks</h2>
-            </div>}
-
-          {currentStep === 9 && <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Sharing and support</h2>
+              <h2 className="text-xl font-semibold">Age</h2>
               <p className="text-foreground-soft">
-                Controls what you see as a supporter. You can change this anytime.
+                How old is {data.preferredName || 'this person'}?
+              </p>
+            </div>}
+          {currentStep === 5 && <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Strengths</h2>
+              <p className="text-foreground-soft">
+                What are {data.preferredName || 'their'} strengths?
+              </p>
+            </div>}
+          {currentStep === 6 && <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Interests</h2>
+              <p className="text-foreground-soft">
+                What does {data.preferredName || 'this person'} enjoy?
+              </p>
+            </div>}
+          {currentStep === 7 && <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Work Style</h2>
+              <p className="text-foreground-soft">
+                How does {data.preferredName || 'this person'} like to work?
+              </p>
+            </div>}
+          {currentStep === 8 && <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Next Two Weeks</h2>
+              <p className="text-foreground-soft">
+                What's one small step {data.preferredName || 'they'} can take in the next two weeks?
+              </p>
+            </div>}
+          {currentStep === 9 && <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Sharing & Support</h2>
+              <p className="text-foreground-soft">
+                How much do you want to share with supporters?
               </p>
             </div>}
         </div>
@@ -374,236 +383,188 @@ export function ParentOnboarding({
       {/* BODY - 43.75vh */}
       <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto">
-          {/* Step 1: Admin Name */}
-          {currentStep === 1 && <div className="space-y-4">
-              <Input value={data.adminName} onChange={e => setData(prev => ({
-            ...prev,
-            adminName: e.target.value
-          }))} placeholder="Your name" className="text-left text-sm" />
+          {currentStep === 3 && <RadioGroup defaultValue={data.pronouns} onValueChange={value => setData({
+              ...data,
+              pronouns: value
+            })} className="space-y-2">
+              {PRONOUNS_OPTIONS.map(option => {
+                const isCustom = option === 'Custom';
+                return <div key={option} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option} id={`pronoun-${option}`} className="cursor-pointer" />
+                    <Label htmlFor={`pronoun-${option}`} className="cursor-pointer">
+                      {isCustom ? <Input type="text" placeholder="Custom pronouns" value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} /> : option}
+                    </Label>
+                  </div>;
+              })}
+            </RadioGroup>}
+          {currentStep === 4 && <RadioGroup defaultValue={data.age} onValueChange={value => setData({
+              ...data,
+              age: value
+            })} className="space-y-2">
+              {AGE_OPTIONS.map(option => <div key={option} className="flex items-center space-x-2">
+                  <RadioGroupItem value={option} id={`age-${option}`} className="cursor-pointer" />
+                  <Label htmlFor={`age-${option}`} className="cursor-pointer">
+                    {option}
+                  </Label>
+                </div>)}
+            </RadioGroup>}
+          {currentStep === 5 && <div className="grid grid-cols-2 gap-2">
+              {STRENGTHS_OPTIONS.map(option => <Badge key={option} variant={data.strengths.includes(option) ? 'primary' : 'secondary'} onClick={() => setData({
+                    ...data,
+                    strengths: toggleSelection(data.strengths, option, 3)
+                  })} className="cursor-pointer">
+                  {option}
+                </Badge>)}
             </div>}
-
-          {/* Step 2: Intro (no inputs) */}
-          {currentStep === 2 && <div className="text-center">
-              {/* No inputs - just the header message */}
+          {currentStep === 6 && <div className="grid grid-cols-2 gap-2">
+              {INTERESTS_OPTIONS.map(option => <Badge key={option} variant={data.interests.includes(option) ? 'primary' : 'secondary'} onClick={() => setData({
+                    ...data,
+                    interests: toggleSelection(data.interests, option, 3)
+                  })} className="cursor-pointer">
+                  {option}
+                </Badge>)}
             </div>}
-
-          {/* Step 3: Name and Pronouns */}
-          {currentStep === 3 && <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium">Preferred name <span className="text-red-500">*</span></Label>
-                <Input value={data.preferredName} onChange={e => setData(prev => ({
-              ...prev,
-              preferredName: e.target.value
-            }))} placeholder="Enter their preferred name" className="mt-1" required />
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium">What are this person's pronouns?</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {PRONOUNS_OPTIONS.map(pronoun => <Button key={pronoun} variant={data.pronouns === pronoun ? "default" : "outline"} onClick={() => setData(prev => ({
-                ...prev,
-                pronouns: pronoun
-              }))} className="text-sm h-auto py-1 px-3">
-                      {pronoun}
-                    </Button>)}
-                </div>
-                {data.pronouns === 'Custom' && <Input value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} placeholder="Enter custom pronouns" className="mt-2" />}
-                <p className="text-xs text-foreground-soft mt-1">
-                  We ask so we can be respectful. You can change this later.
-                </p>
-              </div>
-            </div>}
-
-          {/* Step 4: Age */}
-          {currentStep === 4 && <div className="flex flex-wrap gap-2">
-              {AGE_OPTIONS.map(age => <Button key={age} variant={data.age === age ? "default" : "outline"} onClick={() => setData(prev => ({
-            ...prev,
-            age
-          }))} className="text-sm h-auto py-2 px-3">
-                  {age}
-                </Button>)}
-            </div>}
-
-          {/* Step 5: Strengths */}
-          {currentStep === 5 && <div className="flex flex-wrap gap-2">
-              {STRENGTHS_OPTIONS.map(strength => <Button key={strength} variant={data.strengths.includes(strength) ? "default" : "outline"} onClick={() => setData(prev => ({
-            ...prev,
-            strengths: toggleSelection(prev.strengths, strength, 3)
-          }))} className="text-sm h-auto py-2 px-3" disabled={!data.strengths.includes(strength) && data.strengths.length >= 3}>
-                  {strength}
-                </Button>)}
-            </div>}
-
-          {/* Step 6: Interests */}
-          {currentStep === 6 && <div className="flex flex-wrap gap-2">
-              {INTERESTS_OPTIONS.map(interest => <Button key={interest} variant={data.interests.includes(interest) ? "default" : "outline"} onClick={() => setData(prev => ({
-            ...prev,
-            interests: toggleSelection(prev.interests, interest, 5)
-          }))} className="text-sm h-auto py-2 px-3" disabled={!data.interests.includes(interest) && data.interests.length >= 5}>
-                  {interest}
-                </Button>)}
-            </div>}
-
-          {/* Step 7: Work Style */}
           {currentStep === 7 && <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                <span className="font-medium">Solo</span>
-                <div className="flex gap-1">
-                  <Button variant={data.workStyle.socialPreference === 'solo' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                ...prev,
-                workStyle: {
-                  ...prev.workStyle,
-                  socialPreference: 'solo'
-                }
-              }))}>
-                    Solo
-                  </Button>
-                  <Button variant={data.workStyle.socialPreference === 'with-others' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                ...prev,
-                workStyle: {
-                  ...prev.workStyle,
-                  socialPreference: 'with-others'
-                }
-              }))}>
-                    With others
-                  </Button>
-                </div>
-                <span className="font-medium">With others</span>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                <span className="font-medium">Quiet spaces</span>
-                <div className="flex gap-1">
-                  <Button variant={data.workStyle.environment === 'quiet' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                ...prev,
-                workStyle: {
-                  ...prev.workStyle,
-                  environment: 'quiet'
-                }
-              }))}>
-                    Quiet
-                  </Button>
-                  <Button variant={data.workStyle.environment === 'lively' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                ...prev,
-                workStyle: {
-                  ...prev.workStyle,
-                  environment: 'lively'
-                }
-              }))}>
-                    Lively
-                  </Button>
-                </div>
-                <span className="font-medium">Lively spaces</span>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                <span className="font-medium">Screens</span>
-                <div className="flex gap-1">
-                  <Button variant={data.workStyle.activity === 'screens' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                ...prev,
-                workStyle: {
-                  ...prev.workStyle,
-                  activity: 'screens'
-                }
-              }))}>
-                    Screens
-                  </Button>
-                  <Button variant={data.workStyle.activity === 'hands-on' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                ...prev,
-                workStyle: {
-                  ...prev.workStyle,
-                  activity: 'hands-on'
-                }
-              }))}>
-                    Hands-on
-                  </Button>
-                </div>
-                <span className="font-medium">Hands-on</span>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                <span className="font-medium">Short bursts</span>
-                <div className="flex gap-1">
-                  <Button variant={data.workStyle.duration === 'short-bursts' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                ...prev,
-                workStyle: {
-                  ...prev.workStyle,
-                  duration: 'short-bursts'
-                }
-              }))}>
-                    Short bursts
-                  </Button>
-                  <Button variant={data.workStyle.duration === 'longer-sessions' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
-                ...prev,
-                workStyle: {
-                  ...prev.workStyle,
-                  duration: 'longer-sessions'
-                }
-              }))}>
-                    Longer sessions
-                  </Button>
-                </div>
-                <span className="font-medium">Longer sessions</span>
-              </div>
-            </div>}
-
-          {/* Step 8: Next Two Weeks */}
-          {currentStep === 8 && <div className="space-y-4">
-              <Textarea value={data.nextTwoWeeks} onChange={e => setData(prev => ({
-            ...prev,
-            nextTwoWeeks: e.target.value
-          }))} placeholder="Optional - describe something small they could try" className="mt-2" rows={3} />
               <div>
-                <p className="text-sm font-medium mb-2">Suggestions:</p>
-                <div className="flex flex-wrap gap-2">
-                  {SUGGESTIONS.map(suggestion => <Button key={suggestion} variant="outline" size="sm" onClick={() => setData(prev => ({
-                ...prev,
-                nextTwoWeeks: suggestion
-              }))} className="text-xs">
-                      {suggestion}
-                    </Button>)}
-                </div>
+                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Social Preference
+                </Label>
+                <RadioGroup defaultValue={data.workStyle.socialPreference} onValueChange={value => setData({
+                    ...data,
+                    workStyle: {
+                      ...data.workStyle,
+                      socialPreference: value as 'solo' | 'with-others'
+                    }
+                  })} className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="solo" id="solo" className="cursor-pointer" />
+                    <Label htmlFor="solo" className="cursor-pointer">
+                      Solo
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="with-others" id="with-others" className="cursor-pointer" />
+                    <Label htmlFor="with-others" className="cursor-pointer">
+                      With Others
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div>
+                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Environment
+                </Label>
+                <RadioGroup defaultValue={data.workStyle.environment} onValueChange={value => setData({
+                    ...data,
+                    workStyle: {
+                      ...data.workStyle,
+                      environment: value as 'quiet' | 'lively'
+                    }
+                  })} className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="quiet" id="quiet" className="cursor-pointer" />
+                    <Label htmlFor="quiet" className="cursor-pointer">
+                      Quiet
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="lively" id="lively" className="cursor-pointer" />
+                    <Label htmlFor="lively" className="cursor-pointer">
+                      Lively
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div>
+                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Activity
+                </Label>
+                <RadioGroup defaultValue={data.workStyle.activity} onValueChange={value => setData({
+                    ...data,
+                    workStyle: {
+                      ...data.workStyle,
+                      activity: value as 'screens' | 'hands-on'
+                    }
+                  })} className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="screens" id="screens" className="cursor-pointer" />
+                    <Label htmlFor="screens" className="cursor-pointer">
+                      Screens
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="hands-on" id="hands-on" className="cursor-pointer" />
+                    <Label htmlFor="hands-on" className="cursor-pointer">
+                      Hands-on
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div>
+                <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Duration
+                </Label>
+                <RadioGroup defaultValue={data.workStyle.duration} onValueChange={value => setData({
+                    ...data,
+                    workStyle: {
+                      ...data.workStyle,
+                      duration: value as 'short-bursts' | 'longer-sessions'
+                    }
+                  })} className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="short-bursts" id="short-bursts" className="cursor-pointer" />
+                    <Label htmlFor="short-bursts" className="cursor-pointer">
+                      Short bursts
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="longer-sessions" id="longer-sessions" className="cursor-pointer" />
+                    <Label htmlFor="longer-sessions" className="cursor-pointer">
+                      Longer sessions
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
             </div>}
-
-          {/* Step 9: Sharing and Support */}
-          {currentStep === 9 && <RadioGroup value={data.sharingSupport} onValueChange={value => setData(prev => ({
-          ...prev,
-          sharingSupport: value as any
-        }))}>
-              <div className="space-y-3">
-                <div className="flex items-start space-x-2 p-3 border rounded-lg">
-                  <RadioGroupItem value="private" id="private" className="mt-1" />
-                  <Label htmlFor="private" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Keep private</div>
-                    <div className="text-sm text-foreground-soft">No sharing with supporters</div>
-                  </Label>
-                </div>
-                <div className="flex items-start space-x-2 p-3 border rounded-lg">
-                  <RadioGroupItem value="summary" id="summary" className="mt-1" />
-                  <Label htmlFor="summary" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Share a summary with me</div>
-                    <div className="text-sm text-foreground-soft">Basic progress updates</div>
-                  </Label>
-                </div>
-                <div className="flex items-start space-x-2 p-3 border rounded-lg">
-                  <RadioGroupItem value="details" id="details" className="mt-1" />
-                  <Label htmlFor="details" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Share details with me</div>
-                    <div className="text-sm text-foreground-soft">Detailed progress and insights</div>
-                  </Label>
-                </div>
+          {currentStep === 8 && <Textarea placeholder="Next small step" value={data.nextTwoWeeks} onChange={e => setData({
+              ...data,
+              nextTwoWeeks: e.target.value
+            })} />}
+          {currentStep === 9 && <RadioGroup defaultValue={data.sharingSupport} onValueChange={value => setData({
+              ...data,
+              sharingSupport: value as 'private' | 'summary' | 'details'
+            })} className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="private" id="private" className="cursor-pointer" />
+                <Label htmlFor="private" className="cursor-pointer">
+                  Keep everything private
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="summary" id="summary" className="cursor-pointer" />
+                <Label htmlFor="summary" className="cursor-pointer">
+                  Share summaries with supporters
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="details" id="details" className="cursor-pointer" />
+                <Label htmlFor="details" className="cursor-pointer">
+                  Share details with supporters
+                </Label>
               </div>
             </RadioGroup>}
         </div>
       </div>
       
       {/* FOOTER - 6.25vh */}
-      <div className="h-[6.25vh] bg-white flex items-center justify-end px-6 gap-3">
-        {currentStep >= 1 && <BackButton onClick={handleBack} variant="text" />}
-        <Button onClick={handleNext}>
-          {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
-        </Button>
+      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3">
+        <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
+        <div className="flex items-center gap-3">
+          {currentStep >= 1 && <BackButton onClick={handleBack} variant="text" />}
+          <Button onClick={handleNext}>
+            {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
+          </Button>
+        </div>
       </div>
     </div>;
 }
