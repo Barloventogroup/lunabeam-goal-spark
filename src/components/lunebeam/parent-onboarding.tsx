@@ -320,10 +320,6 @@ export function ParentOnboarding({
               <p className="text-foreground-soft">
                 This will be the name on your admin account.
               </p>
-              <Input type="text" placeholder="Your name" value={data.adminName} onChange={e => setData({
-                ...data,
-                adminName: e.target.value
-              })} />
             </div>}
           {currentStep === 2 && <div className="space-y-2">
               <h2 className="text-xl font-semibold">Who are you helping?</h2>
@@ -383,6 +379,10 @@ export function ParentOnboarding({
       {/* BODY - 43.75vh */}
       <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto">
+          {currentStep === 1 && <Input type="text" placeholder="Your name" value={data.adminName} onChange={e => setData({
+              ...data,
+              adminName: e.target.value
+            })} />}
           {currentStep === 3 && <RadioGroup defaultValue={data.pronouns} onValueChange={value => setData({
               ...data,
               pronouns: value
@@ -560,7 +560,7 @@ export function ParentOnboarding({
       <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3">
         <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
         <div className="flex items-center gap-3">
-          {currentStep >= 1 && <BackButton onClick={handleBack} variant="text" />}
+          {currentStep > 1 && <BackButton onClick={handleBack} variant="text" />}
           <Button onClick={handleNext}>
             {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
           </Button>
