@@ -500,17 +500,20 @@ export function ParentOnboarding({
                 </RadioGroup>
               </div>
             </div>}
-          {currentStep === 3 && <RadioGroup defaultValue={data.age} onValueChange={value => setData({
-              ...data,
-              age: value
-            })} className="space-y-2">
-              {AGE_OPTIONS.map(option => <div key={option} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option} id={`age-${option}`} className="cursor-pointer" />
-                  <Label htmlFor={`age-${option}`} className="cursor-pointer">
-                    {option}
-                  </Label>
-                </div>)}
-            </RadioGroup>}
+          {currentStep === 3 && (
+            <Input
+              value={data.age}
+              onChange={(e) => setData({
+                ...data,
+                age: e.target.value
+              })}
+              placeholder="Their age"
+              className="text-center text-lg w-1/4"
+              type="number"
+              min="1"
+              max="100"
+            />
+          )}
           {currentStep === 4 && (
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
