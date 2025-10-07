@@ -1922,7 +1922,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="flex-1">
             <h1 className="text-xl font-bold">{section.label}</h1>
             <p className="text-sm text-muted-foreground">
-              Section {section.index} of {section.total}
+              Step {section.index} of {section.total}
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={onCancel}>
