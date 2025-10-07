@@ -308,7 +308,7 @@ export function ParentOnboarding({
   }
   return <div className="min-h-screen flex flex-col">
       {/* Logo */}
-      <img src={lunabeamIcon} alt="Lunabeam" className="absolute top-4 left-4 h-16 w-16" />
+      <img src={lunabeamIcon} alt="Lunabeam" className="absolute bottom-4 left-4 h-16 w-16" />
       
       {/* Exit button */}
       <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
