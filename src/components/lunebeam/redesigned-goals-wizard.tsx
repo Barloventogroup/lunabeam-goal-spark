@@ -360,6 +360,7 @@ interface WizardData {
   startDate: Date;
   endDate?: Date;
   frequency: number;
+  selectedDays?: string[]; // Array of selected day codes like ['mon', 'tue', 'wed']
   timeOfDay?: string;
   customTime?: string;
 
@@ -641,8 +642,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         return true;
       // Always can proceed
       case 6:
-        // Scheduling
-        return !!data.frequency && !!data.timeOfDay;
+        // Scheduling - must have selected days, time, and frequency
+        return (data.selectedDays?.length || 0) > 0 && !!data.customTime;
       case 7:
         // Support context validation
         if (data.supportContext === 'alone') return true;
@@ -732,6 +733,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               customChallenges: data.customChallenges,
               prerequisite: data.customPrerequisites,
               startDate: data.startDate,
+              selectedDays: data.selectedDays,
               timeOfDay: data.timeOfDay,
               customTime: data.customTime,
               supportContext: data.supportContext,
@@ -1276,6 +1278,123 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-6">
+        {/* Frequency/Schedule selector */}
+        <div className="space-y-3">
+          <Label>
+            {actuallySupportsAnyone 
+              ? `How often and when will ${data.supportedPersonName || 'they'} perform the action?`
+              : "How often and when will you perform the action?"}
+          </Label>
+          
+          {/* Quick select options */}
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className={cn(
+                "h-auto py-3 flex flex-col items-center",
+                data.selectedDays?.length === 7 && "border-primary bg-primary/5"
+              )}
+              onClick={() => {
+                updateData({ 
+                  selectedDays: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
+                  frequency: 7
+                });
+              }}
+            >
+              <span className="font-semibold">Daily</span>
+              <span className="text-xs text-muted-foreground">Every day</span>
+            </Button>
+            
+            <Button
+              type="button"
+              variant="outline"
+              className={cn(
+                "h-auto py-3 flex flex-col items-center",
+                data.selectedDays?.length === 2 && 
+                data.selectedDays.includes('sat') && 
+                data.selectedDays.includes('sun') && 
+                "border-primary bg-primary/5"
+              )}
+              onClick={() => {
+                updateData({ 
+                  selectedDays: ['sat', 'sun'],
+                  frequency: 2
+                });
+              }}
+            >
+              <span className="font-semibold">Weekends</span>
+              <span className="text-xs text-muted-foreground">Sat & Sun</span>
+            </Button>
+            
+            <Button
+              type="button"
+              variant="outline"
+              className={cn(
+                "h-auto py-3 flex flex-col items-center",
+                data.selectedDays && 
+                data.selectedDays.length > 0 && 
+                data.selectedDays.length !== 7 && 
+                !(data.selectedDays.length === 2 && data.selectedDays.includes('sat') && data.selectedDays.includes('sun')) &&
+                "border-primary bg-primary/5"
+              )}
+            >
+              <span className="font-semibold">Custom</span>
+              <span className="text-xs text-muted-foreground">Pick days</span>
+            </Button>
+          </div>
+          
+          {/* Individual day toggles */}
+          <div className="flex gap-1 justify-between">
+            {[
+              { code: 'mon', label: 'M', full: 'Monday' },
+              { code: 'tue', label: 'T', full: 'Tuesday' },
+              { code: 'wed', label: 'W', full: 'Wednesday' },
+              { code: 'thu', label: 'T', full: 'Thursday' },
+              { code: 'fri', label: 'F', full: 'Friday' },
+              { code: 'sat', label: 'S', full: 'Saturday' },
+              { code: 'sun', label: 'S', full: 'Sunday' },
+            ].map(day => {
+              const isSelected = data.selectedDays?.includes(day.code) || false;
+              return (
+                <Button
+                  key={day.code}
+                  type="button"
+                  variant={isSelected ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "flex-1 h-12 font-semibold",
+                    isSelected && "bg-primary text-primary-foreground"
+                  )}
+                  onClick={() => {
+                    const currentDays = data.selectedDays || [];
+                    const newDays = isSelected
+                      ? currentDays.filter(d => d !== day.code)
+                      : [...currentDays, day.code];
+                    updateData({ 
+                      selectedDays: newDays,
+                      frequency: newDays.length
+                    });
+                  }}
+                  title={day.full}
+                >
+                  {day.label}
+                </Button>
+              );
+            })}
+          </div>
+          
+          {data.selectedDays && data.selectedDays.length > 0 && (
+            <p className="text-sm text-muted-foreground text-center">
+              {data.selectedDays.length === 7 
+                ? "Every day of the week"
+                : data.selectedDays.length === 1
+                ? "Once per week"
+                : `${data.selectedDays.length} times per week`}
+            </p>
+          )}
+        </div>
+        
         {/* Time picker */}
         <div className="space-y-2">
           <Label>

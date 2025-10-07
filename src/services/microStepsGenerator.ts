@@ -12,6 +12,8 @@ interface ActionableVariables {
   motivation: string;
   startTime: string;
   dayOfWeek: string;
+  selectedDays: string[];
+  frequencyPerWeek: number;
   hasPrerequisite: boolean;
   prerequisiteText: string;
   barrier1: string | null;
@@ -29,6 +31,7 @@ interface WizardData {
   goalMotivation?: string;
   customMotivation?: string;
   startDate: Date;
+  selectedDays?: string[];
   customTime?: string;
   hasPrerequisites?: boolean;
   customPrerequisites?: string;
@@ -122,6 +125,8 @@ function translateToActionableVariables(data: WizardData): ActionableVariables {
     motivation: data.customMotivation || data.goalMotivation || 'this goal',
     startTime,
     dayOfWeek,
+    selectedDays: data.selectedDays || [],
+    frequencyPerWeek: data.selectedDays?.length || 7,
     hasPrerequisite: data.hasPrerequisites === true && !!data.customPrerequisites,
     prerequisiteText: data.customPrerequisites || '',
     barrier1: data.challengeAreas?.[0] || null,
