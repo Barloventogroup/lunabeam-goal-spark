@@ -101,7 +101,7 @@ const goalTypes = [{
   description: 'Remember to do something regularly'
 }, {
   id: 'practice',
-  label: 'Leveling Up',
+  label: 'Getting Better',
   description: 'Improve an existing skill'
 }, {
   id: 'new_skill',
