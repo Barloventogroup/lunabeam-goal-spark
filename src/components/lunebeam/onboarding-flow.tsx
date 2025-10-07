@@ -182,5 +182,5 @@ export function OnboardingFlow() {
   return <OnboardingConversation roleData={roleData as {
     role: 'parent' | 'individual';
     isAdmin?: boolean;
-  }} onComplete={handleOnboardingComplete} onExit={handleExit} />;
+  }} onComplete={handleOnboardingComplete} onExit={handleExit} onBack={() => setShowInterstitial(true)} />;
 }

@@ -33,6 +33,7 @@ interface ParentOnboardingData {
 interface ParentOnboardingProps {
   onComplete: () => void;
   onExit: () => Promise<void>;
+  onBack?: () => void;
 }
 const PRONOUNS_OPTIONS = ['she/her', 'he/him', 'they/them', 'she/they', 'he/they', 'name only', 'Prefer not to say', 'Custom'];
 const AGE_OPTIONS = ['13–15', '16–18', '19–22', '23–26', '27+', 'Prefer not to say'];
@@ -41,7 +42,8 @@ const INTERESTS_OPTIONS = ['Animals', 'Art/Design', 'Building/Making', 'Games', 
 const SUGGESTIONS = ['Join a club', 'Cook a new dish', 'Short daily walk', 'Visit the library'];
 export function ParentOnboarding({
   onComplete,
-  onExit
+  onExit,
+  onBack
 }: ParentOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
@@ -117,6 +119,8 @@ export function ParentOnboarding({
       setCurrentStep(totalSteps);
     } else if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+    } else if (currentStep === 1 && onBack) {
+      onBack();
     }
   };
   const handleSkip = () => {
@@ -560,7 +564,7 @@ export function ParentOnboarding({
       <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3">
         <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
         <div className="flex items-center gap-3">
-          {currentStep > 1 && <BackButton onClick={handleBack} variant="text" />}
+          <BackButton onClick={handleBack} variant="text" />
           <Button onClick={handleNext}>
             {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
           </Button>
