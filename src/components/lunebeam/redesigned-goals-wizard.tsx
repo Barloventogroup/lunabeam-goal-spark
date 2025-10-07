@@ -1659,7 +1659,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <Card className="border-2">
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-start gap-3">
-                  <Target className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-muted-foreground">Goal</p>
                     <p className="font-semibold text-lg">{data.goalTitle}</p>
