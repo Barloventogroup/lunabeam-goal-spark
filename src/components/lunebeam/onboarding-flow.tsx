@@ -121,7 +121,7 @@ export function OnboardingFlow() {
         <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
           <div className="max-w-2xl mx-auto w-full">
             <div className="text-left space-y-2">
-              <CardTitle className="text-2xl">Welcome to Lunabeam!</CardTitle>
+              <CardTitle className="text-3xl">Welcome to Lunabeam!</CardTitle>
               <p className="text-foreground">Who are you creating this account for?</p>
             </div>
           </div>
