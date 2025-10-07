@@ -269,7 +269,7 @@ const INDIVIDUAL_FLOW_TEXT = {
     }
   },
   step6: {
-    subtitle: ""
+    subtitle: "start building the plan to crush this goal"
   },
   step7: {
     subtitle: "(It's great to have allies!)"
