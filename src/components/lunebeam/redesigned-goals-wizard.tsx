@@ -1760,10 +1760,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
     };
 
+    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
+
     return <>
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardHeader className="text-center pb-3">
-          <CardTitle className="text-xl">Commitment & Activation</CardTitle>
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl">Commitment & Activation</CardTitle>
+          <p className="text-muted-foreground">{text.confirm.subtitle}</p>
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
           {/* Goal Summary in 2-column grid */}
