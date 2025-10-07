@@ -761,8 +761,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           '💣', '🔫', '🔪', '💥', '💊', '💉', '🚬', '🧨', '⚔️', '🗡️'
         ];
 
-        const combinedInput = `${data.goalTitle || ''} ${buildGoalDescription()}`.toLowerCase();
-        const triggeredKeywords = dangerousKeywords.filter(kw => combinedInput.includes(kw));
+        // Only check the raw goal title, not the generated description (which may contain false positives)
+        const titleOnly = (data.goalTitle || '').toLowerCase();
+        const triggeredKeywords = dangerousKeywords.filter(kw => titleOnly.includes(kw));
 
         if (triggeredKeywords.length > 0) {
           console.error('⚠️ SAFETY VIOLATION in goal creation:', triggeredKeywords);
