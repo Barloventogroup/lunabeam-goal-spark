@@ -141,6 +141,26 @@ export function ParentOnboarding({
     const name = data.preferredName || 'The person you are helping';
     const pronoun = getDisplayPronouns();
     const possessive = getPossessivePronouns();
+    
+    // Helper functions to convert slider values to text
+    const getEnvironmentText = (value: number) => {
+      if (value < 33) return 'quiet';
+      if (value > 66) return 'lively';
+      return 'moderately active';
+    };
+    
+    const getActivityText = (value: number) => {
+      if (value < 33) return 'screen-based';
+      if (value > 66) return 'hands-on';
+      return 'mixed';
+    };
+    
+    const getSocialText = (value: number) => {
+      if (value < 33) return 'solo';
+      if (value > 66) return 'social';
+      return 'flexible';
+    };
+    
     let summary = `${name} `;
     if (data.strengths.length > 0) {
       summary += `shines at being ${data.strengths.slice(0, 3).join(', ')}. `;
@@ -153,10 +173,9 @@ export function ParentOnboarding({
     } else {
       summary += `${pronoun === 'they' ? 'They' : pronoun} `;
     }
-    summary += `${pronoun === 'they' ? 'prefer' : 'prefers'} ${data.workStyle.environment} spaces and ${data.workStyle.activity} activities. `;
-    if (data.nextTwoWeeks) {
-      summary += `${possessive} next small step: ${data.nextTwoWeeks}. `;
-    }
+    summary += `${pronoun === 'they' ? 'prefer' : 'prefers'} ${getEnvironmentText(data.workStyle.environment)} spaces and ${getActivityText(data.workStyle.activity)} activities. `;
+    summary += `${pronoun === 'they' ? 'They work' : `${pronoun} works`} best in ${getSocialText(data.workStyle.socialPreference)} settings. `;
+    
     const sharing = data.sharingSupport === 'private' ? 'keeping things private' : data.sharingSupport === 'summary' ? 'sharing summaries with supporters' : 'sharing details with supporters';
     summary += `${pronoun === 'they' ? 'They prefer' : `${pronoun} prefers`} ${sharing}.`;
     setGeneratedProfile(summary);
