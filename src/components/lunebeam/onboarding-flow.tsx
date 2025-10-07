@@ -168,15 +168,6 @@ export function OnboardingFlow() {
                     </div>
                   </div>
                 </RadioGroup>
-                  
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                  <div className="flex items-start space-x-2">
-                    <div className="text-blue-600 mt-0.5">💡</div>
-                    <div>
-                      <p className="text-xs text-blue-800 font-medium">Admin = person who manages the account and can invite others</p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </CardContent>
