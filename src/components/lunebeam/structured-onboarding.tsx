@@ -105,7 +105,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const { completeOnboarding, setProfile } = useStore();
 
   const getTotalSteps = () => {
-    return 5;
+    return 6;
   };
 
   const handleNext = () => {
@@ -419,6 +419,15 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
                 {data.role === 'parent' ? "What gets in their way most?" : "What gets in your way most?"}
               </h2>
               <p className="text-sm text-black">Choose up to 2 things that make activities harder</p>
+            </div>
+          )}
+          
+          {currentStep === 6 && (
+            <div className="space-y-2">
+              <h2 className="text-3xl font-semibold">Sharing and Support</h2>
+              <p className="text-foreground-soft">
+                How would you like to share your progress with supporters?
+              </p>
             </div>
           )}
         </div>
@@ -738,6 +747,56 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
                     ))}
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 6: Sharing and Support */}
+          {currentStep === 6 && (
+            <div className="space-y-3">
+              <div 
+                onClick={() => setData(prev => ({
+                  ...prev,
+                  sharingPrefs: { ...prev.sharingPrefs, shareScope: 'private' }
+                }))}
+                className={`cursor-pointer p-4 rounded-full border-2 transition-all ${
+                  data.sharingPrefs.shareScope === 'private' 
+                    ? 'border-primary bg-white' 
+                    : 'border-border bg-white'
+                }`}
+              >
+                <div className="font-medium">Keep it private</div>
+                <div className="text-sm text-muted-foreground">Only you can see progress</div>
+              </div>
+              
+              <div 
+                onClick={() => setData(prev => ({
+                  ...prev,
+                  sharingPrefs: { ...prev.sharingPrefs, shareScope: 'summary' }
+                }))}
+                className={`cursor-pointer p-4 rounded-full border-2 transition-all ${
+                  data.sharingPrefs.shareScope === 'summary' 
+                    ? 'border-primary bg-white' 
+                    : 'border-border bg-white'
+                }`}
+              >
+                <div className="font-medium">Share summaries</div>
+                <div className="text-sm text-muted-foreground">Supporters see high-level updates</div>
+              </div>
+              
+              <div 
+                onClick={() => setData(prev => ({
+                  ...prev,
+                  sharingPrefs: { ...prev.sharingPrefs, shareScope: 'details' }
+                }))}
+                className={`cursor-pointer p-4 rounded-full border-2 transition-all ${
+                  data.sharingPrefs.shareScope === 'details' 
+                    ? 'border-primary bg-white' 
+                    : 'border-border bg-white'
+                }`}
+              >
+                <div className="font-medium">Share details</div>
+                <div className="text-sm text-muted-foreground">Supporters see detailed progress</div>
               </div>
             </div>
           )}
