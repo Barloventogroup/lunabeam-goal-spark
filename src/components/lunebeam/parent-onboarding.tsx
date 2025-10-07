@@ -544,6 +544,7 @@ export function ParentOnboarding({
                   disabled={(date) =>
                     date > new Date() || date < new Date("1900-01-01")
                   }
+                  showYearPicker
                   initialFocus
                   className={cn("p-3 pointer-events-auto")}
                 />
