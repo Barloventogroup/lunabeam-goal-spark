@@ -1748,188 +1748,186 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const frequencyLabel = frequencies.find(f => f.value === data.frequency)?.label;
     const supportContextLabel = supportContexts.find(s => s.id === data.supportContext)?.label;
     const primarySupporterRoleLabel = data.primarySupporterRole ? allyRoles.find(r => r.value === data.primarySupporterRole)?.title : null;
+    
+    // Abbreviate days for compact display
+    const dayAbbreviations: Record<string, string> = {
+      'Monday': 'Mon', 'Tuesday': 'Tue', 'Wednesday': 'Wed',
+      'Thursday': 'Thu', 'Friday': 'Fri', 'Saturday': 'Sat', 'Sunday': 'Sun'
+    };
+    const abbreviatedDays = data.selectedDays?.map(d => dayAbbreviations[d] || d).join(', ');
+    
+    // Truncate long text
+    const truncate = (text: string | undefined, maxLen: number) => {
+      if (!text) return text;
+      return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
+    };
 
     return <>
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl">Commitment & Activation</CardTitle>
+        <CardHeader className="text-center pb-3">
+          <CardTitle className="text-xl">Commitment & Activation</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Section 1: Goal Summary in 4 Groups */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
+        <CardContent className="space-y-4 pt-0">
+          {/* Goal Summary in 2-column grid */}
+          <div className="space-y-2">
+            <h3 className="text-base font-semibold flex items-center gap-2">
               <span>✨</span>
-              <span>This is the Goal We Built Together</span>
+              <span>Goal Summary</span>
             </h3>
             
-            {/* The Goal */}
-            <Card className="border-2">
-              <CardContent className="p-4 space-y-3">
-                <h4 className="font-semibold text-primary">The Goal</h4>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Goal</p>
-                    <p className="font-semibold">{data.goalTitle}</p>
+            <Card>
+              <CardContent className="p-3">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* The Goal */}
+                  <div className="space-y-1.5">
+                    <h4 className="text-sm font-semibold text-primary mb-2">The Goal</h4>
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Goal:</span>{' '}
+                      <span className="font-semibold">{data.goalTitle}</span>
+                    </p>
+                    {categoryLabel && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Category:</span>{' '}
+                        <span className="font-medium">{categoryLabel}</span>
+                      </p>
+                    )}
+                    {motivationLabel && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Why:</span>{' '}
+                        <span className="font-medium">{truncate(motivationLabel, 40)}</span>
+                      </p>
+                    )}
+                    {goalTypeLabel && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Type:</span>{' '}
+                        <span className="font-medium">{goalTypeLabel}</span>
+                      </p>
+                    )}
                   </div>
-                  {categoryLabel && (
-                    <div>
-                      <p className="text-muted-foreground">Category</p>
-                      <p className="font-medium">{categoryLabel}</p>
-                    </div>
-                  )}
-                  {motivationLabel && (
-                    <div>
-                      <p className="text-muted-foreground">Motivation</p>
-                      <p className="font-medium">{motivationLabel}</p>
-                    </div>
-                  )}
-                  {goalTypeLabel && (
-                    <div>
-                      <p className="text-muted-foreground">Type</p>
-                      <p className="font-medium">{goalTypeLabel}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Challenges */}
-            <Card className="border-2">
-              <CardContent className="p-4 space-y-3">
-                <h4 className="font-semibold text-primary">Challenges</h4>
-                <div className="space-y-2 text-sm">
-                  {challengeLabels && challengeLabels.length > 0 && (
-                    <div>
-                      <p className="text-muted-foreground">Primary Challenges</p>
-                      <p className="font-medium">{challengeLabels.join(', ')}</p>
-                    </div>
-                  )}
-                  {data.customChallenges && (
-                    <div>
-                      <p className="text-muted-foreground">Additional Details</p>
-                      <p className="font-medium">{data.customChallenges}</p>
-                    </div>
-                  )}
-                  {data.hasPrerequisites !== undefined && (
-                    <div>
-                      <p className="text-muted-foreground">Prerequisites</p>
-                      <p className="font-medium">
-                        {data.hasPrerequisites ? 'Yes' : 'No'}
-                        {data.hasPrerequisites && data.customPrerequisites && ` - ${data.customPrerequisites}`}
+                  {/* Challenges */}
+                  <div className="space-y-1.5">
+                    <h4 className="text-sm font-semibold text-primary mb-2">Challenges</h4>
+                    {challengeLabels && challengeLabels.length > 0 && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Primary:</span>{' '}
+                        <span className="font-medium">
+                          {challengeLabels.join(', ')}
+                          {data.challengeAreas && data.challengeAreas.length > 2 && ' +1 more'}
+                        </span>
                       </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* When and How Often */}
-            <Card className="border-2">
-              <CardContent className="p-4 space-y-3">
-                <h4 className="font-semibold text-primary">When and How Often</h4>
-                <div className="space-y-2 text-sm">
-                  {data.startDate && (
-                    <div>
-                      <p className="text-muted-foreground">Starts</p>
-                      <p className="font-medium">{new Date(data.startDate).toLocaleDateString()}</p>
-                    </div>
-                  )}
-                  {data.endDate && (
-                    <div>
-                      <p className="text-muted-foreground">Ends</p>
-                      <p className="font-medium">{new Date(data.endDate).toLocaleDateString()}</p>
-                    </div>
-                  )}
-                  {frequencyLabel && (
-                    <div>
-                      <p className="text-muted-foreground">Frequency</p>
-                      <p className="font-medium">{frequencyLabel}</p>
-                    </div>
-                  )}
-                  {data.selectedDays && data.selectedDays.length > 0 && (
-                    <div>
-                      <p className="text-muted-foreground">Days</p>
-                      <p className="font-medium">{data.selectedDays.join(', ')}</p>
-                    </div>
-                  )}
-                  {(data.timeOfDay || data.customTime) && (
-                    <div>
-                      <p className="text-muted-foreground">Time</p>
-                      <p className="font-medium">{data.customTime || data.timeOfDay}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* The Team */}
-            <Card className="border-2">
-              <CardContent className="p-4 space-y-3">
-                <h4 className="font-semibold text-primary">The Team</h4>
-                <div className="space-y-2 text-sm">
-                  {supportContextLabel && (
-                    <div>
-                      <p className="text-muted-foreground">Working</p>
-                      <p className="font-medium">{supportContextLabel}</p>
-                    </div>
-                  )}
-                  {data.supportContext !== 'alone' && data.primarySupporterName && (
-                    <div>
-                      <p className="text-muted-foreground">Primary Supporter</p>
-                      <p className="font-medium">
-                        {data.primarySupporterName}
-                        {primarySupporterRoleLabel && ` (${primarySupporterRoleLabel})`}
+                    )}
+                    {data.customChallenges && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Details:</span>{' '}
+                        <span className="font-medium">{truncate(data.customChallenges, 50)}</span>
                       </p>
-                    </div>
-                  )}
-                  {data.selectedSupporters && data.selectedSupporters.length > 0 && (
-                    <div>
-                      <p className="text-muted-foreground">Additional Supporters</p>
-                      <p className="font-medium">{data.selectedSupporters.length} selected</p>
-                    </div>
-                  )}
+                    )}
+                    {data.hasPrerequisites !== undefined && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Prerequisites:</span>{' '}
+                        <span className="font-medium">
+                          {data.hasPrerequisites ? 'Yes' : 'No'}
+                          {data.hasPrerequisites && data.customPrerequisites && ` - ${truncate(data.customPrerequisites, 30)}`}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* When and How Often */}
+                  <div className="space-y-1.5">
+                    <h4 className="text-sm font-semibold text-primary mb-2">When & How Often</h4>
+                    {data.startDate && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Starts:</span>{' '}
+                        <span className="font-medium">{new Date(data.startDate).toLocaleDateString()}</span>
+                      </p>
+                    )}
+                    {data.endDate && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Ends:</span>{' '}
+                        <span className="font-medium">{new Date(data.endDate).toLocaleDateString()}</span>
+                      </p>
+                    )}
+                    {frequencyLabel && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Frequency:</span>{' '}
+                        <span className="font-medium">{frequencyLabel}</span>
+                      </p>
+                    )}
+                    {abbreviatedDays && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Days:</span>{' '}
+                        <span className="font-medium">{abbreviatedDays}</span>
+                      </p>
+                    )}
+                    {(data.timeOfDay || data.customTime) && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Time:</span>{' '}
+                        <span className="font-medium">{data.customTime || data.timeOfDay}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* The Team */}
+                  <div className="space-y-1.5">
+                    <h4 className="text-sm font-semibold text-primary mb-2">The Team</h4>
+                    {supportContextLabel && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Working:</span>{' '}
+                        <span className="font-medium">{supportContextLabel}</span>
+                      </p>
+                    )}
+                    {data.supportContext !== 'alone' && data.primarySupporterName && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Supporter:</span>{' '}
+                        <span className="font-medium">
+                          {data.primarySupporterName}
+                          {primarySupporterRoleLabel && ` (${primarySupporterRoleLabel})`}
+                        </span>
+                      </p>
+                    )}
+                    {data.selectedSupporters && data.selectedSupporters.length > 0 && (
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Additional:</span>{' '}
+                        <span className="font-medium">{data.selectedSupporters.length} supporters</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Section 2: The Pre-Action Cue */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
+          {/* Action Cue - Compact */}
+          <div className="space-y-2">
+            <h3 className="text-base font-semibold flex items-center gap-2">
               <span>🚀</span>
-              <span>Your First Step: Get Ready to Act!</span>
+              <span>First Step</span>
             </h3>
             
-            <p className="text-sm text-muted-foreground">
-              We know starting is the hardest part. While the plan is being designed, please complete this 1-minute action cue.
-            </p>
-
-            <div className="p-4 bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200 dark:border-blue-800 rounded-lg">
-              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">➡️ Action Cue:</p>
+            <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-1">➡️ Action Cue:</p>
               <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">{actionCue}</p>
             </div>
-
-            <p className="text-xs text-muted-foreground italic">
-              This sends a signal to your brain that the task is real.
-            </p>
           </div>
 
-          {/* Proposal notice if needed */}
+          {/* Proposal notice */}
           {isProposal && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
+            <div className="p-2.5 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-xs text-blue-800 dark:text-blue-200">
                 💡 This goal will be sent as a proposal since you don't have direct assignment permissions for {data.supportedPersonName}.
               </p>
             </div>
           )}
 
-          {/* Section 3: Call-to-Action */}
-          <div className="flex gap-3 pt-4">
+          {/* Call-to-Action */}
+          <div className="flex gap-3">
             <Button variant="outline" onClick={() => setCurrentStep(currentStep - 1)} className="flex-1" disabled={loading}>
-              Review and Edit Answers
+              Review & Edit
             </Button>
             <Button onClick={handleSubmit} disabled={loading} className="flex-1">
-              Activate Plan & Design My Steps
+              Activate Plan
             </Button>
           </div>
         </CardContent>
