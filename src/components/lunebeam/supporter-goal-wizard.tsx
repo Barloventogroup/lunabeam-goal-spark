@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays, addWeeks } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, ArrowRight, Calendar as CalendarIcon, HandHelping, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar as CalendarIcon, HandHelping, Sparkles, Gift, Check } from 'lucide-react';
 import { goalsService, stepsService } from '@/services/goalsService';
 import { supabase } from '@/integrations/supabase/client';
 import { generateMicroStepsSmart, type MicroStep } from '@/services/microStepsGenerator';
@@ -44,6 +44,8 @@ interface WizardData {
   timeOfDay: string;
   customTime: string;
   supporterRole: string;
+  assignReward?: boolean;
+  pointValue?: number;
 }
 
 // Keep same categories and options from original wizard
@@ -100,7 +102,9 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
     frequency: 3,
     timeOfDay: 'afternoon',
     customTime: '18:00',
-    supporterRole: 'cheerleader'
+    supporterRole: 'cheerleader',
+    assignReward: false,
+    pointValue: 10
   });
   const [supportedPeople, setSupportedPeople] = useState<any[]>([]);
   const [individualSteps, setIndividualSteps] = useState<MicroStep[]>([]);
@@ -155,12 +159,12 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
   };
 
   const nextStep = async () => {
-    // Generate steps when moving from step 8 to step 9
-    if (currentStep === 8) {
+    // Generate steps when moving from step 9 to step 10
+    if (currentStep === 9) {
       await generateBothStepSets();
     }
 
-    if (currentStep < 9) {
+    if (currentStep < 10) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -278,7 +282,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center gap-2 mb-6">
-      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((step) => (
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((step) => (
         <div
           key={step}
           className={cn(
@@ -500,6 +504,92 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
   const renderStep9 = () => (
     <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
+        <CardTitle className="text-2xl">🎁 Rewards (Optional)</CardTitle>
+        <p className="text-muted-foreground">
+          Would you like to offer a reward for completing this goal?
+        </p>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        {/* No Reward Option */}
+        <Card 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2", 
+            !data.assignReward ? "border-primary bg-primary/5" : "border-border"
+          )} 
+          onClick={() => updateData({ assignReward: false })}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              {!data.assignReward && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+              <div className="text-left flex-1">
+                <div className="font-semibold">No reward</div>
+                <div className="text-sm text-muted-foreground">
+                  Just the satisfaction of completing it
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Add Reward Option */}
+        <Card 
+          className={cn(
+            "cursor-pointer hover:shadow-md transition-all border-2", 
+            data.assignReward ? "border-primary bg-primary/5" : "border-border"
+          )} 
+          onClick={() => updateData({ assignReward: true })}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              {data.assignReward && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+              <div className="text-left flex-1">
+                <div className="font-semibold">Add reward</div>
+                <div className="text-sm text-muted-foreground">
+                  Set point value for completing this goal
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Point Value Selection (conditional) */}
+        {data.assignReward && (
+          <div className="space-y-3 pt-4 border-t">
+            <Label>Point value</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 5, label: 'Small', desc: '5 pts' },
+                { value: 10, label: 'Medium', desc: '10 pts' },
+                { value: 20, label: 'Large', desc: '20 pts' }
+              ].map(point => (
+                <Card 
+                  key={point.value}
+                  className={cn(
+                    "cursor-pointer hover:shadow-md transition-all border-2", 
+                    data.pointValue === point.value ? "border-primary bg-primary/5" : "border-border"
+                  )} 
+                  onClick={() => updateData({ pointValue: point.value })}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      {data.pointValue === point.value && <Check className="h-4 w-4 text-primary" />}
+                      <div className="font-semibold text-center">{point.label}</div>
+                      <div className="text-xs text-muted-foreground">{point.desc}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const renderStep10 = () => (
+    <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+      <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">Review and Confirm</CardTitle>
         <p className="text-muted-foreground">
           Both {data.supportedPersonName}'s steps and your support actions
@@ -570,6 +660,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
       case 7: return renderStep7();
       case 8: return renderStep8();
       case 9: return renderStep9();
+      case 10: return renderStep10();
       default: return null;
     }
   };
@@ -582,8 +673,10 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
       case 4: return true;
       case 5: return true;
       case 6: return true;
-      case 7: return data.supporterRole !== '';
-      case 8: return individualSteps.length > 0 && supporterSteps.length > 0 && !generatingSteps;
+      case 7: return true;
+      case 8: return data.supporterRole !== '';
+      case 9: return true;
+      case 10: return individualSteps.length > 0 && supporterSteps.length > 0 && !generatingSteps;
       default: return true;
     }
   };
@@ -611,7 +704,7 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
             </Button>
           )}
 
-          {currentStep < 9 ? (
+          {currentStep < 10 ? (
             <Button onClick={nextStep} disabled={!canProceed() || generatingSteps}>
               {generatingSteps ? (
                 <>
