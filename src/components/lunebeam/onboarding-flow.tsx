@@ -140,10 +140,10 @@ export function OnboardingFlow() {
                 onClick={() => setSelectedRole('parent')}
               >
                 <div className="space-y-1">
-                  <Label className="text-sm font-medium cursor-pointer">
+                  <Label className="text-base font-medium cursor-pointer">
                     I am a parent/caregiver signing up on behalf of someone else
                   </Label>
-                  <p className="text-xs text-foreground-soft">
+                  <p className="text-sm text-foreground-soft">
                     You'll manage the account and can invite others to join the team
                   </p>
                 </div>
@@ -158,10 +158,10 @@ export function OnboardingFlow() {
                 onClick={() => setSelectedRole('individual')}
               >
                 <div className="space-y-1">
-                  <Label className="text-sm font-medium cursor-pointer">
+                  <Label className="text-base font-medium cursor-pointer">
                     I am signing up for myself
                   </Label>
-                  <p className="text-xs text-foreground-soft">
+                  <p className="text-sm text-foreground-soft">
                     You'll have full control of your own account
                   </p>
                 </div>
