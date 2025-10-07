@@ -12,7 +12,7 @@ import { Slider } from '@/components/ui/slider';
 import { useStore } from '@/store/useStore';
 import { AIService } from '@/services/aiService';
 import { X } from 'lucide-react';
-import lunabeamLogo from '@/assets/lunabeam-logo-circles.svg';
+import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
 
 interface OnboardingData {
   role: 'individual' | 'parent' | '';
@@ -752,7 +752,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       
       {/* FOOTER - 6.25% */}
       <div className="h-[6.25vh] bg-white flex items-center justify-between px-6">
-        <img src={lunabeamLogo} alt="Lunabeam" className="h-16" />
+        <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
         <div className="flex items-center gap-3">
           {currentStep >= 1 && <BackButton variant="text" onClick={handleBack} />}
           <Button 
