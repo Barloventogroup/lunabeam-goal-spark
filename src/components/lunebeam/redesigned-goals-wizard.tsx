@@ -1685,7 +1685,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
                 {data.supportContext !== 'alone' && data.primarySupporterName && (
                   <div className="flex items-start gap-3">
-                    <Users className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
                     <div className="space-y-1">
                       <p className="text-sm font-semibold text-muted-foreground">Supporter</p>
                       <p className="font-medium">{data.primarySupporterName}</p>
