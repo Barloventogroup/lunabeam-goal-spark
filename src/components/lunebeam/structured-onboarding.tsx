@@ -500,7 +500,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
               value={data.age}
               onChange={(e) => setData(prev => ({ ...prev, age: e.target.value }))}
               placeholder={data.role === 'parent' ? "Their age" : "Your age"}
-              className="text-center text-lg"
+              className="text-center text-lg w-1/4"
               type="number"
               min="1"
               max="100"
