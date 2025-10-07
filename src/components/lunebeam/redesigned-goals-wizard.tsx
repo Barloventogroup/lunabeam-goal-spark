@@ -864,53 +864,53 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     // Category-specific cues based on barrier type
     const cueTemplates: Record<string, Record<string, string>> = {
       'independent_living': {
-        'initiation': `Go to the area where you'll do "${goalTitle}", pick up one item you'll need, and place it in the starting position.`,
-        'attention': `Clear the space where you'll do "${goalTitle}" and remove any distractions within arm's reach.`,
-        'planning': `Write down the first 3 items you'll need for "${goalTitle}" on a sticky note and place it where you'll work.`,
-        'time': `Set a timer for 5 minutes and place it next to where you'll do "${goalTitle}".`
+        'initiation': `Go to where you'll work, pick up one item you'll need, and place it in your starting position.`,
+        'attention': `Clear your workspace and remove any distractions within arm's reach.`,
+        'planning': `Write down the first 3 items you'll need on a sticky note and place it where you'll work.`,
+        'time': `Set a timer for 5 minutes and place it next to your workspace.`
       },
       'health': {
-        'initiation': `Put on or lay out the first piece of equipment or clothing you'll need for "${goalTitle}".`,
-        'attention': `Go to the space where you'll do "${goalTitle}" and take 3 deep breaths.`,
-        'planning': `Open your calendar or planner and mark the time you'll start "${goalTitle}".`,
-        'time': `Set a reminder on your phone for when you'll do "${goalTitle}".`
+        'initiation': `Put on or lay out the first piece of equipment or clothing you'll need.`,
+        'attention': `Go to your practice space and take 3 deep breaths.`,
+        'planning': `Open your calendar and mark the time you'll start.`,
+        'time': `Set a reminder on your phone for your next session.`
       },
       'education': {
-        'initiation': `Open your materials for "${goalTitle}" and place them in front of you.`,
-        'attention': `Clear your workspace and place only what you need for "${goalTitle}" in front of you.`,
-        'planning': `Write the first step of "${goalTitle}" on the top of a blank page.`,
-        'time': `Check your schedule and write down when you'll work on "${goalTitle}" today.`
+        'initiation': `Open your study materials and place them in front of you.`,
+        'attention': `Clear your workspace and keep only what you need in front of you.`,
+        'planning': `Write the first step on the top of a blank page.`,
+        'time': `Check your schedule and write down when you'll work on this today.`
       },
       'employment': {
-        'initiation': `Gather the materials you'll need for "${goalTitle}" and place them on your desk.`,
-        'attention': `Turn off notifications and close unnecessary tabs before starting "${goalTitle}".`,
-        'planning': `List the 3 most important tasks for "${goalTitle}" in order of priority.`,
-        'time': `Block 30 minutes in your calendar specifically for "${goalTitle}".`
+        'initiation': `Gather the materials you'll need and place them on your desk.`,
+        'attention': `Turn off notifications and close unnecessary tabs before starting.`,
+        'planning': `List the 3 most important tasks in order of priority.`,
+        'time': `Block 30 minutes in your calendar for focused work.`
       },
       'social_skills': {
-        'initiation': `Write down one specific thing you'll say or do for "${goalTitle}".`,
-        'attention': `Find a quiet space and practice saying your greeting for "${goalTitle}" out loud once.`,
-        'planning': `Choose the exact time and place where you'll practice "${goalTitle}".`,
-        'time': `Set a daily reminder for when you'll work on "${goalTitle}".`
+        'initiation': `Write down one specific thing you'll say or do in your next interaction.`,
+        'attention': `Find a quiet space and practice saying your greeting out loud once.`,
+        'planning': `Choose the exact time and place where you'll practice.`,
+        'time': `Set a daily reminder for when you'll work on this.`
       },
       'postsecondary': {
-        'initiation': `Open the application or materials for "${goalTitle}" and review the first section.`,
-        'attention': `Close all distracting apps and set your phone aside before working on "${goalTitle}".`,
-        'planning': `Make a list of the 3 main steps needed to complete "${goalTitle}".`,
-        'time': `Schedule a 45-minute block in your calendar for "${goalTitle}".`
+        'initiation': `Open the application or materials and review the first section.`,
+        'attention': `Close all distracting apps and set your phone aside.`,
+        'planning': `Make a list of the 3 main steps needed to complete this.`,
+        'time': `Schedule a 45-minute block in your calendar.`
       },
       'fun_recreation': {
-        'initiation': `Get your equipment or materials for "${goalTitle}" and place them in your practice area.`,
-        'attention': `Find a comfortable spot and take a moment to visualize yourself enjoying "${goalTitle}".`,
-        'planning': `Write down what you want to accomplish during today's "${goalTitle}" session.`,
-        'time': `Set a reminder for your next "${goalTitle}" practice time.`
+        'initiation': `Get your equipment and place it in your practice area.`,
+        'attention': `Find a comfortable spot and take a moment to visualize yourself enjoying this activity.`,
+        'planning': `Write down what you want to accomplish in today's session.`,
+        'time': `Set a reminder for your next practice time.`
       }
     };
     
     // Get cue based on category and barrier, with fallback
     const categoryCues = cueTemplates[data.category || ''] || cueTemplates['independent_living'];
     return categoryCues[primaryBarrier || 'initiation'] || 
-      `Take a moment to prepare the space where you'll work on "${goalTitle}".`;
+      `Take a moment to prepare the space where you'll work.`;
   };
   const mapCategoryToDomain = (categoryId?: string) => {
     const mapping: Record<string, GoalDomain> = {
@@ -1894,10 +1894,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           </span>
                         </p>
                       )}
-                      {data.selectedSupporters && data.selectedSupporters.length > 0 && (
+                      {data.selectedSupporters && data.selectedSupporters.length > 1 && (
                         <p className="text-sm">
                           <span className="text-muted-foreground text-xs">Additional:</span>{' '}
-                          <span className="font-medium">{data.selectedSupporters.length} supporters</span>
+                          <span className="font-medium">{data.selectedSupporters.length - 1} {data.selectedSupporters.length - 1 === 1 ? 'supporter' : 'supporters'}</span>
                         </p>
                       )}
                     </div>
@@ -1915,7 +1915,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </h3>
             
             <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-1">➡️ Action Cue:</p>
+              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">➡️ Action Cue:</p>
               <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">{actionCue}</p>
             </div>
           </div>
