@@ -413,7 +413,7 @@ export function ParentOnboarding({
               </Badge>
               {showOtherStrength && <Input 
                 type="text" 
-                placeholder="Type your strength" 
+                placeholder="type strength" 
                 value={otherStrength}
                 onChange={(e) => setOtherStrength(e.target.value)}
                 className="w-full"
