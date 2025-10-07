@@ -99,7 +99,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const { completeOnboarding, setProfile } = useStore();
 
   const getTotalSteps = () => {
-    return 8;
+    return 7;
   };
 
   const handleNext = () => {
@@ -291,8 +291,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       case 1: return data.name.trim().length > 0;
       case 2: return data.age.trim().length > 0;
       case 3: return data.superpowers.length > 0;
-      case 4: return data.interests.length > 0;
-      case 6: return data.bestTime !== '';
+      case 5: return data.bestTime !== '';
       default: return true;
     }
   };
@@ -414,24 +413,13 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           {currentStep === 4 && (
             <div className="space-y-2">
               <h2 className="text-3xl font-semibold">
-                {data.role === 'parent' ? "Choose 3–5 interests they might want to explore" : "Choose 3–5 interests to explore"}
-              </h2>
-              <p className="text-sm text-black">
-                What sounds fun or interesting to {data.role === 'parent' ? 'them' : 'you'}?
-              </p>
-            </div>
-          )}
-          
-          {currentStep === 5 && (
-            <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "How do they like doing things?" : "How do you like doing things?"}
               </h2>
               <p className="text-sm text-black">Slide to show your preferences</p>
             </div>
           )}
           
-          {currentStep === 6 && (
+          {currentStep === 5 && (
             <div className="space-y-2">
               <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "When do they feel at their best?" : "When do you feel at your best?"}
@@ -442,7 +430,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
             </div>
           )}
           
-          {currentStep === 7 && (
+          {currentStep === 6 && (
             <div className="space-y-2">
               <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "What gets in their way most?" : "What gets in your way most?"}
@@ -451,7 +439,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
             </div>
           )}
           
-          {currentStep === 8 && (
+          {currentStep === 7 && (
             <div className="space-y-2">
               <h2 className="text-3xl font-semibold">
                 {data.role === 'parent' ? "One small thing they'd like to try" : "One small thing you'd like to try"}
@@ -603,29 +591,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
             </div>
           )}
 
-          {/* Step 4: Interests */}
+          {/* Step 4: Work Style */}
           {currentStep === 4 && (
-            <div className="flex flex-wrap gap-2">
-              {INTERESTS.map(interest => (
-                <Button
-                  key={interest}
-                  variant={data.interests.includes(interest) ? "default" : "outline"}
-                  onClick={() => setData(prev => ({
-                    ...prev,
-                    interests: toggleSelection(prev.interests, interest, 5)
-                  }))}
-                  className="text-sm h-auto py-2 px-3 border-0"
-                  style={{ backgroundColor: data.interests.includes(interest) ? undefined : '#E0E0E0' }}
-                  disabled={!data.interests.includes(interest) && data.interests.length >= 5}
-                >
-                  {interest}
-                </Button>
-              ))}
-            </div>
-          )}
-
-          {/* Step 5: Work Style */}
-          {currentStep === 5 && (
             <div className="space-y-6">
               {/* Social Preference Slider */}
               <div className="space-y-3">
@@ -705,8 +672,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
             </div>
           )}
 
-          {/* Step 6: Best Time */}
-          {currentStep === 6 && (
+          {/* Step 5: Best Time */}
+          {currentStep === 5 && (
             <div className="space-y-2">
               {['Early morning', 'Late morning', 'Afternoon', 'Evening', 'It varies'].map(time => (
                 <Button
@@ -722,8 +689,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
             </div>
           )}
 
-          {/* Step 7: Barriers */}
-          {currentStep === 7 && (
+          {/* Step 6: Barriers */}
+          {currentStep === 6 && (
             <div className="flex flex-wrap gap-2">
               {BARRIERS.map(barrier => (
                 <Button
@@ -743,8 +710,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
             </div>
           )}
 
-          {/* Step 8: Goal Seed */}
-          {currentStep === 8 && (
+          {/* Step 7: Goal Seed */}
+          {currentStep === 7 && (
             <div className="space-y-4">
               <Textarea
                 value={data.goalSeed}
