@@ -107,7 +107,8 @@ export default {
 				'soft': 'var(--shadow-soft)',
 				'card': 'var(--shadow-card)',
 				'elevated': 'var(--shadow-elevated)',
-				'gradient': 'var(--shadow-gradient)'
+				'gradient': 'var(--shadow-gradient)',
+				'glow': 'var(--shadow-glow)'
 			},
 			transitionTimingFunction: {
 				'smooth': 'var(--transition-smooth)',

@@ -313,7 +313,7 @@ export function ParentOnboarding({
       {/* BODY - 43.75vh */}
       <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto space-y-3">
-          <div className="bg-white rounded-lg p-8 border-2 border-border shadow-gradient">
+          <div className="bg-white rounded-lg p-8 shadow-glow">
             <p className="text-foreground leading-relaxed">
               {generatedProfile}
             </p>
