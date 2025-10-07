@@ -376,25 +376,11 @@ const getDynamicSubtitle = (step: number, goalId?: string): string => {
       const startDate = state.startDate || new Date();
       const due = state.dueDate;
 
-      // Create the goal
-      const rawDescription = buildSmartGoal();
-      const sanitizedDescription = sanitizeGoalDescription(rawDescription);
+      // STEP 1: Generate AI steps and perform safety check FIRST (before creating goal)
+      const durationWeeks = 2;
+      const totalSessions = durationWeeks * 3;
       
-      const goal = await goalsService.createGoal({
-        title: state.goalName || state.goal.title,
-        description: sanitizedDescription,
-        domain: state.category.id === 'starter' ? mapStarterGoalToDomain(state.goal.id) : mapCategoryToDomain(state.category.title),
-        priority: 'medium',
-        start_date: formatDate(startDate),
-        due_date: formatDate(due),
-      });
-
-      // Generate milestone steps based on default duration
-      try {
-        const durationWeeks = 2; // Default to 2 weeks
-        const totalSessions = durationWeeks * 3; // Default to 3 sessions per week
-        
-        const response = await AIService.getCoachingGuidance({
+      const response = await AIService.getCoachingGuidance({
           question: `Generate ${totalSessions} milestone steps for this goal execution. Each step should represent one session/milestone of the goal being completed, NOT preparation tasks. Include the session number and make each step actionable:
 
 Goal: ${state.goal.title}
@@ -414,32 +400,46 @@ Example:
 ]`
         });
 
-        // ============= SAFETY VIOLATION HANDLING =============
-        if (response?.safety_violation || response?.error?.includes('cannot process that request')) {
-          toast({
-            title: "Goal Cannot Be Created",
-            description: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
-            variant: "destructive",
-            duration: 10000,
-          });
-          
-          // Reset the wizard
-          setState({ 
-            step: 1, 
-            goalName: undefined,
-            category: undefined,
-            goal: undefined,
-            purpose: undefined,
-            details: undefined,
-            amount: undefined,
-            timing: undefined,
-            supports: undefined 
-          });
-          
-          setIsCreatingGoal(false);
-          return;
-        }
+      // STEP 2: Safety violation check (BEFORE goal creation)
+      if (response?.safety_violation || response?.error?.includes('cannot process that request')) {
+        toast({
+          title: "Goal Cannot Be Created",
+          description: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
+          variant: "destructive",
+          duration: 10000,
+        });
+        
+        setState({ 
+          step: 1, 
+          goalName: undefined,
+          category: undefined,
+          goal: undefined,
+          purpose: undefined,
+          details: undefined,
+          amount: undefined,
+          timing: undefined,
+          supports: undefined 
+        });
+        
+        setIsCreatingGoal(false);
+        return; // EXIT - do not create goal
+      }
 
+      // STEP 3: Only now create the goal (after safety check passes)
+      const rawDescription = buildSmartGoal();
+      const sanitizedDescription = sanitizeGoalDescription(rawDescription);
+      
+      const goal = await goalsService.createGoal({
+        title: state.goalName || state.goal.title,
+        description: sanitizedDescription,
+        domain: state.category.id === 'starter' ? mapStarterGoalToDomain(state.goal.id) : mapCategoryToDomain(state.category.title),
+        priority: 'medium',
+        start_date: formatDate(startDate),
+        due_date: formatDate(due),
+      });
+
+      // STEP 4: Create steps from AI response
+      try {
         if (response?.steps && Array.isArray(response.steps)) {
           // Create each step with due dates distributed evenly
           for (let i = 0; i < response.steps.length; i++) {
@@ -499,7 +499,7 @@ Example:
         });
       }
 
-      // Clear saved progress
+      // STEP 5: Clear saved progress and navigate
       localStorage.removeItem('goals-wizard-progress');
       
       // Reset state

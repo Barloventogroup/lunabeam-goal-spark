@@ -1,10 +1,90 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// ============= SAFETY VIOLATION NOTIFICATION =============
+async function notifySafetyViolation(
+  supabase: any, 
+  userId: string, 
+  goalTitle: string, 
+  layer: string, 
+  reason: string
+) {
+  try {
+    // Get user profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name, email, is_self_registered')
+      .eq('user_id', userId)
+      .single();
+    
+    // Get supporters (if any)
+    const { data: supporters } = await supabase
+      .from('supporters')
+      .select('supporter_id, is_admin')
+      .eq('individual_id', userId)
+      .eq('is_admin', true);
+    
+    // Update log with notification status
+    await supabase
+      .from('safety_violations_log')
+      .update({
+        compliance_notified: true,
+        supporter_notified: supporters && supporters.length > 0,
+        user_email: profile?.email
+      })
+      .eq('user_id', userId)
+      .eq('goal_title', goalTitle)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    
+    // Send in-app notification to supporters
+    if (supporters && supporters.length > 0) {
+      for (const supporter of supporters) {
+        await supabase.from('notifications').insert({
+          user_id: supporter.supporter_id,
+          type: 'safety_violation',
+          title: '⚠️ Safety Alert',
+          message: `${profile?.first_name || 'An individual'} attempted to create a goal that violated safety guidelines. The goal has been blocked.`,
+          data: {
+            individual_id: userId,
+            individual_name: profile?.first_name,
+            goal_title: goalTitle,
+            layer: layer,
+            reason: reason
+          }
+        });
+      }
+    }
+    
+    // Send email to compliance team and supporters
+    try {
+      await supabase.functions.invoke('send-notification-email', {
+        body: {
+          type: 'safety_violation',
+          userId: userId,
+          userName: profile?.first_name || 'Unknown',
+          userEmail: profile?.email || 'No email',
+          goalTitle: goalTitle,
+          layer: layer,
+          reason: reason,
+          supporterIds: supporters?.map(s => s.supporter_id) || []
+        }
+      });
+    } catch (emailError) {
+      console.error('Failed to send safety violation email:', emailError);
+    }
+    
+  } catch (error) {
+    console.error('Error sending safety violation notification:', error);
+    // Don't throw - notification failure shouldn't block the safety response
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -21,6 +101,19 @@ serve(async (req) => {
       context 
     } = await req.json();
     
+    // Extract user ID from auth header
+    const authHeader = req.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: authHeader || '' } }
+    });
+
+    // Get user ID
+    const { data: { user } } = await supabase.auth.getUser(token);
+    const userId = user?.id;
+    
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
@@ -28,9 +121,62 @@ serve(async (req) => {
 
     console.log(`AI Coach request - Mode: ${mode}, Has question: ${!!question}`);
 
+    // ============= LAYER 1: FAST KEYWORD REJECTION =============
+    const dangerousKeywords = [
+      'kill', 'suicide', 'self-harm', 'self harm', 'cut myself', 'hurt myself',
+      'trafficking', 'illegal', 'steal', 'theft', 'fraud', 'scam',
+      'cocaine', 'heroin', 'meth', 'methamphetamine', 'weed', 'marijuana', 
+      'sell drugs', 'buy drugs', 'drug deal', 'black market',
+      'hack', 'bypass security', 'break into', 'weapon', 'bomb', 'gun',
+      'sexually explicit', 'porn', 'xxx', 'sex tape',
+      'revenge', 'harm someone', 'hurt someone', 'get back at'
+    ];
+
+    const combinedInput = `${question || ''} ${userMessage || ''} ${JSON.stringify(context || {})}`.toLowerCase();
+    const triggeredKeywords = dangerousKeywords.filter(kw => combinedInput.includes(kw));
+
+    if (triggeredKeywords.length > 0 && userId) {
+      console.error('⚠️ LAYER 1 SAFETY VIOLATION:', triggeredKeywords);
+      
+      const supabaseService = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      
+      await supabaseService.from('safety_violations_log').insert({
+        user_id: userId,
+        violation_layer: 'layer_1_keywords',
+        goal_title: question || userMessage || 'Unknown',
+        triggered_keywords: triggeredKeywords,
+        violation_reason: `Explicit keywords: ${triggeredKeywords.join(', ')}`
+      });
+      
+      await notifySafetyViolation(supabaseService, userId, question || userMessage, 'layer_1_keywords', triggeredKeywords.join(', '));
+      
+      return new Response(JSON.stringify({ 
+        error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
+        safety_violation: true
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // For onboarding, use a simpler conversational approach
     if (mode === 'onboarding') {
-      const systemPrompt = `You are Lune, a friendly AI assistant helping teenagers and young adults (16-25) get started.
+      const systemPrompt = `SYSTEM INSTRUCTION: CRITICAL SAFETY AND INTEGRITY AGENT
+
+FAILURE PROTOCOL: If any content violates safety rules, output only: [SAFETY_VIOLATION_SIGNAL]
+
+RULE 1: ABSOLUTE EXPLICIT CONTENT REFUSAL
+Refuse to engage with: illegal activities, self-harm/violence, prohibited substances, sexually explicit content.
+
+RULE 2: NUANCE AUDIT
+Analyze for code words, emojis (🤫💰💊🚬), unethical goals, or high-risk suggestions.
+
+---
+
+You are Lune, a friendly AI assistant helping teenagers and young adults (16-25) get started.
 
 Your job: Have a casual, natural conversation to learn about them - their name, what they're good at, what they're into, and what challenges they face.
 
@@ -84,7 +230,35 @@ Please respond warmly and ask the next helpful question to learn about them.`;
       const data = await response.json();
       const guidance = data.choices[0].message.content;
 
-      return new Response(JSON.stringify({ 
+      // ============= LAYER 2: SAFETY SIGNAL DETECTION =============
+      if (guidance.includes('[SAFETY_VIOLATION_SIGNAL]') && userId) {
+        console.error('⚠️ LAYER 2 SAFETY VIOLATION (onboarding)');
+        
+        const supabaseService = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+        
+        await supabaseService.from('safety_violations_log').insert({
+          user_id: userId,
+          violation_layer: 'layer_2_generation',
+          goal_title: question || userMessage,
+          ai_response: guidance,
+          violation_reason: 'AI detected nuanced violation during onboarding'
+        });
+        
+        await notifySafetyViolation(supabaseService, userId, question || userMessage, 'layer_2_generation', 'Nuanced violation');
+        
+        return new Response(JSON.stringify({ 
+          error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
+          safety_violation: true
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      return new Response(JSON.stringify({
         guidance,
         response_text: guidance,
         mode: 'onboarding',
@@ -191,7 +365,19 @@ Return a JSON array of step objects with:
     }
 
     // For other modes, use the original structured approach
-    const globalSystemPrompt = `You are Lune, a supportive AI guide for teenagers and young adults aged 16-25.
+    const globalSystemPrompt = `SYSTEM INSTRUCTION: CRITICAL SAFETY AND INTEGRITY AGENT
+
+FAILURE PROTOCOL: If any content violates safety rules, output only: [SAFETY_VIOLATION_SIGNAL]
+
+RULE 1: ABSOLUTE EXPLICIT CONTENT REFUSAL
+Refuse to engage with: illegal activities, self-harm/violence, prohibited substances, sexually explicit content.
+
+RULE 2: NUANCE AUDIT
+Analyze for code words, emojis, unethical goals, or high-risk suggestions.
+
+---
+
+You are Lune, a supportive AI guide for teenagers and young adults aged 16-25.
 
 Communication style:
 - Casual but respectful tone - like talking to a friend who gets it
@@ -288,9 +474,37 @@ Please respond supportively according to your role as Lune.`;
     const data = await response.json();
     const guidance = data.choices[0].message.content;
 
+    // ============= LAYER 2: SAFETY SIGNAL DETECTION =============
+    if (guidance.includes('[SAFETY_VIOLATION_SIGNAL]') && userId) {
+      console.error('⚠️ LAYER 2 SAFETY VIOLATION (general)');
+      
+      const supabaseService = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      
+      await supabaseService.from('safety_violations_log').insert({
+        user_id: userId,
+        violation_layer: 'layer_2_generation',
+        goal_title: question || userMessage,
+        ai_response: guidance,
+        violation_reason: 'AI detected nuanced violation during guidance'
+      });
+      
+      await notifySafetyViolation(supabaseService, userId, question || userMessage, 'layer_2_generation', 'Nuanced violation');
+      
+      return new Response(JSON.stringify({ 
+        error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
+        safety_violation: true
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     console.log('Generated guidance successfully');
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       guidance,
       response_text: guidance,
       mode,
