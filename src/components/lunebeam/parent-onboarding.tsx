@@ -75,7 +75,7 @@ export function ParentOnboarding({
     completeOnboarding,
     setProfile
   } = useStore();
-  const totalSteps = 7;
+  const totalSteps = 6;
 
   // Get pronouns for display
   const getDisplayPronouns = () => {
@@ -340,18 +340,12 @@ export function ParentOnboarding({
               </p>
             </div>}
           {currentStep === 5 && <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">Interests</h2>
-              <p className="text-foreground-soft">
-                What does {data.preferredName || 'this person'} enjoy?
-              </p>
-            </div>}
-          {currentStep === 6 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Work Style</h2>
               <p className="text-foreground-soft">
                 How does {data.preferredName || 'this person'} like to work?
               </p>
             </div>}
-          {currentStep === 7 && <div className="space-y-2">
+          {currentStep === 6 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Next Two Weeks</h2>
               <p className="text-foreground-soft">
                 What's one small step {data.preferredName || 'they'} can take in the next two weeks?
@@ -419,15 +413,7 @@ export function ParentOnboarding({
                 className="w-full"
               />}
             </div>}
-          {currentStep === 5 && <div className="grid grid-cols-2 gap-2">
-              {INTERESTS_OPTIONS.map(option => <Badge key={option} variant={data.interests.includes(option) ? 'default' : 'outline'} onClick={() => setData({
-                    ...data,
-                    interests: toggleSelection(data.interests, option, 3)
-                  })} className="cursor-pointer">
-                  {option}
-                </Badge>)}
-            </div>}
-          {currentStep === 6 && <div className="space-y-4">
+          {currentStep === 5 && <div className="space-y-4">
               <div>
                 <Label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   Social Preference
@@ -529,7 +515,7 @@ export function ParentOnboarding({
                 </RadioGroup>
               </div>
             </div>}
-          {currentStep === 7 && <Textarea placeholder="Next small step" value={data.nextTwoWeeks} onChange={e => setData({
+          {currentStep === 6 && <Textarea placeholder="Next small step" value={data.nextTwoWeeks} onChange={e => setData({
               ...data,
               nextTwoWeeks: e.target.value
             })} />}
