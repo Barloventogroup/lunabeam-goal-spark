@@ -67,121 +67,120 @@ export function OnboardingFlow() {
   if (showInterstitial) {
     const isParent = roleData.role === 'parent';
     return (
-      <div className="min-h-screen bg-gradient-soft">
-        <Card className="shadow-none border-0 h-screen w-full rounded-none relative">
-          {/* Exit button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleExit}
-            className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-10"
-          >
-            <X className="h-4 w-4" />
+      <div className="min-h-screen flex flex-col">
+        {/* Exit button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleExit}
+          className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+        
+        {/* HEADER - 50% */}
+        <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+          <div className="space-y-2 text-center">
+            <h1 className="text-xl font-medium text-black">
+              {isParent ? 'Perfect! You\'ll be set as the Admin.' : 'Great! Let\'s personalize your experience.'}
+            </h1>
+            <p className="text-sm text-foreground-soft">
+              {isParent 
+                ? 'As the parent or caregiver, you will be set as the Admin. You can later invite coaches, therapists, or family members to join the team.' 
+                : 'The next questions will help me suggest goals and personalize your experience. Ready?'
+              }
+            </p>
+          </div>
+        </div>
+        
+        {/* BODY - 43.75% */}
+        <div className="h-[43.75vh] bg-gray-100"></div>
+        
+        {/* FOOTER - 6.25% */}
+        <div className="h-[6.25vh] bg-white flex items-center justify-end px-6 gap-3">
+          <BackButton onClick={() => setShowInterstitial(false)} variant="text" />
+          <Button onClick={handleInterstitialNext}>
+            Continue
           </Button>
-          
-          <CardContent className="p-6 h-full flex flex-col justify-center text-center">
-            <div className="flex-1 flex flex-col justify-center space-y-6">
-              <div>
-                <h1 className="text-xl font-medium text-black mb-4">
-                  {isParent ? 'Perfect! You\'ll be set as the Admin.' : 'Great! Let\'s personalize your experience.'}
-                </h1>
-                <p className="text-sm text-foreground-soft">
-                  {isParent 
-                    ? 'As the parent or caregiver, you will be set as the Admin. You can later invite coaches, therapists, or family members to join the team.' 
-                    : 'The next questions will help me suggest goals and personalize your experience. Ready?'
-                  }
-                </p>
-              </div>
-            </div>
-          </CardContent>
-          
-          <div className="absolute bottom-6 left-6">
-            <BackButton onClick={() => setShowInterstitial(false)} variant="text" />
-          </div>
-          
-          <div className="absolute bottom-6 right-6">
-            <Button onClick={handleInterstitialNext}>
-              Continue
-            </Button>
-          </div>
-        </Card>
+        </div>
       </div>
     );
   }
 
   if (showRoleSelection) {
     return (
-      <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #E8F0F3 0%, #f0f8fb 100%)' }}>
-        <Card className="shadow-none border-0 h-screen w-full rounded-none relative">
-          {/* Exit button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleExit}
-            className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-10"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-          
-          <CardContent className="p-6 h-full flex flex-col overflow-y-auto">
-            <div className="flex-1 flex flex-col justify-center">
-              <div className="text-center mb-8">
-                <CardTitle className="text-2xl mb-4">Welcome to lunabeam!</CardTitle>
-                <p className="text-black">
-                  Who are you creating this account for?
-                </p>
-              </div>
-              
-              <div className="space-y-6">
-                <RadioGroup value={selectedRole} onValueChange={(v) => setSelectedRole(v as 'parent' | 'individual')} className="space-y-4">
-                  <div className="space-y-3">
-                    <div 
-                      className="w-full p-4 rounded-lg border-2 border-primary bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors"
-                      onClick={() => setSelectedRole('parent')}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <RadioGroupItem value="parent" id="parent" />
-                        <div className="flex-1">
-                          <Label htmlFor="parent" className="text-sm font-medium cursor-pointer">
-                            I am a parent/caregiver signing up on behalf of someone else
-                          </Label>
-                          <p className="text-xs text-foreground-soft mt-1">
-                            You'll manage the account and can invite others to join the team
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div 
-                      className="w-full p-4 rounded-lg border border-border cursor-pointer hover:bg-muted/30 transition-colors"
-                      onClick={() => setSelectedRole('individual')}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <RadioGroupItem value="individual" id="individual" />
-                        <div className="flex-1">
-                          <Label htmlFor="individual" className="text-sm font-medium cursor-pointer">
-                            I am signing up for myself
-                          </Label>
-                          <p className="text-xs text-foreground-soft mt-1">
-                            You'll have full control of your own account
-                          </p>
-                        </div>
-                      </div>
+      <div className="min-h-screen flex flex-col">
+        {/* Exit button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleExit}
+          className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+        
+        {/* HEADER - 50% */}
+        <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+          <div className="text-center space-y-2">
+            <CardTitle className="text-2xl">Welcome to lunabeam!</CardTitle>
+            <p className="text-black">
+              Who are you creating this account for?
+            </p>
+          </div>
+        </div>
+        
+        {/* BODY - 43.75% */}
+        <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
+          <div className="max-w-2xl mx-auto">
+            <RadioGroup value={selectedRole} onValueChange={(v) => setSelectedRole(v as 'parent' | 'individual')} className="space-y-4">
+              <div className="space-y-3">
+                <div 
+                  className="w-full p-4 rounded-lg border-2 border-primary bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors"
+                  onClick={() => setSelectedRole('parent')}
+                >
+                  <div className="flex items-center space-x-3">
+                    <RadioGroupItem value="parent" id="parent" />
+                    <div className="flex-1">
+                      <Label htmlFor="parent" className="text-sm font-medium cursor-pointer">
+                        I am a parent/caregiver signing up on behalf of someone else
+                      </Label>
+                      <p className="text-xs text-foreground-soft mt-1">
+                        You'll manage the account and can invite others to join the team
+                      </p>
                     </div>
                   </div>
-                </RadioGroup>
+                </div>
+                
+                <div 
+                  className="w-full p-4 rounded-lg border border-border cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => setSelectedRole('individual')}
+                >
+                  <div className="flex items-center space-x-3">
+                    <RadioGroupItem value="individual" id="individual" />
+                    <div className="flex-1">
+                      <Label htmlFor="individual" className="text-sm font-medium cursor-pointer">
+                        I am signing up for myself
+                      </Label>
+                      <p className="text-xs text-foreground-soft mt-1">
+                        You'll have full control of your own account
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </CardContent>
-          
-          <div className="absolute bottom-6 right-6">
-            <Button 
-              onClick={() => handleRoleSelection(selectedRole)}
-            >
-              Continue
-            </Button>
+            </RadioGroup>
           </div>
-        </Card>
+        </div>
+        
+        {/* FOOTER - 6.25% */}
+        <div className="h-[6.25vh] bg-white flex items-center justify-end px-6">
+          <Button 
+            onClick={() => handleRoleSelection(selectedRole)}
+          >
+            Continue
+          </Button>
+        </div>
       </div>
     );
   }

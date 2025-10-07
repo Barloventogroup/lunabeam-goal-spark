@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { database } from '@/services/database';
 import { useToast } from '@/hooks/use-toast';
 import { X, ArrowLeft, Loader2 } from 'lucide-react';
+
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
   preferredName: string;
@@ -29,15 +30,18 @@ interface ParentOnboardingData {
   nextTwoWeeks: string;
   sharingSupport: 'private' | 'summary' | 'details';
 }
+
 interface ParentOnboardingProps {
   onComplete: () => void;
   onExit: () => Promise<void>;
 }
+
 const PRONOUNS_OPTIONS = ['she/her', 'he/him', 'they/them', 'she/they', 'he/they', 'name only', 'Prefer not to say', 'Custom'];
 const AGE_OPTIONS = ['13–15', '16–18', '19–22', '23–26', '27+', 'Prefer not to say'];
 const STRENGTHS_OPTIONS = ['Kind/helper', 'Creative', 'Problem solver', 'Detail-oriented', 'Curious', 'Organizer', 'Hands-on', 'Tech savvy', 'Patient', 'Communicator', 'Other'];
 const INTERESTS_OPTIONS = ['Animals', 'Art/Design', 'Building/Making', 'Games', 'Music', 'Sports/Fitness', 'Cooking', 'Nature', 'Cars', 'Reading/Writing', 'Tech/Coding', 'Volunteering/Helping', 'Money/Business', 'Puzzles', 'Other'];
 const SUGGESTIONS = ['Join a club', 'Cook a new dish', 'Short daily walk', 'Visit the library'];
+
 export function ParentOnboarding({
   onComplete,
   onExit
@@ -78,18 +82,21 @@ export function ParentOnboarding({
     if (data.pronouns === 'he/him') return 'he';
     return 'they';
   };
+  
   const getPossessivePronouns = () => {
     const pronoun = getDisplayPronouns();
     if (pronoun === 'she') return 'her';
     if (pronoun === 'he') return 'his';
     return 'their';
   };
+  
   const getObjectPronouns = () => {
     const pronoun = getDisplayPronouns();
     if (pronoun === 'she') return 'her';
     if (pronoun === 'he') return 'him';
     return 'them';
   };
+
   const handleNext = async () => {
     // Step 3: Name is mandatory - validate before continuing
     if (currentStep === 3) {
@@ -101,7 +108,6 @@ export function ParentOnboarding({
         });
         return;
       }
-      // Name validation passed - no account creation here, that happens at the end
     }
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
@@ -109,6 +115,7 @@ export function ParentOnboarding({
       generateProfile();
     }
   };
+
   const handleBack = () => {
     if (showProfile) {
       setShowProfile(false);
@@ -117,9 +124,11 @@ export function ParentOnboarding({
       setCurrentStep(currentStep - 1);
     }
   };
+
   const handleSkip = () => {
     handleNext();
   };
+
   const toggleSelection = (array: string[], value: string, max?: number) => {
     if (array.includes(value)) {
       return array.filter(item => item !== value);
@@ -128,6 +137,7 @@ export function ParentOnboarding({
     }
     return array;
   };
+
   const generateProfile = () => {
     const name = data.preferredName || 'The person you are helping';
     const pronoun = getDisplayPronouns();
@@ -153,6 +163,7 @@ export function ParentOnboarding({
     setGeneratedProfile(summary);
     setShowProfile(true);
   };
+
   const handleComplete = async () => {
     if (isCreating) {
       console.log('🔒 handleComplete blocked: already creating', { timestamp: Date.now() });
@@ -162,10 +173,6 @@ export function ParentOnboarding({
     console.log('🚀 Let\'s go button clicked - starting handleComplete', { timestamp: Date.now() });
     setIsCreating(true);
 
-    // For admin/parent flow, we need to create TWO things:
-    // 1. Admin's own profile (for the authenticated user)
-    // 2. Individual's profile (using secure database function)
-
     const adminProfile = {
       first_name: data.adminName.trim() || 'Admin',
       strengths: [],
@@ -173,13 +180,13 @@ export function ParentOnboarding({
       challenges: [],
       comm_pref: 'text' as const,
       onboarding_complete: true,
-      user_type: 'admin' as const // Set explicit user type for admins
+      user_type: 'admin' as const
     };
+    
     try {
       console.log('✅ Parent onboarding: Creating admin profile:', adminProfile);
       console.log('👤 Parent onboarding: Will create individual profile:', data.preferredName, data.strengths, data.interests);
 
-      // Save admin's name to auth metadata
       if (data.adminName.trim()) {
         try {
           await supabase.auth.updateUser({
@@ -193,16 +200,13 @@ export function ParentOnboarding({
         }
       }
 
-      // Clear any existing cached profile data first
       useStore.setState({
         profile: null
       });
 
-      // 1. Create admin's own profile
       await database.saveProfile(adminProfile);
       console.log('Admin profile saved to database:', adminProfile);
 
-      // 2. Create individual profile using provisional system (if name provided)
       if (data.preferredName.trim()) {
         console.log('👤 Parent onboarding: Creating provisional profile for:', data.preferredName.trim());
         console.log('📞 Parent onboarding: Calling provision_individual_direct with:', {
@@ -226,7 +230,6 @@ export function ParentOnboarding({
         });
         if (provisionError) {
           console.error('❌ Failed to provision individual profile:', provisionError);
-          // Don't throw - continue with admin setup even if individual creation fails
           alert(`Note: Could not create account for ${data.preferredName}. You can try again later. Error: ${provisionError.message}`);
         } else if (provisionResult && provisionResult.length > 0) {
           const result = provisionResult[0];
@@ -234,7 +237,6 @@ export function ParentOnboarding({
             individual_id: result.individual_id,
             placeholder_email: result.placeholder_email
           });
-          // Verify the supporter relationship was created
           const {
             data: {
               user: currentUser
@@ -257,22 +259,16 @@ export function ParentOnboarding({
         console.log('⏭️ No individual name provided, skipping individual account creation');
       }
 
-      // Update local store with admin profile
       useStore.setState({
         profile: adminProfile
       });
 
-      // Complete onboarding
       await completeOnboarding();
       console.log('🎉 Parent onboarding completed successfully - both admin and individual profiles created');
       onComplete();
     } catch (error) {
       console.error('💥 Parent onboarding failed:', error);
-
-      // Show user-friendly error message
       alert(`There was an issue completing setup: ${error.message || 'Unknown error'}. Your admin account was created, but you may need to create the individual account again.`);
-
-      // Ensure local state shows admin profile even if individual provisioning fails
       useStore.setState({
         profile: adminProfile
       });
@@ -287,95 +283,87 @@ export function ParentOnboarding({
       setIsCreating(false);
     }
   };
+
   if (showProfile) {
     return <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
-        <Card className="w-full max-w-md shadow-card border-0">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-xl">✨</span>
-            </div>
-            <CardTitle className="text-2xl">Your Admin Profile</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-card-soft rounded-lg p-4">
-              <p className="text-foreground-soft leading-relaxed">
-                {data.adminName ? `Welcome ${data.adminName}! ` : 'Welcome! '}
-                As the admin, you'll be able to manage goals, invite supporters, and track progress for {data.preferredName || 'the person you\'re helping'}.
-              </p>
-            </div>
+      <Card className="w-full max-w-md shadow-card border-0">
+        <CardHeader className="text-center">
+          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-white text-xl">✨</span>
+          </div>
+          <CardTitle className="text-2xl">Your Admin Profile</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="bg-card-soft rounded-lg p-4">
+            <p className="text-foreground-soft leading-relaxed">
+              {data.adminName ? `Welcome ${data.adminName}! ` : 'Welcome! '}
+              As the admin, you'll be able to manage goals, invite supporters, and track progress for {data.preferredName || 'the person you\'re helping'}.
+            </p>
+          </div>
 
-            <div className="text-center space-y-3">
-              <p className="text-sm text-foreground-soft">
-                You can create goals and invite the team later. Ready to get started?
-              </p>
-              <div className="space-y-2">
-            <Button onClick={handleComplete} className="w-full" disabled={isCreating}>
-              {isCreating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Setting things up...
-                </>
-              ) : (
-                "Let's go 🚀"
-              )}
-            </Button>
-                <Button variant="outline" onClick={handleBack} className="w-full">
-                  Skip for now
-                </Button>
-              </div>
+          <div className="text-center space-y-3">
+            <p className="text-sm text-foreground-soft">
+              You can create goals and invite the team later. Ready to get started?
+            </p>
+            <div className="space-y-2">
+              <Button onClick={handleComplete} className="w-full" disabled={isCreating}>
+                {isCreating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Setting things up...
+                  </>
+                ) : (
+                  "Let's go 🚀"
+                )}
+              </Button>
+              <Button variant="outline" onClick={handleBack} className="w-full">
+                Skip for now
+              </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>;
+          </div>
+        </CardContent>
+      </Card>
+    </div>;
   }
-  return <div className="min-h-screen bg-gradient-soft">
-        <Card className="shadow-none border-0 h-screen w-full rounded-none relative">
-          {/* Exit button */}
-          <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-10">
-            <X className="h-4 w-4" />
-          </Button>
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Exit button */}
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={onExit} 
+        className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50"
+      >
+        <X className="h-4 w-4" />
+      </Button>
+      
+      {/* HEADER - 50% */}
+      <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+        <div className="max-w-2xl mx-auto w-full">
+          {currentStep === 1 && (
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">What should I call you?</h2>
+              <p className="text-foreground-soft">
+                First, let me know your name so I can greet you properly!
+              </p>
+            </div>
+          )}
           
-          <CardContent className="p-6 h-full flex flex-col">
-            <div className="flex-1 overflow-y-auto">
-            
-            {/* Step 1: Admin Name */}
-            {currentStep === 1 && (
-              <div className="flex-1 flex flex-col justify-center items-center">
-                <div className="w-full max-w-2xl space-y-6">
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold mb-4">What should I call you?</h2>
-                    <p className="text-foreground-soft leading-relaxed mb-6">
-                      First, let me know your name so I can greet you properly!
-                    </p>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="adminName" className="text-sm font-medium">Your name</Label>
-                      <Input id="adminName" placeholder="Enter your name" value={data.adminName} onChange={e => setData(prev => ({
-                      ...prev,
-                      adminName: e.target.value
-                    }))} className="mt-1" />
-                    </div>
-                  </div>
-                </div>
+          {currentStep === 2 && (
+            <div className="text-center space-y-2">
+              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-white text-xl">👨‍👩‍👧‍👦</span>
               </div>
-            )}
-
-            {/* Step 2: Introduction */}
-            {currentStep === 2 && <div className="space-y-6 text-center">
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white text-xl">👨‍👩‍👧‍👦</span>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Let's get to know them</h2>
-                  <p className="text-foreground-soft leading-relaxed">
-                    A few quick questions help me suggest better goals. Use a nickname if you want - you can change anything later.
-                  </p>
-                </div>
-              </div>}
-
-            {/* Step 3: Name and Pronouns */}
-            {currentStep === 3 && <div className="flex-1 flex flex-col justify-center items-center">
+              <h2 className="text-xl font-semibold">Let's get to know them</h2>
+              <p className="text-foreground-soft">
+                A few quick questions help me suggest better goals. Use a nickname if you want - you can change anything later.
+              </p>
+            </div>
+          )}
+          
+          {/* Step 3: Name and Pronouns */}
+          {currentStep === 3 && <div className="flex-1 flex flex-col justify-center items-center">
                 <div className="w-full max-w-2xl space-y-6">
                   <div className="text-center">
                     <h2 className="text-xl font-semibold mb-2">What should we call them?</h2>
@@ -639,17 +627,16 @@ export function ParentOnboarding({
                   </p>
                 </div>
               </div>}
-
-
-            {/* Navigation - Fixed position at bottom */}
-            <div className="absolute bottom-6 right-6 flex items-center gap-3">
-              {currentStep > 1 && <Button variant="outline" onClick={handleBack}><ArrowLeft className="h-4 w-4 mr-2" />Back</Button>}
-              <Button onClick={handleNext}>
-                {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
-              </Button>
-            </div>
-            </div>
-          </CardContent>
-        </Card>
-    </div>;
+        </div>
+      </div>
+      
+      {/* FOOTER - 6.25% */}
+      <div className="h-[6.25vh] bg-white flex items-center justify-end px-6 gap-3">
+        {currentStep > 1 && <BackButton onClick={handleBack} variant="text" />}
+        <Button onClick={handleNext}>
+          {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
+        </Button>
+      </div>
+    </div>
+  );
 }
