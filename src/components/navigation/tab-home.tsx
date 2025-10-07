@@ -316,7 +316,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
               
               if (isAdmin) {
                 // Admin experience
-                title = "Welcome! 💜";
+                title = "Welcome!";
                 subtitle = isFirstTime
                   ? "You've created this account to support someone important in your life. As the Admin, you can help set goals, follow progress, and invite others such as friends, providers, or coaches to be part of the team.\n\nThis space is here to make collaboration easy and encouraging. Together we'll turn small steps into big milestones.\n\n✨ Let's get started by setting up the first goal."
                   : `Welcome back, ${displayName}! Ready to continue supporting your team and tracking progress together.`;
