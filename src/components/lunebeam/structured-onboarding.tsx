@@ -389,17 +389,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit }: Structure
   }
 
   return (
-    <div className="min-h-screen p-4" style={{ background: 'linear-gradient(135deg, #E8F0F3 0%, #f0f8fb 100%)' }}>
-      <div className="max-w-md mx-auto py-6">
-        {/* Progress */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-white">{currentStep}/{getTotalSteps()}</span>
-          </div>
-          <Progress value={(currentStep / getTotalSteps()) * 100} className="h-2" />
-        </div>
-
-        <Card className="shadow-card border-0 h-[720px] relative">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #E8F0F3 0%, #f0f8fb 100%)' }}>
+        <Card className="shadow-none border-0 h-screen w-full rounded-none relative">
           {/* Exit button */}
           <Button
             variant="ghost"
@@ -672,22 +663,20 @@ export function StructuredOnboarding({ onComplete, roleData, onExit }: Structure
 
             </div>
             {/* Navigation - Fixed position at bottom */}
-            <div className="absolute bottom-6 left-6 right-6 space-y-2">
+            <div className="absolute bottom-6 right-6 flex items-center gap-3">
               {currentStep > 1 && (
-                <BackButton variant="text" onClick={handleBack} className="w-full" />
+                <BackButton variant="text" onClick={handleBack} />
               )}
               
               <Button 
                 onClick={handleNext} 
                 disabled={!canProceed() || isGenerating}
-                className="w-full"
               >
                 {isGenerating ? 'Creating...' : currentStep === getTotalSteps() ? 'Create Profile' : 'Continue'}
               </Button>
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }

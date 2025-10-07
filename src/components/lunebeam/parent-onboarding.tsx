@@ -328,17 +328,8 @@ export function ParentOnboarding({
         </Card>
       </div>;
   }
-  return <div className="min-h-screen bg-gradient-soft p-4">
-      <div className="max-w-md mx-auto py-6">
-        {/* Progress */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-foreground-soft">{currentStep}/{totalSteps}</span>
-          </div>
-          <Progress value={currentStep / totalSteps * 100} className="h-2" />
-        </div>
-
-        <Card className="shadow-card border-0 relative h-[720px]">
+  return <div className="min-h-screen bg-gradient-soft">
+        <Card className="shadow-none border-0 h-screen w-full rounded-none relative">
           {/* Exit button */}
           <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-10">
             <X className="h-4 w-4" />
@@ -636,17 +627,14 @@ export function ParentOnboarding({
 
 
             {/* Navigation - Fixed position at bottom */}
-            <div className="absolute bottom-6 left-6 right-6">
-              <div className="flex gap-2">
-                {currentStep > 1 && <Button variant="outline" onClick={handleBack}><ArrowLeft className="h-4 w-4 mr-2" />Back</Button>}
-                <Button onClick={handleNext} className="flex-1">
-                  {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
-                </Button>
-              </div>
+            <div className="absolute bottom-6 right-6 flex items-center gap-3">
+              {currentStep > 1 && <Button variant="outline" onClick={handleBack}><ArrowLeft className="h-4 w-4 mr-2" />Back</Button>}
+              <Button onClick={handleNext}>
+                {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
+              </Button>
             </div>
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>;
 }
