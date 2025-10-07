@@ -311,14 +311,11 @@ export function ParentOnboarding({
       </div>
       
       {/* BODY - 43.75vh */}
-      <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
-        <div className="max-w-2xl mx-auto space-y-3">
-          <h3 className="text-xl font-semibold text-center">Summary</h3>
-          <div className="bg-white rounded-lg p-8 shadow-glow">
-            <p className="text-foreground leading-relaxed">
-              {generatedProfile}
-            </p>
-          </div>
+      <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6 flex items-center justify-center">
+        <div className="inline-block bg-white/90 dark:bg-white/10 backdrop-blur-sm px-6 py-4 rounded-full shadow-glow border border-white/20">
+          <p className="text-sm text-foreground/90 leading-relaxed">
+            {generatedProfile}
+          </p>
         </div>
       </div>
       

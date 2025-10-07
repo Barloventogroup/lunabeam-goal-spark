@@ -44,17 +44,17 @@ serve(async (req) => {
     };
 
     const systemPrompt = `You are a warm, empathetic profile writer helping create natural descriptions of individuals. 
-Write a cohesive, flowing 3-4 sentence profile that captures who this person is.
+Write a cohesive, flowing 2-3 sentence profile that captures who this person is.
 
 Guidelines:
+- Keep it brief and impactful - no more than 2-3 sentences
 - Use a warm, caring tone (like a supportive friend or mentor)
-- Weave all details together naturally - don't list them
+- Prioritize the most distinctive and important aspects
+- Weave details together naturally - don't list them
 - Use the correct pronouns throughout (${pronouns})
 - Avoid templated phrases like "shines at" or "drawn to"
 - Make it sound genuine and personal
-- Focus on the person's strengths, interests, and how they work best
-- Include their age context naturally if provided
-- Mention their sharing preferences subtly at the end`;
+- Focus on the person's key strengths and interests`;
 
     const userPrompt = `Create a profile summary for:
 Name: ${name}
@@ -81,7 +81,7 @@ Sharing preference: ${sharingSupport === 'private' ? 'keeps progress private' : 
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.8,
-        max_tokens: 250,
+        max_tokens: 150,
       }),
     });
 
