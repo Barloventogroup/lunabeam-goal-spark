@@ -653,22 +653,97 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
 
           {/* Step 5: Barriers */}
           {currentStep === 5 && (
-            <div className="flex flex-wrap gap-2">
-              {BARRIERS.map(barrier => (
-                <Button
-                  key={barrier}
-                  variant={data.barriers.includes(barrier) ? "default" : "outline"}
-                  onClick={() => setData(prev => ({
-                    ...prev,
-                    barriers: toggleSelection(prev.barriers, barrier, 2)
-                  }))}
-                  className="text-sm h-auto py-2 px-3 border-0"
-                  style={{ backgroundColor: data.barriers.includes(barrier) ? undefined : '#E0E0E0' }}
-                  disabled={!data.barriers.includes(barrier) && data.barriers.length >= 2}
-                >
-                  {barrier}
-                </Button>
-              ))}
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {BARRIERS.map(barrier => (
+                  <Button
+                    key={barrier}
+                    variant={data.barriers.includes(barrier) ? "default" : "outline"}
+                    onClick={() => setData(prev => ({
+                      ...prev,
+                      barriers: toggleSelection(prev.barriers, barrier, 2)
+                    }))}
+                    className="text-sm h-auto py-2 px-3 border-0"
+                    style={{ backgroundColor: data.barriers.includes(barrier) ? undefined : '#E0E0E0' }}
+                    disabled={!data.barriers.includes(barrier) && data.barriers.length >= 2}
+                  >
+                    {barrier}
+                  </Button>
+                ))}
+              </div>
+              
+              {/* Custom barriers as pills */}
+              {data.barriers.filter(b => !BARRIERS.includes(b)).length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {data.barriers.filter(b => !BARRIERS.includes(b)).map(customBarrier => (
+                    <div 
+                      key={customBarrier}
+                      className="flex items-center gap-1 bg-primary text-primary-foreground rounded-full px-3 py-1 text-sm"
+                    >
+                      <span>{customBarrier}</span>
+                      <button
+                        onClick={() => setData(prev => ({
+                          ...prev,
+                          barriers: prev.barriers.filter(b => b !== customBarrier)
+                        }))}
+                        className="ml-1 hover:opacity-70"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Other input */}
+              <div className="space-y-2">
+                <Input
+                  value={customBarrier}
+                  onChange={(e) => {
+                    setCustomBarrier(e.target.value);
+                    validateWord(e.target.value, 'barriers');
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCustomOption('barriers', customBarrier, setCustomBarrier);
+                    }
+                  }}
+                  placeholder="Other..."
+                  className="text-sm"
+                  disabled={data.barriers.length >= 2}
+                  maxLength={30}
+                />
+                {validationMessages.barriers && (
+                  <p className="text-xs text-destructive">{validationMessages.barriers}</p>
+                )}
+                {suggestions.barriers && suggestions.barriers.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    <p className="text-xs text-muted-foreground w-full">Did you mean:</p>
+                    {suggestions.barriers.map(suggestion => (
+                      <Button
+                        key={suggestion}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setCustomBarrier(suggestion);
+                          setValidationMessages(prev => {
+                            const { barriers: _, ...rest } = prev;
+                            return rest;
+                          });
+                          setSuggestions(prev => {
+                            const { barriers: _, ...rest } = prev;
+                            return rest;
+                          });
+                        }}
+                        className="text-xs h-auto py-1 px-2"
+                      >
+                        {suggestion}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
