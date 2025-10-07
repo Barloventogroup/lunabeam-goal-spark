@@ -173,7 +173,8 @@ Deno.serve(async (req) => {
       'sell drugs', 'buy drugs', 'drug deal', 'black market',
       'hack', 'bypass security', 'break into', 'weapon', 'bomb', 'gun',
       'sexually explicit', 'porn', 'xxx', 'sex tape',
-      'revenge', 'harm someone', 'hurt someone', 'get back at'
+      'revenge', 'harm someone', 'hurt someone', 'get back at',
+      '💣', '🔫', '🔪', '💥', '💊', '💉', '🚬', '🧨', '⚔️', '🗡️'
     ];
 
     const goalLower = payload.goalTitle.toLowerCase();
