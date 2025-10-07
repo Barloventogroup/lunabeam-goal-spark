@@ -13,7 +13,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { database } from '@/services/database';
 import { useToast } from '@/hooks/use-toast';
 import { X, ArrowLeft, Loader2 } from 'lucide-react';
-
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
   preferredName: string;
@@ -30,25 +29,24 @@ interface ParentOnboardingData {
   nextTwoWeeks: string;
   sharingSupport: 'private' | 'summary' | 'details';
 }
-
 interface ParentOnboardingProps {
   onComplete: () => void;
   onExit: () => Promise<void>;
 }
-
 const PRONOUNS_OPTIONS = ['she/her', 'he/him', 'they/them', 'she/they', 'he/they', 'name only', 'Prefer not to say', 'Custom'];
 const AGE_OPTIONS = ['13–15', '16–18', '19–22', '23–26', '27+', 'Prefer not to say'];
 const STRENGTHS_OPTIONS = ['Kind/helper', 'Creative', 'Problem solver', 'Detail-oriented', 'Curious', 'Organizer', 'Hands-on', 'Tech savvy', 'Patient', 'Communicator', 'Other'];
 const INTERESTS_OPTIONS = ['Animals', 'Art/Design', 'Building/Making', 'Games', 'Music', 'Sports/Fitness', 'Cooking', 'Nature', 'Cars', 'Reading/Writing', 'Tech/Coding', 'Volunteering/Helping', 'Money/Business', 'Puzzles', 'Other'];
 const SUGGESTIONS = ['Join a club', 'Cook a new dish', 'Short daily walk', 'Visit the library'];
-
 export function ParentOnboarding({
   onComplete,
   onExit
 }: ParentOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [data, setData] = useState<ParentOnboardingData>({
     adminName: '',
     preferredName: '',
@@ -82,21 +80,18 @@ export function ParentOnboarding({
     if (data.pronouns === 'he/him') return 'he';
     return 'they';
   };
-  
   const getPossessivePronouns = () => {
     const pronoun = getDisplayPronouns();
     if (pronoun === 'she') return 'her';
     if (pronoun === 'he') return 'his';
     return 'their';
   };
-  
   const getObjectPronouns = () => {
     const pronoun = getDisplayPronouns();
     if (pronoun === 'she') return 'her';
     if (pronoun === 'he') return 'him';
     return 'them';
   };
-
   const handleNext = async () => {
     // Step 3: Name is mandatory - validate before continuing
     if (currentStep === 3) {
@@ -104,7 +99,7 @@ export function ParentOnboarding({
         toast({
           title: "Name Required",
           description: "Please enter a name to continue.",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
@@ -115,7 +110,6 @@ export function ParentOnboarding({
       generateProfile();
     }
   };
-
   const handleBack = () => {
     if (showProfile) {
       setShowProfile(false);
@@ -124,11 +118,9 @@ export function ParentOnboarding({
       setCurrentStep(currentStep - 1);
     }
   };
-
   const handleSkip = () => {
     handleNext();
   };
-
   const toggleSelection = (array: string[], value: string, max?: number) => {
     if (array.includes(value)) {
       return array.filter(item => item !== value);
@@ -137,7 +129,6 @@ export function ParentOnboarding({
     }
     return array;
   };
-
   const generateProfile = () => {
     const name = data.preferredName || 'The person you are helping';
     const pronoun = getDisplayPronouns();
@@ -163,16 +154,17 @@ export function ParentOnboarding({
     setGeneratedProfile(summary);
     setShowProfile(true);
   };
-
   const handleComplete = async () => {
     if (isCreating) {
-      console.log('🔒 handleComplete blocked: already creating', { timestamp: Date.now() });
+      console.log('🔒 handleComplete blocked: already creating', {
+        timestamp: Date.now()
+      });
       return;
     }
-
-    console.log('🚀 Let\'s go button clicked - starting handleComplete', { timestamp: Date.now() });
+    console.log('🚀 Let\'s go button clicked - starting handleComplete', {
+      timestamp: Date.now()
+    });
     setIsCreating(true);
-
     const adminProfile = {
       first_name: data.adminName.trim() || 'Admin',
       strengths: [],
@@ -182,11 +174,9 @@ export function ParentOnboarding({
       onboarding_complete: true,
       user_type: 'admin' as const
     };
-    
     try {
       console.log('✅ Parent onboarding: Creating admin profile:', adminProfile);
       console.log('👤 Parent onboarding: Will create individual profile:', data.preferredName, data.strengths, data.interests);
-
       if (data.adminName.trim()) {
         try {
           await supabase.auth.updateUser({
@@ -199,14 +189,11 @@ export function ParentOnboarding({
           console.warn('Failed to save admin name to metadata:', metaError);
         }
       }
-
       useStore.setState({
         profile: null
       });
-
       await database.saveProfile(adminProfile);
       console.log('Admin profile saved to database:', adminProfile);
-
       if (data.preferredName.trim()) {
         console.log('👤 Parent onboarding: Creating provisional profile for:', data.preferredName.trim());
         console.log('📞 Parent onboarding: Calling provision_individual_direct with:', {
@@ -258,11 +245,9 @@ export function ParentOnboarding({
       } else {
         console.log('⏭️ No individual name provided, skipping individual account creation');
       }
-
       useStore.setState({
         profile: adminProfile
       });
-
       await completeOnboarding();
       console.log('🎉 Parent onboarding completed successfully - both admin and individual profiles created');
       onComplete();
@@ -283,7 +268,6 @@ export function ParentOnboarding({
       setIsCreating(false);
     }
   };
-
   if (showProfile) {
     return <div className="min-h-screen bg-gradient-soft p-4 flex items-center justify-center">
       <Card className="w-full max-w-md shadow-card border-0">
@@ -307,14 +291,10 @@ export function ParentOnboarding({
             </p>
             <div className="space-y-2">
               <Button onClick={handleComplete} className="w-full" disabled={isCreating}>
-                {isCreating ? (
-                  <>
+                {isCreating ? <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Setting things up...
-                  </>
-                ) : (
-                  "Let's go 🚀"
-                )}
+                  </> : "Let's go 🚀"}
               </Button>
               <Button variant="outline" onClick={handleBack} className="w-full">
                 Skip for now
@@ -325,92 +305,65 @@ export function ParentOnboarding({
       </Card>
     </div>;
   }
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       {/* Exit button */}
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        onClick={onExit} 
-        className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50"
-      >
+      <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
         <X className="h-4 w-4" />
       </Button>
       
       {/* HEADER - 50vh */}
       <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
         <div className="max-w-2xl mx-auto w-full">
-          {currentStep === 1 && (
-            <div className="space-y-2">
+          {currentStep === 1 && <div className="space-y-2">
               <h2 className="text-xl font-semibold">What should I call you?</h2>
               <p className="text-foreground-soft">
                 First, let me know your name so I can greet you properly!
               </p>
-            </div>
-          )}
+            </div>}
           
-          {currentStep === 2 && (
-            <div className="text-center space-y-2">
-              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white text-xl">👨‍👩‍👧‍👦</span>
-              </div>
+          {currentStep === 2 && <div className="text-center space-y-2">
+              
               <h2 className="text-xl font-semibold">Let's get to know them</h2>
               <p className="text-foreground-soft">
                 A few quick questions help me suggest better goals. Use a nickname if you want - you can change anything later.
               </p>
-            </div>
-          )}
+            </div>}
           
-          {currentStep === 3 && (
-            <div className="space-y-2">
+          {currentStep === 3 && <div className="space-y-2">
               <h2 className="text-xl font-semibold">What should we call them?</h2>
               <p className="text-foreground-soft">
                 This is how we'll address them in the app. Initials or a nickname are okay.
               </p>
-            </div>
-          )}
+            </div>}
 
-          {currentStep === 4 && (
-            <div className="space-y-2">
+          {currentStep === 4 && <div className="space-y-2">
               <h2 className="text-xl font-semibold">How old are they?</h2>
-            </div>
-          )}
+            </div>}
 
-          {currentStep === 5 && (
-            <div className="space-y-2">
+          {currentStep === 5 && <div className="space-y-2">
               <h2 className="text-xl font-semibold">What are 2–3 things they're great at?</h2>
-            </div>
-          )}
+            </div>}
 
-          {currentStep === 6 && (
-            <div className="space-y-2">
+          {currentStep === 6 && <div className="space-y-2">
               <h2 className="text-xl font-semibold">What draws their interest?</h2>
               <p className="text-foreground-soft">Choose up to 5 areas</p>
-            </div>
-          )}
+            </div>}
 
-          {currentStep === 7 && (
-            <div className="space-y-2">
+          {currentStep === 7 && <div className="space-y-2">
               <h2 className="text-xl font-semibold">How do they usually like to do things?</h2>
               <p className="text-foreground-soft">Tap one from each pair</p>
-            </div>
-          )}
+            </div>}
 
-          {currentStep === 8 && (
-            <div className="space-y-2">
+          {currentStep === 8 && <div className="space-y-2">
               <h2 className="text-xl font-semibold">One small thing they might try in the next two weeks</h2>
-            </div>
-          )}
+            </div>}
 
-          {currentStep === 9 && (
-            <div className="space-y-2">
+          {currentStep === 9 && <div className="space-y-2">
               <h2 className="text-xl font-semibold">Sharing and support</h2>
               <p className="text-foreground-soft">
                 Controls what you see as a supporter. You can change this anytime.
               </p>
-            </div>
-          )}
+            </div>}
         </div>
       </div>
       
@@ -418,135 +371,96 @@ export function ParentOnboarding({
       <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
         <div className="max-w-2xl mx-auto">
           {/* Step 1: Admin Name */}
-          {currentStep === 1 && (
-            <div className="space-y-4">
-              <Input
-                value={data.adminName}
-                onChange={(e) => setData(prev => ({ ...prev, adminName: e.target.value }))}
-                placeholder="Your name"
-                className="text-left text-sm"
-              />
-            </div>
-          )}
+          {currentStep === 1 && <div className="space-y-4">
+              <Input value={data.adminName} onChange={e => setData(prev => ({
+            ...prev,
+            adminName: e.target.value
+          }))} placeholder="Your name" className="text-left text-sm" />
+            </div>}
 
           {/* Step 2: Intro (no inputs) */}
-          {currentStep === 2 && (
-            <div className="text-center">
+          {currentStep === 2 && <div className="text-center">
               {/* No inputs - just the header message */}
-            </div>
-          )}
+            </div>}
 
           {/* Step 3: Name and Pronouns */}
-          {currentStep === 3 && (
-            <div className="space-y-4">
+          {currentStep === 3 && <div className="space-y-4">
               <div>
                 <Label className="text-sm font-medium">Preferred name <span className="text-red-500">*</span></Label>
-                <Input 
-                  value={data.preferredName} 
-                  onChange={e => setData(prev => ({ ...prev, preferredName: e.target.value }))} 
-                  placeholder="Enter their preferred name" 
-                  className="mt-1" 
-                  required 
-                />
+                <Input value={data.preferredName} onChange={e => setData(prev => ({
+              ...prev,
+              preferredName: e.target.value
+            }))} placeholder="Enter their preferred name" className="mt-1" required />
               </div>
 
               <div>
                 <Label className="text-sm font-medium">What are this person's pronouns?</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {PRONOUNS_OPTIONS.map(pronoun => (
-                    <Button 
-                      key={pronoun} 
-                      variant={data.pronouns === pronoun ? "default" : "outline"} 
-                      onClick={() => setData(prev => ({ ...prev, pronouns: pronoun }))} 
-                      className="text-sm h-auto py-1 px-3"
-                    >
+                  {PRONOUNS_OPTIONS.map(pronoun => <Button key={pronoun} variant={data.pronouns === pronoun ? "default" : "outline"} onClick={() => setData(prev => ({
+                ...prev,
+                pronouns: pronoun
+              }))} className="text-sm h-auto py-1 px-3">
                       {pronoun}
-                    </Button>
-                  ))}
+                    </Button>)}
                 </div>
-                {data.pronouns === 'Custom' && (
-                  <Input 
-                    value={customPronouns} 
-                    onChange={e => setCustomPronouns(e.target.value)} 
-                    placeholder="Enter custom pronouns" 
-                    className="mt-2" 
-                  />
-                )}
+                {data.pronouns === 'Custom' && <Input value={customPronouns} onChange={e => setCustomPronouns(e.target.value)} placeholder="Enter custom pronouns" className="mt-2" />}
                 <p className="text-xs text-foreground-soft mt-1">
                   We ask so we can be respectful. You can change this later.
                 </p>
               </div>
-            </div>
-          )}
+            </div>}
 
           {/* Step 4: Age */}
-          {currentStep === 4 && (
-            <div className="flex flex-wrap gap-2">
-              {AGE_OPTIONS.map(age => (
-                <Button 
-                  key={age} 
-                  variant={data.age === age ? "default" : "outline"} 
-                  onClick={() => setData(prev => ({ ...prev, age }))} 
-                  className="text-sm h-auto py-2 px-3"
-                >
+          {currentStep === 4 && <div className="flex flex-wrap gap-2">
+              {AGE_OPTIONS.map(age => <Button key={age} variant={data.age === age ? "default" : "outline"} onClick={() => setData(prev => ({
+            ...prev,
+            age
+          }))} className="text-sm h-auto py-2 px-3">
                   {age}
-                </Button>
-              ))}
-            </div>
-          )}
+                </Button>)}
+            </div>}
 
           {/* Step 5: Strengths */}
-          {currentStep === 5 && (
-            <div className="flex flex-wrap gap-2">
-              {STRENGTHS_OPTIONS.map(strength => (
-                <Button 
-                  key={strength} 
-                  variant={data.strengths.includes(strength) ? "default" : "outline"} 
-                  onClick={() => setData(prev => ({ ...prev, strengths: toggleSelection(prev.strengths, strength, 3) }))} 
-                  className="text-sm h-auto py-2 px-3" 
-                  disabled={!data.strengths.includes(strength) && data.strengths.length >= 3}
-                >
+          {currentStep === 5 && <div className="flex flex-wrap gap-2">
+              {STRENGTHS_OPTIONS.map(strength => <Button key={strength} variant={data.strengths.includes(strength) ? "default" : "outline"} onClick={() => setData(prev => ({
+            ...prev,
+            strengths: toggleSelection(prev.strengths, strength, 3)
+          }))} className="text-sm h-auto py-2 px-3" disabled={!data.strengths.includes(strength) && data.strengths.length >= 3}>
                   {strength}
-                </Button>
-              ))}
-            </div>
-          )}
+                </Button>)}
+            </div>}
 
           {/* Step 6: Interests */}
-          {currentStep === 6 && (
-            <div className="flex flex-wrap gap-2">
-              {INTERESTS_OPTIONS.map(interest => (
-                <Button 
-                  key={interest} 
-                  variant={data.interests.includes(interest) ? "default" : "outline"} 
-                  onClick={() => setData(prev => ({ ...prev, interests: toggleSelection(prev.interests, interest, 5) }))} 
-                  className="text-sm h-auto py-2 px-3" 
-                  disabled={!data.interests.includes(interest) && data.interests.length >= 5}
-                >
+          {currentStep === 6 && <div className="flex flex-wrap gap-2">
+              {INTERESTS_OPTIONS.map(interest => <Button key={interest} variant={data.interests.includes(interest) ? "default" : "outline"} onClick={() => setData(prev => ({
+            ...prev,
+            interests: toggleSelection(prev.interests, interest, 5)
+          }))} className="text-sm h-auto py-2 px-3" disabled={!data.interests.includes(interest) && data.interests.length >= 5}>
                   {interest}
-                </Button>
-              ))}
-            </div>
-          )}
+                </Button>)}
+            </div>}
 
           {/* Step 7: Work Style */}
-          {currentStep === 7 && (
-            <div className="space-y-4">
+          {currentStep === 7 && <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <span className="font-medium">Solo</span>
                 <div className="flex gap-1">
-                  <Button 
-                    variant={data.workStyle.socialPreference === 'solo' ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, socialPreference: 'solo' } }))}
-                  >
+                  <Button variant={data.workStyle.socialPreference === 'solo' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
+                ...prev,
+                workStyle: {
+                  ...prev.workStyle,
+                  socialPreference: 'solo'
+                }
+              }))}>
                     Solo
                   </Button>
-                  <Button 
-                    variant={data.workStyle.socialPreference === 'with-others' ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, socialPreference: 'with-others' } }))}
-                  >
+                  <Button variant={data.workStyle.socialPreference === 'with-others' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
+                ...prev,
+                workStyle: {
+                  ...prev.workStyle,
+                  socialPreference: 'with-others'
+                }
+              }))}>
                     With others
                   </Button>
                 </div>
@@ -556,18 +470,22 @@ export function ParentOnboarding({
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <span className="font-medium">Quiet spaces</span>
                 <div className="flex gap-1">
-                  <Button 
-                    variant={data.workStyle.environment === 'quiet' ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, environment: 'quiet' } }))}
-                  >
+                  <Button variant={data.workStyle.environment === 'quiet' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
+                ...prev,
+                workStyle: {
+                  ...prev.workStyle,
+                  environment: 'quiet'
+                }
+              }))}>
                     Quiet
                   </Button>
-                  <Button 
-                    variant={data.workStyle.environment === 'lively' ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, environment: 'lively' } }))}
-                  >
+                  <Button variant={data.workStyle.environment === 'lively' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
+                ...prev,
+                workStyle: {
+                  ...prev.workStyle,
+                  environment: 'lively'
+                }
+              }))}>
                     Lively
                   </Button>
                 </div>
@@ -577,18 +495,22 @@ export function ParentOnboarding({
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <span className="font-medium">Screens</span>
                 <div className="flex gap-1">
-                  <Button 
-                    variant={data.workStyle.activity === 'screens' ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, activity: 'screens' } }))}
-                  >
+                  <Button variant={data.workStyle.activity === 'screens' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
+                ...prev,
+                workStyle: {
+                  ...prev.workStyle,
+                  activity: 'screens'
+                }
+              }))}>
                     Screens
                   </Button>
-                  <Button 
-                    variant={data.workStyle.activity === 'hands-on' ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, activity: 'hands-on' } }))}
-                  >
+                  <Button variant={data.workStyle.activity === 'hands-on' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
+                ...prev,
+                workStyle: {
+                  ...prev.workStyle,
+                  activity: 'hands-on'
+                }
+              }))}>
                     Hands-on
                   </Button>
                 </div>
@@ -598,61 +520,53 @@ export function ParentOnboarding({
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <span className="font-medium">Short bursts</span>
                 <div className="flex gap-1">
-                  <Button 
-                    variant={data.workStyle.duration === 'short-bursts' ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, duration: 'short-bursts' } }))}
-                  >
+                  <Button variant={data.workStyle.duration === 'short-bursts' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
+                ...prev,
+                workStyle: {
+                  ...prev.workStyle,
+                  duration: 'short-bursts'
+                }
+              }))}>
                     Short bursts
                   </Button>
-                  <Button 
-                    variant={data.workStyle.duration === 'longer-sessions' ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setData(prev => ({ ...prev, workStyle: { ...prev.workStyle, duration: 'longer-sessions' } }))}
-                  >
+                  <Button variant={data.workStyle.duration === 'longer-sessions' ? "default" : "outline"} size="sm" onClick={() => setData(prev => ({
+                ...prev,
+                workStyle: {
+                  ...prev.workStyle,
+                  duration: 'longer-sessions'
+                }
+              }))}>
                     Longer sessions
                   </Button>
                 </div>
                 <span className="font-medium">Longer sessions</span>
               </div>
-            </div>
-          )}
+            </div>}
 
           {/* Step 8: Next Two Weeks */}
-          {currentStep === 8 && (
-            <div className="space-y-4">
-              <Textarea 
-                value={data.nextTwoWeeks} 
-                onChange={e => setData(prev => ({ ...prev, nextTwoWeeks: e.target.value }))} 
-                placeholder="Optional - describe something small they could try" 
-                className="mt-2" 
-                rows={3} 
-              />
+          {currentStep === 8 && <div className="space-y-4">
+              <Textarea value={data.nextTwoWeeks} onChange={e => setData(prev => ({
+            ...prev,
+            nextTwoWeeks: e.target.value
+          }))} placeholder="Optional - describe something small they could try" className="mt-2" rows={3} />
               <div>
                 <p className="text-sm font-medium mb-2">Suggestions:</p>
                 <div className="flex flex-wrap gap-2">
-                  {SUGGESTIONS.map(suggestion => (
-                    <Button 
-                      key={suggestion} 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setData(prev => ({ ...prev, nextTwoWeeks: suggestion }))} 
-                      className="text-xs"
-                    >
+                  {SUGGESTIONS.map(suggestion => <Button key={suggestion} variant="outline" size="sm" onClick={() => setData(prev => ({
+                ...prev,
+                nextTwoWeeks: suggestion
+              }))} className="text-xs">
                       {suggestion}
-                    </Button>
-                  ))}
+                    </Button>)}
                 </div>
               </div>
-            </div>
-          )}
+            </div>}
 
           {/* Step 9: Sharing and Support */}
-          {currentStep === 9 && (
-            <RadioGroup 
-              value={data.sharingSupport} 
-              onValueChange={value => setData(prev => ({ ...prev, sharingSupport: value as any }))}
-            >
+          {currentStep === 9 && <RadioGroup value={data.sharingSupport} onValueChange={value => setData(prev => ({
+          ...prev,
+          sharingSupport: value as any
+        }))}>
               <div className="space-y-3">
                 <div className="flex items-start space-x-2 p-3 border rounded-lg">
                   <RadioGroupItem value="private" id="private" className="mt-1" />
@@ -676,8 +590,7 @@ export function ParentOnboarding({
                   </Label>
                 </div>
               </div>
-            </RadioGroup>
-          )}
+            </RadioGroup>}
         </div>
       </div>
       
@@ -688,6 +601,5 @@ export function ParentOnboarding({
           {currentStep === totalSteps ? 'Create Profile' : 'Continue'}
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 }
