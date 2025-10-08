@@ -69,21 +69,45 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     }
   }, [goal, steps]);
 
-  const calculateProgress = (goalSteps: Step[]): GoalProgress => {
+  const calculateProgress = async (goalSteps: Step[]): Promise<GoalProgress> => {
     const actionableSteps = goalSteps.filter(s => (!s.type || s.type === 'action') && !s.hidden && s.status !== 'skipped');
-    const doneSteps = actionableSteps.filter(s => s.status === 'done');
+    
+    // Fetch substeps for all steps to include in count
+    let totalCompletableItems = 0;
+    let completedItems = 0;
+    
+    for (const step of actionableSteps) {
+      const { data: substeps } = await supabase
+        .from('substeps')
+        .select('*')
+        .eq('step_id', step.id)
+        .order('created_at', { ascending: true });
+      
+      const stepSubsteps = substeps || [];
+      
+      if (stepSubsteps.length > 0) {
+        // If step has substeps, count each substep
+        totalCompletableItems += stepSubsteps.length;
+        completedItems += stepSubsteps.filter(sub => sub.completed_at).length;
+      } else {
+        // If no substeps, count the main step
+        totalCompletableItems += 1;
+        completedItems += step.status === 'done' ? 1 : 0;
+      }
+    }
     
     console.log('Goal progress calculation debug:', {
       totalSteps: goalSteps.length,
       actionableSteps: actionableSteps.length,
-      doneSteps: doneSteps.length,
+      totalCompletableItems,
+      completedItems,
       actionableStepsDetails: actionableSteps.map(s => ({ id: s.id, title: s.title, status: s.status, type: s.type, hidden: s.hidden }))
     });
     
     return {
-      done: doneSteps.length,
-      actionable: actionableSteps.length,
-      percent: actionableSteps.length > 0 ? Math.round((doneSteps.length / actionableSteps.length) * 100) : 0
+      done: completedItems,
+      actionable: totalCompletableItems,
+      percent: totalCompletableItems > 0 ? Math.round((completedItems / totalCompletableItems) * 100) : 0
     };
   };
 
@@ -115,7 +139,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         // Use steps as-is, no auto-generation
         const finalSteps = stepsData || [];
 
-        const progress = calculateProgress(finalSteps);
+        const progress = await calculateProgress(finalSteps);
         setGoal({ ...goalData, progress });
         setSteps(finalSteps);
       } else {
@@ -138,8 +162,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     }
   };
 
-  const handleStepsUpdate = (updatedSteps: Step[], updatedGoal: Goal) => {
-    const progress = calculateProgress(updatedSteps);
+  const handleStepsUpdate = async (updatedSteps: Step[], updatedGoal: Goal) => {
+    const progress = await calculateProgress(updatedSteps);
     setSteps(updatedSteps);
     setGoal({ ...updatedGoal, progress });
   };
@@ -153,7 +177,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     // Reload steps from database to get the latest data
     try {
       const updatedSteps = await stepsService.getSteps(goalId);
-      const progress = calculateProgress(updatedSteps);
+      const progress = await calculateProgress(updatedSteps);
       setSteps(updatedSteps);
       if (goal) {
         setGoal({ ...goal, progress });

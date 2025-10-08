@@ -84,17 +84,39 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       
       setGoals(goalsData);
 
-      // Load step counts for each goal
+      // Load step counts for each goal (including substeps)
       const counts: Record<string, { required: number; done: number }> = {};
       for (const goal of goalsData) {
         try {
           const steps = await stepsService.getSteps(goal.id);
-          // Use same logic as goal detail view - actionable steps include new schema too
           const actionableSteps = steps.filter(s => ((!s.type || s.type === 'action') || (s.step_type && s.step_type !== 'container')) && !s.hidden && s.status !== 'skipped');
-          const doneSteps = actionableSteps.filter(s => s.status === 'done');
+          
+          // Count substeps for accurate progress
+          let totalCompletableItems = 0;
+          let completedItems = 0;
+          
+          for (const step of actionableSteps) {
+            const { data: substeps } = await supabase
+              .from('substeps')
+              .select('*')
+              .eq('step_id', step.id);
+            
+            const stepSubsteps = substeps || [];
+            
+            if (stepSubsteps.length > 0) {
+              // If step has substeps, count each substep
+              totalCompletableItems += stepSubsteps.length;
+              completedItems += stepSubsteps.filter(sub => sub.completed_at).length;
+            } else {
+              // If no substeps, count the main step
+              totalCompletableItems += 1;
+              completedItems += step.status === 'done' ? 1 : 0;
+            }
+          }
+          
           counts[goal.id] = {
-            required: actionableSteps.length,
-            done: doneSteps.length
+            required: totalCompletableItems,
+            done: completedItems
           };
         } catch (error) {
           console.error(`Failed to load steps for goal ${goal.id}:`, error);
