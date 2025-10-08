@@ -26,6 +26,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useStore } from '@/store/useStore';
 import { cleanStepTitle } from '@/utils/stepUtils';
 import { parseISO, isBefore } from 'date-fns';
+import Lottie from 'lottie-react';
+import successCheckAnimation from '@/assets/success-check-animation.json';
 
 // Utility function to format dates
 const formatDate = (dateStr: string): string => {
@@ -110,6 +112,7 @@ export const StepsList: React.FC<StepsListProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
   const [showFireworks, setShowFireworks] = useState(false);
+  const [showSuccessCheck, setShowSuccessCheck] = useState(false);
   const [showSetupSteps, setShowSetupSteps] = useState(true);
   const { toast } = useToast();
 
@@ -475,6 +478,10 @@ export const StepsList: React.FC<StepsListProps> = ({
         next.delete(stepId);
         return next;
       });
+
+      // Trigger success animation
+      setShowSuccessCheck(true);
+      setTimeout(() => setShowSuccessCheck(false), 2000);
 
       // Trigger fireworks animation
       setShowFireworks(true);
@@ -1512,6 +1519,17 @@ export const StepsList: React.FC<StepsListProps> = ({
         onClose={() => setShowGoalCelebration(false)}
         goalTitle={goal.title}
       />
+      
+      {/* Success Check Animation */}
+      {showSuccessCheck && (
+        <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+          <Lottie 
+            animationData={successCheckAnimation} 
+            loop={false}
+            style={{ width: 300, height: 300 }}
+          />
+        </div>
+      )}
     </Card>
 
     {/* Modals outside the Card components */}
