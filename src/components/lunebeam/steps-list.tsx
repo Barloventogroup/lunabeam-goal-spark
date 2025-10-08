@@ -483,9 +483,6 @@ export const StepsList: React.FC<StepsListProps> = ({
       setShowSuccessCheck(true);
       setTimeout(() => setShowSuccessCheck(false), 2000);
 
-      // Trigger fireworks animation
-      setShowFireworks(true);
-
       toast({
         title: "Step completed!",
         description: `Great job! You've completed this step.`,
