@@ -27,7 +27,7 @@ import { useStore } from '@/store/useStore';
 import { cleanStepTitle } from '@/utils/stepUtils';
 import { parseISO, isBefore } from 'date-fns';
 import Lottie from 'lottie-react';
-import successCheckAnimation from '@/assets/success-check-animation.json';
+import successAnimation from '@/assets/success-animation.json';
 
 // Utility function to format dates
 const formatDate = (dateStr: string): string => {
@@ -1517,11 +1517,11 @@ export const StepsList: React.FC<StepsListProps> = ({
         goalTitle={goal.title}
       />
       
-      {/* Success Check Animation */}
+      {/* Success Animation */}
       {showSuccessCheck && (
         <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
           <Lottie 
-            animationData={successCheckAnimation} 
+            animationData={successAnimation} 
             loop={false}
             style={{ width: 300, height: 300 }}
           />
