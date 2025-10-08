@@ -12,9 +12,10 @@ import { RewardsHub } from '../lunebeam/rewards-hub';
 import { RewardsGallery, RewardsAdminList, RedemptionInbox } from '../lunebeam/reward-bank';
 import { ProfileView } from '../lunebeam/profile-view';
 import { NotificationsList } from '../lunebeam/notifications-list';
+import { SettingsPrivacyView } from '../lunebeam/settings-privacy-view';
 import { notificationsService } from '@/services/notificationsService';
 import { supabase } from '@/integrations/supabase/client';
-type YouView = 'profile' | 'rewards' | 'achievements' | 'rewardsHub' | 'profileDetail' | 'rewardBank' | 'rewardAdmin' | 'redemptionInbox' | 'notifications';
+type YouView = 'profile' | 'rewards' | 'achievements' | 'rewardsHub' | 'profileDetail' | 'rewardBank' | 'rewardAdmin' | 'redemptionInbox' | 'notifications' | 'settingsPrivacy';
 
 interface TabYouProps {
   initialView?: YouView;
@@ -132,6 +133,9 @@ export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
   if (currentView === 'notifications') {
     return <NotificationsList onBack={() => setCurrentView('profile')} />;
   }
+  if (currentView === 'settingsPrivacy') {
+    return <SettingsPrivacyView onBack={() => setCurrentView('profile')} />;
+  }
   return <div className="min-h-screen bg-gradient-soft">
       {/* Header */}
       <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
@@ -219,7 +223,7 @@ export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
           </Card>
 
           {/* Settings & Privacy */}
-          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentView('settingsPrivacy')}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

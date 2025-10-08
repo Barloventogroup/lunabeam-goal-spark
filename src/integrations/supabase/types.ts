@@ -686,12 +686,15 @@ export type Database = {
           created_by_supporter: string | null
           email: string | null
           first_name: string
+          goal_sharing: string | null
           guardian_locked_until: string | null
           id: string
           interests: string[] | null
           is_self_registered: boolean
           onboarding_complete: boolean
           password_set: boolean | null
+          profile_visibility: string | null
+          progress_sharing: string | null
           strengths: string[] | null
           updated_at: string
           user_id: string
@@ -708,12 +711,15 @@ export type Database = {
           created_by_supporter?: string | null
           email?: string | null
           first_name: string
+          goal_sharing?: string | null
           guardian_locked_until?: string | null
           id?: string
           interests?: string[] | null
           is_self_registered?: boolean
           onboarding_complete?: boolean
           password_set?: boolean | null
+          profile_visibility?: string | null
+          progress_sharing?: string | null
           strengths?: string[] | null
           updated_at?: string
           user_id: string
@@ -730,12 +736,15 @@ export type Database = {
           created_by_supporter?: string | null
           email?: string | null
           first_name?: string
+          goal_sharing?: string | null
           guardian_locked_until?: string | null
           id?: string
           interests?: string[] | null
           is_self_registered?: boolean
           onboarding_complete?: boolean
           password_set?: boolean | null
+          profile_visibility?: string | null
+          progress_sharing?: string | null
           strengths?: string[] | null
           updated_at?: string
           user_id?: string

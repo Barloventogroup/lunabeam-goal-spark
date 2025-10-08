@@ -34,9 +34,9 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
       if (error) throw error;
 
       if (data) {
-        setProfileVisibility(data.profile_visibility || 'supporters');
-        setGoalSharing(data.goal_sharing || 'supporters');
-        setProgressSharing(data.progress_sharing || 'weekly');
+        setProfileVisibility((data.profile_visibility || 'supporters') as 'public' | 'supporters' | 'private');
+        setGoalSharing((data.goal_sharing || 'supporters') as 'all' | 'supporters' | 'private');
+        setProgressSharing((data.progress_sharing || 'weekly') as 'realtime' | 'weekly' | 'manual');
       }
     } catch (error) {
       console.error('Error loading privacy settings:', error);
