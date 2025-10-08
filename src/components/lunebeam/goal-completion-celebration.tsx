@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Fireworks } from '@/components/ui/fireworks';
+import Lottie from 'lottie-react';
+import trophyAnimation from '@/assets/trophy-animation.json';
 
 interface GoalCompletionCelebrationProps {
   isOpen: boolean;
@@ -31,7 +33,13 @@ export const GoalCompletionCelebration: React.FC<GoalCompletionCelebrationProps>
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="max-w-md text-center bg-card border border-border">
           <div className="space-y-6 py-6">
-            <div className="text-6xl">💪</div>
+            <div className="flex justify-center">
+              <Lottie 
+                animationData={trophyAnimation} 
+                loop={false}
+                style={{ width: 200, height: 200 }}
+              />
+            </div>
             
             <div className="space-y-3">
               <h2 className="text-2xl font-bold text-foreground">
