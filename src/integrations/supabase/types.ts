@@ -688,6 +688,7 @@ export type Database = {
           first_name: string
           goal_sharing: string | null
           guardian_locked_until: string | null
+          has_seen_welcome: boolean | null
           id: string
           interests: string[] | null
           is_self_registered: boolean
@@ -713,6 +714,7 @@ export type Database = {
           first_name: string
           goal_sharing?: string | null
           guardian_locked_until?: string | null
+          has_seen_welcome?: boolean | null
           id?: string
           interests?: string[] | null
           is_self_registered?: boolean
@@ -738,6 +740,7 @@ export type Database = {
           first_name?: string
           goal_sharing?: string | null
           guardian_locked_until?: string | null
+          has_seen_welcome?: boolean | null
           id?: string
           interests?: string[] | null
           is_self_registered?: boolean

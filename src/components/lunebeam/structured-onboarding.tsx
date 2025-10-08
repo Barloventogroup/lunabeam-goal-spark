@@ -278,9 +278,27 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const handleComplete = async () => {
     if (isCreating) return;
     
-    // Show confetti animation immediately
-    setShowConfetti(true);
     setIsCreating(true);
+    
+    // Check if user has seen welcome animation before
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('has_seen_welcome')
+          .eq('user_id', user.id)
+          .single();
+        
+        // Only show confetti if this is first time
+        if (!profileData?.has_seen_welcome) {
+          setShowConfetti(true);
+        }
+      }
+    } catch (error) {
+      console.warn('Could not check welcome status, showing confetti:', error);
+      setShowConfetti(true);
+    }
     
     const localProfile = {
       first_name: data.name || 'User',
@@ -290,6 +308,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       comm_pref: 'text' as const,
       onboarding_complete: true,
       user_type: 'individual' as const,
+      has_seen_welcome: true, // Mark as seen
     };
 
     try {

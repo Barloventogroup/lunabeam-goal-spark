@@ -278,10 +278,28 @@ export function ParentOnboarding({
       timestamp: Date.now()
     });
     
-    // Show confetti animation
-    setShowConfetti(true);
-    
     setIsCreating(true);
+    
+    // Check if user has seen welcome animation before
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('has_seen_welcome')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        // Only show confetti if this is first time
+        if (!profileData?.has_seen_welcome) {
+          setShowConfetti(true);
+        }
+      }
+    } catch (error) {
+      console.warn('Could not check welcome status, showing confetti:', error);
+      setShowConfetti(true);
+    }
+    
     const adminProfile = {
       first_name: data.adminName.trim() || 'Admin',
       strengths: [],
@@ -289,7 +307,8 @@ export function ParentOnboarding({
       challenges: [],
       comm_pref: 'text' as const,
       onboarding_complete: true,
-      user_type: 'admin' as const
+      user_type: 'admin' as const,
+      has_seen_welcome: true, // Mark as seen
     };
     try {
       console.log('✅ Parent onboarding: Creating admin profile:', adminProfile);
