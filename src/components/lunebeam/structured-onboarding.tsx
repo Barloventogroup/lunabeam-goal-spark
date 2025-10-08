@@ -276,6 +276,12 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   };
 
   const handleComplete = async () => {
+    if (isCreating) return;
+    
+    // Show confetti animation immediately
+    setShowConfetti(true);
+    setIsCreating(true);
+    
     const localProfile = {
       first_name: data.name || 'User',
       strengths: data.superpowers,
