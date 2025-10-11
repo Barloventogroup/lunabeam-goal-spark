@@ -1984,24 +1984,21 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   // Get current section information based on step and role
   const getStepSection = () => {
     if (actuallySupportsAnyone) {
-      // Supporter flow - 6 sections
-      if (currentStep! >= 0 && currentStep! <= 2) return { label: 'The Goal', index: 1, total: 6 };
-      if (currentStep === 3) return { label: 'Prerequisites', index: 2, total: 6 };
-      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenge', index: 3, total: 6 };
-      if (currentStep === 6) return { label: 'When and How Often', index: 4, total: 6 };
-      if (currentStep === 7) return { label: 'The Team', index: 5, total: 6 };
-      if (currentStep === 8) return { label: 'Rewards', index: 6, total: 6 };
-      if (currentStep === 9) return { label: 'Commitment & Activation', index: 7, total: 6 };
+      // Supporter flow - 5 sections
+      if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
+      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenge', index: 2, total: 5 };
+      if (currentStep === 6) return { label: 'When and How Often', index: 3, total: 5 };
+      if (currentStep === 7) return { label: 'The Team', index: 4, total: 5 };
+      if (currentStep === 8 || currentStep === 9) return { label: 'Commitment & Activation', index: 5, total: 5 };
     } else {
       // Non-supporter flow - 5 sections
-      if (currentStep! >= 1 && currentStep! <= 2) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep === 3) return { label: 'Prerequisites', index: 2, total: 5 };
-      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenges', index: 3, total: 5 };
-      if (currentStep === 6) return { label: 'When and How Often', index: 4, total: 5 };
-      if (currentStep === 7) return { label: 'The Team', index: 5, total: 5 };
-      if (currentStep === 8) return { label: 'Your First Steps', index: 6, total: 5 };
+      if (currentStep! >= 1 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
+      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenges', index: 2, total: 5 };
+      if (currentStep === 6) return { label: 'When and How Often', index: 3, total: 5 };
+      if (currentStep === 7) return { label: 'The Team', index: 4, total: 5 };
+      if (currentStep === 8) return { label: 'Your First Steps', index: 5, total: 5 };
     }
-    return { label: '', index: 0, total: 6 };
+    return { label: '', index: 0, total: 5 };
   };
 
   const section = getStepSection();
