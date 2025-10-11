@@ -359,6 +359,7 @@ interface WizardData {
   // Step 6: Scheduling & timing
   startDate: Date;
   endDate?: Date;
+  projectCompletionDate?: Date; // For new_skill: mandatory completion deadline
   frequency: number;
   selectedDays?: string[]; // Array of selected day codes like ['mon', 'tue', 'wed']
   timeOfDay?: string;
@@ -414,7 +415,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [datePickerType, setDatePickerType] = useState<'start' | 'end'>('start');
+  const [datePickerType, setDatePickerType] = useState<'start' | 'end' | 'completion'>('start');
   const [tempHour, setTempHour] = useState<string>("08");
   const [tempMinute, setTempMinute] = useState<string>("00");
   const [tempPeriod, setTempPeriod] = useState<"AM" | "PM">("AM");
@@ -610,8 +611,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const name = data.supportedPersonName;
 
     // Use supporterTitles when step 0 exists (actuallySupportsAnyone), otherwise use nonSupporterTitles
-    const supporterTitles = ['Who is this goal for?', `What is the one clear, observable action ${isForOther ? name || 'they' : 'you'} need${isForOther && name ? 's' : ''} to establish?`, `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`, `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, 'What type of goal?', `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`, `Let's build a reliable structure for ${isForOther ? name || 'they' : 'you'}`, 'Support context', 'Review and Create'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter to you?', 'Prerequisites check', 'What type of goal?', 'Which part usually feels the trickiest when you start this?', "Let's start building the plan to crush this goal", 'Support context', 'Review and Create'];
+    const step6Title = data.goalType === 'new_skill' 
+      ? (actuallySupportsAnyone 
+        ? `When will ${isForOther ? name || 'they' : 'you'} work on this project?`
+        : "When will you work on this project?")
+      : (actuallySupportsAnyone
+        ? `Let's build a reliable structure for ${isForOther ? name || 'they' : 'you'}`
+        : "Let's start building the plan to crush this goal");
+    
+    const supporterTitles = ['Who is this goal for?', `What is the one clear, observable action ${isForOther ? name || 'they' : 'you'} need${isForOther && name ? 's' : ''} to establish?`, `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`, `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, 'What type of goal?', `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`, step6Title, 'Support context', 'Review and Create'];
+    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter to you?', 'Prerequisites check', 'What type of goal?', 'Which part usually feels the trickiest when you start this?', step6Title, 'Support context', 'Review and Create'];
     if (actuallySupportsAnyone) {
       return supporterTitles[currentStep] || '';
     } else {
@@ -642,8 +651,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Challenge areas
         return (data.challengeAreas?.length || 0) > 0;
       case 6:
-        // Scheduling - must have selected days, time, and frequency
-        return (data.selectedDays?.length || 0) > 0 && !!data.customTime;
+        // Scheduling - conditional validation based on goal type
+        const hasTime = !!data.customTime;
+        if (data.goalType === 'new_skill') {
+          // Brand New Skill: requires completion date and time
+          return hasTime && !!data.projectCompletionDate;
+        } else {
+          // New Habit or Getting Better: requires recurrence schedule and time
+          return hasTime && (data.selectedDays?.length || 0) > 0;
+        }
       case 7:
         // Support context validation
         if (data.supportContext === 'alone') return true;
@@ -682,8 +698,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         description: buildGoalDescription(),
         domain: mapCategoryToDomain(data.category) as GoalDomain,
         start_date: format(data.startDate, 'yyyy-MM-dd'),
-        due_date: data.endDate ? format(data.endDate, 'yyyy-MM-dd') : undefined,
-        frequency_per_week: data.frequency,
+        due_date: data.goalType === 'new_skill' 
+          ? (data.projectCompletionDate ? format(data.projectCompletionDate, 'yyyy-MM-dd') : undefined)
+          : (data.endDate ? format(data.endDate, 'yyyy-MM-dd') : undefined),
+        frequency_per_week: data.goalType === 'new_skill' ? undefined : data.frequency,
         owner_id: data.recipient === 'other' ? data.supportedPersonId : undefined
       };
       if (isProposal) {
@@ -713,10 +731,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           domain: mapCategoryToDomain(data.category) as GoalDomain,
           status: 'active' as const,
           priority: 'medium' as const,
-          frequency_per_week: data.frequency,
+          frequency_per_week: data.goalType === 'new_skill' ? undefined : data.frequency,
           duration_weeks: 4,
           start_date: format(data.startDate, 'yyyy-MM-dd'),
-          due_date: data.endDate ? format(data.endDate, 'yyyy-MM-dd') : undefined,
+          due_date: data.goalType === 'new_skill' 
+            ? (data.projectCompletionDate ? format(data.projectCompletionDate, 'yyyy-MM-dd') : undefined)
+            : (data.endDate ? format(data.endDate, 'yyyy-MM-dd') : undefined),
           owner_id: finalOwnerId,
           created_by: currentUser?.id,
           tags: data.challengeAreas || [],
@@ -1272,158 +1292,222 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   };
   const renderStep6 = () => {
+    const isProject = data.goalType === 'new_skill';
+    const isHabitOrPractice = data.goalType === 'reminder' || data.goalType === 'practice';
+    
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        
+        <p className="text-muted-foreground">
+          {isProject 
+            ? "Set your project timeline and first learning session"
+            : "Set your practice schedule"
+          }
+        </p>
       </CardHeader>
       
       <CardContent className="space-y-6">
-        {/* Frequency/Schedule selector */}
-        <div className="space-y-3">
-          <Label>
-            {actuallySupportsAnyone 
-              ? `How often and when will ${data.supportedPersonName || 'they'} perform the action?`
-              : "How often and when will you perform the action?"}
-          </Label>
-          
-          {/* Quick select options */}
-          <div className="grid grid-cols-3 gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className={cn(
-                "h-auto py-3 flex flex-col items-center",
-                data.selectedDays?.length === 7 && "border-primary bg-primary/5"
-              )}
-              onClick={() => {
-                updateData({ 
-                  selectedDays: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
-                  frequency: 7
-                });
-              }}
-            >
-              <span className="font-semibold">Daily</span>
-              <span className="text-xs text-muted-foreground">Every day</span>
-            </Button>
-            
-            <Button
-              type="button"
-              variant="outline"
-              className={cn(
-                "h-auto py-3 flex flex-col items-center",
-                data.selectedDays?.length === 2 && 
-                data.selectedDays.includes('sat') && 
-                data.selectedDays.includes('sun') && 
-                "border-primary bg-primary/5"
-              )}
-              onClick={() => {
-                updateData({ 
-                  selectedDays: ['sat', 'sun'],
-                  frequency: 2
-                });
-              }}
-            >
-              <span className="font-semibold">Weekends</span>
-              <span className="text-xs text-muted-foreground">Sat & Sun</span>
-            </Button>
-            
-            <Button
-              type="button"
-              variant="outline"
-              className={cn(
-                "h-auto py-3 flex flex-col items-center",
-                data.selectedDays && 
-                data.selectedDays.length > 0 && 
-                data.selectedDays.length !== 7 && 
-                !(data.selectedDays.length === 2 && data.selectedDays.includes('sat') && data.selectedDays.includes('sun')) &&
-                "border-primary bg-primary/5"
-              )}
-            >
-              <span className="font-semibold">Custom</span>
-              <span className="text-xs text-muted-foreground">Pick days</span>
-            </Button>
-          </div>
-          
-          {/* Individual day toggles */}
-          <div className="flex gap-1 justify-between">
-            {[
-              { code: 'mon', label: 'M', full: 'Monday' },
-              { code: 'tue', label: 'T', full: 'Tuesday' },
-              { code: 'wed', label: 'W', full: 'Wednesday' },
-              { code: 'thu', label: 'T', full: 'Thursday' },
-              { code: 'fri', label: 'F', full: 'Friday' },
-              { code: 'sat', label: 'S', full: 'Saturday' },
-              { code: 'sun', label: 'S', full: 'Sunday' },
-            ].map(day => {
-              const isSelected = data.selectedDays?.includes(day.code) || false;
-              return (
-                <Button
-                  key={day.code}
-                  type="button"
-                  variant={isSelected ? "default" : "outline"}
-                  size="sm"
-                  className={cn(
-                    "flex-1 h-12 font-semibold",
-                    isSelected && "bg-primary text-primary-foreground"
-                  )}
-                  onClick={() => {
-                    const currentDays = data.selectedDays || [];
-                    const newDays = isSelected
-                      ? currentDays.filter(d => d !== day.code)
-                      : [...currentDays, day.code];
-                    updateData({ 
-                      selectedDays: newDays,
-                      frequency: newDays.length
-                    });
-                  }}
-                  title={day.full}
-                >
-                  {day.label}
-                </Button>
-              );
-            })}
-          </div>
-          
-          {data.selectedDays && data.selectedDays.length > 0 && (
-            <p className="text-sm text-muted-foreground text-center">
-              {data.selectedDays.length === 7 
-                ? "Every day of the week"
-                : data.selectedDays.length === 1
-                ? "Once per week"
-                : `${data.selectedDays.length} times per week`}
+        {/* Section A: Recurrence Schedule - Only for Habit/Practice */}
+        {isHabitOrPractice && (
+          <div className="space-y-3">
+            <Label className="flex items-center gap-2">
+              <span>Recurrence Schedule</span>
+              <Badge variant="destructive" className="text-xs">Required</Badge>
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              How often will {actuallySupportsAnyone ? (data.supportedPersonName || 'they') : 'you'} practice or perform this habit?
             </p>
-          )}
-        </div>
+            
+            {/* Quick select options */}
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className={cn(
+                  "h-auto py-3 flex flex-col items-center",
+                  data.selectedDays?.length === 7 && "border-primary bg-primary/5"
+                )}
+                onClick={() => {
+                  updateData({ 
+                    selectedDays: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
+                    frequency: 7
+                  });
+                }}
+              >
+                <span className="font-semibold">Daily</span>
+                <span className="text-xs text-muted-foreground">Every day</span>
+              </Button>
+              
+              <Button
+                type="button"
+                variant="outline"
+                className={cn(
+                  "h-auto py-3 flex flex-col items-center",
+                  data.selectedDays?.length === 2 && 
+                  data.selectedDays.includes('sat') && 
+                  data.selectedDays.includes('sun') && 
+                  "border-primary bg-primary/5"
+                )}
+                onClick={() => {
+                  updateData({ 
+                    selectedDays: ['sat', 'sun'],
+                    frequency: 2
+                  });
+                }}
+              >
+                <span className="font-semibold">Weekends</span>
+                <span className="text-xs text-muted-foreground">Sat & Sun</span>
+              </Button>
+              
+              <Button
+                type="button"
+                variant="outline"
+                className={cn(
+                  "h-auto py-3 flex flex-col items-center",
+                  data.selectedDays && 
+                  data.selectedDays.length > 0 && 
+                  data.selectedDays.length !== 7 && 
+                  !(data.selectedDays.length === 2 && data.selectedDays.includes('sat') && data.selectedDays.includes('sun')) &&
+                  "border-primary bg-primary/5"
+                )}
+              >
+                <span className="font-semibold">Custom</span>
+                <span className="text-xs text-muted-foreground">Pick days</span>
+              </Button>
+            </div>
+            
+            {/* Individual day toggles */}
+            <div className="flex gap-1 justify-between">
+              {[
+                { code: 'mon', label: 'M', full: 'Monday' },
+                { code: 'tue', label: 'T', full: 'Tuesday' },
+                { code: 'wed', label: 'W', full: 'Wednesday' },
+                { code: 'thu', label: 'T', full: 'Thursday' },
+                { code: 'fri', label: 'F', full: 'Friday' },
+                { code: 'sat', label: 'S', full: 'Saturday' },
+                { code: 'sun', label: 'S', full: 'Sunday' },
+              ].map(day => {
+                const isSelected = data.selectedDays?.includes(day.code) || false;
+                return (
+                  <Button
+                    key={day.code}
+                    type="button"
+                    variant={isSelected ? "default" : "outline"}
+                    size="sm"
+                    className={cn(
+                      "flex-1 h-12 font-semibold",
+                      isSelected && "bg-primary text-primary-foreground"
+                    )}
+                    onClick={() => {
+                      const currentDays = data.selectedDays || [];
+                      const newDays = isSelected
+                        ? currentDays.filter(d => d !== day.code)
+                        : [...currentDays, day.code];
+                      updateData({ 
+                        selectedDays: newDays,
+                        frequency: newDays.length
+                      });
+                    }}
+                    title={day.full}
+                  >
+                    {day.label}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            {data.selectedDays && data.selectedDays.length > 0 && (
+              <p className="text-sm text-muted-foreground text-center">
+                {data.selectedDays.length === 7 
+                  ? "Every day of the week"
+                  : data.selectedDays.length === 1
+                  ? "Once per week"
+                  : `${data.selectedDays.length} times per week`}
+              </p>
+            )}
+          </div>
+        )}
         
-        {/* Time picker */}
+        {/* Section B: Time Picker - ALWAYS REQUIRED */}
         <div className="space-y-2">
-          <Label>
-            {actuallySupportsAnyone 
-              ? "Pick a starting time" 
-              : "What is the EXACT time you will START this goal?"}
+          <Label className="flex items-center gap-2">
+            <span>
+              {isProject 
+                ? "First Learning Session Time" 
+                : "Start Time"
+              }
+            </span>
+            <Badge variant="destructive" className="text-xs">Required</Badge>
           </Label>
-          <div className="grid grid-cols-2 gap-2">
-            <Button type="button" variant="outline" className={cn("justify-start", !data.customTime && "text-muted-foreground")} onClick={() => {
+          <p className="text-sm text-muted-foreground">
+            {isProject
+              ? `When will ${actuallySupportsAnyone ? (data.supportedPersonName || 'they') : 'you'} take the very first learning step?`
+              : `What time will ${actuallySupportsAnyone ? (data.supportedPersonName || 'they') : 'you'} start this activity?`
+            }
+          </p>
+          <Button 
+            type="button" 
+            variant="outline" 
+            className={cn("w-full justify-start", !data.customTime && "text-muted-foreground")} 
+            onClick={() => {
               initTimeDialogFromValue(data.customTime || "08:00");
               setShowTimePicker(true);
-            }}>
-              <Clock className="h-4 w-4 mr-2" />
-              {data.customTime ? formatDisplayTime(data.customTime) : "Pick a starting time"}
-            </Button>
-          </div>
+            }}
+          >
+            <Clock className="h-4 w-4 mr-2" />
+            {data.customTime ? formatDisplayTime(data.customTime) : "Pick a time"}
+          </Button>
         </div>
         
-        {/* Date range */}
-        <div className="space-y-3">
-          <Label>
-            {actuallySupportsAnyone 
-              ? "Pick a starting date" 
-              : "How long do you plan to work on it?"}
-          </Label>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label className="text-xs">Start date</Label>
+        {/* Section C: Date Fields - Conditional Layout */}
+        {isProject ? (
+          // PROJECT LAYOUT: Project Completion Date (required) + First Attempt Date (required)
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <span>Project Completion Date</span>
+                <Badge variant="destructive" className="text-xs">Required</Badge>
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                When {actuallySupportsAnyone ? `will ${data.supportedPersonName || 'they'}` : 'do you'} want to finish learning this skill?
+              </p>
+              <Popover open={showDatePicker && datePickerType === 'completion'} onOpenChange={open => {
+                setShowDatePicker(open);
+                if (open) setDatePickerType('completion');
+              }}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start">
+                    <CalendarIcon className="h-4 w-4 mr-2" />
+                    {data.projectCompletionDate 
+                      ? format(data.projectCompletionDate, 'PPP')
+                      : 'Pick completion date'
+                    }
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar 
+                    mode="single" 
+                    selected={data.projectCompletionDate} 
+                    onSelect={(date) => {
+                      if (date) {
+                        updateData({ projectCompletionDate: date });
+                        setShowDatePicker(false);
+                      }
+                    }}
+                    disabled={(date) => date <= new Date()}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <span>First Learning Session Date</span>
+                <Badge variant="destructive" className="text-xs">Required</Badge>
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                When will {actuallySupportsAnyone ? (data.supportedPersonName || 'they') : 'you'} start working on this?
+              </p>
               <Popover open={showDatePicker && datePickerType === 'start'} onOpenChange={open => {
                 setShowDatePicker(open);
                 if (open) setDatePickerType('start');
@@ -1431,50 +1515,97 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
                     <CalendarIcon className="h-4 w-4 mr-2" />
-                    {format(data.startDate, 'MMM d')}
+                    {format(data.startDate, 'PPP')}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={data.startDate} onSelect={date => {
-                    if (date) {
-                      updateData({
-                        startDate: date
-                      });
-                      setShowDatePicker(false);
-                    }
-                  }} disabled={date => date < new Date()} />
+                  <Calendar 
+                    mode="single" 
+                    selected={data.startDate} 
+                    onSelect={(date) => {
+                      if (date) {
+                        updateData({ startDate: date });
+                        setShowDatePicker(false);
+                      }
+                    }}
+                    disabled={(date) => date < new Date() || (data.projectCompletionDate && date >= data.projectCompletionDate)}
+                  />
                 </PopoverContent>
               </Popover>
             </div>
             
-            <div className="space-y-1">
-              <Label className="text-xs">End date (optional)</Label>
-              <Popover open={showDatePicker && datePickerType === 'end'} onOpenChange={open => {
-                setShowDatePicker(open);
-                if (open) setDatePickerType('end');
-              }}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start">
-                    <CalendarIcon className="h-4 w-4 mr-2" />
-                    {data.endDate ? format(data.endDate, 'MMM d') : 'Open'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={data.endDate} onSelect={date => {
-                    updateData({
-                      endDate: date
-                    });
-                    setShowDatePicker(false);
-                  }} disabled={date => date < data.startDate} />
-                </PopoverContent>
-              </Popover>
+            <div className="text-xs text-muted-foreground">
+              💡 The AI will work backwards from your completion date to create a learning plan
             </div>
           </div>
-          
-          <div className="text-xs text-muted-foreground">
-            Default: Start today, no end date. You can always adjust later.
+        ) : (
+          // HABIT/PRACTICE LAYOUT: Start Date (required) + End Date (optional)
+          <div className="space-y-3">
+            <Label>Timeline</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs flex items-center gap-1">
+                  Start date
+                  <Badge variant="destructive" className="text-[10px] px-1">Required</Badge>
+                </Label>
+                <Popover open={showDatePicker && datePickerType === 'start'} onOpenChange={open => {
+                  setShowDatePicker(open);
+                  if (open) setDatePickerType('start');
+                }}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      <CalendarIcon className="h-4 w-4 mr-2" />
+                      {format(data.startDate, 'MMM d')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar 
+                      mode="single" 
+                      selected={data.startDate} 
+                      onSelect={(date) => {
+                        if (date) {
+                          updateData({ startDate: date });
+                          setShowDatePicker(false);
+                        }
+                      }}
+                      disabled={(date) => date < new Date()}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <div className="space-y-1">
+                <Label className="text-xs">End date (optional)</Label>
+                <Popover open={showDatePicker && datePickerType === 'end'} onOpenChange={open => {
+                  setShowDatePicker(open);
+                  if (open) setDatePickerType('end');
+                }}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      <CalendarIcon className="h-4 w-4 mr-2" />
+                      {data.endDate ? format(data.endDate, 'MMM d') : 'Open-ended'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar 
+                      mode="single" 
+                      selected={data.endDate} 
+                      onSelect={(date) => {
+                        updateData({ endDate: date });
+                        setShowDatePicker(false);
+                      }}
+                      disabled={(date) => date < data.startDate}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            
+            <div className="text-xs text-muted-foreground">
+              💡 Habits are often ongoing - you can leave the end date open
+            </div>
           </div>
-        </div>
+        )}
         
       </CardContent>
     </Card>;
