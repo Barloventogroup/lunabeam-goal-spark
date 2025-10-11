@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +29,9 @@ import { goalsService, stepsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { generateMicroStepsSmart } from '@/services/microStepsGenerator';
-import { StepsList } from './steps-list';
+import { GoalFactorSummary } from './goal-factor-summary';
+import { RecommendedStepsList } from './recommended-steps-list';
+import { SupporterSetupStepsList } from './supporter-setup-steps-list';
 import { StepsChat } from './steps-chat';
 import { StepChatModal } from './step-chat-modal';
 import { ProgressBar } from './progress-bar';
@@ -615,23 +618,58 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </div>
       </div>
 
-      {/* Goal Info */}
-      {goal.description && (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-muted-foreground capitalize">{sanitizeDescription(goal.description)}</p>
-          </CardContent>
-        </Card>
-      )}
+      {/* Tabbed Content */}
+      <Tabs defaultValue="summary" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="summary">
+            Summary
+          </TabsTrigger>
+          <TabsTrigger value="steps">
+            Recommended Steps
+            {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
+              <Badge className="ml-2" variant="secondary">
+                {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
+            <TabsTrigger value="supporter">
+              Supporter Setup
+              <Badge className="ml-2" variant="secondary">
+                {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
+              </Badge>
+            </TabsTrigger>
+          )}
+        </TabsList>
 
-      {/* Steps */}
-          <StepsList 
+        <TabsContent value="summary" className="mt-4">
+          <GoalFactorSummary 
             goal={goal}
+            wizardContext={(goal as any).metadata?.wizardContext}
+          />
+        </TabsContent>
+
+        <TabsContent value="steps" className="mt-4">
+          <RecommendedStepsList
             steps={steps}
-            isViewerSupporter={isViewerSupporter}
+            goal={goal}
+            onStepsChange={loadGoalData}
             onStepsUpdate={handleStepsUpdate}
             onOpenStepChat={handleOpenStepChat}
           />
+        </TabsContent>
+
+        {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
+          <TabsContent value="supporter" className="mt-4">
+            <SupporterSetupStepsList
+              steps={steps}
+              goal={goal}
+              onStepsChange={loadGoalData}
+              onStepsUpdate={handleStepsUpdate}
+            />
+          </TabsContent>
+        )}
+      </Tabs>
 
       {/* Step Chat Modal */}
       <StepChatModal
