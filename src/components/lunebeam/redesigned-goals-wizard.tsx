@@ -245,12 +245,6 @@ const INDIVIDUAL_FLOW_TEXT = {
     subtitle: "Understanding your motivation helps us support you better"
   },
   step3: {
-    subtitle: "Let's figure out where you're starting from. This goal is which of the following:"
-  },
-  step4: {
-    subtitle: "Select up to two"
-  },
-  step5: {
     question: "Are you fully equipped to start right now?",
     helperText: "If you're not sure, look at your space. Is there anything you'd have to find, clear, or buy before you can touch the work? If so, choose No.",
     options: {
@@ -267,6 +261,12 @@ const INDIVIDUAL_FLOW_TEXT = {
       label: "What is the one thing missing/in the way?",
       placeholder: "e.g., guitar picks, clear desk space, permission to use kitchen"
     }
+  },
+  step4: {
+    subtitle: "Let's figure out where you're starting from. This goal is which of the following:"
+  },
+  step5: {
+    subtitle: "Select up to two"
   },
   step6: {
     subtitle: "start building the plan to crush this goal"
@@ -292,12 +292,6 @@ const getSupporterFlowText = (name?: string) => ({
     subtitle: `Understanding ${name ? `${name}'s` : 'their'} motivation helps us support ${name || 'them'} better`
   },
   step3: {
-    subtitle: `Let's figure out where ${name || 'they'} ${name ? 'is' : 'are'} starting from. This goal is which of the following:`
-  },
-  step4: {
-    subtitle: `Select up to two areas that typically feel challenging for ${name || 'them'}`
-  },
-  step5: {
     question: "Is the environment completely prepared? (Tools, space, permissions)",
     helperText: "If you're not sure, focus on the single non-negotiable item or space they need to begin. If that's missing, choose No.",
     options: {
@@ -314,6 +308,12 @@ const getSupporterFlowText = (name?: string) => ({
       label: "What is the single most critical missing prerequisite?",
       placeholder: "e.g., keyboard, quiet study area, parent approval for gym membership"
     }
+  },
+  step4: {
+    subtitle: `Let's figure out where ${name || 'they'} ${name ? 'is' : 'are'} starting from. This goal is which of the following:`
+  },
+  step5: {
+    subtitle: `Select up to two areas that typically feel challenging for ${name || 'them'}`
   },
   step6: {
     subtitle: ""
@@ -610,8 +610,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const name = data.supportedPersonName;
 
     // Use supporterTitles when step 0 exists (actuallySupportsAnyone), otherwise use nonSupporterTitles
-    const supporterTitles = ['Who is this goal for?', `What is the one clear, observable action ${isForOther ? name || 'they' : 'you'} need${isForOther && name ? 's' : ''} to establish?`, `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`, 'What type of goal?', `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`, `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, `Let's build a reliable structure for ${isForOther ? name || 'they' : 'you'}`, 'Support context', 'Review and Create'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter to you?', 'What type of goal?', 'Which part usually feels the trickiest when you start this?', 'Prerequisites check', "Let's start building the plan to crush this goal", 'Support context', 'Review and Create'];
+    const supporterTitles = ['Who is this goal for?', `What is the one clear, observable action ${isForOther ? name || 'they' : 'you'} need${isForOther && name ? 's' : ''} to establish?`, `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`, `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, 'What type of goal?', `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`, `Let's build a reliable structure for ${isForOther ? name || 'they' : 'you'}`, 'Support context', 'Review and Create'];
+    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter to you?', 'Prerequisites check', 'What type of goal?', 'Which part usually feels the trickiest when you start this?', "Let's start building the plan to crush this goal", 'Support context', 'Review and Create'];
     if (actuallySupportsAnyone) {
       return supporterTitles[currentStep] || '';
     } else {
@@ -630,17 +630,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Motivation
         return !!data.goalMotivation;
       case 3:
+        // Prerequisites
+        return true;
+        // Always can proceed
+      case 4:
         // Goal type
         if (!data.goalType) return false;
         if (data.goalType === 'practice' && !data.difficultyArea?.trim()) return false;
         return true;
-      case 4:
+      case 5:
         // Challenge areas
         return (data.challengeAreas?.length || 0) > 0;
-      case 5:
-        // Prerequisites
-        return true;
-      // Always can proceed
       case 6:
         // Scheduling - must have selected days, time, and frequency
         return (data.selectedDays?.length || 0) > 0 && !!data.customTime;
@@ -1117,8 +1117,72 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
+        <CardTitle className="text-2xl">{text.step3.question}</CardTitle>
+        {/* Inline helper text - always visible */}
+        <p className="text-sm text-muted-foreground mt-3 italic">
+          {text.step3.helperText}
+        </p>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        {/* Choice 1: Ready */}
+        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", !data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
+          hasPrerequisites: false
+        })}>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-primary" />
+              <div className="text-left flex-1">
+                <div className="font-semibold">{text.step3.options.yes.title}</div>
+                <div className="text-sm text-muted-foreground">{text.step3.options.yes.description}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Choice 2: Need Something */}
+        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
+          hasPrerequisites: true
+        })}>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
+              <div className="text-left flex-1">
+                <div className="font-semibold">{text.step3.options.no.title}</div>
+                <div className="text-sm text-muted-foreground">{text.step3.options.no.description}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Conditional Input - only shows if "need something" is selected */}
+        {data.hasPrerequisites && (
+          <div className="space-y-2 pt-4 border-t animate-in fade-in slide-in-from-top-2 duration-300">
+            <Label htmlFor="prerequisite-item">
+              {text.step3.conditionalInput.label}
+            </Label>
+            <Input
+              id="prerequisite-item"
+              placeholder={text.step3.conditionalInput.placeholder}
+              value={data.customPrerequisites || ''}
+              onChange={(e) => updateData({ customPrerequisites: e.target.value })}
+              className="min-h-[44px]"
+              autoFocus
+            />
+            <p className="text-xs text-muted-foreground">
+              Focus on the single most important thing needed to begin
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>;
+  };
+  const renderStep4 = () => {
+    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+      <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">{text.step3.subtitle}</p>
+        <p className="text-muted-foreground">{text.step4.subtitle}</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -1152,7 +1216,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardContent>
     </Card>;
   };
-  const renderStep4 = () => {
+  const renderStep5 = () => {
     const handleChallengeToggle = (challengeId: string) => {
       const current = data.challengeAreas || [];
       const isSelected = current.includes(challengeId);
@@ -1174,7 +1238,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">{text.step4.subtitle}</p>
+        <p className="text-muted-foreground">{text.step5.subtitle}</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -1204,70 +1268,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             customChallenges: e.target.value
           })} className="min-h-[80px] resize-none" rows={3} />
         </div>
-      </CardContent>
-    </Card>;
-  };
-  const renderStep5 = () => {
-    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">{text.step5.question}</CardTitle>
-        {/* Inline helper text - always visible */}
-        <p className="text-sm text-muted-foreground mt-3 italic">
-          {text.step5.helperText}
-        </p>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {/* Choice 1: Ready */}
-        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", !data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-          hasPrerequisites: false
-        })}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Check className="h-5 w-5 text-primary" />
-              <div className="text-left flex-1">
-                <div className="font-semibold">{text.step5.options.yes.title}</div>
-                <div className="text-sm text-muted-foreground">{text.step5.options.yes.description}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Choice 2: Need Something */}
-        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-          hasPrerequisites: true
-        })}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-500" />
-              <div className="text-left flex-1">
-                <div className="font-semibold">{text.step5.options.no.title}</div>
-                <div className="text-sm text-muted-foreground">{text.step5.options.no.description}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Conditional Input - only shows if "need something" is selected */}
-        {data.hasPrerequisites && (
-          <div className="space-y-2 pt-4 border-t animate-in fade-in slide-in-from-top-2 duration-300">
-            <Label htmlFor="prerequisite-item">
-              {text.step5.conditionalInput.label}
-            </Label>
-            <Input
-              id="prerequisite-item"
-              placeholder={text.step5.conditionalInput.placeholder}
-              value={data.customPrerequisites || ''}
-              onChange={(e) => updateData({ customPrerequisites: e.target.value })}
-              className="min-h-[44px]"
-              autoFocus
-            />
-            <p className="text-xs text-muted-foreground">
-              Focus on the single most important thing needed to begin
-            </p>
-          </div>
-        )}
       </CardContent>
     </Card>;
   };
@@ -1953,13 +1953,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       // Motivation
       case 3:
         return renderStep3();
-      // Goal type
+      // Prerequisites
       case 4:
         return renderStep4();
-      // Experience level
+      // Goal type
       case 5:
         return renderStep5();
-      // Prerequisites
+      // Challenge areas
       case 6:
         return renderStep6();
       // Scheduling
@@ -1985,19 +1985,21 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const getStepSection = () => {
     if (actuallySupportsAnyone) {
       // Supporter flow - 6 sections
-      if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 6 };
-      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenge', index: 2, total: 6 };
-      if (currentStep === 6) return { label: 'When and How Often', index: 3, total: 6 };
-      if (currentStep === 7) return { label: 'The Team', index: 4, total: 6 };
-      if (currentStep === 8) return { label: 'Rewards', index: 5, total: 6 };
-      if (currentStep === 9) return { label: 'Commitment & Activation', index: 6, total: 6 };
+      if (currentStep! >= 0 && currentStep! <= 2) return { label: 'The Goal', index: 1, total: 6 };
+      if (currentStep === 3) return { label: 'Prerequisites', index: 2, total: 6 };
+      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenge', index: 3, total: 6 };
+      if (currentStep === 6) return { label: 'When and How Often', index: 4, total: 6 };
+      if (currentStep === 7) return { label: 'The Team', index: 5, total: 6 };
+      if (currentStep === 8) return { label: 'Rewards', index: 6, total: 6 };
+      if (currentStep === 9) return { label: 'Commitment & Activation', index: 7, total: 6 };
     } else {
       // Non-supporter flow - 5 sections
-      if (currentStep! >= 1 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenges', index: 2, total: 5 };
-      if (currentStep === 6) return { label: 'When and How Often', index: 3, total: 5 };
-      if (currentStep === 7) return { label: 'The Team', index: 4, total: 5 };
-      if (currentStep === 8) return { label: 'Your First Steps', index: 5, total: 5 };
+      if (currentStep! >= 1 && currentStep! <= 2) return { label: 'The Goal', index: 1, total: 5 };
+      if (currentStep === 3) return { label: 'Prerequisites', index: 2, total: 5 };
+      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenges', index: 3, total: 5 };
+      if (currentStep === 6) return { label: 'When and How Often', index: 4, total: 5 };
+      if (currentStep === 7) return { label: 'The Team', index: 5, total: 5 };
+      if (currentStep === 8) return { label: 'Your First Steps', index: 6, total: 5 };
     }
     return { label: '', index: 0, total: 6 };
   };
