@@ -1,58 +1,36 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Target, AlertCircle, Users, ClipboardList, Calendar, Tag } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, Users, Calendar } from 'lucide-react';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal } from '@/types';
 
 interface GoalFactorSummaryProps {
   goal: Goal;
   wizardContext?: any;
+  onInviteSupporter?: () => void;
 }
 
-export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({ goal, wizardContext }) => {
+export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({ 
+  goal, 
+  wizardContext,
+  onInviteSupporter 
+}) => {
   // If no wizard context, show simplified summary
   if (!wizardContext) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            {goal.title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="py-8 text-center">
+          <h1 className="text-2xl md:text-3xl font-bold">{goal.title}</h1>
           {goal.description && (
-            <p className="text-foreground leading-relaxed">{goal.description}</p>
+            <p className="text-center text-muted-foreground mt-4">
+              {goal.description}
+            </p>
           )}
-          
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-            {goal.domain && (
-              <div>
-                <span className="text-xs text-muted-foreground block mb-1">Category</span>
-                <Badge variant="outline" className="capitalize">
-                  {getDomainDisplayName(goal.domain)}
-                </Badge>
-              </div>
-            )}
-            {goal.due_date && (
-              <div>
-                <span className="text-xs text-muted-foreground block mb-1">Due Date</span>
-                <p className="text-sm text-foreground">
-                  {new Date(goal.due_date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}
-                </p>
-              </div>
-            )}
-          </div>
-          
-          <p className="text-xs text-muted-foreground italic pt-4 border-t">
+          <div className="text-center text-sm text-muted-foreground italic pt-6 border-t mt-6">
             This goal was created before detailed tracking was available.
-          </p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -63,150 +41,169 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({ goal, wiza
     ? [wizardContext.customChallenges]
     : wizardContext.challengeAreas || [];
   const hasSupport = wizardContext.primarySupporterName || wizardContext.supportContext;
-  const hasTimeline = wizardContext.startDate || wizardContext.durationWeeks || wizardContext.frequencyPerWeek;
   const prerequisite = wizardContext.prerequisite;
 
-  // Full structured summary with wizard context
+  // Format start date
+  const formatStartDate = () => {
+    if (!wizardContext.startDate) return null;
+    const date = new Date(wizardContext.startDate);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  // Format time display
+  const formatTimeDisplay = () => {
+    const parts = [];
+    if (wizardContext.customTime) {
+      parts.push(wizardContext.customTime);
+    } else if (wizardContext.timeOfDay) {
+      parts.push(wizardContext.timeOfDay.replace(/_/g, ' '));
+    }
+    if (wizardContext.frequencyPerWeek) {
+      parts.push('Daily');
+    }
+    return parts.join(' ');
+  };
+
+  // Full structured summary with 5-card layout
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-xl flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
-          {goal.title}
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent className="space-y-6">
-        {/* Motivation */}
-        {motivation && (
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">
-                Why I want this
-              </span>
-            </div>
-            <p className="text-foreground leading-relaxed pl-6">
+    <div className="space-y-4">
+      {/* Card 1: Goal Summary */}
+      <Card>
+        <CardContent className="py-8 text-center">
+          <h1 className="text-2xl md:text-3xl font-bold leading-tight">{goal.title}</h1>
+        </CardContent>
+      </Card>
+
+      {/* Card 2: Why it Matters */}
+      {motivation && (
+        <Card className="bg-primary/5 dark:bg-primary/10">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <span className="text-2xl">💡</span>
+              Why it Matters
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-base md:text-lg leading-relaxed">
               {motivation}
             </p>
-          </div>
-        )}
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Challenges */}
-        {challenges.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <AlertCircle className="h-4 w-4 text-orange-500" />
-              <span className="text-sm font-medium text-muted-foreground">
-                Challenges to overcome
-              </span>
+      {/* Card 3: The Game Plan */}
+      {(wizardContext.startDate || wizardContext.timeOfDay || wizardContext.customTime || prerequisite) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Calendar className="h-5 w-5" />
+              The Game Plan
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {wizardContext.startDate && (
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">Starts:</span>
+                <p className="text-base font-medium">{formatStartDate()}</p>
+              </div>
+            )}
+            {(wizardContext.timeOfDay || wizardContext.customTime) && (
+              <div>
+                <span className="text-sm font-medium text-muted-foreground">Time:</span>
+                <p className="text-base font-medium capitalize">{formatTimeDisplay()}</p>
+              </div>
+            )}
+            
+            <div className="pt-2">
+              <span className="text-sm font-medium text-muted-foreground block mb-2">Prerequisites:</span>
+              {prerequisite ? (
+                <p className="text-sm leading-relaxed">{prerequisite}</p>
+              ) : (
+                <div className="text-muted-foreground italic text-sm">
+                  <p className="font-medium text-foreground mb-1">None set</p>
+                  <p className="flex items-start gap-2">
+                    <span className="text-base">💭</span>
+                    <span>Consider simple prep like "Layout clothes the night before"</span>
+                  </p>
+                </div>
+              )}
             </div>
-            <div className="flex flex-wrap gap-2 pl-6">
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Card 4: Roadblocks */}
+      {challenges.length > 0 && (
+        <Card className="border-l-4 border-destructive shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              Roadblocks
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-3">Challenges you might face:</p>
+            <ul className="space-y-2">
               {challenges.map((challenge: string, idx: number) => (
-                <Badge key={idx} variant="outline" className="text-xs capitalize">
-                  {challenge.replace(/_/g, ' ')}
-                </Badge>
+                <li key={idx} className="flex items-start gap-2">
+                  <span className="text-destructive mt-0.5">•</span>
+                  <span className="capitalize">{challenge.replace(/_/g, ' ')}</span>
+                </li>
               ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Card 5: Support System */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Users className="h-5 w-5" />
+            Support System
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-3">Who's on your team?</p>
+          
+          {hasSupport ? (
+            <div className="space-y-1">
+              {wizardContext.primarySupporterName && (
+                <p className="font-medium text-base">{wizardContext.primarySupporterName}</p>
+              )}
+              {wizardContext.primarySupporterRole && (
+                <p className="text-sm text-muted-foreground capitalize">
+                  {wizardContext.primarySupporterRole.replace(/_/g, ' ')}
+                </p>
+              )}
+              {wizardContext.supportContext && (
+                <p className="text-sm capitalize">
+                  {wizardContext.supportContext.replace(/_/g, ' ')}
+                </p>
+              )}
             </div>
-          </div>
-        )}
-
-        {/* Divider before Quick Facts */}
-        {(hasSupport || hasTimeline || goal.domain) && (
-          <>
-            <Separator className="my-6" />
-
-            {/* Quick Facts Grid */}
-            <div>
-              <h4 className="text-sm font-medium text-muted-foreground mb-4">
-                Quick Facts
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pl-6">
-                {/* Support */}
-                {hasSupport && (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-blue-500">
-                      <Users className="h-4 w-4" />
-                      <span className="text-xs font-medium">Support</span>
-                    </div>
-                    {wizardContext.primarySupporterName && (
-                      <p className="text-sm text-foreground">
-                        {wizardContext.primarySupporterName}
-                      </p>
-                    )}
-                    {wizardContext.primarySupporterRole && (
-                      <p className="text-xs text-muted-foreground capitalize">
-                        {wizardContext.primarySupporterRole.replace(/_/g, ' ')}
-                      </p>
-                    )}
-                    {wizardContext.supportContext && (
-                      <p className="text-xs text-muted-foreground capitalize">
-                        {wizardContext.supportContext.replace(/_/g, ' ')}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Timeline */}
-                {hasTimeline && (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-green-500">
-                      <Calendar className="h-4 w-4" />
-                      <span className="text-xs font-medium">Timeline</span>
-                    </div>
-                    {wizardContext.frequencyPerWeek && (
-                      <p className="text-sm text-foreground">
-                        {wizardContext.frequencyPerWeek}x per week
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      {wizardContext.durationWeeks && `${wizardContext.durationWeeks} weeks`}
-                      {wizardContext.startDate && wizardContext.durationWeeks && ' • '}
-                      {wizardContext.startDate && `Starts ${new Date(wizardContext.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
-                    </p>
-                    {wizardContext.timeOfDay && (
-                      <p className="text-xs text-muted-foreground capitalize">
-                        {wizardContext.customTime || wizardContext.timeOfDay.replace(/_/g, ' ')}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Category */}
-                {goal.domain && (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-indigo-500">
-                      <Tag className="h-4 w-4" />
-                      <span className="text-xs font-medium">Category</span>
-                    </div>
-                    <Badge variant="outline" className="text-xs capitalize">
-                      {getDomainDisplayName(goal.domain)}
-                    </Badge>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Prerequisites */}
-        {prerequisite && (
-          <>
-            <Separator className="my-6" />
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <ClipboardList className="h-4 w-4 text-purple-500" />
-                <span className="text-sm font-medium text-muted-foreground">
-                  Prerequisites
-                </span>
-              </div>
-              <p className="text-sm text-foreground leading-relaxed pl-6">
-                {prerequisite}
+          ) : (
+            <div className="space-y-3">
+              <p className="text-muted-foreground">
+                Currently: <span className="font-medium text-foreground">Alone</span>
               </p>
+              {onInviteSupporter && (
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={onInviteSupporter}
+                >
+                  👉 Find a supporter
+                </Button>
+              )}
             </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
