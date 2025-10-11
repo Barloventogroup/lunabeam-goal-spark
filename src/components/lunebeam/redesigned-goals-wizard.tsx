@@ -1310,9 +1310,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         {/* Section A: Recurrence Schedule - Only for Habit/Practice */}
         {isHabitOrPractice && (
           <div className="space-y-3">
-            <Label className="flex items-center gap-2">
+            <Label className="flex items-center gap-1">
               <span>Recurrence Schedule</span>
-              <Badge variant="destructive" className="text-xs">Required</Badge>
+              <span className="text-destructive">*</span>
             </Label>
             <p className="text-sm text-muted-foreground">
               How often will {actuallySupportsAnyone ? (data.supportedPersonName || 'they') : 'you'} practice or perform this habit?
@@ -1430,14 +1430,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         {/* Section B: Time Picker - ALWAYS REQUIRED */}
         <div className="space-y-2">
-          <Label className="flex items-center gap-2">
+          <Label className="flex items-center gap-1">
             <span>
               {isProject 
                 ? "First Learning Session Time" 
                 : "Start Time"
               }
             </span>
-            <Badge variant="destructive" className="text-xs">Required</Badge>
+            <span className="text-destructive">*</span>
           </Label>
           <p className="text-sm text-muted-foreground">
             {isProject
@@ -1464,9 +1464,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           // PROJECT LAYOUT: Project Completion Date (required) + First Attempt Date (required)
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
+              <Label className="flex items-center gap-1">
                 <span>Project Completion Date</span>
-                <Badge variant="destructive" className="text-xs">Required</Badge>
+                <span className="text-destructive">*</span>
               </Label>
               <p className="text-sm text-muted-foreground">
                 When {actuallySupportsAnyone ? `will ${data.supportedPersonName || 'they'}` : 'do you'} want to finish learning this skill?
@@ -1501,9 +1501,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>
             
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
+              <Label className="flex items-center gap-1">
                 <span>First Learning Session Date</span>
-                <Badge variant="destructive" className="text-xs">Required</Badge>
+                <span className="text-destructive">*</span>
               </Label>
               <p className="text-sm text-muted-foreground">
                 When will {actuallySupportsAnyone ? (data.supportedPersonName || 'they') : 'you'} start working on this?
@@ -1546,7 +1546,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <div className="space-y-1">
                 <Label className="text-xs flex items-center gap-1">
                   Start date
-                  <Badge variant="destructive" className="text-[10px] px-1">Required</Badge>
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Popover open={showDatePicker && datePickerType === 'start'} onOpenChange={open => {
                   setShowDatePicker(open);
