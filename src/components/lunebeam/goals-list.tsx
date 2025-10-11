@@ -84,24 +84,52 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       
       setGoals(goalsData);
 
-      // Load step counts for each goal (including substeps)
+      // OPTIMIZED: Batch substep queries to reduce database calls
       const counts: Record<string, { required: number; done: number }> = {};
+      
+      // Step 1: Fetch all steps for all goals
+      const stepsPromises = goalsData.map(goal => stepsService.getSteps(goal.id));
+      const allStepsArrays = await Promise.all(stepsPromises);
+      
+      // Step 2: Collect ALL step IDs and organize by goal
+      const allStepIds: string[] = [];
+      const stepsByGoal: Record<string, Step[]> = {};
+      
+      allStepsArrays.forEach((steps, index) => {
+        const goal = goalsData[index];
+        const actionableSteps = steps.filter(s => 
+          ((!s.type || s.type === 'action') || (s.step_type && s.step_type !== 'container')) && 
+          !s.hidden && 
+          s.status !== 'skipped'
+        );
+        stepsByGoal[goal.id] = actionableSteps;
+        allStepIds.push(...actionableSteps.map(s => s.id));
+      });
+      
+      // Step 3: Single batched query for ALL substeps
+      const { data: allSubsteps } = await supabase
+        .from('substeps')
+        .select('*')
+        .in('step_id', allStepIds);
+      
+      // Step 4: Group substeps by step_id for fast lookup
+      const substepsByStepId: Record<string, any[]> = {};
+      (allSubsteps || []).forEach(substep => {
+        if (!substepsByStepId[substep.step_id]) {
+          substepsByStepId[substep.step_id] = [];
+        }
+        substepsByStepId[substep.step_id].push(substep);
+      });
+      
+      // Step 5: Calculate counts using grouped data
       for (const goal of goalsData) {
         try {
-          const steps = await stepsService.getSteps(goal.id);
-          const actionableSteps = steps.filter(s => ((!s.type || s.type === 'action') || (s.step_type && s.step_type !== 'container')) && !s.hidden && s.status !== 'skipped');
-          
-          // Count substeps for accurate progress
+          const actionableSteps = stepsByGoal[goal.id] || [];
           let totalCompletableItems = 0;
           let completedItems = 0;
           
           for (const step of actionableSteps) {
-            const { data: substeps } = await supabase
-              .from('substeps')
-              .select('*')
-              .eq('step_id', step.id);
-            
-            const stepSubsteps = substeps || [];
+            const stepSubsteps = substepsByStepId[step.id] || [];
             
             if (stepSubsteps.length > 0) {
               // If step has substeps, count each substep
@@ -139,12 +167,22 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   useEffect(() => {
     // Reset to first page when tab changes
     setCurrentPage(1);
-    // Force sanitization of existing descriptions - remove the localStorage check
-    goalsService.sanitizeExistingGoalDescriptions().then(() => {
-      // Reload goals after sanitization to show updated descriptions
+    
+    // OPTIMIZED: Run sanitization only once per user session
+    const sanitizationKey = `goals_sanitization_v1_${currentUser?.id}`;
+    const hasRunSanitization = sessionStorage.getItem(sanitizationKey);
+    
+    if (!hasRunSanitization && currentUser?.id) {
+      // First load - run sanitization
+      goalsService.sanitizeExistingGoalDescriptions().then(() => {
+        sessionStorage.setItem(sanitizationKey, 'true');
+        loadGoals();
+      });
+    } else {
+      // Already sanitized this session - just load goals
       loadGoals();
-    });
-  }, [activeTab, refreshTrigger]); // Reload when tab changes or refresh is triggered
+    }
+  }, [activeTab, refreshTrigger, currentUser?.id]); // Reload when tab changes or refresh is triggered
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -253,7 +291,46 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   };
 
   if (loading) {
-    return null; // Don't show loading state
+    return (
+      <div className="flex flex-col h-screen bg-background">
+        {/* Fixed Header Skeleton */}
+        <div className="flex-shrink-0 space-y-4 px-4 pt-6 pb-4 bg-background border-b">
+          <div className="flex justify-between items-center">
+            <div className="h-8 w-24 bg-muted animate-pulse rounded" />
+            <div className="w-10 h-10 bg-muted animate-pulse rounded-full" />
+          </div>
+          
+          {/* Tabs Skeleton */}
+          <div className="h-10 bg-muted animate-pulse rounded" />
+          
+          {/* Filter Skeleton */}
+          <div className="h-10 w-40 bg-muted animate-pulse rounded" />
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader className="pb-3">
+                  <div className="space-y-3">
+                    <div className="h-6 bg-muted rounded w-3/4" />
+                    <div className="flex gap-2">
+                      <div className="h-5 w-20 bg-muted rounded" />
+                      <div className="h-5 w-24 bg-muted rounded" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-2 bg-muted rounded w-full mb-2" />
+                  <div className="h-4 bg-muted rounded w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
