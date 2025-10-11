@@ -1985,15 +1985,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const getStepSection = () => {
     if (actuallySupportsAnyone) {
       // Supporter flow - 5 sections
-      if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenge', index: 2, total: 5 };
+      if (currentStep! >= 0 && currentStep! <= 4) return { label: 'The Goal', index: 1, total: 5 };
+      if (currentStep === 5) return { label: 'Challenge', index: 2, total: 5 };
       if (currentStep === 6) return { label: 'When and How Often', index: 3, total: 5 };
       if (currentStep === 7) return { label: 'The Team', index: 4, total: 5 };
       if (currentStep === 8 || currentStep === 9) return { label: 'Commitment & Activation', index: 5, total: 5 };
     } else {
       // Non-supporter flow - 5 sections
-      if (currentStep! >= 1 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep! >= 4 && currentStep! <= 5) return { label: 'Challenges', index: 2, total: 5 };
+      if (currentStep! >= 1 && currentStep! <= 4) return { label: 'The Goal', index: 1, total: 5 };
+      if (currentStep === 5) return { label: 'Challenges', index: 2, total: 5 };
       if (currentStep === 6) return { label: 'When and How Often', index: 3, total: 5 };
       if (currentStep === 7) return { label: 'The Team', index: 4, total: 5 };
       if (currentStep === 8) return { label: 'Your First Steps', index: 5, total: 5 };
