@@ -94,11 +94,11 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   const [showingQueuedSteps, setShowingQueuedSteps] = useState(false);
   const [awaitingStepUpdate, setAwaitingStepUpdate] = useState<string | null>(null);
   const [substepsMap, setSubstepsMap] = useState<Record<string, Substep[]>>({});
-  const [showGoalCelebration, setShowGoalCelebration] = useState(false);
+  // const [showGoalCelebration, setShowGoalCelebration] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
-  const [showFireworks, setShowFireworks] = useState(false);
-  const [showSuccessCheck, setShowSuccessCheck] = useState(false);
+  // const [showFireworks, setShowFireworks] = useState(false);
+  // const [showSuccessCheck, setShowSuccessCheck] = useState(false);
   const { toast } = useToast();
 
   // Fetch substeps for all steps
@@ -334,8 +334,8 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
         return next;
       });
 
-      setShowSuccessCheck(true);
-      setTimeout(() => setShowSuccessCheck(false), 2000);
+      // setShowSuccessCheck(true);
+      // setTimeout(() => setShowSuccessCheck(false), 2000);
 
       toast({
         title: "Step completed!",
@@ -384,7 +384,11 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
           const isLastStep = allGoalSteps && allGoalSteps[0]?.id === stepId;
 
           if (isLastStep) {
-            setShowGoalCelebration(true);
+            // setShowGoalCelebration(true);
+            toast({
+              title: "Goal completed! 🏆",
+              description: `Amazing work! You've completed "${goal.title}"!`,
+            });
             
             for (const admin of adminSupporters) {
               try {
@@ -580,7 +584,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       
       const allCompleted = substeps.every(s => s.completed_at !== null);
       if (allCompleted) {
-        setShowFireworks(true);
+        // setShowFireworks(true);
         
         const step = steps.find(s => s.id === stepId);
         if (step && step.status !== 'done') {
@@ -591,7 +595,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
           });
         }
       } else {
-        setShowFireworks(true);
+        // setShowFireworks(true);
         
         toast({
           title: "Substep completed!",
@@ -1088,8 +1092,8 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
           />
         )}
 
-        {/* Fireworks Animation */}
-        <Fireworks 
+        {/* Fireworks Animation - Temporarily disabled */}
+        {/* <Fireworks 
           isVisible={showFireworks} 
           onComplete={() => setShowFireworks(false)} 
         />
@@ -1101,7 +1105,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
         />
         
         {/* Success Animation */}
-        {showSuccessCheck && (
+        {/* {showSuccessCheck && (
           <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
             <Lottie 
               animationData={successAnimation} 
@@ -1109,7 +1113,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
               style={{ width: 300, height: 300 }}
             />
           </div>
-        )}
+        )} */}
       </Card>
     </>
   );

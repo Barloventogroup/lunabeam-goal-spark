@@ -3,8 +3,9 @@ import { CheckCircle2, ChevronRight, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StreakBanner } from "./streak-banner";
-import { CompletionCelebration } from "./completion-celebration";
+// import { CompletionCelebration } from "./completion-celebration";
 import { SkipReasonModal } from "./skip-reason-modal";
+import { useToast } from "@/hooks/use-toast";
 import type { Step, Goal, SkipReason } from "@/types";
 
 interface HabitTrackerCardProps {
@@ -32,20 +33,27 @@ export const HabitTrackerCard: React.FC<HabitTrackerCardProps> = ({
 }) => {
   const [showSkipModal, setShowSkipModal] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [celebrationData, setCelebrationData] = useState({ points: 0, streak: 0 });
+  // const [showCelebration, setShowCelebration] = useState(false);
+  // const [celebrationData, setCelebrationData] = useState({ points: 0, streak: 0 });
+  const { toast } = useToast();
   
   const handleComplete = async () => {
     setIsCompleting(true);
     try {
       const result = await onMarkComplete();
-      setCelebrationData({
-        points: result.pointsAwarded,
-        streak: result.newStreak
+      
+      // Show toast notification instead of celebration modal
+      toast({
+        title: "Step completed! 🎉",
+        description: `Great job! +${result.pointsAwarded} points${result.newStreak > 1 ? ` • ${result.newStreak}-day streak! 🔥` : ''}`,
       });
-      setShowCelebration(true);
     } catch (error) {
       console.error('Error completing step:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete step. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsCompleting(false);
     }
@@ -118,14 +126,14 @@ export const HabitTrackerCard: React.FC<HabitTrackerCardProps> = ({
         </CardContent>
       </Card>
       
-      {/* Celebration Overlay */}
-      {showCelebration && (
+      {/* Celebration Overlay - Temporarily disabled */}
+      {/* {showCelebration && (
         <CompletionCelebration
           streakCount={celebrationData.streak}
           pointsAwarded={celebrationData.points}
           onComplete={() => setShowCelebration(false)}
         />
-      )}
+      )} */}
       
       {/* Skip Modal */}
       <SkipReasonModal
