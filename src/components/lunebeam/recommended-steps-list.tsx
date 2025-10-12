@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, Plus, MoreHorizontal, Edit, Hourglass, Play, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, Plus, MoreHorizontal, Edit, Hourglass, Play, AlertCircle, MessageSquare } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1012,6 +1012,10 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
                                     <Edit className="h-4 w-4 mr-2" />
                                     Edit
                                   </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleNeedHelp(mainStep)}>
+                                    <MessageSquare className="h-4 w-4 mr-2" />
+                                    Break it down
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             )}
@@ -1029,19 +1033,6 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
                           <TableCell colSpan={4} className="p-0 bg-muted/20">
                             {subSteps.length > 0 ? (
                               <div className="p-4">
-                                {/* Main step description section */}
-                                <div className="mb-6 pb-4 border-b border-gray-200">
-                                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap mb-3">
-                                    {(mainStep.explainer?.trim() || mainStep.notes?.trim() || "Here are the sub-steps to complete this main step.")}
-                                  </p>
-                                  <button
-                                    onClick={() => handleNeedHelp(mainStep)}
-                                    className="text-primary hover:text-primary/80 underline text-sm cursor-pointer bg-transparent border-none p-0"
-                                  >
-                                    Need more help?
-                                  </button>
-                                </div>
-                                
                                 {/* Substeps cards */}
                                 <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
                                   {subSteps.map((substep) => (
@@ -1123,15 +1114,9 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
                               </div>
                             ) : (
                               <div className="p-4">
-                                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap mb-3">
-                                  {(mainStep.explainer?.trim() || mainStep.notes?.trim() || "Click 'Need more help?' to break this step down further.")}
+                                <p className="text-sm text-muted-foreground italic">
+                                  No substeps yet. Use "Break it down" from the menu to create substeps for this task.
                                 </p>
-                                <button
-                                  onClick={() => handleNeedHelp(mainStep)}
-                                  className="text-primary hover:text-primary/80 underline text-sm cursor-pointer bg-transparent border-none p-0"
-                                >
-                                  Need more help?
-                                </button>
                               </div>
                             )}
                           </TableCell>
