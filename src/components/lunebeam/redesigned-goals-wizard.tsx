@@ -783,7 +783,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
         // Only check the raw goal title, not the generated description (which may contain false positives)
         const titleOnly = (data.goalTitle || '').toLowerCase();
-        const triggeredKeywords = dangerousKeywords.filter(kw => titleOnly.includes(kw));
+        // Use word boundary regex to match whole words only, not substrings
+        const triggeredKeywords = dangerousKeywords.filter(kw => {
+          const wordBoundaryRegex = new RegExp(`\\b${kw}\\b`, 'i');
+          return wordBoundaryRegex.test(titleOnly);
+        });
 
         if (triggeredKeywords.length > 0) {
           console.error('⚠️ SAFETY VIOLATION in goal creation:', triggeredKeywords);
