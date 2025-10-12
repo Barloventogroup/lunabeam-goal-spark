@@ -130,6 +130,12 @@ export interface Step {
   initiated_at?: string;
   is_supporter_step?: boolean;
   
+  // Habit tracking fields
+  completion_streak?: number;
+  skip_count?: number;
+  skip_reasons?: any; // JSONB field, parsed as SkipRecord[]
+  last_skipped_date?: string;
+  
   // Legacy fields (kept for backwards compatibility)
   hidden?: boolean;
   blocked?: boolean;
@@ -296,4 +302,44 @@ export interface WeeklyCheckin {
   completed_at?: string;
   created_at: string;
   updated_at: string;
+}
+
+// Habit Tracking Types
+export type StreakMilestone = 'bronze' | 'silver' | 'gold' | 'platinum';
+export type SkipReason = 'sick' | 'busy' | 'tired' | 'not_ready' | 'forgot' | 'other';
+
+export interface StreakCalculation {
+  currentStreak: number;
+  longestStreak: number;
+  lastCompletedDate: string | null;
+  consecutiveDays: number;
+  isStreakAtRisk: boolean;
+  streakMilestone?: StreakMilestone;
+  goalId: string;
+}
+
+export interface SkipRecord {
+  stepId: string;
+  skippedAt: string;
+  reason: SkipReason;
+  customNote?: string;
+  streakAtRisk: boolean;
+}
+
+export interface HabitAnalytics {
+  goalId: string;
+  totalCompletions: number;
+  currentStreak: number;
+  longestStreak: number;
+  completionRate: number;
+  averageSkipsPerWeek: number;
+  mostCommonSkipReason: string | null;
+  skipPatterns: SkipPatterns;
+}
+
+export interface SkipPatterns {
+  timeOfDay: { hour: number; count: number }[];
+  dayOfWeek: { day: string; count: number }[];
+  reasons: { reason: string; count: number }[];
+  consecutiveSkips: number;
 }

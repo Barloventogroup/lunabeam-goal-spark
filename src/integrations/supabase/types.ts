@@ -528,7 +528,10 @@ export type Database = {
           earned_points: number | null
           frequency_per_week: number | null
           goal_completion_bonus: number | null
+          goal_type: string | null
           id: string
+          last_completed_date: string | null
+          longest_streak: number | null
           metadata: Json | null
           owner_id: string
           planned_milestones_count: number | null
@@ -536,6 +539,7 @@ export type Database = {
           planned_steps_count: number | null
           priority: string
           progress_pct: number
+          selected_days: string[] | null
           start_date: string | null
           status: string
           streak_count: number | null
@@ -557,7 +561,10 @@ export type Database = {
           earned_points?: number | null
           frequency_per_week?: number | null
           goal_completion_bonus?: number | null
+          goal_type?: string | null
           id?: string
+          last_completed_date?: string | null
+          longest_streak?: number | null
           metadata?: Json | null
           owner_id: string
           planned_milestones_count?: number | null
@@ -565,6 +572,7 @@ export type Database = {
           planned_steps_count?: number | null
           priority?: string
           progress_pct?: number
+          selected_days?: string[] | null
           start_date?: string | null
           status?: string
           streak_count?: number | null
@@ -586,7 +594,10 @@ export type Database = {
           earned_points?: number | null
           frequency_per_week?: number | null
           goal_completion_bonus?: number | null
+          goal_type?: string | null
           id?: string
+          last_completed_date?: string | null
+          longest_streak?: number | null
           metadata?: Json | null
           owner_id?: string
           planned_milestones_count?: number | null
@@ -594,6 +605,7 @@ export type Database = {
           planned_steps_count?: number | null
           priority?: string
           progress_pct?: number
+          selected_days?: string[] | null
           start_date?: string | null
           status?: string
           streak_count?: number | null
@@ -894,6 +906,7 @@ export type Database = {
       }
       steps: {
         Row: {
+          completion_streak: number | null
           created_at: string
           dependency_step_ids: string[] | null
           due_date: string | null
@@ -905,11 +918,14 @@ export type Database = {
           is_planned: boolean | null
           is_required: boolean
           is_supporter_step: boolean
+          last_skipped_date: string | null
           notes: string | null
           order_index: number
           planned_week_index: number | null
           points: number | null
           points_awarded: number | null
+          skip_count: number | null
+          skip_reasons: Json | null
           status: string
           step_type: string | null
           title: string
@@ -917,6 +933,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          completion_streak?: number | null
           created_at?: string
           dependency_step_ids?: string[] | null
           due_date?: string | null
@@ -928,11 +945,14 @@ export type Database = {
           is_planned?: boolean | null
           is_required?: boolean
           is_supporter_step?: boolean
+          last_skipped_date?: string | null
           notes?: string | null
           order_index?: number
           planned_week_index?: number | null
           points?: number | null
           points_awarded?: number | null
+          skip_count?: number | null
+          skip_reasons?: Json | null
           status?: string
           step_type?: string | null
           title: string
@@ -940,6 +960,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          completion_streak?: number | null
           created_at?: string
           dependency_step_ids?: string[] | null
           due_date?: string | null
@@ -951,11 +972,14 @@ export type Database = {
           is_planned?: boolean | null
           is_required?: boolean
           is_supporter_step?: boolean
+          last_skipped_date?: string | null
           notes?: string | null
           order_index?: number
           planned_week_index?: number | null
           points?: number | null
           points_awarded?: number | null
+          skip_count?: number | null
+          skip_reasons?: Json | null
           status?: string
           step_type?: string | null
           title?: string
