@@ -243,7 +243,13 @@ export const smartSchedulingService = {
       .eq('id', stepId);
   },
 
-  // Schedule next day's habit occurrence
+  /**
+   * LEGACY FUNCTION - Now used as fallback only
+   * 
+   * Originally designed for JIT (just-in-time) scheduling. Now all steps are created 
+   * upfront during goal creation. This function remains as a safety net to backfill
+   * missing steps if needed.
+   */
   async scheduleNextHabitOccurrence(goalId: string): Promise<{ scheduledTime: string; success: boolean }> {
     const goal = await this.getGoal(goalId);
     if (!goal) return { scheduledTime: '', success: false };
