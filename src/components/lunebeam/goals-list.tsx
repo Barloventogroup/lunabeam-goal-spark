@@ -36,6 +36,21 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
 
   const GOALS_PER_PAGE = 10;
 
+  // Helper to count unique completion days for habit goals
+  const getUniqueCompletionDays = (steps: Step[]): number => {
+    const completionDates = new Set<string>();
+    
+    steps.forEach(step => {
+      if (step.status === 'done' && step.updated_at) {
+        // Extract date only (YYYY-MM-DD)
+        const date = new Date(step.updated_at).toISOString().split('T')[0];
+        completionDates.add(date);
+      }
+    });
+    
+    return completionDates.size;
+  };
+
   const loadGoals = async () => {
     try {
       let goalsData: Goal[];
@@ -125,27 +140,43 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       for (const goal of goalsData) {
         try {
           const actionableSteps = stepsByGoal[goal.id] || [];
-          let totalCompletableItems = 0;
-          let completedItems = 0;
           
-          for (const step of actionableSteps) {
-            const stepSubsteps = substepsByStepId[step.id] || [];
+          // Check if this is a habit goal
+          const isHabit = goal.frequency_per_week && goal.frequency_per_week > 0;
+          
+          if (isHabit) {
+            // For habits: count unique completion days
+            const uniqueDays = getUniqueCompletionDays(actionableSteps);
+            const plannedDays = (goal.frequency_per_week || 0) * (goal.duration_weeks || 1);
             
-            if (stepSubsteps.length > 0) {
-              // If step has substeps, count each substep
-              totalCompletableItems += stepSubsteps.length;
-              completedItems += stepSubsteps.filter(sub => sub.completed_at).length;
-            } else {
-              // If no substeps, count the main step
-              totalCompletableItems += 1;
-              completedItems += step.status === 'done' ? 1 : 0;
+            counts[goal.id] = {
+              required: plannedDays,
+              done: uniqueDays
+            };
+          } else {
+            // For non-habits: count steps/substeps (existing logic)
+            let totalCompletableItems = 0;
+            let completedItems = 0;
+            
+            for (const step of actionableSteps) {
+              const stepSubsteps = substepsByStepId[step.id] || [];
+              
+              if (stepSubsteps.length > 0) {
+                // If step has substeps, count each substep
+                totalCompletableItems += stepSubsteps.length;
+                completedItems += stepSubsteps.filter(sub => sub.completed_at).length;
+              } else {
+                // If no substeps, count the main step
+                totalCompletableItems += 1;
+                completedItems += step.status === 'done' ? 1 : 0;
+              }
             }
+            
+            counts[goal.id] = {
+              required: totalCompletableItems,
+              done: completedItems
+            };
           }
-          
-          counts[goal.id] = {
-            required: totalCompletableItems,
-            done: completedItems
-          };
         } catch (error) {
           console.error(`Failed to load steps for goal ${goal.id}:`, error);
           counts[goal.id] = { required: 0, done: 0 };
@@ -504,18 +535,28 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                             </div>
                           )}
                         </div>
-                        <div className="flex items-start gap-2">
-                          <div className="text-right">
-                            <div className="text-3xl font-bold text-primary">
-                              {Math.round(progressPct)}%
-                            </div>
-                            <div className="text-caption">
-                              {stepCount.done} of {stepCount.required} steps done
-                            </div>
-                          </div>
-                          
-                          {/* Goal Menu */}
-                          <DropdownMenu>
+                <div className="flex items-start gap-2">
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-primary">
+                      {Math.round(progressPct)}%
+                    </div>
+                    <div className="text-caption">
+                      {stepCount.done} of {stepCount.required} {
+                        goal.frequency_per_week && goal.frequency_per_week > 0 
+                          ? 'days completed' 
+                          : 'steps done'
+                      }
+                    </div>
+                    {/* Show streak for habits if exists */}
+                    {goal.frequency_per_week && goal.frequency_per_week > 0 && goal.streak_count > 0 && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        🔥 {goal.streak_count} day streak
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Goal Menu */}
+                  <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button 
                                 variant="ghost" 
