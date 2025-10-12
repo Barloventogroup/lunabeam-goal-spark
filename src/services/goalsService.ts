@@ -362,14 +362,15 @@ export const stepsService = {
     planned_week_index?: number;
     is_supporter_step?: boolean;
   }): Promise<{ step: Step; goal: Goal }> {
-    // Validate due date against goal's due date
+    // Validate due date against goal's due date (treat goal due date as end-of-day)
     if (stepData.due_date) {
       const goal = await goalsService.getGoal(goalId);
       if (goal?.due_date) {
         const stepDueDate = new Date(stepData.due_date);
-        const goalDueDate = new Date(goal.due_date);
-        if (stepDueDate > goalDueDate) {
-          throw new Error(`Step due date cannot be after goal due date (${goalDueDate.toLocaleDateString()}).`);
+        const goalDueEnd = new Date(goal.due_date);
+        goalDueEnd.setHours(23, 59, 59, 999);
+        if (stepDueDate > goalDueEnd) {
+          throw new Error(`Step due date cannot be after goal due date (${goalDueEnd.toLocaleDateString()}).`);
         }
       }
     }
@@ -444,9 +445,10 @@ export const stepsService = {
       const goal = await goalsService.getGoal(stepData.goal_id);
       if (goal?.due_date) {
         const stepDueDate = new Date(updates.due_date);
-        const goalDueDate = new Date(goal.due_date);
-        if (stepDueDate > goalDueDate) {
-          throw new Error(`Step due date cannot be after goal due date (${goalDueDate.toLocaleDateString()}).`);
+        const goalDueEnd = new Date(goal.due_date);
+        goalDueEnd.setHours(23, 59, 59, 999);
+        if (stepDueDate > goalDueEnd) {
+          throw new Error(`Step due date cannot be after goal due date (${goalDueEnd.toLocaleDateString()}).`);
         }
       }
     }

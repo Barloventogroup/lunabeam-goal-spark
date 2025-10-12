@@ -67,8 +67,18 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   }, [goalId]);
 
   useEffect(() => {
-    // Auto-generate steps for new goals
-    if (goal && steps.length === 0 && (goal as any).metadata?.wizardContext && !generatingSteps && !generationError) {
+    // Auto-generate steps for new goals (gate on generationStatus to prevent loops)
+    const status = (goal as any)?.metadata?.generationStatus;
+    if (
+      goal &&
+      steps.length === 0 &&
+      (goal as any).metadata?.wizardContext &&
+      !generatingSteps &&
+      !generationError &&
+      status !== 'failed' &&
+      status !== 'completed' &&
+      status !== 'pending'
+    ) {
       generateStepsForNewGoal();
     }
   }, [goal, steps]);
@@ -279,6 +289,18 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     setGeneratingSteps(true);
     setGenerationError(false);
     
+    // Persist pending status to prevent re-runs
+    await supabase
+      .from('goals')
+      .update({ 
+        metadata: {
+          ...goal?.metadata,
+          generationStatus: 'pending',
+          startedAt: new Date().toISOString()
+        } as any
+      })
+      .eq('id', goal!.id);
+    
     // Add timeout: If generation takes more than 2 minutes, abort
     const timeoutId = setTimeout(async () => {
       console.error('Step generation timed out after 2 minutes');
@@ -350,6 +372,18 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       // Normalize baseStartDate to midnight to ensure proper day-of-week comparisons
       const baseStartDate = new Date(wizardData.startDate);
       baseStartDate.setHours(0, 0, 0, 0);
+      
+      // Pre-check: if start date is after goal end date, fail fast
+      const dueEnd = goal!.due_date ? new Date(goal!.due_date) : null;
+      if (dueEnd) {
+        dueEnd.setHours(23, 59, 59, 999);
+        if (baseStartDate > dueEnd) {
+          throw new Error(
+            `Start date (${format(baseStartDate, 'MMM d, yyyy')}) is after goal end date (${format(dueEnd, 'MMM d, yyyy')}). Please adjust your dates.`
+          );
+        }
+      }
+      
       const startTime = wizardData.customTime || wizardData.timeOfDay || '08:00';
       const [startHour, startMin] = startTime.split(':').map(Number);
       
@@ -364,11 +398,14 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         if (selectedDayNumbers.length > 0) {
           // Generate occurrences on selected weekdays within date range
           let currentDate = new Date(baseStartDate);
+          // Add safety: Calculate soft max based on date range to prevent infinite loop
           const goalEndDate = goal!.due_date ? new Date(goal!.due_date) : null;
-          const estimatedMaxOccurrences = goal!.frequency_per_week * (goal!.duration_weeks || 1);
+          if (goalEndDate) goalEndDate.setHours(23, 59, 59, 999);
           
-          // Add safety: Maximum iterations to prevent infinite loop
-          const maxIterations = 365; // Don't loop more than 1 year
+          const daysBetween = goalEndDate 
+            ? Math.ceil((goalEndDate.getTime() - baseStartDate.getTime()) / (1000 * 60 * 60 * 24))
+            : null;
+          const maxIterations = daysBetween ? Math.min(daysBetween + 7, 365) : 365;
           let iterations = 0;
           
           while (iterations < maxIterations) {
@@ -388,11 +425,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
             // Move to next day
             currentDate.setDate(currentDate.getDate() + 1);
             
-            // Stop conditions:
-            // 1. Reached goal due_date
-            // 2. Generated enough occurrences (as safety limit)
-            if ((goalEndDate && currentDate > goalEndDate) || 
-                occurrenceDates.length >= estimatedMaxOccurrences) {
+            // Stop condition: Reached goal due_date
+            if (goalEndDate && currentDate > goalEndDate) {
               break;
             }
           }
@@ -719,6 +753,21 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       await loadGoalData();
       
       clearTimeout(timeoutId); // Clear timeout on success
+      
+      // On success, mark generation as completed
+      if (failedDays.length === 0) {
+        await supabase
+          .from('goals')
+          .update({ 
+            metadata: {
+              ...goal?.metadata,
+              generationStatus: 'completed',
+              generationComplete: true,
+              completedAt: new Date().toISOString()
+            } as any
+          })
+          .eq('id', goal!.id);
+      }
       
       toast({
         title: "Micro-steps ready! 🎯",
