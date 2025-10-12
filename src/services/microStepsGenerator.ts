@@ -203,8 +203,23 @@ function getSmartActivationCue(goalAction: string, startTime: string, dayOfWeek:
     return `At ${startTime} on ${dayOfWeek}, open your materials and place them in front of you for ${goalAction}.`;
   }
   
+  // Reading tasks - distinguish leisure from academic
+  if (lower.includes('read')) {
+    const isAcademicReading = lower.includes('study') || 
+                              lower.includes('textbook') || 
+                              lower.includes('homework') ||
+                              lower.includes('assignment') ||
+                              lower.includes('chapter');
+    
+    if (isAcademicReading) {
+      return `At ${startTime} on ${dayOfWeek}, open your reading materials to the right page for ${goalAction}.`;
+    } else {
+      return `At ${startTime} on ${dayOfWeek}, pick up the book you're currently reading for ${goalAction}.`;
+    }
+  }
+  
   // Learning/study tasks
-  if (lower.includes('study') || lower.includes('homework') || lower.includes('read') || lower.includes('learn')) {
+  if (lower.includes('study') || lower.includes('homework') || lower.includes('learn')) {
     return `At ${startTime} on ${dayOfWeek}, open your textbook or laptop to the right page or app for ${goalAction}.`;
   }
   
@@ -233,8 +248,23 @@ function getSmartSupporterActivationCue(goalAction: string, startTime: string, d
     return `At ${startTime} on ${dayOfWeek}, place their materials in front of them for ${goalAction}.`;
   }
   
+  // Reading tasks - distinguish leisure from academic
+  if (lower.includes('read')) {
+    const isAcademicReading = lower.includes('study') || 
+                              lower.includes('textbook') || 
+                              lower.includes('homework') ||
+                              lower.includes('assignment') ||
+                              lower.includes('chapter');
+    
+    if (isAcademicReading) {
+      return `At ${startTime} on ${dayOfWeek}, help them open their reading materials to the right page for ${goalAction}.`;
+    } else {
+      return `At ${startTime} on ${dayOfWeek}, hand them the book they're currently reading for ${goalAction}.`;
+    }
+  }
+  
   // Learning/study tasks
-  if (lower.includes('study') || lower.includes('homework') || lower.includes('read') || lower.includes('learn')) {
+  if (lower.includes('study') || lower.includes('homework') || lower.includes('learn')) {
     return `At ${startTime} on ${dayOfWeek}, help them open their textbook or laptop to the right page or app for ${goalAction}.`;
   }
   
@@ -251,7 +281,17 @@ function getSmartActivationTitle(goalAction: string): string {
   if (lower.includes('water') || lower.includes('drink')) return 'Grab water bottle';
   if (lower.includes('exercise') || lower.includes('walk') || lower.includes('run')) return 'Put on shoes';
   if (lower.includes('clean') || lower.includes('tidy')) return 'Clear one surface';
-  if (lower.includes('study') || lower.includes('read') || lower.includes('homework')) return 'Open materials';
+  
+  // Reading - distinguish leisure from academic
+  if (lower.includes('read')) {
+    const isAcademicReading = lower.includes('study') || 
+                              lower.includes('textbook') || 
+                              lower.includes('homework') ||
+                              lower.includes('chapter');
+    return isAcademicReading ? 'Open reading materials' : 'Pick up book';
+  }
+  
+  if (lower.includes('study') || lower.includes('homework')) return 'Open materials';
   if (lower.includes('practice') || lower.includes('instrument')) return 'Get instrument';
   if (lower.includes('cook') || lower.includes('meal')) return 'Get ingredients';
   if (lower.includes('write') || lower.includes('journal')) return 'Open notebook';
@@ -469,6 +509,25 @@ export async function generateMicroStepsSmart(
       });
     }
 
+    // Detect leisure reading context for AI guidance
+    const goalLower = data.goalTitle.toLowerCase();
+    const isReading = goalLower.includes('read');
+    const timeHour = data.customTime ? parseInt(data.customTime.split(':')[0]) : null;
+    const isLeisureReading = isReading && (
+      goalLower.includes('before bed') ||
+      goalLower.includes('for fun') ||
+      goalLower.includes('relax') ||
+      goalLower.includes('novel') ||
+      goalLower.includes('book') ||
+      (timeHour !== null && timeHour >= 20) // Evening time suggests leisure
+    );
+
+    // Build context hints for AI
+    const contextHints = [];
+    if (isLeisureReading) {
+      contextHints.push('This is LEISURE reading (book, novel), not academic study. Use "book" not "textbook" or "study materials".');
+    }
+
     const payload = {
       flow,
       goalTitle: data.goalTitle,
@@ -482,7 +541,7 @@ export async function generateMicroStepsSmart(
       prerequisiteIsConcrete,
       barrier1,
       barrier2,
-      barrierContext: data.barrierContext || '',
+      barrierContext: [data.barrierContext, ...contextHints].filter(Boolean).join(' '),
       supportedPersonName: data.supportedPersonName || '',
       supporterName: data.supporterName || '',
     };

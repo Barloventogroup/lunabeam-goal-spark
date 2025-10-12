@@ -581,6 +581,12 @@ Step 1: PREPARATION (BEFORE [startTime])
   * Goal: "Practice Spanish" + Concrete: "Spanish flashcards" + supporterName="Carlos" → "By Thursday, ask Carlos to buy Spanish verb flashcards at Target or order from Amazon. Place them on your desk."
   * Goal: "Learn guitar" + Uncertain: "not sure what type of guitar" → "By Wednesday, watch 1 YouTube video: 'Beginner guitars for teens'. Write down 2 guitar types that interest you."
 
+**CONTEXT AWARENESS RULES:**
+- Consider timing and modifiers to infer the nature of the activity
+- "before bed", "evening", "relax by", "for fun" → leisure context (use "book", "pick up")
+- "homework", "assignment", "test prep", "textbook", "chapter" → academic context (use "textbook", "open to page")
+- Choose materials and language that match the context
+
 Step 2: ACTIVATION CUE (AT EXACTLY [startTime])
 - **Purpose**: Trivial activation to defeat the inertia barrier.
 - **Constraint**: The physical action must take **< 15 seconds** to complete. It must be an initial touch, tap, or switch.
@@ -588,6 +594,7 @@ Step 2: ACTIVATION CUE (AT EXACTLY [startTime])
 - **Examples**:
   * Goal: "Practice Spanish" → "At 7:00 PM Friday, tap the Duolingo app icon."
   * Goal: "Study algebra" → "At 8:00 AM Friday, open your algebra textbook to chapter 3."
+  * Goal: "Read before bed" → "At 9:30 PM Friday, pick up the book on your nightstand."
   * Goal: "Learn guitar" → "At 6:30 PM Tuesday, pick up your guitar."
   * Goal: "Write a short story" → "At 9:00 AM Saturday, open your writing notebook to a blank page."
 
