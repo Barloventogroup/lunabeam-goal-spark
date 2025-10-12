@@ -67,21 +67,69 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   }, [goalId]);
 
   useEffect(() => {
-    // Auto-generate steps for new goals (gate on generationStatus to prevent loops)
+    // Auto-generate steps for new goals with stale detection
     const status = (goal as any)?.metadata?.generationStatus;
+    const startedAt = (goal as any)?.metadata?.startedAt;
+
+    // Allow retry if pending for more than 5 minutes (likely stalled)
+    const isPendingStalled = status === 'pending' && startedAt && 
+      (Date.now() - new Date(startedAt).getTime()) > 5 * 60 * 1000;
+
     if (
       goal &&
       steps.length === 0 &&
       (goal as any).metadata?.wizardContext &&
       !generatingSteps &&
       !generationError &&
-      status !== 'failed' &&
-      status !== 'completed' &&
-      status !== 'pending'
+      status !== 'completed' && // Don't retry completed
+      (status !== 'pending' || isPendingStalled) && // Allow retry if stalled
+      (status !== 'failed' || isPendingStalled) // Allow auto-retry of stalled failures
     ) {
+      // If stalled, log it
+      if (isPendingStalled) {
+        console.log('Detected stalled generation (pending > 5 min), retrying...');
+      }
       generateStepsForNewGoal();
     }
   }, [goal, steps]);
+
+  useEffect(() => {
+    // On mount, check if goal has stale 'pending' status
+    const checkStaleGeneration = async () => {
+      if (!goal) return;
+      
+      const status = (goal as any)?.metadata?.generationStatus;
+      const startedAt = (goal as any)?.metadata?.startedAt;
+      
+      // If pending for > 3 minutes and no steps, mark as failed
+      if (status === 'pending' && startedAt && steps.length === 0) {
+        const minutesPending = (Date.now() - new Date(startedAt).getTime()) / (1000 * 60);
+        
+        if (minutesPending > 3) {
+          console.warn(`Found stale pending generation (${minutesPending.toFixed(1)} min), marking as failed`);
+          
+          await supabase
+            .from('goals')
+            .update({
+              metadata: {
+                ...goal.metadata,
+                generationStatus: 'failed',
+                generationError: 'Generation stalled - please retry',
+                failedAt: new Date().toISOString()
+              } as any
+            })
+            .eq('id', goal.id);
+          
+          // Reload to trigger fresh attempt
+          await loadGoalData();
+        }
+      }
+    };
+    
+    if (goal && steps.length === 0) {
+      checkStaleGeneration();
+    }
+  }, [goal?.id, steps.length]);
 
   const calculateProgress = async (goalSteps: Step[]): Promise<GoalProgress> => {
     const actionableSteps = goalSteps.filter(s => (!s.type || s.type === 'action') && !s.hidden && s.status !== 'skipped');
@@ -289,17 +337,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     setGeneratingSteps(true);
     setGenerationError(false);
     
-    // Persist pending status to prevent re-runs
-    await supabase
-      .from('goals')
-      .update({ 
-        metadata: {
-          ...goal?.metadata,
-          generationStatus: 'pending',
-          startedAt: new Date().toISOString()
-        } as any
-      })
-      .eq('id', goal!.id);
+    // NOTE: Don't set 'pending' status here - wait until we're about to call edge function
+    // This prevents deadlock if early validation fails
     
     // Add timeout: If generation takes more than 2 minutes, abort
     const timeoutId = setTimeout(async () => {
@@ -535,6 +574,20 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
           
           while (retryCount < maxRetries && !generationSuccess) {
             try {
+              // On first attempt of first day, mark as pending now that we're actually calling AI
+              if (dayIndex === 0 && retryCount === 0) {
+                await supabase
+                  .from('goals')
+                  .update({ 
+                    metadata: {
+                      ...goal?.metadata,
+                      generationStatus: 'pending',
+                      startedAt: new Date().toISOString()
+                    } as any
+                  })
+                  .eq('id', goal!.id);
+              }
+
               individualSteps = await generateMicroStepsSmart(dailyEnrichedData, 'individual');
               
               if (!individualSteps || individualSteps.length === 0) {
@@ -775,42 +828,42 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       });
       
     } catch (error: any) {
-      console.error('Step generation error:', error);
+      clearTimeout(timeoutId); // Ensure timeout is cleared
+      console.error('Failed to generate steps:', error);
+      setGeneratingSteps(false);
       setGenerationError(true);
-      
-      clearTimeout(timeoutId); // Clear timeout on error
       
       // Determine user-friendly error message
       let errorMessage = 'Failed to generate your plan. Please try again.';
       
       if (error.message?.includes('No occurrences found')) {
-        errorMessage = error.message; // Use the detailed message
+        errorMessage = error.message;
       } else if (error.message?.includes('date range too large')) {
         errorMessage = 'Your goal duration is too long. Please choose a shorter time period.';
       } else if (error.message?.includes('429') || error.message?.includes('rate limit')) {
         errorMessage = 'Our system is busy right now. Please wait a moment and try again.';
-      } else if (error.message?.includes('due date is too early')) {
-        errorMessage = error.message; // Use the validation message
+      } else if (error.message?.includes('due date is too early') || error.message?.includes('Start date')) {
+        errorMessage = error.message;
       }
       
-      toast({
-        title: "Step Generation Failed",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      
-      // Update goal metadata to mark generation as failed
+      // Persist failure state with detailed error
       await supabase
         .from('goals')
         .update({ 
           metadata: {
             ...goal?.metadata,
             generationStatus: 'failed',
-            generationError: error.message,
+            generationError: error.message || 'Unknown error during generation',
             failedAt: new Date().toISOString()
           } as any
         })
         .eq('id', goal!.id);
+      
+      toast({
+        title: "Step generation failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
     } finally {
       clearTimeout(timeoutId);
       setGeneratingSteps(false);
