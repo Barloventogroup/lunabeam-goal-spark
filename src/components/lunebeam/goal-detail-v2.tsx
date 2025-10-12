@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit, Users, UserCheck } from 'lucide-react';
+import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit, Users, UserCheck, AlertCircle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { BackButton } from '@/components/ui/back-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -279,6 +279,18 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     setGeneratingSteps(true);
     setGenerationError(false);
     
+    // Add timeout: If generation takes more than 2 minutes, abort
+    const timeoutId = setTimeout(() => {
+      console.error('Step generation timed out after 2 minutes');
+      setGeneratingSteps(false);
+      setGenerationError(true);
+      toast({
+        title: "Generation Timeout",
+        description: "Step generation is taking too long. Please try again or contact support.",
+        variant: "destructive"
+      });
+    }, 120000); // 2 minutes
+    
     try {
       const wizardData = goalMetadata.wizardContext;
       
@@ -295,8 +307,13 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         hasPrerequisites: !!wizardData.prerequisite,
         customPrerequisites: wizardData.prerequisite || '',
         
-        // Fix: Ensure Date object
-        startDate: new Date(wizardData.startDate),
+        // Fix: Ensure Date object with timezone handling
+        startDate: (() => {
+          const date = new Date(wizardData.startDate);
+          // Reset to midnight in local timezone to avoid day-of-week confusion
+          date.setHours(0, 0, 0, 0);
+          return date;
+        })(),
         
         timeOfDay: wizardData.timeOfDay,
         customTime: wizardData.customTime,
@@ -334,7 +351,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
           const goalEndDate = goal!.due_date ? new Date(goal!.due_date) : null;
           const estimatedMaxOccurrences = goal!.frequency_per_week * (goal!.duration_weeks || 1);
           
-          while (true) {
+          // Add safety: Maximum iterations to prevent infinite loop
+          const maxIterations = 365; // Don't loop more than 1 year
+          let iterations = 0;
+          
+          while (iterations < maxIterations) {
+            iterations++;
             const currentDayOfWeek = currentDate.getDay();
             
             // If this is a selected day, add it
@@ -358,6 +380,22 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               break;
             }
           }
+          
+          // Add error handling: If loop maxed out, throw error
+          if (iterations >= maxIterations) {
+            console.error('Step generation loop exceeded maximum iterations');
+            clearTimeout(timeoutId);
+            throw new Error('Failed to generate schedule - date range too large or invalid configuration');
+          }
+          
+          // Add validation: If no occurrences found, throw clear error
+          if (occurrenceDates.length === 0) {
+            const selectedDayNames = selectedDays.map((d: string) => d.toUpperCase()).join(', ');
+            clearTimeout(timeoutId);
+            throw new Error(
+              `No occurrences found for selected days (${selectedDayNames}) between ${format(baseStartDate, 'MMM d, yyyy')} and ${goalEndDate ? format(goalEndDate, 'MMM d, yyyy') : 'end date'}. Please check your schedule.`
+            );
+          }
         } else {
           // Fallback: consecutive days (if selectedDays missing)
           const estimatedMaxOccurrences = goal!.frequency_per_week * (goal!.duration_weeks || 1);
@@ -376,6 +414,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       const totalOccurrences = occurrenceDates.length;
       
       console.log(`Generating steps for ${occurrenceDates.length} days...`);
+      console.log('Occurrence dates:', occurrenceDates.map(d => format(d, 'EEE MMM d, yyyy HH:mm')));
+      console.log('Selected days from wizard:', (wizardData as any).selectedDays);
+      console.log('Goal date range:', {
+        start: format(new Date(goal!.start_date), 'MMM d, yyyy'),
+        end: goal!.due_date ? format(new Date(goal!.due_date), 'MMM d, yyyy') : 'no end date'
+      });
       
       // Safety check: verify goal due_date can accommodate all occurrences
       const lastOccurrenceDate = occurrenceDates[occurrenceDates.length - 1];
@@ -632,20 +676,50 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       // Reload steps
       await loadGoalData();
       
+      clearTimeout(timeoutId); // Clear timeout on success
+      
       toast({
         title: "Micro-steps ready! 🎯",
         description: "Your personalized steps have been generated."
       });
       
-    } catch (error) {
-      console.error('Failed to generate steps:', error);
+    } catch (error: any) {
+      console.error('Step generation error:', error);
       setGenerationError(true);
       
+      clearTimeout(timeoutId); // Clear timeout on error
+      
+      // Determine user-friendly error message
+      let errorMessage = 'Failed to generate your plan. Please try again.';
+      
+      if (error.message?.includes('No occurrences found')) {
+        errorMessage = error.message; // Use the detailed message
+      } else if (error.message?.includes('date range too large')) {
+        errorMessage = 'Your goal duration is too long. Please choose a shorter time period.';
+      } else if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+        errorMessage = 'Our system is busy right now. Please wait a moment and try again.';
+      } else if (error.message?.includes('due date is too early')) {
+        errorMessage = error.message; // Use the validation message
+      }
+      
       toast({
-        title: "Step generation failed",
-        description: "We couldn't generate your micro-steps at this time. Use the Generate Steps button to try again.",
+        title: "Step Generation Failed",
+        description: errorMessage,
         variant: "destructive"
       });
+      
+      // Update goal metadata to mark generation as failed
+      await supabase
+        .from('goals')
+        .update({ 
+          metadata: {
+            ...goal?.metadata,
+            generationStatus: 'failed',
+            generationError: error.message,
+            failedAt: new Date().toISOString()
+          } as any
+        })
+        .eq('id', goal!.id);
     } finally {
       setGeneratingSteps(false);
     }
@@ -688,14 +762,49 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       )}
 
       {/* Error state with retry button */}
-      {!generatingSteps && steps.length === 0 && generationError && (goal as any)?.metadata?.wizardContext && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-sm text-amber-800 mb-3">
-            We couldn't generate your micro-steps at this time. If you want to try again, click below.
-          </p>
-          <Button onClick={generateStepsForNewGoal} variant="outline" className="w-full">
-            Generate Steps
-          </Button>
+      {generationError && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <h4 className="font-semibold text-red-800">Step Generation Failed</h4>
+              <p className="text-sm text-red-700 mt-1">
+                We couldn't create your plan. This might be due to:
+              </p>
+              <ul className="text-sm text-red-700 mt-2 ml-4 list-disc">
+                <li>Invalid date range (no selected days fall within your goal period)</li>
+                <li>System overload (try again in a moment)</li>
+                <li>Connection issues</li>
+              </ul>
+              <div className="flex gap-2 mt-3">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => {
+                    setGenerationError(false);
+                    generateStepsForNewGoal();
+                  }}
+                  disabled={generatingSteps}
+                >
+                  {generatingSteps ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Retrying...
+                    </>
+                  ) : (
+                    'Retry Generation'
+                  )}
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="ghost"
+                  onClick={onBack}
+                >
+                  Back to Goals
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
