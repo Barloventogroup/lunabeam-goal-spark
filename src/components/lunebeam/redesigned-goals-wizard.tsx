@@ -966,7 +966,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           created_by: currentUser?.id,
           tags: data.challengeAreas || [],
           metadata: {
-            generationStatus: 'pending',
+            generationStatus: 'queued',
+            generationQueuedAt: new Date().toISOString(),
             actionCue: actionCue,
             wizardContext: {
               goalTitle: data.goalTitle,

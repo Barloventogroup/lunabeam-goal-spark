@@ -70,43 +70,70 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     // Auto-generate steps for new goals with stale detection
     const status = (goal as any)?.metadata?.generationStatus;
     const startedAt = (goal as any)?.metadata?.startedAt;
-
-    // Allow retry if pending for more than 5 minutes (likely stalled)
+    const queuedAt = (goal as any)?.metadata?.generationQueuedAt;
+    
+    // Compute gate conditions
+    const isQueued = status === 'queued';
+    const pendingNoStart = status === 'pending' && !startedAt;
     const isPendingStalled = status === 'pending' && startedAt && 
       (Date.now() - new Date(startedAt).getTime()) > 5 * 60 * 1000;
 
-    if (
+    // Log gate decision for debugging
+    console.info('[AutoGen Gate]', {
+      status,
+      startedAt,
+      queuedAt,
+      isQueued,
+      pendingNoStart,
+      isPendingStalled,
+      stepsLength: steps.length,
+      generatingSteps,
+      generationError,
+      hasWizardContext: !!(goal as any)?.metadata?.wizardContext
+    });
+
+    const shouldGenerate = 
       goal &&
       steps.length === 0 &&
       (goal as any).metadata?.wizardContext &&
       !generatingSteps &&
       !generationError &&
       status !== 'completed' && // Don't retry completed
-      (status !== 'pending' || isPendingStalled) && // Allow retry if stalled
-      (status !== 'failed' || isPendingStalled) // Allow auto-retry of stalled failures
-    ) {
-      // If stalled, log it
-      if (isPendingStalled) {
-        console.log('Detected stalled generation (pending > 5 min), retrying...');
+      (isQueued || pendingNoStart || isPendingStalled || !status); // Allow generation for these states
+
+    if (shouldGenerate) {
+      // Log reason for generation
+      if (isQueued) {
+        console.info('[AutoGen] Triggering generation for queued goal');
+      } else if (pendingNoStart) {
+        console.info('[AutoGen] Triggering generation for pending goal without startedAt');
+      } else if (isPendingStalled) {
+        console.info('[AutoGen] Retrying stalled generation (pending > 5 min)');
+      } else if (!status) {
+        console.info('[AutoGen] Triggering generation for goal without status');
       }
+      
       generateStepsForNewGoal();
     }
   }, [goal, steps]);
 
   useEffect(() => {
-    // On mount, check if goal has stale 'pending' status
+    // On mount, check if goal has stale 'pending' or 'queued' status
     const checkStaleGeneration = async () => {
       if (!goal) return;
       
       const status = (goal as any)?.metadata?.generationStatus;
       const startedAt = (goal as any)?.metadata?.startedAt;
+      const queuedAt = (goal as any)?.metadata?.generationQueuedAt;
       
-      // If pending for > 3 minutes and no steps, mark as failed
+      console.info('[Stale Checker]', { status, startedAt, queuedAt, stepsLength: steps.length });
+      
+      // Check for stale 'pending' (with startedAt > 3 minutes)
       if (status === 'pending' && startedAt && steps.length === 0) {
         const minutesPending = (Date.now() - new Date(startedAt).getTime()) / (1000 * 60);
         
         if (minutesPending > 3) {
-          console.warn(`Found stale pending generation (${minutesPending.toFixed(1)} min), marking as failed`);
+          console.warn(`[Stale Checker] Found stale pending generation (${minutesPending.toFixed(1)} min), marking as failed`);
           
           await supabase
             .from('goals')
@@ -114,7 +141,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               metadata: {
                 ...goal.metadata,
                 generationStatus: 'failed',
-                generationError: 'Generation stalled - please retry',
+                generationError: 'Generation stalled from pending state',
                 failedAt: new Date().toISOString()
               } as any
             })
@@ -122,6 +149,32 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
           
           // Reload to trigger fresh attempt
           await loadGoalData();
+          return;
+        }
+      }
+      
+      // Check for stale 'queued' (with queuedAt > 3 minutes)
+      if (status === 'queued' && queuedAt && steps.length === 0) {
+        const minutesQueued = (Date.now() - new Date(queuedAt).getTime()) / (1000 * 60);
+        
+        if (minutesQueued > 3) {
+          console.warn(`[Stale Checker] Found stale queued goal (${minutesQueued.toFixed(1)} min), marking as failed`);
+          
+          await supabase
+            .from('goals')
+            .update({
+              metadata: {
+                ...goal.metadata,
+                generationStatus: 'failed',
+                generationError: 'Generation stalled from queued state',
+                failedAt: new Date().toISOString()
+              } as any
+            })
+            .eq('id', goal.id);
+          
+          // Reload to trigger fresh attempt
+          await loadGoalData();
+          return;
         }
       }
     };
@@ -333,6 +386,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const generateStepsForNewGoal = async () => {
     const goalMetadata = (goal as any)?.metadata;
     if (!goalMetadata?.wizardContext) return;
+    
+    console.info('[Generation] Starting step generation', {
+      goalId: goal?.id,
+      goalTitle: goal?.title,
+      currentStatus: goalMetadata?.generationStatus
+    });
     
     setGeneratingSteps(true);
     setGenerationError(false);
@@ -576,6 +635,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
             try {
               // On first attempt of first day, mark as pending now that we're actually calling AI
               if (dayIndex === 0 && retryCount === 0) {
+                console.info('[Generation] Setting status to pending, about to call AI');
                 await supabase
                   .from('goals')
                   .update({ 
