@@ -327,7 +327,7 @@ function getSmartActivationTitle(goalAction: string): string {
 }
 
 /**
- * Returns barrier-specific templates for Individual flow
+ * Returns barrier-specific templates for Individual flow with natural language
  */
 function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariables): BarrierTemplate {
   const templates: Record<string, BarrierTemplate> = {
@@ -337,38 +337,38 @@ function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariabl
         description: getSmartActivationCue(vars.goalAction, vars.startTime, vars.dayOfWeek)
       },
       barrierStep: {
-        title: `Focus for 20 min on ${vars.goalObject}`,
-        description: `Set a timer for 20 minutes and focus on ${vars.goalObject}. When the timer rings, stand up and stretch for 5 minutes before continuing.`
+        title: `20-minute focus session`,
+        description: `Set a timer for 20 minutes and work on ${vars.goalObject}. When it rings, stand up and stretch for 5 minutes - give your body a break before continuing.`
       }
     },
     attention: {
       activationStep: {
-        title: `At ${vars.startTime}: Prepare materials for ${vars.goalObject}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, open or grab one specific thing for ${vars.goalObject}.`
+        title: `At ${vars.startTime}: Get materials ready`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, grab or open what you need for ${vars.goalObject} - just one simple thing to get started.`
       },
       barrierStep: {
-        title: `25-min focus timer for ${vars.goalObject}`,
-        description: `Set a 25-minute timer and work on ${vars.goalObject}. When it rings, stand up and take a 5-minute movement break before continuing.`
+        title: `25-minute work sprint`,
+        description: `Set a 25-minute timer and dive into ${vars.goalObject}. When the timer goes off, take a 5-minute movement break - walk around, stretch, or grab water.`
       }
     },
     planning: {
       activationStep: {
-        title: `At ${vars.startTime}: Grab pen to plan ${vars.goalObject}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, grab a pen and paper to plan ${vars.goalObject}.`
+        title: `At ${vars.startTime}: Grab planning tools`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, grab a pen and paper so you can plan out ${vars.goalObject}.`
       },
       barrierStep: {
-        title: `Break ${vars.goalObject} into 3 steps`,
-        description: `Spend 20 minutes writing down 3 smaller steps for ${vars.goalObject}. Number them 1, 2, 3 and write what you'll do for each one.`
+        title: `Map out 3 mini-steps`,
+        description: `Take 20 minutes to break ${vars.goalObject} into 3 smaller, doable steps. Write each one down and number them 1, 2, 3 so you have a clear path forward.`
       }
     },
     time: {
       activationStep: {
-        title: `At ${vars.startTime}: Set timer for ${vars.goalObject}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a timer for 20 minutes for ${vars.goalObject}.`
+        title: `At ${vars.startTime}: Start your timer`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a 20-minute timer for ${vars.goalObject}.`
       },
       barrierStep: {
-        title: `Work on ${vars.goalObject} until timer rings`,
-        description: `Focus on ${vars.goalObject} for 20 minutes until your timer rings. When it does, take a mandatory 5-minute break.`
+        title: `Work until timer rings`,
+        description: `Stay focused on ${vars.goalObject} for the full 20 minutes. When your timer goes off, take a well-deserved 5-minute break.`
       }
     },
   };
@@ -377,48 +377,48 @@ function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariabl
 }
 
 /**
- * Returns barrier-specific templates for Supporter flow
+ * Returns barrier-specific templates for Supporter flow with natural language
  */
 function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariables): BarrierTemplate {
   const templates: Record<string, BarrierTemplate> = {
     initiation: {
       activationStep: {
-        title: `At ${vars.startTime}: Hand materials for ${vars.goalObject}`,
+        title: `At ${vars.startTime}: Hand them what they need`,
         description: getSmartSupporterActivationCue(vars.goalAction, vars.startTime, vars.dayOfWeek)
       },
       barrierStep: {
-        title: `Stay nearby for ${vars.goalObject} (20 min)`,
-        description: `Remain in the same room while they work on ${vars.goalObject} for 20 minutes. After 20 minutes, check in and celebrate any progress they made.`
+        title: `Stay nearby during work time`,
+        description: `Stick around in the same room while they work on ${vars.goalObject} for about 20 minutes. When time's up, check in and celebrate any progress they made, no matter how small.`
       }
     },
     attention: {
       activationStep: {
-        title: `At ${vars.startTime}: Start timer for ${vars.goalObject}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a visible 25-minute timer and say: "Work on ${vars.goalObject} until this rings."`
+        title: `At ${vars.startTime}: Set up the timer`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a visible 25-minute timer where they can see it and say: "Let's work on ${vars.goalObject} until this rings."`
       },
       barrierStep: {
-        title: `Check in after ${vars.goalObject} session`,
-        description: `When the 25-minute timer rings, check in with them about ${vars.goalObject}. Make sure they take a 5-minute movement break before continuing.`
+        title: `Check in when timer ends`,
+        description: `When the 25-minute timer goes off, check in to see how ${vars.goalObject} went. Help them take a 5-minute movement break - maybe walk around together or get water.`
       }
     },
     planning: {
       activationStep: {
-        title: `At ${vars.startTime}: Provide materials to plan ${vars.goalObject}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them paper and pen to plan ${vars.goalObject}.`
+        title: `At ${vars.startTime}: Get planning materials`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them paper and a pen so they can map out ${vars.goalObject}.`
       },
       barrierStep: {
-        title: `Help break down ${vars.goalObject} into steps`,
-        description: `Sit with them for 20 minutes to help write and number 3 smaller steps for ${vars.goalObject}. Ask guiding questions like "What needs to happen first?" but let them decide.`
+        title: `Help create a simple plan`,
+        description: `Sit down together for 20 minutes to break ${vars.goalObject} into 3 smaller steps. Ask questions like "What needs to happen first?" but let them make the decisions and write things down.`
       }
     },
     time: {
       activationStep: {
-        title: `At ${vars.startTime}: Set timer for ${vars.goalObject}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, help them set a 20-minute timer for ${vars.goalObject}.`
+        title: `At ${vars.startTime}: Set the work timer`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, help them set a 20-minute timer for working on ${vars.goalObject}.`
       },
       barrierStep: {
-        title: `Monitor ${vars.goalObject} and celebrate progress`,
-        description: `Check in when the timer rings after 20 minutes of ${vars.goalObject}. Celebrate what they completed and help them take a 5-minute break before the next work session.`
+        title: `Celebrate when timer rings`,
+        description: `Check in when the 20-minute timer goes off. Celebrate what they accomplished with ${vars.goalObject} and make sure they take a 5-minute break before continuing.`
       }
     },
   };
@@ -427,218 +427,24 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
 }
 
 /**
- * Generates a varied goal completion step (SLOT 4) with dynamic phrasing
+ * Generates a natural, varied goal completion step - simplified for natural language
  */
 function getSmartCompletionStep(goalAction: string, goalTitle: string, flow: 'individual' | 'supporter'): MicroStep {
   const lower = goalAction.toLowerCase();
+  const object = extractGoalObject(goalTitle);
   
-  // Random selection helper
-  const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
-  
-  // For supporter flow
   if (flow === 'supporter') {
-    if (lower.includes('cook') || lower.includes('meal') || lower.includes('recipe')) {
-      return pickRandom([
-        {
-          title: `Finish cooking: ${goalAction}`,
-          description: `Be there as they complete cooking ${goalAction}. Snap a photo together of the finished dish and celebrate the effort.`
-        },
-        {
-          title: `Complete the meal: ${goalAction}`,
-          description: `Support them through the final steps of cooking ${goalAction}. Take a photo to remember what they created.`
-        },
-        {
-          title: `Wrap up cooking: ${goalAction}`,
-          description: `Help them finish ${goalAction}. Celebrate together when the meal is plated and snap a pic of their creation.`
-        }
-      ]);
-    }
-    
-    if (lower.includes('write') || lower.includes('essay') || lower.includes('paper')) {
-      return pickRandom([
-        {
-          title: `Finish writing: ${goalAction}`,
-          description: `Check in as they wrap up ${goalAction}. Give them a high-five when they hit save and ask what they learned.`
-        },
-        {
-          title: `Complete the writing: ${goalAction}`,
-          description: `Be there when they finish ${goalAction}. Celebrate when the final version is saved and reflect on the accomplishment together.`
-        },
-        {
-          title: `Wrap up: ${goalAction}`,
-          description: `Support them through the final edits of ${goalAction}. Celebrate when it's saved and ask about their favorite part.`
-        }
-      ]);
-    }
-    
-    if (lower.includes('clean') || lower.includes('organize') || lower.includes('tidy')) {
-      return pickRandom([
-        {
-          title: `Finish cleaning: ${goalAction}`,
-          description: `Walk through as they complete ${goalAction}. Take before/after photos together to see the transformation.`
-        },
-        {
-          title: `Complete: ${goalAction}`,
-          description: `Be there when they finish ${goalAction}. Snap photos to capture the progress and celebrate the effort.`
-        },
-        {
-          title: `Wrap it up: ${goalAction}`,
-          description: `Check in as they finish ${goalAction}. Take photos together and acknowledge how much they accomplished.`
-        }
-      ]);
-    }
-    
-    if (lower.includes('exercise') || lower.includes('workout') || lower.includes('run')) {
-      return pickRandom([
-        {
-          title: `Finish the workout: ${goalAction}`,
-          description: `Support them through the final minutes of ${goalAction}. Help them log their activity and celebrate how they pushed through.`
-        },
-        {
-          title: `Complete: ${goalAction} session`,
-          description: `Be present as they finish ${goalAction}. Track their time together and give them credit for showing up.`
-        },
-        {
-          title: `Wrap up: ${goalAction}`,
-          description: `Cheer them on through the end of ${goalAction}. Help them note their progress and celebrate the effort.`
-        }
-      ]);
-    }
-    
-    return pickRandom([
-      {
-        title: `Finish: ${goalAction}`,
-        description: `Be there as they complete ${goalAction}. Mark the accomplishment together and celebrate what they achieved.`
-      },
-      {
-        title: `Complete: ${goalAction}`,
-        description: `Support them through finishing ${goalAction}. Help them note what they accomplished and give them recognition.`
-      },
-      {
-        title: `Wrap up: ${goalAction}`,
-        description: `Check in as they finish ${goalAction}. Celebrate together and reflect on what they learned or accomplished.`
-      }
-    ]);
+    return {
+      title: `Celebrate finishing`,
+      description: `Be there as they complete ${object}. Help them mark the accomplishment - maybe snap a photo together, give a high-five, or ask them to share what they learned. Celebrate the effort!`
+    };
   }
   
-  // For individual flow
-  if (lower.includes('cook') || lower.includes('meal') || lower.includes('recipe')) {
-    return pickRandom([
-      {
-        title: `Finish cooking: ${goalAction}`,
-        description: `Complete cooking ${goalAction}. Snap a photo of your finished dish to celebrate your creation.`
-      },
-      {
-        title: `Complete the meal: ${goalAction}`,
-        description: `Finish ${goalAction}. Take a photo to remember what you made and give yourself credit.`
-      },
-      {
-        title: `Wrap up: ${goalAction}`,
-        description: `Complete ${goalAction}. Capture a photo of your dish and reflect on what you learned while cooking.`
-      }
-    ]);
-  }
-  
-  if (lower.includes('write') || lower.includes('essay') || lower.includes('paper')) {
-    return pickRandom([
-      {
-        title: `Finish writing: ${goalAction}`,
-        description: `Complete ${goalAction}. Hit save and jot down one thing you're proud of or learned.`
-      },
-      {
-        title: `Wrap up: ${goalAction}`,
-        description: `Finish ${goalAction}. Save the final version and note what you accomplished or what challenged you.`
-      },
-      {
-        title: `Complete: ${goalAction}`,
-        description: `Finish ${goalAction}. Save your work and reflect on one new insight you gained while writing.`
-      }
-    ]);
-  }
-  
-  if (lower.includes('clean') || lower.includes('organize') || lower.includes('tidy')) {
-    return pickRandom([
-      {
-        title: `Finish: ${goalAction}`,
-        description: `Complete ${goalAction}. Take before/after photos to see your transformation.`
-      },
-      {
-        title: `Wrap up: ${goalAction}`,
-        description: `Finish ${goalAction}. Snap photos to capture your progress and give yourself credit.`
-      },
-      {
-        title: `Complete cleaning: ${goalAction}`,
-        description: `Finish ${goalAction}. Take photos to see the difference you made and celebrate the effort.`
-      }
-    ]);
-  }
-  
-  if (lower.includes('exercise') || lower.includes('workout') || lower.includes('run')) {
-    return pickRandom([
-      {
-        title: `Finish your workout: ${goalAction}`,
-        description: `Complete ${goalAction}. Track your time and note how you feel—energized? Proud? Accomplished?`
-      },
-      {
-        title: `Wrap up: ${goalAction} session`,
-        description: `Finish ${goalAction}. Log your activity (time, distance, reps) and reflect on what you accomplished.`
-      },
-      {
-        title: `Complete: ${goalAction}`,
-        description: `Finish ${goalAction} strong. Note your stats and give yourself credit for showing up and pushing through.`
-      }
-    ]);
-  }
-  
-  if (lower.includes('read') || lower.includes('reading')) {
-    return pickRandom([
-      {
-        title: `Finish reading: ${goalAction}`,
-        description: `Complete ${goalAction}. Jot down your favorite quote or one interesting idea you discovered.`
-      },
-      {
-        title: `Wrap up: ${goalAction}`,
-        description: `Finish ${goalAction}. Write down what stood out to you or how the reading made you feel.`
-      },
-      {
-        title: `Complete: ${goalAction}`,
-        description: `Finish ${goalAction}. Note one thing you learned or one character/concept that intrigued you.`
-      }
-    ]);
-  }
-  
-  if (lower.includes('practice') || lower.includes('learn') || lower.includes('study')) {
-    return pickRandom([
-      {
-        title: `Finish practicing: ${goalAction}`,
-        description: `Complete ${goalAction}. Write down 3 things you improved or learned during this session.`
-      },
-      {
-        title: `Wrap up: ${goalAction}`,
-        description: `Finish ${goalAction}. Note your progress and one thing you want to remember for next time.`
-      },
-      {
-        title: `Complete: ${goalAction}`,
-        description: `Finish ${goalAction}. Reflect on what went well and jot down one skill you're developing.`
-      }
-    ]);
-  }
-  
-  // Default pattern with variety
-  return pickRandom([
-    {
-      title: `Finish: ${goalAction}`,
-      description: `Complete ${goalAction}. Take a photo or note to mark your accomplishment and reflect on what you achieved.`
-    },
-    {
-      title: `Wrap up: ${goalAction}`,
-      description: `Finish ${goalAction}. Capture the moment with a photo or quick note about what you learned.`
-    },
-    {
-      title: `Complete: ${goalAction}`,
-      description: `Finish ${goalAction}. Mark it done with a photo, note, or reflection on how you feel about completing it.`
-    }
-  ]);
+  // Individual flow - keep it simple and natural
+  return {
+    title: `You did it!`,
+    description: `Finish up ${object}. When you're done, take a moment to mark your accomplishment - snap a photo, jot down what you learned, or just note how you feel. You earned it!`
+  };
 }
 
 /**
@@ -769,7 +575,7 @@ export function generateMicroStepsFallback(
 }
 
 /**
- * Parses prerequisite text into 1-2 concrete actions
+ * Parses prerequisite text into natural, flowing instructions
  */
 function parsePrerequisiteIntoAction(prereqText: string, dayOfWeek: string, flow: 'individual' | 'supporter'): string {
   const lower = prereqText.toLowerCase();
@@ -780,43 +586,42 @@ function parsePrerequisiteIntoAction(prereqText: string, dayOfWeek: string, flow
   
   if (flow === 'supporter') {
     if (hasUncertainty || lower.includes('find') || lower.includes('locate')) {
-      return `Before ${dayOfWeek}, help them research options. Write down 2-3 possibilities on a sticky note.`;
+      return `Before ${dayOfWeek}, help them research options online or ask around. Write down 2-3 possibilities on a sticky note so they have concrete choices.`;
     }
     if (lower.includes('help') || lower.includes('someone')) {
-      return `Before ${dayOfWeek}, help them identify 2 potential helpers. Place their names on a visible note.`;
+      return `Before ${dayOfWeek}, help them identify 2 people who could assist. Write their names on a visible note.`;
     }
     if (lower.includes('material') || lower.includes('supplies')) {
-      return `Before ${dayOfWeek}, place all required materials in a designated spot (desk, table, counter).`;
+      return `Before ${dayOfWeek}, gather all required materials and place them in a designated spot like their desk or the kitchen counter.`;
     }
-    return `Before ${dayOfWeek}, help set up their environment for the goal.`;
+    return `Before ${dayOfWeek}, help them get everything ready for their goal.`;
   }
   
-  // Individual flow - detect uncertainty and generate research/exploration steps
+  // Individual flow - generate natural research/exploration instructions
   if (hasUncertainty || lower.includes('find') || lower.includes('locate')) {
-    // Generate research/exploration steps for uncertain prerequisites
     if (lower.includes('friend') || lower.includes('people') || lower.includes('partner')) {
-      return `Action 1: By Wednesday, search online for relevant groups or ask 2 people for recommendations. Action 2: By ${dayOfWeek}, contact one group or person.`;
+      return `By Wednesday, spend 15-20 minutes searching online for relevant groups or text 2 people for recommendations. Write down what you find. Then by ${dayOfWeek}, reach out to one group or person.`;
     }
     if (lower.includes('place') || lower.includes('location') || lower.includes('where')) {
-      return `Action 1: By Wednesday, search for locations online or ask 2 people for suggestions. Action 2: By ${dayOfWeek}, pick one location to visit.`;
+      return `By Wednesday, search online for locations or ask 2 people for suggestions. Write down 2-3 options. Then by ${dayOfWeek}, pick your favorite location and save the address.`;
     }
-    return `Action 1: By Wednesday, research 3 possible options online. Action 2: By ${dayOfWeek}, choose one option to try.`;
+    return `By Wednesday, spend about 20 minutes researching 3 possible options online. Make a list. Then by ${dayOfWeek}, choose your top option to try.`;
   }
   
   if (lower.includes('help') || lower.includes('someone')) {
-    return `Action 1: By Wednesday, text or ask 2 people who could help. Action 2: By ${dayOfWeek}, confirm one helper.`;
+    return `By Wednesday, text or talk to 2 people who might be able to help. Then by ${dayOfWeek}, follow up with whoever said yes and confirm a time.`;
   }
   
   if (lower.includes('material') || lower.includes('supplies') || lower.includes('book') || lower.includes('equipment')) {
-    return `Action 1: By Wednesday, find all materials needed. Action 2: By ${dayOfWeek}, place them in one spot.`;
+    return `By Wednesday, gather all the materials you need. Then by ${dayOfWeek}, place them in one easy-to-find spot.`;
   }
   
   if (lower.includes('permission') || lower.includes('approval')) {
-    return `Action 1: By Wednesday, ask for permission. Action 2: By ${dayOfWeek}, get confirmation.`;
+    return `By Wednesday, ask for permission. Then by ${dayOfWeek}, get final confirmation.`;
   }
   
-  // Catch-all for other prerequisites - focus on obtaining/preparing
-  return `Action 1: By Wednesday, take the first step to address: "${prereqText.slice(0, 60)}". Action 2: By ${dayOfWeek}, verify you're ready.`;
+  // Catch-all for other prerequisites
+  return `By Wednesday, take the first step to address this: ${prereqText.slice(0, 60)}. Then by ${dayOfWeek}, double-check that you're ready.`;
 }
 
 /**

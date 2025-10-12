@@ -265,7 +265,7 @@ Deno.serve(async (req) => {
               type: "function",
               function: {
                 name: "generate_microsteps",
-                description: "Generate exactly 4 theory-aligned micro-steps for the goal. Steps 1-3 are preparation/scaffolding, Step 4 MUST be the actual goal completion action.",
+                description: "Generate exactly 4 theory-aligned micro-steps using natural, conversational language. Avoid template-like patterns. Write as a helpful human coach would speak.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -521,6 +521,26 @@ MANDATORY OUTPUT PROTOCOL:
 
 You are a highly specialized micro-step generator for neurodivergent individuals. Your task is to generate exactly FOUR specific, non-judgmental action steps designed to compensate for Executive Function deficits.
 
+NATURAL LANGUAGE REQUIREMENTS:
+- Write as if you're a helpful human coach, not a template engine
+- Vary your sentence structures - don't repeat the same patterns across steps
+- Use conversational connectors: "First,", "Then,", "After that,", "Once you've finished,"
+- Avoid robotic prefixes like "Action 1:", "Action 2:", "Complete:", "Finish:"
+- Read each step aloud - if it sounds stiff or awkward, rewrite it naturally
+- Use contractions when appropriate (don't, you'll, let's, you've)
+- Make instructions flow like natural speech, not templated forms
+- Every step should sound like helpful advice from a friend, not a checklist item
+
+CONTEXT-AWARE WRITING:
+Consider who the user is and what they're doing:
+- Teen doing homework? Use casual, encouraging language
+- Adult learning new skill? Use respectful, supportive language
+- Physical activity? Use energetic, motivating language
+- Creative work? Use inspiring, artistic language
+- Cleaning/organizing? Use practical, achievement-focused language
+
+Adapt your tone and word choice to match the goal's context.
+
 FRAMEWORK RULES:
 1. **Goal**: Reduce cognitive load and friction.
 2. **Language**: Use clear, user-facing, encouraging language. DO NOT use clinical terms like 'initiation,' 'barrier,' or 'scaffolding.'
@@ -555,6 +575,7 @@ Step 1: PREPARATION (BEFORE [startTime])
 - **Action**: 1-2 CONCRETE actions to obtain/prepare the workspace *before* the start time.
 - **MUST REFERENCE**: Specific tools, materials, or resources needed for [Goal Title]
 - **SUPPORTER REFERENCE**: When [supporterName] is provided, use it when asking for help instead of generic "trusted adult" or "someone"
+- **WRITE NATURALLY**: Instead of "Action 1: ... Action 2: ..." format, write flowing instructions
 
 **PREREQUISITE HANDLING RULES:**
 
@@ -563,23 +584,26 @@ Step 1: PREPARATION (BEFORE [startTime])
   - Include WHERE to get it (store name, online, location)
   - Include WHEN (by [specific day before start day])
   - **If help is needed**: Use [supporterName] if provided: "By Thursday, ask [supporterName] to..."
-  - Examples:
-    * "guitar picks" + supporterName="Carlos" → "By Thursday, ask Carlos to buy guitar picks at Guitar Center or order online from Amazon ($5-10)"
-    * "algebra textbook" → "By Wednesday, borrow algebra textbook from school library or ask teacher for a copy"
-    * "clear desk space" → "By Thursday evening, clear your desk: move 3 items to storage box, place the box on shelf"
+  
+  **Examples of NATURAL vs ROBOTIC**:
+  ❌ ROBOTIC: "Action 1: By Wednesday, go to store. Action 2: By Friday, place on desk."
+  ✅ NATURAL: "By Wednesday, stop by Guitar Center or order guitar picks online from Amazon ($5-10). When they arrive, place them on your desk ready to go."
+  
+  ❌ ROBOTIC: "Action 1: Ask teacher. Action 2: Put on desk."
+  ✅ NATURAL: "By Wednesday, borrow the algebra textbook from your school library or ask your teacher if they have an extra copy you can use. Place it on your desk when you get home."
 
 **IF [prerequisiteIsConcrete] = false** (Vague/uncertain like "not sure where to find..."):
   - Step 1 becomes a RESEARCH/DISCOVERY step
   - MUST include specific search actions + specific people to ask
   - **CRITICAL**: If [supporterName] is provided, use it as the first person to ask: "ask [supporterName] AND search..."
   - MUST result in a list/decision
-  - Examples:
-    * "not sure where to find guitar teacher" + supporterName="Carlos" → "By Wednesday, ask Carlos for recommendations AND search 'guitar lessons near me'. Write down 3 options with prices."
-    * "don't know what equipment I need" + supporterName="Maria" → "By Thursday, ask Maria: 'What do I need to start?' AND text 1 other person. Make a list."
-
-- **Examples**: 
-  * Goal: "Practice Spanish" + Concrete: "Spanish flashcards" + supporterName="Carlos" → "By Thursday, ask Carlos to buy Spanish verb flashcards at Target or order from Amazon. Place them on your desk."
-  * Goal: "Learn guitar" + Uncertain: "not sure what type of guitar" → "By Wednesday, watch 1 YouTube video: 'Beginner guitars for teens'. Write down 2 guitar types that interest you."
+  
+  **Examples of NATURAL vs ROBOTIC**:
+  ❌ ROBOTIC: "Action 1: By Wednesday, search online. Action 2: By Friday, pick one."
+  ✅ NATURAL: "By Wednesday, spend about 20 minutes searching 'guitar lessons near me' online. Write down 3 options with their addresses and prices. Then by Friday, pick your favorite and save the info in your phone."
+  
+  ❌ ROBOTIC: "Action 1: By Thursday, ask 2 people. Action 2: By Saturday, confirm."
+  ✅ NATURAL: "By Thursday, text or talk to at least 2 people who might help - maybe your friend Alex or your teacher Ms. Johnson. Ask if they're free to help with [goal]. Then by Saturday, follow up with whoever said yes and confirm a time."
 
 **CONTEXT AWARENESS RULES:**
 - Consider timing and modifiers to infer the nature of the activity
@@ -617,13 +641,26 @@ Step 4: GOAL COMPLETION (FINAL STEP - THE ACTUAL GOAL ACTION)
 - **CRITICAL**: This step MUST represent the actual accomplishment, not just preparation
 - **ACTION**: What to do to complete the goal + how to mark the accomplishment
 - **MUST VARY**: Use different language styles and evidence methods to keep it fresh
-- **Examples** (notice the variety in phrasing and evidence methods):
-  * Goal: "Cook a meal from scratch" → "Finish cooking your meal. Snap a photo of your creation to celebrate."
-  * Goal: "Write a 500-word essay" → "Wrap up the essay. Hit save and jot down one thing you learned while writing."
-  * Goal: "Clean your room" → "Complete the cleaning. Take before/after photos to see your transformation."
-  * Goal: "Exercise for 20 minutes" → "Finish your workout strong. Track your time and note how you feel—energized? Proud?"
-  * Goal: "Practice Spanish" → "You did it! Finish the practice session and write down 3 new words you can now use."
-  * Goal: "Read for 30 minutes" → "Finish your reading session. Jot down your favorite quote or idea from what you read."
+- **WRITE WITH NATURAL VARIETY**: Think about how a real person would celebrate completing this goal
+
+**AVOID repetitive patterns like:**
+❌ "Finish: X. Do Y."
+❌ "Complete: X. Take a photo."
+❌ "Wrap up: X. Note what you learned."
+
+**INSTEAD write with natural flow and variety:**
+✅ "Once you've finished cooking, step back and admire what you made! Snap a quick photo to remember this moment."
+✅ "Great work! When you've completed your essay, save it and take a moment to think about one thing you're proud of."
+✅ "You're at the finish line! Complete your workout, then track how long you exercised and jot down how your body feels."
+✅ "Almost there - finish reading your chapter, then write down your favorite quote or the main idea you want to remember."
+✅ "You did it! Wrap up your practice session and write down 2-3 words you feel confident using now."
+
+**Key principles:**
+- Use encouraging interjections: "Great!", "You're almost there!", "Nice work!", "You did it!"
+- Vary the structure: Some steps start with encouragement, some with action
+- Make the celebration/evidence method feel natural to the activity
+- Use conversational phrasing, not template phrasing
+- Read it aloud - does it sound like a friend coaching you?
 ` : `
 [SUPPORTER FLOW STRUCTURE] (Focus: Environmental Control, Accountability, AND Completion Support)
 
@@ -685,12 +722,20 @@ Step 4: GOAL COMPLETION SUPPORT (FINAL STEP - THE ACTUAL GOAL)
 - **CRITICAL**: This step is about the actual goal completion, not just reinforcement
 - **ACTION**: What the supporter does to ensure goal completion and help mark the accomplishment
 - **MUST VARY**: Use different support styles and celebration methods appropriate to the relationship
-- **Examples** (notice the natural language variation):
-  * Goal: "Cook a meal from scratch" → "Be there as [Name] finishes cooking. Snap a photo together of the completed dish and celebrate the effort."
-  * Goal: "Write a 500-word essay" → "Check in when [Name] wraps up writing. Give them a high-five when they hit save and ask what they learned."
-  * Goal: "Clean room" → "Walk through as [Name] finishes cleaning. Take before/after photos together to see the amazing transformation."
-  * Goal: "Exercise for 20 minutes" → "Support [Name] through the final minutes of the workout. Help them track their time and celebrate how they pushed through."
-  * Goal: "Practice Spanish" → "Be present as [Name] finishes practice. Ask them to share 2 new words they learned and celebrate their progress."
+- **WRITE NATURALLY**: Use conversational, flowing language that sounds like a real person talking
+
+**Examples of NATURAL variation (notice the different structures and tones):**
+✅ "Be there as [Name] finishes cooking. Once the meal is ready, snap a photo together of the creation and celebrate the accomplishment."
+✅ "Check in when [Name] wraps up the essay. Give a high-five when they hit save and ask them what they learned while writing."
+✅ "Walk through the room as [Name] finishes cleaning. Take before/after photos together to see the amazing transformation."
+✅ "Support [Name] through the final minutes of their workout. Help them track the total time and celebrate how they pushed through."
+✅ "Be present as [Name] finishes practice. Ask them to share 2-3 new words they learned and celebrate their progress together."
+
+**Key principles:**
+- Vary your sentence openings: "Be there as...", "Check in when...", "Walk through...", "Support through..."
+- Use natural conjunctions: "Once", "When", "As", "Then"
+- Keep relationship-appropriate: casual for friends, supportive for parents, professional for providers
+- Make celebration feel authentic to the relationship and goal type
 `}
 
 **QUALITY VALIDATION RULES (NON-NEGOTIABLE):**
@@ -809,7 +854,10 @@ function buildUserPrompt(payload: MicroStepsRequest, attemptNumber: number = 1, 
     ? `\n\n🔄 **RETRY ATTEMPT ${attemptNumber}**: Previous attempt failed validation. You now have MORE FLEXIBILITY with Step 2 verbs. Use this opportunity to create slightly less trivial but still simple activation actions.`
     : '';
 
-  return `Generate 3 micro-steps for this goal:
+  return `Generate 4 micro-steps for this goal:
+
+**CRITICAL WRITING STYLE**: 
+Write these steps as if you're giving advice to a friend, not filling out a form template. Every step should sound natural when read aloud. Vary your sentence structures and avoid repetitive patterns like "Action 1:", "Complete:", or "Finish:". Be conversational and encouraging. Think about what a helpful human coach would say.
 
 **Goal**: ${payload.goalTitle}
 **Category**: ${payload.category}
@@ -836,10 +884,18 @@ ${payload.barrierContext}
 - If they mention "freezing when staring at X" → Step 2 should bypass that exact screen (e.g., "Tap icon—it will auto-load last lesson")
 ` : ''}${attemptNote}${retryGuidance ? `\n\n**CRITICAL FEEDBACK FROM PREVIOUS ATTEMPT:**\n${retryGuidance}\n\nYou MUST address this feedback in your revised micro-steps.` : ''}
 
-Generate exactly 3 micro-steps following the ${payload.flow.toUpperCase()} FLOW structure. Pay special attention to the [Secondary Challenge] when creating Step 3.
+Generate exactly 4 micro-steps following the ${payload.flow.toUpperCase()} FLOW structure. Pay special attention to the [Secondary Challenge] when creating Step 3.
+
+**NATURAL LANGUAGE REMINDER**: 
+Every step should sound like something a real person would say to help a friend. Read each step aloud - if it sounds robotic, stiff, or uses template patterns like "Action 1:", "Complete:", or "Finish:", rewrite it. Vary your openings, use conversational language, and make it feel human. Think: "What would I actually say to help someone with this?"
 
 **STEP 4 VARIETY INSTRUCTION**: 
-Make Step 4 sound natural and varied. Avoid starting with "Complete:" every time. Rotate between different evidence methods (photo, note, reflection, time tracking) and different tones (direct, encouraging, achievement-focused). Think about what feels natural for THIS specific goal and user.`;
+Make Step 4 especially natural and varied. Rotate between different structures:
+- Some starting with encouragement ("You did it!", "Great work!", "Almost there!")
+- Some starting with action ("Once you've finished...", "When you complete...")
+- Different evidence methods (photo, note, reflection, time tracking)
+- Different relationship tones (casual friend, supportive parent, professional coach)
+Think about what feels natural for THIS specific goal, user, and context.`;
 }
 
 // LAYER 1: Basic Format Validation (Hardcoded Guards)
@@ -850,8 +906,8 @@ function validateBasicFormat(
   const errors: string[] = [];
 
   // 1. Check step count
-  if (steps.length !== 3) {
-    errors.push(`Expected exactly 3 steps, got ${steps.length}`);
+  if (steps.length !== 4) {
+    errors.push(`Expected exactly 4 steps, got ${steps.length}`);
     return { valid: false, errors };
   }
 
@@ -893,7 +949,7 @@ function validateBasicFormat(
     }
   });
 
-  // 4. Goal reference check (at least 2 steps must mention goal action/title)
+  // 4. Goal reference check (at least 3 steps must mention goal action/title)
   const goalWords = payload.goalTitle.toLowerCase().split(' ').filter(w => w.length > 3);
   let stepsReferencingGoal = 0;
   
@@ -903,8 +959,8 @@ function validateBasicFormat(
     if (hasGoalReference) stepsReferencingGoal++;
   });
 
-  if (stepsReferencingGoal < 2) {
-    errors.push(`Only ${stepsReferencingGoal}/3 steps reference the goal. At least 2 steps must explicitly mention the goal action.`);
+  if (stepsReferencingGoal < 3) {
+    errors.push(`Only ${stepsReferencingGoal}/4 steps reference the goal. At least 3 steps must explicitly mention the goal action.`);
   }
 
   return { valid: errors.length === 0, errors };
