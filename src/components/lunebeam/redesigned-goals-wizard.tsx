@@ -419,6 +419,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [tempHour, setTempHour] = useState<string>("08");
   const [tempMinute, setTempMinute] = useState<string>("00");
   const [tempPeriod, setTempPeriod] = useState<"AM" | "PM">("AM");
+  const [dateValidationError, setDateValidationError] = useState<string | null>(null);
+  const [dateValidationWarning, setDateValidationWarning] = useState<string | null>(null);
   const {
     toast
   } = useToast();
@@ -490,6 +492,54 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       setActionCue(generateActionCue());
     }
   }, [currentStep, data.goalTitle, data.challengeAreas, actionCue, actuallySupportsAnyone]);
+
+  // Validate dates whenever they change
+  useEffect(() => {
+    if (currentStep !== 6) {
+      setDateValidationError(null);
+      setDateValidationWarning(null);
+      return;
+    }
+    
+    const isProject = data.goalType === 'new_skill';
+    const isHabit = data.goalType === 'reminder' || data.goalType === 'practice';
+    
+    // Clear previous messages
+    setDateValidationError(null);
+    setDateValidationWarning(null);
+    
+    if (isProject && data.projectCompletionDate) {
+      const validation = validateDateRange(data.startDate, data.projectCompletionDate, 'new_skill');
+      if (!validation.isValid) {
+        setDateValidationError(validation.error || null);
+      } else if (validation.warning) {
+        setDateValidationWarning(validation.warning);
+      }
+    }
+    
+    if (isHabit && data.endDate) {
+      const dateValidation = validateDateRange(data.startDate, data.endDate, data.goalType);
+      if (!dateValidation.isValid) {
+        setDateValidationError(dateValidation.error || null);
+        return;
+      }
+      
+      if (data.selectedDays && data.selectedDays.length > 0) {
+        const occurrenceValidation = validateOccurrencesInDateRange(
+          data.startDate,
+          data.endDate,
+          data.selectedDays
+        );
+        
+        if (!occurrenceValidation.isValid) {
+          setDateValidationError(occurrenceValidation.error || null);
+        } else if (occurrenceValidation.warning) {
+          setDateValidationWarning(occurrenceValidation.warning);
+        }
+      }
+    }
+  }, [data.startDate, data.endDate, data.projectCompletionDate, data.selectedDays, data.goalType, currentStep]);
+
   const loadSupportedPeople = async () => {
     try {
       // First, get the supporter relationships
@@ -627,6 +677,94 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       return nonSupporterTitles[currentStep - 1] || '';
     }
   };
+
+  // Date validation helpers
+  const validateDateRange = (startDate: Date, endDate: Date | undefined, goalType: string) => {
+    if (!endDate && goalType !== 'new_skill') {
+      return { isValid: true }; // Open-ended habit is allowed
+    }
+    
+    if (!endDate) {
+      return { isValid: false, error: 'End date is required for project goals' };
+    }
+    
+    // Check if end is after start
+    if (endDate <= startDate) {
+      return { 
+        isValid: false, 
+        error: 'End date must be after start date' 
+      };
+    }
+    
+    // Check minimum duration (at least 1 day)
+    const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysDiff < 1) {
+      return { 
+        isValid: false, 
+        error: 'Goal must be at least 1 day long' 
+      };
+    }
+    
+    // For habits, recommend at least 7 days for meaningful tracking
+    if (goalType !== 'new_skill' && daysDiff < 7) {
+      return { 
+        isValid: true, 
+        warning: 'Goals under 1 week may not provide enough time to build a habit' 
+      };
+    }
+    
+    return { isValid: true };
+  };
+
+  const validateOccurrencesInDateRange = (
+    startDate: Date, 
+    endDate: Date | undefined, 
+    selectedDays: string[] | undefined
+  ) => {
+    if (!selectedDays || selectedDays.length === 0) {
+      return { isValid: false, error: 'Please select at least one day' };
+    }
+    
+    if (!endDate) {
+      return { isValid: true }; // Open-ended is fine
+    }
+    
+    const dayMap = { 'sun': 0, 'mon': 1, 'tue': 2, 'wed': 3, 'thu': 4, 'fri': 5, 'sat': 6 };
+    const selectedDayNums = selectedDays.map(d => dayMap[d as keyof typeof dayMap]);
+    
+    // Count actual occurrences
+    let occurrenceCount = 0;
+    const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    for (let i = 0; i <= daysDiff; i++) {
+      const checkDate = new Date(startDate);
+      checkDate.setDate(checkDate.getDate() + i);
+      if (selectedDayNums.includes(checkDate.getDay())) {
+        occurrenceCount++;
+      }
+    }
+    
+    if (occurrenceCount === 0) {
+      const selectedDayNames = selectedDays.map(d => d.toUpperCase()).join(', ');
+      return { 
+        isValid: false, 
+        error: `No ${selectedDayNames} days occur between ${format(startDate, 'MMM d')} and ${format(endDate, 'MMM d')}. Please adjust your dates or selected days.` 
+      };
+    }
+    
+    // Warning for very few occurrences
+    if (occurrenceCount < 3) {
+      return { 
+        isValid: true, 
+        warning: `Only ${occurrenceCount} occurrence${occurrenceCount > 1 ? 's' : ''} scheduled. Consider extending your timeline.`,
+        occurrenceCount
+      };
+    }
+    
+    return { isValid: true, occurrenceCount };
+  };
+
   const canProceed = () => {
     switch (currentStep) {
       case 0:
@@ -653,12 +791,39 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       case 6:
         // Scheduling - conditional validation based on goal type
         const hasTime = !!data.customTime;
+        
         if (data.goalType === 'new_skill') {
-          // Brand New Skill: requires completion date and time
-          return hasTime && !!data.projectCompletionDate;
+          // Brand New Skill: validate project dates
+          if (!hasTime || !data.projectCompletionDate) return false;
+          
+          const projectValidation = validateDateRange(
+            data.startDate, 
+            data.projectCompletionDate, 
+            'new_skill'
+          );
+          
+          return projectValidation.isValid;
+          
         } else {
-          // New Habit or Getting Better: requires recurrence schedule and time
-          return hasTime && (data.selectedDays?.length || 0) > 0;
+          // New Habit or Getting Better: validate recurrence schedule
+          if (!hasTime || (data.selectedDays?.length || 0) === 0) return false;
+          
+          // If end date is specified, validate date range and occurrences
+          if (data.endDate) {
+            const dateValidation = validateDateRange(data.startDate, data.endDate, data.goalType);
+            if (!dateValidation.isValid) return false;
+            
+            const occurrenceValidation = validateOccurrencesInDateRange(
+              data.startDate,
+              data.endDate,
+              data.selectedDays
+            );
+            
+            return occurrenceValidation.isValid;
+          }
+          
+          // Open-ended habit is valid
+          return true;
         }
       case 7:
         // Support context validation
@@ -1540,7 +1705,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 if (open) setDatePickerType('completion');
               }}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className={cn(
+                      "w-full justify-start",
+                      dateValidationError && "border-destructive text-destructive"
+                    )}
+                  >
                     <CalendarIcon className="h-4 w-4 mr-2" />
                     {data.projectCompletionDate 
                       ? format(data.projectCompletionDate, 'PPP')
@@ -1558,7 +1729,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         setShowDatePicker(false);
                       }
                     }}
-                    disabled={(date) => date <= new Date()}
+                    disabled={(date) => {
+                      // Can't be today or earlier
+                      if (date <= new Date()) return true;
+                      
+                      // Can't be before or same as start date
+                      if (date <= data.startDate) return true;
+                      
+                      return false;
+                    }}
                   />
                 </PopoverContent>
               </Popover>
@@ -1577,7 +1756,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 if (open) setDatePickerType('start');
               }}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className={cn(
+                      "w-full justify-start",
+                      dateValidationError && "border-destructive text-destructive"
+                    )}
+                  >
                     <CalendarIcon className="h-4 w-4 mr-2" />
                     {format(data.startDate, 'PPP')}
                   </Button>
@@ -1592,7 +1777,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         setShowDatePicker(false);
                       }
                     }}
-                    disabled={(date) => date < new Date() || (data.projectCompletionDate && date >= data.projectCompletionDate)}
+                    disabled={(date) => {
+                      // Can't be in the past
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      if (date < today) return true;
+                      
+                      // Can't be after or equal to completion date
+                      if (data.projectCompletionDate && date >= data.projectCompletionDate) return true;
+                      
+                      return false;
+                    }}
                   />
                 </PopoverContent>
               </Popover>
@@ -1617,7 +1812,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   if (open) setDatePickerType('start');
                 }}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button 
+                      variant="outline" 
+                      className={cn(
+                        "w-full justify-start",
+                        dateValidationError && "border-destructive text-destructive"
+                      )}
+                    >
                       <CalendarIcon className="h-4 w-4 mr-2" />
                       {format(data.startDate, 'MMM d')}
                     </Button>
@@ -1632,7 +1833,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           setShowDatePicker(false);
                         }
                       }}
-                      disabled={(date) => date < new Date()}
+                      disabled={(date) => {
+                        // Can't be in the past
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        if (date < today) return true;
+                        
+                        // If end date exists, can't be after or equal to end date
+                        if (data.endDate && date >= data.endDate) return true;
+                        
+                        return false;
+                      }}
                     />
                   </PopoverContent>
                 </Popover>
@@ -1644,8 +1855,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   setShowDatePicker(open);
                   if (open) setDatePickerType('end');
                 }}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
+                <PopoverTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className={cn(
+                        "w-full justify-start",
+                        dateValidationError && "border-destructive text-destructive"
+                      )}
+                    >
                       <CalendarIcon className="h-4 w-4 mr-2" />
                       {data.endDate ? format(data.endDate, 'MMM d') : 'Open-ended'}
                     </Button>
@@ -1658,7 +1875,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         updateData({ endDate: date });
                         setShowDatePicker(false);
                       }}
-                      disabled={(date) => date < data.startDate}
+                      disabled={(date) => {
+                        // Must be after start date (at least 1 day later)
+                        const minEndDate = new Date(data.startDate);
+                        minEndDate.setDate(minEndDate.getDate() + 1);
+                        
+                        if (date < minEndDate) return true;
+                        
+                        return false;
+                      }}
                     />
                   </PopoverContent>
                 </Popover>
@@ -1668,6 +1893,40 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <div className="text-xs text-muted-foreground">
               💡 Habits are often ongoing - you can leave the end date open
             </div>
+
+            {/* Occurrence Counter for Habit Goals */}
+            {data.endDate && data.selectedDays && data.selectedDays.length > 0 && (
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-sm font-medium mb-1">Scheduled Occurrences</p>
+                <p className="text-xs text-muted-foreground">
+                  {(() => {
+                    const validation = validateOccurrencesInDateRange(
+                      data.startDate,
+                      data.endDate,
+                      data.selectedDays
+                    );
+                    return validation.occurrenceCount 
+                      ? `${validation.occurrenceCount} practice session${validation.occurrenceCount > 1 ? 's' : ''} between ${format(data.startDate, 'MMM d')} and ${format(data.endDate, 'MMM d')}`
+                      : 'Calculating...';
+                  })()}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Validation Messages */}
+        {dateValidationError && (
+          <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-destructive">{dateValidationError}</p>
+          </div>
+        )}
+
+        {dateValidationWarning && !dateValidationError && (
+          <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-amber-700 dark:text-amber-400">{dateValidationWarning}</p>
           </div>
         )}
         
