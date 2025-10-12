@@ -295,7 +295,10 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     return false;
   };
 
-  const handleMarkComplete = async (stepId: string) => {
+  const handleMarkComplete = async (
+    stepId: string, 
+    context?: { substepsCompletedToday?: number; pointsFromSubsteps?: number }
+  ) => {
     if (awaitingStepUpdate === stepId) return;
     
     setAwaitingStepUpdate(stepId);
@@ -366,13 +369,35 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
         const isHabitGoal = goal.frequency_per_week && goal.frequency_per_week > 0;
         
         if (isHabitGoal) {
+          // Fetch fresh goal data for accurate metrics
+          const { data: freshGoal } = await supabase
+            .from('goals')
+            .select('streak_count, progress_pct, frequency_per_week, duration_weeks')
+            .eq('id', goal.id)
+            .single();
+          
           const { smartSchedulingService } = await import('@/services/smartSchedulingService');
           const { scheduledTime, success } = await smartSchedulingService.scheduleNextHabitOccurrence(goal.id);
           
-          if (success) {
-            toast({
-              title: "Today completed! ✨",
-              description: `You're set for tomorrow at ${scheduledTime}`,
+          if (success && freshGoal) {
+            // Calculate metrics
+            const plannedDays = (freshGoal.frequency_per_week || 1) * (freshGoal.duration_weeks || 1);
+            const daysCompleted = Math.round((freshGoal.progress_pct / 100) * plannedDays);
+            
+            // Calculate points earned today
+            const stepPoints = result.step.points_awarded || 5;
+            const substepPoints = context?.pointsFromSubsteps || 0;
+            const pointsEarnedToday = stepPoints + substepPoints;
+            
+            // Show enhanced toast
+            const { showDailyCompletionToast } = await import('./daily-completion-toast');
+            showDailyCompletionToast({
+              daysCompleted,
+              totalDays: plannedDays,
+              streak: freshGoal.streak_count || 0,
+              pointsEarnedToday,
+              scheduledTime,
+              goalTitle: goal.title
             });
           } else {
             toast({
@@ -602,25 +627,34 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       const substeps = dedupeSubsteps(await pointsService.getSubsteps(stepId));
       setSubstepsMap(prev => ({ ...prev, [stepId]: substeps }));
       
-      const allCompleted = substeps.every(s => s.completed_at !== null);
+      const completedCount = substeps.filter(s => s.completed_at !== null).length;
+      const totalCount = substeps.length;
+      const allCompleted = completedCount === totalCount;
+      
       if (allCompleted) {
-        // setShowFireworks(true);
-        
         const step = steps.find(s => s.id === stepId);
         if (step && step.status !== 'done') {
-          await handleMarkComplete(stepId);
-          toast({
-            title: "Step completed!",
-            description: "All substeps finished - main step marked complete!",
+          // Pass context about substeps
+          await handleMarkComplete(stepId, {
+            substepsCompletedToday: totalCount,
+            pointsFromSubsteps: totalCount * 2 // 2 points each
           });
+          // Don't show additional toast here - handleMarkComplete handles it
         }
       } else {
-        // setShowFireworks(true);
-        
-        toast({
-          title: "Substep completed!",
-          description: "Great progress on breaking down this step.",
-        });
+        // Show progress toast
+        const remaining = totalCount - completedCount;
+        if (remaining === 1) {
+          toast({
+            title: "Almost there! 💪",
+            description: "One more substep to complete this step!",
+          });
+        } else {
+          toast({
+            title: "Progress!",
+            description: `${completedCount} of ${totalCount} substeps done`,
+          });
+        }
 
         // Send notifications
         const { data: { user } } = await supabase.auth.getUser();
