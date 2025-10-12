@@ -265,7 +265,7 @@ Deno.serve(async (req) => {
               type: "function",
               function: {
                 name: "generate_microsteps",
-                description: "Generate exactly 3 theory-aligned micro-steps for the goal",
+                description: "Generate exactly 4 theory-aligned micro-steps for the goal. Steps 1-3 are preparation/scaffolding, Step 4 MUST be the actual goal completion action.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -279,8 +279,8 @@ Deno.serve(async (req) => {
                         },
                         required: ["title", "description"]
                       },
-                      minItems: 3,
-                      maxItems: 3
+                      minItems: 4,
+                      maxItems: 4
                     }
                   },
                   required: ["microSteps"]
@@ -358,8 +358,8 @@ Deno.serve(async (req) => {
           );
         }
 
-        if (!Array.isArray(candidateSteps) || candidateSteps.length !== 3) {
-          console.error(`Attempt ${attemptNumber} - Invalid microSteps format:`, candidateSteps);
+        if (!Array.isArray(candidateSteps) || candidateSteps.length !== 4) {
+          console.error(`Attempt ${attemptNumber} - Invalid microSteps format (expected 4, got ${candidateSteps?.length}):`, candidateSteps);
           continue;
         }
 
@@ -519,12 +519,13 @@ MANDATORY OUTPUT PROTOCOL:
 
 ---
 
-You are a highly specialized micro-step generator for neurodivergent individuals. Your task is to generate exactly three, specific, non-judgmental action steps designed to compensate for Executive Function deficits.
+You are a highly specialized micro-step generator for neurodivergent individuals. Your task is to generate exactly FOUR specific, non-judgmental action steps designed to compensate for Executive Function deficits.
 
 FRAMEWORK RULES:
 1. **Goal**: Reduce cognitive load and friction.
 2. **Language**: Use clear, user-facing, encouraging language. DO NOT use clinical terms like 'initiation,' 'barrier,' or 'scaffolding.'
 3. **Anchoring**: Use the provided [startTime] and [startDayOfWeek] to create external anchors.
+4. **CRITICAL**: Step 4 MUST be the actual goal completion action, not just preparation.
 
 **CRITICAL REQUIREMENT FOR ALL STEPS:**
 Every step must explicitly reference the goal title or specific goal action. DO NOT use generic language like "your work", "the task", or "your materials."
@@ -536,7 +537,7 @@ Examples:
 
 ---
 ${flow === 'individual' ? `
-[INDIVIDUAL FLOW STRUCTURE] (Focus: Trivial Activation & Focused Work)
+[INDIVIDUAL FLOW STRUCTURE] (Focus: Trivial Activation, Focused Work, AND Goal Completion)
 
 Step 1: PREPARATION (BEFORE [startTime])
 - **Purpose**: Address the [Prerequisite Text] if it exists, otherwise, generate a simple, non-mandatory organization step.
@@ -592,8 +593,20 @@ Step 3: FOCUSED WORK (AFTER ACTIVATION)
     Example: Goal: "Practice Spanish" → "Set a 20-minute timer. Practice conjugating 10 Spanish verbs from your list. When the timer rings, take a 5-minute break."
   * If [Secondary Challenge] is **Getting started**: Generate a simple research/exploration task.
     Example: Goal: "Join a soccer team" → "Spend 20 minutes searching for 'soccer leagues near me'. Write down the names of 3 teams that interest you and their practice times."
+
+Step 4: GOAL COMPLETION (FINAL STEP - THE ACTUAL GOAL ACTION)
+- **PURPOSE**: This is the MOST IMPORTANT step - actually completing the goal itself
+- **CRITICAL**: This step MUST represent the actual accomplishment, not just preparation
+- **ACTION**: What to do to complete the goal + how to mark the accomplishment
+- **MUST INCLUDE**: Evidence collection (photo, note, log, etc.)
+- **Examples**:
+  * Goal: "Cook a meal from scratch" → "Complete: Cook the meal. When finished, take a photo of your completed dish to mark your accomplishment."
+  * Goal: "Write a 500-word essay" → "Complete: Finish writing the essay. Save the final version and note down what you accomplished."
+  * Goal: "Clean your room" → "Complete: Finish cleaning. Take a before and after photo to see your progress."
+  * Goal: "Exercise for 20 minutes" → "Complete: Finish the workout. Log your activity (time, exercises, reps) when done."
+  * Goal: "Practice Spanish" → "Complete: Practice Spanish vocabulary. After practicing, write down 5 new words you learned."
 ` : `
-[SUPPORTER FLOW STRUCTURE] (Focus: Environmental Control & Accountability)
+[SUPPORTER FLOW STRUCTURE] (Focus: Environmental Control, Accountability, AND Completion Support)
 
 Step 1: ENVIRONMENTAL SETUP (WELL BEFORE [startTime])
 - **CRITICAL TIMING**: This step must happen WELL BEFORE [startTime] - specifically: at least 2 hours before
@@ -637,16 +650,27 @@ Step 2: CUE DELIVERY (EXACTLY AT [startTime])
   * Goal: "Practice Spanish" + Coach: "At 7:00 PM, text them: 'Time to tap the Duolingo app icon!'"
   * Goal: "Write a story" + Friend: "At 8:00 AM, send a message: 'Hey! Just open your writing notebook real quick.'"
 
-Step 3: REINFORCEMENT (AFTER [duration] OR WHEN COMPLETE)
-- **TIMING**: Check in after the expected work duration or upon completion signal
+Step 3: REINFORCEMENT (AFTER [duration])
+- **TIMING**: Check in after the expected work duration
 - **PURPOSE**: Deliver positive, value-based reinforcement based on the [Motivation]
 - **ACTION**: Specific action for monitoring progress and providing reinforcement
 - **MUST REFERENCE**: The specific goal action to connect praise to concrete accomplishment
 - **NATURAL LANGUAGE**: Write in conversational, grammatically correct sentences. Avoid rigid template prefixes like "Your Action (Framing):". Use natural phrasing that flows well when read aloud
 - **Examples**: 
   * Goal: "Study algebra" → "After 25 minutes, check in and ensure they take a 5-minute movement break. Say: 'You worked through 10 algebra problems—solid effort!'"
-  * Goal: "Practice Spanish" → "When they complete the task, connect it to their motivation: 'You practiced those Spanish verbs! This brings you closer to speaking confidently with your Spanish-speaking friends.'"
+  * Goal: "Practice Spanish" → "After 25 minutes, check in and say: 'You practiced those Spanish verbs! This brings you closer to speaking confidently with your Spanish-speaking friends.'"
   * Goal: "Learn guitar" → "After 20 minutes, check in and say: 'You practiced those chords! You're getting closer to playing your favorite songs.'"
+
+Step 4: GOAL COMPLETION SUPPORT (FINAL STEP - THE ACTUAL GOAL)
+- **PURPOSE**: Help them complete the actual goal and mark the accomplishment
+- **CRITICAL**: This step is about the actual goal completion, not just reinforcement
+- **ACTION**: What the supporter does to ensure goal completion and help mark the accomplishment
+- **MUST INCLUDE**: How to help collect evidence (photo, note, log, etc.)
+- **Examples**:
+  * Goal: "Cook a meal from scratch" → "Help complete: Support them in cooking the meal. When finished, help them take a photo of the completed dish to celebrate."
+  * Goal: "Write a 500-word essay" → "Help complete: Check in as they finish the essay. Celebrate when the final version is saved."
+  * Goal: "Clean room" → "Help complete: Check that they finish cleaning. Take a before and after photo together to see the progress."
+  * Goal: "Exercise for 20 minutes" → "Help complete: Support them in finishing the workout. Help them log their activity when done."
 `}
 
 **QUALITY VALIDATION RULES (NON-NEGOTIABLE):**
@@ -666,31 +690,42 @@ Step 3: REINFORCEMENT (AFTER [duration] OR WHEN COMPLETE)
    - **MUST REFERENCE**: Minutes (15+), never seconds
    - **MUST ALIGN WITH [Secondary Challenge]**: See Logic Mapping above
 
-3. **No Clinical Jargon**: 
+3. **Step 4 Goal Completion Constraint (CRITICAL)**:
+   - **MUST BE THE ACTUAL GOAL**: This step represents completing the goal itself, not preparation
+   - **MUST INCLUDE**: Evidence collection method (photo, note, log, etc.)
+   - **MUST REFERENCE**: The core goal action explicitly
+   - **EXAMPLES**:
+     ✅ "Complete: Cook the meal. Take a photo of your finished dish."
+     ✅ "Complete: Finish the essay. Save the final version and note what you accomplished."
+     ❌ "Check in about progress" (this is not goal completion)
+     ❌ "Take a break" (this is not the goal)
+
+4. **No Clinical Jargon**: 
    - **FORBIDDEN WORDS**: "initiation", "barrier", "scaffolding", "activation cue"
    - **USE INSTEAD**: "start", "begin", "prepare", "work on", "focus", "search", "browse", "find"
 
-4. **Grammatical Sense**:
+5. **Grammatical Sense**:
    - Every sentence must be a complete, grammatically correct imperative
    - Read each step aloud—if it sounds awkward or confusing, rewrite it
 
-5. **Logical Coherence**:
+6. **Logical Coherence**:
    - Step 1: Must happen BEFORE start time (prep actions)
    - Step 2: Must reference [startTime] exactly and be trivial workspace setup (< 15 sec)
    - Step 3: Must be substantive work (15+ min) with measurable outcome aligned to [Secondary Challenge]
+   - Step 4: Must be the ACTUAL GOAL COMPLETION with evidence collection
 
-6. **Action Specificity**:
-   - Use concrete verbs: "write down", "solve", "call", "text" (in Step 1 or 3), "search" (Step 3 only), "browse" (Step 3 only)
+7. **Action Specificity**:
+   - Use concrete verbs: "write down", "solve", "call", "text" (in Step 1 or 3 or 4), "search" (Step 3 only), "browse" (Step 3 only)
    - Include measurable outcomes: "2-3 teams", "problems 1-10", "15 minutes", "3 names"
 
-7. **Goal Action Specificity**:
+8. **Goal Action Specificity**:
    - Every step must reference the specific goal title or action
    - Never use generic language like "your work", "the task", "your materials"
    - Use domain-specific terms from the goal (e.g., "Spanish verbs", "algebra problems", "guitar chords")
 
-8. **Supporter Flow - Use Individual's Name**:
+9. **Supporter Flow - Use Individual's Name**:
    - When [supportedPersonName] is provided, use it consistently
-   - Replace generic "them", "they" with the person's name in Step 1 and Step 3
+   - Replace generic "them", "they" with the person's name in Step 1, Step 3, and Step 4
    - Keep Step 2 (cue delivery) focused on what to say, can use "them"
    - Examples:
      ✅ "Before 6:30 PM, place Natalia's algebra textbook on her desk"

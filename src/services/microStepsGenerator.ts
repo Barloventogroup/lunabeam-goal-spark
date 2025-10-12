@@ -343,6 +343,85 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
 }
 
 /**
+ * Generates a goal completion step (SLOT 4)
+ */
+function getSmartCompletionStep(goalAction: string, goalTitle: string, flow: 'individual' | 'supporter'): MicroStep {
+  const lower = goalAction.toLowerCase();
+  const originalTitle = goalTitle.toLowerCase();
+  
+  // For supporter flow
+  if (flow === 'supporter') {
+    if (lower.includes('cook') || lower.includes('meal') || lower.includes('recipe')) {
+      return {
+        title: `Help complete: Cook the meal`,
+        description: `Support them in cooking ${goalAction}. Help check they've completed all steps and celebrate when the meal is done.`
+      };
+    }
+    
+    if (lower.includes('write') || lower.includes('essay') || lower.includes('paper')) {
+      return {
+        title: `Help complete: Finish the writing`,
+        description: `Check in as they complete ${goalAction}. Celebrate when the final version is saved.`
+      };
+    }
+    
+    if (lower.includes('clean') || lower.includes('organize') || lower.includes('tidy')) {
+      return {
+        title: `Help complete: Finish the task`,
+        description: `Check that they finish ${goalAction}. Take a before and after photo together to see the progress.`
+      };
+    }
+    
+    if (lower.includes('exercise') || lower.includes('workout') || lower.includes('run')) {
+      return {
+        title: `Help complete: Finish the session`,
+        description: `Support them in completing ${goalAction}. Help them log their activity when finished.`
+      };
+    }
+    
+    return {
+      title: `Help complete: ${goalTitle}`,
+      description: `Support them in finishing ${goalAction}. Celebrate together when it's done!`
+    };
+  }
+  
+  // For individual flow
+  if (lower.includes('cook') || lower.includes('meal') || lower.includes('recipe')) {
+    return {
+      title: `Complete: Cook the meal`,
+      description: `Actually cook ${goalAction}. When finished, take a photo of your completed dish to mark your accomplishment.`
+    };
+  }
+  
+  if (lower.includes('write') || lower.includes('essay') || lower.includes('paper')) {
+    return {
+      title: `Complete: Finish writing`,
+      description: `Complete ${goalAction}. Save the final version and note down what you accomplished.`
+    };
+  }
+  
+  if (lower.includes('clean') || lower.includes('organize') || lower.includes('tidy')) {
+    return {
+      title: `Complete: Finish the task`,
+      description: `Finish ${goalAction}. Take a before and after photo to see your progress.`
+    };
+  }
+  
+  if (lower.includes('exercise') || lower.includes('workout') || lower.includes('run')) {
+    return {
+      title: `Complete: Finish the session`,
+      description: `Complete ${goalAction}. Log your activity (time, distance, reps, etc.) when done.`
+    };
+  }
+  
+  // Default pattern
+  return {
+    title: `Complete: ${goalTitle}`,
+    description: `Actually complete ${goalAction}. Make a note or take a photo when finished to mark your accomplishment.`
+  };
+}
+
+/**
  * Smart generation: attempts AI, falls back to theory-aligned templates
  */
 export async function generateMicroStepsSmart(
@@ -396,7 +475,7 @@ export async function generateMicroStepsSmart(
     const { microSteps, error, useFallback } = await AIService.getMicroSteps(payload);
     console.log('[generateMicroStepsSmart] AI response:', { microSteps, error, useFallback, stepCount: microSteps?.length });
     
-    if (error || useFallback || !microSteps || microSteps.length !== 3) {
+    if (error || useFallback || !microSteps || microSteps.length !== 4) {
       console.warn('AI generation failed, using theory-aligned fallback. Reason:', { error, useFallback, stepCount: microSteps?.length });
       return generateMicroStepsFallback(data, flow);
     }
@@ -443,7 +522,11 @@ export function generateMicroStepsFallback(
   
   steps.push(barrierTemplate.barrierStep);
   
-  return steps.slice(0, 3);
+  // SLOT 4: Goal Completion Action (NEW!)
+  const completionStep = getSmartCompletionStep(vars.goalAction, data.goalTitle, flow);
+  steps.push(completionStep);
+  
+  return steps.slice(0, 4);
 }
 
 /**
