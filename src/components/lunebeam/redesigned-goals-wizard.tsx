@@ -693,14 +693,34 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     setLoading(true);
     try {
       const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
+      
+      // Calculate proper due_date for habit goals
+      const durationWeeks = 4; // Hardcoded for now
+      let calculatedDueDate: string | undefined;
+      
+      if (data.goalType !== 'new_skill' && data.frequency) {
+        // Habit goal: due_date = start_date + (duration_weeks × 7 days)
+        const habitEndDate = new Date(data.startDate);
+        habitEndDate.setDate(habitEndDate.getDate() + (durationWeeks * 7));
+        calculatedDueDate = format(habitEndDate, 'yyyy-MM-dd');
+      } else if (data.goalType === 'new_skill') {
+        // Project goal: use user-selected completion date
+        calculatedDueDate = data.projectCompletionDate 
+          ? format(data.projectCompletionDate, 'yyyy-MM-dd') 
+          : undefined;
+      } else {
+        // Fallback to wizard's endDate if available
+        calculatedDueDate = data.endDate 
+          ? format(data.endDate, 'yyyy-MM-dd') 
+          : undefined;
+      }
+      
       const goalData = {
         title: data.goalTitle,
         description: buildGoalDescription(),
         domain: mapCategoryToDomain(data.category) as GoalDomain,
         start_date: format(data.startDate, 'yyyy-MM-dd'),
-        due_date: data.goalType === 'new_skill' 
-          ? (data.projectCompletionDate ? format(data.projectCompletionDate, 'yyyy-MM-dd') : undefined)
-          : (data.endDate ? format(data.endDate, 'yyyy-MM-dd') : undefined),
+        due_date: calculatedDueDate,
         frequency_per_week: data.goalType === 'new_skill' ? undefined : data.frequency,
         owner_id: data.recipient === 'other' ? data.supportedPersonId : undefined
       };
@@ -712,7 +732,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           description: goalData.description,
           category: data.category,
           timeline_start: goalData.start_date,
-          timeline_end: goalData.due_date,
+          timeline_end: calculatedDueDate,
           frequency_per_week: data.frequency,
           rationale: `Goal type: ${data.goalType}, Challenges: ${data.challengeAreas?.map(id => challengeAreas.find(c => c.id === id)?.label).join(', ')}, Support: ${data.supportContext}`
         });
@@ -732,11 +752,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           status: 'active' as const,
           priority: 'medium' as const,
           frequency_per_week: data.goalType === 'new_skill' ? undefined : data.frequency,
-          duration_weeks: 4,
+          duration_weeks: durationWeeks,
           start_date: format(data.startDate, 'yyyy-MM-dd'),
-          due_date: data.goalType === 'new_skill' 
-            ? (data.projectCompletionDate ? format(data.projectCompletionDate, 'yyyy-MM-dd') : undefined)
-            : (data.endDate ? format(data.endDate, 'yyyy-MM-dd') : undefined),
+          due_date: calculatedDueDate,
           owner_id: finalOwnerId,
           created_by: currentUser?.id,
           tags: data.challengeAreas || [],

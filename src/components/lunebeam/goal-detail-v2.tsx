@@ -337,6 +337,19 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       
       console.log(`Generating steps for ${occurrenceDates.length} days...`);
       
+      // Safety check: verify goal due_date can accommodate all occurrences
+      const lastOccurrenceDate = occurrenceDates[occurrenceDates.length - 1];
+      const goalDueDateObj = goal!.due_date ? new Date(goal!.due_date) : null;
+      
+      if (goalDueDateObj && lastOccurrenceDate > goalDueDateObj) {
+        console.error('Goal due date is too early for all planned occurrences');
+        const daysDifference = Math.ceil((lastOccurrenceDate.getTime() - new Date(goal!.start_date).getTime()) / (1000 * 60 * 60 * 24));
+        throw new Error(
+          `Goal due date (${format(goalDueDateObj, 'MMM d, yyyy')}) is before the last planned occurrence (${format(lastOccurrenceDate, 'MMM d, yyyy')}). ` +
+          `Please extend the goal duration to at least ${daysDifference} days.`
+        );
+      }
+      
       // Generate and save steps for each occurrence
       for (let dayIndex = 0; dayIndex < occurrenceDates.length; dayIndex++) {
         const occurrenceDate = occurrenceDates[dayIndex];
