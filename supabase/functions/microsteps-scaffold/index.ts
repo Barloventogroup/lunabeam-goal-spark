@@ -275,7 +275,11 @@ Deno.serve(async (req) => {
                         type: "object",
                         properties: {
                           title: { type: "string", maxLength: 60 },
-                          description: { type: "string", maxLength: 300 }
+                          description: { 
+                            type: "string", 
+                            maxLength: 300,
+                            description: "Brief context (15-25 words max). No motivational fluff. Essential details only."
+                          }
                         },
                         required: ["title", "description"]
                       },
@@ -531,6 +535,27 @@ NATURAL LANGUAGE REQUIREMENTS:
 - Make instructions flow like natural speech, not templated forms
 - Every step should sound like helpful advice from a friend, not a checklist item
 
+BREVITY AND RESPECT PRINCIPLES:
+- Users are CAPABLE. Don't over-explain or hand-hold.
+- Be CONCISE. One clear sentence is better than three explanatory ones.
+- TRUST the user to figure out details. You provide the structure, they execute.
+- Avoid motivational fluff: "This will help you feel confident!" or "Don't worry!"
+- Descriptions should be 1-2 sentences MAX, not paragraphs
+- If you can say it in 10 words instead of 30, do that
+
+WHAT TO AVOID:
+❌ "Before Monday evening rolls around, make sure you've got..."
+❌ "Since time can sometimes get away from us, let's..."
+❌ "This focused burst will help you build confidence..."
+❌ "Having everything laid out will help you feel prepared..."
+❌ Any sentence starting with "This will help you..." or "You'll feel..."
+
+WHAT TO DO INSTEAD:
+✅ Direct, clear instructions
+✅ Specific actions with minimal explanation
+✅ Assume user competence
+✅ Only include details that are truly necessary
+
 CONTEXT-AWARE WRITING:
 Consider who the user is and what they're doing:
 - Teen doing homework? Use casual, encouraging language
@@ -562,9 +587,11 @@ Examples:
 - ❌ "Use a focus timer" → ✅ "25-min timer for algebra problems"
 
 **DESCRIPTION REQUIREMENTS:**
-- Provide additional context, tips, or motivation
-- Can reference timing, sensory cues, or troubleshooting
-- Should complement the title, not repeat it
+- MAXIMUM 1-2 SHORT SENTENCES (aim for 15-25 words total)
+- Only include essential context or timing details
+- NO motivational fluff or explanations of benefits
+- Should complement the title with practical details only
+- If the title is clear enough, keep description VERY brief
 
 ---
 ${flow === 'individual' ? `
@@ -585,12 +612,12 @@ Step 1: PREPARATION (BEFORE [startTime])
   - Include WHEN (by [specific day before start day])
   - **If help is needed**: Use [supporterName] if provided: "By Thursday, ask [supporterName] to..."
   
-  **Examples of NATURAL vs ROBOTIC**:
-  ❌ ROBOTIC: "Action 1: By Wednesday, go to store. Action 2: By Friday, place on desk."
-  ✅ NATURAL: "By Wednesday, stop by Guitar Center or order guitar picks online from Amazon ($5-10). When they arrive, place them on your desk ready to go."
+  **Examples of CONCISE vs VERBOSE**:
+  ❌ VERBOSE: "By Wednesday, stop by Guitar Center or order guitar picks online from Amazon ($5-10). When they arrive, place them on your desk ready to go."
+  ✅ CONCISE: "By Wednesday, get guitar picks at Guitar Center or order on Amazon. Place on your desk."
   
-  ❌ ROBOTIC: "Action 1: Ask teacher. Action 2: Put on desk."
-  ✅ NATURAL: "By Wednesday, borrow the algebra textbook from your school library or ask your teacher if they have an extra copy you can use. Place it on your desk when you get home."
+  ❌ VERBOSE: "Before Monday evening rolls around, make sure you've got your notebook and favorite pens or highlighters ready. Having everything laid out will help you feel prepared and confident when it's time to start taking notes."
+  ✅ CONCISE: "By Monday 7 PM, place your notebook and 2 pens on your desk."
 
 **IF [prerequisiteIsConcrete] = false** (Vague/uncertain like "not sure where to find..."):
   - Step 1 becomes a RESEARCH/DISCOVERY step
@@ -598,12 +625,12 @@ Step 1: PREPARATION (BEFORE [startTime])
   - **CRITICAL**: If [supporterName] is provided, use it as the first person to ask: "ask [supporterName] AND search..."
   - MUST result in a list/decision
   
-  **Examples of NATURAL vs ROBOTIC**:
-  ❌ ROBOTIC: "Action 1: By Wednesday, search online. Action 2: By Friday, pick one."
-  ✅ NATURAL: "By Wednesday, spend about 20 minutes searching 'guitar lessons near me' online. Write down 3 options with their addresses and prices. Then by Friday, pick your favorite and save the info in your phone."
+  **Examples of CONCISE vs VERBOSE**:
+  ❌ VERBOSE: "By Wednesday, spend about 20 minutes searching 'guitar lessons near me' online. Write down 3 options with their addresses and prices. Then by Friday, pick your favorite and save the info in your phone."
+  ✅ CONCISE: "By Wednesday, search 'guitar lessons near me' and list 3 options. By Friday, choose one and save the info."
   
-  ❌ ROBOTIC: "Action 1: By Thursday, ask 2 people. Action 2: By Saturday, confirm."
-  ✅ NATURAL: "By Thursday, text or talk to at least 2 people who might help - maybe your friend Alex or your teacher Ms. Johnson. Ask if they're free to help with [goal]. Then by Saturday, follow up with whoever said yes and confirm a time."
+  ❌ VERBOSE: "By Thursday, text or talk to at least 2 people who might help - maybe your friend Alex or your teacher Ms. Johnson. Ask if they're free to help with [goal]. Then by Saturday, follow up with whoever said yes and confirm a time."
+  ✅ CONCISE: "By Thursday, ask 2 people (friend, teacher) if they can help. By Saturday, confirm with whoever said yes."
 
 **CONTEXT AWARENESS RULES:**
 - Consider timing and modifiers to infer the nature of the activity
@@ -627,14 +654,15 @@ Step 3: FOCUSED WORK (AFTER ACTIVATION)
 - **Constraint**: Must be a measurable chunk of work (15-30 minutes).
 - **MUST INCLUDE**: The specific goal action in the work description
 - **Logic Mapping**:
-  * If [Secondary Challenge] is **Focus** or **Attention**: Generate a 25-minute timer sprint with a mandatory movement break.
-    Example: Goal: "Study algebra" → "Set a 25-minute timer. Work through algebra problems 1-10 from chapter 3. When the timer rings, stand up and stretch for 5 minutes."
+  * If [Secondary Challenge] is **Focus** or **Attention**: Generate a timer sprint with a break.
+    ❌ VERBOSE: "Since time can sometimes get away from us, let's set a 20-minute timer. During this time, focus on taking organized notes for your subject. This focused burst will help you get a solid chunk done and build your confidence in staying on track!"
+    ✅ CONCISE: "Set a 20-minute timer and take organized notes. When it rings, take a 5-minute break."
   * If [Secondary Challenge] is **Planning**: Generate a sequencing step.
-    Example: Goal: "Learn Spanish" → "Spend 20 minutes breaking your Spanish learning goal into 3 smaller tasks (e.g., 'learn 10 verbs', 'practice pronunciation', 'complete one lesson'). Write each task on a sticky note and arrange them in order."
-  * If [Secondary Challenge] is **Time Blindness** or **Time**: Generate a goal to complete a specific sub-task within 20 minutes.
-    Example: Goal: "Practice Spanish" → "Set a 20-minute timer. Practice conjugating 10 Spanish verbs from your list. When the timer rings, take a 5-minute break."
-  * If [Secondary Challenge] is **Getting started**: Generate a simple research/exploration task.
-    Example: Goal: "Join a soccer team" → "Spend 20 minutes searching for 'soccer leagues near me'. Write down the names of 3 teams that interest you and their practice times."
+    ✅ "Spend 20 minutes listing 3 smaller tasks for learning Spanish. Write each on a sticky note."
+  * If [Secondary Challenge] is **Time Blindness** or **Time**: Generate a timed sub-task.
+    ✅ "Set a 20-minute timer. Practice 10 Spanish verbs. When it rings, take a 5-minute break."
+  * If [Secondary Challenge] is **Getting started**: Generate a research/exploration task.
+    ✅ "Spend 20 minutes searching 'soccer leagues near me'. Write down 3 teams and their practice times."
 
 Step 4: GOAL COMPLETION (FINAL STEP - THE ACTUAL GOAL ACTION)
 - **PURPOSE**: This is the MOST IMPORTANT step - actually completing the goal itself
@@ -648,19 +676,18 @@ Step 4: GOAL COMPLETION (FINAL STEP - THE ACTUAL GOAL ACTION)
 ❌ "Complete: X. Take a photo."
 ❌ "Wrap up: X. Note what you learned."
 
-**INSTEAD write with natural flow and variety:**
-✅ "Once you've finished cooking, step back and admire what you made! Snap a quick photo to remember this moment."
-✅ "Great work! When you've completed your essay, save it and take a moment to think about one thing you're proud of."
-✅ "You're at the finish line! Complete your workout, then track how long you exercised and jot down how your body feels."
-✅ "Almost there - finish reading your chapter, then write down your favorite quote or the main idea you want to remember."
-✅ "You did it! Wrap up your practice session and write down 2-3 words you feel confident using now."
+**INSTEAD write with brevity and variety:**
+✅ "Finish cooking, then snap a photo of your dish."
+✅ "Complete your essay, save it, and note one thing you're proud of."
+✅ "Finish your workout, then track the time and how you feel."
+✅ "Finish the chapter and write down one key idea."
+✅ "Complete your practice. Write down 2-3 words you learned."
 
 **Key principles:**
-- Use encouraging interjections: "Great!", "You're almost there!", "Nice work!", "You did it!"
-- Vary the structure: Some steps start with encouragement, some with action
-- Make the celebration/evidence method feel natural to the activity
-- Use conversational phrasing, not template phrasing
-- Read it aloud - does it sound like a friend coaching you?
+- Keep encouragement BRIEF: "Great!", "Done!", "Nice!" - then move on
+- One action to complete + one action to record/celebrate
+- Maximum 2 sentences total
+- No explanations about why or how it helps
 ` : `
 [SUPPORTER FLOW STRUCTURE] (Focus: Environmental Control, Accountability, AND Completion Support)
 

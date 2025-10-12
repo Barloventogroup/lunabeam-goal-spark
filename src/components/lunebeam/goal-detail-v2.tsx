@@ -934,17 +934,30 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       } else if (successfulDays < occurrenceDates.length) {
         console.warn(`Only ${successfulDays} of ${occurrenceDates.length} days generated`);
         
-        await supabase
-          .from('goals')
-          .update({ 
-            metadata: {
-              ...goal?.metadata as any,
-              generation_incomplete: true,
-              successful_days: successfulDays,
-              total_expected_days: occurrenceDates.length
-            } as any
-          })
-          .eq('id', goal!.id);
+        // For habit goals, generating only day 1 is EXPECTED behavior
+        if (isHabitGoal && successfulDays === 1) {
+          console.log('Habit goal: Day 1 generated successfully, remaining days will generate automatically');
+          // Don't mark as incomplete - this is expected
+        } else {
+          // Actual incomplete generation for non-habit goals or multiple failures
+          await supabase
+            .from('goals')
+            .update({ 
+              metadata: {
+                ...goal?.metadata as any,
+                generation_incomplete: true,
+                successful_days: successfulDays,
+                total_expected_days: occurrenceDates.length
+              } as any
+            })
+            .eq('id', goal!.id);
+          
+          toast({
+            title: "⚠️ Incomplete Step Generation",
+            description: `Only ${successfulDays} of ${occurrenceDates.length} days generated successfully. Please try recreating this goal or contact support.`,
+            variant: "destructive"
+          });
+        }
       }
       
       // Reload steps
@@ -970,7 +983,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       toast({
         title: "Micro-steps ready! 🎯",
         description: isHabitGoal && occurrenceDates.length > 1
-          ? `Day 1 steps generated! Steps for the remaining ${occurrenceDates.length - 1} days will be generated automatically.`
+          ? `✅ Day 1 steps generated! The next ${occurrenceDates.length - 1} ${occurrenceDates.length - 1 === 1 ? 'day' : 'days'} will be generated automatically as you complete each day.`
           : "Your personalized steps have been generated."
       });
       
