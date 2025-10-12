@@ -616,13 +616,14 @@ Step 4: GOAL COMPLETION (FINAL STEP - THE ACTUAL GOAL ACTION)
 - **PURPOSE**: This is the MOST IMPORTANT step - actually completing the goal itself
 - **CRITICAL**: This step MUST represent the actual accomplishment, not just preparation
 - **ACTION**: What to do to complete the goal + how to mark the accomplishment
-- **MUST INCLUDE**: Evidence collection (photo, note, log, etc.)
-- **Examples**:
-  * Goal: "Cook a meal from scratch" → "Complete: Cook the meal. When finished, take a photo of your completed dish to mark your accomplishment."
-  * Goal: "Write a 500-word essay" → "Complete: Finish writing the essay. Save the final version and note down what you accomplished."
-  * Goal: "Clean your room" → "Complete: Finish cleaning. Take a before and after photo to see your progress."
-  * Goal: "Exercise for 20 minutes" → "Complete: Finish the workout. Log your activity (time, exercises, reps) when done."
-  * Goal: "Practice Spanish" → "Complete: Practice Spanish vocabulary. After practicing, write down 5 new words you learned."
+- **MUST VARY**: Use different language styles and evidence methods to keep it fresh
+- **Examples** (notice the variety in phrasing and evidence methods):
+  * Goal: "Cook a meal from scratch" → "Finish cooking your meal. Snap a photo of your creation to celebrate."
+  * Goal: "Write a 500-word essay" → "Wrap up the essay. Hit save and jot down one thing you learned while writing."
+  * Goal: "Clean your room" → "Complete the cleaning. Take before/after photos to see your transformation."
+  * Goal: "Exercise for 20 minutes" → "Finish your workout strong. Track your time and note how you feel—energized? Proud?"
+  * Goal: "Practice Spanish" → "You did it! Finish the practice session and write down 3 new words you can now use."
+  * Goal: "Read for 30 minutes" → "Finish your reading session. Jot down your favorite quote or idea from what you read."
 ` : `
 [SUPPORTER FLOW STRUCTURE] (Focus: Environmental Control, Accountability, AND Completion Support)
 
@@ -683,12 +684,13 @@ Step 4: GOAL COMPLETION SUPPORT (FINAL STEP - THE ACTUAL GOAL)
 - **PURPOSE**: Help them complete the actual goal and mark the accomplishment
 - **CRITICAL**: This step is about the actual goal completion, not just reinforcement
 - **ACTION**: What the supporter does to ensure goal completion and help mark the accomplishment
-- **MUST INCLUDE**: How to help collect evidence (photo, note, log, etc.)
-- **Examples**:
-  * Goal: "Cook a meal from scratch" → "Help complete: Support them in cooking the meal. When finished, help them take a photo of the completed dish to celebrate."
-  * Goal: "Write a 500-word essay" → "Help complete: Check in as they finish the essay. Celebrate when the final version is saved."
-  * Goal: "Clean room" → "Help complete: Check that they finish cleaning. Take a before and after photo together to see the progress."
-  * Goal: "Exercise for 20 minutes" → "Help complete: Support them in finishing the workout. Help them log their activity when done."
+- **MUST VARY**: Use different support styles and celebration methods appropriate to the relationship
+- **Examples** (notice the natural language variation):
+  * Goal: "Cook a meal from scratch" → "Be there as [Name] finishes cooking. Snap a photo together of the completed dish and celebrate the effort."
+  * Goal: "Write a 500-word essay" → "Check in when [Name] wraps up writing. Give them a high-five when they hit save and ask what they learned."
+  * Goal: "Clean room" → "Walk through as [Name] finishes cleaning. Take before/after photos together to see the amazing transformation."
+  * Goal: "Exercise for 20 minutes" → "Support [Name] through the final minutes of the workout. Help them track their time and celebrate how they pushed through."
+  * Goal: "Practice Spanish" → "Be present as [Name] finishes practice. Ask them to share 2 new words they learned and celebrate their progress."
 `}
 
 **QUALITY VALIDATION RULES (NON-NEGOTIABLE):**
@@ -710,13 +712,27 @@ Step 4: GOAL COMPLETION SUPPORT (FINAL STEP - THE ACTUAL GOAL)
 
 3. **Step 4 Goal Completion Constraint (CRITICAL)**:
    - **MUST BE THE ACTUAL GOAL**: This step represents completing the goal itself, not preparation
-   - **MUST INCLUDE**: Evidence collection method (photo, note, log, etc.)
+   - **MUST INCLUDE**: Evidence/celebration method that varies by context
    - **MUST REFERENCE**: The core goal action explicitly
-   - **EXAMPLES**:
-     ✅ "Complete: Cook the meal. Take a photo of your finished dish."
-     ✅ "Complete: Finish the essay. Save the final version and note what you accomplished."
+   - **VARIETY REQUIREMENT**: Avoid using "Complete:" prefix every time. Vary your language naturally.
+   - **EVIDENCE METHODS** (rotate these based on goal type):
+     * Photo-based: "Take a photo", "Snap a pic", "Capture it"
+     * Note-based: "Jot it down", "Log it", "Write what you learned", "Note your progress"
+     * Time-based: "Track your time", "Log duration", "Record how long"
+     * Reflection-based: "Reflect on what went well", "Think about what you learned", "Note how you feel"
+     * Celebration-based: "Mark it done and celebrate", "Give yourself credit", "Acknowledge your effort"
+   - **TONE VARIATION** (alternate between these styles):
+     * Direct: "Finish the workout. Log your time and how you feel."
+     * Encouraging: "You're doing it! Complete the practice session and write down 3 things you improved."
+     * Achievement-focused: "Cross the finish line: Cook the meal and take a photo to remember your creation."
+     * Reflection-focused: "Wrap up your essay. Save it and reflect on one thing you learned while writing."
+   - **EXAMPLES OF VARIETY**:
+     ✅ "Finish cooking. Snap a pic of your dish to celebrate."
+     ✅ "Complete the essay. Save the final draft and jot down what you're proud of."
+     ✅ "Wrap up your workout. Track your time and note how your body feels."
+     ✅ "You did it! Finish the practice session and write down 3 new things you learned."
+     ❌ "Complete: Cook the meal. Take a photo of your finished dish." (too repetitive if used every time)
      ❌ "Check in about progress" (this is not goal completion)
-     ❌ "Take a break" (this is not the goal)
 
 4. **No Clinical Jargon**: 
    - **FORBIDDEN WORDS**: "initiation", "barrier", "scaffolding", "activation cue"
@@ -820,7 +836,10 @@ ${payload.barrierContext}
 - If they mention "freezing when staring at X" → Step 2 should bypass that exact screen (e.g., "Tap icon—it will auto-load last lesson")
 ` : ''}${attemptNote}${retryGuidance ? `\n\n**CRITICAL FEEDBACK FROM PREVIOUS ATTEMPT:**\n${retryGuidance}\n\nYou MUST address this feedback in your revised micro-steps.` : ''}
 
-Generate exactly 3 micro-steps following the ${payload.flow.toUpperCase()} FLOW structure. Pay special attention to the [Secondary Challenge] when creating Step 3.`;
+Generate exactly 3 micro-steps following the ${payload.flow.toUpperCase()} FLOW structure. Pay special attention to the [Secondary Challenge] when creating Step 3.
+
+**STEP 4 VARIETY INSTRUCTION**: 
+Make Step 4 sound natural and varied. Avoid starting with "Complete:" every time. Rotate between different evidence methods (photo, note, reflection, time tracking) and different tones (direct, encouraging, achievement-focused). Think about what feels natural for THIS specific goal and user.`;
 }
 
 // LAYER 1: Basic Format Validation (Hardcoded Guards)

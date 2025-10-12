@@ -400,81 +400,218 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
 }
 
 /**
- * Generates a goal completion step (SLOT 4)
+ * Generates a varied goal completion step (SLOT 4) with dynamic phrasing
  */
 function getSmartCompletionStep(goalAction: string, goalTitle: string, flow: 'individual' | 'supporter'): MicroStep {
   const lower = goalAction.toLowerCase();
   
+  // Random selection helper
+  const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+  
   // For supporter flow
   if (flow === 'supporter') {
     if (lower.includes('cook') || lower.includes('meal') || lower.includes('recipe')) {
-      return {
-        title: `Complete: Cook ${goalAction}`,
-        description: `Support them in cooking ${goalAction}. Help check they've completed all steps and celebrate when the meal is done.`
-      };
+      return pickRandom([
+        {
+          title: `Finish cooking: ${goalAction}`,
+          description: `Be there as they complete cooking ${goalAction}. Snap a photo together of the finished dish and celebrate the effort.`
+        },
+        {
+          title: `Complete the meal: ${goalAction}`,
+          description: `Support them through the final steps of cooking ${goalAction}. Take a photo to remember what they created.`
+        },
+        {
+          title: `Wrap up cooking: ${goalAction}`,
+          description: `Help them finish ${goalAction}. Celebrate together when the meal is plated and snap a pic of their creation.`
+        }
+      ]);
     }
     
     if (lower.includes('write') || lower.includes('essay') || lower.includes('paper')) {
-      return {
-        title: `Complete: Finish ${goalAction}`,
-        description: `Check in as they complete ${goalAction}. Celebrate when the final version is saved.`
-      };
+      return pickRandom([
+        {
+          title: `Finish writing: ${goalAction}`,
+          description: `Check in as they wrap up ${goalAction}. Give them a high-five when they hit save and ask what they learned.`
+        },
+        {
+          title: `Complete the writing: ${goalAction}`,
+          description: `Be there when they finish ${goalAction}. Celebrate when the final version is saved and reflect on the accomplishment together.`
+        },
+        {
+          title: `Wrap up: ${goalAction}`,
+          description: `Support them through the final edits of ${goalAction}. Celebrate when it's saved and ask about their favorite part.`
+        }
+      ]);
     }
     
     if (lower.includes('clean') || lower.includes('organize') || lower.includes('tidy')) {
-      return {
-        title: `Complete: ${goalAction}`,
-        description: `Check that they finish ${goalAction}. Take a before and after photo together to see the progress.`
-      };
+      return pickRandom([
+        {
+          title: `Finish cleaning: ${goalAction}`,
+          description: `Walk through as they complete ${goalAction}. Take before/after photos together to see the transformation.`
+        },
+        {
+          title: `Complete: ${goalAction}`,
+          description: `Be there when they finish ${goalAction}. Snap photos to capture the progress and celebrate the effort.`
+        },
+        {
+          title: `Wrap it up: ${goalAction}`,
+          description: `Check in as they finish ${goalAction}. Take photos together and acknowledge how much they accomplished.`
+        }
+      ]);
     }
     
     if (lower.includes('exercise') || lower.includes('workout') || lower.includes('run')) {
-      return {
-        title: `Complete: ${goalAction} session`,
-        description: `Support them in completing ${goalAction}. Help them log their activity when finished.`
-      };
+      return pickRandom([
+        {
+          title: `Finish the workout: ${goalAction}`,
+          description: `Support them through the final minutes of ${goalAction}. Help them log their activity and celebrate how they pushed through.`
+        },
+        {
+          title: `Complete: ${goalAction} session`,
+          description: `Be present as they finish ${goalAction}. Track their time together and give them credit for showing up.`
+        },
+        {
+          title: `Wrap up: ${goalAction}`,
+          description: `Cheer them on through the end of ${goalAction}. Help them note their progress and celebrate the effort.`
+        }
+      ]);
     }
     
-    return {
-      title: `Complete: ${goalAction}`,
-      description: `Support them in finishing ${goalAction}. Celebrate together when it's done!`
-    };
+    return pickRandom([
+      {
+        title: `Finish: ${goalAction}`,
+        description: `Be there as they complete ${goalAction}. Mark the accomplishment together and celebrate what they achieved.`
+      },
+      {
+        title: `Complete: ${goalAction}`,
+        description: `Support them through finishing ${goalAction}. Help them note what they accomplished and give them recognition.`
+      },
+      {
+        title: `Wrap up: ${goalAction}`,
+        description: `Check in as they finish ${goalAction}. Celebrate together and reflect on what they learned or accomplished.`
+      }
+    ]);
   }
   
   // For individual flow
   if (lower.includes('cook') || lower.includes('meal') || lower.includes('recipe')) {
-    return {
-      title: `Complete: Cook ${goalAction}`,
-      description: `Actually cook ${goalAction}. When finished, take a photo of your completed dish to mark your accomplishment.`
-    };
+    return pickRandom([
+      {
+        title: `Finish cooking: ${goalAction}`,
+        description: `Complete cooking ${goalAction}. Snap a photo of your finished dish to celebrate your creation.`
+      },
+      {
+        title: `Complete the meal: ${goalAction}`,
+        description: `Finish ${goalAction}. Take a photo to remember what you made and give yourself credit.`
+      },
+      {
+        title: `Wrap up: ${goalAction}`,
+        description: `Complete ${goalAction}. Capture a photo of your dish and reflect on what you learned while cooking.`
+      }
+    ]);
   }
   
   if (lower.includes('write') || lower.includes('essay') || lower.includes('paper')) {
-    return {
-      title: `Complete: Finish ${goalAction}`,
-      description: `Complete ${goalAction}. Save the final version and note down what you accomplished.`
-    };
+    return pickRandom([
+      {
+        title: `Finish writing: ${goalAction}`,
+        description: `Complete ${goalAction}. Hit save and jot down one thing you're proud of or learned.`
+      },
+      {
+        title: `Wrap up: ${goalAction}`,
+        description: `Finish ${goalAction}. Save the final version and note what you accomplished or what challenged you.`
+      },
+      {
+        title: `Complete: ${goalAction}`,
+        description: `Finish ${goalAction}. Save your work and reflect on one new insight you gained while writing.`
+      }
+    ]);
   }
   
   if (lower.includes('clean') || lower.includes('organize') || lower.includes('tidy')) {
-    return {
-      title: `Complete: ${goalAction}`,
-      description: `Finish ${goalAction}. Take a before and after photo to see your progress.`
-    };
+    return pickRandom([
+      {
+        title: `Finish: ${goalAction}`,
+        description: `Complete ${goalAction}. Take before/after photos to see your transformation.`
+      },
+      {
+        title: `Wrap up: ${goalAction}`,
+        description: `Finish ${goalAction}. Snap photos to capture your progress and give yourself credit.`
+      },
+      {
+        title: `Complete cleaning: ${goalAction}`,
+        description: `Finish ${goalAction}. Take photos to see the difference you made and celebrate the effort.`
+      }
+    ]);
   }
   
   if (lower.includes('exercise') || lower.includes('workout') || lower.includes('run')) {
-    return {
-      title: `Complete: ${goalAction} session`,
-      description: `Complete ${goalAction}. Log your activity (time, distance, reps, etc.) when done.`
-    };
+    return pickRandom([
+      {
+        title: `Finish your workout: ${goalAction}`,
+        description: `Complete ${goalAction}. Track your time and note how you feel—energized? Proud? Accomplished?`
+      },
+      {
+        title: `Wrap up: ${goalAction} session`,
+        description: `Finish ${goalAction}. Log your activity (time, distance, reps) and reflect on what you accomplished.`
+      },
+      {
+        title: `Complete: ${goalAction}`,
+        description: `Finish ${goalAction} strong. Note your stats and give yourself credit for showing up and pushing through.`
+      }
+    ]);
   }
   
-  // Default pattern
-  return {
-    title: `Complete: ${goalAction}`,
-    description: `Actually complete ${goalAction}. Make a note or take a photo when finished to mark your accomplishment.`
-  };
+  if (lower.includes('read') || lower.includes('reading')) {
+    return pickRandom([
+      {
+        title: `Finish reading: ${goalAction}`,
+        description: `Complete ${goalAction}. Jot down your favorite quote or one interesting idea you discovered.`
+      },
+      {
+        title: `Wrap up: ${goalAction}`,
+        description: `Finish ${goalAction}. Write down what stood out to you or how the reading made you feel.`
+      },
+      {
+        title: `Complete: ${goalAction}`,
+        description: `Finish ${goalAction}. Note one thing you learned or one character/concept that intrigued you.`
+      }
+    ]);
+  }
+  
+  if (lower.includes('practice') || lower.includes('learn') || lower.includes('study')) {
+    return pickRandom([
+      {
+        title: `Finish practicing: ${goalAction}`,
+        description: `Complete ${goalAction}. Write down 3 things you improved or learned during this session.`
+      },
+      {
+        title: `Wrap up: ${goalAction}`,
+        description: `Finish ${goalAction}. Note your progress and one thing you want to remember for next time.`
+      },
+      {
+        title: `Complete: ${goalAction}`,
+        description: `Finish ${goalAction}. Reflect on what went well and jot down one skill you're developing.`
+      }
+    ]);
+  }
+  
+  // Default pattern with variety
+  return pickRandom([
+    {
+      title: `Finish: ${goalAction}`,
+      description: `Complete ${goalAction}. Take a photo or note to mark your accomplishment and reflect on what you achieved.`
+    },
+    {
+      title: `Wrap up: ${goalAction}`,
+      description: `Finish ${goalAction}. Capture the moment with a photo or quick note about what you learned.`
+    },
+    {
+      title: `Complete: ${goalAction}`,
+      description: `Finish ${goalAction}. Mark it done with a photo, note, or reflection on how you feel about completing it.`
+    }
+  ]);
 }
 
 /**
