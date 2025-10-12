@@ -527,13 +527,24 @@ FRAMEWORK RULES:
 3. **Anchoring**: Use the provided [startTime] and [startDayOfWeek] to create external anchors.
 4. **CRITICAL**: Step 4 MUST be the actual goal completion action, not just preparation.
 
-**CRITICAL REQUIREMENT FOR ALL STEPS:**
-Every step must explicitly reference the goal title or specific goal action. DO NOT use generic language like "your work", "the task", or "your materials."
+**CRITICAL TITLE REQUIREMENTS:**
+- Titles must be self-explanatory and actionable (under 60 characters but descriptive)
+- Include specific objects/actions from the goal in the title itself
+- Front-load the most important action
+- Users should understand the step WITHOUT reading the description
+- Every title must explicitly reference the goal action
 
 Examples:
-- ❌ "Prepare your workspace" → ✅ "Gather your Spanish flashcards and notebook"
-- ❌ "Tap the app icon" → ✅ "Tap the Duolingo app icon"
-- ❌ "Work for 20 minutes" → ✅ "Practice 10 Spanish verbs for 20 minutes"
+- ❌ "Prepare your workspace" → ✅ "Gather Spanish flashcards and notebook"
+- ❌ "Tap the app icon" → ✅ "At 7pm: Tap Duolingo app icon"
+- ❌ "Work for 20 minutes" → ✅ "Practice 10 Spanish verbs for 20 min"
+- ❌ "At 8:00, start" → ✅ "At 8:00: Put on running shoes"
+- ❌ "Use a focus timer" → ✅ "25-min timer for algebra problems"
+
+**DESCRIPTION REQUIREMENTS:**
+- Provide additional context, tips, or motivation
+- Can reference timing, sensory cues, or troubleshooting
+- Should complement the title, not repeat it
 
 ---
 ${flow === 'individual' ? `

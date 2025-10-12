@@ -1291,7 +1291,7 @@ export const StepsList: React.FC<StepsListProps> = ({
                          )}
                        </TableCell>
                        
-                        <TableCell className="p-2">
+                         <TableCell className="p-2">
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <span className={`text-sm font-medium ${
@@ -1309,6 +1309,13 @@ export const StepsList: React.FC<StepsListProps> = ({
                                 </Badge>
                               )}
                             </div>
+
+                            {/* Show description inline without requiring expansion */}
+                            {mainStep.notes && (
+                              <p className="text-xs text-muted-foreground leading-relaxed">
+                                {mainStep.notes}
+                              </p>
+                            )}
 
                             {isBlocked && (
                               <BlockedStepGuidance step={mainStep} />

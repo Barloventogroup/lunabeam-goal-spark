@@ -243,47 +243,64 @@ function getSmartSupporterActivationCue(goalAction: string, startTime: string, d
 }
 
 /**
+ * Helper function to generate smart activation titles based on goal context
+ */
+function getSmartActivationTitle(goalAction: string): string {
+  const lower = goalAction.toLowerCase();
+  
+  if (lower.includes('water') || lower.includes('drink')) return 'Grab water bottle';
+  if (lower.includes('exercise') || lower.includes('walk') || lower.includes('run')) return 'Put on shoes';
+  if (lower.includes('clean') || lower.includes('tidy')) return 'Clear one surface';
+  if (lower.includes('study') || lower.includes('read') || lower.includes('homework')) return 'Open materials';
+  if (lower.includes('practice') || lower.includes('instrument')) return 'Get instrument';
+  if (lower.includes('cook') || lower.includes('meal')) return 'Get ingredients';
+  if (lower.includes('write') || lower.includes('journal')) return 'Open notebook';
+  
+  return 'Start preparing';
+}
+
+/**
  * Returns barrier-specific templates for Individual flow
  */
 function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariables): BarrierTemplate {
   const templates: Record<string, BarrierTemplate> = {
     initiation: {
       activationStep: {
-        title: `At ${vars.startTime}, start`,
+        title: `At ${vars.startTime}: ${getSmartActivationTitle(vars.goalAction)}`,
         description: getSmartActivationCue(vars.goalAction, vars.startTime, vars.dayOfWeek)
       },
       barrierStep: {
-        title: `Work for 20 minutes`,
+        title: `Focus for 20 min on ${vars.goalAction}`,
         description: `Set a timer for 20 minutes and focus on ${vars.goalAction}. When the timer rings, stand up and stretch for 5 minutes before continuing.`
       }
     },
     attention: {
       activationStep: {
-        title: `At ${vars.startTime}, open materials`,
+        title: `At ${vars.startTime}: Prepare materials for ${vars.goalAction}`,
         description: `At ${vars.startTime} on ${vars.dayOfWeek}, open or grab one specific thing for ${vars.goalAction}.`
       },
       barrierStep: {
-        title: `Use a focus timer`,
+        title: `25-min focus timer for ${vars.goalAction}`,
         description: `Set a 25-minute timer and work on ${vars.goalAction}. When it rings, stand up and take a 5-minute movement break before continuing.`
       }
     },
     planning: {
       activationStep: {
-        title: `At ${vars.startTime}, grab pen and paper`,
+        title: `At ${vars.startTime}: Grab pen to plan ${vars.goalAction}`,
         description: `At ${vars.startTime} on ${vars.dayOfWeek}, grab a pen and paper to plan ${vars.goalAction}.`
       },
       barrierStep: {
-        title: `Break it into 3 steps`,
+        title: `Break ${vars.goalAction} into 3 steps`,
         description: `Spend 20 minutes writing down 3 smaller steps for ${vars.goalAction}. Number them 1, 2, 3 and write what you'll do for each one.`
       }
     },
     time: {
       activationStep: {
-        title: `At ${vars.startTime}, set a timer`,
+        title: `At ${vars.startTime}: Set timer for ${vars.goalAction}`,
         description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a timer for 20 minutes for ${vars.goalAction}.`
       },
       barrierStep: {
-        title: `Work until the timer rings`,
+        title: `Work on ${vars.goalAction} until timer rings`,
         description: `Focus on ${vars.goalAction} for 20 minutes until your timer rings. When it does, take a mandatory 5-minute break.`
       }
     },
@@ -299,41 +316,41 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
   const templates: Record<string, BarrierTemplate> = {
     initiation: {
       activationStep: {
-        title: `At ${vars.startTime}, hand them materials`,
+        title: `At ${vars.startTime}: Hand materials for ${vars.goalAction}`,
         description: getSmartSupporterActivationCue(vars.goalAction, vars.startTime, vars.dayOfWeek)
       },
       barrierStep: {
-        title: `Stay nearby for 20 minutes`,
+        title: `Stay nearby for ${vars.goalAction} (20 min)`,
         description: `Remain in the same room while they work on ${vars.goalAction} for 20 minutes. After 20 minutes, check in and celebrate any progress they made.`
       }
     },
     attention: {
       activationStep: {
-        title: `At ${vars.startTime}, start the timer`,
+        title: `At ${vars.startTime}: Start timer for ${vars.goalAction}`,
         description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a visible 25-minute timer and say: "Work on ${vars.goalAction} until this rings."`
       },
       barrierStep: {
-        title: `Check in when timer rings`,
+        title: `Check in after ${vars.goalAction} session`,
         description: `When the 25-minute timer rings, check in with them about ${vars.goalAction}. Make sure they take a 5-minute movement break before continuing.`
       }
     },
     planning: {
       activationStep: {
-        title: `At ${vars.startTime}, provide materials`,
+        title: `At ${vars.startTime}: Provide materials to plan ${vars.goalAction}`,
         description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them paper and pen to plan ${vars.goalAction}.`
       },
       barrierStep: {
-        title: `Help organize the steps`,
+        title: `Help break down ${vars.goalAction} into steps`,
         description: `Sit with them for 20 minutes to help write and number 3 smaller steps for ${vars.goalAction}. Ask guiding questions like "What needs to happen first?" but let them decide.`
       }
     },
     time: {
       activationStep: {
-        title: `At ${vars.startTime}, set the timer together`,
+        title: `At ${vars.startTime}: Set timer for ${vars.goalAction}`,
         description: `At ${vars.startTime} on ${vars.dayOfWeek}, help them set a 20-minute timer for ${vars.goalAction}.`
       },
       barrierStep: {
-        title: `Monitor and celebrate`,
+        title: `Monitor ${vars.goalAction} and celebrate progress`,
         description: `Check in when the timer rings after 20 minutes of ${vars.goalAction}. Celebrate what they completed and help them take a 5-minute break before the next work session.`
       }
     },
@@ -347,40 +364,39 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
  */
 function getSmartCompletionStep(goalAction: string, goalTitle: string, flow: 'individual' | 'supporter'): MicroStep {
   const lower = goalAction.toLowerCase();
-  const originalTitle = goalTitle.toLowerCase();
   
   // For supporter flow
   if (flow === 'supporter') {
     if (lower.includes('cook') || lower.includes('meal') || lower.includes('recipe')) {
       return {
-        title: `Help complete: Cook the meal`,
+        title: `Complete: Cook ${goalAction}`,
         description: `Support them in cooking ${goalAction}. Help check they've completed all steps and celebrate when the meal is done.`
       };
     }
     
     if (lower.includes('write') || lower.includes('essay') || lower.includes('paper')) {
       return {
-        title: `Help complete: Finish the writing`,
+        title: `Complete: Finish ${goalAction}`,
         description: `Check in as they complete ${goalAction}. Celebrate when the final version is saved.`
       };
     }
     
     if (lower.includes('clean') || lower.includes('organize') || lower.includes('tidy')) {
       return {
-        title: `Help complete: Finish the task`,
+        title: `Complete: ${goalAction}`,
         description: `Check that they finish ${goalAction}. Take a before and after photo together to see the progress.`
       };
     }
     
     if (lower.includes('exercise') || lower.includes('workout') || lower.includes('run')) {
       return {
-        title: `Help complete: Finish the session`,
+        title: `Complete: ${goalAction} session`,
         description: `Support them in completing ${goalAction}. Help them log their activity when finished.`
       };
     }
     
     return {
-      title: `Help complete: ${goalTitle}`,
+      title: `Complete: ${goalAction}`,
       description: `Support them in finishing ${goalAction}. Celebrate together when it's done!`
     };
   }
@@ -388,35 +404,35 @@ function getSmartCompletionStep(goalAction: string, goalTitle: string, flow: 'in
   // For individual flow
   if (lower.includes('cook') || lower.includes('meal') || lower.includes('recipe')) {
     return {
-      title: `Complete: Cook the meal`,
+      title: `Complete: Cook ${goalAction}`,
       description: `Actually cook ${goalAction}. When finished, take a photo of your completed dish to mark your accomplishment.`
     };
   }
   
   if (lower.includes('write') || lower.includes('essay') || lower.includes('paper')) {
     return {
-      title: `Complete: Finish writing`,
+      title: `Complete: Finish ${goalAction}`,
       description: `Complete ${goalAction}. Save the final version and note down what you accomplished.`
     };
   }
   
   if (lower.includes('clean') || lower.includes('organize') || lower.includes('tidy')) {
     return {
-      title: `Complete: Finish the task`,
+      title: `Complete: ${goalAction}`,
       description: `Finish ${goalAction}. Take a before and after photo to see your progress.`
     };
   }
   
   if (lower.includes('exercise') || lower.includes('workout') || lower.includes('run')) {
     return {
-      title: `Complete: Finish the session`,
+      title: `Complete: ${goalAction} session`,
       description: `Complete ${goalAction}. Log your activity (time, distance, reps, etc.) when done.`
     };
   }
   
   // Default pattern
   return {
-    title: `Complete: ${goalTitle}`,
+    title: `Complete: ${goalAction}`,
     description: `Actually complete ${goalAction}. Make a note or take a photo when finished to mark your accomplishment.`
   };
 }
