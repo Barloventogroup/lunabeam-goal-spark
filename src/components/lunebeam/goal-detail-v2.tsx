@@ -314,9 +314,6 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       
       // Calculate all occurrence dates for habit goals
       const isHabitGoal = goal!.frequency_per_week && goal!.frequency_per_week > 0;
-      const totalOccurrences = isHabitGoal 
-        ? (goal!.frequency_per_week * (goal!.duration_weeks || 1)) 
-        : 1;
       
       const occurrenceDates: Date[] = [];
       const baseStartDate = new Date(wizardData.startDate);
@@ -324,17 +321,59 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       const [startHour, startMin] = startTime.split(':').map(Number);
       
       if (isHabitGoal) {
-        // Generate all occurrence dates
-        for (let i = 0; i < totalOccurrences; i++) {
-          const occurrenceDate = new Date(baseStartDate);
-          occurrenceDate.setDate(occurrenceDate.getDate() + i);
-          occurrenceDate.setHours(startHour, startMin || 0, 0, 0);
-          occurrenceDates.push(occurrenceDate);
+        // Get selected days from wizard context
+        const selectedDays = (wizardData as any).selectedDays || [];
+        const dayMap: Record<string, number> = {
+          'sun': 0, 'mon': 1, 'tue': 2, 'wed': 3, 'thu': 4, 'fri': 5, 'sat': 6
+        };
+        const selectedDayNumbers = selectedDays.map((d: string) => dayMap[d]).sort();
+        
+        if (selectedDayNumbers.length > 0) {
+          // Generate occurrences on selected weekdays within date range
+          let currentDate = new Date(baseStartDate);
+          const goalEndDate = goal!.due_date ? new Date(goal!.due_date) : null;
+          const estimatedMaxOccurrences = goal!.frequency_per_week * (goal!.duration_weeks || 1);
+          
+          while (true) {
+            const currentDayOfWeek = currentDate.getDay();
+            
+            // If this is a selected day, add it
+            if (selectedDayNumbers.includes(currentDayOfWeek)) {
+              // Don't add dates before start_date
+              if (currentDate >= baseStartDate) {
+                const occurrenceDate = new Date(currentDate);
+                occurrenceDate.setHours(startHour, startMin || 0, 0, 0);
+                occurrenceDates.push(occurrenceDate);
+              }
+            }
+            
+            // Move to next day
+            currentDate.setDate(currentDate.getDate() + 1);
+            
+            // Stop conditions:
+            // 1. Reached goal due_date
+            // 2. Generated enough occurrences (as safety limit)
+            if ((goalEndDate && currentDate > goalEndDate) || 
+                occurrenceDates.length >= estimatedMaxOccurrences) {
+              break;
+            }
+          }
+        } else {
+          // Fallback: consecutive days (if selectedDays missing)
+          const estimatedMaxOccurrences = goal!.frequency_per_week * (goal!.duration_weeks || 1);
+          for (let i = 0; i < estimatedMaxOccurrences; i++) {
+            const occurrenceDate = new Date(baseStartDate);
+            occurrenceDate.setDate(occurrenceDate.getDate() + i);
+            occurrenceDate.setHours(startHour, startMin || 0, 0, 0);
+            occurrenceDates.push(occurrenceDate);
+          }
         }
       } else {
         baseStartDate.setHours(startHour, startMin || 0, 0, 0);
         occurrenceDates.push(baseStartDate);
       }
+      
+      const totalOccurrences = occurrenceDates.length;
       
       console.log(`Generating steps for ${occurrenceDates.length} days...`);
       

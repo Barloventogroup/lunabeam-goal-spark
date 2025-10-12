@@ -694,15 +694,57 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     try {
       const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
       
-      // Calculate proper due_date for habit goals
-      const durationWeeks = 4; // Hardcoded for now
+      // Calculate proper due_date and duration_weeks from user's endDate
+      let durationWeeks = 4; // Default fallback
       let calculatedDueDate: string | undefined;
       
       if (data.goalType !== 'new_skill' && data.frequency) {
-        // Habit goal: due_date = start_date + (duration_weeks × 7 days)
-        const habitEndDate = new Date(data.startDate);
-        habitEndDate.setDate(habitEndDate.getDate() + (durationWeeks * 7));
-        calculatedDueDate = format(habitEndDate, 'yyyy-MM-dd');
+        // Habit goal: use user's endDate if provided
+        if (data.endDate) {
+          calculatedDueDate = format(data.endDate, 'yyyy-MM-dd');
+          // Calculate duration in weeks from start to end
+          const daysDifference = Math.ceil(
+            (data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          durationWeeks = Math.max(1, Math.ceil(daysDifference / 7));
+        } else {
+          // Fallback: 4 weeks from start
+          const habitEndDate = new Date(data.startDate);
+          habitEndDate.setDate(habitEndDate.getDate() + (durationWeeks * 7));
+          calculatedDueDate = format(habitEndDate, 'yyyy-MM-dd');
+        }
+        
+        // Validate: ensure there are actual occurrences within the date range
+        if (data.selectedDays && data.selectedDays.length > 0 && data.endDate) {
+          const daysDiff = Math.ceil(
+            (data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          
+          if (daysDiff < 7) {
+            const dayMap = { 'sun': 0, 'mon': 1, 'tue': 2, 'wed': 3, 'thu': 4, 'fri': 5, 'sat': 6 };
+            const selectedDayNums = data.selectedDays.map(d => dayMap[d as keyof typeof dayMap]);
+            let hasOccurrence = false;
+            
+            for (let i = 0; i <= daysDiff; i++) {
+              const checkDate = new Date(data.startDate);
+              checkDate.setDate(checkDate.getDate() + i);
+              if (selectedDayNums.includes(checkDate.getDay())) {
+                hasOccurrence = true;
+                break;
+              }
+            }
+            
+            if (!hasOccurrence) {
+              toast({
+                title: "Invalid schedule",
+                description: `No ${data.selectedDays.join(' or ')} days fall between ${format(data.startDate, 'MMM d')} and ${format(data.endDate, 'MMM d')}. Please adjust your dates.`,
+                variant: "destructive"
+              });
+              setLoading(false);
+              return;
+            }
+          }
+        }
       } else if (data.goalType === 'new_skill') {
         // Project goal: use user-selected completion date
         calculatedDueDate = data.projectCompletionDate 
@@ -1443,8 +1485,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 {data.selectedDays.length === 7 
                   ? "Every day of the week"
                   : data.selectedDays.length === 1
-                  ? "Once per week"
-                  : `${data.selectedDays.length} times per week`}
+                  ? "Once per week on " + data.selectedDays[0].toUpperCase()
+                  : `${data.selectedDays.length} days per week: ${data.selectedDays.map(d => d.toUpperCase()).join(', ')}`}
               </p>
             )}
           </div>

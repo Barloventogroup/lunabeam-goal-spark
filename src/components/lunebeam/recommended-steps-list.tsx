@@ -346,11 +346,9 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       // setShowSuccessCheck(true);
       // setTimeout(() => setShowSuccessCheck(false), 2000);
 
-      // Check if all planned steps are complete - use EXPECTED count, not existing count
+      // Check if all planned steps are complete - count actual planned steps generated
       const isHabitGoal = goal.frequency_per_week && goal.frequency_per_week > 0;
-      const expectedPlannedSteps = isHabitGoal 
-        ? (goal.frequency_per_week * (goal.duration_weeks || 4))
-        : 1;
+      const expectedPlannedSteps = updatedSteps.filter(s => s.is_planned).length;
       
       const completedPlanned = updatedSteps.filter(s => s.is_planned && s.status === 'done').length;
       const allPlannedComplete = completedPlanned >= expectedPlannedSteps;
