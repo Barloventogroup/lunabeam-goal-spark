@@ -337,10 +337,61 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       // setShowSuccessCheck(true);
       // setTimeout(() => setShowSuccessCheck(false), 2000);
 
-      toast({
-        title: "Step completed!",
-        description: `Great job! You've completed this step.`,
-      });
+      // Check if all planned steps are complete and handle goal completion logic
+      const remainingPlanned = updatedSteps.filter(s => s.is_planned && s.status !== 'done');
+      const allPlannedComplete = remainingPlanned.length === 0;
+      
+      // Check if goal is at or past its due date
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const goalDueDate = goal.due_date ? new Date(goal.due_date) : null;
+      const isAtOrPastEnd = goalDueDate ? today >= goalDueDate : false;
+      
+      if (allPlannedComplete && isAtOrPastEnd) {
+        // Mark goal as completed
+        await supabase
+          .from('goals')
+          .update({ 
+            status: 'completed',
+            last_completed_date: new Date().toISOString().split('T')[0]
+          })
+          .eq('id', goal.id);
+        
+        toast({
+          title: "Goal completed! 🏆",
+          description: `Amazing work! You've completed "${goal.title}"!`,
+        });
+      } else if (allPlannedComplete && !isAtOrPastEnd) {
+        // Daily completion for habit goals - schedule next occurrence
+        const isHabitGoal = goal.frequency_per_week && goal.frequency_per_week > 0;
+        
+        if (isHabitGoal) {
+          const { smartSchedulingService } = await import('@/services/smartSchedulingService');
+          const { scheduledTime, success } = await smartSchedulingService.scheduleNextHabitOccurrence(goal.id);
+          
+          if (success) {
+            toast({
+              title: "Today completed! ✨",
+              description: `You're set for tomorrow at ${scheduledTime}`,
+            });
+          } else {
+            toast({
+              title: "Step completed!",
+              description: `Great job! You've completed this step.`,
+            });
+          }
+        } else {
+          toast({
+            title: "Step completed!",
+            description: `Great job! You've completed this step.`,
+          });
+        }
+      } else {
+        toast({
+          title: "Step completed!",
+          description: `Great job! You've completed this step.`,
+        });
+      }
 
       // Send notifications
       const { data: { user } } = await supabase.auth.getUser();
@@ -371,37 +422,6 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
               });
             } catch (err) {
               console.error('Failed to create step completion notification for admin:', admin.supporter_id, err);
-            }
-          }
-
-          // Check if this is the last step
-          const { data: allGoalSteps } = await supabase
-            .from('steps')
-            .select('id, order_index, status')
-            .eq('goal_id', goal.id)
-            .order('order_index', { ascending: false });
-
-          const isLastStep = allGoalSteps && allGoalSteps[0]?.id === stepId;
-
-          if (isLastStep) {
-            // setShowGoalCelebration(true);
-            toast({
-              title: "Goal completed! 🏆",
-              description: `Amazing work! You've completed "${goal.title}"!`,
-            });
-            
-            for (const admin of adminSupporters) {
-              try {
-                await notificationsService.createNotification({
-                  user_id: admin.supporter_id,
-                  type: 'goal_complete',
-                  title: 'Goal Completed! 🎯',
-                  message: `${userName} completed goal "${goal.title}"`,
-                  data: { goal_id: goal.id, goal_title: goal.title }
-                });
-              } catch (err) {
-                console.error('Failed to create goal completion notification for admin:', admin.supporter_id, err);
-              }
             }
           }
         }

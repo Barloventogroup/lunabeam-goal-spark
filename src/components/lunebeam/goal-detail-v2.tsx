@@ -328,6 +328,18 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       
       for (let i = 0; i < individualSteps.length; i++) {
         const microStep = individualSteps[i];
+        const isLastStep = i === individualSteps.length - 1;
+        const isCompletionStep = microStep.title.toLowerCase().includes('complete:') || 
+                                  microStep.title.toLowerCase().includes('help complete:');
+        
+        // Determine step_type based on goal characteristics and position
+        let stepType = 'action';
+        const isHabitGoal = goal!.frequency_per_week && goal!.frequency_per_week > 0;
+        
+        if (isLastStep || isCompletionStep) {
+          // Last step: 'habit' for daily habit goals, 'milestone' for time-bound goals
+          stepType = isHabitGoal ? 'habit' : 'milestone';
+        }
         
         // Calculate due date based on step position
         let stepDueDate: Date = new Date(goalStartDate);
@@ -346,7 +358,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         
         const { step } = await stepsService.createStep(goal!.id, {
           title: microStep.title,
-          step_type: 'action',
+          step_type: stepType,
           is_required: true,
           estimated_effort_min: 15,
           is_planned: true,

@@ -483,10 +483,61 @@ export const StepsList: React.FC<StepsListProps> = ({
       // setShowSuccessCheck(true);
       // setTimeout(() => setShowSuccessCheck(false), 2000);
 
-      toast({
-        title: "Step completed!",
-        description: `Great job! You've completed this step.`,
-      });
+      // Check if all planned steps are complete and handle goal completion logic
+      const remainingPlanned = updatedSteps.filter(s => s.is_planned && s.status !== 'done');
+      const allPlannedComplete = remainingPlanned.length === 0;
+      
+      // Check if goal is at or past its due date
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const goalDueDate = goal.due_date ? new Date(goal.due_date) : null;
+      const isAtOrPastEnd = goalDueDate ? today >= goalDueDate : false;
+      
+      if (allPlannedComplete && isAtOrPastEnd) {
+        // Mark goal as completed
+        await supabase
+          .from('goals')
+          .update({ 
+            status: 'completed',
+            last_completed_date: new Date().toISOString().split('T')[0]
+          })
+          .eq('id', goal.id);
+        
+        toast({
+          title: "Goal completed! 🏆",
+          description: `Amazing work! You've completed "${goal.title}"!`,
+        });
+      } else if (allPlannedComplete && !isAtOrPastEnd) {
+        // Daily completion for habit goals - schedule next occurrence
+        const isHabitGoal = goal.frequency_per_week && goal.frequency_per_week > 0;
+        
+        if (isHabitGoal) {
+          const { smartSchedulingService } = await import('@/services/smartSchedulingService');
+          const { scheduledTime, success } = await smartSchedulingService.scheduleNextHabitOccurrence(goal.id);
+          
+          if (success) {
+            toast({
+              title: "Today completed! ✨",
+              description: `You're set for tomorrow at ${scheduledTime}`,
+            });
+          } else {
+            toast({
+              title: "Step completed!",
+              description: `Great job! You've completed this step.`,
+            });
+          }
+        } else {
+          toast({
+            title: "Step completed!",
+            description: `Great job! You've completed this step.`,
+          });
+        }
+      } else {
+        toast({
+          title: "Step completed!",
+          description: `Great job! You've completed this step.`,
+        });
+      }
 
       // Send notifications to supporters for step completion
       const { data: { user } } = await supabase.auth.getUser();

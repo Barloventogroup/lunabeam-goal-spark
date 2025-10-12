@@ -241,5 +241,137 @@ export const smartSchedulingService = {
       .from('steps')
       .update({ due_date: dueDate })
       .eq('id', stepId);
+  },
+
+  // Schedule next day's habit occurrence
+  async scheduleNextHabitOccurrence(goalId: string): Promise<{ scheduledTime: string; success: boolean }> {
+    const goal = await this.getGoal(goalId);
+    if (!goal) return { scheduledTime: '', success: false };
+
+    // Check if goal is past due date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = goal.due_date ? new Date(goal.due_date) : null;
+    
+    if (dueDate && today >= dueDate) {
+      return { scheduledTime: '', success: false }; // Goal is complete
+    }
+
+    // Calculate next occurrence date
+    const startDate = goal.start_date ? new Date(goal.start_date) : new Date();
+    const nextDate = new Date(today);
+    nextDate.setDate(nextDate.getDate() + 1);
+
+    // Check if next date is within goal's due date
+    if (dueDate && nextDate > dueDate) {
+      return { scheduledTime: '', success: false };
+    }
+
+    // Get wizard context for timing
+    const metadata = (goal as any).metadata?.wizardContext;
+    const startTime = metadata?.customTime || metadata?.timeOfDay || '08:00';
+    const [hour, min] = startTime.split(':').map(Number);
+    
+    nextDate.setHours(hour, min || 0, 0, 0);
+
+    // Generate tomorrow's microsteps (reuse existing wizard context)
+    // For simplicity, we'll use the same microstep pattern
+    try {
+      const { generateMicroStepsSmart } = await import('./microStepsGenerator');
+      
+      // Fetch current user profile
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { scheduledTime: '', success: false };
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name')
+        .eq('user_id', goal.owner_id)
+        .single();
+
+      const enrichedData = {
+        goalTitle: metadata?.goalTitle || goal.title,
+        goalMotivation: metadata?.goalMotivation || '',
+        customMotivation: metadata?.customMotivation || '',
+        goalType: metadata?.goalType || goal.goal_type,
+        challengeAreas: metadata?.challengeAreas || [],
+        customChallenges: metadata?.customChallenges || '',
+        hasPrerequisites: !!metadata?.prerequisite,
+        customPrerequisites: metadata?.prerequisite || '',
+        startDate: nextDate,
+        timeOfDay: metadata?.timeOfDay || 'morning',
+        customTime: startTime,
+        supportContext: metadata?.supportContext || '',
+        primarySupporterName: metadata?.primarySupporterName || '',
+        primarySupporterRole: metadata?.primarySupporterRole || '',
+        category: goal.domain || 'general',
+        supportedPersonName: profile?.first_name || 'them',
+        supporterName: metadata?.primarySupporterName || ''
+      };
+
+      const microSteps = await generateMicroStepsSmart(enrichedData, 'individual');
+
+      // Save microsteps for tomorrow
+      const savedSteps: any[] = [];
+      const isHabitGoal = goal.frequency_per_week && goal.frequency_per_week > 0;
+
+      for (let i = 0; i < microSteps.length; i++) {
+        const microStep = microSteps[i];
+        const isLastStep = i === microSteps.length - 1;
+        
+        let stepDueDate = new Date(nextDate);
+        if (i === 0 && microStep.title.toLowerCase().includes('get ready by')) {
+          stepDueDate.setDate(stepDueDate.getDate() - 1);
+          stepDueDate.setHours(20, 0, 0, 0);
+        } else if (i === 1 || microStep.title.toLowerCase().includes('at ')) {
+          stepDueDate = new Date(nextDate);
+        } else {
+          stepDueDate = new Date(nextDate);
+          stepDueDate.setHours(hour + 1, 0, 0, 0);
+        }
+
+        const stepType = isLastStep ? (isHabitGoal ? 'habit' : 'milestone') : 'action';
+
+        const { data: step, error } = await supabase
+          .from('steps')
+          .insert({
+            goal_id: goalId,
+            title: microStep.title,
+            step_type: stepType,
+            is_required: true,
+            estimated_effort_min: 15,
+            is_planned: true,
+            notes: microStep.description,
+            is_supporter_step: false,
+            due_date: stepDueDate.toISOString(),
+            status: 'not_started',
+            order_index: 1000 + i // High index to append
+          })
+          .select()
+          .single();
+
+        if (!error && step) {
+          savedSteps.push(step);
+          
+          // Set dependency on previous step
+          if (i > 0 && savedSteps[i - 1]) {
+            await supabase
+              .from('steps')
+              .update({ dependency_step_ids: [savedSteps[i - 1].id] })
+              .eq('id', step.id);
+          }
+        }
+      }
+
+      const scheduledTimeFormatted = nextDate.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit' 
+      });
+
+      return { scheduledTime: scheduledTimeFormatted, success: true };
+    } catch (error) {
+      console.error('Failed to schedule next occurrence:', error);
+      return { scheduledTime: '', success: false };
+    }
   }
 };
