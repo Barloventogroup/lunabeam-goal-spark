@@ -91,6 +91,15 @@ function getPrerequisiteSuggestions(goalTitle: string, goalDomain?: string): str
   ];
 }
 
+// Motivation ID to display label mapping
+const motivationLabels: Record<string, string> = {
+  'confidence': 'Confidence',
+  'future_skill': 'Future Skill',
+  'tangible_reward': 'Tangible Reward',
+  'accountability': 'Accountability',
+  'personal_growth': 'Personal Growth'
+};
+
 interface GoalFactorSummaryProps {
   goal: Goal;
   wizardContext?: any;
@@ -121,7 +130,31 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
     );
   }
 
-  const motivation = wizardContext.customMotivation || wizardContext.goalMotivation;
+  // Format motivation display
+  const formatMotivation = (): string => {
+    const categoryId = wizardContext.goalMotivation;
+    const customText = wizardContext.customMotivation;
+    
+    // If we have custom text
+    if (customText) {
+      // If we also have a category, show both
+      if (categoryId && motivationLabels[categoryId]) {
+        return `${motivationLabels[categoryId]}. ${customText}`;
+      }
+      // Otherwise just custom text
+      return customText;
+    }
+    
+    // Fallback: show formatted category or raw value
+    if (categoryId && motivationLabels[categoryId]) {
+      return motivationLabels[categoryId];
+    }
+    
+    // Last resort: show whatever we have
+    return categoryId || '';
+  };
+
+  const motivation = formatMotivation();
   const challenges = wizardContext.customChallenges 
     ? [wizardContext.customChallenges]
     : wizardContext.challengeAreas || [];
