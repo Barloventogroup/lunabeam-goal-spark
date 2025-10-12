@@ -8,6 +8,7 @@ export interface MicroStep {
 
 interface ActionableVariables {
   goalAction: string;
+  goalObject: string;
   category: string;
   motivation: string;
   startTime: string;
@@ -129,12 +130,23 @@ function convertToActionPhrase(goalTitle: string): string {
     .trim();
   
   // Common action verbs that work well in gerund form (-ing)
-  const gerundVerbs = ['stretch', 'walk', 'run', 'practice', 'clean', 'exercise', 'read', 'write', 'study', 'cook', 'meditate'];
+  const gerundVerbs = [
+    { base: 'practice', gerund: 'practicing' },
+    { base: 'exercise', gerund: 'exercising' },
+    { base: 'meditate', gerund: 'meditating' },
+    { base: 'stretch', gerund: 'stretching' },
+    { base: 'walk', gerund: 'walking' },
+    { base: 'run', gerund: 'running' },
+    { base: 'clean', gerund: 'cleaning' },
+    { base: 'read', gerund: 'reading' },
+    { base: 'write', gerund: 'writing' },
+    { base: 'study', gerund: 'studying' },
+    { base: 'cook', gerund: 'cooking' }
+  ];
   
   for (const verb of gerundVerbs) {
-    if (withoutTime.startsWith(verb)) {
-      // Convert to gerund (stretching, walking, etc.)
-      return withoutTime.replace(new RegExp(`^${verb}`), verb + 'ing');
+    if (withoutTime.startsWith(verb.base)) {
+      return withoutTime.replace(new RegExp(`^${verb.base}`), verb.gerund);
     }
   }
   
@@ -148,6 +160,20 @@ function convertToActionPhrase(goalTitle: string): string {
 }
 
 /**
+ * Extracts the object/activity from goal title (e.g., "Practice math problems" → "math problems")
+ */
+function extractGoalObject(goalTitle: string): string {
+  const lowerTitle = goalTitle.toLowerCase().trim();
+  
+  // Remove common leading verbs
+  const withoutVerb = lowerTitle
+    .replace(/^(practice|study|do|complete|work on|focus on|learn|read|write|cook|clean|exercise|meditate|stretch|walk|run)\s+/i, '')
+    .trim();
+  
+  return withoutVerb || goalTitle;
+}
+
+/**
  * Translates wizard data into actionable variables for template rendering
  */
 function translateToActionableVariables(data: WizardData): ActionableVariables {
@@ -156,6 +182,7 @@ function translateToActionableVariables(data: WizardData): ActionableVariables {
   
   return {
     goalAction: convertToActionPhrase(data.goalTitle || 'your goal'),
+    goalObject: extractGoalObject(data.goalTitle || 'your goal'),
     category: data.category || 'general',
     motivation: data.customMotivation || data.goalMotivation || 'this goal',
     startTime,
@@ -310,38 +337,38 @@ function getIndividualBarrierTemplate(barrierId: string, vars: ActionableVariabl
         description: getSmartActivationCue(vars.goalAction, vars.startTime, vars.dayOfWeek)
       },
       barrierStep: {
-        title: `Focus for 20 min on ${vars.goalAction}`,
-        description: `Set a timer for 20 minutes and focus on ${vars.goalAction}. When the timer rings, stand up and stretch for 5 minutes before continuing.`
+        title: `Focus for 20 min on ${vars.goalObject}`,
+        description: `Set a timer for 20 minutes and focus on ${vars.goalObject}. When the timer rings, stand up and stretch for 5 minutes before continuing.`
       }
     },
     attention: {
       activationStep: {
-        title: `At ${vars.startTime}: Prepare materials for ${vars.goalAction}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, open or grab one specific thing for ${vars.goalAction}.`
+        title: `At ${vars.startTime}: Prepare materials for ${vars.goalObject}`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, open or grab one specific thing for ${vars.goalObject}.`
       },
       barrierStep: {
-        title: `25-min focus timer for ${vars.goalAction}`,
-        description: `Set a 25-minute timer and work on ${vars.goalAction}. When it rings, stand up and take a 5-minute movement break before continuing.`
+        title: `25-min focus timer for ${vars.goalObject}`,
+        description: `Set a 25-minute timer and work on ${vars.goalObject}. When it rings, stand up and take a 5-minute movement break before continuing.`
       }
     },
     planning: {
       activationStep: {
-        title: `At ${vars.startTime}: Grab pen to plan ${vars.goalAction}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, grab a pen and paper to plan ${vars.goalAction}.`
+        title: `At ${vars.startTime}: Grab pen to plan ${vars.goalObject}`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, grab a pen and paper to plan ${vars.goalObject}.`
       },
       barrierStep: {
-        title: `Break ${vars.goalAction} into 3 steps`,
-        description: `Spend 20 minutes writing down 3 smaller steps for ${vars.goalAction}. Number them 1, 2, 3 and write what you'll do for each one.`
+        title: `Break ${vars.goalObject} into 3 steps`,
+        description: `Spend 20 minutes writing down 3 smaller steps for ${vars.goalObject}. Number them 1, 2, 3 and write what you'll do for each one.`
       }
     },
     time: {
       activationStep: {
-        title: `At ${vars.startTime}: Set timer for ${vars.goalAction}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a timer for 20 minutes for ${vars.goalAction}.`
+        title: `At ${vars.startTime}: Set timer for ${vars.goalObject}`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a timer for 20 minutes for ${vars.goalObject}.`
       },
       barrierStep: {
-        title: `Work on ${vars.goalAction} until timer rings`,
-        description: `Focus on ${vars.goalAction} for 20 minutes until your timer rings. When it does, take a mandatory 5-minute break.`
+        title: `Work on ${vars.goalObject} until timer rings`,
+        description: `Focus on ${vars.goalObject} for 20 minutes until your timer rings. When it does, take a mandatory 5-minute break.`
       }
     },
   };
@@ -356,42 +383,42 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
   const templates: Record<string, BarrierTemplate> = {
     initiation: {
       activationStep: {
-        title: `At ${vars.startTime}: Hand materials for ${vars.goalAction}`,
+        title: `At ${vars.startTime}: Hand materials for ${vars.goalObject}`,
         description: getSmartSupporterActivationCue(vars.goalAction, vars.startTime, vars.dayOfWeek)
       },
       barrierStep: {
-        title: `Stay nearby for ${vars.goalAction} (20 min)`,
-        description: `Remain in the same room while they work on ${vars.goalAction} for 20 minutes. After 20 minutes, check in and celebrate any progress they made.`
+        title: `Stay nearby for ${vars.goalObject} (20 min)`,
+        description: `Remain in the same room while they work on ${vars.goalObject} for 20 minutes. After 20 minutes, check in and celebrate any progress they made.`
       }
     },
     attention: {
       activationStep: {
-        title: `At ${vars.startTime}: Start timer for ${vars.goalAction}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a visible 25-minute timer and say: "Work on ${vars.goalAction} until this rings."`
+        title: `At ${vars.startTime}: Start timer for ${vars.goalObject}`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, set a visible 25-minute timer and say: "Work on ${vars.goalObject} until this rings."`
       },
       barrierStep: {
-        title: `Check in after ${vars.goalAction} session`,
-        description: `When the 25-minute timer rings, check in with them about ${vars.goalAction}. Make sure they take a 5-minute movement break before continuing.`
+        title: `Check in after ${vars.goalObject} session`,
+        description: `When the 25-minute timer rings, check in with them about ${vars.goalObject}. Make sure they take a 5-minute movement break before continuing.`
       }
     },
     planning: {
       activationStep: {
-        title: `At ${vars.startTime}: Provide materials to plan ${vars.goalAction}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them paper and pen to plan ${vars.goalAction}.`
+        title: `At ${vars.startTime}: Provide materials to plan ${vars.goalObject}`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, hand them paper and pen to plan ${vars.goalObject}.`
       },
       barrierStep: {
-        title: `Help break down ${vars.goalAction} into steps`,
-        description: `Sit with them for 20 minutes to help write and number 3 smaller steps for ${vars.goalAction}. Ask guiding questions like "What needs to happen first?" but let them decide.`
+        title: `Help break down ${vars.goalObject} into steps`,
+        description: `Sit with them for 20 minutes to help write and number 3 smaller steps for ${vars.goalObject}. Ask guiding questions like "What needs to happen first?" but let them decide.`
       }
     },
     time: {
       activationStep: {
-        title: `At ${vars.startTime}: Set timer for ${vars.goalAction}`,
-        description: `At ${vars.startTime} on ${vars.dayOfWeek}, help them set a 20-minute timer for ${vars.goalAction}.`
+        title: `At ${vars.startTime}: Set timer for ${vars.goalObject}`,
+        description: `At ${vars.startTime} on ${vars.dayOfWeek}, help them set a 20-minute timer for ${vars.goalObject}.`
       },
       barrierStep: {
-        title: `Monitor ${vars.goalAction} and celebrate progress`,
-        description: `Check in when the timer rings after 20 minutes of ${vars.goalAction}. Celebrate what they completed and help them take a 5-minute break before the next work session.`
+        title: `Monitor ${vars.goalObject} and celebrate progress`,
+        description: `Check in when the timer rings after 20 minutes of ${vars.goalObject}. Celebrate what they completed and help them take a 5-minute break before the next work session.`
       }
     },
   };
