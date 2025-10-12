@@ -6,6 +6,91 @@ import { AlertCircle, Users, Calendar } from 'lucide-react';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal } from '@/types';
 
+// Helper to get context-aware prerequisite suggestions
+function getPrerequisiteSuggestions(goalTitle: string, goalDomain?: string): string[] {
+  const titleLower = goalTitle.toLowerCase();
+  
+  // Study/learning goals
+  if (titleLower.includes('study') || titleLower.includes('homework') || 
+      titleLower.includes('read') || titleLower.includes('learn') || 
+      titleLower.includes('research')) {
+    return [
+      'Clear a quiet workspace',
+      'Charge laptop or gather materials',
+      'Set phone to Do Not Disturb'
+    ];
+  }
+  
+  // Exercise/fitness goals
+  if (titleLower.includes('exercise') || titleLower.includes('workout') || 
+      titleLower.includes('run') || titleLower.includes('walk') || 
+      titleLower.includes('gym') || goalDomain === 'health') {
+    return [
+      'Layout workout clothes the night before',
+      'Set out water bottle and shoes',
+      'Prepare gym bag'
+    ];
+  }
+  
+  // Cooking/meal goals
+  if (titleLower.includes('cook') || titleLower.includes('meal') || 
+      titleLower.includes('recipe') || titleLower.includes('dinner')) {
+    return [
+      'Check you have all ingredients',
+      'Clear counter space',
+      'Thaw frozen items in advance'
+    ];
+  }
+  
+  // Creative/practice goals
+  if (titleLower.includes('practice') || titleLower.includes('draw') || 
+      titleLower.includes('write') || titleLower.includes('paint') || 
+      titleLower.includes('instrument')) {
+    return [
+      'Set up materials in your workspace',
+      'Ensure instrument is tuned/charged',
+      'Clear space for creative work'
+    ];
+  }
+  
+  // Cleaning/organizing goals
+  if (titleLower.includes('clean') || titleLower.includes('organize') || 
+      titleLower.includes('tidy') || titleLower.includes('declutter')) {
+    return [
+      'Gather cleaning supplies',
+      'Have trash bags ready',
+      'Play motivating music'
+    ];
+  }
+  
+  // Job/career goals
+  if (titleLower.includes('interview') || titleLower.includes('resume') || 
+      titleLower.includes('job') || goalDomain === 'employment') {
+    return [
+      'Update resume with recent achievements',
+      'Prepare professional outfit',
+      'Research the company/role'
+    ];
+  }
+  
+  // Social/communication goals
+  if (titleLower.includes('call') || titleLower.includes('reach out') || 
+      titleLower.includes('contact') || titleLower.includes('friend')) {
+    return [
+      'Save their contact info',
+      'Note conversation topics',
+      'Find a quiet time/place'
+    ];
+  }
+  
+  // Default generic suggestions
+  return [
+    'Prepare materials needed',
+    'Clear your workspace',
+    'Set a reminder'
+  ];
+}
+
 interface GoalFactorSummaryProps {
   goal: Goal;
   wizardContext?: any;
@@ -125,10 +210,15 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               ) : (
                 <div className="text-muted-foreground italic text-sm">
                   <p className="font-medium text-foreground mb-1">None set</p>
-                  <p className="flex items-start gap-2">
-                    <span className="text-base">💭</span>
-                    <span>Consider simple prep like "Layout clothes the night before"</span>
-                  </p>
+                  <div className="space-y-1.5 mt-2">
+                    <p className="text-xs font-medium text-muted-foreground">💭 Consider:</p>
+                    {getPrerequisiteSuggestions(goal.title, goal.domain).map((suggestion, idx) => (
+                      <p key={idx} className="flex items-start gap-2 text-xs">
+                        <span>•</span>
+                        <span>{suggestion}</span>
+                      </p>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
