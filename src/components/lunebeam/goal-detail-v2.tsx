@@ -280,10 +280,24 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     setGenerationError(false);
     
     // Add timeout: If generation takes more than 2 minutes, abort
-    const timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(async () => {
       console.error('Step generation timed out after 2 minutes');
       setGeneratingSteps(false);
       setGenerationError(true);
+      
+      // Persist failure state
+      await supabase
+        .from('goals')
+        .update({ 
+          metadata: {
+            ...goal?.metadata,
+            generationStatus: 'failed',
+            generationError: 'Generation timed out after 2 minutes',
+            failedAt: new Date().toISOString()
+          } as any
+        })
+        .eq('id', goal!.id);
+      
       toast({
         title: "Generation Timeout",
         description: "Step generation is taking too long. Please try again or contact support.",
@@ -333,7 +347,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       const isHabitGoal = goal!.frequency_per_week && goal!.frequency_per_week > 0;
       
       const occurrenceDates: Date[] = [];
+      // Normalize baseStartDate to midnight to ensure proper day-of-week comparisons
       const baseStartDate = new Date(wizardData.startDate);
+      baseStartDate.setHours(0, 0, 0, 0);
       const startTime = wizardData.customTime || wizardData.timeOfDay || '08:00';
       const [startHour, startMin] = startTime.split(':').map(Number);
       
@@ -416,6 +432,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       console.log(`Generating steps for ${occurrenceDates.length} days...`);
       console.log('Occurrence dates:', occurrenceDates.map(d => format(d, 'EEE MMM d, yyyy HH:mm')));
       console.log('Selected days from wizard:', (wizardData as any).selectedDays);
+      console.log('Base start date (normalized):', format(baseStartDate, 'EEE MMM d, yyyy HH:mm'));
       console.log('Goal date range:', {
         start: format(new Date(goal!.start_date), 'MMM d, yyyy'),
         end: goal!.due_date ? format(new Date(goal!.due_date), 'MMM d, yyyy') : 'no end date'
@@ -425,13 +442,38 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       const lastOccurrenceDate = occurrenceDates[occurrenceDates.length - 1];
       const goalDueDateObj = goal!.due_date ? new Date(goal!.due_date) : null;
       
-      if (goalDueDateObj && lastOccurrenceDate > goalDueDateObj) {
-        console.error('Goal due date is too early for all planned occurrences');
-        const daysDifference = Math.ceil((lastOccurrenceDate.getTime() - new Date(goal!.start_date).getTime()) / (1000 * 60 * 60 * 24));
-        throw new Error(
-          `Goal due date (${format(goalDueDateObj, 'MMM d, yyyy')}) is before the last planned occurrence (${format(lastOccurrenceDate, 'MMM d, yyyy')}). ` +
-          `Please extend the goal duration to at least ${daysDifference} days.`
-        );
+      // Create end-of-day version of due date for comparison
+      const goalDueDateEnd = goalDueDateObj ? new Date(goalDueDateObj) : null;
+      if (goalDueDateEnd) {
+        goalDueDateEnd.setHours(23, 59, 59, 999);
+        console.log('Goal due date (end-of-day):', format(goalDueDateEnd, 'EEE MMM d, yyyy HH:mm'));
+      }
+      
+      // Graceful trimming: if occurrences extend past end date, trim them
+      if (goalDueDateEnd && lastOccurrenceDate > goalDueDateEnd) {
+        const originalCount = occurrenceDates.length;
+        const trimmedDates = occurrenceDates.filter(d => d <= goalDueDateEnd);
+        
+        console.log(`Trimming occurrences: ${originalCount} → ${trimmedDates.length} (${originalCount - trimmedDates.length} sessions after end date)`);
+        
+        if (trimmedDates.length === 0) {
+          // No valid occurrences remain after trimming
+          const selectedDayNames = ((wizardData as any).selectedDays || []).map((d: string) => d.toUpperCase()).join(', ');
+          throw new Error(
+            `No ${selectedDayNames} days occur between ${format(baseStartDate, 'MMM d, yyyy')} and ${format(goalDueDateEnd, 'MMM d, yyyy')}. Please extend your end date or adjust selected days.`
+          );
+        }
+        
+        // Update occurrenceDates array
+        occurrenceDates.length = 0;
+        occurrenceDates.push(...trimmedDates);
+        
+        // Show toast about trimmed sessions
+        toast({
+          title: "Schedule Adjusted",
+          description: `${originalCount - trimmedDates.length} session${originalCount - trimmedDates.length > 1 ? 's' : ''} fell after your end date and ${originalCount - trimmedDates.length > 1 ? 'were' : 'was'} skipped. Generating ${trimmedDates.length} sessions.`,
+          duration: 5000
+        });
       }
       
       // Generate and save steps for each occurrence with retry logic
@@ -721,7 +763,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         })
         .eq('id', goal!.id);
     } finally {
+      clearTimeout(timeoutId);
       setGeneratingSteps(false);
+      setGenerationProgress(null);
     }
   };
 
