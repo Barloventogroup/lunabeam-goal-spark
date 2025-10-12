@@ -67,6 +67,13 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   }, [goalId]);
 
   useEffect(() => {
+    // Trigger daily generation check for habit goals
+    if (goal) {
+      triggerDailyGeneration();
+    }
+  }, [goal?.id]);
+
+  useEffect(() => {
     // Auto-generate steps for new goals with stale detection
     const status = (goal as any)?.metadata?.generationStatus;
     const startedAt = (goal as any)?.metadata?.startedAt;
@@ -224,6 +231,50 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       actionable: totalCompletableItems,
       percent: totalCompletableItems > 0 ? Math.round((completedItems / totalCompletableItems) * 100) : 0
     };
+  };
+
+  const triggerDailyGeneration = async () => {
+    if (!goal?.id) return;
+    
+    const metadata = (goal as any)?.metadata;
+    const isHabitGoal = goal.frequency_per_week && goal.frequency_per_week > 0;
+    
+    // Only trigger for habit goals with planned occurrences
+    if (!isHabitGoal || !metadata?.plannedOccurrences) return;
+    
+    const lastChecked = metadata?.lastGenerationCheck;
+    const now = new Date();
+    
+    // Only check at most twice per day
+    if (lastChecked) {
+      const lastCheckedDate = new Date(lastChecked);
+      const hoursSince = (now.getTime() - lastCheckedDate.getTime()) / (1000 * 60 * 60);
+      if (hoursSince < 12) return;
+    }
+    
+    console.log('Triggering daily generation check for goal:', goal.id);
+    
+    // Update last check time
+    await supabase
+      .from('goals')
+      .update({
+        metadata: {
+          ...metadata,
+          lastGenerationCheck: now.toISOString()
+        } as any
+      })
+      .eq('id', goal.id);
+    
+    // Trigger generation (fire and forget, don't block UI)
+    const { dailyStepsGenerator } = await import('@/services/dailyStepsGenerator');
+    dailyStepsGenerator.generateNextDaySteps(goal.id)
+      .then(result => {
+        if (result.daysGenerated > 0) {
+          console.log(`Generated ${result.daysGenerated} days for goal ${goal.id}`);
+          loadGoalData(); // Reload to show new steps
+        }
+      })
+      .catch(err => console.error('Daily generation failed:', err));
   };
 
   const loadGoalData = async () => {
@@ -608,11 +659,32 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         });
       }
       
+      // For habit goals, only generate first day initially
+      const daysToGenerate = isHabitGoal ? Math.min(1, occurrenceDates.length) : occurrenceDates.length;
+      
+      console.log(`Habit goal: ${isHabitGoal}, generating ${daysToGenerate} of ${occurrenceDates.length} total occurrences`);
+      
+      // Store all occurrence dates in metadata for future generation
+      if (isHabitGoal && occurrenceDates.length > 1) {
+        await supabase
+          .from('goals')
+          .update({
+            metadata: {
+              ...goal?.metadata,
+              plannedOccurrences: occurrenceDates.map(d => d.toISOString()),
+              lastGeneratedOccurrenceIndex: -1, // Will be 0 after first day
+              totalPlannedOccurrences: occurrenceDates.length,
+              wizardContext: goalMetadata.wizardContext // Preserve for future generation
+            } as any
+          })
+          .eq('id', goal!.id);
+      }
+      
       // Generate and save steps for each occurrence with retry logic
       let successfulDays = 0;
       let failedDays: { day: number; date: Date; error: string }[] = [];
       
-      for (let dayIndex = 0; dayIndex < occurrenceDates.length; dayIndex++) {
+      for (let dayIndex = 0; dayIndex < daysToGenerate; dayIndex++) {
         const occurrenceDate = occurrenceDates[dayIndex];
         setGenerationProgress({ current: dayIndex + 1, total: occurrenceDates.length });
         console.log(`Generating steps for day ${dayIndex + 1} of ${occurrenceDates.length}...`);
@@ -806,8 +878,21 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         
         successfulDays++;
         
+        // Update lastGeneratedOccurrenceIndex
+        if (isHabitGoal) {
+          await supabase
+            .from('goals')
+            .update({
+              metadata: {
+                ...(goal?.metadata as any),
+                lastGeneratedOccurrenceIndex: dayIndex
+              } as any
+            })
+            .eq('id', goal!.id);
+        }
+        
         // Add small delay between days to avoid overwhelming the edge function
-        if (dayIndex < occurrenceDates.length - 1) {
+        if (dayIndex < daysToGenerate - 1) {
           await new Promise(resolve => setTimeout(resolve, 500));
         }
         
@@ -884,7 +969,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       
       toast({
         title: "Micro-steps ready! 🎯",
-        description: "Your personalized steps have been generated."
+        description: isHabitGoal && occurrenceDates.length > 1
+          ? `Day 1 steps generated! Steps for the remaining ${occurrenceDates.length - 1} days will be generated automatically.`
+          : "Your personalized steps have been generated."
       });
       
     } catch (error: any) {
@@ -1047,6 +1134,13 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 <Badge variant="outline" className="text-xs">
                   <UserCheck className="h-3 w-3 mr-1" />
                   Created by {creatorProfile.first_name}
+                </Badge>
+              )}
+              
+              {/* Habit goal generation status */}
+              {goal.frequency_per_week && goal.frequency_per_week > 0 && (goal as any)?.metadata?.totalPlannedOccurrences && (
+                <Badge variant="secondary" className="text-xs">
+                  Day {Math.floor(steps.length / 4)} of {(goal as any).metadata.totalPlannedOccurrences} generated
                 </Badge>
               )}
             </div>
