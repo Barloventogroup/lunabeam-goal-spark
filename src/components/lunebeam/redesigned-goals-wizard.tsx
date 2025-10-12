@@ -411,7 +411,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [selectedCategoryDetails, setSelectedCategoryDetails] = useState<any>(null);
   const [canAssignDirectly, setCanAssignDirectly] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [actionCue, setActionCue] = useState<string>('');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -480,18 +479,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       }
     }
   }, [actuallySupportsAnyone, currentStep]);
-
-  // Generate action cue when arriving at final step
-  useEffect(() => {
-    const steps = actuallySupportsAnyone ? 
-      [0, 1, 2, 3, 4, 5, 6, 7, 8] : 
-      [1, 2, 3, 4, 5, 6, 7, 8];
-    const lastStepIndex = steps[steps.length - 1];
-    
-    if (currentStep === lastStepIndex && !actionCue && data.goalTitle && data.challengeAreas && data.challengeAreas.length > 0) {
-      setActionCue(generateActionCue());
-    }
-  }, [currentStep, data.goalTitle, data.challengeAreas, actionCue, actuallySupportsAnyone]);
 
   // Validate dates whenever they change
   useEffect(() => {
@@ -968,7 +955,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           metadata: {
             generationStatus: 'queued',
             generationQueuedAt: new Date().toISOString(),
-            actionCue: actionCue,
             wizardContext: {
               goalTitle: data.goalTitle,
               goalMotivation: data.goalMotivation,
@@ -1108,61 +1094,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return description;
   };
 
-  const generateActionCue = (): string => {
-    const primaryBarrier = data.challengeAreas?.[0];
-    const goalTitle = data.goalTitle || 'this task';
-    
-    // Category-specific cues based on barrier type
-    const cueTemplates: Record<string, Record<string, string>> = {
-      'independent_living': {
-        'initiation': `Go to where you'll work, pick up one item you'll need, and place it in your starting position.`,
-        'attention': `Clear your workspace and remove any distractions within arm's reach.`,
-        'planning': `Write down the first 3 items you'll need on a sticky note and place it where you'll work.`,
-        'time': `Set a timer for 5 minutes and place it next to your workspace.`
-      },
-      'health': {
-        'initiation': `Put on or lay out the first piece of equipment or clothing you'll need.`,
-        'attention': `Go to your practice space and take 3 deep breaths.`,
-        'planning': `Open your calendar and mark the time you'll start.`,
-        'time': `Set a reminder on your phone for your next session.`
-      },
-      'education': {
-        'initiation': `Open your study materials and place them in front of you.`,
-        'attention': `Clear your workspace and keep only what you need in front of you.`,
-        'planning': `Write the first step on the top of a blank page.`,
-        'time': `Check your schedule and write down when you'll work on this today.`
-      },
-      'employment': {
-        'initiation': `Gather the materials you'll need and place them on your desk.`,
-        'attention': `Turn off notifications and close unnecessary tabs before starting.`,
-        'planning': `List the 3 most important tasks in order of priority.`,
-        'time': `Block 30 minutes in your calendar for focused work.`
-      },
-      'social_skills': {
-        'initiation': `Write down one specific thing you'll say or do in your next interaction.`,
-        'attention': `Find a quiet space and practice saying your greeting out loud once.`,
-        'planning': `Choose the exact time and place where you'll practice.`,
-        'time': `Set a daily reminder for when you'll work on this.`
-      },
-      'postsecondary': {
-        'initiation': `Open the application or materials and review the first section.`,
-        'attention': `Close all distracting apps and set your phone aside.`,
-        'planning': `Make a list of the 3 main steps needed to complete this.`,
-        'time': `Schedule a 45-minute block in your calendar.`
-      },
-      'fun_recreation': {
-        'initiation': `Get your equipment and place it in your practice area.`,
-        'attention': `Find a comfortable spot and take a moment to visualize yourself enjoying this activity.`,
-        'planning': `Write down what you want to accomplish in today's session.`,
-        'time': `Set a reminder for your next practice time.`
-      }
-    };
-    
-    // Get cue based on category and barrier, with fallback
-    const categoryCues = cueTemplates[data.category || ''] || cueTemplates['independent_living'];
-    return categoryCues[primaryBarrier || 'initiation'] || 
-      `Take a moment to prepare the space where you'll work.`;
-  };
   const mapCategoryToDomain = (categoryId?: string) => {
     const mapping: Record<string, GoalDomain> = {
       'health': 'health',
@@ -2361,19 +2292,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </div>
               </CardContent>
             </Card>
-          </div>
-
-          {/* Action Cue - Compact */}
-          <div className="space-y-2">
-            <h3 className="text-base font-semibold flex items-center gap-2">
-              <span>🚀</span>
-              <span>First Step</span>
-            </h3>
-            
-            <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">➡️ Action Cue:</p>
-              <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">{actionCue}</p>
-            </div>
           </div>
 
           {/* Proposal notice */}
