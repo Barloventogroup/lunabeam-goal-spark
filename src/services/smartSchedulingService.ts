@@ -267,6 +267,46 @@ export const smartSchedulingService = {
       return { scheduledTime: '', success: false };
     }
 
+    // DEDUPLICATION CHECK: See if steps already exist for tomorrow
+    const tomorrowDateStr = nextDate.toISOString().split('T')[0];
+    const { data: existingSteps } = await supabase
+      .from('steps')
+      .select('id, title')
+      .eq('goal_id', goalId)
+      .gte('due_date', tomorrowDateStr)
+      .lt('due_date', new Date(nextDate.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+    
+    if (existingSteps && existingSteps.length > 0) {
+      console.log('Steps already exist for tomorrow, skipping creation');
+      return { scheduledTime: '', success: false };
+    }
+
+    // Check if we've already created the maximum planned steps for this habit goal
+    if (goal.frequency_per_week && goal.duration_weeks) {
+      const totalPlannedSteps = goal.frequency_per_week * goal.duration_weeks;
+      const { data: allSteps, count } = await supabase
+        .from('steps')
+        .select('id', { count: 'exact' })
+        .eq('goal_id', goalId)
+        .eq('is_supporter_step', false);
+      
+      // Each occurrence creates multiple microsteps, but we count the completion steps
+      // to determine how many "sessions" have been created
+      const { data: completionSteps } = await supabase
+        .from('steps')
+        .select('id')
+        .eq('goal_id', goalId)
+        .eq('is_supporter_step', false)
+        .ilike('title', '%Complete:%');
+      
+      const sessionsCreated = completionSteps?.length || 0;
+      
+      if (sessionsCreated >= totalPlannedSteps) {
+        console.log(`Already created ${sessionsCreated} sessions out of ${totalPlannedSteps} planned, skipping`);
+        return { scheduledTime: '', success: false };
+      }
+    }
+
     // Get wizard context for timing
     const metadata = (goal as any).metadata?.wizardContext;
     const startTime = metadata?.customTime || metadata?.timeOfDay || '08:00';
@@ -275,7 +315,6 @@ export const smartSchedulingService = {
     nextDate.setHours(hour, min || 0, 0, 0);
 
     // Generate tomorrow's microsteps (reuse existing wizard context)
-    // For simplicity, we'll use the same microstep pattern
     try {
       const { generateMicroStepsSmart } = await import('./microStepsGenerator');
       
@@ -368,6 +407,7 @@ export const smartSchedulingService = {
         minute: '2-digit' 
       });
 
+      console.log(`Successfully scheduled ${savedSteps.length} steps for tomorrow at ${scheduledTimeFormatted}`);
       return { scheduledTime: scheduledTimeFormatted, success: true };
     } catch (error) {
       console.error('Failed to schedule next occurrence:', error);
