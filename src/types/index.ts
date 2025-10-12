@@ -89,6 +89,15 @@ export interface Goal {
   goal_completion_bonus?: number;
   total_possible_points?: number;
   earned_points?: number;
+  
+  // Metadata for generation tracking
+  metadata?: {
+    generation_incomplete?: boolean;
+    failed_days?: Array<{ day: number; date: Date; error: string }>;
+    successful_days?: number;
+    total_expected_days?: number;
+    [key: string]: any;
+  };
 }
 
 export interface StepFeedback {

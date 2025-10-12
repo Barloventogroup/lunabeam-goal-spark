@@ -58,6 +58,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const [creatorProfile, setCreatorProfile] = useState<any>(null);
   const [generatingSteps, setGeneratingSteps] = useState(false);
   const [generationError, setGenerationError] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
   const [isViewerSupporter, setIsViewerSupporter] = useState(false);
   const { toast } = useToast();
 
@@ -350,19 +351,53 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         );
       }
       
-      // Generate and save steps for each occurrence
+      // Generate and save steps for each occurrence with retry logic
+      let successfulDays = 0;
+      let failedDays: { day: number; date: Date; error: string }[] = [];
+      
       for (let dayIndex = 0; dayIndex < occurrenceDates.length; dayIndex++) {
         const occurrenceDate = occurrenceDates[dayIndex];
+        setGenerationProgress({ current: dayIndex + 1, total: occurrenceDates.length });
         console.log(`Generating steps for day ${dayIndex + 1} of ${occurrenceDates.length}...`);
         
-        // Update enriched data with this occurrence's date
-        const dailyEnrichedData = {
-          ...enrichedData,
-          startDate: occurrenceDate,
-          supporterName: wizardData.primarySupporterName
-        };
-        
-        const individualSteps = await generateMicroStepsSmart(dailyEnrichedData, 'individual');
+        try {
+          // Update enriched data with this occurrence's date
+          const dailyEnrichedData = {
+            ...enrichedData,
+            startDate: occurrenceDate,
+            supporterName: wizardData.primarySupporterName
+          };
+          
+          // Retry logic for robust generation
+          let retryCount = 0;
+          const maxRetries = 3;
+          let generationSuccess = false;
+          let individualSteps: any[] = [];
+          
+          while (retryCount < maxRetries && !generationSuccess) {
+            try {
+              individualSteps = await generateMicroStepsSmart(dailyEnrichedData, 'individual');
+              
+              if (!individualSteps || individualSteps.length === 0) {
+                throw new Error('No steps returned from generation');
+              }
+              
+              generationSuccess = true;
+              
+            } catch (error: any) {
+              retryCount++;
+              console.error(`Attempt ${retryCount}/${maxRetries} failed for day ${dayIndex + 1}:`, error);
+              
+              if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+                console.log(`Rate limited. Waiting 5 seconds before retry ${retryCount}...`);
+                await new Promise(resolve => setTimeout(resolve, 5000));
+              } else if (retryCount >= maxRetries) {
+                throw error;
+              } else {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+              }
+            }
+          }
         
         // Save individual steps with timing and dependencies
         const savedIndividualSteps: any[] = [];
@@ -496,6 +531,63 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
             // No dependencies set - supporter steps are independent but contextually timed
           }
         }
+        
+        successfulDays++;
+        
+        // Add small delay between days to avoid overwhelming the edge function
+        if (dayIndex < occurrenceDates.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
+      } catch (outerError: any) {
+        console.error(`Failed to generate steps for day ${dayIndex + 1}:`, outerError);
+        failedDays.push({
+          day: dayIndex + 1,
+          date: occurrenceDate,
+          error: outerError.message || 'Unknown error'
+        });
+      }
+      }
+      
+      // Post-generation validation
+      console.log(`Generation complete: ${successfulDays}/${occurrenceDates.length} days successful`);
+      setGenerationProgress({ current: 0, total: 0 });
+      
+      if (failedDays.length > 0) {
+        console.error('Failed to generate steps for the following days:', failedDays);
+        
+        await supabase
+          .from('goals')
+          .update({ 
+            metadata: {
+              ...goal?.metadata as any,
+              generation_incomplete: true,
+              failed_days: failedDays.map(f => ({ ...f, date: f.date.toISOString() })),
+              successful_days: successfulDays,
+              total_expected_days: occurrenceDates.length
+            } as any
+          })
+          .eq('id', goal!.id);
+        
+        toast({
+          title: "⚠️ Partial Step Generation",
+          description: `Generated steps for ${successfulDays} of ${occurrenceDates.length} days. ${failedDays.length} days failed.`,
+          variant: "destructive"
+        });
+      } else if (successfulDays < occurrenceDates.length) {
+        console.warn(`Only ${successfulDays} of ${occurrenceDates.length} days generated`);
+        
+        await supabase
+          .from('goals')
+          .update({ 
+            metadata: {
+              ...goal?.metadata as any,
+              generation_incomplete: true,
+              successful_days: successfulDays,
+              total_expected_days: occurrenceDates.length
+            } as any
+          })
+          .eq('id', goal!.id);
       }
       
       // Reload steps
@@ -533,7 +625,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
   return (
     <div className="min-h-screen bg-background px-4 py-6 space-y-6">
-      {/* Loading overlay for step generation */}
+      {/* Loading overlay for step generation with progress */}
       {generatingSteps && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <Card className="w-80">
@@ -541,9 +633,15 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
               <div>
                 <h3 className="font-semibold text-lg">Creating your micro-steps</h3>
-                <p className="text-sm text-muted-foreground mt-2">
-                  🎯 Personalizing your journey...
-                </p>
+                {generationProgress.total > 0 ? (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Day {generationProgress.current} of {generationProgress.total}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    🎯 Personalizing your journey...
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

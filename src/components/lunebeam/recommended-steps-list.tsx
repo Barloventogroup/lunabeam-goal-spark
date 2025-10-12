@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, Plus, MoreHorizontal, Edit, Hourglass, Play } from 'lucide-react';
+import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, Plus, MoreHorizontal, Edit, Hourglass, Play, AlertCircle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -100,6 +100,12 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   // const [showFireworks, setShowFireworks] = useState(false);
   // const [showSuccessCheck, setShowSuccessCheck] = useState(false);
   const { toast } = useToast();
+  
+  // Check for incomplete generation
+  const generationIncomplete = (goal.metadata as any)?.generation_incomplete === true;
+  const failedDays = (goal.metadata as any)?.failed_days || [];
+  const successfulDays = (goal.metadata as any)?.successful_days || 0;
+  const totalExpectedDays = (goal.metadata as any)?.total_expected_days || 0;
 
   // Fetch substeps for all steps
   useEffect(() => {
@@ -340,9 +346,16 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       // setShowSuccessCheck(true);
       // setTimeout(() => setShowSuccessCheck(false), 2000);
 
-      // Check if all planned steps are complete and handle goal completion logic
-      const remainingPlanned = updatedSteps.filter(s => s.is_planned && s.status !== 'done');
-      const allPlannedComplete = remainingPlanned.length === 0;
+      // Check if all planned steps are complete - use EXPECTED count, not existing count
+      const isHabitGoal = goal.frequency_per_week && goal.frequency_per_week > 0;
+      const expectedPlannedSteps = isHabitGoal 
+        ? (goal.frequency_per_week * (goal.duration_weeks || 4))
+        : 1;
+      
+      const completedPlanned = updatedSteps.filter(s => s.is_planned && s.status === 'done').length;
+      const allPlannedComplete = completedPlanned >= expectedPlannedSteps;
+      
+      console.log(`Completion check: ${completedPlanned}/${expectedPlannedSteps} planned steps done, generation incomplete: ${generationIncomplete}`);
       
       // Check if goal is at or past its due date
       const today = new Date();
@@ -350,7 +363,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       const goalDueDate = goal.due_date ? new Date(goal.due_date) : null;
       const isAtOrPastEnd = goalDueDate ? today >= goalDueDate : false;
       
-      if (allPlannedComplete && isAtOrPastEnd) {
+      if (allPlannedComplete && isAtOrPastEnd && !generationIncomplete) {
         // Mark goal as completed
         await supabase
           .from('goals')
@@ -849,6 +862,23 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
 
   return (
     <>
+      {/* Incomplete generation warning banner */}
+      {generationIncomplete && (
+        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <h4 className="font-semibold text-yellow-800">Incomplete Step Generation</h4>
+              <p className="text-sm text-yellow-700 mt-1">
+                Only {successfulDays} of {totalExpectedDays} days were generated successfully.
+                {failedDays.length > 0 && ` ${failedDays.length} days failed.`}
+                {' '}Please try recreating this goal or contact support.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <Card>
         <CardHeader className="pb-4">
           <div className="space-y-2">
