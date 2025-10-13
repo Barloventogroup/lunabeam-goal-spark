@@ -24,6 +24,12 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  suggestedSubstep?: {
+    title: string;
+    description: string;
+    step_id: string;
+    is_planned: boolean;
+  };
 }
 
 export const StepChatModal: React.FC<StepChatModalProps> = ({
@@ -196,26 +202,15 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
         setIrrelevanceCount(data.irrelevance_count);
       }
 
-      // Add assistant message
+      // Add assistant message with optional substep suggestion
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
         content: data.response,
-        timestamp: new Date()
+        timestamp: new Date(),
+        suggestedSubstep: data.suggestedSubstep || undefined
       };
       setMessages(prev => [...prev, assistantMessage]);
-
-      // Check if new steps were suggested (only for RELEVANT queries)
-      if (data.suggestedSteps && data.suggestedSteps.length > 0) {
-        toast({
-          title: "New sub-steps suggested!",
-          description: `I've suggested ${data.suggestedSteps.length} additional steps to help break this down.`
-        });
-
-        if (onStepsUpdate) {
-          onStepsUpdate(data.suggestedSteps);
-        }
-      }
 
     } catch (error) {
       console.error('Error getting step assistance:', error);
@@ -226,6 +221,51 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddSubstep = async (substep: any) => {
+    if (!substep) return;
+    
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('substeps')
+        .insert({
+          step_id: substep.step_id,
+          title: substep.title,
+          description: substep.description,
+          is_planned: false
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Substep Added!",
+        description: `"${substep.title}" has been added to your plan.`,
+        variant: "default"
+      });
+
+      // Add confirmation message to chat
+      const confirmMessage: ChatMessage = {
+        id: `confirm-${Date.now()}`,
+        role: 'assistant',
+        content: `✅ Added "${substep.title}" to your plan! Would you like me to suggest another substep to break this down further?`,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, confirmMessage]);
+
+    } catch (error) {
+      console.error('Error adding substep:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add substep. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -429,25 +469,56 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                     message.role === 'user' ? 'justify-end' : 'justify-start'
                   }`}
                 >
-                  {message.role === 'assistant' && (
-                     <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                       <span className="text-white text-xs font-normal">L</span>
-                     </div>
-                  )}
-                   <div
-                     className={`max-w-[80%] p-2 rounded-lg text-sm ${
-                       message.role === 'user'
-                         ? 'bg-primary text-primary-foreground ml-auto'
-                         : 'bg-muted'
-                     }`}
-                     style={{ whiteSpace: 'pre-line' }}
-                   >
-                    {stripMarkup(message.content)}
-                  </div>
-                  {message.role === 'user' && (
-                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                      <User className="h-3 w-3" />
-                    </div>
+                  {message.role === 'assistant' && message.suggestedSubstep ? (
+                    // Special rendering for substep suggestions
+                    <>
+                      <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-normal">L</span>
+                      </div>
+                      <div className="max-w-[80%] flex flex-col gap-2">
+                        {message.content && (
+                          <div className="bg-muted p-2 rounded-lg text-sm" style={{ whiteSpace: 'pre-line' }}>
+                            {stripMarkup(message.content)}
+                          </div>
+                        )}
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <h4 className="font-semibold text-sm mb-1">{message.suggestedSubstep.title}</h4>
+                          <p className="text-xs text-muted-foreground mb-2">{message.suggestedSubstep.description}</p>
+                          <Button 
+                            onClick={() => handleAddSubstep(message.suggestedSubstep)}
+                            size="sm"
+                            className="w-full"
+                            disabled={isLoading}
+                          >
+                            Add to Plan
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    // Regular message rendering
+                    <>
+                      {message.role === 'assistant' && (
+                        <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-xs font-normal">L</span>
+                        </div>
+                      )}
+                      <div
+                        className={`max-w-[80%] p-2 rounded-lg text-sm ${
+                          message.role === 'user'
+                            ? 'bg-primary text-primary-foreground ml-auto'
+                            : 'bg-muted'
+                        }`}
+                        style={{ whiteSpace: 'pre-line' }}
+                      >
+                        {stripMarkup(message.content)}
+                      </div>
+                      {message.role === 'user' && (
+                        <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                          <User className="h-3 w-3" />
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               ))}

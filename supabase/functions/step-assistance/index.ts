@@ -466,53 +466,12 @@ Would you like to exit this coaching session and start fresh with a new goal?`;
     // Build context for the AI (avoid nested template literals)
     const isSubstep = !!(step.explainer && String(step.explainer).includes('This is a substep of'));
 
-    const modeLine = isSubstep
-      ? `SUBSTEP MODE: Only help with \"${step.title}\" - do not suggest breaking it down further or creating additional substeps`
-      : `MAIN STEP MODE: Focus on \"${step.title}\" - may suggest substeps if needed`;
-
-    const guidanceBlock = isSubstep
-      ? `\nSUBSTEP GUIDANCE RULES:\n- DO NOT suggest breaking \"${step.title}\" into smaller pieces\n- Provide direct, actionable advice using Executive Function scaffolding principles\n- Keep responses under 100 words\n- If they're stuck, suggest a trivial activation cue (< 15 sec physical action) followed by a timed work sprint\n`
-      : `\nMAIN STEP GUIDANCE RULES:\n
-THEORETICAL FRAMEWORK (CRITICAL):
-When suggesting sub-steps, they MUST follow the Executive Function scaffolding model (exactly 3 steps):
-
-**3-STEP STRUCTURE (MANDATORY):**
-1. PREPARATION (before work session) - Gather materials, set up workspace (no time estimate needed)
-2. ACTIVATION CUE (< 15 seconds) - Trivial physical action at specific time: touch, open, tap, grab, place, hold
-   - BANNED VERBS: search, browse, research, find, read, write, call, text, boot, login
-   - MUST include exact time (e.g., "At 8:00 PM")
-3. FOCUSED WORK (15-30 min) - Substantive work with measurable outcome
-   - Must specify minutes (never seconds)
-   - Must include clear completion criteria
-
-**FORMAT (EXACTLY 3 STEPS):**
-[SUB-STEPS]
-1. Preparation Step | Gather/prepare materials for "${step.title}" before work session
-2. Activation Step | At [HH:MM AM/PM], [trivial physical action < 15 sec] for "${step.title}"
-3. Focused Work Step | [Substantive work with measurable outcome] for [15-30] minutes (CRITICAL: MUST include "minutes" in description)
-[/SUB-STEPS]
-
-EXAMPLE:
-[SUB-STEPS]
-1. Gather Materials | By 7:00 PM, place your biology textbook, notes, and highlighter on your desk
-2. Start Work | At 7:30 PM, open your biology textbook to chapter 5
-3. Active Review | Read and highlight key concepts from chapter 5 for 25 minutes. When timer rings, stand up and stretch
-[/SUB-STEPS]
-
-ONLY suggest sub-steps if:
-- They ask for help with this step
-- They say this step feels overwhelming
-- They ask \"how do I start\" this step
-`;
-
-    const systemPrompt = `You are Luna, a helpful AI assistant designed for teenagers and young adults (16-25) working on their goals.
+    const systemPrompt = `You are Luna, a helpful AI assistant for teenagers and young adults (16-25) working on their goals.
 
 Current Goal: "${goal.title}"
-Goal Description: ${goal.description || 'No description provided'}
 Goal Domain: ${goal.domain || 'General'}
 PRIMARY BARRIER: ${goal.barrier_1 || 'Not specified'}
 SECONDARY BARRIER: ${goal.barrier_2 || 'Not specified'}
-USER MOTIVATION: ${goal.motivation || 'Not specified'}
 
 ${progressContext}
 
@@ -521,31 +480,39 @@ Step Description: ${step.notes || step.explainer || 'No description provided'}
 Estimated Time: ${step.estimated_effort_min ? `${step.estimated_effort_min} minutes` : 'Not specified'}
 
 Your communication style:
-- Be concise and focused - you have limited responses
-- Talk like a supportive friend who gets their struggles
+- Be concise and focused
+- Talk like a supportive friend
 - Use relatable examples from their world: social media, gaming, apps
-- Keep responses under 150 words when possible
+- Keep responses under 150 words
 
-Use quick analogies they'll connect with:
-- "Like organizing your phone apps"
-- "Similar to learning a new game - start simple"
-- "Think of it like creating content - plan, create, share"
+CRITICAL RULES FOR SUBSTEP SUGGESTIONS:
+1. Generate ONE substep at a time when the user asks for help breaking down this step
+2. Each substep should be:
+   - A simple, actionable task
+   - Smaller than the parent step
+   - Something they can complete in 5-30 minutes
+   - Written in natural, friendly language
+3. Format substeps using this EXACT syntax:
+   [SUBSTEP]
+   Title: [brief action-oriented title]
+   Description: [1-2 sentence explanation]
+   [/SUBSTEP]
+4. ONLY suggest ONE substep per response
+5. After suggesting a substep, ask if they want another one or if this helps
+6. Stay focused on breaking down "${step.title}" - nothing else
 
-CRITICAL RULES:
-1. ${modeLine}
-2. Analyze what they've completed to understand their progress pattern
-3. ${isSubstep ? 'Provide direct action steps for this specific substep' : 'Provide sub-steps ONLY for the current step in question'}
-4. Stay laser-focused on the current ${isSubstep ? 'substep' : 'step'}
+DO NOT:
+- Generate multiple substeps at once
+- Use rigid frameworks or templates
+- Over-explain or add motivational fluff
+- Suggest substeps that are too complex
 
 Your role is to:
-1. Answer their specific questions about THIS ${isSubstep ? 'SUBSTEP' : 'STEP'} only
-2. ${isSubstep ? 'Give direct, specific guidance for completing this substep' : 'Break down THIS STEP into smaller, manageable sub-steps'}
-3. Give practical advice for completing THIS SPECIFIC ${isSubstep ? 'SUBSTEP' : 'STEP'}
-4. Stay laser-focused on the current ${isSubstep ? 'substep' : 'step'}
+1. Answer their specific questions about THIS STEP
+2. Suggest ONE practical substep when they ask for help breaking it down
+3. Keep suggestions simple, actionable, and achievable
 
-${guidanceBlock}
-
-Be supportive but keep it brief and focused on THIS ${isSubstep ? 'SUBSTEP' : 'STEP'} ONLY.`;
+Be supportive but brief and focused on THIS STEP ONLY.`;
 
     // Prepare conversation history for context
     const history = Array.isArray(conversationHistory) ? conversationHistory : [];
@@ -577,65 +544,13 @@ Be supportive but keep it brief and focused on THIS ${isSubstep ? 'SUBSTEP' : 'S
     const data = await response.json();
     const assistantResponse = data.choices?.[0]?.message?.content || '';
 
-    // Parse potential sub-steps from the response (must be exactly 3 steps following EF framework)
-    const suggestedSteps = dedupeSubSteps(parseSubSteps(assistantResponse, step, goal));
+    // Parse potential substep from the response (expect max 1)
+    const suggestedSteps = parseSubSteps(assistantResponse, step, goal);
 
-    // Check if substeps already exist for this step
-    const existingSubsteps = await checkExistingSubsteps(step.id);
-
-    // If sub-steps were suggested, create them in the database (only if none exist)
-    let createdSteps: any[] = [];
-    if (suggestedSteps.length > 0 && existingSubsteps.length === 0) {
-      createdSteps = await createSubSteps(suggestedSteps, step, goal);
-      
-      // After successful substep generation: reset irrelevance counter and check for escalation
-      const newCooldownAttemptsTotal = cooldownState.cooldown_attempts_total;
-      
-      let shouldLock = false;
-      let newCooldownLevel = cooldownState.cooldown_level;
-      let cooldownUntil = null;
-      
-      if (newCooldownAttemptsTotal >= 6) {
-        shouldLock = true;
-        await updateCooldownState(supabase, {
-          ...cooldownState,
-          irrelevance_count: 0,
-          is_locked: true,
-          locked_at: new Date().toISOString(),
-          lock_reason: 'Exceeded 6 total cooldown attempts'
-        });
-        
-        await logCooldownEvent(supabase, userId, step.id, goal.id, 'persistent_lock_triggered', {
-          total_cooldown_attempts: newCooldownAttemptsTotal
-        });
-      } else if (newCooldownAttemptsTotal >= 3 && cooldownState.cooldown_level < 2) {
-        newCooldownLevel = 2;
-        cooldownUntil = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-        
-        await updateCooldownState(supabase, {
-          ...cooldownState,
-          irrelevance_count: 0,
-          cooldown_level: newCooldownLevel,
-          cooldown_until: cooldownUntil
-        });
-        
-        await logCooldownEvent(supabase, userId, step.id, goal.id, 'cooldown_5min_triggered', {
-          total_cooldown_attempts: newCooldownAttemptsTotal
-        });
-      } else {
-        await updateCooldownState(supabase, {
-          ...cooldownState,
-          irrelevance_count: 0
-        });
-      }
-    } else if (existingSubsteps.length > 0) {
-      console.log(`Skipping substep creation - ${existingSubsteps.length} substeps already exist for step ${step.id}`);
-      createdSteps = existingSubsteps;
-    }
-
+    // Return the substep as a SUGGESTION, don't auto-create
     return new Response(JSON.stringify({
-      response: assistantResponse.replace(/\[SUB-STEPS\][\s\S]*?\[\/SUB-STEPS\]/g, '').trim(),
-      suggestedSteps: createdSteps
+      response: assistantResponse.replace(/\[SUBSTEP\][\s\S]*?\[\/SUBSTEP\]/g, '').trim(),
+      suggestedSubstep: suggestedSteps.length > 0 ? suggestedSteps[0] : null
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -719,71 +634,41 @@ function dedupeSubSteps(list: any[]): any[] {
 }
 
 function parseSubSteps(response: string, parentStep: any, goal: any): any[] {
-  const subStepsMatch = response.match(/\[SUB-STEPS\]([\s\S]*?)\[\/SUB-STEPS\]/);
-  if (!subStepsMatch) return [];
+  // Look for [SUBSTEP] blocks instead of [SUB-STEPS]
+  const substepMatch = response.match(/\[SUBSTEP\]([\s\S]*?)\[\/SUBSTEP\]/);
+  if (!substepMatch) return [];
 
-  const subStepsText = subStepsMatch[1].trim();
-  const lines = subStepsText.split('\n').filter((line) => line.trim());
-
-  const parsedSteps = lines.map((line) => {
-    const match = line.match(/^\d+\.\s*(.+?)\s*\|\s*(.+?)(?:\s*\((\d+)\s*minutes?\))?$/);
-    if (!match) return null;
-
-    const [, title, description] = match;
-
-    return {
-      title: String(title).trim(),
-      description: String(description).trim(),
-      step_id: parentStep.id,
-      is_planned: false,
-    };
-  }).filter(Boolean);
-
-  // CRITICAL: Must have exactly 3 steps
-  if (parsedSteps.length !== 3) {
-    console.warn(`Substeps must be exactly 3 steps (got ${parsedSteps.length}) - rejecting all`);
+  const substepText = substepMatch[1].trim();
+  
+  // Parse title and description
+  const titleMatch = substepText.match(/Title:\s*(.+)/);
+  const descMatch = substepText.match(/Description:\s*(.+)/);
+  
+  if (!titleMatch || !descMatch) {
+    console.warn('Substep missing title or description');
     return [];
   }
 
-  // Validate each step against EF framework rules
-  for (let index = 0; index < parsedSteps.length; index++) {
-    const substep = parsedSteps[index];
-    
-    // Validate Step 2 (index 1) follows activation rules
-    if (index === 1) {
-      const bannedVerbs = ['search', 'browse', 'research', 'find', 'read', 'write', 'call', 'text', 'boot', 'login'];
-      const hasTimeBound = /\d{1,2}:\d{2}\s?(AM|PM)/i.test(substep.description);
-      const hasBannedVerb = bannedVerbs.some(verb => 
-        new RegExp(`\\b${verb}\\b`, 'i').test(substep.description)
-      );
-      
-      if (hasBannedVerb) {
-        console.warn(`Step 2 contains banned verb - rejecting all substeps`);
-        return [];
-      }
-      if (!hasTimeBound) {
-        console.warn(`Step 2 missing exact time anchor (HH:MM AM/PM) - rejecting all substeps`);
-        return [];
-      }
-    }
-    
-    // Validate Step 3 (index 2) is substantive work
-    if (index === 2) {
-      const hasMinutes = /\d+\s?minut/i.test(substep.description);
-      const hasSeconds = /\d+\s?seconds/i.test(substep.description);
-      
-      if (hasSeconds) {
-        console.warn(`Step 3 cannot use "seconds" - must be 15+ minutes - rejecting all substeps`);
-        return [];
-      }
-      if (!hasMinutes) {
-        console.warn(`Step 3 must specify duration in minutes - rejecting all substeps`);
-        return [];
-      }
-    }
+  const title = titleMatch[1].trim();
+  const description = descMatch[1].trim();
+  
+  // Basic validation
+  if (!title || title.length < 5 || title.length > 100) {
+    console.warn('Substep title invalid length');
+    return [];
+  }
+  
+  if (!description || description.length < 10 || description.length > 200) {
+    console.warn('Substep description invalid length');
+    return [];
   }
 
-  return parsedSteps as any[];
+  return [{
+    title,
+    description,
+    step_id: parentStep.id,
+    is_planned: false,
+  }];
 }
 
 async function createSubSteps(subSteps: any[], parentStep: any, goal: any) {
