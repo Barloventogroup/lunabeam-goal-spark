@@ -1150,18 +1150,8 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
               >
                 Show fewer steps
               </Button>
-            </div>
-          )}
-
-          <div className="flex justify-center pt-2">
-            <button
-              onClick={() => handleNeedHelp({ id: 'new', title: 'Add New Step', goal_id: goal.id } as Step)}
-              className="flex items-center gap-2 text-sm border border-primary/30 text-primary hover:bg-primary/10 px-3 py-2 rounded-md transition-colors"
-            >
-              <Plus className="h-4 w-4" />
-              Add step
-            </button>
           </div>
+          )}
         </CardContent>
 
         {/* Modals */}
