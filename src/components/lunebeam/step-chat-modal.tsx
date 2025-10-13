@@ -250,6 +250,11 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
         variant: "default"
       });
 
+      // Trigger parent reload to refresh substeps display
+      if (onStepsUpdate && step) {
+        onStepsUpdate([step]);
+      }
+
       // Add confirmation message to chat
       const confirmMessage: ChatMessage = {
         id: `confirm-${Date.now()}`,

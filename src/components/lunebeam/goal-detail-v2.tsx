@@ -60,6 +60,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const [generationError, setGenerationError] = useState(false);
   const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
   const [isViewerSupporter, setIsViewerSupporter] = useState(false);
+  const [activeTab, setActiveTab] = useState('summary');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -1233,7 +1234,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       </div>
 
       {/* Tabbed Content */}
-      <Tabs defaultValue="summary" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="summary">
             Summary
