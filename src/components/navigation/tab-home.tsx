@@ -20,6 +20,7 @@ import { useStore } from '../../store/useStore';
 import { supabase } from '../../integrations/supabase/client';
 import { useAuth } from '../auth/auth-provider';
 import { goalsService, stepsService } from '../../services/goalsService';
+import { pointsService } from '../../services/pointsService';
 import { normalizeDomainForDisplay } from '../../utils/domainUtils';
 import { getWelcomeMessage } from '../../utils/userTypeUtils';
 import confettiAnimation from '@/assets/confetti-animation.json';
@@ -44,6 +45,11 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [goalsLoaded, setGoalsLoaded] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [stepsData, setStepsData] = useState<{
+    todaysSteps: any[];
+    overdueSteps: any[];
+    upcomingSteps: any[];
+  }>({ todaysSteps: [], overdueSteps: [], upcomingSteps: [] });
 
   const { user, signOut } = useAuth();
   const {
@@ -160,7 +166,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const mockPoints = 247; // Placeholder points to match Rewards screen
 
   // Compute today's due step, overdue steps and next upcoming steps
-  const getTodaysStepsAndNext = () => {
+  const getTodaysStepsAndNext = async () => {
     const todaysSteps: Array<{ step: any; goal: Goal }> = [];
     const overdueSteps: Array<{ step: any; goal: Goal; dueDate: Date }> = [];
     const upcomingSteps: Array<{ step: any; goal: Goal; dueDate: Date }> = [];
@@ -181,11 +187,12 @@ export const TabHome: React.FC<TabHomeProps> = ({
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Start of today
 
-    goals.forEach((goal) => {
+    for (const goal of goals) {
       // Include active/planned/paused goals
       if (goal.status === 'active' || goal.status === 'planned' || goal.status === 'paused') {
         const goalSteps = steps[goal.id] || [];
-        goalSteps.forEach((step) => {
+        
+        for (const step of goalSteps) {
           allStepsDebug.push({
             goalTitle: goal.title,
             goalStatus: goal.status,
@@ -196,28 +203,59 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
           // Exclude completed or skipped steps; include others with a due date
           if (step.status !== 'done' && step.status !== 'skipped') {
-            const dueDate = normalizeDueDate(step.due_date);
-            if (dueDate && !isNaN(dueDate.getTime())) {
-              const dueDateStart = new Date(dueDate);
-              dueDateStart.setHours(0, 0, 0, 0);
-              
-              if (isToday(dueDate)) {
-                todaysSteps.push({ step, goal });
-              } else if (dueDateStart < today) {
-                // Overdue steps
-                overdueSteps.push({ step, goal, dueDate });
-              } else {
-                // Future steps
-                upcomingSteps.push({ step, goal, dueDate });
+            // Fetch substeps for this step
+            const substeps = await pointsService.getSubsteps(step.id);
+            const incompleteSubsteps = substeps.filter(sub => !sub.completed_at);
+            
+            if (incompleteSubsteps.length > 0) {
+              // Count each incomplete substep separately
+              incompleteSubsteps.forEach(substep => {
+                const dueDate = normalizeDueDate(step.due_date); // Use parent step's due date
+                if (dueDate && !isNaN(dueDate.getTime())) {
+                  const dueDateStart = new Date(dueDate);
+                  dueDateStart.setHours(0, 0, 0, 0);
+                  
+                  // Create a virtual "step" for the substep to maintain compatibility
+                  const substepAsStep = {
+                    ...step,
+                    id: substep.id,
+                    title: `→ ${substep.title}`,
+                    isSubstep: true,
+                    parentStepId: step.id
+                  };
+                  
+                  if (isToday(dueDate)) {
+                    todaysSteps.push({ step: substepAsStep, goal });
+                  } else if (dueDateStart < today) {
+                    overdueSteps.push({ step: substepAsStep, goal, dueDate });
+                  } else {
+                    upcomingSteps.push({ step: substepAsStep, goal, dueDate });
+                  }
+                }
+              });
+            } else {
+              // No substeps or all complete - count the main step
+              const dueDate = normalizeDueDate(step.due_date);
+              if (dueDate && !isNaN(dueDate.getTime())) {
+                const dueDateStart = new Date(dueDate);
+                dueDateStart.setHours(0, 0, 0, 0);
+                
+                if (isToday(dueDate)) {
+                  todaysSteps.push({ step, goal });
+                } else if (dueDateStart < today) {
+                  overdueSteps.push({ step, goal, dueDate });
+                } else {
+                  upcomingSteps.push({ step, goal, dueDate });
+                }
               }
             }
           }
-        });
+        }
       }
-    });
+    }
 
     console.log('All steps debug:', allStepsDebug);
-    overdueSteps.sort((a, b) => b.dueDate.getTime() - a.dueDate.getTime()); // Most recent overdue first
+    overdueSteps.sort((a, b) => b.dueDate.getTime() - a.dueDate.getTime());
     upcomingSteps.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
     return { 
       todaysSteps, 
@@ -226,7 +264,19 @@ export const TabHome: React.FC<TabHomeProps> = ({
     };
   };
 
-  const { todaysSteps, overdueSteps, upcomingSteps } = getTodaysStepsAndNext();
+  // Load steps data when goals change
+  useEffect(() => {
+    const loadStepsData = async () => {
+      const data = await getTodaysStepsAndNext();
+      setStepsData(data);
+    };
+    
+    if (goalsLoaded) {
+      loadStepsData();
+    }
+  }, [goalsLoaded, goals, steps]);
+
+  const { todaysSteps, overdueSteps, upcomingSteps } = stepsData;
   const todaysDueItem = todaysSteps[0] || null;
   
   console.log('TabHome debug:', { 
