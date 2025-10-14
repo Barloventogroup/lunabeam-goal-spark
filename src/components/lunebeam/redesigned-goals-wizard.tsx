@@ -791,7 +791,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     switch (currentStep) {
       case 0:
         // Who is this for (supporters only)
-        return data.recipient === 'self' || data.recipient === 'other' && data.supportedPersonId;
+        return data.recipient === 'self' || (data.recipient === 'other' && data.supportedPersonId);
       case 1:
         // Goal description
         return data.goalTitle.trim().length > 0;
@@ -988,8 +988,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           domain: mapCategoryToDomain(data.category) as GoalDomain,
           status: 'active' as const,
           priority: 'medium' as const,
-          goal_type: data.goalType === 'progressive_mastery' ? 'progressive_mastery' : undefined,
-          frequency_per_week: data.goalType === 'progressive_mastery' 
+          goal_type: (() => {
+            if (data.goalType === 'progressive_mastery') return 'practice';
+            if (data.goalType === 'reminder') return 'reminder';
+            if (data.goalType === 'practice') return 'practice';
+            if (data.goalType === 'new_skill') return 'new_skill';
+            return undefined;
+          })(),
+          frequency_per_week: data.goalType === 'progressive_mastery'
             ? data.frequency 
             : (data.goalType === 'new_skill' ? undefined : data.frequency),
           duration_weeks: pmDurationWeeks,
@@ -1089,6 +1095,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }
 
         // Only now proceed with goal creation
+        console.log('Creating goal with data:', {
+          title: goalDataWithMetadata.title,
+          goal_type: goalDataWithMetadata.goal_type,
+          wizardGoalType: data.goalType,
+          isPM: data.goalType === 'progressive_mastery'
+        });
         const createdGoal = await goalsService.createGoal(goalDataWithMetadata);
 
         // If Progressive Mastery, save additional metadata
