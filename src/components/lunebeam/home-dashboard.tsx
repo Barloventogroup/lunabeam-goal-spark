@@ -458,7 +458,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           {!hasActiveOrPlannedGoals && (
             <Card 
               className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => onNavigate('goal-wizard')}
+              onClick={() => onNavigate('add-goal')}
             >
               <CardContent className="p-6 text-center space-y-3">
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto">

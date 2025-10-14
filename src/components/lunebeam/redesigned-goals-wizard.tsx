@@ -28,6 +28,16 @@ import { progressiveMasteryService } from '@/services/progressiveMasteryService'
 import { notificationsService } from '@/services/notificationsService';
 import { addWeeks } from 'date-fns';
 import { QuestionScreen } from './question-screen';
+import {
+  PMStep2_Motivation,
+  PMStep3_Prerequisites,
+  PMStep4_Barriers,
+  PMStep5_Experience,
+  PMStep6_Confidence,
+  PMStep7_HelpNeeded,
+  PMStep8_Helper,
+  PMStep9_PracticePlan
+} from './pm-micro-steps';
 interface RedesignedGoalsWizardProps {
   onComplete: (goalData: any) => void;
   onCancel: () => void;
@@ -499,6 +509,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     goalTitle: '',
     hasPrerequisites: true,
     prerequisites: { ready: true },
+    pmAssessment: { q1_experience: 1, q2_confidence: 1, q3_help_needed: 1 },
     startDate: new Date(),
     frequency: 3,
     isMyIdea: true
@@ -3018,20 +3029,33 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </Card>
     </>;
   };
+
+  // Props for PM micro-steps
+  const pmStepProps = {
+    data,
+    updateData,
+    goNext: nextStep,
+    goBack: prevStep,
+    currentStep: currentStep || 0,
+    totalSteps: 10,
+    userSupporters,
+    currentUserId: '',
+  };
+
   const renderCurrentStep = () => {
     // Progressive Mastery flow intercepts after goal type selection
-    if (data.goalType === 'progressive_masery') {
+    if (data.goalType === 'progressive_mastery') {
       switch (currentStep) {
         case 0: return renderStep0(); // Who is this for
         case 1: return renderStep1(); // Goal description + type
-        case 2: return renderStep2(); // Motivation
-        case 3: return renderStep3(); // Prerequisites
-        case 4: return renderPMSkillName(); // PM: Skill name input
-        case 5: return renderPMSkillAssessment(); // PM: Skill assessment
-        case 6: return renderPMTargetFrequency(); // PM: Target frequency
-        case 7: return renderPMSmartStart(); // PM: Smart Start
-        case 8: return renderPMTeachingHelper(); // PM: Teaching helper
-        case 9: return renderPMDuration(); // PM: Duration
+        case 2: return <PMStep2_Motivation {...pmStepProps} />; // Motivation
+        case 3: return <PMStep3_Prerequisites {...pmStepProps} />; // Prerequisites
+        case 4: return <PMStep4_Barriers {...pmStepProps} />; // Barriers (optional)
+        case 5: return <PMStep5_Experience {...pmStepProps} />; // Experience
+        case 6: return <PMStep6_Confidence {...pmStepProps} />; // Confidence
+        case 7: return <PMStep7_HelpNeeded {...pmStepProps} />; // Help Needed + Calculate Level
+        case 8: return <PMStep8_Helper {...pmStepProps} />; // Helper Selection
+        case 9: return <PMStep9_PracticePlan {...pmStepProps} />; // Practice Plan (target + Smart Start + duration)
         case 10: return renderConfirmStep(); // PM: Summary
         default: return null;
       }
