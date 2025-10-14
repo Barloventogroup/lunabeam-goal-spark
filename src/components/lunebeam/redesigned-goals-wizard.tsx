@@ -23,6 +23,10 @@ import { PermissionsService } from '@/services/permissionsService';
 import { generateMicroStepsSmart, type MicroStep } from '@/services/microStepsGenerator';
 import type { GoalDomain } from '@/types';
 import { cleanStepTitle } from '@/utils/stepUtils';
+import { SkillAssessmentWizard } from './skill-assessment-wizard';
+import { progressiveMasteryService } from '@/services/progressiveMasteryService';
+import { notificationsService } from '@/services/notificationsService';
+import { addWeeks } from 'date-fns';
 interface RedesignedGoalsWizardProps {
   onComplete: (goalData: any) => void;
   onCancel: () => void;
@@ -100,13 +104,10 @@ const goalTypes = [{
   label: 'New Habit',
   description: 'Remember to do something regularly'
 }, {
-  id: 'practice',
-  label: 'Getting Better',
-  description: 'Improve an existing skill'
-}, {
-  id: 'new_skill',
-  label: 'Brand New Skill',
-  description: 'Learn something completely new'
+  id: 'progressive_mastery',
+  label: 'Progressive Mastery',
+  description: 'Learn with increasing independence',
+  icon: '🚀'
 }];
 
 // Experience levels
@@ -379,6 +380,14 @@ interface WizardData {
   assignReward?: boolean;
   rewardType?: string;
   pointValue?: number;
+
+  // Progressive Mastery specific fields
+  pmSkillName?: string;
+  pmSkillAssessment?: any;
+  pmTargetFrequency?: number;
+  pmSmartStartPlan?: any;
+  pmTeachingHelper?: { id: string; name: string; relationship: string };
+  pmDurationWeeks?: number | null;
 }
 interface SupportedPerson {
   id: string;
@@ -753,6 +762,25 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
 
   const canProceed = () => {
+    // Progressive Mastery flow
+    if (data.goalType === 'progressive_mastery') {
+      switch (currentStep) {
+        case 0: return data.recipient === 'self' || (data.recipient === 'other' && data.supportedPersonId);
+        case 1: return data.goalTitle.trim().length > 0;
+        case 2: return !!data.goalMotivation;
+        case 3: return true;
+        case 4: return !!data.goalType;
+        case 5: return !!data.pmSkillAssessment; // Skill assessment complete
+        case 6: return !!data.pmTargetFrequency; // Target frequency selected
+        case 7: return !!data.pmSmartStartPlan; // Smart start plan accepted
+        case 8: return true; // Teaching helper (optional)
+        case 9: return data.pmDurationWeeks !== undefined; // Duration selected
+        case 10: return true; // Ready to confirm
+        default: return false;
+      }
+    }
+
+    // Regular flow
     switch (currentStep) {
       case 0:
         // Who is this for (supporters only)
@@ -939,16 +967,27 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         const {data: {user: currentUser}} = await supabase.auth.getUser();
         const finalOwnerId = data.recipient === 'other' ? data.supportedPersonId : currentUser?.id;
         
+        // Progressive Mastery: Use PM duration and frequency
+        const pmDurationWeeks = data.goalType === 'progressive_mastery' && data.pmDurationWeeks 
+          ? data.pmDurationWeeks 
+          : durationWeeks;
+        const pmDueDate = data.goalType === 'progressive_mastery' && data.pmDurationWeeks
+          ? format(addWeeks(data.startDate, data.pmDurationWeeks), 'yyyy-MM-dd')
+          : calculatedDueDate;
+
         const goalDataWithMetadata = {
           title: data.goalTitle,
           description: buildGoalDescription(),
           domain: mapCategoryToDomain(data.category) as GoalDomain,
           status: 'active' as const,
           priority: 'medium' as const,
-          frequency_per_week: data.goalType === 'new_skill' ? undefined : data.frequency,
-          duration_weeks: durationWeeks,
+          goal_type: data.goalType === 'progressive_mastery' ? 'progressive_mastery' : undefined,
+          frequency_per_week: data.goalType === 'progressive_mastery' 
+            ? data.frequency 
+            : (data.goalType === 'new_skill' ? undefined : data.frequency),
+          duration_weeks: pmDurationWeeks,
           start_date: format(data.startDate, 'yyyy-MM-dd'),
-          due_date: calculatedDueDate,
+          due_date: data.goalType === 'progressive_mastery' ? pmDueDate : calculatedDueDate,
           owner_id: finalOwnerId,
           created_by: currentUser?.id,
           tags: data.challengeAreas || [],
@@ -1045,9 +1084,64 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Only now proceed with goal creation
         const createdGoal = await goalsService.createGoal(goalDataWithMetadata);
 
+        // If Progressive Mastery, save additional metadata
+        if (data.goalType === 'progressive_mastery') {
+          try {
+            // Save skill assessment
+            if (data.pmSkillAssessment) {
+              await progressiveMasteryService.saveSkillAssessment(createdGoal.id, {
+                q1: data.pmSkillAssessment.q1_familiarity,
+                q2: data.pmSkillAssessment.q2_confidence,
+                q3: data.pmSkillAssessment.q3_independence
+              });
+            }
+
+            // Save smart start plan
+            if (data.pmSmartStartPlan) {
+              await progressiveMasteryService.saveSmartStartPlan(
+                createdGoal.id,
+                {
+                  suggested_initial: data.pmSmartStartPlan.suggested_initial,
+                  target_frequency: data.pmTargetFrequency || 3,
+                  rationale: data.pmSmartStartPlan.rationale,
+                  phase_guidance: data.pmSmartStartPlan.phase_guidance
+                },
+                data.pmSmartStartPlan.suggestion_accepted,
+                data.pmSmartStartPlan.user_selected_initial
+              );
+            }
+
+            // Save teaching helper and notify
+            if (data.pmTeachingHelper) {
+              await progressiveMasteryService.saveTeachingHelper(
+                createdGoal.id,
+                data.pmTeachingHelper.id,
+                data.pmTeachingHelper.name,
+                data.pmTeachingHelper.relationship as 'parent' | 'teacher' | 'coach'
+              );
+
+              // Notify teaching helper
+              await notificationsService.createNotification({
+                user_id: data.pmTeachingHelper.id,
+                type: 'teaching_helper_assigned',
+                title: 'New Teaching Helper Role',
+                message: `You've been assigned as a teaching helper for ${data.goalTitle}`,
+                data: { goalId: createdGoal.id }
+              });
+            }
+          } catch (pmError) {
+            console.error('Failed to save Progressive Mastery metadata:', pmError);
+            // Continue anyway - goal is created
+          }
+        }
+
         toast({
-          title: data.recipient === 'self' ? 'Goal created! 🎯' : `Goal assigned to ${data.supportedPersonName}! 🎯`,
-          description: 'Your personalized micro-steps are being generated.'
+          title: data.goalType === 'progressive_mastery' 
+            ? 'Progressive Mastery Goal Created! 🚀' 
+            : (data.recipient === 'self' ? 'Goal created! 🎯' : `Goal assigned to ${data.supportedPersonName}! 🎯`),
+          description: data.goalType === 'progressive_mastery'
+            ? 'Your learning journey begins now!'
+            : 'Your personalized micro-steps are being generated.'
         });
         
         // Celebration animation
@@ -1373,6 +1467,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               {data.goalType === type.id && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+              {'icon' in type && <span className="text-2xl">{type.icon}</span>}
               <div className="text-left flex-1">
                 <div className="font-semibold">{type.label}</div>
                 <div className="text-sm text-muted-foreground mt-1">{type.description}</div>
@@ -2123,6 +2218,287 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   };
 
+  // Progressive Mastery render functions
+  const renderPMSkillAssessment = () => {
+    return (
+      <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+        <SkillAssessmentWizard
+          goalTitle={data.pmSkillName || data.goalTitle || 'this skill'}
+          onComplete={(assessment) => {
+            updateData({ pmSkillAssessment: assessment });
+            nextStep();
+          }}
+          onBack={() => setCurrentStep(currentStep! - 1)}
+        />
+      </div>
+    );
+  };
+
+  const renderPMTargetFrequency = () => {
+    return (
+      <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl">How often would you eventually like to practice?</CardTitle>
+          <p className="text-muted-foreground">Don't worry, we'll start slower and build up gradually!</p>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4, 5, 6, 7].map(freq => (
+              <Card
+                key={freq}
+                className={cn(
+                  "cursor-pointer hover:shadow-md transition-all border-2",
+                  data.pmTargetFrequency === freq ? "border-primary bg-primary/5" : "border-border"
+                )}
+                onClick={() => updateData({ pmTargetFrequency: freq })}
+              >
+                <CardContent className="p-4 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-bold">{freq}</span>
+                  <span className="text-xs">day{freq > 1 ? 's' : ''}/wk</span>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderPMSmartStart = () => {
+    const [customFrequency, setCustomFrequency] = useState<number | undefined>();
+    const [accepted, setAccepted] = useState(false);
+
+    const suggestion = progressiveMasteryService.suggestStartFrequency(
+      data.pmSkillAssessment?.calculated_level || 1,
+      data.pmTargetFrequency || 3
+    );
+
+    const selectedFrequency = customFrequency || suggestion.suggested_initial;
+
+    return (
+      <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl">Your Smart Start Plan</CardTitle>
+          <Badge variant="secondary">
+            {data.pmSkillAssessment?.level_label || 'Beginner'} Level
+          </Badge>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          {/* Suggestion Card */}
+          <div className="p-4 bg-primary/10 border-2 border-primary rounded-lg space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">We recommend starting with</p>
+                <p className="text-3xl font-bold text-primary">
+                  {suggestion.suggested_initial}x per week
+                </p>
+              </div>
+              <Sparkles className="h-8 w-8 text-primary" />
+            </div>
+            
+            <p className="text-sm">{suggestion.rationale}</p>
+            <p className="text-sm text-muted-foreground">{suggestion.phase_guidance}</p>
+          </div>
+
+          {/* Accept or Customize */}
+          <div className="space-y-3">
+            <Button
+              onClick={() => {
+                setAccepted(true);
+                setCustomFrequency(undefined);
+              }}
+              variant={accepted && !customFrequency ? 'default' : 'outline'}
+              className="w-full"
+            >
+              ✓ Accept Suggestion ({suggestion.suggested_initial}x/week)
+            </Button>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or customize</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              {[1, 2, 3, 4, 5, 6, 7].map(freq => (
+                <Button
+                  key={freq}
+                  variant={customFrequency === freq ? 'default' : 'outline'}
+                  onClick={() => {
+                    setCustomFrequency(freq);
+                    setAccepted(false);
+                  }}
+                  className="h-12"
+                >
+                  {freq}x
+                </Button>
+              ))}
+            </div>
+
+            <Button 
+              onClick={() => {
+                const plan = {
+                  ...suggestion,
+                  user_selected_initial: selectedFrequency,
+                  suggestion_accepted: accepted
+                };
+                updateData({ 
+                  pmSmartStartPlan: plan,
+                  frequency: selectedFrequency 
+                });
+                nextStep();
+              }}
+              className="w-full"
+            >
+              Continue with {selectedFrequency}x/week
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderPMTeachingHelper = () => {
+    const [selectedHelper, setSelectedHelper] = useState<string | null>(data.pmTeachingHelper?.id || null);
+
+    return (
+      <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl">Who can help you learn this skill?</CardTitle>
+          <p className="text-muted-foreground">Choose someone who will guide and support your progress</p>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            {/* On my own option */}
+            <Card
+              className={cn(
+                "cursor-pointer hover:shadow-md transition-all border-2",
+                selectedHelper === 'none' ? "border-primary bg-primary/5" : "border-border"
+              )}
+              onClick={() => setSelectedHelper('none')}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  {selectedHelper === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                  <div className="text-left">
+                    <div className="font-medium">🦸 On my own</div>
+                    <div className="text-sm text-muted-foreground">
+                      I'll practice independently
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Supporters list */}
+            {userSupporters.length > 0 ? (
+              userSupporters.map(supporter => (
+                <Card
+                  key={supporter.id}
+                  className={cn(
+                    "cursor-pointer hover:shadow-md transition-all border-2",
+                    selectedHelper === supporter.id ? "border-primary bg-primary/5" : "border-border"
+                  )}
+                  onClick={() => setSelectedHelper(supporter.id)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      {selectedHelper === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage src={supporter.profile?.avatar_url || undefined} />
+                        <AvatarFallback className="text-xs">
+                          {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-left flex-1">
+                        <div className="font-medium">👤 {supporter.name}</div>
+                        <div className="text-sm text-muted-foreground capitalize">
+                          Helper
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No helpers available. You can add supporters later.
+              </p>
+            )}
+          </div>
+
+          <Button 
+            onClick={() => {
+              if (selectedHelper && selectedHelper !== 'none') {
+                const helper = userSupporters.find(s => s.id === selectedHelper);
+                updateData({ 
+                  pmTeachingHelper: {
+                    id: selectedHelper,
+                    name: helper?.name || 'Helper',
+                    relationship: 'parent'
+                  }
+                });
+              } else {
+                updateData({ pmTeachingHelper: undefined });
+              }
+              nextStep();
+            }}
+            className="w-full"
+            disabled={!selectedHelper}
+          >
+            Next
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderPMDuration = () => {
+    const options = [
+      { weeks: 8, label: '8 weeks', description: 'Short intensive practice' },
+      { weeks: 12, label: '12 weeks', description: 'Recommended for most skills' },
+      { weeks: 16, label: '16 weeks', description: 'Extended deep practice' },
+      { weeks: null, label: 'Ongoing', description: 'No end date, practice indefinitely' }
+    ];
+
+    return (
+      <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl">How long do you want to practice?</CardTitle>
+          <p className="text-muted-foreground">Choose a duration that gives you time to build mastery</p>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            {options.map(option => (
+              <Card
+                key={option.weeks || 'ongoing'}
+                className={cn(
+                  "cursor-pointer hover:shadow-md transition-all border-2",
+                  data.pmDurationWeeks === option.weeks ? "border-primary bg-primary/5" : "border-border"
+                )}
+                onClick={() => updateData({ pmDurationWeeks: option.weeks })}
+              >
+                <CardContent className="p-4">
+                  <div className="text-left">
+                    <div className="font-medium">{option.label}</div>
+                    <div className="text-sm text-muted-foreground">{option.description}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const renderConfirmStep = () => {
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
     const motivationLabel = motivations.find(m => m.id === data.goalMotivation)?.label || data.customMotivation;
@@ -2314,48 +2690,56 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </>;
   };
   const renderCurrentStep = () => {
+    // Progressive Mastery flow intercepts after goal type selection
+    if (data.goalType === 'progressive_mastery') {
+      switch (currentStep) {
+        case 0: return renderStep0(); // Who is this for
+        case 1: return renderStep1(); // Goal title (skill name)
+        case 2: return renderStep2(); // Motivation
+        case 3: return renderStep3(); // Prerequisites
+        case 4: return renderStep4(); // Goal type
+        case 5: return renderPMSkillAssessment(); // PM: Skill assessment
+        case 6: return renderPMTargetFrequency(); // PM: Target frequency
+        case 7: return renderPMSmartStart(); // PM: Smart Start
+        case 8: return renderPMTeachingHelper(); // PM: Teaching helper
+        case 9: return renderPMDuration(); // PM: Duration
+        case 10: return renderConfirmStep(); // PM: Summary
+        default: return null;
+      }
+    }
+
+    // Regular flow (habit goals)
     switch (currentStep) {
-      case 0:
-        return renderStep0();
-      // Who is this for (supporters only)
-      case 1:
-        return renderStep1();
-      // Goal description
-      case 2:
-        return renderStep2();
-      // Motivation
-      case 3:
-        return renderStep3();
-      // Prerequisites
-      case 4:
-        return renderStep4();
-      // Goal type
-      case 5:
-        return renderStep5();
-      // Challenge areas
-      case 6:
-        return renderStep6();
-      // Scheduling
-      case 7:
-        return renderStep7();
-      // Support context
-      case 8:
-        return isSupporter ? renderStep8() : renderConfirmStep();
-      // Rewards or confirm
-      case 9:
-        return renderConfirmStep();
-      // Final confirm (supporters only)
-      default:
-        return null;
+      case 0: return renderStep0(); // Who is this for (supporters only)
+      case 1: return renderStep1(); // Goal description
+      case 2: return renderStep2(); // Motivation
+      case 3: return renderStep3(); // Prerequisites
+      case 4: return renderStep4(); // Goal type
+      case 5: return renderStep5(); // Challenge areas
+      case 6: return renderStep6(); // Scheduling
+      case 7: return renderStep7(); // Support context
+      case 8: return isSupporter ? renderStep8() : renderConfirmStep(); // Rewards or confirm
+      case 9: return renderConfirmStep(); // Final confirm (supporters only)
+      default: return null;
     }
   };
-  const lastStepIndex = isSupporter ? 9 : 8;
-  const totalSteps = isSupporter ? 10 : 8;
+  // Update last step index for Progressive Mastery flow
+  const lastStepIndex = data.goalType === 'progressive_mastery' ? 10 : (isSupporter ? 9 : 8);
+  const totalSteps = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 10 : 8);
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
 
   // Get current section information based on step and role
   const getStepSection = () => {
+    // Progressive Mastery flow
+    if (data.goalType === 'progressive_mastery') {
+      if (currentStep! >= 0 && currentStep! <= 4) return { label: 'The Goal', index: 1, total: 5 };
+      if (currentStep === 5 || currentStep === 6) return { label: 'Skill Assessment', index: 2, total: 5 };
+      if (currentStep === 7) return { label: 'Smart Start Plan', index: 3, total: 5 };
+      if (currentStep === 8 || currentStep === 9) return { label: 'Support & Duration', index: 4, total: 5 };
+      if (currentStep === 10) return { label: 'Review & Confirm', index: 5, total: 5 };
+    }
+    
     if (actuallySupportsAnyone) {
       // Supporter flow - 5 sections
       if (currentStep! >= 0 && currentStep! <= 4) return { label: 'The Goal', index: 1, total: 5 };
