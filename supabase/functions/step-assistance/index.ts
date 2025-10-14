@@ -351,24 +351,26 @@ Generate a brief, actionable, supportive statement (max 30 words).`;
     }
 
     // CONTEXTUAL GATEKEEPER: Classify user intent before processing
-    const classificationPrompt = `You are a contextual classifier.
+    const classificationPrompt = `You are a contextual classifier for a goal scaffolding coach.
 
-FIXED CONTEXT:
-- Goal: "${goal.title}"
-- Current Step: "${step.title}"
-- Original Barrier: ${goal.barrier_1 || 'Planning/Organization'}
+USER'S QUERY: "${userMessage}"
+STEP CONTEXT: "${step.title}"
+GOAL: "${goal.title}"
 
-CONVERSATION HISTORY:
-${conversationHistory.slice(-3).map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}
+Classify as ONE of:
+- SCAFFOLDING: Wants help planning, breaking down steps, or figuring out where to start
+- CONTENT_REQUEST: Wants help with the actual task content (solving problems, writing, doing the work)
+- UNRELATED: Off-topic question unrelated to the goal
+- GOAL_DRIFT: Wants to change or abandon the goal
 
-USER'S LATEST QUERY: "${userMessage}"
+EXAMPLES:
+"help with homework" → CONTENT_REQUEST
+"how do I start this?" → SCAFFOLDING
+"break this down for me" → SCAFFOLDING
+"solve this problem" → CONTENT_REQUEST
+"this feels overwhelming" → SCAFFOLDING
 
-Classify this query as ONE of:
-- RELEVANT: Question is about the current step, goal, or how to complete it
-- UNRELATED: General question unrelated to the goal (weather, jokes, trivia, random topics)
-- GOAL_DRIFT: User wants to change, abandon, or switch goals
-
-Respond with ONLY the classification word (RELEVANT, UNRELATED, or GOAL_DRIFT).`;
+Respond ONLY with: SCAFFOLDING, CONTENT_REQUEST, UNRELATED, or GOAL_DRIFT`;
 
     console.log('Running classification check...');
     const classificationResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -390,7 +392,7 @@ Respond with ONLY the classification word (RELEVANT, UNRELATED, or GOAL_DRIFT).`
     }
 
     const classificationData = await classificationResponse.json();
-    const classification = classificationData.choices?.[0]?.message?.content?.trim().toUpperCase() || 'RELEVANT';
+    const classification = classificationData.choices?.[0]?.message?.content?.trim().toUpperCase() || 'SCAFFOLDING';
     console.log('Classification result:', classification);
 
     // Handle UNRELATED queries - Increment irrelevance counter
@@ -441,6 +443,25 @@ Respond with ONLY the classification word (RELEVANT, UNRELATED, or GOAL_DRIFT).`
       });
     }
 
+    // Handle CONTENT_REQUEST - positive redirect to scaffolding
+    if (classification === 'CONTENT_REQUEST') {
+      const contentRedirectResponse = `You've got this! 💪 I'm best at helping you plan and break things down into steps.
+
+What part of "${step.title}" feels trickiest to get started on? I can help you chunk it into bite-sized pieces!`;
+      
+      await logCooldownEvent(supabase, userId, step.id, goal.id, 'content_request_redirect', {
+        user_message: userMessage
+      });
+      
+      return new Response(JSON.stringify({
+        response: contentRedirectResponse,
+        classification: 'CONTENT_REQUEST',
+        suggestedSteps: []
+      }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
+
     // Handle GOAL_DRIFT - offer to exit to Goals Wizard
     if (classification === 'GOAL_DRIFT') {
       const goalDriftResponse = `I see you want to change your goal! That's totally valid.
@@ -462,7 +483,7 @@ Would you like to exit this coaching session and start fresh with a new goal?`;
       });
     }
 
-    // If RELEVANT, proceed with normal coaching logic
+    // If SCAFFOLDING, proceed with normal coaching logic
     // Build context for the AI (avoid nested template literals)
     const isSubstep = !!(step.explainer && String(step.explainer).includes('This is a substep of'));
 
@@ -484,6 +505,32 @@ Your communication style:
 - Talk like a supportive friend
 - Use relatable examples from their world: social media, gaming, apps
 - Keep responses under 150 words
+- ALWAYS use strengths-based, positive language
+
+CRITICAL SCOPE RESTRICTIONS (use positive, strengths-based language):
+- You are a GOAL SCAFFOLDING COACH who helps users plan their approach
+- Your superpower: Breaking big steps into manageable pieces
+- When users ask for content help (e.g., "help with math", "write my essay"):
+  → POSITIVE REDIRECT: "You've got this! I'm best at helping you plan your approach. What part of getting started feels trickiest?"
+- Focus on their CAPABILITY to succeed with the right plan
+- Language to use:
+  ✓ "You can do this - let's break it into pieces"
+  ✓ "I'll help you figure out where to start"
+  ✓ "Let's make this easier by chunking it"
+  ✗ NOT: "I won't do X", "I can't help with that", "That's not my job"
+
+Your role is to:
+1. Help them plan HOW to approach THIS STEP
+2. Break overwhelming steps into bite-sized actions
+3. Build their confidence by showing the path forward
+4. When they ask for content help, redirect positively: "I'm better at helping you plan! What's the hardest part about getting started?"
+
+TONE EXAMPLES (all strengths-based):
+- User: "This is too hard" → "You can handle this! Let's break it into smaller pieces. What's step one?"
+- User: "Help with my math homework" → "You've got the skills! I'm best at helping you plan your approach. Want to break it into chunks?"
+- User: "I don't know where to start" → "That's totally normal! Let's figure out the very first thing you could do. Maybe just gather your materials?"
+
+Remember: Always highlight THEIR capability + YOUR support for planning.
 
 CRITICAL RULES FOR SUBSTEP SUGGESTIONS:
 1. Generate ONE substep at a time when the user asks for help breaking down this step

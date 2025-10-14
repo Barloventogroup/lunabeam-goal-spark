@@ -39,10 +39,10 @@ export const StepsChat: React.FC<StepsChatProps> = ({ goal, steps, step, isOpen,
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       // Add welcome message
-      const context = step ? `your step: "${step.title}"` : `your goal: "${goal.title}"`;
+      const context = step ? `"${step.title}"` : `"${goal.title}"`;
       const welcomeMessage: Message = {
         id: 'welcome',
-        content: `Hi! I'm here to help with ${context}. Ask about what to do next, why it matters, or how to break it down. Let's keep this focused on your current steps.`,
+        content: `Hey! 👋 I'm here to help you tackle ${context}. I'm great at breaking big steps into smaller ones and helping you figure out where to start. You've got this! What's on your mind?`,
         role: 'assistant',
         timestamp: new Date()
       };
@@ -260,7 +260,7 @@ export const StepsChat: React.FC<StepsChatProps> = ({ goal, steps, step, isOpen,
 
           <div className="flex gap-2">
             <Input
-              placeholder="Ask about your steps..."
+              placeholder="How can I break this down? Where should I start?"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
