@@ -27,6 +27,7 @@ import { SkillAssessmentWizard } from './skill-assessment-wizard';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
 import { notificationsService } from '@/services/notificationsService';
 import { addWeeks } from 'date-fns';
+import { QuestionScreen } from './question-screen';
 interface RedesignedGoalsWizardProps {
   onComplete: (goalData: any) => void;
   onCancel: () => void;
@@ -402,29 +403,35 @@ interface WizardData {
   goalTitle: string;
   category?: string;
 
-  // Step 2: Motivation
+  // Step 2: Motivation (SHARED - free text, not dropdown)
+  motivation?: string;
+
+  // Step 3: Prerequisites (SHARED)
+  prerequisites: {
+    ready: boolean;
+    needs?: string;
+  };
+
+  // Step 4: Barriers (SHARED, OPTIONAL)
+  barriers?: string;
+
+  // Old fields for backward compatibility
   goalMotivation?: string;
   customMotivation?: string;
-
-  // Step 3: Goal type
   goalType?: string;
   difficultyArea?: string;
-
-  // Step 4: Challenge areas (up to 2)
   challengeAreas?: string[];
   customChallenges?: string;
-  barrierContext?: string; // Additional context about barriers for AI generation
-
-  // Step 5: Prerequisites
+  barrierContext?: string;
   hasPrerequisites: boolean;
   customPrerequisites?: string;
 
   // Step 6: Scheduling & timing
   startDate: Date;
   endDate?: Date;
-  projectCompletionDate?: Date; // For new_skill: mandatory completion deadline
+  projectCompletionDate?: Date;
   frequency: number;
-  selectedDays?: string[]; // Array of selected day codes like ['mon', 'tue', 'wed']
+  selectedDays?: string[];
   timeOfDay?: string;
   customTime?: string;
 
@@ -435,8 +442,8 @@ interface WizardData {
   primarySupporterId?: string;
   primarySupporterName?: string;
   primarySupporterRole?: 'cheerleader' | 'accountability_partner' | 'hands_on_helper';
-  supporterTimingOffset?: string; // e.g., "2 hours before", "by 8:00 AM on" - for supporter preparation timing
-  sendReminderToMe?: boolean; // For supporters
+  supporterTimingOffset?: string;
+  sendReminderToMe?: boolean;
 
   // Step 8: Rewards (supporters only)
   assignReward?: boolean;
@@ -445,6 +452,26 @@ interface WizardData {
 
   // Progressive Mastery specific fields
   pmSkillName?: string;
+  pmAssessment?: {
+    q1_experience: number;
+    q2_confidence: number;
+    q3_help_needed: number;
+    calculatedLevel?: number;
+    levelLabel?: string;
+  };
+  pmHelper?: {
+    helperId: string | 'none';
+    helperName?: string;
+    supportTypes?: string[];
+  };
+  pmPracticePlan?: {
+    targetFrequency: number;
+    startingFrequency: number;
+    smartStartAccepted: boolean;
+    durationWeeks: number | null;
+  };
+  
+  // Old PM fields for backward compatibility
   pmSkillAssessment?: any;
   pmTargetFrequency?: number;
   pmSmartStartPlan?: any;
@@ -471,6 +498,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     supportedPersonId: initialIndividualId,
     goalTitle: '',
     hasPrerequisites: true,
+    prerequisites: { ready: true },
     startDate: new Date(),
     frequency: 3,
     isMyIdea: true
