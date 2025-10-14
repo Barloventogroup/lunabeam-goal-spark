@@ -64,7 +64,7 @@ export const progressiveMasteryService = {
 
     switch (skillLevel) {
       case 1: // Beginner
-        suggestedInitial = Math.max(1, Math.round(targetFrequency * 0.3));
+        suggestedInitial = Math.max(1, Math.ceil(targetFrequency * 0.3));
         rationale = "Since this is brand new to you, we recommend starting with fewer days to build confidence and avoid burnout.";
         phaseGuidance = "We'll increase gradually over 3 phases as you build the skill: Learning → Developing → Proficient.";
         break;
