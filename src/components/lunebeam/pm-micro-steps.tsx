@@ -116,45 +116,87 @@ export const PMStep4_Barriers: React.FC<PMStepsProps> = ({ data, updateData, goN
   
   const levelContext = `Starting Level: ${levelLabel} ${levelEmojis[level - 1]}`;
   
-  const introTextByLevel: Record<number, string> = {
-    1: "As a beginner, many things will be new. Common challenges include:",
-    2: "As an early learner, you're building foundations. You might face:",
-    3: "At the developing level, you have some experience but might face challenges with:",
-    4: "As someone proficient, you're refining skills. Common challenges include:",
-    5: "At your independent level, you might not need much support."
-  };
+  const challengeOptions = [
+    { 
+      id: 'initiation', 
+      label: "Just Starting", 
+      description: "(Initiation)"
+    },
+    { 
+      id: 'attention', 
+      label: "Staying Focused", 
+      description: "(Attention)"
+    },
+    { 
+      id: 'time', 
+      label: "Remembering", 
+      description: "(Time)"
+    },
+    { 
+      id: 'planning', 
+      label: "Knowing What's Next", 
+      description: "(Planning)"
+    }
+  ];
+
+  const barriers = typeof data.barriers === 'object' && data.barriers !== null
+    ? data.barriers 
+    : { priority1: '', priority2: '', details: '' };
   
-  const barrierExamplesByLevel: Record<number, string[]> = {
-    1: [
-      'Understanding basic techniques and terminology',
-      'Feeling overwhelmed by new information',
-      'Knowing where to start',
-      'Safety concerns with new equipment'
-    ],
-    2: [
-      'Remembering steps without constant guidance',
-      'Building confidence to try independently',
-      'Understanding why certain steps matter',
-      'Managing safety with less supervision'
-    ],
-    3: [
-      'Following complex multi-step processes',
-      'Timing multiple things at once',
-      'Remembering sequences without prompts',
-      'Managing safety independently'
-    ],
-    4: [
-      'Refining technique for consistency',
-      'Adapting when things don\'t go as planned',
-      'Managing time efficiently',
-      'Troubleshooting problems independently'
-    ],
-    5: [
-      'You may not face many barriers at this level',
-      'Consider maintaining consistency instead'
-    ]
+  const handlePriorityToggle = (challengeId: string) => {
+    const current = barriers as any;
+    
+    if (current.priority1 === challengeId) {
+      // Clicking 1st priority again - remove it, promote 2nd to 1st
+      updateData({ 
+        barriers: { 
+          ...current,
+          priority1: current.priority2 || '',
+          priority2: ''
+        } 
+      });
+    } else if (current.priority2 === challengeId) {
+      // Clicking 2nd priority again - remove it
+      updateData({ 
+        barriers: { 
+          ...current,
+          priority2: ''
+        } 
+      });
+    } else if (!current.priority1) {
+      // No 1st priority - set as 1st
+      updateData({ 
+        barriers: { 
+          ...current,
+          priority1: challengeId
+        } 
+      });
+    } else if (!current.priority2) {
+      // Has 1st but no 2nd - set as 2nd
+      updateData({ 
+        barriers: { 
+          ...current,
+          priority2: challengeId
+        } 
+      });
+    } else {
+      // Both slots filled - replace 2nd priority
+      updateData({ 
+        barriers: { 
+          ...current,
+          priority2: challengeId
+        } 
+      });
+    }
   };
-  
+
+  const getPriorityBadge = (challengeId: string) => {
+    const current = barriers as any;
+    if (current.priority1 === challengeId) return '1st Priority';
+    if (current.priority2 === challengeId) return '2nd Priority';
+    return null;
+  };
+
   return (
     <QuestionScreen
       currentStep={currentStep}
@@ -162,7 +204,7 @@ export const PMStep4_Barriers: React.FC<PMStepsProps> = ({ data, updateData, goN
       goalTitle={data.goalTitle}
       goalContext={levelContext}
       questionIcon="🤔"
-      questionText={`What might be challenging for ${name}?`}
+      questionText={`Which part usually feels the trickiest when ${name === 'you' ? 'you' : name} start${name === 'you' ? '' : 's'} this?`}
       inputType="custom"
       onBack={goBack}
       onContinue={goNext}
@@ -171,21 +213,12 @@ export const PMStep4_Barriers: React.FC<PMStepsProps> = ({ data, updateData, goN
       hideFooter
     >
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          {introTextByLevel[level]}
+        <p className="text-sm text-muted-foreground text-center mb-6">
+          start building the plan to crush this goal
         </p>
-        
-        <ul className="space-y-2">
-          {barrierExamplesByLevel[level].map((example, idx) => (
-            <li key={idx} className="flex items-start gap-2 text-sm">
-              <span className="text-muted-foreground mt-0.5">•</span>
-              <span>{example}</span>
-            </li>
-          ))}
-        </ul>
-        
+
         {level === 5 && (
-          <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+          <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 mb-6">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <Sparkles className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -211,17 +244,63 @@ export const PMStep4_Barriers: React.FC<PMStepsProps> = ({ data, updateData, goN
           </Card>
         )}
         
+        {/* Challenge Options */}
+        <div className="space-y-3 mb-6">
+          {challengeOptions.map((option) => {
+            const priority = getPriorityBadge(option.id);
+            const isSelected = priority !== null;
+            
+            return (
+              <button
+                key={option.id}
+                onClick={() => handlePriorityToggle(option.id)}
+                className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                  isSelected 
+                    ? 'border-primary bg-primary/5' 
+                    : 'border-border bg-card hover:border-primary/50'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 flex-1">
+                    {isSelected && (
+                      <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                    <div className="flex-1">
+                      <div className="font-semibold text-foreground mb-0.5">
+                        {option.label}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {option.description}
+                      </div>
+                    </div>
+                  </div>
+                  {priority && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground flex-shrink-0">
+                      {priority}
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tell us more */}
         <div className="space-y-2 pt-2">
-          <Label>Your specific barriers (optional)</Label>
+          <Label>Tell us more</Label>
           <Textarea
-            value={data.barriers || ''}
-            onChange={(e) => updateData({ barriers: e.target.value })}
-            placeholder="For example: keeping track of multiple steps..."
+            value={(barriers as any).details || ''}
+            onChange={(e) => updateData({ 
+              barriers: { 
+                ...(barriers as any),
+                details: e.target.value 
+              } 
+            })}
+            placeholder="Share any additional details here..."
             rows={3}
           />
-          <p className="text-xs text-muted-foreground">
-            This helps your helper know where to focus support.
-          </p>
         </div>
       </div>
     </QuestionScreen>
