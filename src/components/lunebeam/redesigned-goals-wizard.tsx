@@ -269,26 +269,7 @@ const timesOfDay = [{
   description: 'Pick specific time'
 }];
 
-// Ally roles
-const allyRoles = [{
-  value: 'cheerleader' as const,
-  title: 'Cheerleader',
-  emoji: '📣',
-  description: 'Celebrates wins and provides encouragement',
-  color: 'text-pink-500'
-}, {
-  value: 'accountability_partner' as const,
-  title: 'Accountability Partner',
-  emoji: '🛡️',
-  description: 'Checks in regularly and helps stay on track',
-  color: 'text-blue-500'
-}, {
-  value: 'hands_on_helper' as const,
-  title: 'Hands-on Helper',
-  emoji: '🤝',
-  description: 'Provides direct assistance and practical support',
-  color: 'text-green-500'
-}];
+// Ally roles removed - simplified to just "supporter"
 
 // Motivation options
 const motivations = [{
@@ -452,10 +433,8 @@ interface WizardData {
   // Step 7: Context/Support (unified)
   supportContext?: string;
   selectedSupporters?: string[];
-  allyRoles?: Record<string, 'cheerleader' | 'accountability_partner' | 'hands_on_helper'>;
   primarySupporterId?: string;
   primarySupporterName?: string;
-  primarySupporterRole?: 'cheerleader' | 'accountability_partner' | 'hands_on_helper';
   supporterTimingOffset?: string;
   sendReminderToMe?: boolean;
 
@@ -1019,7 +998,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       case 7:
         // Support context validation
         if (data.supportContext === 'alone') return true;
-        if (!data.primarySupporterId || !data.primarySupporterRole) return false;
+        // Only require allies to be selected, NOT roles
+        if (!data.selectedSupporters || data.selectedSupporters.length === 0) return false;
         return true;
       case 8:
         // Rewards (supporters only)
@@ -1193,8 +1173,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               selectedSupporters: data.selectedSupporters,
               primarySupporterId: data.primarySupporterId,
               primarySupporterName: data.primarySupporterName,
-              primarySupporterRole: data.primarySupporterRole,
-              allyRoles: data.allyRoles,
               supportedPersonName: data.supportedPersonName,
               supportedPersonId: data.supportedPersonId,
               recipient: data.recipient
@@ -2352,8 +2330,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           supportContext: 'alone',
           selectedSupporters: [],
           primarySupporterId: undefined,
-          primarySupporterName: undefined,
-          primarySupporterRole: undefined
+          primarySupporterName: undefined
         })}>
           <CardContent className="p-6">
             <div className="flex items-start gap-3">
@@ -2379,19 +2356,20 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   {data.recipient === 'other' ? 'With Support' : 'Select an Ally'}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {data.selectedSupporters && data.selectedSupporters.length > 0 ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'ally' : 'allies'} selected` : data.recipient === 'other' ? `Choose allies to support ${individualName}` : 'Choose your supporters'}
+                  {data.selectedSupporters && data.selectedSupporters.length > 0 ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'supporter' : 'supporters'} selected` : data.recipient === 'other' ? `Choose supporters to help ${individualName}` : 'Choose your supporters'}
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        {/* Primary Supporter Selection - shown after allies are selected */}
-        {data.selectedSupporters && data.selectedSupporters.length > 0 && data.supportContext === 'with_supporters' && <div className="space-y-4 mt-6 pt-6 border-t">
-            <div>
-              <h3 className="font-semibold mb-2">Who will be the primary supporter?</h3>
-              <p className="text-sm text-muted-foreground">
-                Select the main person providing support
+        {/* Show selected supporters */}
+        {data.selectedSupporters && data.selectedSupporters.length > 0 && data.supportContext === 'with_supporters' && (
+          <div className="mt-6 pt-6 border-t">
+            <div className="mb-3">
+              <h3 className="font-semibold text-sm">Selected Supporters</h3>
+              <p className="text-xs text-muted-foreground">
+                These people will help with this goal
               </p>
             </div>
             
@@ -2399,129 +2377,22 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               {data.selectedSupporters.map(supporterId => {
                 const supporter = userSupporters.find(s => s.id === supporterId);
                 if (!supporter) return null;
-                const isSelected = data.primarySupporterId === supporterId;
                 
-                return <Card 
-                  key={supporterId} 
-                  className={cn("cursor-pointer hover:shadow-md transition-all border-2", isSelected ? "border-primary bg-primary/5" : "border-border")} 
-                  onClick={() => updateData({
-                    primarySupporterId: supporterId,
-                    primarySupporterName: supporter.name
-                  })}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src={supporter.profile?.avatar_url} />
-                        <AvatarFallback className="text-xs">
-                          {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">{supporter.name}</span>
-                    </div>
-                  </CardContent>
-                </Card>;
-              })}
-            </div>
-          </div>}
-        
-        {/* Primary Supporter Role Assignment */}
-        {data.primarySupporterId && <div className="space-y-4 mt-6 pt-6 border-t">
-            <div>
-              <h3 className="font-semibold mb-2">What's their role?</h3>
-              <p className="text-sm text-muted-foreground">
-                Choose how {data.primarySupporterName} will support {individualName}
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-3">
-              {allyRoles.map(role => {
-                const isSelected = data.primarySupporterRole === role.value;
-                return <Card 
-                  key={role.value} 
-                  className={cn("cursor-pointer hover:shadow-md transition-all border-2", isSelected ? "border-primary bg-primary/5" : "border-border")} 
-                  onClick={() => updateData({
-                    primarySupporterRole: role.value
-                  })}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
-                      <span className="text-2xl flex-shrink-0">{role.emoji}</span>
-                      <div className="flex-1">
-                        <div className="font-medium">{role.title}</div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {role.description}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>;
-              })}
-            </div>
-          </div>}
-        
-        
-        {/* Additional Ally Roles - for non-primary supporters */}
-        {data.selectedSupporters && data.selectedSupporters.length > 1 && data.primarySupporterId && <div className="space-y-6 mt-6 pt-6 border-t">
-            <div>
-              <h3 className="font-semibold mb-2">Additional supporters</h3>
-              <p className="text-sm text-muted-foreground">
-                Assign roles to other allies
-              </p>
-            </div>
-            
-            {data.selectedSupporters
-              .filter(id => id !== data.primarySupporterId)
-              .map(supporterId => {
-                const supporter = userSupporters.find(s => s.id === supporterId);
-                if (!supporter) return null;
-                
-                return <div key={supporterId} className="space-y-3">
-                  <div className="flex items-center gap-2">
+                return (
+                  <div key={supporterId} className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
                     <Avatar className="w-8 h-8">
                       <AvatarImage src={supporter.profile?.avatar_url} />
                       <AvatarFallback className="text-xs">
                         {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">{supporter.name}</span>
+                    <span className="font-medium text-sm">{supporter.name}</span>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {allyRoles.filter(r => r.value !== 'hands_on_helper').map(role => {
-                      const isSelected = data.allyRoles?.[supporterId] === role.value;
-                      return <Card 
-                        key={role.value} 
-                        className={cn("cursor-pointer hover:shadow-md transition-all border-2", isSelected ? "border-primary bg-primary/5" : "border-border")} 
-                        onClick={() => {
-                          updateData({
-                            allyRoles: {
-                              ...(data.allyRoles || {}),
-                              [supporterId]: role.value
-                            }
-                          });
-                        }}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
-                            {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
-                            <span className="text-2xl flex-shrink-0">{role.emoji}</span>
-                            <div className="flex-1">
-                              <div className="font-medium text-sm">{role.title}</div>
-                              <div className="text-xs text-muted-foreground mt-1">
-                                {role.description}
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>;
-                    })}
-                  </div>
-                </div>;
+                );
               })}
-          </div>}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>;
   };
@@ -2938,7 +2809,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       : frequencies.find(f => f.value === data.frequency)?.label;
     
     const supportContextLabel = supportContexts.find(s => s.id === data.supportContext)?.label;
-    const primarySupporterRoleLabel = data.primarySupporterRole ? allyRoles.find(r => r.value === data.primarySupporterRole)?.title : null;
     
     // Abbreviate days for compact display
     const dayAbbreviations: Record<string, string> = {
@@ -3116,7 +2986,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                               <span className="text-muted-foreground text-xs">Supporter:</span>{' '}
                               <span className="font-medium">
                                 {data.primarySupporterName}
-                                {primarySupporterRoleLabel && ` (${primarySupporterRoleLabel})`}
                               </span>
                             </p>
                           )}
@@ -3347,14 +3216,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   const isSelected = currentSelection.includes(supporter.id);
                   const newSelection = isSelected ? currentSelection.filter(id => id !== supporter.id) : [...currentSelection, supporter.id];
 
-                  // Remove role if deselecting
-                  const updatedRoles = {
-                    ...(data.allyRoles || {})
-                  };
-                  if (isSelected) {
-                    delete updatedRoles[supporter.id];
-                  }
-
                   // Auto-select primary supporter if only one is selected
                   let primarySupporterId = data.primarySupporterId;
                   let primarySupporterName = data.primarySupporterName;
@@ -3372,7 +3233,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   updateData({
                     selectedSupporters: newSelection,
                     supportContext: newSelection.length > 0 ? 'with_supporters' : 'alone',
-                    allyRoles: updatedRoles,
                     primarySupporterId,
                     primarySupporterName
                   });

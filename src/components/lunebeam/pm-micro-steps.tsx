@@ -452,7 +452,7 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
     ...userSupporters.map(s => ({
       value: s.id,
       label: s.name,
-      description: 'Supporter'
+      description: s.name
     }))
   ];
   
