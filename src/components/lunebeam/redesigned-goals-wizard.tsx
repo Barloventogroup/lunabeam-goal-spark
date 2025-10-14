@@ -776,12 +776,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 2: return !!data.goalMotivation;
         case 3: return true;
         case 4: return !!data.goalType;
-        case 5: return !!data.pmSkillAssessment; // Skill assessment complete
-        case 6: return !!data.pmTargetFrequency; // Target frequency selected
-        case 7: return !!data.pmSmartStartPlan; // Smart start plan accepted
-        case 8: return true; // Teaching helper (optional)
-        case 9: return data.pmDurationWeeks !== undefined; // Duration selected
-        case 10: return true; // Ready to confirm
+        case 5: return !!data.pmSkillName && data.pmSkillName.trim().length >= 3; // PM Skill Name
+        case 6: return !!data.pmSkillAssessment; // Skill assessment complete
+        case 7: return !!data.pmTargetFrequency; // Target frequency selected
+        case 8: return !!data.pmSmartStartPlan && !!data.pmSmartStartPlan.user_selected_initial; // Smart start plan
+        case 9: return true; // Teaching helper (optional)
+        case 10: return data.pmDurationWeeks !== undefined; // Duration selected
+        case 11: return true; // Ready to confirm
         default: return false;
       }
     }
@@ -982,7 +983,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           : calculatedDueDate;
 
         const goalDataWithMetadata = {
-          title: data.goalTitle,
+          title: data.goalType === 'progressive_mastery' ? (data.pmSkillName || data.goalTitle) : data.goalTitle,
           description: buildGoalDescription(),
           domain: mapCategoryToDomain(data.category) as GoalDomain,
           status: 'active' as const,
@@ -1093,29 +1094,41 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // If Progressive Mastery, save additional metadata
         if (data.goalType === 'progressive_mastery') {
           try {
-            // Save skill assessment
-            if (data.pmSkillAssessment) {
-              await progressiveMasteryService.saveSkillAssessment(createdGoal.id, {
-                q1: data.pmSkillAssessment.q1_familiarity,
-                q2: data.pmSkillAssessment.q2_confidence,
-                q3: data.pmSkillAssessment.q3_independence
-              });
+            // Validate all required PM fields
+            if (!data.pmSkillName) {
+              throw new Error('Skill name is required for Progressive Mastery goals');
+            }
+            if (!data.pmSkillAssessment) {
+              throw new Error('Skill assessment is required');
+            }
+            if (!data.pmSmartStartPlan || !data.pmSmartStartPlan.user_selected_initial) {
+              throw new Error('Smart start plan is required');
+            }
+            if (data.pmDurationWeeks === undefined) {
+              throw new Error('Duration is required');
             }
 
+            console.log('Saving PM metadata for goal:', createdGoal.id);
+
+            // Save skill assessment
+            await progressiveMasteryService.saveSkillAssessment(createdGoal.id, {
+              q1: data.pmSkillAssessment.q1_familiarity,
+              q2: data.pmSkillAssessment.q2_confidence,
+              q3: data.pmSkillAssessment.q3_independence
+            });
+
             // Save smart start plan
-            if (data.pmSmartStartPlan) {
-              await progressiveMasteryService.saveSmartStartPlan(
-                createdGoal.id,
-                {
-                  suggested_initial: data.pmSmartStartPlan.suggested_initial,
-                  target_frequency: data.pmTargetFrequency || 3,
-                  rationale: data.pmSmartStartPlan.rationale,
-                  phase_guidance: data.pmSmartStartPlan.phase_guidance
-                },
-                data.pmSmartStartPlan.suggestion_accepted,
-                data.pmSmartStartPlan.user_selected_initial
-              );
-            }
+            await progressiveMasteryService.saveSmartStartPlan(
+              createdGoal.id,
+              {
+                suggested_initial: data.pmSmartStartPlan.suggested_initial,
+                target_frequency: data.pmTargetFrequency || 3,
+                rationale: data.pmSmartStartPlan.rationale,
+                phase_guidance: data.pmSmartStartPlan.phase_guidance
+              },
+              data.pmSmartStartPlan.suggestion_accepted,
+              data.pmSmartStartPlan.user_selected_initial
+            );
 
             // Save teaching helper and notify
             if (data.pmTeachingHelper) {
@@ -1131,13 +1144,30 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 user_id: data.pmTeachingHelper.id,
                 type: 'teaching_helper_assigned',
                 title: 'New Teaching Helper Role',
-                message: `You've been assigned as a teaching helper for ${data.goalTitle}`,
-                data: { goalId: createdGoal.id }
+                message: `You've been assigned to help with learning: ${data.pmSkillName}`,
+                data: { goal_id: createdGoal.id }
               });
             }
-          } catch (pmError) {
+
+            console.log('PM metadata saved successfully');
+          } catch (pmError: any) {
             console.error('Failed to save Progressive Mastery metadata:', pmError);
-            // Continue anyway - goal is created
+            
+            // Clean up the created goal since PM setup failed
+            try {
+              await goalsService.deleteGoal(createdGoal.id);
+            } catch (cleanupError) {
+              console.error('Failed to clean up goal after PM metadata error:', cleanupError);
+            }
+            
+            toast({
+              title: "Setup Failed",
+              description: pmError.message || "Failed to configure Progressive Mastery settings. Please try again.",
+              variant: "destructive"
+            });
+            
+            setLoading(false);
+            return; // Exit without proceeding
           }
         }
 
@@ -2225,6 +2255,50 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
 
   // Progressive Mastery render functions
+  const renderPMSkillName = () => {
+    return (
+      <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl">What skill do you want to learn?</CardTitle>
+          <p className="text-muted-foreground">
+            Be specific! This will help us create the perfect learning plan.
+          </p>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="pmSkillName">Skill Name</Label>
+            <Input
+              id="pmSkillName"
+              value={data.pmSkillName || ''}
+              onChange={(e) => updateData({ pmSkillName: e.target.value })}
+              placeholder="e.g., Making breakfast independently"
+              className="text-lg"
+            />
+          </div>
+
+          <div className="space-y-2 pt-2">
+            <p className="text-sm font-medium">Examples:</p>
+            <div className="space-y-1 text-sm text-muted-foreground">
+              <p>• Making scrambled eggs</p>
+              <p>• Doing my own laundry</p>
+              <p>• Managing my weekly schedule</p>
+              <p>• Packing my school bag</p>
+            </div>
+          </div>
+
+          <Button 
+            onClick={() => nextStep()} 
+            className="w-full"
+            disabled={!data.pmSkillName || data.pmSkillName.trim().length < 3}
+          >
+            Next
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const renderPMSkillAssessment = () => {
     return (
       <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
@@ -2696,16 +2770,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     if (data.goalType === 'progressive_mastery') {
       switch (currentStep) {
         case 0: return renderStep0(); // Who is this for
-        case 1: return renderStep1(); // Goal title (skill name)
+        case 1: return renderStep1(); // Goal description (can be generic)
         case 2: return renderStep2(); // Motivation
         case 3: return renderStep3(); // Prerequisites
         case 4: return renderStep4(); // Goal type
-        case 5: return renderPMSkillAssessment(); // PM: Skill assessment
-        case 6: return renderPMTargetFrequency(); // PM: Target frequency
-        case 7: return renderPMSmartStart(); // PM: Smart Start
-        case 8: return renderPMTeachingHelper(); // PM: Teaching helper
-        case 9: return renderPMDuration(); // PM: Duration
-        case 10: return renderConfirmStep(); // PM: Summary
+        case 5: return renderPMSkillName(); // PM: Skill name input
+        case 6: return renderPMSkillAssessment(); // PM: Skill assessment
+        case 7: return renderPMTargetFrequency(); // PM: Target frequency
+        case 8: return renderPMSmartStart(); // PM: Smart Start
+        case 9: return renderPMTeachingHelper(); // PM: Teaching helper
+        case 10: return renderPMDuration(); // PM: Duration
+        case 11: return renderConfirmStep(); // PM: Summary
         default: return null;
       }
     }
@@ -2726,8 +2801,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   // Update last step index for Progressive Mastery flow
-  const lastStepIndex = data.goalType === 'progressive_mastery' ? 10 : (isSupporter ? 9 : 8);
-  const totalSteps = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 10 : 8);
+  const lastStepIndex = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 9 : 8);
+  const totalSteps = data.goalType === 'progressive_mastery' ? 12 : (isSupporter ? 10 : 8);
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
 
@@ -2736,10 +2811,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     // Progressive Mastery flow
     if (data.goalType === 'progressive_mastery') {
       if (currentStep! >= 0 && currentStep! <= 4) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep === 5 || currentStep === 6) return { label: 'Skill Assessment', index: 2, total: 5 };
-      if (currentStep === 7) return { label: 'Smart Start Plan', index: 3, total: 5 };
-      if (currentStep === 8 || currentStep === 9) return { label: 'Support & Duration', index: 4, total: 5 };
-      if (currentStep === 10) return { label: 'Review & Confirm', index: 5, total: 5 };
+      if (currentStep === 5) return { label: 'Define Skill', index: 2, total: 5 };
+      if (currentStep === 6 || currentStep === 7) return { label: 'Skill Assessment', index: 2, total: 5 };
+      if (currentStep === 8) return { label: 'Smart Start Plan', index: 3, total: 5 };
+      if (currentStep === 9 || currentStep === 10) return { label: 'Support & Duration', index: 4, total: 5 };
+      if (currentStep === 11) return { label: 'Review & Confirm', index: 5, total: 5 };
     }
     
     if (actuallySupportsAnyone) {
