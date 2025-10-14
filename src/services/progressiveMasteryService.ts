@@ -71,7 +71,7 @@ export const progressiveMasteryService = {
 
       case 2: // Early Learner
         suggestedInitial = Math.max(2, Math.round(targetFrequency * 0.4));
-        rationale = "You've tried this before, so we'll start a bit higher than a complete beginner while still giving you room to grow.";
+        rationale = "You've tried before, so we'll start a bit higher than a complete beginner while still giving you room to grow.";
         phaseGuidance = "We'll ramp up over 2-3 weeks as you develop consistency and confidence.";
         break;
 
