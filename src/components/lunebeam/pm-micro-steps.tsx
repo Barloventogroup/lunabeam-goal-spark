@@ -486,6 +486,8 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
 };
 
 export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
+  const [showCustomSelector, setShowCustomSelector] = React.useState(false);
+  
   const levelContext = data.pmAssessment?.calculatedLevel 
     ? `Starting Level: ${data.pmAssessment.levelLabel} ${['🌱', '🌿', '🌳', '🎯', '⭐'][data.pmAssessment.calculatedLevel - 1]}`
     : undefined;
@@ -571,20 +573,55 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        updateData({
-                          pmPracticePlan: {
-                            ...data.pmPracticePlan,
-                            startingFrequency: data.pmPracticePlan?.targetFrequency,
-                            smartStartAccepted: false
-                          }
-                        });
+                        setShowCustomSelector(!showCustomSelector);
+                        if (!showCustomSelector) {
+                          updateData({
+                            pmPracticePlan: {
+                              ...data.pmPracticePlan,
+                              smartStartAccepted: false
+                            }
+                          });
+                        }
                       }}
                     >
-                      Let me choose ▼
+                      {showCustomSelector ? 'Hide options ▲' : 'Let me choose ▼'}
                     </Button>
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* Custom Frequency Selector */}
+        {showCustomSelector && data.pmPracticePlan?.targetFrequency && (
+          <Card className="bg-accent/50 border-primary/30 animate-in fade-in slide-in-from-top-2 duration-300">
+            <CardContent className="p-4 space-y-3">
+              <Label className="text-sm font-semibold">Choose your starting frequency:</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4, 5, 6, 7].map(freq => (
+                  <Button
+                    key={freq}
+                    variant={data.pmPracticePlan?.startingFrequency === freq && !data.pmPracticePlan?.smartStartAccepted ? 'default' : 'outline'}
+                    onClick={() => {
+                      updateData({
+                        pmPracticePlan: {
+                          ...data.pmPracticePlan,
+                          startingFrequency: freq,
+                          smartStartAccepted: false
+                        }
+                      });
+                    }}
+                    className="h-12"
+                    disabled={freq > (data.pmPracticePlan?.targetFrequency || 0)}
+                  >
+                    {freq}×
+                  </Button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                per week (max {data.pmPracticePlan?.targetFrequency}× based on your target)
+              </p>
             </CardContent>
           </Card>
         )}
@@ -625,6 +662,11 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                 <div>
                   <div className="font-semibold">📊 Your Plan</div>
                   <p className="text-sm text-muted-foreground">
+                    {data.pmPracticePlan.smartStartAccepted && (
+                      <span className="inline-flex items-center gap-1 text-primary">
+                        <Sparkles className="h-3 w-3" /> Smart Start: 
+                      </span>
+                    )}
                     Practice {data.pmPracticePlan.startingFrequency}× per week 
                     {data.pmPracticePlan.durationWeeks 
                       ? ` for ${data.pmPracticePlan.durationWeeks} weeks`
