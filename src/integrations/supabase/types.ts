@@ -517,10 +517,13 @@ export type Database = {
       }
       goals: {
         Row: {
+          ai_generation_metadata: Json | null
           base_points_per_milestone: number | null
           base_points_per_planned_step: number | null
+          completed_steps_count: number | null
           created_at: string
           created_by: string
+          current_step_position: number | null
           description: string | null
           domain: string | null
           due_date: string | null
@@ -537,6 +540,7 @@ export type Database = {
           planned_milestones_count: number | null
           planned_scaffold_count: number | null
           planned_steps_count: number | null
+          pm_metadata: Json | null
           priority: string
           progress_pct: number
           selected_days: string[] | null
@@ -547,13 +551,17 @@ export type Database = {
           tags: string[] | null
           title: string
           total_possible_points: number | null
+          total_steps_count: number | null
           updated_at: string
         }
         Insert: {
+          ai_generation_metadata?: Json | null
           base_points_per_milestone?: number | null
           base_points_per_planned_step?: number | null
+          completed_steps_count?: number | null
           created_at?: string
           created_by: string
+          current_step_position?: number | null
           description?: string | null
           domain?: string | null
           due_date?: string | null
@@ -570,6 +578,7 @@ export type Database = {
           planned_milestones_count?: number | null
           planned_scaffold_count?: number | null
           planned_steps_count?: number | null
+          pm_metadata?: Json | null
           priority?: string
           progress_pct?: number
           selected_days?: string[] | null
@@ -580,13 +589,17 @@ export type Database = {
           tags?: string[] | null
           title: string
           total_possible_points?: number | null
+          total_steps_count?: number | null
           updated_at?: string
         }
         Update: {
+          ai_generation_metadata?: Json | null
           base_points_per_milestone?: number | null
           base_points_per_planned_step?: number | null
+          completed_steps_count?: number | null
           created_at?: string
           created_by?: string
+          current_step_position?: number | null
           description?: string | null
           domain?: string | null
           due_date?: string | null
@@ -603,6 +616,7 @@ export type Database = {
           planned_milestones_count?: number | null
           planned_scaffold_count?: number | null
           planned_steps_count?: number | null
+          pm_metadata?: Json | null
           priority?: string
           progress_pct?: number
           selected_days?: string[] | null
@@ -613,6 +627,7 @@ export type Database = {
           tags?: string[] | null
           title?: string
           total_possible_points?: number | null
+          total_steps_count?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -858,15 +873,18 @@ export type Database = {
           created_at: string
           goal_category: string | null
           goal_title: string
+          helper_notified: boolean | null
           id: string
           is_self_registered: boolean | null
           motivation: string | null
+          skill_level: number | null
           supporter_notified: boolean | null
           triggered_keywords: string[] | null
+          user_age: number | null
           user_email: string | null
           user_id: string
           violation_layer: string
-          violation_reason: string | null
+          violation_reason: string
         }
         Insert: {
           ai_response?: string | null
@@ -875,15 +893,18 @@ export type Database = {
           created_at?: string
           goal_category?: string | null
           goal_title: string
+          helper_notified?: boolean | null
           id?: string
           is_self_registered?: boolean | null
           motivation?: string | null
+          skill_level?: number | null
           supporter_notified?: boolean | null
           triggered_keywords?: string[] | null
+          user_age?: number | null
           user_email?: string | null
           user_id: string
           violation_layer: string
-          violation_reason?: string | null
+          violation_reason: string
         }
         Update: {
           ai_response?: string | null
@@ -892,20 +913,24 @@ export type Database = {
           created_at?: string
           goal_category?: string | null
           goal_title?: string
+          helper_notified?: boolean | null
           id?: string
           is_self_registered?: boolean | null
           motivation?: string | null
+          skill_level?: number | null
           supporter_notified?: boolean | null
           triggered_keywords?: string[] | null
+          user_age?: number | null
           user_email?: string | null
           user_id?: string
           violation_layer?: string
-          violation_reason?: string | null
+          violation_reason?: string
         }
         Relationships: []
       }
       steps: {
         Row: {
+          completion_notes: string | null
           completion_streak: number | null
           created_at: string
           dependency_step_ids: string[] | null
@@ -914,6 +939,7 @@ export type Database = {
           explainer: string | null
           goal_id: string
           id: string
+          independence_rating: number | null
           initiated_at: string | null
           is_planned: boolean | null
           is_required: boolean
@@ -922,8 +948,10 @@ export type Database = {
           notes: string | null
           order_index: number
           planned_week_index: number | null
+          pm_metadata: Json | null
           points: number | null
           points_awarded: number | null
+          quality_rating: number | null
           skip_count: number | null
           skip_reasons: Json | null
           status: string
@@ -933,6 +961,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          completion_notes?: string | null
           completion_streak?: number | null
           created_at?: string
           dependency_step_ids?: string[] | null
@@ -941,6 +970,7 @@ export type Database = {
           explainer?: string | null
           goal_id: string
           id?: string
+          independence_rating?: number | null
           initiated_at?: string | null
           is_planned?: boolean | null
           is_required?: boolean
@@ -949,8 +979,10 @@ export type Database = {
           notes?: string | null
           order_index?: number
           planned_week_index?: number | null
+          pm_metadata?: Json | null
           points?: number | null
           points_awarded?: number | null
+          quality_rating?: number | null
           skip_count?: number | null
           skip_reasons?: Json | null
           status?: string
@@ -960,6 +992,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          completion_notes?: string | null
           completion_streak?: number | null
           created_at?: string
           dependency_step_ids?: string[] | null
@@ -968,6 +1001,7 @@ export type Database = {
           explainer?: string | null
           goal_id?: string
           id?: string
+          independence_rating?: number | null
           initiated_at?: string | null
           is_planned?: boolean | null
           is_required?: boolean
@@ -976,8 +1010,10 @@ export type Database = {
           notes?: string | null
           order_index?: number
           planned_week_index?: number | null
+          pm_metadata?: Json | null
           points?: number | null
           points_awarded?: number | null
+          quality_rating?: number | null
           skip_count?: number | null
           skip_reasons?: Json | null
           status?: string
