@@ -46,6 +46,70 @@ export interface Consent {
   share_with: SupporterConsent[];
 }
 
+// Progressive Mastery Types (defined before Goal interface as they're referenced in metadata)
+export interface SkillAssessment {
+  calculated_level: number;
+  q1_familiarity: number;
+  q2_confidence: number;
+  q3_independence: number;
+  assessment_date: string;
+  level_label: 'beginner' | 'early_learner' | 'developing' | 'proficient' | 'independent';
+}
+
+export interface TeachingHelper {
+  helper_id: string;
+  helper_name: string;
+  relationship: 'parent' | 'teacher' | 'coach';
+}
+
+export interface SmartStartPlan {
+  suggested_initial: number;
+  target_frequency: number;
+  rationale: string;
+  phase_guidance: string;
+}
+
+export interface ProgressionSummary {
+  total_steps: number;
+  completed_steps: number;
+  avg_quality_rating: number;
+  avg_independence_level: number;
+  latest_independence_level: number;
+  quality_trend: 'improving' | 'stable' | 'declining' | 'insufficient_data';
+  independence_trend: 'improving' | 'stable' | 'declining' | 'insufficient_data';
+  sessions_with_helper: number;
+  sessions_independent: number;
+  avg_time_spent_minutes: number;
+  skill_assessment?: SkillAssessment;
+  smart_start?: any;
+  teaching_helper?: TeachingHelper;
+  current_phase?: 'learning' | 'developing' | 'proficient' | 'independent';
+}
+
+export interface TeachingHelperGoal {
+  goal_id: string;
+  goal_title: string;
+  individual_id: string;
+  individual_name: string;
+  current_phase: 'learning' | 'developing' | 'proficient' | 'independent';
+  avg_independence: number;
+  total_sessions: number;
+  last_session_date: string;
+}
+
+export interface CheckInData {
+  goalId: string;
+  stepId: string;
+  qualityRating: number;
+  independenceLevel: number;
+  timeSpentMinutes?: number;
+  confidenceBefore?: number;
+  confidenceAfter?: number;
+  notes?: string;
+  helperPresent?: boolean;
+  helperId?: string;
+}
+
 // Goals & Steps Types (New MVP Model)
 export type GoalDomain = 'school' | 'work' | 'life' | 'health' | 'education' | 'employment' | 'independent_living' | 'social_skills' | 'postsecondary' | 'fun_recreation' | 'other';
 export type GoalPriority = 'low' | 'medium' | 'high';
@@ -76,6 +140,7 @@ export interface Goal {
   created_at: string;
   updated_at: string;
   progress?: GoalProgress;
+  goal_type?: 'habit' | 'progressive_mastery';
   
   // New fields for points system
   frequency_per_week?: number;
@@ -90,12 +155,16 @@ export interface Goal {
   total_possible_points?: number;
   earned_points?: number;
   
-  // Metadata for generation tracking
+  // Metadata for generation tracking and Progressive Mastery
   metadata?: {
     generation_incomplete?: boolean;
     failed_days?: Array<{ day: number; date: Date; error: string }>;
     successful_days?: number;
     total_expected_days?: number;
+    skill_assessment?: SkillAssessment;
+    smart_start?: any;
+    teaching_helper?: TeachingHelper;
+    current_phase?: 'learning' | 'developing' | 'proficient' | 'independent';
     [key: string]: any;
   };
 }

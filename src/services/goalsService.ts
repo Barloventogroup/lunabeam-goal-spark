@@ -335,6 +335,38 @@ export const goalsService = {
 
     if (error) throw error;
     return data as Goal;
+  },
+
+  // Update goal metadata (merge with existing metadata)
+  async updateMetadata(goalId: string, metadataUpdates: Record<string, any>): Promise<Goal> {
+    const goal = await this.getGoal(goalId);
+    if (!goal) throw new Error('Goal not found');
+    
+    const updatedMetadata = {
+      ...goal.metadata,
+      ...metadataUpdates
+    };
+    
+    return this.updateGoal(goalId, { metadata: updatedMetadata });
+  },
+
+  // Get Progressive Mastery goals for a user
+  async getProgressiveMasteryGoals(userId?: string): Promise<Goal[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    const targetUserId = userId || user?.id;
+    
+    if (!targetUserId) return [];
+    
+    const { data, error } = await supabase
+      .from('goals')
+      .select('*')
+      .eq('owner_id', targetUserId)
+      .eq('goal_type', 'progressive_mastery')
+      .in('status', ['active', 'planned'])
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return (data || []) as Goal[];
   }
 };
 // Steps API
