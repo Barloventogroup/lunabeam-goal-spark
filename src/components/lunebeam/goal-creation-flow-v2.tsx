@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format, addDays, addWeeks, isAfter, isBefore } from 'date-fns';
-import { CalendarIcon, Clock, X, Sparkles } from 'lucide-react';
+import { CalendarIcon, Clock, X, Sparkles, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { goalsService } from '@/services/goalsService';
 import type { GoalDomain, GoalPriority } from '@/types';
@@ -19,8 +20,10 @@ import { progressiveMasteryService } from '@/services/progressiveMasteryService'
 import { PermissionsService } from '@/services/permissionsService';
 import { notificationsService } from '@/services/notificationsService';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
 interface FlowData {
+  goal_title?: string;
   timeframe?: 'short_term' | 'mid_term' | 'long_term';
   first_action?: string;
   milestone?: string;
@@ -124,31 +127,21 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
     setCurrentStep('goal_type_selection');
   };
 
-  const handleGoalTypeSelect = (goalType: 'habit' | 'progressive_mastery') => {
-    updateFlowData('goal_type', goalType);
+  const handleGoalEntryComplete = () => {
+    if (!flowData.goal_title?.trim() || !flowData.goal_type) return;
     
-    if (goalType === 'progressive_mastery') {
+    if (flowData.goal_type === 'progressive_mastery') {
       setCurrentStep('skill_assessment');
     } else {
-      // Continue with existing habit flow
-      switch (flowData.timeframe) {
-        case 'short_term':
-          setCurrentStep('short_followup');
-          break;
-        case 'mid_term':
-          setCurrentStep('mid_followup');
-          break;
-        case 'long_term':
-          setCurrentStep('long_followup');
-          break;
-      }
+      // Habit flow - go to scheduling
+      setCurrentStep('habit_scheduling');
     }
   };
 
   const handleSaveGoal = async () => {
     setIsLoading(true);
     try {
-      const title = flowData.first_action || flowData.milestone || flowData.starter_step || 'Untitled Goal';
+      const title = flowData.goal_title || flowData.first_action || flowData.milestone || flowData.starter_step || 'Untitled Goal';
       const dueDate = flowData.due_at || flowData.start_due_at || flowData.due_date;
       
       const goalData = {
@@ -185,7 +178,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
   const handleSavePMGoal = async () => {
     setIsLoading(true);
     try {
-      const title = flowData.first_action || flowData.milestone || flowData.starter_step || 'Untitled Goal';
+      const title = flowData.goal_title || flowData.first_action || flowData.milestone || flowData.starter_step || 'Untitled Goal';
       const startDate = new Date().toISOString().split('T')[0];
       const dueDate = flowData.duration_weeks 
         ? addWeeks(new Date(), flowData.duration_weeks).toISOString().split('T')[0]
@@ -286,7 +279,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
       </div>
       <div className="flex gap-2">
         <Button 
-          onClick={() => setCurrentStep('timeframe')} 
+          onClick={() => setCurrentStep('goal_entry')} 
           className="flex-1"
           disabled={!selectedOwnerId}
         >
@@ -299,53 +292,110 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
     </Card>
   );
 
-  const renderTimeframe = () => (
-    <Card className="p-6 space-y-4">
-      <div className="space-y-3">
-        <h3 className="text-lg font-medium">Is this a short-term step or a long-term goal?</h3>
-        <div className="space-y-2">
-          <Button
-            variant="outline"
-            className="w-full justify-start h-auto p-4"
-            onClick={() => handleTimeframeSelect('short_term')}
+  const renderGoalEntry = () => {
+    const [localTitle, setLocalTitle] = useState(flowData.goal_title || '');
+
+    return (
+      <Card className="p-6 space-y-6">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">What do you want to achieve?</h2>
+            <p className="text-sm text-muted-foreground">
+              Describe your goal in a few words
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="goal-title">Your goal</Label>
+            <Textarea
+              id="goal-title"
+              placeholder="e.g., Learn to play piano, Practice skateboarding, Get better at cooking"
+              value={localTitle}
+              onChange={(e) => {
+                setLocalTitle(e.target.value);
+                updateFlowData('goal_title', e.target.value);
+              }}
+              rows={2}
+              className="resize-none"
+            />
+          </div>
+
+          <div className="space-y-3 pt-2 border-t">
+            <Label>How familiar are you with this activity?</Label>
+            
+            {/* Option 1: Habit */}
+            <Card 
+              className={cn(
+                "cursor-pointer hover:shadow-md transition-all border-2",
+                flowData.goal_type === 'habit' 
+                  ? "border-primary bg-primary/5" 
+                  : "border-border hover:border-primary/50"
+              )} 
+              onClick={() => updateFlowData('goal_type', 'habit')}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  {flowData.goal_type === 'habit' && (
+                    <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  )}
+                  <span className="text-2xl">🔄</span>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold">Yes, I already know how to do this</div>
+                    <div className="text-sm text-muted-foreground mt-1">
+                      Track consistency and build a routine
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Option 2: Progressive Mastery */}
+            <Card 
+              className={cn(
+                "cursor-pointer hover:shadow-md transition-all border-2 relative",
+                flowData.goal_type === 'progressive_mastery' 
+                  ? "border-primary bg-primary/5" 
+                  : "border-border hover:border-primary/50"
+              )} 
+              onClick={() => updateFlowData('goal_type', 'progressive_mastery')}
+            >
+              <Badge className="absolute top-2 right-2 text-xs bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800">
+                Recommended for learning
+              </Badge>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  {flowData.goal_type === 'progressive_mastery' && (
+                    <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  )}
+                  <span className="text-2xl">🎯</span>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold">No, I'm learning or improving this skill</div>
+                    <div className="text-sm text-muted-foreground mt-1">
+                      Track your progress from beginner to independent
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        
+        <div className="flex gap-2">
+          <BackButton variant="text" onClick={() => setCurrentStep('greeting')} className="flex-1" />
+          <Button 
+            onClick={handleGoalEntryComplete} 
+            className="flex-1"
+            disabled={!localTitle.trim() || !flowData.goal_type}
           >
-            <div className="text-left">
-              <div className="font-medium">Today or this week</div>
-              <div className="text-sm text-muted-foreground">Quick actions you can do soon</div>
-            </div>
+            Continue
           </Button>
-          <Button
-            variant="outline"
-            className="w-full justify-start h-auto p-4"
-            onClick={() => handleTimeframeSelect('mid_term')}
-          >
-            <div className="text-left">
-              <div className="font-medium">Next 1–3 months</div>
-              <div className="text-sm text-muted-foreground">Milestones and bigger steps</div>
-            </div>
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full justify-start h-auto p-4"
-            onClick={() => handleTimeframeSelect('long_term')}
-          >
-            <div className="text-left">
-              <div className="font-medium">Long-term (6+ months)</div>
-              <div className="text-sm text-muted-foreground">Big goals, broken into steps</div>
-            </div>
+          <Button variant="outline" onClick={handleExit} size="icon">
+            <X className="h-4 w-4" />
           </Button>
         </div>
-      </div>
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={() => setCurrentStep('greeting')} className="flex-1">
-          Back
-        </Button>
-        <Button variant="outline" onClick={handleExit} size="icon">
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-    </Card>
-  );
+      </Card>
+    );
+  };
 
   const renderTextInput = (stepId: string, prompt: string, placeholder: string, saveKey: keyof FlowData, nextStep: string) => {
     const savedValue = flowData[saveKey];
@@ -580,41 +630,157 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
     );
   };
 
-  const renderGoalTypeSelection = () => (
+  const renderHabitScheduling = () => (
     <Card className="p-6 space-y-4">
       <div className="space-y-3">
-        <h3 className="text-lg font-medium">What type of goal is this?</h3>
+        <h3 className="text-lg font-medium">When would you like to work on this?</h3>
+        <p className="text-sm text-muted-foreground">
+          Choose a target date or time to get started
+        </p>
+        
         <div className="space-y-2">
           <Button
             variant="outline"
             className="w-full justify-start h-auto p-4"
-            onClick={() => handleGoalTypeSelect('habit')}
+            onClick={() => {
+              const dateTime = new Date();
+              dateTime.setHours(18, 0, 0, 0);
+              updateFlowData('due_at', dateTime.toISOString());
+              setCurrentStep('habit_summary');
+            }}
           >
             <div className="text-left">
-              <div className="font-medium">🎯 Habit Goal</div>
-              <div className="text-sm text-muted-foreground">
-                Build a routine or reach a one-time milestone
-              </div>
+              <div className="font-medium">Today at 6:00 PM</div>
+              <div className="text-sm text-muted-foreground">Start right away</div>
             </div>
           </Button>
           
           <Button
             variant="outline"
             className="w-full justify-start h-auto p-4"
-            onClick={() => handleGoalTypeSelect('progressive_mastery')}
+            onClick={() => {
+              const dateTime = addDays(new Date(), 1);
+              dateTime.setHours(10, 0, 0, 0);
+              updateFlowData('due_at', dateTime.toISOString());
+              setCurrentStep('habit_summary');
+            }}
           >
             <div className="text-left">
-              <div className="font-medium">🚀 Progressive Mastery</div>
-              <div className="text-sm text-muted-foreground">
-                Learn a new skill with increasing independence
-              </div>
+              <div className="font-medium">Tomorrow at 10:00 AM</div>
+              <div className="text-sm text-muted-foreground">Give yourself a day to prepare</div>
+            </div>
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-full justify-start h-auto p-4"
+            onClick={() => {
+              const dateTime = addDays(new Date(), 7);
+              dateTime.setHours(9, 0, 0, 0);
+              updateFlowData('due_at', dateTime.toISOString());
+              setCurrentStep('habit_summary');
+            }}
+          >
+            <div className="text-left">
+              <div className="font-medium">Next week</div>
+              <div className="text-sm text-muted-foreground">Plan ahead</div>
             </div>
           </Button>
         </div>
+
+        <div className="space-y-3 border-t pt-3">
+          <p className="text-sm text-muted-foreground">Or pick a custom time:</p>
+          <div className="flex gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="flex-1 justify-start">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? format(selectedDate, 'MMM dd, yyyy') : 'Pick date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-white dark:bg-gray-800 border shadow-lg pointer-events-auto">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  disabled={(date) => isBefore(date, new Date())}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Input
+                type="time"
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                className="w-24"
+              />
+            </div>
+          </div>
+          
+          <Button 
+            onClick={() => {
+              if (selectedDate) {
+                const dateTimeString = `${format(selectedDate, 'yyyy-MM-dd')}T${selectedTime}`;
+                updateFlowData('due_at', dateTimeString);
+                setCurrentStep('habit_summary');
+              }
+            }}
+            className="w-full"
+            disabled={!selectedDate}
+          >
+            Set this time
+          </Button>
+        </div>
       </div>
+      
       <div className="flex gap-2">
-        <Button variant="outline" onClick={() => setCurrentStep('timeframe')}>
-          Back
+        <BackButton variant="text" onClick={() => setCurrentStep('goal_entry')} className="flex-1" />
+        <Button variant="outline" onClick={handleExit} size="icon">
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </Card>
+  );
+
+  const renderHabitSummary = () => (
+    <Card className="p-6 space-y-4">
+      <div className="space-y-3">
+        <h3 className="text-lg font-medium">Confirm your plan</h3>
+        
+        <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
+          <div>
+            <span className="text-sm font-medium">Goal: </span>
+            <span className="text-sm">{flowData.goal_title}</span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Type:</span>
+            <Badge variant="secondary">Habit Goal</Badge>
+          </div>
+          
+          {flowData.due_at && (
+            <div>
+              <span className="text-sm font-medium">Start: </span>
+              <span className="text-sm">
+                {format(new Date(flowData.due_at), 'MMM dd, yyyy \'at\' h:mm a')}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div className="flex gap-2">
+        <BackButton variant="text" onClick={() => setCurrentStep('habit_scheduling')} className="flex-1" />
+        <Button 
+          onClick={handleSaveGoal} 
+          className="flex-1"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Creating...' : 'Create Goal'}
         </Button>
         <Button variant="outline" onClick={handleExit} size="icon">
           <X className="h-4 w-4" />
@@ -626,7 +792,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
   const renderSkillAssessment = () => (
     <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
       <SkillAssessmentWizard
-        goalTitle={flowData.first_action || flowData.milestone || flowData.starter_step || 'this skill'}
+        goalTitle={flowData.goal_title || flowData.first_action || flowData.milestone || flowData.starter_step || 'this skill'}
         onComplete={(assessment) => {
           updateFlowData('skill_assessment', {
             q1_familiarity: assessment.q1_familiarity,
@@ -635,51 +801,13 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
             calculated_level: assessment.calculated_level,
             level_label: assessment.level_label
           });
-          setCurrentStep('pm_text_input');
+          setCurrentStep('target_frequency');
         }}
-        onBack={() => setCurrentStep('goal_type_selection')}
+        onBack={() => setCurrentStep('goal_entry')}
       />
     </div>
   );
 
-  const renderPMTextInput = () => {
-    const savedValue = flowData.first_action || flowData.milestone || flowData.starter_step;
-    const [inputValue, setInputValue] = useState(typeof savedValue === 'string' ? savedValue : '');
-
-    const handleNext = () => {
-      if (inputValue.trim()) {
-        updateFlowData('first_action', inputValue.trim());
-        setCurrentStep('target_frequency');
-      }
-    };
-
-    return (
-      <Card className="p-6 space-y-4">
-        <div className="space-y-3">
-          <h3 className="text-lg font-medium">What skill do you want to learn?</h3>
-          <Textarea
-            placeholder="e.g., Cooking scrambled eggs, Playing guitar chords, Writing essays"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            rows={3}
-          />
-        </div>
-        <div className="flex gap-2">
-          <BackButton variant="text" onClick={() => setCurrentStep('skill_assessment')} className="flex-1" />
-          <Button 
-            onClick={handleNext} 
-            className="flex-1"
-            disabled={!inputValue.trim()}
-          >
-            Next
-          </Button>
-          <Button variant="outline" onClick={handleExit} size="icon">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </Card>
-    );
-  };
 
   const renderTargetFrequency = () => (
     <Card className="p-6 space-y-4">
@@ -709,7 +837,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
       </div>
       
       <div className="flex gap-2">
-        <BackButton onClick={() => setCurrentStep('pm_text_input')} />
+        <BackButton onClick={() => setCurrentStep('skill_assessment')} />
         <Button 
           onClick={() => setCurrentStep('smart_start_suggestion')} 
           className="flex-1"
@@ -1004,7 +1132,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
         <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
           <div>
             <span className="text-sm font-medium">Goal: </span>
-            <span className="text-sm">{flowData.first_action || flowData.milestone || flowData.starter_step}</span>
+            <span className="text-sm">{flowData.goal_title || flowData.first_action || flowData.milestone || flowData.starter_step}</span>
           </div>
           
           <div className="flex items-center gap-2">
@@ -1060,18 +1188,19 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
     case 'greeting':
       return renderGreeting();
     
-    case 'timeframe':
-      return renderTimeframe();
+    case 'goal_entry':
+      return renderGoalEntry();
     
-    case 'goal_type_selection':
-      return renderGoalTypeSelection();
+    // Habit flow
+    case 'habit_scheduling':
+      return renderHabitScheduling();
+    
+    case 'habit_summary':
+      return renderHabitSummary();
     
     // Progressive Mastery flow
     case 'skill_assessment':
       return renderSkillAssessment();
-    
-    case 'pm_text_input':
-      return renderPMTextInput();
     
     case 'target_frequency':
       return renderTargetFrequency();
