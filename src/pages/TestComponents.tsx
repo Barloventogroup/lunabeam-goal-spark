@@ -297,11 +297,13 @@ export default function TestComponents() {
 
       {/* Modals */}
       {showAssessment && (
-        <SkillAssessmentWizard
-          goalTitle="Cooking Scrambled Eggs"
-          onComplete={handleAssessmentComplete}
-          onBack={() => setShowAssessment(false)}
-        />
+        <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+          <SkillAssessmentWizard
+            goalTitle="Cooking Scrambled Eggs"
+            onComplete={handleAssessmentComplete}
+            onBack={() => setShowAssessment(false)}
+          />
+        </div>
       )}
 
       {showCheckIn && (
