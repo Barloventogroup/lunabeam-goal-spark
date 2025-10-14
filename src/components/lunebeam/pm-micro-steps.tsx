@@ -492,14 +492,29 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
     ? `Starting Level: ${data.pmAssessment.levelLabel} ${['🌱', '🌿', '🌳', '🎯', '⭐'][data.pmAssessment.calculatedLevel - 1]}`
     : undefined;
   
-  const targetFreq = data.pmPracticePlan?.targetFrequency || 3;
   const level = data.pmAssessment?.calculatedLevel || 3;
+  
+  // Use a sensible default target frequency based on skill level
+  // Beginners: 3×, Intermediate: 4×, Advanced: 5×
+  const defaultTargetFreq = level <= 2 ? 3 : (level >= 4 ? 5 : 4);
+  const targetFreq = data.pmPracticePlan?.targetFrequency || defaultTargetFreq;
   
   const smartStartPlan = progressiveMasteryService.suggestStartFrequency(level, targetFreq);
   const smartStartFreq = smartStartPlan.suggested_initial;
   
-  const isComplete = data.pmPracticePlan?.targetFrequency && 
-                     data.pmPracticePlan?.startingFrequency && 
+  // Auto-set target frequency if not already set
+  React.useEffect(() => {
+    if (!data.pmPracticePlan?.targetFrequency) {
+      updateData({
+        pmPracticePlan: {
+          ...data.pmPracticePlan,
+          targetFrequency: defaultTargetFreq
+        }
+      });
+    }
+  }, []);
+  
+  const isComplete = data.pmPracticePlan?.startingFrequency && 
                      data.pmPracticePlan?.durationWeeks !== undefined;
   
   return (
@@ -519,31 +534,8 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
       hideFooter
     >
       <div className="space-y-6">
-        {/* Q1: Target Frequency */}
-        <div className="space-y-3">
-          <Label className="text-base">How often do you want to practice eventually?</Label>
-          <div className="grid grid-cols-4 gap-2">
-            {[1, 2, 3, 4, 5, 6, 7].map(freq => (
-              <Button
-                key={freq}
-                variant={data.pmPracticePlan?.targetFrequency === freq ? 'default' : 'outline'}
-                onClick={() => updateData({
-                  pmPracticePlan: {
-                    ...data.pmPracticePlan,
-                    targetFrequency: freq
-                  }
-                })}
-                className="h-12"
-              >
-                {freq}×
-              </Button>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">per week</p>
-        </div>
-        
         {/* Smart Start Suggestion */}
-        {data.pmPracticePlan?.targetFrequency && (
+        {(
           <Card className="bg-primary/5 border-primary/20 animate-in fade-in duration-300">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
@@ -561,6 +553,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                           pmPracticePlan: {
                             ...data.pmPracticePlan,
                             startingFrequency: smartStartFreq,
+                            targetFrequency: smartStartFreq,
                             smartStartAccepted: true
                           }
                         });
@@ -594,7 +587,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
         )}
         
         {/* Custom Frequency Selector */}
-        {showCustomSelector && data.pmPracticePlan?.targetFrequency && (
+        {showCustomSelector && (
           <Card className="bg-accent/50 border-primary/30 animate-in fade-in slide-in-from-top-2 duration-300">
             <CardContent className="p-4 space-y-3">
               <Label className="text-sm font-semibold">Choose your starting frequency:</Label>
@@ -608,19 +601,19 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                         pmPracticePlan: {
                           ...data.pmPracticePlan,
                           startingFrequency: freq,
+                          targetFrequency: freq,
                           smartStartAccepted: false
                         }
                       });
                     }}
                     className="h-12"
-                    disabled={freq > (data.pmPracticePlan?.targetFrequency || 0)}
                   >
                     {freq}×
                   </Button>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">
-                per week (max {data.pmPracticePlan?.targetFrequency}× based on your target)
+                per week
               </p>
             </CardContent>
           </Card>
