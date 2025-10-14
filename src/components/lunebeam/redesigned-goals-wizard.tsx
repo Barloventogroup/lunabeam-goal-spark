@@ -995,13 +995,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           // Open-ended habit is valid
           return true;
         }
-      case 7:
+      case 6:
         // Support context validation
         if (data.supportContext === 'alone') return true;
         // Only require allies to be selected, NOT roles
         if (!data.selectedSupporters || data.selectedSupporters.length === 0) return false;
         return true;
-      case 8:
+      case 7:
         // Rewards (supporters only)
         return true;
       // Optional step
