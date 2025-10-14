@@ -46,7 +46,7 @@ export const progressiveMasteryService = {
       case 5:
         return 'Independent';
       default:
-        return 'Unknown';
+        return 'Beginner';
     }
   },
 
@@ -82,7 +82,7 @@ export const progressiveMasteryService = {
         break;
 
       case 4: // Proficient
-        suggestedInitial = Math.max(targetFrequency - 1, Math.round(targetFrequency * 0.8));
+        suggestedInitial = Math.max(4, Math.round(targetFrequency * 0.8));
         rationale = "You're already proficient, so we're starting close to your target frequency.";
         phaseGuidance = "We'll reach your full target in 1-2 weeks as you maintain and strengthen your skills.";
         break;

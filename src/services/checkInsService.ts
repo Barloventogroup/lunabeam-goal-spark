@@ -380,28 +380,33 @@ class CheckInsService {
   private validateCheckInData(data: Partial<CheckInInput>, isUpdate: boolean = false): void {
     // Required fields for create
     if (!isUpdate) {
-      if (!data.goalId) throw new Error('goalId is required');
-      if (!data.stepId) throw new Error('stepId is required');
-      if (data.qualityRating === undefined) throw new Error('qualityRating is required');
-      if (data.independenceLevel === undefined) throw new Error('independenceLevel is required');
+      if (!data.goalId || !data.stepId) {
+        throw new Error('Goal ID and Step ID are required');
+      }
+      if (data.qualityRating === undefined || data.independenceLevel === undefined) {
+        throw new Error('Quality rating and independence level are required');
+      }
     }
     
     // Validate numeric ranges
     if (data.qualityRating !== undefined) {
       if (!Number.isInteger(data.qualityRating) || data.qualityRating < 1 || data.qualityRating > 5) {
-        throw new Error('qualityRating must be an integer between 1 and 5');
+        throw new Error('Quality rating must be between 1 and 5');
       }
     }
     
     if (data.independenceLevel !== undefined) {
       if (!Number.isInteger(data.independenceLevel) || data.independenceLevel < 1 || data.independenceLevel > 5) {
-        throw new Error('independenceLevel must be an integer between 1 and 5');
+        throw new Error('Independence level must be between 1 and 5');
       }
     }
     
     if (data.timeSpentMinutes !== undefined && data.timeSpentMinutes !== null) {
-      if (!Number.isInteger(data.timeSpentMinutes) || data.timeSpentMinutes < 1 || data.timeSpentMinutes > 480) {
-        throw new Error('timeSpentMinutes must be an integer between 1 and 480 (8 hours)');
+      if (data.timeSpentMinutes < 1) {
+        throw new Error('Time spent must be positive');
+      }
+      if (!Number.isInteger(data.timeSpentMinutes) || data.timeSpentMinutes > 480) {
+        throw new Error('Time spent cannot exceed 480 minutes');
       }
     }
     
@@ -420,13 +425,13 @@ class CheckInsService {
     // Validate string length
     if (data.notes !== undefined && data.notes !== null) {
       if (data.notes.length > 500) {
-        throw new Error('notes must not exceed 500 characters');
+        throw new Error('Notes cannot exceed 500 characters');
       }
     }
     
     // Logical consistency
     if (data.helperPresent && !data.helperId) {
-      throw new Error('helperId is required when helperPresent is true');
+      throw new Error('Helper ID required when helper is present');
     }
   }
   
