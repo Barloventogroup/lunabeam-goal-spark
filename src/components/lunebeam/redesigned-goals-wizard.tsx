@@ -332,18 +332,15 @@ const INDIVIDUAL_FLOW_TEXT = {
     }
   },
   step4: {
-    subtitle: "Let's figure out where you're starting from. This goal is which of the following:"
-  },
-  step5: {
     subtitle: "Select up to two"
   },
-  step6: {
+  step5: {
     subtitle: "start building the plan to crush this goal"
   },
-  step7: {
+  step6: {
     subtitle: "(It's great to have allies!)"
   },
-  step8: {
+  step7: {
     subtitle: "Add an additional motivation for you to complete this goal"
   },
   confirm: {
@@ -379,18 +376,15 @@ const getSupporterFlowText = (name?: string) => ({
     }
   },
   step4: {
-    subtitle: `Let's figure out where ${name || 'they'} ${name ? 'is' : 'are'} starting from. This goal is which of the following:`
-  },
-  step5: {
     subtitle: `Select up to two areas that typically feel challenging for ${name || 'them'}`
   },
-  step6: {
+  step5: {
     subtitle: ""
   },
-  step7: {
+  step6: {
     subtitle: "(Having support makes a difference!)"
   },
-  step8: {
+  step7: {
     subtitle: `Add an additional motivation for ${name || 'them'} to complete this goal`
   },
   confirm: {
@@ -2421,7 +2415,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">🎁 Rewards (Optional)</CardTitle>
-        <p className="text-muted-foreground">{text.step8.subtitle}</p>
+        <p className="text-muted-foreground">{text.step7.subtitle}</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
