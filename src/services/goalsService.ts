@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { Goal, Step, GoalDomain, GoalPriority, GoalStatus, StepStatus } from '@/types';
+import type { Goal, Step, GoalDomain, GoalPriority, GoalStatus, StepStatus, CheckInInput, CheckIn } from '@/types';
 import { pointsService } from './pointsService';
 import { validateGoalFrequencyWithDueDate } from '@/utils/goalValidationUtils';
 import { notificationsService } from './notificationsService';
@@ -594,4 +594,51 @@ export const stepsService = {
 
     if (error) throw error;
   },
+
+  /**
+   * Complete a step with rich check-in data (Progressive Mastery)
+   * Orchestrates step completion AND check-in creation
+   */
+  async completeWithCheckIn(stepId: string, checkInData: CheckInInput): Promise<{ step: Step; goal: Goal; checkIn: CheckIn }> {
+    try {
+      // Import to avoid circular dependency
+      const { checkInsService } = await import('./checkInsService');
+      
+      // Create check-in first (validates data)
+      const checkIn = await checkInsService.create(checkInData);
+      
+      // Increment attempt count
+      await this.incrementAttemptCount(stepId);
+      
+      // Complete the step
+      const { step, goal } = await this.completeStep(stepId);
+      
+      return { step, goal, checkIn };
+    } catch (err) {
+      console.error('Error in completeWithCheckIn:', err);
+      throw err;
+    }
+  },
+
+  /**
+   * Increment attempt count for a step
+   * Note: This is a placeholder for future attempt tracking functionality
+   */
+  async incrementAttemptCount(stepId: string): Promise<void> {
+    try {
+      // Update last_attempted_at timestamp
+      const { error } = await supabase
+        .from('steps')
+        .update({ 
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', stepId);
+      
+      if (error) {
+        console.error('Failed to update step attempt timestamp:', error);
+      }
+    } catch (err) {
+      console.error('Error updating step attempt:', err);
+    }
+  }
 };

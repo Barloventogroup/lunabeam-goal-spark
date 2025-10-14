@@ -110,6 +110,52 @@ export interface CheckInData {
   helperId?: string;
 }
 
+// Check-Ins Types (for checkInsService)
+export interface CheckInInput {
+  goalId: string;
+  stepId: string;
+  qualityRating: number; // 1-5
+  independenceLevel: number; // 1-5
+  timeSpentMinutes?: number; // 1-480
+  confidenceBefore?: number; // 1-5
+  confidenceAfter?: number; // 1-5
+  notes?: string; // max 500 chars
+  helperPresent?: boolean;
+  helperId?: string;
+}
+
+export interface CheckIn extends CheckInInput {
+  id: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  stepTitle?: string;
+  goalTitle?: string;
+}
+
+export interface ProgressionAnalytics {
+  totalCheckIns: number;
+  avgQualityRating: number;
+  avgIndependenceLevel: number;
+  qualityTrend: 'improving' | 'stable' | 'declining' | 'insufficient_data';
+  independenceTrend: 'improving' | 'stable' | 'declining' | 'insufficient_data';
+  avgTimeSpentMinutes: number;
+  sessionsWithHelper: number;
+  sessionsIndependent: number;
+  confidenceGain: number;
+  recentCheckIns: CheckIn[];
+}
+
+export interface StepProgressionData {
+  stepId: string;
+  stepTitle: string;
+  attemptCount: number;
+  checkIns: CheckIn[];
+  improvementRate: number;
+  avgQuality: number;
+  avgIndependence: number;
+}
+
 // Goals & Steps Types (New MVP Model)
 export type GoalDomain = 'school' | 'work' | 'life' | 'health' | 'education' | 'employment' | 'independent_living' | 'social_skills' | 'postsecondary' | 'fun_recreation' | 'other';
 export type GoalPriority = 'low' | 'medium' | 'high';
