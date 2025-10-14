@@ -879,10 +879,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 1: return data.goalTitle.trim().length > 0 && !!data.goalType;
         case 2: return true; // Motivation OPTIONAL
         case 3: return data.prerequisites?.ready === true || (data.prerequisites?.ready === false && !!data.prerequisites?.needs); // Prerequisites REQUIRED
-        case 4: return true; // Barriers OPTIONAL
-        case 5: return !!data.pmAssessment?.q1_experience; // Experience REQUIRED
-        case 6: return !!data.pmAssessment?.q2_confidence; // Confidence REQUIRED
-        case 7: return !!data.pmAssessment?.q3_help_needed; // Help Needed REQUIRED
+        case 4: return !!data.pmAssessment?.q1_experience; // Experience REQUIRED (moved up from step 5)
+        case 5: return !!data.pmAssessment?.q2_confidence; // Confidence REQUIRED (moved up from step 6)
+        case 6: return !!data.pmAssessment?.q3_help_needed; // Help Needed REQUIRED (moved up from step 7)
+        case 7: return true; // Barriers OPTIONAL (moved after level calc - now contextual)
         case 8: return true; // Helper OPTIONAL
         case 9: return !!data.pmPracticePlan?.targetFrequency && !!data.pmPracticePlan?.startingFrequency && data.pmPracticePlan?.durationWeeks !== undefined; // Practice Plan REQUIRED
         case 10: return true; // Ready to confirm
@@ -3048,10 +3048,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 1: return renderStep1(); // Goal description + type
         case 2: return <PMStep2_Motivation {...pmStepProps} />; // Motivation
         case 3: return <PMStep3_Prerequisites {...pmStepProps} />; // Prerequisites
-        case 4: return <PMStep4_Barriers {...pmStepProps} />; // Barriers (optional)
-        case 5: return <PMStep5_Experience {...pmStepProps} />; // Experience
-        case 6: return <PMStep6_Confidence {...pmStepProps} />; // Confidence
-        case 7: return <PMStep7_HelpNeeded {...pmStepProps} />; // Help Needed + Calculate Level
+        case 4: return <PMStep5_Experience {...pmStepProps} />; // Experience (moved up)
+        case 5: return <PMStep6_Confidence {...pmStepProps} />; // Confidence
+        case 6: return <PMStep7_HelpNeeded {...pmStepProps} />; // Help Needed + Calculate Level
+        case 7: return <PMStep4_Barriers {...pmStepProps} />; // Barriers (moved after level calc - NOW CONTEXTUAL)
         case 8: return <PMStep8_Helper {...pmStepProps} />; // Helper Selection
         case 9: return <PMStep9_PracticePlan {...pmStepProps} />; // Practice Plan (target + Smart Start + duration)
         case 10: return renderConfirmStep(); // PM: Summary
@@ -3084,10 +3084,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     // Progressive Mastery flow
     if (data.goalType === 'progressive_mastery') {
       if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep === 4) return { label: 'Define Skill', index: 2, total: 5 };
-      if (currentStep === 5 || currentStep === 6) return { label: 'Skill Assessment', index: 2, total: 5 };
-      if (currentStep === 7) return { label: 'Smart Start Plan', index: 3, total: 5 };
-      if (currentStep === 8 || currentStep === 9) return { label: 'Support & Duration', index: 4, total: 5 };
+      if (currentStep === 4 || currentStep === 5 || currentStep === 6) return { label: 'Skill Assessment', index: 2, total: 5 };
+      if (currentStep === 7) return { label: 'Context & Challenges', index: 3, total: 5 };
+      if (currentStep === 8 || currentStep === 9) return { label: 'Support & Practice Plan', index: 4, total: 5 };
       if (currentStep === 10) return { label: 'Review & Confirm', index: 5, total: 5 };
     }
     

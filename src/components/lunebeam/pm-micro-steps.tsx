@@ -110,24 +110,121 @@ export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData
 
 export const PMStep4_Barriers: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
+  const level = data.pmAssessment?.calculatedLevel || 3;
+  const levelLabel = data.pmAssessment?.levelLabel || 'Developing';
+  const levelEmojis = ['🌱', '🌿', '🌳', '🎯', '⭐'];
+  
+  const levelContext = `Starting Level: ${levelLabel} ${levelEmojis[level - 1]}`;
+  
+  const introTextByLevel: Record<number, string> = {
+    1: "As a beginner, many things will be new. Common challenges include:",
+    2: "As an early learner, you're building foundations. You might face:",
+    3: "At the developing level, you have some experience but might face challenges with:",
+    4: "As someone proficient, you're refining skills. Common challenges include:",
+    5: "At your independent level, you might not need much support."
+  };
+  
+  const barrierExamplesByLevel: Record<number, string[]> = {
+    1: [
+      'Understanding basic techniques and terminology',
+      'Feeling overwhelmed by new information',
+      'Knowing where to start',
+      'Safety concerns with new equipment'
+    ],
+    2: [
+      'Remembering steps without constant guidance',
+      'Building confidence to try independently',
+      'Understanding why certain steps matter',
+      'Managing safety with less supervision'
+    ],
+    3: [
+      'Following complex multi-step processes',
+      'Timing multiple things at once',
+      'Remembering sequences without prompts',
+      'Managing safety independently'
+    ],
+    4: [
+      'Refining technique for consistency',
+      'Adapting when things don\'t go as planned',
+      'Managing time efficiently',
+      'Troubleshooting problems independently'
+    ],
+    5: [
+      'You may not face many barriers at this level',
+      'Consider maintaining consistency instead'
+    ]
+  };
   
   return (
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
       goalTitle={data.goalTitle}
+      goalContext={levelContext}
       questionIcon="🤔"
       questionText={`What might be challenging for ${name}?`}
-      helpText="Knowing potential barriers helps plan for success."
-      inputType="textarea"
-      value={data.barriers || ''}
-      onChange={(value) => updateData({ barriers: value })}
+      inputType="custom"
       onBack={goBack}
       onContinue={goNext}
       onSkip={goNext}
       hideHeader
       hideFooter
-    />
+    >
+      <div className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          {introTextByLevel[level]}
+        </p>
+        
+        <ul className="space-y-2">
+          {barrierExamplesByLevel[level].map((example, idx) => (
+            <li key={idx} className="flex items-start gap-2 text-sm">
+              <span className="text-muted-foreground mt-0.5">•</span>
+              <span>{example}</span>
+            </li>
+          ))}
+        </ul>
+        
+        {level === 5 && (
+          <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="font-semibold text-blue-900 dark:text-blue-100">💡 Suggestion</p>
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    You're already independent with this! Consider using a Habit goal instead to track consistency.
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      updateData({ goalType: 'reminder' });
+                      goNext();
+                    }}
+                    className="mt-2"
+                  >
+                    Switch to Habit Goal
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
+        <div className="space-y-2 pt-2">
+          <Label>Your specific barriers (optional)</Label>
+          <Textarea
+            value={data.barriers || ''}
+            onChange={(e) => updateData({ barriers: e.target.value })}
+            placeholder="For example: keeping track of multiple steps..."
+            rows={3}
+          />
+          <p className="text-xs text-muted-foreground">
+            This helps your helper know where to focus support.
+          </p>
+        </div>
+      </div>
+    </QuestionScreen>
   );
 };
 
