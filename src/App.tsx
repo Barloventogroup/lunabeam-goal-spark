@@ -11,6 +11,7 @@ import ResetPassword from "./pages/ResetPassword";
 import RequestReset from "./pages/RequestReset";
 import Invitations from "./pages/Invitations";
 import Logout from "./pages/Logout";
+import TestComponents from "./pages/TestComponents";
 import { ProtectedRoute } from "./components/auth/protected-route";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
               <Invitations />
             </ProtectedRoute>
           } />
+          <Route path="/test-components" element={<TestComponents />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
