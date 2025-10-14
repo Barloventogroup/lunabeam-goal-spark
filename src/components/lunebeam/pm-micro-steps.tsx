@@ -307,26 +307,25 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
   const smartStartPlan = progressiveMasteryService.suggestStartFrequency(level, targetFreq);
   const smartStartFreq = smartStartPlan.suggested_initial;
   
+  const isComplete = data.pmPracticePlan?.targetFrequency && 
+                     data.pmPracticePlan?.startingFrequency && 
+                     data.pmPracticePlan?.durationWeeks !== undefined;
+  
   return (
-    <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardContent className="p-6 space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          {data.goalTitle && (
-            <>
-              <h2 className="text-xl font-semibold">{data.goalTitle}</h2>
-              {levelContext && (
-                <p className="text-sm text-muted-foreground">{levelContext}</p>
-              )}
-            </>
-          )}
-          <h1 className="text-2xl md:text-3xl font-bold flex items-center justify-center gap-2">
-            <span>🎯</span>
-            <span>Your Practice Plan</span>
-          </h1>
-          <p className="text-muted-foreground">Let's set up your learning schedule</p>
-        </div>
-
+    <QuestionScreen
+      currentStep={currentStep}
+      totalSteps={totalSteps}
+      goalTitle={data.goalTitle}
+      goalContext={levelContext}
+      questionIcon="🎯"
+      questionText="Your Practice Plan"
+      helpText="Let's set up your learning schedule"
+      inputType="custom"
+      onBack={goBack}
+      onContinue={goNext}
+      continueDisabled={!isComplete}
+    >
+      <div className="space-y-6">
         {/* Q1: Target Frequency */}
         <div className="space-y-3">
           <Label className="text-base">How often do you want to practice eventually?</Label>
@@ -450,23 +449,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
             </CardContent>
           </Card>
         )}
-      </CardContent>
-      
-      {/* Footer Navigation */}
-      <div className="p-6 border-t flex justify-between mt-auto">
-        <Button variant="outline" onClick={goBack} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
-        <Button
-          onClick={goNext}
-          disabled={!data.pmPracticePlan?.targetFrequency || !data.pmPracticePlan?.startingFrequency || data.pmPracticePlan?.durationWeeks === undefined}
-          className="gap-2"
-        >
-          Continue
-          <ArrowRight className="h-4 w-4" />
-        </Button>
       </div>
-    </Card>
+    </QuestionScreen>
   );
 };

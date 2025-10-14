@@ -33,8 +33,8 @@ interface QuestionScreenProps {
   options?: QuestionOption[];
   
   // State management
-  value: any;
-  onChange: (value: any) => void;
+  value?: any;
+  onChange?: (value: any) => void;
   
   // Navigation
   onBack: () => void;
@@ -51,6 +51,7 @@ interface QuestionScreenProps {
   
   // Custom rendering
   customContent?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const QuestionScreen: React.FC<QuestionScreenProps> = ({
@@ -73,6 +74,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
   expandOnValue,
   expandedContent,
   customContent,
+  children,
 }) => {
   const firstInputRef = useRef<HTMLTextAreaElement>(null);
   const percentage = (currentStep / totalSteps) * 100;
@@ -106,6 +108,10 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
   const renderInput = () => {
     if (customContent) {
       return customContent;
+    }
+
+    if (inputType === 'custom' && children) {
+      return children;
     }
 
     switch (inputType) {
