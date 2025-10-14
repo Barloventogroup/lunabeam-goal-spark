@@ -971,7 +971,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         return data.goalTitle.trim().length > 0 && !!data.goalType;
       case 2:
         // Motivation
-        return !!data.goalMotivation;
+        return !!data.motivation?.trim();
       case 3:
         // Prerequisites
         return true;
@@ -1771,39 +1771,38 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const renderStep2 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">
-          {text.step2.subtitle}
-        </p>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="space-y-3">
-          {motivations.map(motivation => <Card key={motivation.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.goalMotivation === motivation.id ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-            goalMotivation: motivation.id
-          })}>
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3 w-full">
-                {data.goalMotivation === motivation.id && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
-                <div className="flex-1">
-                  <div className="font-semibold">{motivation.label}</div>
-                  <div className="text-sm mt-1 text-muted-foreground">{motivation.description}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>)}
-        </div>
+    const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
+    
+    return (
+      <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl">
+            Why does this matter to {name}?
+          </CardTitle>
+          <p className="text-muted-foreground">
+            Understanding motivation helps maintain commitment when practice gets tough.
+          </p>
+        </CardHeader>
         
-        <div className="space-y-2 pt-4 border-t">
-          <Label htmlFor="custom-motivation">Tell us more</Label>
-          <Textarea id="custom-motivation" placeholder="Share any additional details..." value={data.customMotivation || ''} onChange={e => updateData({
-            customMotivation: e.target.value
-          })} className="min-h-[80px] resize-none" rows={3} />
-        </div>
-      </CardContent>
-    </Card>;
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="motivation">Share your motivation</Label>
+            <Textarea 
+              id="motivation"
+              placeholder="e.g., I want to feel healthier and have more energy..."
+              value={data.motivation || ''} 
+              onChange={e => updateData({ motivation: e.target.value })}
+              className="min-h-[120px] resize-none" 
+              rows={5}
+              autoFocus
+            />
+            <p className="text-xs text-muted-foreground">
+              Take a moment to reflect on what drives you
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
   const renderStep3 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
