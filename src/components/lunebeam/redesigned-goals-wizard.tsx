@@ -433,6 +433,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   // PM Smart Start state variables
   const [pmCustomFrequency, setPMCustomFrequency] = useState<number | undefined>();
   const [pmSuggestionAccepted, setPMSuggestionAccepted] = useState(false);
+  // PM Teaching Helper selection state
+  const [pmSelectedHelperId, setPMSelectedHelperId] = useState<string | 'none' | null>(data.pmTeachingHelper?.id ?? null);
   const {
     toast
   } = useToast();
@@ -2365,7 +2367,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
 
   const renderPMTeachingHelper = () => {
-    const [selectedHelper, setSelectedHelper] = useState<string | null>(data.pmTeachingHelper?.id || null);
 
     return (
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
@@ -2380,13 +2381,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <Card
               className={cn(
                 "cursor-pointer hover:shadow-md transition-all border-2",
-                selectedHelper === 'none' ? "border-primary bg-primary/5" : "border-border"
+                pmSelectedHelperId === 'none' ? "border-primary bg-primary/5" : "border-border"
               )}
-              onClick={() => setSelectedHelper('none')}
+              onClick={() => setPMSelectedHelperId('none')}
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  {selectedHelper === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                  {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
                   <div className="text-left">
                     <div className="font-medium">🦸 On my own</div>
                     <div className="text-sm text-muted-foreground">
@@ -2404,13 +2405,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   key={supporter.id}
                   className={cn(
                     "cursor-pointer hover:shadow-md transition-all border-2",
-                    selectedHelper === supporter.id ? "border-primary bg-primary/5" : "border-border"
+                    pmSelectedHelperId === supporter.id ? "border-primary bg-primary/5" : "border-border"
                   )}
-                  onClick={() => setSelectedHelper(supporter.id)}
+                  onClick={() => setPMSelectedHelperId(supporter.id)}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      {selectedHelper === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                      {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
                       <Avatar className="w-8 h-8">
                         <AvatarImage src={supporter.profile?.avatar_url || undefined} />
                         <AvatarFallback className="text-xs">
@@ -2436,11 +2437,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
           <Button 
             onClick={() => {
-              if (selectedHelper && selectedHelper !== 'none') {
-                const helper = userSupporters.find(s => s.id === selectedHelper);
+              if (pmSelectedHelperId && pmSelectedHelperId !== 'none') {
+                const helper = userSupporters.find(s => s.id === pmSelectedHelperId);
                 updateData({ 
                   pmTeachingHelper: {
-                    id: selectedHelper,
+                    id: pmSelectedHelperId,
                     name: helper?.name || 'Helper',
                     relationship: 'parent'
                   }
@@ -2451,7 +2452,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               nextStep();
             }}
             className="w-full"
-            disabled={!selectedHelper}
+            disabled={!pmSelectedHelperId}
           >
             Next
           </Button>
