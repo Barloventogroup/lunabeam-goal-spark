@@ -98,6 +98,74 @@ const categories = [{
   detailedExamples: ['Play guitar for 30 minutes', 'Paint or draw weekly', 'Join a sports team', 'Play board games with friends', 'Learn a new hobby', 'Attend social events']
 }];
 
+// Example goals interface and data
+interface ExampleGoal {
+  id: string;
+  title: string;
+  description: string;
+  suggestedType: 'reminder' | 'progressive_mastery' | 'practice' | 'new_skill';
+  categoryId: string;
+}
+
+const exampleGoalsByCategory: Record<string, ExampleGoal[]> = {
+  health: [
+    { id: 'walk-daily', title: 'Walk daily for 30 minutes', description: 'Build cardiovascular health and energy through regular walking', suggestedType: 'reminder', categoryId: 'health' },
+    { id: 'stretch-morning', title: 'Stretch every morning', description: 'Improve flexibility and reduce tension with daily stretching', suggestedType: 'reminder', categoryId: 'health' },
+    { id: 'sleep-8hours', title: 'Sleep 8 hours per night', description: 'Establish consistent sleep schedule for better rest', suggestedType: 'reminder', categoryId: 'health' },
+    { id: 'drink-water', title: 'Drink more water', description: 'Stay hydrated by tracking daily water intake', suggestedType: 'reminder', categoryId: 'health' },
+    { id: 'meditation', title: 'Practice meditation', description: 'Build mindfulness and reduce stress through daily meditation', suggestedType: 'progressive_mastery', categoryId: 'health' },
+    { id: 'healthy-meals', title: 'Eat healthy meals', description: 'Improve nutrition by planning and preparing balanced meals', suggestedType: 'reminder', categoryId: 'health' }
+  ],
+  education: [
+    { id: 'homework-daily', title: 'Complete homework daily', description: 'Stay on top of assignments with consistent daily work', suggestedType: 'reminder', categoryId: 'education' },
+    { id: 'study-evening', title: 'Study for 1 hour each evening', description: 'Build strong study habits through regular practice', suggestedType: 'reminder', categoryId: 'education' },
+    { id: 'read-bedtime', title: 'Read 30 minutes before bed', description: 'Improve reading skills and comprehension through daily practice', suggestedType: 'reminder', categoryId: 'education' },
+    { id: 'organized-notes', title: 'Take organized notes', description: 'Learn effective note-taking strategies for better retention', suggestedType: 'progressive_mastery', categoryId: 'education' },
+    { id: 'math-practice', title: 'Practice math problems', description: 'Strengthen math skills through regular problem-solving', suggestedType: 'reminder', categoryId: 'education' },
+    { id: 'test-prep', title: 'Prepare for upcoming tests', description: 'Develop effective test preparation strategies', suggestedType: 'practice', categoryId: 'education' }
+  ],
+  employment: [
+    { id: 'resume-weekly', title: 'Update resume weekly', description: 'Keep resume current with latest skills and experiences', suggestedType: 'reminder', categoryId: 'employment' },
+    { id: 'interview-skills', title: 'Practice interview skills', description: 'Build confidence through mock interviews and preparation', suggestedType: 'progressive_mastery', categoryId: 'employment' },
+    { id: 'learn-software', title: 'Learn new software', description: 'Expand technical skills by mastering new tools', suggestedType: 'new_skill', categoryId: 'employment' },
+    { id: 'network-professionals', title: 'Network with professionals', description: 'Build connections through regular professional interactions', suggestedType: 'reminder', categoryId: 'employment' },
+    { id: 'apply-jobs', title: 'Apply for jobs daily', description: 'Maintain consistent job search momentum', suggestedType: 'reminder', categoryId: 'employment' },
+    { id: 'work-portfolio', title: 'Develop work portfolio', description: 'Showcase skills and accomplishments professionally', suggestedType: 'new_skill', categoryId: 'employment' }
+  ],
+  independent_living: [
+    { id: 'cook-meal', title: 'Cook a meal from scratch', description: 'Learn to prepare complete meals independently', suggestedType: 'progressive_mastery', categoryId: 'independent_living' },
+    { id: 'clean-room', title: 'Clean room weekly', description: 'Maintain a clean living space through regular cleaning', suggestedType: 'reminder', categoryId: 'independent_living' },
+    { id: 'track-budget', title: 'Track monthly budget', description: 'Develop financial awareness through budget tracking', suggestedType: 'reminder', categoryId: 'independent_living' },
+    { id: 'public-transport', title: 'Learn public transportation', description: 'Master navigating buses, trains, and routes independently', suggestedType: 'progressive_mastery', categoryId: 'independent_living' },
+    { id: 'laundry-independent', title: 'Do laundry independently', description: 'Learn the complete laundry process from start to finish', suggestedType: 'progressive_mastery', categoryId: 'independent_living' },
+    { id: 'grocery-shopping', title: 'Grocery shopping', description: 'Plan and execute grocery trips independently', suggestedType: 'progressive_mastery', categoryId: 'independent_living' }
+  ],
+  social_skills: [
+    { id: 'start-conversations', title: 'Start conversations with peers', description: 'Build social confidence by initiating friendly interactions', suggestedType: 'progressive_mastery', categoryId: 'social_skills' },
+    { id: 'speak-up-meetings', title: 'Practice speaking up in meetings', description: 'Develop self-advocacy skills in group settings', suggestedType: 'progressive_mastery', categoryId: 'social_skills' },
+    { id: 'join-social-group', title: 'Join a social group', description: 'Connect with others who share similar interests', suggestedType: 'new_skill', categoryId: 'social_skills' },
+    { id: 'express-needs', title: 'Express needs clearly', description: 'Learn to communicate wants and needs effectively', suggestedType: 'progressive_mastery', categoryId: 'social_skills' },
+    { id: 'team-projects', title: 'Work on team projects', description: 'Develop collaboration and teamwork skills', suggestedType: 'practice', categoryId: 'social_skills' },
+    { id: 'build-friendships', title: 'Build friendships', description: 'Strengthen social connections and relationships', suggestedType: 'practice', categoryId: 'social_skills' }
+  ],
+  postsecondary: [
+    { id: 'research-programs', title: 'Research college programs', description: 'Explore and compare educational options after high school', suggestedType: 'new_skill', categoryId: 'postsecondary' },
+    { id: 'application-essays', title: 'Complete application essays', description: 'Craft compelling personal statements for applications', suggestedType: 'new_skill', categoryId: 'postsecondary' },
+    { id: 'campus-tours', title: 'Visit campus tours', description: 'Experience potential schools firsthand', suggestedType: 'reminder', categoryId: 'postsecondary' },
+    { id: 'apply-scholarships', title: 'Apply for scholarships', description: 'Seek financial aid opportunities for education', suggestedType: 'reminder', categoryId: 'postsecondary' },
+    { id: 'study-strategies', title: 'Develop study strategies', description: 'Learn effective techniques for college-level learning', suggestedType: 'progressive_mastery', categoryId: 'postsecondary' },
+    { id: 'career-path', title: 'Plan career path', description: 'Map out educational and career goals', suggestedType: 'new_skill', categoryId: 'postsecondary' }
+  ],
+  fun_recreation: [
+    { id: 'play-guitar', title: 'Play guitar for 30 minutes', description: 'Build musical skills through regular practice', suggestedType: 'reminder', categoryId: 'fun_recreation' },
+    { id: 'paint-draw', title: 'Paint or draw weekly', description: 'Express creativity through visual art', suggestedType: 'reminder', categoryId: 'fun_recreation' },
+    { id: 'sports-team', title: 'Join a sports team', description: 'Participate in organized athletics and teamwork', suggestedType: 'new_skill', categoryId: 'fun_recreation' },
+    { id: 'board-games', title: 'Play board games with friends', description: 'Enjoy social gaming and strategic thinking', suggestedType: 'reminder', categoryId: 'fun_recreation' },
+    { id: 'new-hobby', title: 'Learn a new hobby', description: 'Explore and develop a completely new interest', suggestedType: 'new_skill', categoryId: 'fun_recreation' },
+    { id: 'social-events', title: 'Attend social events', description: 'Engage in community and social activities', suggestedType: 'reminder', categoryId: 'fun_recreation' }
+  ]
+};
+
 // Goal types
 const goalTypes = [{
   id: 'reminder',
@@ -435,6 +503,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [pmSuggestionAccepted, setPMSuggestionAccepted] = useState(false);
   // PM Teaching Helper selection state
   const [pmSelectedHelperId, setPMSelectedHelperId] = useState<string | 'none' | null>(data.pmTeachingHelper?.id ?? null);
+  const [showBrowseModal, setShowBrowseModal] = useState(false);
+  const [modalView, setModalView] = useState<'categories' | 'examples'>('categories');
+  const [selectedCategoryForModal, setSelectedCategoryForModal] = useState<typeof categories[0] | null>(null);
   const {
     toast
   } = useToast();
@@ -1268,6 +1339,159 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     if (period === "PM") H += 12;
     return `${H.toString().padStart(2, "0")}:${minute}`;
   };
+  // ============================================
+  // BROWSE MODAL RENDERERS
+  // ============================================
+
+  const renderCategoriesModal = () => {
+    return (
+      <div className="space-y-4">
+        <div className="text-center pb-2">
+          <h2 className="text-2xl font-bold">Browse Goal Ideas</h2>
+          <p className="text-muted-foreground mt-2">
+            Pick a category to explore example goals
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 max-h-[60vh] overflow-y-auto px-1">
+          {categories.map((category) => {
+            return (
+              <Card
+                key={category.id}
+                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-2 hover:border-primary/50"
+                onClick={() => {
+                  setSelectedCategoryForModal(category);
+                  setModalView('examples');
+                }}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">{category.emoji}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base mb-1">{category.title}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {category.description}
+                      </p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderExampleGoalsModal = () => {
+    if (!selectedCategoryForModal) return null;
+
+    const exampleGoals = exampleGoalsByCategory[selectedCategoryForModal.id] || [];
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 pb-2 border-b">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setModalView('categories');
+              setSelectedCategoryForModal(null);
+            }}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div className="flex-1">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <span>{selectedCategoryForModal.emoji}</span>
+              {selectedCategoryForModal.title}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {selectedCategoryForModal.description}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3 max-h-[55vh] overflow-y-auto px-1">
+          {exampleGoals.map((goal) => {
+            const getBadge = () => {
+              switch (goal.suggestedType) {
+                case 'progressive_mastery':
+                  return { text: '🎯 Progressive Mastery', color: 'bg-purple-100 text-purple-700 border-purple-200' };
+                case 'reminder':
+                  return { text: '🔄 Habit', color: 'bg-blue-100 text-blue-700 border-blue-200' };
+                case 'practice':
+                  return { text: '📈 Practice', color: 'bg-green-100 text-green-700 border-green-200' };
+                case 'new_skill':
+                  return { text: '⭐ New Skill', color: 'bg-amber-100 text-amber-700 border-amber-200' };
+                default:
+                  return { text: '🎯 Goal', color: 'bg-gray-100 text-gray-700 border-gray-200' };
+              }
+            };
+
+            const badge = getBadge();
+
+            return (
+              <Card
+                key={goal.id}
+                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.01] border-2 hover:border-primary/50"
+                onClick={() => {
+                  updateData({
+                    goalTitle: goal.title,
+                    category: goal.categoryId,
+                    goalType: goal.suggestedType
+                  });
+
+                  setShowBrowseModal(false);
+                  setModalView('categories');
+                  setSelectedCategoryForModal(null);
+
+                  toast({
+                    title: "Goal idea selected!",
+                    description: `"${goal.title}" has been added. Continue to customize it.`,
+                  });
+                }}
+              >
+                <CardContent className="p-4">
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-base">{goal.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {goal.description}
+                    </p>
+                    <Badge className={cn("text-xs border", badge.color)}>
+                      {badge.text}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="text-center pt-2 border-t">
+          <p className="text-xs text-muted-foreground">
+            Click any goal to use it as a starting point
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const renderBrowseModal = () => {
+    return (
+      <Dialog open={showBrowseModal} onOpenChange={setShowBrowseModal}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col p-6">
+          {modalView === 'categories' ? renderCategoriesModal() : renderExampleGoalsModal()}
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   const renderStep0 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
@@ -1343,59 +1567,44 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          
-          <Textarea id="goal-title" placeholder="e.g., Practice guitar for 30 minutes daily" value={data.goalTitle} onChange={e => updateData({
-            goalTitle: e.target.value
-          })} className="text-lg py-3 min-h-[76px] resize-none" rows={3} />
+          <Textarea 
+            id="goal-title" 
+            placeholder="e.g., Practice guitar for 30 minutes daily" 
+            value={data.goalTitle} 
+            onChange={e => updateData({ goalTitle: e.target.value })} 
+            className="text-lg py-3 min-h-[76px] resize-none" 
+            rows={3} 
+          />
         </div>
         
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <Label>Categories</Label>
-            <p className="text-xs text-muted-foreground">
-              Need a starting spark? Check out these categories for ideas. (It's totally fine to use one for inspiration or skip this part!)
-            </p>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label>Need inspiration?</Label>
           </div>
           
-          {/* All Categories */}
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 gap-2">
-              {categories.sort((a, b) => a.title.localeCompare(b.title)).map(category => <Card key={category.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.category === category.id ? "border-primary bg-primary/5" : expandedCategory === category.id ? "border-primary/50 bg-primary/2" : "border-border")} onClick={() => handleCategorySelect(category.id)}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <span className="text-2xl">{category.emoji}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold truncate">{category.title}</div>
-                          <p className="text-sm text-muted-foreground line-clamp-2">{category.description}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {data.category === category.id && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
-                          {expandedCategory === category.id ? <ChevronRight className="h-4 w-4 text-primary rotate-90 transition-transform" /> : <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform" />}
-                        </div>
-                      </div>
-                      
-                      {/* Expanded Details */}
-                      {expandedCategory === category.id && <div className="mt-3 pt-3 border-t border-border animate-fade-in">
-                          <p className="text-xs font-medium text-foreground mb-2">Goal ideas:</p>
-                          <div className="grid grid-cols-1 gap-1">
-                            {category.detailedExamples.map((example, index) => <div key={index} className="text-xs text-foreground p-2 bg-muted/20 rounded cursor-pointer hover:bg-muted/40 transition-colors" onClick={e => {
-                        e.stopPropagation();
-                        updateData({
-                          goalTitle: example,
-                          category: category.id
-                        });
-                        setExpandedCategory(null);
-                      }}>
-                      {example}
-                            </div>)}
-                        </div>
-                      </div>}
-                    </CardContent>
-                  </Card>)}
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-auto py-4 border-2 border-dashed hover:border-primary hover:bg-primary/5"
+            onClick={() => setShowBrowseModal(true)}
+          >
+            <div className="flex items-center gap-3">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <div className="text-left flex-1">
+                <div className="font-semibold">Browse Goal Ideas</div>
+                <div className="text-xs text-muted-foreground font-normal">
+                  Explore 50+ example goals organized by category
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </div>
-          </div>
+          </Button>
+          
+          {data.category && (
+            <div className="text-xs text-muted-foreground text-center animate-fade-in">
+              Selected category: <span className="font-medium">{categories.find(c => c.id === data.category)?.title}</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>;
@@ -3085,6 +3294,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Browse Goals Modal */}
+        {renderBrowseModal()}
       </div>
     </div>;
 };
