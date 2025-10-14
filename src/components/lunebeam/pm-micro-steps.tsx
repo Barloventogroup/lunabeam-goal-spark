@@ -108,7 +108,7 @@ export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData
   );
 };
 
-export const PMStep4_Barriers: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
+export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () => void }> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, onSwitchToHabit }) => {
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   const level = data.pmAssessment?.calculatedLevel || 3;
   const levelLabel = data.pmAssessment?.levelLabel || 'Developing';
@@ -231,8 +231,7 @@ export const PMStep4_Barriers: React.FC<PMStepsProps> = ({ data, updateData, goN
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      updateData({ goalType: 'reminder' });
-                      goNext();
+                      onSwitchToHabit?.();
                     }}
                     className="mt-2"
                   >

@@ -423,7 +423,11 @@ interface WizardData {
   };
 
   // Step 4: Barriers (SHARED, OPTIONAL)
-  barriers?: string;
+  barriers?: {
+    priority1?: string;
+    priority2?: string;
+    details?: string;
+  };
 
   // Old fields for backward compatibility
   goalMotivation?: string;
@@ -528,6 +532,73 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [tempHour, setTempHour] = useState<string>("08");
   const [tempMinute, setTempMinute] = useState<string>("00");
   const [tempPeriod, setTempPeriod] = useState<"AM" | "PM">("AM");
+
+  // Helper to switch goal types and reset type-specific data
+  const switchGoalType = (newType: 'reminder' | 'progressive_mastery') => {
+    // If user has made progress, confirm the switch
+    if (currentStep > 1) {
+      const confirmed = window.confirm(
+        `Switching to ${newType === 'progressive_mastery' ? 'Progressive Mastery' : 'Habit'} will clear your previous answers. Continue?`
+      );
+      
+      if (!confirmed) return;
+    }
+
+    // Preserve shared fields
+    const sharedFields = {
+      goalTitle: data.goalTitle,
+      recipient: data.recipient,
+      supportedPersonId: data.supportedPersonId,
+      supportedPersonName: data.supportedPersonName,
+      startDate: data.startDate,
+      category: data.category,
+      hasPrerequisites: data.hasPrerequisites,
+      frequency: data.frequency
+    };
+
+    // Clear type-specific fields
+    if (newType === 'progressive_mastery') {
+      // Switching TO PM: clear habit-specific fields
+      setData({
+        ...sharedFields,
+        goalType: 'progressive_mastery',
+        prerequisites: { ready: true },
+        // Clear habit fields
+        supportContext: undefined,
+        primarySupporterName: undefined,
+        selectedSupporters: undefined,
+        selectedDays: undefined,
+        timeOfDay: undefined,
+        customTime: undefined,
+        endDate: undefined
+      });
+      
+      // Reset to PM step 2 (after type selection)
+      setCurrentStep(2);
+      
+    } else if (newType === 'reminder') {
+      // Switching TO Habit: clear PM-specific fields
+      setData({
+        ...sharedFields,
+        goalType: 'reminder',
+        prerequisites: { ready: true },
+        // Clear PM fields
+        motivation: undefined,
+        barriers: undefined,
+        pmAssessment: undefined,
+        pmHelper: undefined,
+        pmPracticePlan: undefined
+      });
+      
+      // Reset to Habit step 2 (after type selection)
+      setCurrentStep(2);
+    }
+    
+    toast({
+      title: `Switched to ${newType === 'progressive_mastery' ? 'Progressive Mastery' : 'Habit'} goal`,
+      description: "Previous answers have been cleared. Let's start fresh!"
+    });
+  };
   const [dateValidationError, setDateValidationError] = useState<string | null>(null);
   const [dateValidationWarning, setDateValidationWarning] = useState<string | null>(null);
   
@@ -1644,7 +1715,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 ? "border-primary bg-primary/5" 
                 : "border-border hover:border-primary/50"
             )} 
-            onClick={() => updateData({ goalType: 'reminder' })}
+            onClick={() => {
+              if (data.goalType !== 'reminder') {
+                switchGoalType('reminder');
+              }
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
@@ -1668,7 +1743,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 ? "border-primary bg-primary/5" 
                 : "border-border hover:border-primary/50"
             )} 
-            onClick={() => updateData({ goalType: 'progressive_mastery' })}
+            onClick={() => {
+              if (data.goalType !== 'progressive_mastery') {
+                switchGoalType('progressive_mastery');
+              }
+            }}
           >
             <Badge className="absolute top-2 right-2 text-xs bg-amber-100 text-amber-700 border-amber-200">
               Recommended for learning
@@ -2839,11 +2918,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
   const renderConfirmStep = () => {
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
-    const motivationLabel = motivations.find(m => m.id === data.goalMotivation)?.label || data.customMotivation;
+    
+    // Fix: Use current field names
+    const motivationLabel = data.motivation; // Free text from PM step 2 or habit motivation
     const categoryLabel = categories.find(c => c.id === data.category)?.title;
-    const goalTypeLabel = goalTypes.find(g => g.id === data.goalType)?.label;
-    const challengeLabels = data.challengeAreas?.slice(0, 2).map(id => challengeAreas.find(c => c.id === id)?.label).filter(Boolean);
-    const frequencyLabel = frequencies.find(f => f.value === data.frequency)?.label;
+    
+    // Infer goal type from flow context
+    const goalTypeLabel = data.pmAssessment ? 'Progressive Mastery' : 'New Habit';
+    
+    // Fix: Read barriers from new structure
+    const barrier1Label = data.barriers?.priority1 ? 
+      challengeAreas.find(c => c.id === data.barriers.priority1)?.label : null;
+    const barrier2Label = data.barriers?.priority2 ? 
+      challengeAreas.find(c => c.id === data.barriers.priority2)?.label : null;
+    const challengeLabels = [barrier1Label, barrier2Label].filter(Boolean);
+    
+    // Fix: Handle PM frequency from practice plan
+    const frequencyLabel = data.pmPracticePlan 
+      ? `${data.pmPracticePlan.startingFrequency}x per week`
+      : frequencies.find(f => f.value === data.frequency)?.label;
+    
     const supportContextLabel = supportContexts.find(s => s.id === data.supportContext)?.label;
     const primarySupporterRoleLabel = data.primarySupporterRole ? allyRoles.find(r => r.value === data.primarySupporterRole)?.title : null;
     
@@ -2912,27 +3006,38 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200">
                     <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
                     <div className="space-y-1.5">
-                      {challengeLabels && challengeLabels.length > 0 && (
+                      {/* Show barriers priorities */}
+                      {data.barriers?.priority1 && (
                         <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Primary:</span>{' '}
+                          <span className="text-muted-foreground text-xs">1st Priority:</span>{' '}
                           <span className="font-medium">
-                            {challengeLabels.join(', ')}
-                            {data.challengeAreas && data.challengeAreas.length > 2 && ' +1 more'}
+                            {challengeAreas.find(c => c.id === data.barriers.priority1)?.label}
                           </span>
                         </p>
                       )}
-                      {data.customChallenges && (
+                      {data.barriers?.priority2 && (
                         <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Details:</span>{' '}
-                          <span className="font-medium">{truncate(data.customChallenges, 50)}</span>
+                          <span className="text-muted-foreground text-xs">2nd Priority:</span>{' '}
+                          <span className="font-medium">
+                            {challengeAreas.find(c => c.id === data.barriers.priority2)?.label}
+                          </span>
                         </p>
                       )}
-                      {data.hasPrerequisites !== undefined && (
+                      {/* Show barriers details text */}
+                      {data.barriers?.details && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Details:</span>{' '}
+                          <span className="font-medium">{truncate(data.barriers.details, 50)}</span>
+                        </p>
+                      )}
+                      {/* Show prerequisites status */}
+                      {data.prerequisites && (
                         <p className="text-sm">
                           <span className="text-muted-foreground text-xs">Prerequisites:</span>{' '}
                           <span className="font-medium">
-                            {data.hasPrerequisites ? 'Yes' : 'No'}
-                            {data.hasPrerequisites && data.customPrerequisites && ` - ${truncate(data.customPrerequisites, 30)}`}
+                            {data.prerequisites.ready ? 'Ready to start' : 'Need some things'}
+                            {!data.prerequisites.ready && data.prerequisites.needs && 
+                              ` - ${truncate(data.prerequisites.needs, 30)}`}
                           </span>
                         </p>
                       )}
@@ -2980,26 +3085,52 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200">
                     <h4 className="text-sm font-semibold text-purple-700 mb-2">The Team</h4>
                     <div className="space-y-1.5">
-                      {supportContextLabel && (
-                        <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Working:</span>{' '}
-                          <span className="font-medium">{supportContextLabel}</span>
-                        </p>
+                      {/* PM flow: show helper */}
+                      {data.pmHelper && (
+                        <>
+                          <p className="text-sm">
+                            <span className="text-muted-foreground text-xs">Learning:</span>{' '}
+                            <span className="font-medium">
+                              {data.pmHelper.helperId === 'none' ? 'Independently' : 'With support'}
+                            </span>
+                          </p>
+                          {data.pmHelper.helperId !== 'none' && (
+                            <p className="text-sm">
+                              <span className="text-muted-foreground text-xs">Helper:</span>{' '}
+                              <span className="font-medium">{data.pmHelper.helperName || 'Helper'}</span>
+                            </p>
+                          )}
+                        </>
                       )}
-                      {data.supportContext !== 'alone' && data.primarySupporterName && (
-                        <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Supporter:</span>{' '}
-                          <span className="font-medium">
-                            {data.primarySupporterName}
-                            {primarySupporterRoleLabel && ` (${primarySupporterRoleLabel})`}
-                          </span>
-                        </p>
-                      )}
-                      {data.selectedSupporters && data.selectedSupporters.length > 1 && (
-                        <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Additional:</span>{' '}
-                          <span className="font-medium">{data.selectedSupporters.length - 1} {data.selectedSupporters.length - 1 === 1 ? 'supporter' : 'supporters'}</span>
-                        </p>
+                      
+                      {/* Habit flow: show support context and supporters */}
+                      {!data.pmHelper && (
+                        <>
+                          {supportContextLabel && (
+                            <p className="text-sm">
+                              <span className="text-muted-foreground text-xs">Working:</span>{' '}
+                              <span className="font-medium">{supportContextLabel}</span>
+                            </p>
+                          )}
+                          {data.supportContext !== 'alone' && data.primarySupporterName && (
+                            <p className="text-sm">
+                              <span className="text-muted-foreground text-xs">Supporter:</span>{' '}
+                              <span className="font-medium">
+                                {data.primarySupporterName}
+                                {primarySupporterRoleLabel && ` (${primarySupporterRoleLabel})`}
+                              </span>
+                            </p>
+                          )}
+                          {data.selectedSupporters && data.selectedSupporters.length > 1 && (
+                            <p className="text-sm">
+                              <span className="text-muted-foreground text-xs">Additional:</span>{' '}
+                              <span className="font-medium">
+                                {data.selectedSupporters.length - 1} 
+                                {data.selectedSupporters.length - 1 === 1 ? ' supporter' : ' supporters'}
+                              </span>
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -3051,7 +3182,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 4: return <PMStep5_Experience {...pmStepProps} />; // Experience (moved up)
         case 5: return <PMStep6_Confidence {...pmStepProps} />; // Confidence
         case 6: return <PMStep7_HelpNeeded {...pmStepProps} />; // Help Needed + Calculate Level
-        case 7: return <PMStep4_Barriers {...pmStepProps} />; // Barriers (moved after level calc - NOW CONTEXTUAL)
+        case 7: return <PMStep4_Barriers {...pmStepProps} onSwitchToHabit={() => switchGoalType('reminder')} />; // Barriers (moved after level calc - NOW CONTEXTUAL)
         case 8: return <PMStep8_Helper {...pmStepProps} />; // Helper Selection
         case 9: return <PMStep9_PracticePlan {...pmStepProps} />; // Practice Plan (target + Smart Start + duration)
         case 10: return renderConfirmStep(); // PM: Summary
