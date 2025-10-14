@@ -77,7 +77,7 @@ export const progressiveMasteryService = {
 
       case 3: // Developing
         suggestedInitial = Math.round(targetFrequency * 0.6);
-        rationale = "You have some experience with this, so we can start at a moderate pace and increase as you refine your skills.";
+        rationale = "You have some experience with this, so we can start at a moderate pace and increase as you continue developing your skills.";
         phaseGuidance = "We'll increase to your target over about 2 weeks as you continue developing.";
         break;
 
