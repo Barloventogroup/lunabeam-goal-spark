@@ -429,6 +429,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [tempPeriod, setTempPeriod] = useState<"AM" | "PM">("AM");
   const [dateValidationError, setDateValidationError] = useState<string | null>(null);
   const [dateValidationWarning, setDateValidationWarning] = useState<string | null>(null);
+  
+  // PM Smart Start state variables
+  const [pmCustomFrequency, setPMCustomFrequency] = useState<number | undefined>();
+  const [pmSuggestionAccepted, setPMSuggestionAccepted] = useState(false);
   const {
     toast
   } = useToast();
@@ -2266,15 +2270,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
 
   const renderPMSmartStart = () => {
-    const [customFrequency, setCustomFrequency] = useState<number | undefined>();
-    const [accepted, setAccepted] = useState(false);
-
     const suggestion = progressiveMasteryService.suggestStartFrequency(
       data.pmSkillAssessment?.calculated_level || 1,
       data.pmTargetFrequency || 3
     );
 
-    const selectedFrequency = customFrequency || suggestion.suggested_initial;
+    const selectedFrequency = pmCustomFrequency || suggestion.suggested_initial;
 
     return (
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
@@ -2306,10 +2307,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="space-y-3">
             <Button
               onClick={() => {
-                setAccepted(true);
-                setCustomFrequency(undefined);
+                setPMSuggestionAccepted(true);
+                setPMCustomFrequency(undefined);
               }}
-              variant={accepted && !customFrequency ? 'default' : 'outline'}
+              variant={pmSuggestionAccepted && !pmCustomFrequency ? 'default' : 'outline'}
               className="w-full"
             >
               ✓ Accept Suggestion ({suggestion.suggested_initial}x/week)
@@ -2328,10 +2329,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               {[1, 2, 3, 4, 5, 6, 7].map(freq => (
                 <Button
                   key={freq}
-                  variant={customFrequency === freq ? 'default' : 'outline'}
+                  variant={pmCustomFrequency === freq ? 'default' : 'outline'}
                   onClick={() => {
-                    setCustomFrequency(freq);
-                    setAccepted(false);
+                    setPMCustomFrequency(freq);
+                    setPMSuggestionAccepted(false);
                   }}
                   className="h-12"
                 >
@@ -2345,7 +2346,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 const plan = {
                   ...suggestion,
                   user_selected_initial: selectedFrequency,
-                  suggestion_accepted: accepted
+                  suggestion_accepted: pmSuggestionAccepted
                 };
                 updateData({ 
                   pmSmartStartPlan: plan,
