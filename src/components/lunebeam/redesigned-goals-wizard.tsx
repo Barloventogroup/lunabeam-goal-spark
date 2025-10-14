@@ -308,7 +308,7 @@ const INDIVIDUAL_FLOW_TEXT = {
     subtitle: "Choose who will be working on this goal"
   },
   step1: {
-    subtitle: "Describe the specific action you want to achieve. Be clear and concrete."
+    subtitle: "Describe what you want to achieve and choose how you'll approach it"
   },
   step2: {
     subtitle: "Understanding your motivation helps us support you better"
@@ -842,18 +842,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     // Progressive Mastery flow
     if (data.goalType === 'progressive_mastery') {
       switch (currentStep) {
-        case 0: return data.recipient === 'self' || (data.recipient === 'other' && data.supportedPersonId);
-        case 1: return data.goalTitle.trim().length > 0;
+      case 0: return data.recipient === 'self' || (data.recipient === 'other' && data.supportedPersonId);
+        case 1: return data.goalTitle.trim().length > 0 && !!data.goalType;
         case 2: return !!data.goalMotivation;
         case 3: return true;
-        case 4: return !!data.goalType;
-        case 5: return !!data.pmSkillName && data.pmSkillName.trim().length >= 3; // PM Skill Name
-        case 6: return !!data.pmSkillAssessment; // Skill assessment complete
-        case 7: return !!data.pmTargetFrequency; // Target frequency selected
-        case 8: return !!data.pmSmartStartPlan && !!data.pmSmartStartPlan.user_selected_initial; // Smart start plan
-        case 9: return true; // Teaching helper (optional)
-        case 10: return data.pmDurationWeeks !== undefined; // Duration selected
-        case 11: return true; // Ready to confirm
+        case 4: return !!data.pmSkillName && data.pmSkillName.trim().length >= 3; // PM Skill Name
+        case 5: return !!data.pmSkillAssessment; // Skill assessment complete
+        case 6: return !!data.pmTargetFrequency; // Target frequency selected
+        case 7: return !!data.pmSmartStartPlan && !!data.pmSmartStartPlan.user_selected_initial; // Smart start plan
+        case 8: return true; // Teaching helper (optional)
+        case 9: return data.pmDurationWeeks !== undefined; // Duration selected
+        case 10: return true; // Ready to confirm
         default: return false;
       }
     }
@@ -864,8 +863,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Who is this for (supporters only)
         return data.recipient === 'self' || (data.recipient === 'other' && data.supportedPersonId);
       case 1:
-        // Goal description
-        return data.goalTitle.trim().length > 0;
+        // Goal description + type
+        return data.goalTitle.trim().length > 0 && !!data.goalType;
       case 2:
         // Motivation
         return !!data.goalMotivation;
@@ -874,14 +873,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         return true;
         // Always can proceed
       case 4:
-        // Goal type
-        if (!data.goalType) return false;
-        if (data.goalType === 'practice' && !data.difficultyArea?.trim()) return false;
-        return true;
-      case 5:
         // Challenge areas
         return (data.challengeAreas?.length || 0) > 0;
-      case 6:
+      case 5:
         // Scheduling - conditional validation based on goal type
         const hasTime = !!data.customTime;
         
@@ -1606,6 +1600,62 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>
           )}
         </div>
+
+        {/* Type Selection */}
+        <div className="space-y-3 pt-4 border-t">
+          <Label>How familiar are you with this activity?</Label>
+          
+          {/* Habit Option */}
+          <Card 
+            className={cn(
+              "cursor-pointer hover:shadow-md transition-all border-2",
+              data.goalType === 'reminder' 
+                ? "border-primary bg-primary/5" 
+                : "border-border hover:border-primary/50"
+            )} 
+            onClick={() => updateData({ goalType: 'reminder' })}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                {data.goalType === 'reminder' && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+                <span className="text-2xl">🔄</span>
+                <div className="text-left flex-1">
+                  <div className="font-semibold">Yes, I already know how to do this</div>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    Track consistency and build a routine
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Progressive Mastery Option */}
+          <Card 
+            className={cn(
+              "cursor-pointer hover:shadow-md transition-all border-2 relative",
+              data.goalType === 'progressive_mastery' 
+                ? "border-primary bg-primary/5" 
+                : "border-border hover:border-primary/50"
+            )} 
+            onClick={() => updateData({ goalType: 'progressive_mastery' })}
+          >
+            <Badge className="absolute top-2 right-2 text-xs bg-amber-100 text-amber-700 border-amber-200">
+              Recommended for learning
+            </Badge>
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                {data.goalType === 'progressive_mastery' && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+                <span className="text-2xl">🎯</span>
+                <div className="text-left flex-1">
+                  <div className="font-semibold">No, I'm learning or improving this skill</div>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    Track your progress from beginner to independent
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </CardContent>
     </Card>;
   };
@@ -1710,46 +1760,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </Card>;
   };
   const renderStep4 = () => {
-    const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">{text.step4.subtitle}</p>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {goalTypes.map(type => <Card key={type.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.goalType === type.id ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-          goalType: type.id
-        })}>
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              {data.goalType === type.id && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
-              {'icon' in type && <span className="text-2xl">{type.icon}</span>}
-              <div className="text-left flex-1">
-                <div className="font-semibold">{type.label}</div>
-                <div className="text-sm text-muted-foreground mt-1">{type.description}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>)}
-
-        {data.goalType === 'practice' && (
-          <div className="space-y-2 pt-4 border-t">
-            <Label htmlFor="difficulty-area">What is the area of difficulty?</Label>
-            <Textarea 
-              id="difficulty-area" 
-              placeholder="Describe the specific area where you want to improve..." 
-              value={data.difficultyArea || ''} 
-              onChange={e => updateData({ difficultyArea: e.target.value })} 
-              className="min-h-[80px] resize-none" 
-              rows={3} 
-            />
-          </div>
-        )}
-      </CardContent>
-    </Card>;
-  };
-  const renderStep5 = () => {
     const handleChallengeToggle = (challengeId: string) => {
       const current = data.challengeAreas || [];
       const isSelected = current.includes(challengeId);
@@ -1804,7 +1814,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardContent>
     </Card>;
   };
-  const renderStep6 = () => {
+  const renderStep5 = () => {
     const isProject = data.goalType === 'new_skill';
     const isHabitOrPractice = data.goalType === 'reminder' || data.goalType === 'practice';
     
@@ -2217,7 +2227,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardContent>
     </Card>;
   };
-  const renderStep7 = () => {
+  const renderStep6 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     const individualName = data.recipient === 'other' ? data.supportedPersonName || 'they' : 'you';
     
@@ -2406,7 +2416,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardContent>
     </Card>;
   };
-  const renderStep8 = () => {
+  const renderStep7 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="text-center pb-4">
@@ -2988,20 +2998,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const renderCurrentStep = () => {
     // Progressive Mastery flow intercepts after goal type selection
-    if (data.goalType === 'progressive_mastery') {
+    if (data.goalType === 'progressive_masery') {
       switch (currentStep) {
         case 0: return renderStep0(); // Who is this for
-        case 1: return renderStep1(); // Goal description (can be generic)
+        case 1: return renderStep1(); // Goal description + type
         case 2: return renderStep2(); // Motivation
         case 3: return renderStep3(); // Prerequisites
-        case 4: return renderStep4(); // Goal type
-        case 5: return renderPMSkillName(); // PM: Skill name input
-        case 6: return renderPMSkillAssessment(); // PM: Skill assessment
-        case 7: return renderPMTargetFrequency(); // PM: Target frequency
-        case 8: return renderPMSmartStart(); // PM: Smart Start
-        case 9: return renderPMTeachingHelper(); // PM: Teaching helper
-        case 10: return renderPMDuration(); // PM: Duration
-        case 11: return renderConfirmStep(); // PM: Summary
+        case 4: return renderPMSkillName(); // PM: Skill name input
+        case 5: return renderPMSkillAssessment(); // PM: Skill assessment
+        case 6: return renderPMTargetFrequency(); // PM: Target frequency
+        case 7: return renderPMSmartStart(); // PM: Smart Start
+        case 8: return renderPMTeachingHelper(); // PM: Teaching helper
+        case 9: return renderPMDuration(); // PM: Duration
+        case 10: return renderConfirmStep(); // PM: Summary
         default: return null;
       }
     }
@@ -3009,21 +3018,20 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     // Regular flow (habit goals)
     switch (currentStep) {
       case 0: return renderStep0(); // Who is this for (supporters only)
-      case 1: return renderStep1(); // Goal description
+      case 1: return renderStep1(); // Goal description + type
       case 2: return renderStep2(); // Motivation
       case 3: return renderStep3(); // Prerequisites
-      case 4: return renderStep4(); // Goal type
-      case 5: return renderStep5(); // Challenge areas
-      case 6: return renderStep6(); // Scheduling
-      case 7: return renderStep7(); // Support context
-      case 8: return isSupporter ? renderStep8() : renderConfirmStep(); // Rewards or confirm
-      case 9: return renderConfirmStep(); // Final confirm (supporters only)
+      case 4: return renderStep4(); // Challenge areas
+      case 5: return renderStep5(); // Scheduling
+      case 6: return renderStep6(); // Support context
+      case 7: return isSupporter ? renderStep7() : renderConfirmStep(); // Rewards or confirm
+      case 8: return renderConfirmStep(); // Final confirm (supporters only)
       default: return null;
     }
   };
   // Update last step index for Progressive Mastery flow
-  const lastStepIndex = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 9 : 8);
-  const totalSteps = data.goalType === 'progressive_mastery' ? 12 : (isSupporter ? 10 : 8);
+  const lastStepIndex = data.goalType === 'progressive_mastery' ? 10 : (isSupporter ? 8 : 7);
+  const totalSteps = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 9 : 8);
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
 
@@ -3031,28 +3039,28 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const getStepSection = () => {
     // Progressive Mastery flow
     if (data.goalType === 'progressive_mastery') {
-      if (currentStep! >= 0 && currentStep! <= 4) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep === 5) return { label: 'Define Skill', index: 2, total: 5 };
-      if (currentStep === 6 || currentStep === 7) return { label: 'Skill Assessment', index: 2, total: 5 };
-      if (currentStep === 8) return { label: 'Smart Start Plan', index: 3, total: 5 };
-      if (currentStep === 9 || currentStep === 10) return { label: 'Support & Duration', index: 4, total: 5 };
-      if (currentStep === 11) return { label: 'Review & Confirm', index: 5, total: 5 };
+      if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
+      if (currentStep === 4) return { label: 'Define Skill', index: 2, total: 5 };
+      if (currentStep === 5 || currentStep === 6) return { label: 'Skill Assessment', index: 2, total: 5 };
+      if (currentStep === 7) return { label: 'Smart Start Plan', index: 3, total: 5 };
+      if (currentStep === 8 || currentStep === 9) return { label: 'Support & Duration', index: 4, total: 5 };
+      if (currentStep === 10) return { label: 'Review & Confirm', index: 5, total: 5 };
     }
     
     if (actuallySupportsAnyone) {
       // Supporter flow - 5 sections
-      if (currentStep! >= 0 && currentStep! <= 4) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep === 5) return { label: 'Challenge', index: 2, total: 5 };
-      if (currentStep === 6) return { label: 'When and How Often', index: 3, total: 5 };
-      if (currentStep === 7) return { label: 'The Team', index: 4, total: 5 };
-      if (currentStep === 8 || currentStep === 9) return { label: 'Commitment & Activation', index: 5, total: 5 };
+      if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
+      if (currentStep === 4) return { label: 'Challenge', index: 2, total: 5 };
+      if (currentStep === 5) return { label: 'When and How Often', index: 3, total: 5 };
+      if (currentStep === 6) return { label: 'The Team', index: 4, total: 5 };
+      if (currentStep === 7 || currentStep === 8) return { label: 'Commitment & Activation', index: 5, total: 5 };
     } else {
       // Non-supporter flow - 5 sections
-      if (currentStep! >= 1 && currentStep! <= 4) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep === 5) return { label: 'Challenges', index: 2, total: 5 };
-      if (currentStep === 6) return { label: 'When and How Often', index: 3, total: 5 };
-      if (currentStep === 7) return { label: 'The Team', index: 4, total: 5 };
-      if (currentStep === 8) return { label: 'Your First Steps', index: 5, total: 5 };
+      if (currentStep! >= 1 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
+      if (currentStep === 4) return { label: 'Challenges', index: 2, total: 5 };
+      if (currentStep === 5) return { label: 'When and How Often', index: 3, total: 5 };
+      if (currentStep === 6) return { label: 'The Team', index: 4, total: 5 };
+      if (currentStep === 7) return { label: 'Your First Steps', index: 5, total: 5 };
     }
     return { label: '', index: 0, total: 5 };
   };
