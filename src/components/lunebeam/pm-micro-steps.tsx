@@ -37,6 +37,8 @@ export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, g
       onBack={goBack}
       onContinue={goNext}
       onSkip={goNext}
+      hideHeader
+      hideFooter
     />
   );
 };
@@ -100,6 +102,8 @@ export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData
       onContinue={goNext}
       required
       continueDisabled={!data.prerequisites?.ready && !data.prerequisites?.needs}
+      hideHeader
+      hideFooter
     />
   );
 };
@@ -121,6 +125,8 @@ export const PMStep4_Barriers: React.FC<PMStepsProps> = ({ data, updateData, goN
       onBack={goBack}
       onContinue={goNext}
       onSkip={goNext}
+      hideHeader
+      hideFooter
     />
   );
 };
@@ -151,6 +157,8 @@ export const PMStep5_Experience: React.FC<PMStepsProps> = ({ data, updateData, g
       onBack={goBack}
       onContinue={goNext}
       required
+      hideHeader
+      hideFooter
     />
   );
 };
@@ -181,6 +189,8 @@ export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, g
       onBack={goBack}
       onContinue={goNext}
       required
+      hideHeader
+      hideFooter
     />
   );
 };
@@ -247,6 +257,8 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
       onBack={goBack}
       onContinue={handleContinue}
       required
+      hideHeader
+      hideFooter
     />
   );
 };
@@ -292,6 +304,8 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
       onBack={goBack}
       onContinue={goNext}
       onSkip={goNext}
+      hideHeader
+      hideFooter
     />
   );
 };
@@ -324,6 +338,8 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
       onBack={goBack}
       onContinue={goNext}
       continueDisabled={!isComplete}
+      hideHeader
+      hideFooter
     >
       <div className="space-y-6">
         {/* Q1: Target Frequency */}

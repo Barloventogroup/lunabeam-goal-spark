@@ -52,6 +52,10 @@ interface QuestionScreenProps {
   // Custom rendering
   customContent?: React.ReactNode;
   children?: React.ReactNode;
+  
+  // Embedded mode (hide header/footer for parent-controlled navigation)
+  hideHeader?: boolean;
+  hideFooter?: boolean;
 }
 
 export const QuestionScreen: React.FC<QuestionScreenProps> = ({
@@ -75,6 +79,8 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
   expandedContent,
   customContent,
   children,
+  hideHeader = false,
+  hideFooter = false,
 }) => {
   const firstInputRef = useRef<HTMLTextAreaElement>(null);
   const percentage = (currentStep / totalSteps) * 100;
@@ -261,20 +267,22 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
   return (
     <div className="min-h-screen bg-background flex flex-col animate-fade-in">
       {/* Header with Progress */}
-      <div className="sticky top-0 bg-background border-b z-10 p-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
-            <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-            <div className="text-sm text-muted-foreground">
-              Step {currentStep} of {totalSteps}
+      {!hideHeader && (
+        <div className="sticky top-0 bg-background border-b z-10 p-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-center justify-between mb-3">
+              <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                Step {currentStep} of {totalSteps}
+              </div>
             </div>
+            <Progress value={percentage} className="h-2" />
           </div>
-          <Progress value={percentage} className="h-2" />
         </div>
-      </div>
+      )}
 
       {/* Main Content - Centered */}
       <div className="flex-1 flex items-center justify-center p-6">
@@ -314,27 +322,29 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
       </div>
 
       {/* Footer Navigation */}
-      <div className="sticky bottom-0 bg-background border-t p-6">
-        <div className="max-w-3xl mx-auto flex justify-between items-center">
-          {onSkip ? (
-            <Button variant="ghost" onClick={onSkip}>
-              Skip for now
-            </Button>
-          ) : (
-            <div />
-          )}
+      {!hideFooter && (
+        <div className="sticky bottom-0 bg-background border-t p-6">
+          <div className="max-w-3xl mx-auto flex justify-between items-center">
+            {onSkip ? (
+              <Button variant="ghost" onClick={onSkip}>
+                Skip for now
+              </Button>
+            ) : (
+              <div />
+            )}
 
-          <Button
-            size="lg"
-            onClick={onContinue}
-            disabled={canContinue}
-            className="gap-2"
-          >
-            Continue
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+            <Button
+              size="lg"
+              onClick={onContinue}
+              disabled={canContinue}
+              className="gap-2"
+            >
+              Continue
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

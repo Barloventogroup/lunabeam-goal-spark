@@ -875,16 +875,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     // Progressive Mastery flow
     if (data.goalType === 'progressive_mastery') {
       switch (currentStep) {
-      case 0: return data.recipient === 'self' || (data.recipient === 'other' && data.supportedPersonId);
+        case 0: return data.recipient === 'self' || (data.recipient === 'other' && data.supportedPersonId);
         case 1: return data.goalTitle.trim().length > 0 && !!data.goalType;
-        case 2: return !!data.goalMotivation;
-        case 3: return true;
-        case 4: return !!data.pmSkillName && data.pmSkillName.trim().length >= 3; // PM Skill Name
-        case 5: return !!data.pmSkillAssessment; // Skill assessment complete
-        case 6: return !!data.pmTargetFrequency; // Target frequency selected
-        case 7: return !!data.pmSmartStartPlan && !!data.pmSmartStartPlan.user_selected_initial; // Smart start plan
-        case 8: return true; // Teaching helper (optional)
-        case 9: return data.pmDurationWeeks !== undefined; // Duration selected
+        case 2: return true; // Motivation OPTIONAL
+        case 3: return data.prerequisites?.ready === true || (data.prerequisites?.ready === false && !!data.prerequisites?.needs); // Prerequisites REQUIRED
+        case 4: return true; // Barriers OPTIONAL
+        case 5: return !!data.pmAssessment?.q1_experience; // Experience REQUIRED
+        case 6: return !!data.pmAssessment?.q2_confidence; // Confidence REQUIRED
+        case 7: return !!data.pmAssessment?.q3_help_needed; // Help Needed REQUIRED
+        case 8: return true; // Helper OPTIONAL
+        case 9: return !!data.pmPracticePlan?.targetFrequency && !!data.pmPracticePlan?.startingFrequency && data.pmPracticePlan?.durationWeeks !== undefined; // Practice Plan REQUIRED
         case 10: return true; // Ready to confirm
         default: return false;
       }
@@ -1072,16 +1072,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         const {data: {user: currentUser}} = await supabase.auth.getUser();
         const finalOwnerId = data.recipient === 'other' ? data.supportedPersonId : currentUser?.id;
         
-        // Progressive Mastery: Use PM duration and frequency
-        const pmDurationWeeks = data.goalType === 'progressive_mastery' && data.pmDurationWeeks 
-          ? data.pmDurationWeeks 
+        // Progressive Mastery: Use PM duration and frequency from new structure
+        const pmDurationWeeks = data.goalType === 'progressive_mastery' && data.pmPracticePlan?.durationWeeks 
+          ? data.pmPracticePlan.durationWeeks 
           : durationWeeks;
-        const pmDueDate = data.goalType === 'progressive_mastery' && data.pmDurationWeeks
-          ? format(addWeeks(data.startDate, data.pmDurationWeeks), 'yyyy-MM-dd')
+        const pmDueDate = data.goalType === 'progressive_mastery' && data.pmPracticePlan?.durationWeeks
+          ? format(addWeeks(data.startDate, data.pmPracticePlan.durationWeeks), 'yyyy-MM-dd')
           : calculatedDueDate;
 
         const goalDataWithMetadata = {
-          title: data.goalType === 'progressive_mastery' ? (data.pmSkillName || data.goalTitle) : data.goalTitle,
+          title: data.goalTitle,
           description: buildGoalDescription(),
           domain: mapCategoryToDomain(data.category) as GoalDomain,
           status: 'active' as const,
@@ -1094,7 +1094,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             return undefined;
           })(),
           frequency_per_week: data.goalType === 'progressive_mastery'
-            ? data.frequency 
+            ? (data.pmPracticePlan?.startingFrequency ?? data.frequency)
             : (data.goalType === 'new_skill' ? undefined : data.frequency),
           duration_weeks: pmDurationWeeks,
           start_date: format(data.startDate, 'yyyy-MM-dd'),
@@ -1204,57 +1204,55 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // If Progressive Mastery, save additional metadata
         if (data.goalType === 'progressive_mastery') {
           try {
-            // Validate all required PM fields
-            if (!data.pmSkillName) {
-              throw new Error('Skill name is required for Progressive Mastery goals');
-            }
-            if (!data.pmSkillAssessment) {
+            // Validate all required PM fields using new data structure
+            if (!data.pmAssessment?.q1_experience || !data.pmAssessment?.q2_confidence || !data.pmAssessment?.q3_help_needed) {
               throw new Error('Skill assessment is required');
             }
-            if (!data.pmSmartStartPlan || !data.pmSmartStartPlan.user_selected_initial) {
-              throw new Error('Smart start plan is required');
-            }
-            if (data.pmDurationWeeks === undefined) {
-              throw new Error('Duration is required');
+            if (!data.pmPracticePlan?.targetFrequency || !data.pmPracticePlan?.startingFrequency || data.pmPracticePlan?.durationWeeks === undefined) {
+              throw new Error('Practice plan is required');
             }
 
             console.log('Saving PM metadata for goal:', createdGoal.id);
 
-            // Save skill assessment
+            // Save skill assessment using new pmAssessment structure
             await progressiveMasteryService.saveSkillAssessment(createdGoal.id, {
-              q1: data.pmSkillAssessment.q1_familiarity,
-              q2: data.pmSkillAssessment.q2_confidence,
-              q3: data.pmSkillAssessment.q3_independence
+              q1: data.pmAssessment.q1_experience,
+              q2: data.pmAssessment.q2_confidence,
+              q3: data.pmAssessment.q3_help_needed
             });
 
-            // Save smart start plan
+            // Calculate level and generate Smart Start plan
+            const level = data.pmAssessment.calculatedLevel ?? progressiveMasteryService.calculateSkillLevel({
+              q1: data.pmAssessment.q1_experience,
+              q2: data.pmAssessment.q2_confidence,
+              q3: data.pmAssessment.q3_help_needed
+            });
+            
+            const plan = progressiveMasteryService.suggestStartFrequency(level, data.pmPracticePlan.targetFrequency);
+
+            // Save smart start plan using new pmPracticePlan structure
             await progressiveMasteryService.saveSmartStartPlan(
               createdGoal.id,
-              {
-                suggested_initial: data.pmSmartStartPlan.suggested_initial,
-                target_frequency: data.pmTargetFrequency || 3,
-                rationale: data.pmSmartStartPlan.rationale,
-                phase_guidance: data.pmSmartStartPlan.phase_guidance
-              },
-              data.pmSmartStartPlan.suggestion_accepted,
-              data.pmSmartStartPlan.user_selected_initial
+              plan,
+              data.pmPracticePlan.smartStartAccepted,
+              data.pmPracticePlan.startingFrequency
             );
 
-            // Save teaching helper and notify
-            if (data.pmTeachingHelper) {
+            // Save teaching helper if selected (using new pmHelper structure)
+            if (data.pmHelper?.helperId && data.pmHelper.helperId !== 'none') {
               await progressiveMasteryService.saveTeachingHelper(
                 createdGoal.id,
-                data.pmTeachingHelper.id,
-                data.pmTeachingHelper.name,
-                data.pmTeachingHelper.relationship as 'parent' | 'teacher' | 'coach'
+                data.pmHelper.helperId,
+                data.pmHelper.helperName ?? 'Helper',
+                'coach' // Default relationship
               );
 
               // Notify teaching helper
               await notificationsService.createNotification({
-                user_id: data.pmTeachingHelper.id,
+                user_id: data.pmHelper.helperId,
                 type: 'teaching_helper_assigned',
                 title: 'New Teaching Helper Role',
-                message: `You've been assigned to help with learning: ${data.pmSkillName}`,
+                message: `You've been assigned to help with learning: ${data.goalTitle}`,
                 data: { goal_id: createdGoal.id }
               });
             }
