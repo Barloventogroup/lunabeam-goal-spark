@@ -736,8 +736,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         ? `Let's build a reliable structure for ${isForOther ? name || 'they' : 'you'}`
         : "Let's start building the plan to crush this goal");
     
-    const supporterTitles = ['Who is this goal for?', `What is the one clear, observable action ${isForOther ? name || 'they' : 'you'} need${isForOther && name ? 's' : ''} to establish?`, `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`, `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, 'What type of goal?', `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`, step6Title, 'Support context', 'Review and Create'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter to you?', 'Prerequisites check', 'What type of goal?', 'Which part usually feels the trickiest when you start this?', step6Title, 'Support context', 'Review and Create'];
+    const supporterTitles = ['Who is this goal for?', `What is the one clear, observable action ${isForOther ? name || 'they' : 'you'} need${isForOther && name ? 's' : ''} to establish?`, `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`, `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`, step6Title, 'Support context', 'Rewards (Optional)', 'Review and Create'];
+    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter to you?', 'Prerequisites check', 'Which part usually feels the trickiest when you start this?', step6Title, 'Support context', 'Review and Create', 'Review and Create'];
     if (actuallySupportsAnyone) {
       return supporterTitles[currentStep] || '';
     } else {
