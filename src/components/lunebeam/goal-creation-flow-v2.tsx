@@ -7,13 +7,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format, addDays, isAfter, isBefore } from 'date-fns';
-import { CalendarIcon, Clock, X } from 'lucide-react';
+import { format, addDays, addWeeks, isAfter, isBefore } from 'date-fns';
+import { CalendarIcon, Clock, X, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { goalsService } from '@/services/goalsService';
 import type { GoalDomain, GoalPriority } from '@/types';
 import { OwnerSelector } from '@/components/ui/owner-selector';
 import { getAvailableOwners, getDefaultOwner, shouldShowOwnerSelector, type OwnerOption } from '@/utils/ownerSelectionUtils';
+import { SkillAssessmentWizard } from './skill-assessment-wizard';
+import { progressiveMasteryService } from '@/services/progressiveMasteryService';
+import { PermissionsService } from '@/services/permissionsService';
+import { notificationsService } from '@/services/notificationsService';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FlowData {
   timeframe?: 'short_term' | 'mid_term' | 'long_term';
@@ -23,6 +28,28 @@ interface FlowData {
   due_at?: string;
   due_date?: string;
   start_due_at?: string;
+  goal_type?: 'habit' | 'progressive_mastery';
+  skill_assessment?: {
+    q1_familiarity: number;
+    q2_confidence: number;
+    q3_independence: number;
+    calculated_level: number;
+    level_label: string;
+  };
+  target_frequency?: number;
+  smart_start_plan?: {
+    suggested_initial: number;
+    user_selected_initial: number;
+    suggestion_accepted: boolean;
+    rationale: string;
+    phase_guidance: string;
+  };
+  teaching_helper?: {
+    id: string;
+    name: string;
+    relationship: string;
+  };
+  duration_weeks?: number | null;
 }
 
 interface GoalCreationFlowV2Props {
@@ -78,7 +105,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
     }
   }, []);
 
-  const updateFlowData = (key: keyof FlowData, value: string) => {
+  const updateFlowData = (key: keyof FlowData, value: any) => {
     setFlowData(prev => ({ ...prev, [key]: value }));
   };
 
@@ -94,17 +121,27 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
 
   const handleTimeframeSelect = (timeframe: 'short_term' | 'mid_term' | 'long_term') => {
     updateFlowData('timeframe', timeframe);
+    setCurrentStep('goal_type_selection');
+  };
+
+  const handleGoalTypeSelect = (goalType: 'habit' | 'progressive_mastery') => {
+    updateFlowData('goal_type', goalType);
     
-    switch (timeframe) {
-      case 'short_term':
-        setCurrentStep('short_followup');
-        break;
-      case 'mid_term':
-        setCurrentStep('mid_followup');
-        break;
-      case 'long_term':
-        setCurrentStep('long_followup');
-        break;
+    if (goalType === 'progressive_mastery') {
+      setCurrentStep('skill_assessment');
+    } else {
+      // Continue with existing habit flow
+      switch (flowData.timeframe) {
+        case 'short_term':
+          setCurrentStep('short_followup');
+          break;
+        case 'mid_term':
+          setCurrentStep('mid_followup');
+          break;
+        case 'long_term':
+          setCurrentStep('long_followup');
+          break;
+      }
     }
   };
 
@@ -138,6 +175,92 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
       toast({
         title: "Oops, something hiccupped",
         description: "Let's give that another shot.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSavePMGoal = async () => {
+    setIsLoading(true);
+    try {
+      const title = flowData.first_action || flowData.milestone || flowData.starter_step || 'Untitled Goal';
+      const startDate = new Date().toISOString().split('T')[0];
+      const dueDate = flowData.duration_weeks 
+        ? addWeeks(new Date(), flowData.duration_weeks).toISOString().split('T')[0]
+        : null;
+      
+      const goalData = {
+        title,
+        description: `Progressive Mastery goal: ${title}`,
+        domain: 'general' as GoalDomain,
+        priority: 'medium' as GoalPriority,
+        goal_type: 'progressive_mastery',
+        frequency_per_week: flowData.smart_start_plan?.user_selected_initial || 3,
+        duration_weeks: flowData.duration_weeks,
+        start_date: startDate,
+        due_date: dueDate,
+        owner_id: selectedOwnerId
+      };
+
+      const goal = await goalsService.createGoal(goalData);
+      
+      // Save Progressive Mastery metadata
+      if (flowData.skill_assessment) {
+        await progressiveMasteryService.saveSkillAssessment(goal.id, {
+          q1: flowData.skill_assessment.q1_familiarity,
+          q2: flowData.skill_assessment.q2_confidence,
+          q3: flowData.skill_assessment.q3_independence
+        });
+      }
+
+      if (flowData.smart_start_plan) {
+        await progressiveMasteryService.saveSmartStartPlan(
+          goal.id,
+          {
+            suggested_initial: flowData.smart_start_plan.suggested_initial,
+            target_frequency: flowData.target_frequency || 3,
+            rationale: flowData.smart_start_plan.rationale,
+            phase_guidance: flowData.smart_start_plan.phase_guidance
+          },
+          flowData.smart_start_plan.suggestion_accepted,
+          flowData.smart_start_plan.user_selected_initial
+        );
+      }
+
+      if (flowData.teaching_helper) {
+        await progressiveMasteryService.saveTeachingHelper(
+          goal.id,
+          flowData.teaching_helper.id,
+          flowData.teaching_helper.name,
+          flowData.teaching_helper.relationship as 'parent' | 'teacher' | 'coach'
+        );
+
+        // Trigger notification to helper
+        await notificationsService.createNotification({
+          user_id: flowData.teaching_helper.id,
+          type: 'teaching_helper_assigned',
+          title: 'New Teaching Helper Role',
+          message: `You've been assigned as a teaching helper for ${title}`,
+          data: { goalId: goal.id }
+        });
+      }
+      
+      // Clear draft
+      localStorage.removeItem('goal_creation_draft_v2');
+      
+      toast({
+        title: "Progressive Mastery Goal Created! 🚀",
+        description: "Your learning journey begins now!",
+      });
+      
+      onComplete?.();
+    } catch (error) {
+      console.error('Failed to create PM goal:', error);
+      toast({
+        title: "Oops, something went wrong",
+        description: "Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -225,7 +348,8 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
   );
 
   const renderTextInput = (stepId: string, prompt: string, placeholder: string, saveKey: keyof FlowData, nextStep: string) => {
-    const [inputValue, setInputValue] = useState(flowData[saveKey] || '');
+    const savedValue = flowData[saveKey];
+    const [inputValue, setInputValue] = useState(typeof savedValue === 'string' ? savedValue : '');
 
     const handleNext = () => {
       if (inputValue.trim()) {
@@ -236,7 +360,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
 
     const handleBack = () => {
       if (stepId === 'short_followup' || stepId === 'mid_followup' || stepId === 'long_followup') {
-        setCurrentStep('timeframe');
+        setCurrentStep('goal_type_selection');
       }
     };
 
@@ -456,6 +580,482 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
     );
   };
 
+  const renderGoalTypeSelection = () => (
+    <Card className="p-6 space-y-4">
+      <div className="space-y-3">
+        <h3 className="text-lg font-medium">What type of goal is this?</h3>
+        <div className="space-y-2">
+          <Button
+            variant="outline"
+            className="w-full justify-start h-auto p-4"
+            onClick={() => handleGoalTypeSelect('habit')}
+          >
+            <div className="text-left">
+              <div className="font-medium">🎯 Habit Goal</div>
+              <div className="text-sm text-muted-foreground">
+                Build a routine or reach a one-time milestone
+              </div>
+            </div>
+          </Button>
+          
+          <Button
+            variant="outline"
+            className="w-full justify-start h-auto p-4"
+            onClick={() => handleGoalTypeSelect('progressive_mastery')}
+          >
+            <div className="text-left">
+              <div className="font-medium">🚀 Progressive Mastery</div>
+              <div className="text-sm text-muted-foreground">
+                Learn a new skill with increasing independence
+              </div>
+            </div>
+          </Button>
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={() => setCurrentStep('timeframe')}>
+          Back
+        </Button>
+        <Button variant="outline" onClick={handleExit} size="icon">
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </Card>
+  );
+
+  const renderSkillAssessment = () => (
+    <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+      <SkillAssessmentWizard
+        goalTitle={flowData.first_action || flowData.milestone || flowData.starter_step || 'this skill'}
+        onComplete={(assessment) => {
+          updateFlowData('skill_assessment', {
+            q1_familiarity: assessment.q1_familiarity,
+            q2_confidence: assessment.q2_confidence,
+            q3_independence: assessment.q3_independence,
+            calculated_level: assessment.calculated_level,
+            level_label: assessment.level_label
+          });
+          setCurrentStep('pm_text_input');
+        }}
+        onBack={() => setCurrentStep('goal_type_selection')}
+      />
+    </div>
+  );
+
+  const renderPMTextInput = () => {
+    const savedValue = flowData.first_action || flowData.milestone || flowData.starter_step;
+    const [inputValue, setInputValue] = useState(typeof savedValue === 'string' ? savedValue : '');
+
+    const handleNext = () => {
+      if (inputValue.trim()) {
+        updateFlowData('first_action', inputValue.trim());
+        setCurrentStep('target_frequency');
+      }
+    };
+
+    return (
+      <Card className="p-6 space-y-4">
+        <div className="space-y-3">
+          <h3 className="text-lg font-medium">What skill do you want to learn?</h3>
+          <Textarea
+            placeholder="e.g., Cooking scrambled eggs, Playing guitar chords, Writing essays"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            rows={3}
+          />
+        </div>
+        <div className="flex gap-2">
+          <BackButton variant="text" onClick={() => setCurrentStep('skill_assessment')} className="flex-1" />
+          <Button 
+            onClick={handleNext} 
+            className="flex-1"
+            disabled={!inputValue.trim()}
+          >
+            Next
+          </Button>
+          <Button variant="outline" onClick={handleExit} size="icon">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </Card>
+    );
+  };
+
+  const renderTargetFrequency = () => (
+    <Card className="p-6 space-y-4">
+      <div className="space-y-3">
+        <h3 className="text-lg font-medium">
+          How often would you eventually like to practice this?
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Don't worry, we'll start slower and build up gradually!
+        </p>
+        
+        <div className="grid grid-cols-4 gap-2">
+          {[1, 2, 3, 4, 5, 6, 7].map(freq => (
+            <Button
+              key={freq}
+              variant={flowData.target_frequency === freq ? 'default' : 'outline'}
+              onClick={() => {
+                updateFlowData('target_frequency', freq);
+              }}
+              className="h-16 flex flex-col items-center justify-center"
+            >
+              <span className="text-2xl font-bold">{freq}</span>
+              <span className="text-xs">day{freq > 1 ? 's' : ''}/wk</span>
+            </Button>
+          ))}
+        </div>
+      </div>
+      
+      <div className="flex gap-2">
+        <BackButton onClick={() => setCurrentStep('pm_text_input')} />
+        <Button 
+          onClick={() => setCurrentStep('smart_start_suggestion')} 
+          className="flex-1"
+          disabled={!flowData.target_frequency}
+        >
+          Next
+        </Button>
+        <Button variant="outline" onClick={handleExit} size="icon">
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </Card>
+  );
+
+  const renderSmartStartSuggestion = () => {
+    const [customFrequency, setCustomFrequency] = useState<number>();
+    const [accepted, setAccepted] = useState(false);
+    
+    const suggestion = progressiveMasteryService.suggestStartFrequency(
+      flowData.skill_assessment?.calculated_level || 1,
+      flowData.target_frequency || 3
+    );
+
+    const selectedFrequency = customFrequency || suggestion.suggested_initial;
+
+    return (
+      <Card className="p-6 space-y-4">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h3 className="text-lg font-medium">Your Smart Start Plan</h3>
+            <Badge variant="secondary">
+              {flowData.skill_assessment?.level_label || 'Beginner'} Level
+            </Badge>
+          </div>
+
+          <div className="p-4 bg-primary/10 border-2 border-primary rounded-lg space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">We recommend starting with</p>
+                <p className="text-3xl font-bold text-primary">
+                  {suggestion.suggested_initial}x per week
+                </p>
+              </div>
+              <Sparkles className="h-8 w-8 text-primary" />
+            </div>
+            
+            <p className="text-sm">{suggestion.rationale}</p>
+            <p className="text-sm text-muted-foreground">{suggestion.phase_guidance}</p>
+          </div>
+
+          <div className="space-y-3">
+            <Button
+              onClick={() => {
+                setAccepted(true);
+                setCustomFrequency(undefined);
+              }}
+              variant={accepted && !customFrequency ? 'default' : 'outline'}
+              className="w-full"
+            >
+              ✓ Accept Suggestion ({suggestion.suggested_initial}x/week)
+            </Button>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or customize</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              {[1, 2, 3, 4, 5, 6, 7].map(freq => (
+                <Button
+                  key={freq}
+                  variant={customFrequency === freq ? 'default' : 'outline'}
+                  onClick={() => {
+                    setCustomFrequency(freq);
+                    setAccepted(false);
+                  }}
+                  className="h-12"
+                >
+                  {freq}x
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <BackButton onClick={() => setCurrentStep('target_frequency')} />
+          <Button 
+            onClick={() => {
+              const plan = {
+                suggested_initial: suggestion.suggested_initial,
+                user_selected_initial: selectedFrequency,
+                suggestion_accepted: accepted,
+                rationale: suggestion.rationale,
+                phase_guidance: suggestion.phase_guidance
+              };
+              updateFlowData('smart_start_plan', plan);
+              setCurrentStep('teaching_helper');
+            }}
+            className="flex-1"
+          >
+            Continue with {selectedFrequency}x/week
+          </Button>
+          <Button variant="outline" onClick={handleExit} size="icon">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </Card>
+    );
+  };
+
+  const renderTeachingHelper = () => {
+    const [selectedHelper, setSelectedHelper] = useState<string | null>(
+      flowData.teaching_helper?.id || null
+    );
+    const [supporters, setSupporters] = useState<any[]>([]);
+    const [supporterProfiles, setSupporterProfiles] = useState<Record<string, any>>({});
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      const loadSupporters = async () => {
+        try {
+          const supportersList = await PermissionsService.getSupporters(selectedOwnerId);
+          setSupporters(supportersList);
+
+          // Load profiles for supporters
+          const profiles: Record<string, any> = {};
+          for (const supporter of supportersList) {
+            const { data } = await supabase
+              .from('profiles')
+              .select('display_name, email')
+              .eq('id', supporter.supporter_id)
+              .single();
+            if (data) {
+              profiles[supporter.supporter_id] = data;
+            }
+          }
+          setSupporterProfiles(profiles);
+        } catch (error) {
+          console.error('Failed to load supporters:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadSupporters();
+    }, [selectedOwnerId]);
+
+    return (
+      <Card className="p-6 space-y-4">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h3 className="text-lg font-medium">Who can help you learn this skill?</h3>
+            <p className="text-sm text-muted-foreground">
+              Choose someone who will guide and support your progress
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Button
+              variant={selectedHelper === 'none' ? 'default' : 'outline'}
+              className="w-full justify-start h-auto p-4"
+              onClick={() => setSelectedHelper('none')}
+            >
+              <div className="text-left">
+                <div className="font-medium">🦸 On my own</div>
+                <div className="text-sm text-muted-foreground">
+                  I'll practice independently
+                </div>
+              </div>
+            </Button>
+
+            {loading ? (
+              <div className="text-center py-4 text-muted-foreground">
+                Loading helpers...
+              </div>
+            ) : supporters.length > 0 ? (
+              supporters.map(supporter => (
+                <Button
+                  key={supporter.id}
+                  variant={selectedHelper === supporter.supporter_id ? 'default' : 'outline'}
+                  className="w-full justify-start h-auto p-4"
+                  onClick={() => setSelectedHelper(supporter.supporter_id)}
+                >
+                  <div className="text-left">
+                    <div className="font-medium">
+                      👤 {supporterProfiles[supporter.supporter_id]?.display_name || 
+                           supporterProfiles[supporter.supporter_id]?.email || 
+                           'Helper'}
+                    </div>
+                    <div className="text-sm text-muted-foreground capitalize">
+                      {supporter.role}
+                    </div>
+                  </div>
+                </Button>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No helpers available. You can add supporters later.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <BackButton onClick={() => setCurrentStep('smart_start_suggestion')} />
+          <Button 
+            onClick={() => {
+              if (selectedHelper && selectedHelper !== 'none') {
+                const supporter = supporters.find(s => s.supporter_id === selectedHelper);
+                updateFlowData('teaching_helper', {
+                  id: selectedHelper,
+                  name: supporterProfiles[selectedHelper]?.display_name || 
+                        supporterProfiles[selectedHelper]?.email || 
+                        'Helper',
+                  relationship: supporter?.role || 'supporter'
+                });
+              } else {
+                updateFlowData('teaching_helper', undefined);
+              }
+              setCurrentStep('duration');
+            }}
+            className="flex-1"
+            disabled={!selectedHelper}
+          >
+            Next
+          </Button>
+          <Button variant="outline" onClick={handleExit} size="icon">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </Card>
+    );
+  };
+
+  const renderDuration = () => (
+    <Card className="p-6 space-y-4">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">How long do you want to practice?</h3>
+          <p className="text-sm text-muted-foreground">
+            Choose a duration that gives you time to build mastery
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          {[
+            { weeks: 8, label: '8 weeks', description: 'Short intensive practice' },
+            { weeks: 12, label: '12 weeks', description: 'Recommended for most skills' },
+            { weeks: 16, label: '16 weeks', description: 'Extended deep practice' },
+            { weeks: null, label: 'Ongoing', description: 'No end date, practice indefinitely' }
+          ].map(option => (
+            <Button
+              key={option.weeks || 'ongoing'}
+              variant={flowData.duration_weeks === option.weeks ? 'default' : 'outline'}
+              className="w-full justify-start h-auto p-4"
+              onClick={() => updateFlowData('duration_weeks', option.weeks)}
+            >
+              <div className="text-left">
+                <div className="font-medium">{option.label}</div>
+                <div className="text-sm text-muted-foreground">{option.description}</div>
+              </div>
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <BackButton onClick={() => setCurrentStep('teaching_helper')} />
+        <Button 
+          onClick={() => setCurrentStep('pm_summary')}
+          className="flex-1"
+          disabled={flowData.duration_weeks === undefined}
+        >
+          Next
+        </Button>
+        <Button variant="outline" onClick={handleExit} size="icon">
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </Card>
+  );
+
+  const renderPMSummary = () => (
+    <Card className="p-6 space-y-4">
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Review Your Progressive Mastery Goal</h3>
+        
+        <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+          <div>
+            <span className="text-sm font-medium">Goal: </span>
+            <span className="text-sm">{flowData.first_action || flowData.milestone || flowData.starter_step}</span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Skill Level:</span>
+            <Badge variant="secondary">
+              {flowData.skill_assessment?.level_label || 'Beginner'}
+            </Badge>
+          </div>
+
+          <div>
+            <span className="text-sm font-medium">Starting Frequency: </span>
+            <span className="text-sm">{flowData.smart_start_plan?.user_selected_initial}x per week</span>
+          </div>
+
+          <div>
+            <span className="text-sm font-medium">Target Frequency: </span>
+            <span className="text-sm">{flowData.target_frequency}x per week</span>
+          </div>
+
+          {flowData.teaching_helper && (
+            <div>
+              <span className="text-sm font-medium">Teaching Helper: </span>
+              <span className="text-sm">{flowData.teaching_helper.name}</span>
+            </div>
+          )}
+
+          <div>
+            <span className="text-sm font-medium">Duration: </span>
+            <span className="text-sm">
+              {flowData.duration_weeks ? `${flowData.duration_weeks} weeks` : 'Ongoing'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <BackButton onClick={() => setCurrentStep('duration')} />
+        <Button 
+          onClick={handleSavePMGoal}
+          className="flex-1"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Creating...' : 'Create Goal'}
+        </Button>
+        <Button variant="outline" onClick={handleExit} size="icon">
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </Card>
+  );
+
   switch (currentStep) {
     case 'greeting':
       return renderGreeting();
@@ -463,6 +1063,32 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
     case 'timeframe':
       return renderTimeframe();
     
+    case 'goal_type_selection':
+      return renderGoalTypeSelection();
+    
+    // Progressive Mastery flow
+    case 'skill_assessment':
+      return renderSkillAssessment();
+    
+    case 'pm_text_input':
+      return renderPMTextInput();
+    
+    case 'target_frequency':
+      return renderTargetFrequency();
+    
+    case 'smart_start_suggestion':
+      return renderSmartStartSuggestion();
+    
+    case 'teaching_helper':
+      return renderTeachingHelper();
+    
+    case 'duration':
+      return renderDuration();
+    
+    case 'pm_summary':
+      return renderPMSummary();
+    
+    // Existing habit flow
     case 'short_followup':
       return renderTextInput(
         'short_followup',
