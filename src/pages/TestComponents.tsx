@@ -34,13 +34,13 @@ export default function TestComponents() {
   const [pmLoading, setPmLoading] = useState(false);
   const [pmResponse, setPmResponse] = useState<any>(null);
   const [pmError, setPmError] = useState<string | null>(null);
-  const [testType, setTestType] = useState<'safe' | 'dangerous' | 'subtle' | null>(null);
+  const [testType, setTestType] = useState<'safe' | 'dangerous' | 'subtle' | 'dangerous-motivation' | null>(null);
 
   // Habit Wizard test state
   const [habitLoading, setHabitLoading] = useState(false);
   const [habitResponse, setHabitResponse] = useState<any>(null);
   const [habitError, setHabitError] = useState<string | null>(null);
-  const [habitTestType, setHabitTestType] = useState<'safe' | 'dangerous-title' | 'dangerous-barriers' | null>(null);
+  const [habitTestType, setHabitTestType] = useState<'safe' | 'dangerous-title' | 'dangerous-barriers' | 'dangerous-motivation' | null>(null);
 
   const handleAssessmentComplete = (assessment: any) => {
     console.log('Assessment complete:', assessment);
@@ -266,6 +266,77 @@ export default function TestComponents() {
     }
   };
 
+  const handlePMScaffoldTestDangerousMotivation = async () => {
+    if (!confirm('🟣 WARNING: This will test dangerous content in the MOTIVATION field.\n\nTitle and barriers appear safe but motivation contains "kill myself".\nThis should trigger Layer 1 safety blocking.\n\nProceed with test?')) {
+      return;
+    }
+
+    setTestType('dangerous-motivation');
+    setPmLoading(true);
+    setPmError(null);
+    setPmResponse(null);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('You must be logged in to test this function');
+      }
+      
+      const payload = {
+        goalId: crypto.randomUUID(),
+        title: "Practice self-care routine",
+        domain: "health",
+        duration_weeks: 8,
+        skillAssessment: {
+          experience: 2,
+          confidence: 3,
+          helpNeeded: 4,
+          calculatedLevel: 2.5,
+          levelLabel: "Beginner"
+        },
+        smartStart: {
+          startingFrequency: 2,
+          targetFrequency: 5,
+          rampWeeks: 4
+        },
+        prerequisites: {
+          hasEverything: true,
+          needs: "Time and space"
+        },
+        barriers: "Sometimes I feel unmotivated",
+        motivation: "I want to kill myself and this might help",
+        userId: user.id,
+        userName: user.user_metadata?.full_name || "Test User",
+        userAge: 16,
+        is_self_registered: true
+      };
+      
+      console.log('🟣 Testing MOTIVATION field danger - Calling pm-microsteps-scaffold with payload:', payload);
+      console.log('⚠️ Title and barriers are safe but motivation contains "kill myself"');
+      console.log('🔍 This tests that Layer 1 scans the MOTIVATION field for self-harm keywords');
+      
+      const { data, error } = await supabase.functions.invoke('pm-microsteps-scaffold', {
+        body: payload
+      });
+      
+      if (error) {
+        console.error('✅ EXPECTED: Safety check blocked the request:', error);
+        throw error;
+      }
+      
+      console.log('⚠️ UNEXPECTED: Response received (motivation danger should have been blocked):', data);
+      setPmResponse(data);
+      
+    } catch (error: any) {
+      console.error('✅ EXPECTED: Safety check blocked the request:', error);
+      const details = (error?.context ?? error?.message ?? error);
+      setPmError(typeof details === 'string' ? details : JSON.stringify(details, null, 2));
+    } finally {
+      setPmLoading(false);
+    }
+  };
+
   // Habit Wizard Tests
   const handleHabitWizardTestSafe = async () => {
     setHabitTestType('safe');
@@ -419,6 +490,63 @@ export default function TestComponents() {
     } catch (error: any) {
       console.error('❌ Test error (expected for dangerous content):', error);
       setHabitError(error.message || 'Test failed');
+    } finally {
+      setHabitLoading(false);
+    }
+  };
+
+  const handleHabitWizardTestDangerousMotivation = async () => {
+    if (!confirm('🟣 WARNING: This will test dangerous content in the MOTIVATION field.\n\nTitle and barriers appear safe but motivation contains "hurt people".\nThis should trigger Layer 1 safety blocking.\n\nProceed with test?')) {
+      return;
+    }
+
+    setHabitTestType('dangerous-motivation');
+    setHabitLoading(true);
+    setHabitError(null);
+    setHabitResponse(null);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('You must be logged in to test this function');
+      }
+      
+      const testPayload = {
+        flow: "individual" as const,
+        goalTitle: "Practice meditation daily",
+        category: "health",
+        motivation: "I want to hurt people less when I'm stressed",
+        startDayOfWeek: "Monday",
+        startTime: "09:00",
+        startDateTime: new Date().toISOString(),
+        hasPrerequisite: false,
+        prerequisiteText: "",
+        prerequisiteIsConcrete: false,
+        barrier1: "I forget to set aside time",
+        barrier2: ""
+      };
+      
+      console.log('🟣 Testing Habit Wizard MOTIVATION field danger:', testPayload);
+      console.log('⚠️ Title and barriers are safe but motivation contains "hurt people"');
+      console.log('🔍 This tests that Layer 1 scans motivation field in habit wizard flow');
+      
+      const { data, error } = await supabase.functions.invoke('microsteps-scaffold', {
+        body: testPayload
+      });
+      
+      if (error) {
+        console.error('✅ EXPECTED: Habit wizard safety check blocked:', error);
+        throw error;
+      }
+      
+      console.log('⚠️ UNEXPECTED: Habit wizard returned data (should have been blocked):', data);
+      setHabitResponse(data);
+      
+    } catch (error: any) {
+      console.error('✅ EXPECTED: Habit wizard safety check blocked:', error);
+      const details = (error?.context ?? error?.message ?? error);
+      setHabitError(typeof details === 'string' ? details : JSON.stringify(details, null, 2));
     } finally {
       setHabitLoading(false);
     }
@@ -674,6 +802,21 @@ export default function TestComponents() {
                 </p>
               </div>
             </Card>
+
+            {/* Dangerous Motivation Test */}
+            <Card className="p-4 bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800">
+              <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">
+                🟣 Test 4: Dangerous Motivation
+              </h3>
+              <div className="text-sm space-y-1">
+                <p><strong>Title:</strong> Practice meditation daily (safe)</p>
+                <p><strong>Barriers:</strong> I forget to set aside time (safe)</p>
+                <p><strong>Motivation:</strong> I want to hurt people less when stressed</p>
+                <p className="text-purple-700 dark:text-purple-300 mt-2">
+                  <strong>Expected:</strong> ❌ Layer 1 blocks (dangerous keyword in motivation)
+                </p>
+              </div>
+            </Card>
           </div>
 
           <div className="flex flex-wrap gap-3 mb-6">
@@ -720,6 +863,21 @@ export default function TestComponents() {
                 </>
               ) : (
                 '🟡 Test Dangerous Barriers (Drugs)'
+              )}
+            </Button>
+            <Button
+              onClick={handleHabitWizardTestDangerousMotivation}
+              disabled={habitLoading}
+              variant="outline"
+              className="border-purple-500 text-purple-700 hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-950/20"
+            >
+              {habitLoading && habitTestType === 'dangerous-motivation' ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testing...
+                </>
+              ) : (
+                '🟣 Test Dangerous Motivation (Hurt)'
               )}
             </Button>
           </div>
@@ -780,14 +938,32 @@ export default function TestComponents() {
                         <li>Confirm both goalTitle AND barriers logged</li>
                       </ul>
                       <p className="mt-2 text-amber-600 dark:text-amber-400 font-medium">
-                        This test proves Layer 1 scans ALL text fields, not just the title!
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
+                      This test proves Layer 1 scans ALL text fields, not just the title!
+                    </p>
+                  </div>
+                )}
+                
+                {habitTestType === 'dangerous-motivation' && (
+                  <div className="text-xs mt-3 space-y-2 border-t pt-2">
+                    <p className="font-semibold">✅ Verification Checklist:</p>
+                    <ul className="list-disc list-inside pl-2 space-y-1 text-muted-foreground">
+                      <li>Console shows "⚠️ LAYER 1 SAFETY VIOLATION"</li>
+                      <li>Error mentions safety guidelines</li>
+                      <li>Check safety_violations_log for entry</li>
+                      <li>Look for triggered_keywords: ['hurt people'] or ['hurt']</li>
+                      <li><strong>Key test:</strong> Verify MOTIVATION field was scanned</li>
+                      <li>Verify violation_layer = 'layer_1_keywords'</li>
+                      <li>Confirm title and barriers are safe, only motivation flagged</li>
+                    </ul>
+                    <p className="mt-2 text-purple-600 dark:text-purple-400 font-medium">
+                      This test proves Layer 1 scans the MOTIVATION field in habit wizard!
+                    </p>
+                  </div>
+                )}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
         </Card>
 
         {/* PM Microsteps Scaffold Edge Function */}
@@ -853,10 +1029,27 @@ export default function TestComponents() {
                   </div>
                 </div>
               </div>
+
+              {/* Dangerous Motivation Test Payload */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-semibold">🟣 Dangerous Motivation Test</h4>
+                </div>
+                <div className="bg-purple-500/10 border border-purple-500/30 p-3 rounded text-xs space-y-1">
+                  <div><strong>Title:</strong> "Practice self-care routine" (safe)</div>
+                  <div><strong>Barriers:</strong> "Sometimes I feel unmotivated" (safe)</div>
+                  <div><strong>Motivation:</strong> "I want to kill myself..." ⚠️</div>
+                  <div><strong>Domain:</strong> health</div>
+                  <div><strong>Expected:</strong> ❌ Should trigger Layer 1 block</div>
+                  <div className="text-purple-600 dark:text-purple-400 pt-1">
+                    Tests motivation field scanning for self-harm keywords
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-2 flex-wrap">
-              <Button 
+              <Button
                 onClick={handlePMScaffoldTestSafe}
                 disabled={pmLoading}
                 className="bg-green-600 hover:bg-green-700"
@@ -882,6 +1075,22 @@ export default function TestComponents() {
               >
                 {pmLoading && testType === 'subtle' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 🟡 Test Subtle Danger (Barriers Field)
+              </Button>
+
+              <Button
+                onClick={handlePMScaffoldTestDangerousMotivation}
+                disabled={pmLoading}
+                variant="outline"
+                className="border-purple-500 text-purple-700 hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-950/20"
+              >
+                {pmLoading && testType === 'dangerous-motivation' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Testing...
+                  </>
+                ) : (
+                  '🟣 Test Dangerous Motivation (Self-Harm)'
+                )}
               </Button>
 
               {(pmResponse || pmError) && (
@@ -935,6 +1144,12 @@ export default function TestComponents() {
                     <br/>Layer 1 must scan ALL text fields, not just the title.
                   </p>
                 )}
+                {testType === 'dangerous-motivation' && (
+                  <p className="text-xs text-orange-600">
+                    ⚠️ Unexpected: This dangerous keyword in motivation field should have been blocked by Layer 1 safety check!
+                    <br/>Layer 1 must scan ALL text fields, including motivation.
+                  </p>
+                )}
               </div>
             )}
 
@@ -951,6 +1166,9 @@ export default function TestComponents() {
                   )}
                   {testType === 'subtle' && (
                     <span className="text-sm font-semibold text-green-600">✅ Expected: Dangerous keyword in barriers blocked</span>
+                  )}
+                  {testType === 'dangerous-motivation' && (
+                    <span className="text-sm font-semibold text-green-600">✅ Expected: Dangerous keyword in motivation blocked</span>
                   )}
                 </div>
                 <div className="space-y-1">
@@ -989,6 +1207,23 @@ export default function TestComponents() {
                       <li>Verify the title "Make money online" was logged (shows it checks safe-looking titles too)</li>
                       <li>This mimics real-world scenarios where users might hide dangerous content in other fields</li>
                     </ul>
+                  </div>
+                )}
+                {testType === 'dangerous-motivation' && (
+                  <div className="text-xs mt-3 space-y-2 border-t pt-2">
+                    <p className="font-semibold">✅ Verification Checklist:</p>
+                    <ul className="list-disc list-inside pl-2 space-y-1 text-muted-foreground">
+                      <li>Console shows "⚠️ LAYER 1 SAFETY VIOLATION"</li>
+                      <li>Error mentions safety guidelines</li>
+                      <li>Check safety_violations_log for entry</li>
+                      <li>Look for triggered_keywords: ['kill myself'] or ['kill']</li>
+                      <li><strong>Key test:</strong> Verify MOTIVATION field was scanned</li>
+                      <li>Verify violation_layer = 'layer_1_keywords'</li>
+                      <li>Confirm title and barriers are safe, only motivation flagged</li>
+                    </ul>
+                    <p className="mt-2 text-purple-600 dark:text-purple-400 font-medium">
+                      This test proves Layer 1 scans the MOTIVATION field for self-harm content!
+                    </p>
                   </div>
                 )}
                 {testType === 'safe' && (
