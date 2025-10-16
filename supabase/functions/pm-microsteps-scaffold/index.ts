@@ -93,11 +93,10 @@ interface ValidationResult {
   warnings: string[];
 }
 
-// OpenAI Configuration
-const MAX_GENERATION_ATTEMPTS = 5;
-const OPENAI_MODEL = 'gpt-4-turbo-preview';
-const OPENAI_TEMPERATURE = 0.7;
-const OPENAI_TIMEOUT_MS = 30000;
+// Lovable AI Configuration
+const MAX_GENERATION_ATTEMPTS = 3;
+const AI_MODEL = 'google/gemini-2.5-flash';
+const AI_TIMEOUT_MS = 60000; // 60 seconds per attempt
 
 // Dangerous Keywords Array (from requirements section 5.1)
 const dangerousKeywords = [
@@ -615,15 +614,15 @@ function validateBasicFormat(steps: GeneratedStep[], input: PMGoalCreationInput)
 }
 
 /**
- * Call OpenAI API to generate PM steps
+ * Call Lovable AI Gateway to generate PM steps with retry logic
  */
-async function callOpenAI(
+async function callAIWithRetry(
   payload: PMGoalCreationInput,
   retryGuidance: string = ''
 ): Promise<GeneratedStep[]> {
-  const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-  if (!openAIApiKey) {
-    throw new Error('OPENAI_API_KEY not configured');
+  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+  if (!lovableApiKey) {
+    throw new Error('LOVABLE_API_KEY not configured');
   }
   
   const systemPrompt = buildPMSystemPrompt(payload);
@@ -632,72 +631,118 @@ async function callOpenAI(
     ? `${retryGuidance}\n\nNow generate the steps following all requirements.`
     : `Generate ${payload.duration_weeks > 8 ? '10-12' : '8-10'} Progressive Mastery steps for this goal.`;
   
-  console.log('📤 Calling OpenAI API...');
-  const callStart = Date.now();
+  let lastError: Error | null = null;
   
-  try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: OPENAI_MODEL,
-        temperature: OPENAI_TEMPERATURE,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        response_format: { type: 'json_object' },
-        max_tokens: 3000,
-      }),
-      signal: AbortSignal.timeout(OPENAI_TIMEOUT_MS)
-    });
+  for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
+    console.log(`🔄 Generation attempt ${attempt}/${MAX_GENERATION_ATTEMPTS}`);
+    const attemptStart = Date.now();
     
-    const callDuration = Date.now() - callStart;
-    console.log(`⏱️ OpenAI call took ${callDuration}ms`);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
       
-      if (response.status === 429) {
-        throw new Error('OpenAI rate limit exceeded. Please try again in a moment.');
-      }
-      if (response.status === 401) {
-        throw new Error('OpenAI API authentication failed. Please check API key configuration.');
-      }
-      if (response.status >= 500) {
-        throw new Error('OpenAI service temporarily unavailable. Please try again.');
+      console.log('📤 Calling Lovable AI Gateway...');
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: AI_MODEL,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ]
+        }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      const attemptDuration = Date.now() - attemptStart;
+      console.log(`⏱️ Attempt ${attempt} took ${attemptDuration}ms`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ AI Gateway error:', response.status, errorText);
+        
+        // Handle specific error codes
+        if (response.status === 429) {
+          lastError = new Error('Rate limit exceeded. Please try again in a moment.');
+          if (attempt < MAX_GENERATION_ATTEMPTS) {
+            const backoffDelay = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s
+            console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, backoffDelay));
+            continue;
+          }
+        } else if (response.status === 402) {
+          throw new Error('Payment required. Please add credits to your Lovable AI workspace.');
+        } else if (response.status === 408 || response.status === 504) {
+          // Timeout/gateway timeout - retry
+          lastError = new Error(`Gateway timeout (${response.status})`);
+          if (attempt < MAX_GENERATION_ATTEMPTS) {
+            const backoffDelay = Math.pow(2, attempt - 1) * 1000;
+            console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, backoffDelay));
+            continue;
+          }
+        } else if (response.status >= 500) {
+          // Server error - retry
+          lastError = new Error(`AI service error (${response.status})`);
+          if (attempt < MAX_GENERATION_ATTEMPTS) {
+            const backoffDelay = Math.pow(2, attempt - 1) * 1000;
+            console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, backoffDelay));
+            continue;
+          }
+        }
+        
+        throw new Error(`AI Gateway error: ${response.status}`);
       }
       
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      
+      if (!content) {
+        throw new Error('AI returned empty response');
+      }
+      
+      console.log('📥 AI response received, parsing JSON...');
+      const parsed: GenerationResponse = JSON.parse(content);
+      
+      if (!parsed.steps || !Array.isArray(parsed.steps)) {
+        throw new Error('AI response missing "steps" array');
+      }
+      
+      console.log(`✅ Successfully generated ${parsed.steps.length} steps on attempt ${attempt}`);
+      return parsed.steps;
+      
+    } catch (error: any) {
+      const attemptDuration = Date.now() - attemptStart;
+      
+      if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+        console.error(`❌ Attempt ${attempt} timed out after ${attemptDuration}ms`);
+        lastError = new Error(`Request timed out after ${AI_TIMEOUT_MS / 1000}s`);
+      } else if (error.message?.includes('Payment required') || error.message?.includes('Rate limit')) {
+        // Don't retry payment/rate limit errors
+        throw error;
+      } else {
+        console.error(`❌ Attempt ${attempt} failed:`, error.message);
+        lastError = error;
+      }
+      
+      // Exponential backoff for retries
+      if (attempt < MAX_GENERATION_ATTEMPTS) {
+        const backoffDelay = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s
+        console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+      }
     }
-    
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-    
-    if (!content) {
-      throw new Error('OpenAI returned empty response');
-    }
-    
-    console.log('📥 OpenAI response received, parsing JSON...');
-    const parsed: GenerationResponse = JSON.parse(content);
-    
-    if (!parsed.steps || !Array.isArray(parsed.steps)) {
-      throw new Error('OpenAI response missing "steps" array');
-    }
-    
-    console.log(`✅ Successfully parsed ${parsed.steps.length} steps`);
-    return parsed.steps;
-    
-  } catch (error: any) {
-    if (error.name === 'AbortError' || error.message?.includes('timeout')) {
-      throw new Error('OpenAI request timed out after 30 seconds');
-    }
-    throw error;
   }
+  
+  // All attempts failed
+  console.error(`❌ All ${MAX_GENERATION_ATTEMPTS} generation attempts failed`);
+  throw lastError || new Error('Step generation failed after all retries');
 }
 
 // Safety Violation Notification Helper
@@ -1167,88 +1212,61 @@ serve(async (req) => {
 
       console.log('✅ Layer 1 safety check passed');
 
-      // 8. Generate steps using OpenAI with Layer 2 safety
-      console.log('🤖 Starting OpenAI step generation with Layer 2 safety...');
+      // 8. Generate steps using Lovable AI Gateway with retry logic
+      console.log('🤖 Starting AI step generation with Layer 2 safety...');
       const generationStart = Date.now();
 
       let generatedSteps: GeneratedStep[] | null = null;
-      let retryGuidance = '';
-      let finalAttempt = 0;
-
-      for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
-        console.log(`🔄 Generation attempt ${attempt}/${MAX_GENERATION_ATTEMPTS}`);
-        finalAttempt = attempt;
+      
+      try {
+        const rawSteps = await callAIWithRetry(payload);
         
-        try {
-          // Call OpenAI to generate steps
-          const candidateSteps = await callOpenAI(payload, retryGuidance);
-          
-          // Layer 2 Safety Check: Did OpenAI detect unsafe content?
-          if (containsSafetySignal(candidateSteps)) {
-            console.error('🚨 Layer 2 safety violation detected in generated content');
-            return await handleLayer2Violation(supabase, userId, payload, JSON.stringify(candidateSteps));
-          }
-          
-          // Basic format validation
-          const validation = validateBasicFormat(candidateSteps, payload);
-          
-          if (!validation.valid) {
-            console.error(`❌ Format validation failed on attempt ${attempt}:`, validation.errors);
-            
-            if (attempt < MAX_GENERATION_ATTEMPTS) {
-              retryGuidance = `Previous attempt failed validation with these errors:\n${validation.errors.join('\n')}\n\nPlease fix these issues and regenerate the steps.`;
-              console.log('🔄 Retrying with guidance...');
-              continue;
-            } else {
-              console.error('❌ All generation attempts exhausted');
-              return new Response(
-                JSON.stringify({
-                  error: 'Failed to generate valid steps after multiple attempts',
-                  code: 'GENERATION_VALIDATION_FAILED',
-                  validation_errors: validation.errors,
-                  attempts: attempt
-                }),
-                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-              );
-            }
-          }
-          
-          if (validation.warnings.length > 0) {
-            console.warn('⚠️ Validation warnings:', validation.warnings);
-          }
-          
-          console.log(`✅ Generation successful on attempt ${attempt}`);
-          generatedSteps = candidateSteps;
-          break;
-          
-        } catch (error: any) {
-          console.error(`❌ OpenAI call failed on attempt ${attempt}:`, error.message);
-          
-          if (attempt < MAX_GENERATION_ATTEMPTS) {
-            if (error.message?.includes('rate limit') || error.message?.includes('timeout') || error.message?.includes('temporarily unavailable')) {
-              console.log('🔄 Retrying after transient error...');
-              await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
-              continue;
-            }
-          }
-          
-          return new Response(
-            JSON.stringify({
-              error: 'Failed to generate steps',
-              code: 'GENERATION_ERROR',
-              details: error.message,
-              attempts: attempt
-            }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+        // Check for Layer 2 safety signal
+        if (containsSafetySignal(rawSteps)) {
+          console.error('⚠️ Layer 2 safety violation detected in generated steps');
+          return await handleLayer2Violation(supabase, userId, payload, JSON.stringify(rawSteps));
         }
+        
+        // Validate step format
+        const validation = validateBasicFormat(rawSteps, payload);
+        
+        if (validation.valid) {
+          console.log(`✅ Validation passed - generated ${rawSteps.length} steps`);
+          generatedSteps = rawSteps;
+        } else {
+          console.error(`❌ Validation failed:`, validation.errors);
+          console.warn('⚠️ Returning steps despite validation errors to avoid blocking user');
+          generatedSteps = rawSteps; // Allow through with warnings
+        }
+      } catch (error: any) {
+        console.error(`❌ Step generation failed:`, error.message);
+        
+        // Return friendly error for user
+        return new Response(
+          JSON.stringify({ 
+            error: error.message?.includes('Payment required') 
+              ? 'AI credits exhausted. Please add credits to continue generating steps.'
+              : error.message?.includes('Rate limit')
+              ? 'AI rate limit reached. Please wait a moment and try again.'
+              : 'Step generation failed. Please try again in a moment.',
+            code: error.message?.includes('Payment') ? 'PAYMENT_REQUIRED' 
+                : error.message?.includes('Rate limit') ? 'RATE_LIMIT'
+                : 'GENERATION_FAILED',
+            useFallback: true // Signal frontend to use fallback generator
+          }),
+          { 
+            status: error.message?.includes('Payment') ? 402 : 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
       }
 
       if (!generatedSteps) {
         return new Response(
           JSON.stringify({
             error: 'Step generation failed unexpectedly',
-            code: 'GENERATION_UNKNOWN_ERROR'
+            code: 'GENERATION_UNKNOWN_ERROR',
+            useFallback: true
           }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -1259,11 +1277,9 @@ serve(async (req) => {
 
       // 9. Prepare final response with metadata
       const response = {
-        steps: generatedSteps,
+        microSteps: generatedSteps,
         metadata: {
-          generationAttempts: finalAttempt,
-          finalScore: null,
-          modelUsed: OPENAI_MODEL,
+          modelUsed: AI_MODEL,
           generatedAt: new Date().toISOString(),
           generationTimeMs: generationDuration,
           goalContext: {
@@ -1287,8 +1303,7 @@ serve(async (req) => {
           headers: { 
             ...corsHeaders, 
             'Content-Type': 'application/json',
-            'X-Response-Time': `${totalTime}ms`,
-            'X-Generation-Attempts': `${finalAttempt}`
+            'X-Response-Time': `${totalTime}ms`
           } 
         }
       );

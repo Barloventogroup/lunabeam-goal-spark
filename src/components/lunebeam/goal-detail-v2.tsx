@@ -435,15 +435,269 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     return out;
   };
 
+  const calculateStepDueDate = (startDate: Date, weekNumber: string): Date => {
+    const weekMatch = weekNumber.match(/(\d+)(?:-(\d+))?/);
+    if (!weekMatch) return startDate;
+    
+    const week1 = parseInt(weekMatch[1]);
+    const week2 = weekMatch[2] ? parseInt(weekMatch[2]) : week1;
+    const avgWeek = Math.floor((week1 + week2) / 2);
+    
+    const dueDate = new Date(startDate);
+    dueDate.setDate(dueDate.getDate() + (avgWeek - 1) * 7);
+    return dueDate;
+  };
+
+  const generatePMSteps = async () => {
+    if (!goal) return;
+    
+    console.log('[PM Generation] Starting PM step generation for goal:', goal.id);
+    setGeneratingSteps(true);
+    setGenerationError(false);
+    
+    try {
+      const pmMetadata = (goal as any)?.pm_metadata;
+      if (!pmMetadata) {
+        throw new Error('PM metadata not found on goal');
+      }
+      
+      // Extract motivation and barriers text
+      const motivationText = pmMetadata.motivation?.text || pmMetadata.motivation || '';
+      const barriersText = Array.isArray(pmMetadata.barriers)
+        ? pmMetadata.barriers.map((b: any) => typeof b === 'string' ? b : b.text || '').join('; ')
+        : (pmMetadata.barriers?.text || pmMetadata.barriers || '');
+      
+      // Build PM payload
+      const pmPayload = {
+        goalId: goal.id,
+        title: goal.title,
+        domain: goal.domain || 'general',
+        duration_weeks: goal.duration_weeks || 4,
+        skillAssessment: pmMetadata.skillAssessment || {
+          experience: 3,
+          confidence: 3,
+          helpNeeded: 3,
+          calculatedLevel: 3,
+          levelLabel: 'Developing'
+        },
+        smartStart: pmMetadata.smartStart || {
+          startingFrequency: 2,
+          targetFrequency: 3,
+          rampWeeks: 2
+        },
+        teachingHelper: pmMetadata.teachingHelper,
+        prerequisites: pmMetadata.prerequisites || { hasEverything: true },
+        barriers: barriersText,
+        motivation: motivationText,
+        userId: goal.owner_id,
+        userName: ownerProfile?.first_name || 'User',
+        userAge: undefined,
+        is_self_registered: true
+      };
+      
+      console.log('[PM Generation] Calling pm-microsteps-scaffold with payload:', {
+        goalId: pmPayload.goalId,
+        title: pmPayload.title,
+        domain: pmPayload.domain
+      });
+      
+      const { data, error } = await supabase.functions.invoke('pm-microsteps-scaffold', {
+        body: pmPayload
+      });
+      
+      if (error) {
+        console.error('[PM Generation] Edge function error:', error);
+        
+        // Check if it's a safety violation
+        if (data?.safety_violation || data?.code === 'SAFETY_VIOLATION_LAYER_2') {
+          toast({
+            title: "Goal needs review",
+            description: "Your goal will be generated shortly after quick review.",
+            duration: 5000
+          });
+          setGeneratingSteps(false);
+          return;
+        }
+        
+        // Check if we should use fallback
+        if (data?.useFallback || error.message?.includes('timeout') || error.message?.includes('failed')) {
+          console.warn('[PM Generation] Using fallback generator');
+          await generatePMFallbackSteps();
+          return;
+        }
+        
+        throw error;
+      }
+      
+      if (!data?.microSteps || data.microSteps.length === 0) {
+        console.warn('[PM Generation] No steps returned, using fallback');
+        await generatePMFallbackSteps();
+        return;
+      }
+      
+      console.log(`[PM Generation] Received ${data.microSteps.length} steps, saving to database`);
+      
+      // Transform and save steps
+      const startDate = goal.start_date ? new Date(goal.start_date) : new Date();
+      const stepsToInsert = data.microSteps.map((step: any, index: number) => ({
+        goal_id: goal.id,
+        title: step.title,
+        notes: step.description || '',
+        estimated_effort_min: step.estimatedDuration || 30,
+        step_type: 'habit',
+        is_planned: true,
+        status: 'not_started',
+        order_index: index,
+        due_date: calculateStepDueDate(startDate, step.weekNumber || 'Week 1').toISOString().split('T')[0],
+        pm_metadata: {
+          phase: step.phase || 1,
+          weekNumber: step.weekNumber || 'Week 1',
+          supportLevel: step.supportLevel || 'medium',
+          difficulty: step.difficulty || 2,
+          prerequisites: step.prerequisites || [],
+          safetyNotes: step.safetyNotes,
+          qualityIndicators: step.qualityIndicators || [],
+          independenceIndicators: step.independenceIndicators || []
+        } as any
+      }));
+      
+      const { error: insertError } = await supabase
+        .from('steps')
+        .insert(stepsToInsert);
+      
+      if (insertError) {
+        console.error('[PM Generation] Failed to insert steps:', insertError);
+        throw insertError;
+      }
+      
+      console.log('[PM Generation] Successfully saved steps to database');
+      
+      // Update goal status
+      await supabase
+        .from('goals')
+        .update({
+          status: 'active',
+          metadata: {
+            ...(goal as any).metadata,
+            generationStatus: 'complete',
+            generatedAt: new Date().toISOString()
+          } as any
+        })
+        .eq('id', goal.id);
+      
+      toast({
+        title: "Practice plan created!",
+        description: `Generated ${data.microSteps.length} personalized steps.`,
+        duration: 4000
+      });
+      
+      // Reload goal data
+      await loadGoalData();
+      
+    } catch (error: any) {
+      console.error('[PM Generation] Error:', error);
+      
+      // Try fallback on any error
+      await generatePMFallbackSteps();
+    } finally {
+      setGeneratingSteps(false);
+    }
+  };
+
+  const generatePMFallbackSteps = async () => {
+    if (!goal) return;
+    
+    console.log('[Fallback] Using fallback PM step generator');
+    
+    try {
+      const { generatePMFallbackSteps } = await import('@/services/pmFallbackGenerator');
+      
+      const fallbackSteps = generatePMFallbackSteps(
+        goal.title,
+        goal.domain || 'independent_living',
+        goal.duration_weeks || 4
+      );
+      
+      const startDate = goal.start_date ? new Date(goal.start_date) : new Date();
+      
+      const stepsToInsert = fallbackSteps.map((step, index) => ({
+        goal_id: goal.id,
+        title: step.title,
+        notes: step.notes,
+        estimated_effort_min: step.estimatedDuration,
+        step_type: 'habit',
+        is_planned: true,
+        status: 'not_started',
+        order_index: index,
+        due_date: (() => {
+          const date = new Date(startDate);
+          date.setDate(date.getDate() + (step.weekIndex - 1) * 7);
+          return date.toISOString().split('T')[0];
+        })(),
+        pm_metadata: step.pm_metadata as any
+      }));
+      
+      const { error: insertError } = await supabase
+        .from('steps')
+        .insert(stepsToInsert);
+      
+      if (insertError) {
+        throw insertError;
+      }
+      
+      console.log(`[Fallback] Saved ${fallbackSteps.length} fallback steps`);
+      
+      await supabase
+        .from('goals')
+        .update({
+          status: 'active',
+          metadata: {
+            ...(goal as any).metadata,
+            generationStatus: 'complete',
+            generatedAt: new Date().toISOString(),
+            usedFallback: true
+          } as any
+        })
+        .eq('id', goal.id);
+      
+      toast({
+        title: "Starter plan created",
+        description: `Created a ${fallbackSteps.length}-step practice plan to get you started.`,
+        duration: 4000
+      });
+      
+      await loadGoalData();
+      
+    } catch (error: any) {
+      console.error('[Fallback] Failed to create fallback steps:', error);
+      setGenerationError(true);
+      
+      toast({
+        title: "Could not create steps",
+        description: "You can add steps manually or try again later.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const generateStepsForNewGoal = async () => {
     const goalMetadata = (goal as any)?.metadata;
-    if (!goalMetadata?.wizardContext) return;
+    if (!goalMetadata?.wizardContext && !goalMetadata?.pmContext) return;
     
     console.info('[Generation] Starting step generation', {
       goalId: goal?.id,
       goalTitle: goal?.title,
+      goalType: goal?.goal_type,
       currentStatus: goalMetadata?.generationStatus
     });
+    
+    // Check if this is a PM goal
+    const isPMGoal = goal?.goal_type === 'progressive_mastery';
+    
+    if (isPMGoal) {
+      console.log('[PM Generation] Detected PM goal, using PM generation path');
+      return generatePMSteps();
+    }
     
     setGeneratingSteps(true);
     setGenerationError(false);
