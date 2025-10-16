@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
 
@@ -51,18 +52,52 @@ interface PMGoalCreationInput {
 
 interface SafetyViolationLog {
   user_id: string;
-  violation_layer: 'layer_1_keywords' | 'layer_2_generation' | 'layer_3_judge';
+  violation_layer: 'layer_1_keywords' | 'layer_1_keywords_and_emojis' | 'layer_2_generation' | 'layer_3_judge';
   goal_title: string;
   goal_category?: string;
   motivation?: string;
   barriers?: string;
   triggered_keywords?: string[];
+  triggered_emojis?: string[];
+  triggered_emoji_codes?: string[];
+  emoji_combination_detected?: boolean;
   violation_reason: string;
   user_email?: string;
   user_age?: number;
   skill_level?: number;
   is_self_registered?: boolean;
 }
+
+interface GeneratedStep {
+  title: string;
+  description: string;
+  estimatedDuration: number;
+  supportLevel: 'high' | 'medium' | 'low' | 'minimal' | 'none';
+  difficulty: number;
+  weekNumber: string;
+  phase: number;
+  prerequisites?: string[];
+  safetyNotes?: string | null;
+  qualityIndicators?: string[];
+  independenceIndicators?: string[];
+  practiceCount?: number;
+}
+
+interface GenerationResponse {
+  steps: GeneratedStep[];
+}
+
+interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+// OpenAI Configuration
+const MAX_GENERATION_ATTEMPTS = 5;
+const OPENAI_MODEL = 'gpt-4-turbo-preview';
+const OPENAI_TEMPERATURE = 0.7;
+const OPENAI_TIMEOUT_MS = 30000;
 
 // Dangerous Keywords Array (from requirements section 5.1)
 const dangerousKeywords = [
@@ -182,6 +217,487 @@ function checkLayer1Safety(payload: PMGoalCreationInput): { triggered: boolean; 
     emojis: triggeredEmojis,
     emojiCodes: triggeredEmojiCodes
   };
+}
+
+/**
+ * Layer 2: Check if OpenAI returned a safety violation signal
+ */
+function containsSafetySignal(steps: GeneratedStep[]): boolean {
+  const serialized = JSON.stringify(steps);
+  return serialized.includes('[SAFETY_VIOLATION_SIGNAL]');
+}
+
+/**
+ * Handle Layer 2 safety violations (detected during generation)
+ */
+async function handleLayer2Violation(
+  supabase: any,
+  userId: string,
+  payload: PMGoalCreationInput,
+  generatedContent: string
+): Promise<Response> {
+  console.error('⚠️ LAYER 2 SAFETY VIOLATION: OpenAI detected unsafe content');
+  
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('email, is_self_registered')
+    .eq('user_id', userId)
+    .single();
+
+  const violationLog: SafetyViolationLog = {
+    user_id: userId,
+    violation_layer: 'layer_2_generation',
+    goal_title: payload.title,
+    goal_category: payload.domain,
+    motivation: payload.motivation,
+    barriers: payload.barriers,
+    violation_reason: 'OpenAI detected unsafe content during step generation',
+    user_email: profile?.email || null,
+    user_age: payload.userAge || null,
+    skill_level: payload.skillAssessment.calculatedLevel,
+    is_self_registered: profile?.is_self_registered || null
+  };
+
+  const { error: logError } = await supabase
+    .from('safety_violations_log')
+    .insert(violationLog);
+
+  if (logError) {
+    console.error('❌ Failed to log Layer 2 violation:', logError);
+  } else {
+    console.log('✅ Layer 2 violation logged to database');
+  }
+
+  notifySafetyViolation(
+    supabase,
+    userId,
+    payload.title,
+    'layer_2_generation',
+    violationLog.violation_reason,
+    []
+  ).catch(err => console.error('Notification error:', err));
+
+  return new Response(
+    JSON.stringify({
+      error: "I'm sorry, I cannot generate steps for this goal. Please try rephrasing your goal to focus on positive, legal, and healthy outcomes.",
+      code: 'SAFETY_VIOLATION_LAYER_2',
+      safety_violation: true,
+      no_retry: true,
+      details: 'Content flagged during AI generation as potentially harmful.'
+    }),
+    { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+/**
+ * Get domain-specific guidance for PM step generation
+ */
+function getDomainGuidance(domain: string, skillLevel: number): string {
+  const levelLabel = skillLevel <= 2 ? 'emerging' : skillLevel <= 4 ? 'developing' : 'advancing';
+  
+  const domainGuidelines: Record<string, string> = {
+    independent_living: `
+**Independent Living Domain Guidelines:**
+- Focus on practical daily living skills (cooking, cleaning, personal hygiene, money management)
+- Level ${skillLevel} (${levelLabel}): ${
+  skillLevel <= 2 
+    ? 'Break tasks into very small steps with high support. Include reminders and checklists.'
+    : skillLevel <= 4
+    ? 'Moderate independence with support available. Include decision-making opportunities.'
+    : 'Encourage full independence with minimal supervision. Focus on problem-solving.'
+}
+- Safety is paramount: Always include safety checks for cooking, cleaning chemicals, money handling
+- Build toward long-term independence: Each step should reduce support level over time
+- Include concrete quality indicators (e.g., "food is cooked to safe temperature", "sink is free of food particles")
+`,
+    
+    employment: `
+**Employment Domain Guidelines:**
+- Focus on career exploration, job readiness, workplace skills, and job retention
+- Level ${skillLevel} (${levelLabel}): ${
+  skillLevel <= 2
+    ? 'Start with exploration and basic skills. Use role-playing and guided practice.'
+    : skillLevel <= 4
+    ? 'Include real-world applications like mock interviews, resume building. Practice professional communication.'
+    : 'Focus on career advancement, networking, and leadership skills. Encourage independent job search.'
+}
+- Professional context: Use workplace-appropriate language and scenarios
+- Include soft skills: Communication, time management, teamwork, problem-solving
+- Progression: Exploration → Preparation → Application → Interview → Job Start → Retention
+`,
+    
+    education: `
+**Education Domain Guidelines:**
+- Focus on academic skills, study habits, classroom participation, and learning strategies
+- Level ${skillLevel} (${levelLabel}): ${
+  skillLevel <= 2
+    ? 'Focus on foundational study skills. Use visual aids and structured routines.'
+    : skillLevel <= 4
+    ? 'Build time management and note-taking skills. Introduce independent study strategies.'
+    : 'Emphasize advanced research, critical thinking, and self-directed learning.'
+}
+- Academic integrity: Always emphasize honest, original work
+- Include self-advocacy: Encourage asking for help, accommodations when needed
+- Balance: Mix academic tasks with organizational and social-emotional learning
+`,
+    
+    social_skills: `
+**Social Skills Domain Guidelines:**
+- Focus on communication, friendship, emotional regulation, and social problem-solving
+- Level ${skillLevel} (${levelLabel}): ${
+  skillLevel <= 2
+    ? 'Start with basic greetings, turn-taking, personal space. Use scripts and role-play.'
+    : skillLevel <= 4
+    ? 'Practice conversation skills, reading social cues, group dynamics. Include reflection.'
+    : 'Focus on complex social situations, conflict resolution, advocacy, leadership.'
+}
+- Neurodiversity-affirming: Respect different communication styles, avoid forcing eye contact
+- Safety: Include consent, boundaries, recognizing unsafe situations
+- Authenticity: Help learner develop genuine connections, not just "masking"
+`,
+    
+    health: `
+**Health Domain Guidelines:**
+- Focus on physical health, mental wellness, medical self-management, healthy habits
+- Level ${skillLevel} (${levelLabel}): ${
+  skillLevel <= 2
+    ? 'Simple daily routines: brushing teeth, taking medications with reminders, basic hygiene.'
+    : skillLevel <= 4
+    ? 'Build consistency in health habits. Introduce self-monitoring (sleep logs, mood tracking).'
+    : 'Focus on independent health management: scheduling appointments, advocating in medical settings.'
+}
+- Medical safety: Always verify with healthcare providers for medication, diet, exercise changes
+- Mental health: Normalize seeking support, include coping strategies
+- Sustainable habits: Emphasize gradual, realistic changes over extreme goals
+`,
+    
+    recreation_fun: `
+**Recreation & Fun Domain Guidelines:**
+- Focus on hobbies, leisure activities, social recreation, and personal interests
+- Level ${skillLevel} (${levelLabel}): ${
+  skillLevel <= 2
+    ? 'Simple, structured activities with clear steps. Focus on enjoyment and engagement.'
+    : skillLevel <= 4
+    ? 'Balance solo and group activities. Encourage trying new things with support.'
+    : 'Foster independence in planning and organizing activities. Include social leadership opportunities.'
+}
+- Joy-focused: This domain is about enjoyment, not just skill-building
+- Inclusion: Suggest adaptive equipment or modifications if needed
+- Social connection: Where appropriate, build in opportunities to share interests with others
+`
+  };
+  
+  return domainGuidelines[domain] || domainGuidelines.independent_living;
+}
+
+/**
+ * Build the comprehensive system prompt for PM step generation
+ */
+function buildPMSystemPrompt(input: PMGoalCreationInput): string {
+  const domainGuidance = getDomainGuidance(input.domain, input.skillAssessment.calculatedLevel);
+  
+  return `You are an expert transition skills coach specializing in Progressive Mastery for neurodivergent learners (ages 14-26). Your role is to generate personalized, theory-aligned practice steps that build independence gradually.
+
+# CRITICAL SAFETY INSTRUCTIONS (Layer 2)
+
+**YOU MUST REFUSE** to generate steps for goals involving:
+1. Violence, self-harm, or harm to others
+2. Illegal activities (drugs, theft, hacking, underage drinking/smoking, etc.)
+3. Sexual content or exploitation
+4. Dangerous activities without proper safety measures
+5. Harassment, bullying, manipulation, or revenge
+6. Content inappropriate for minors (ages 14-26)
+
+**If you detect ANY safety concerns:**
+- Return EXACTLY this JSON structure (nothing else):
+  {
+    "steps": [
+      {
+        "title": "[SAFETY_VIOLATION_SIGNAL]",
+        "description": "[SAFETY_VIOLATION_SIGNAL]",
+        "estimatedDuration": 0,
+        "supportLevel": "high",
+        "difficulty": 1,
+        "weekNumber": "Week 1",
+        "phase": 1
+      }
+    ]
+  }
+- DO NOT explain why or provide alternative suggestions
+- DO NOT generate any steps
+
+# GOAL CONTEXT
+
+**Goal:** ${input.title}
+**Domain:** ${input.domain}
+**Duration:** ${input.duration_weeks} weeks
+**Skill Level:** ${input.skillAssessment.calculatedLevel}/6 (${input.skillAssessment.levelLabel})
+**Starting Frequency:** ${input.smartStart.startingFrequency}x per week
+**Target Frequency:** ${input.smartStart.targetFrequency}x per week
+**Ramp Period:** ${input.smartStart.rampWeeks} weeks
+**Motivation:** ${input.motivation}
+${input.barriers ? `**Barriers:** ${input.barriers}` : ''}
+${input.prerequisites.hasEverything ? '' : `**Prerequisites Needed:** ${input.prerequisites.needs}`}
+${input.teachingHelper ? `**Teaching Helper:** ${input.teachingHelper.helperName} (Support types: ${input.teachingHelper.supportTypes.join(', ')})` : '**Learning:** Independently'}
+
+${domainGuidance}
+
+# PROGRESSIVE MASTERY FRAMEWORK
+
+Generate **8-12 practice steps** following this 4-phase structure:
+
+**Phase 1 (Weeks 1-2): Foundation with High Support**
+- Support Level: HIGH
+- Focus: Basic skill introduction, building confidence
+- Include: Safety training, tool familiarization, success criteria
+- Steps should be short (5-15 min), highly structured
+
+**Phase 2 (Weeks 3-4): Guided Practice**
+- Support Level: MEDIUM-HIGH
+- Focus: Repetition with decreasing prompts
+- Include: Checklists, self-monitoring, problem-solving practice
+- Steps should be moderate (15-30 min), some independence
+
+**Phase 3 (Weeks 5-6): Developing Independence**
+- Support Level: MEDIUM-LOW
+- Focus: More complex variations, decision-making
+- Include: Quality self-assessment, efficiency improvements
+- Steps should be longer (30-45 min), mostly independent
+
+**Phase 4 (Weeks 7-${input.duration_weeks}): Mastery & Generalization**
+- Support Level: LOW to MINIMAL
+- Focus: Full independence, adapting to new contexts
+- Include: Teaching others, handling unexpected challenges
+- Steps should be comprehensive (45-60 min), fully independent
+
+# STEP QUALITY REQUIREMENTS
+
+Each step MUST include:
+1. **title**: Clear, action-oriented (10-80 chars). NO placeholders like "[Goal]" or "[Name]"
+2. **description**: Detailed instructions (50-400 chars). Specific, concrete, actionable
+3. **estimatedDuration**: Realistic time in minutes
+4. **supportLevel**: "high" | "medium" | "low" | "minimal" | "none" (decreasing over time)
+5. **difficulty**: 1-5 rating (increasing gradually)
+6. **weekNumber**: "Week X" or "Week X-Y" (aligned with duration)
+7. **phase**: 1, 2, 3, or 4 (matching Progressive Mastery phases)
+8. **prerequisites**: Array of what must be mastered first (can be empty for Phase 1)
+9. **safetyNotes**: Important safety considerations (or null if none)
+10. **qualityIndicators**: 2-4 concrete signs of success
+11. **independenceIndicators**: 2-3 signs learner is ready for less support
+12. **practiceCount**: Recommended number of practice attempts for this step
+
+# VALIDATION CHECKS
+
+**Title & Description Quality:**
+- NO generic placeholders ("[Name]", "[Goal]", "[Helper]")
+- NO vague actions ("practice", "continue", "keep going")
+- YES specific, concrete actions
+
+**Goal Alignment:**
+- At least 60% of steps MUST explicitly reference the goal: "${input.title}"
+- Use goal-specific vocabulary, not generic skill-building
+
+**Progressive Difficulty:**
+- Steps get progressively harder (difficulty should increase)
+- Support level should decrease over time
+- Practice count should decrease as independence grows
+
+# OUTPUT FORMAT
+
+Return ONLY valid JSON matching this schema (no markdown, no explanation):
+
+{
+  "steps": [
+    {
+      "title": "Start with the activation cue",
+      "description": "When [trigger], I will [first concrete action]. Use a timer and checklist.",
+      "estimatedDuration": 15,
+      "supportLevel": "high",
+      "difficulty": 1,
+      "weekNumber": "Week 1",
+      "phase": 1,
+      "prerequisites": [],
+      "safetyNotes": "Ask for help if you feel unsafe or unsure",
+      "qualityIndicators": ["Completes without assistance", "Follows all safety rules"],
+      "independenceIndicators": ["Asks clarifying questions", "Refers to checklist without prompting"],
+      "practiceCount": 5
+    }
+  ]
+}
+
+**Remember:** If ANY safety concerns arise, return the SAFETY_VIOLATION_SIGNAL structure instead.`;
+}
+
+/**
+ * Validate generated steps for basic format compliance
+ */
+function validateBasicFormat(steps: GeneratedStep[], input: PMGoalCreationInput): ValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  
+  if (steps.length < 8 || steps.length > 12) {
+    errors.push(`Expected 8-12 steps, got ${steps.length}`);
+  }
+  
+  const goalKeywords = input.title.toLowerCase()
+    .split(' ')
+    .filter(word => word.length > 3 && !['the', 'and', 'for', 'with', 'this', 'that'].includes(word));
+  
+  let stepsWithGoalReference = 0;
+  
+  steps.forEach((step, index) => {
+    const stepNum = index + 1;
+    
+    if (!step.title || step.title.trim().length === 0) {
+      errors.push(`Step ${stepNum}: Missing title`);
+    }
+    if (!step.description || step.description.trim().length === 0) {
+      errors.push(`Step ${stepNum}: Missing description`);
+    }
+    if (!step.weekNumber) {
+      errors.push(`Step ${stepNum}: Missing weekNumber`);
+    }
+    if (!step.phase || step.phase < 1 || step.phase > 4) {
+      errors.push(`Step ${stepNum}: Invalid phase (must be 1-4)`);
+    }
+    
+    if (step.title && (step.title.length < 10 || step.title.length > 80)) {
+      warnings.push(`Step ${stepNum}: Title length ${step.title.length} (should be 10-80 chars)`);
+    }
+    if (step.description && (step.description.length < 50 || step.description.length > 400)) {
+      warnings.push(`Step ${stepNum}: Description length ${step.description.length} (should be 50-400 chars)`);
+    }
+    
+    const placeholderPatterns = [
+      /\[.*?\]/,
+      /\bgoal\b.*?\bhere\b/i,
+      /\btask\b.*?\bhere\b/i,
+      /\bactivity\b.*?\bhere\b/i,
+    ];
+    
+    const titleLower = step.title?.toLowerCase() || '';
+    const descLower = step.description?.toLowerCase() || '';
+    
+    placeholderPatterns.forEach(pattern => {
+      if (pattern.test(titleLower) || pattern.test(descLower)) {
+        errors.push(`Step ${stepNum}: Contains placeholder text (${pattern.source})`);
+      }
+    });
+    
+    const stepText = `${titleLower} ${descLower}`;
+    const hasGoalKeyword = goalKeywords.some(keyword => stepText.includes(keyword));
+    if (hasGoalKeyword) {
+      stepsWithGoalReference++;
+    }
+    
+    if (index > 0 && step.difficulty && steps[index - 1].difficulty) {
+      if (step.difficulty < steps[index - 1].difficulty - 1) {
+        warnings.push(`Step ${stepNum}: Difficulty decreased significantly from previous step`);
+      }
+    }
+    
+    const validSupportLevels = ['high', 'medium', 'low', 'minimal', 'none'];
+    if (step.supportLevel && !validSupportLevels.includes(step.supportLevel)) {
+      errors.push(`Step ${stepNum}: Invalid supportLevel "${step.supportLevel}"`);
+    }
+  });
+  
+  const goalAlignmentPercent = (stepsWithGoalReference / steps.length) * 100;
+  if (goalAlignmentPercent < 60) {
+    errors.push(`Only ${Math.round(goalAlignmentPercent)}% of steps reference the goal (need 60%)`);
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings
+  };
+}
+
+/**
+ * Call OpenAI API to generate PM steps
+ */
+async function callOpenAI(
+  payload: PMGoalCreationInput,
+  retryGuidance: string = ''
+): Promise<GeneratedStep[]> {
+  const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!openAIApiKey) {
+    throw new Error('OPENAI_API_KEY not configured');
+  }
+  
+  const systemPrompt = buildPMSystemPrompt(payload);
+  
+  const userPrompt = retryGuidance 
+    ? `${retryGuidance}\n\nNow generate the steps following all requirements.`
+    : `Generate ${payload.duration_weeks > 8 ? '10-12' : '8-10'} Progressive Mastery steps for this goal.`;
+  
+  console.log('📤 Calling OpenAI API...');
+  const callStart = Date.now();
+  
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        temperature: OPENAI_TEMPERATURE,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        response_format: { type: 'json_object' },
+        max_tokens: 3000,
+      }),
+      signal: AbortSignal.timeout(OPENAI_TIMEOUT_MS)
+    });
+    
+    const callDuration = Date.now() - callStart;
+    console.log(`⏱️ OpenAI call took ${callDuration}ms`);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        throw new Error('OpenAI rate limit exceeded. Please try again in a moment.');
+      }
+      if (response.status === 401) {
+        throw new Error('OpenAI API authentication failed. Please check API key configuration.');
+      }
+      if (response.status >= 500) {
+        throw new Error('OpenAI service temporarily unavailable. Please try again.');
+      }
+      
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      throw new Error('OpenAI returned empty response');
+    }
+    
+    console.log('📥 OpenAI response received, parsing JSON...');
+    const parsed: GenerationResponse = JSON.parse(content);
+    
+    if (!parsed.steps || !Array.isArray(parsed.steps)) {
+      throw new Error('OpenAI response missing "steps" array');
+    }
+    
+    console.log(`✅ Successfully parsed ${parsed.steps.length} steps`);
+    return parsed.steps;
+    
+  } catch (error: any) {
+    if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+      throw new Error('OpenAI request timed out after 30 seconds');
+    }
+    throw error;
+  }
 }
 
 // Safety Violation Notification Helper
@@ -651,29 +1167,119 @@ serve(async (req) => {
 
       console.log('✅ Layer 1 safety check passed');
 
-      // 8. Placeholder response (OpenAI generation will be added in Phase 3)
+      // 8. Generate steps using OpenAI with Layer 2 safety
+      console.log('🤖 Starting OpenAI step generation with Layer 2 safety...');
+      const generationStart = Date.now();
+
+      let generatedSteps: GeneratedStep[] | null = null;
+      let retryGuidance = '';
+      let finalAttempt = 0;
+
+      for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
+        console.log(`🔄 Generation attempt ${attempt}/${MAX_GENERATION_ATTEMPTS}`);
+        finalAttempt = attempt;
+        
+        try {
+          // Call OpenAI to generate steps
+          const candidateSteps = await callOpenAI(payload, retryGuidance);
+          
+          // Layer 2 Safety Check: Did OpenAI detect unsafe content?
+          if (containsSafetySignal(candidateSteps)) {
+            console.error('🚨 Layer 2 safety violation detected in generated content');
+            return await handleLayer2Violation(supabase, userId, payload, JSON.stringify(candidateSteps));
+          }
+          
+          // Basic format validation
+          const validation = validateBasicFormat(candidateSteps, payload);
+          
+          if (!validation.valid) {
+            console.error(`❌ Format validation failed on attempt ${attempt}:`, validation.errors);
+            
+            if (attempt < MAX_GENERATION_ATTEMPTS) {
+              retryGuidance = `Previous attempt failed validation with these errors:\n${validation.errors.join('\n')}\n\nPlease fix these issues and regenerate the steps.`;
+              console.log('🔄 Retrying with guidance...');
+              continue;
+            } else {
+              console.error('❌ All generation attempts exhausted');
+              return new Response(
+                JSON.stringify({
+                  error: 'Failed to generate valid steps after multiple attempts',
+                  code: 'GENERATION_VALIDATION_FAILED',
+                  validation_errors: validation.errors,
+                  attempts: attempt
+                }),
+                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
+          }
+          
+          if (validation.warnings.length > 0) {
+            console.warn('⚠️ Validation warnings:', validation.warnings);
+          }
+          
+          console.log(`✅ Generation successful on attempt ${attempt}`);
+          generatedSteps = candidateSteps;
+          break;
+          
+        } catch (error: any) {
+          console.error(`❌ OpenAI call failed on attempt ${attempt}:`, error.message);
+          
+          if (attempt < MAX_GENERATION_ATTEMPTS) {
+            if (error.message?.includes('rate limit') || error.message?.includes('timeout') || error.message?.includes('temporarily unavailable')) {
+              console.log('🔄 Retrying after transient error...');
+              await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+              continue;
+            }
+          }
+          
+          return new Response(
+            JSON.stringify({
+              error: 'Failed to generate steps',
+              code: 'GENERATION_ERROR',
+              details: error.message,
+              attempts: attempt
+            }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      if (!generatedSteps) {
+        return new Response(
+          JSON.stringify({
+            error: 'Step generation failed unexpectedly',
+            code: 'GENERATION_UNKNOWN_ERROR'
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const generationDuration = Date.now() - generationStart;
+      console.log(`⏱️ Total generation time: ${generationDuration}ms`);
+
+      // 9. Prepare final response with metadata
       const response = {
-        message: "Layer 1 safety passed - OpenAI generation coming in Phase 3",
-        status: "safety_validated",
-        input: {
-          goalId: payload.goalId,
-          title: payload.title,
-          domain: payload.domain,
-          skillLevel: payload.skillAssessment.calculatedLevel,
-          levelLabel: payload.skillAssessment.levelLabel,
-          startingFrequency: payload.smartStart.startingFrequency,
-          targetFrequency: payload.smartStart.targetFrequency,
-          rampWeeks: payload.smartStart.rampWeeks,
-          motivation: payload.motivation,
-          barriers: payload.barriers,
-          prerequisites: payload.prerequisites,
-          teachingHelper: payload.teachingHelper
+        steps: generatedSteps,
+        metadata: {
+          generationAttempts: finalAttempt,
+          finalScore: null,
+          modelUsed: OPENAI_MODEL,
+          generatedAt: new Date().toISOString(),
+          generationTimeMs: generationDuration,
+          goalContext: {
+            goalId: payload.goalId,
+            title: payload.title,
+            domain: payload.domain,
+            skillLevel: payload.skillAssessment.calculatedLevel,
+            levelLabel: payload.skillAssessment.levelLabel,
+            duration_weeks: payload.duration_weeks
+          }
         }
       };
 
       const totalTime = Date.now() - startTime;
       console.log(`✅ Request completed successfully in ${totalTime}ms`);
-      
+
       return new Response(
         JSON.stringify(response),
         { 
@@ -681,7 +1287,8 @@ serve(async (req) => {
           headers: { 
             ...corsHeaders, 
             'Content-Type': 'application/json',
-            'X-Response-Time': `${totalTime}ms`
+            'X-Response-Time': `${totalTime}ms`,
+            'X-Generation-Attempts': `${finalAttempt}`
           } 
         }
       );
