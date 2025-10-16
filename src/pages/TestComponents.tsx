@@ -67,10 +67,11 @@ export default function TestComponents() {
       
     // Test payload for Natalia
     const payload = {
+      goalId: crypto.randomUUID(),
       title: "Learn to cook scrambled eggs",
       domain: "independent_living",
       duration_weeks: 8,
-      assessmentData: {
+      skillAssessment: {
         experience: 2,
         confidence: 3,
         helpNeeded: 4,
@@ -110,7 +111,8 @@ export default function TestComponents() {
       
     } catch (error: any) {
       console.error('❌ Test failed:', error);
-      setPmError(error.message || 'Unknown error');
+      const details = (error?.context ?? error?.message ?? error);
+      setPmError(typeof details === 'string' ? details : JSON.stringify(details, null, 2));
     } finally {
       setPmLoading(false);
     }
