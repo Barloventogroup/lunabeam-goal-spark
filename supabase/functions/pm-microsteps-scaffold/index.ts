@@ -403,16 +403,43 @@ serve(async (req) => {
       }
 
       // 6. Validate field types and values
-      if (typeof payload.title !== 'string' || payload.title.length < 10 || payload.title.length > 100) {
-        console.error('❌ Invalid title:', payload.title);
+      console.log('🔍 Validating title:', {
+        title: payload.title,
+        type: typeof payload.title,
+        length: payload.title?.length,
+        raw: JSON.stringify(payload.title)
+      });
+
+      if (!payload.title || typeof payload.title !== 'string') {
+        console.error('❌ Title is not a string:', payload.title);
         return new Response(
           JSON.stringify({ 
-            error: 'Goal title must be between 10 and 100 characters',
-            code: 'INVALID_TITLE'
+            error: 'Goal title must be a string',
+            code: 'INVALID_TITLE_TYPE',
+            received: typeof payload.title
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      const trimmedTitle = payload.title.trim();
+      if (trimmedTitle.length < 10 || trimmedTitle.length > 100) {
+        console.error('❌ Invalid title length:', {
+          title: trimmedTitle,
+          length: trimmedTitle.length
+        });
+        return new Response(
+          JSON.stringify({ 
+            error: `Goal title must be between 10 and 100 characters (received ${trimmedTitle.length} characters)`,
+            code: 'INVALID_TITLE_LENGTH',
+            titleLength: trimmedTitle.length
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Use trimmed title for the rest of the function
+      payload.title = trimmedTitle;
 
       const validDomains = ['independent_living', 'employment', 'education', 'social_skills', 'health', 'recreation_fun'];
       if (!validDomains.includes(payload.domain)) {
