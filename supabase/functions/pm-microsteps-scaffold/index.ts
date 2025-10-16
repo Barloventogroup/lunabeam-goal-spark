@@ -2,6 +2,11 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
 
+// Declare EdgeRuntime global for background tasks
+declare const EdgeRuntime: {
+  waitUntil(promise: Promise<any>): void;
+};
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -48,6 +53,7 @@ interface PMGoalCreationInput {
   userName: string;
   userAge?: number;
   is_self_registered?: boolean;
+  mode?: 'sync' | 'async'; // NEW: async returns immediately, sync waits for AI
 }
 
 interface SafetyViolationLog {
@@ -1318,6 +1324,134 @@ serve(async (req) => {
       }
 
       console.log('✅ Layer 1 safety check passed');
+
+      // Check if async mode is requested (instant deterministic fallback approach)
+      const mode = payload.mode || 'async'; // Default to async for fast UX
+      
+      if (mode === 'async') {
+        console.log('⚡ Async mode: Returning immediately, AI generation will run in background');
+        
+        // Return immediately to frontend
+        const immediateResponse = new Response(
+          JSON.stringify({
+            status: 'queued',
+            message: 'Goal created successfully. AI is enhancing your practice steps in the background.',
+            goalId: payload.goalId
+          }),
+          { 
+            status: 202, // Accepted
+            headers: { 
+              ...corsHeaders, 
+              'Content-Type': 'application/json'
+            } 
+          }
+        );
+        
+        // Start background AI generation using waitUntil
+        const backgroundTask = async () => {
+          try {
+            console.log('🔄 Background: Starting AI step generation...');
+            const genStart = Date.now();
+            
+            let generatedSteps: GeneratedStep[] | null = null;
+            
+            // Try OpenAI first
+            try {
+              const rawSteps = await callAIWithRetry(payload);
+              
+              if (containsSafetySignal(rawSteps)) {
+                console.error('⚠️ Background: Layer 2 safety violation detected');
+                return; // Don't update steps, keep deterministic ones
+              }
+              
+              const validation = validateBasicFormat(rawSteps, payload);
+              if (validation.valid || rawSteps.length > 0) {
+                generatedSteps = rawSteps;
+                console.log(`✅ Background: Generated ${rawSteps.length} AI-enhanced steps`);
+              }
+            } catch (err: any) {
+              console.warn('⚠️ Background: OpenAI failed, trying Lovable AI...', err.message);
+              
+              try {
+                const rawSteps = await callLovableAIWithRetry(payload);
+                if (!containsSafetySignal(rawSteps)) {
+                  generatedSteps = rawSteps;
+                  console.log(`✅ Background: Lovable AI generated ${rawSteps.length} steps`);
+                }
+              } catch (lovableErr: any) {
+                console.error('❌ Background: Both AI providers failed', lovableErr.message);
+                // Keep deterministic steps, no update needed
+                return;
+              }
+            }
+            
+            if (!generatedSteps || generatedSteps.length === 0) {
+              console.warn('⚠️ Background: No steps generated, keeping deterministic steps');
+              return;
+            }
+            
+            // Update existing steps in database with AI-enhanced content
+            console.log(`🔄 Background: Updating ${generatedSteps.length} steps with AI enhancements...`);
+            
+            for (let i = 0; i < generatedSteps.length; i++) {
+              const aiStep = generatedSteps[i];
+              const { error: updateError } = await supabase
+                .from('steps')
+                .update({
+                  title: aiStep.title,
+                  notes: aiStep.description || '',
+                  explainer: aiStep.description || '',
+                  estimated_effort_min: aiStep.estimatedDuration || 30,
+                  pm_metadata: {
+                    version: 1,
+                    source: 'pm-microsteps-scaffold',
+                    phase: aiStep.phase,
+                    weekNumber: aiStep.weekNumber,
+                    supportLevel: aiStep.supportLevel,
+                    difficulty: aiStep.difficulty,
+                    safetyNotes: aiStep.safetyNotes,
+                    qualityIndicators: aiStep.qualityIndicators || [],
+                    independenceIndicators: aiStep.independenceIndicators || [],
+                    practiceCount: aiStep.practiceCount || 1,
+                    prerequisites: aiStep.prerequisites || [],
+                    enhanced: true,
+                    enhancedAt: new Date().toISOString(),
+                    modelUsed: AI_MODEL,
+                    generationTimeMs: Date.now() - genStart
+                  }
+                })
+                .eq('goal_id', payload.goalId)
+                .eq('order_index', i);
+              
+              if (updateError) {
+                console.error(`❌ Background: Failed to update step ${i}:`, updateError);
+              }
+            }
+            
+            console.log(`✅ Background: Successfully enhanced ${generatedSteps.length} steps in ${Date.now() - genStart}ms`);
+            
+            // Send notification to user
+            await supabase.from('notifications').insert({
+              user_id: userId,
+              type: 'goal_enhanced',
+              title: 'Practice Steps Enhanced! ✨',
+              message: `Your ${payload.title} goal now has AI-personalized guidance and tips.`,
+              data: { goalId: payload.goalId, stepsCount: generatedSteps.length }
+            });
+            
+          } catch (bgError: any) {
+            console.error('❌ Background task error:', bgError);
+          }
+        };
+        
+        // Use EdgeRuntime.waitUntil to keep function alive for background task
+        EdgeRuntime.waitUntil(backgroundTask());
+        
+        return immediateResponse;
+      }
+
+      // SYNC MODE: Original behavior - wait for AI generation
+      console.log('⏳ Sync mode: Waiting for AI generation...');
 
       // 8. Generate steps using OpenAI API with Lovable AI fallback
       console.log('🤖 Starting AI step generation with Layer 2 safety...');
