@@ -1025,6 +1025,34 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       setExpandedCategory(categoryId);
     }
   };
+
+  /**
+   * Calculate due date for a PM step based on week number
+   * @param startDate - Goal start date
+   * @param weekNumber - e.g., "1", "2", "2-3", "4"
+   * @returns ISO date string or undefined
+   */
+  const calculateStepDueDate = (startDate: Date, weekNumber: string | number): string | undefined => {
+    try {
+      // Handle both "Week 1" format and plain number
+      const weekStr = weekNumber.toString();
+      const weekMatch = weekStr.match(/(\d+)(?:-(\d+))?/);
+      if (!weekMatch) return undefined;
+      
+      const startWeek = parseInt(weekMatch[1], 10);
+      const endWeek = weekMatch[2] ? parseInt(weekMatch[2], 10) : startWeek;
+      
+      // Set due date to end of the week range (Sunday)
+      const dueDate = new Date(startDate);
+      dueDate.setDate(dueDate.getDate() + (endWeek * 7) - 1);
+      
+      return format(dueDate, 'yyyy-MM-dd');
+    } catch (error) {
+      console.error('Failed to calculate step due date:', error);
+      return undefined;
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -1307,6 +1335,187 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             }
 
             console.log('PM metadata saved successfully');
+
+            // ============= GENERATE PM MICRO-STEPS =============
+            console.log('🤖 Starting PM micro-step generation...');
+
+            try {
+              // Extract motivation text (already a string in data structure)
+              const motivationText = data.motivation || data.customMotivation || data.goalMotivation || '';
+
+              // Extract barriers text from PM structure
+              const barriersText = (() => {
+                const challengeAreas = [
+                  { id: 'time', label: 'Finding time to practice' },
+                  { id: 'motivation', label: 'Staying motivated' },
+                  { id: 'materials', label: 'Getting the right materials or equipment' },
+                  { id: 'space', label: 'Finding a good place to practice' },
+                  { id: 'confidence', label: 'Feeling confident enough to try' },
+                  { id: 'instructions', label: 'Understanding instructions' },
+                  { id: 'help', label: 'Getting help when I need it' },
+                  { id: 'sensory', label: 'Sensory challenges (sounds, textures, lights)' },
+                  { id: 'social', label: 'Social anxiety or pressure' },
+                  { id: 'physical', label: 'Physical limitations' }
+                ];
+
+                if (!data.barriers) return '';
+
+                const barrier1 = data.barriers.priority1 ? 
+                  challengeAreas.find(c => c.id === data.barriers.priority1)?.label : null;
+                const barrier2 = data.barriers.priority2 ? 
+                  challengeAreas.find(c => c.id === data.barriers.priority2)?.label : null;
+                const details = data.barriers.details || '';
+                
+                const barriersText = [barrier1, barrier2].filter(Boolean).join(', ');
+                return details ? `${barriersText}. ${details}` : barriersText;
+              })();
+
+              // Build complete PM payload for edge function
+              const pmPayload = {
+                goalId: createdGoal.id,
+                title: data.goalTitle,
+                domain: mapCategoryToDomain(data.category) || 'independent_living',
+                duration_weeks: data.pmPracticePlan?.durationWeeks || durationWeeks || 6,
+                
+                // Skill assessment from wizard
+                skillAssessment: {
+                  experience: data.pmAssessment?.q1_experience || 3,
+                  confidence: data.pmAssessment?.q2_confidence || 3,
+                  helpNeeded: data.pmAssessment?.q3_help_needed || 3,
+                  calculatedLevel: data.pmAssessment?.calculatedLevel ?? level,
+                  levelLabel: data.pmAssessment?.levelLabel ?? 'Beginner'
+                },
+                
+                // Smart start plan from wizard
+                smartStart: {
+                  startingFrequency: data.pmPracticePlan?.startingFrequency || 2,
+                  targetFrequency: data.pmPracticePlan?.targetFrequency || 4,
+                  rampWeeks: Math.ceil((data.pmPracticePlan?.durationWeeks || durationWeeks || 6) / 2)
+                },
+                
+                // Prerequisites from wizard
+                prerequisites: {
+                  hasEverything: data.prerequisites?.ready ?? true,
+                  needs: data.prerequisites?.needs || data.customPrerequisites || ''
+                },
+                
+                // Motivation and barriers
+                motivation: motivationText,
+                barriers: barriersText,
+                
+                // Teaching helper if selected
+                teachingHelper: data.pmHelper?.helperId && data.pmHelper.helperId !== 'none' ? {
+                  helperId: data.pmHelper.helperId,
+                  helperName: data.pmHelper.helperName ?? 'Helper',
+                  supportTypes: data.pmHelper.supportTypes ?? ['verbal']
+                } : null,
+                
+                // User context
+                userId: finalOwnerId,
+                userName: currentUser?.user_metadata?.full_name || 'User',
+                userAge: currentUser?.user_metadata?.age || null,
+                is_self_registered: data.recipient === 'self'
+              };
+              
+              console.log('📤 Calling pm-microsteps-scaffold with payload:', pmPayload);
+              
+              // Call edge function to generate steps
+              const { data: stepsData, error: stepsError } = await supabase.functions.invoke(
+                'pm-microsteps-scaffold',
+                { body: pmPayload }
+              );
+              
+              if (stepsError) {
+                console.error('❌ PM step generation failed:', stepsError);
+                
+                // Check if it's a safety violation (Layer 1 or Layer 2)
+                const isSafetyViolation = 
+                  stepsError.message?.toLowerCase().includes('safety') || 
+                  stepsError.message?.toLowerCase().includes('violation') ||
+                  stepsError.message?.includes('SAFETY_VIOLATION');
+                
+                if (isSafetyViolation) {
+                  // Safety violation: Keep goal but explain steps are pending review
+                  toast({
+                    title: "Goal Created Successfully",
+                    description: "Your goal needs a quick review before we can generate practice steps. We'll notify you when ready!",
+                    variant: "default"
+                  });
+                } else {
+                  // Other errors: Keep goal, steps will be added later
+                  toast({
+                    title: "Goal Created!",
+                    description: "Your goal was created successfully. Practice steps will be generated shortly.",
+                    variant: "default"
+                  });
+                }
+                
+              } else if (stepsData?.steps && Array.isArray(stepsData.steps) && stepsData.steps.length > 0) {
+                console.log(`✅ Generated ${stepsData.steps.length} PM steps:`, stepsData.steps);
+                
+                // Transform and save generated steps to database
+                const stepsToInsert = stepsData.steps.map((step: any, index: number) => ({
+                  goal_id: createdGoal.id,
+                  title: step.title || `Step ${index + 1}`,
+                  notes: step.description || '',
+                  explainer: step.description || '',
+                  estimated_effort_min: step.estimatedDuration || 30,
+                  status: 'not_started',
+                  order_index: index,
+                  is_required: true,
+                  due_date: step.weekNumber ? 
+                    calculateStepDueDate(data.startDate, step.weekNumber) : 
+                    undefined,
+                  pm_metadata: {
+                    version: 1,
+                    source: 'pm-microsteps-scaffold',
+                    phase: step.phase,
+                    weekNumber: step.weekNumber,
+                    supportLevel: step.supportLevel,
+                    difficulty: step.difficulty,
+                    safetyNotes: step.safetyNotes,
+                    qualityIndicators: step.qualityIndicators || [],
+                    independenceIndicators: step.independenceIndicators || [],
+                    practiceCount: step.practiceCount || 1,
+                    prerequisites: step.prerequisites || [],
+                    generationAttempts: stepsData.metadata?.generationAttempts,
+                    modelUsed: stepsData.metadata?.modelUsed,
+                    generatedAt: stepsData.metadata?.generatedAt
+                  }
+                }));
+                
+                const { error: insertError } = await supabase
+                  .from('steps')
+                  .insert(stepsToInsert);
+                
+                if (insertError) {
+                  console.error('Failed to save PM steps to database:', insertError);
+                  toast({
+                    title: "Goal Created!",
+                    description: "Your goal was created. You can add practice steps manually from the goal details.",
+                    variant: "default"
+                  });
+                } else {
+                  console.log(`✅ Successfully saved ${stepsToInsert.length} PM steps to database`);
+                  toast({
+                    title: 'Progressive Mastery Goal Created! 🚀',
+                    description: `Your learning journey begins now! We've created ${stepsToInsert.length} personalized practice steps.`
+                  });
+                }
+              } else {
+                console.warn('⚠️ PM step generation returned no steps');
+                toast({
+                  title: "Goal Created!",
+                  description: "Your goal was created successfully. You can add practice steps manually.",
+                  variant: "default"
+                });
+              }
+            } catch (pmStepsError: any) {
+              console.error('❌ Unexpected error during PM step generation:', pmStepsError);
+              // Don't block goal creation - goal is already saved, just missing steps
+            }
+
+            console.log('✅ PM goal creation flow complete');
           } catch (pmError: any) {
             console.error('Failed to save Progressive Mastery metadata:', pmError);
             
