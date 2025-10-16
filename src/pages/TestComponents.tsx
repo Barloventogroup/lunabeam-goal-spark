@@ -8,7 +8,8 @@ import { IndependenceSlider } from '@/components/lunebeam/independence-slider';
 import { ConfidenceRating } from '@/components/lunebeam/confidence-rating';
 import { SkillAssessmentWizard } from '@/components/lunebeam/skill-assessment-wizard';
 import { ProgressiveMasteryCheckIn } from '@/components/lunebeam/progressive-mastery-checkin';
-import { Smartphone, Tablet, Monitor } from 'lucide-react';
+import { Smartphone, Tablet, Monitor, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function TestComponents() {
   // StarRating states
@@ -28,6 +29,11 @@ export default function TestComponents() {
   // ProgressiveMasteryCheckIn state
   const [showCheckIn, setShowCheckIn] = useState(false);
 
+  // PM Microsteps Scaffold test state
+  const [pmLoading, setPmLoading] = useState(false);
+  const [pmResponse, setPmResponse] = useState<any>(null);
+  const [pmError, setPmError] = useState<string | null>(null);
+
   const handleAssessmentComplete = (assessment: any) => {
     console.log('Assessment complete:', assessment);
     alert(`Assessment complete! Level: ${assessment.level_label}, Score: ${assessment.calculated_level}`);
@@ -44,6 +50,69 @@ export default function TestComponents() {
     console.log('Check-in skipped');
     await new Promise(resolve => setTimeout(resolve, 500));
     alert('Step completed without check-in');
+  };
+
+  const handlePMScaffoldTest = async () => {
+    setPmLoading(true);
+    setPmError(null);
+    setPmResponse(null);
+    
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('You must be logged in to test this function');
+      }
+      
+      // Test payload for Natalia
+      const payload = {
+        title: "Learn to cook scrambled eggs",
+        domain: "independent_living",
+        assessmentData: {
+          experience: 2,
+          confidence: 3,
+          helpNeeded: 4,
+          calculatedLevel: 2.5,
+          levelLabel: "Beginner"
+        },
+        smartStart: {
+          startingFrequency: 2,
+          targetFrequency: 5,
+          rampWeeks: 4
+        },
+        prerequisites: {
+          hasEverything: true,
+          needs: "Access to kitchen and cooking supplies"
+        },
+        barriers: "Sometimes I forget to check if we have eggs in the fridge",
+        motivation: "I want to be able to make my own breakfast and feel more independent",
+        userId: user.id,
+        userName: user.user_metadata?.full_name || "Test User",
+        userAge: 16,
+        is_self_registered: true
+      };
+      
+      console.log('🚀 Calling pm-microsteps-scaffold with payload:', payload);
+      
+      const { data, error } = await supabase.functions.invoke('pm-microsteps-scaffold', {
+        body: payload
+      });
+      
+      if (error) {
+        console.error('❌ Edge function error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Success response:', data);
+      setPmResponse(data);
+      
+    } catch (error: any) {
+      console.error('❌ Test failed:', error);
+      setPmError(error.message || 'Unknown error');
+    } finally {
+      setPmLoading(false);
+    }
   };
 
   return (
@@ -243,6 +312,92 @@ export default function TestComponents() {
             <Button onClick={() => setShowCheckIn(true)}>
               Launch Check-In Modal
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* PM Microsteps Scaffold Edge Function */}
+        <Card>
+          <CardHeader>
+            <CardTitle>PM Microsteps Scaffold Edge Function</CardTitle>
+            <CardDescription>Test the Progressive Mastery goal creation backend</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                This will call the <code className="bg-muted px-1 py-0.5 rounded">pm-microsteps-scaffold</code> edge function with test data for creating a Progressive Mastery goal.
+              </p>
+              <div className="flex items-center gap-2 text-sm">
+                <Badge variant="outline">Required</Badge>
+                <span className="text-muted-foreground">You must be logged in</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold">Test Payload:</h4>
+              <div className="bg-muted p-3 rounded text-xs space-y-1">
+                <div><strong>Title:</strong> "Learn to cook scrambled eggs"</div>
+                <div><strong>Domain:</strong> independent_living</div>
+                <div><strong>User Age:</strong> 16</div>
+                <div><strong>Assessment Level:</strong> Beginner (2.5)</div>
+                <div><strong>Smart Start:</strong> 2x/week → 5x/week over 4 weeks</div>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button 
+                onClick={handlePMScaffoldTest}
+                disabled={pmLoading}
+              >
+                {pmLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {pmLoading ? 'Testing...' : 'Test PM Scaffold Function'}
+              </Button>
+              {(pmResponse || pmError) && (
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setPmResponse(null);
+                    setPmError(null);
+                  }}
+                >
+                  Clear Results
+                </Button>
+              )}
+            </div>
+
+            {/* Success Response */}
+            {pmResponse && (
+              <div className="border border-green-500/50 bg-green-500/10 rounded-lg p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-green-500 text-white">Success</Badge>
+                  <span className="text-sm font-semibold">Edge function executed successfully</span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium">Response Data:</p>
+                  <pre className="bg-background/50 p-3 rounded text-xs overflow-x-auto max-h-96 overflow-y-auto">
+                    {JSON.stringify(pmResponse, null, 2)}
+                  </pre>
+                </div>
+              </div>
+            )}
+
+            {/* Error Response */}
+            {pmError && (
+              <div className="border border-destructive/50 bg-destructive/10 rounded-lg p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant="destructive">Error</Badge>
+                  <span className="text-sm font-semibold">Function call failed</span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium">Error Message:</p>
+                  <pre className="bg-background/50 p-3 rounded text-xs overflow-x-auto">
+                    {pmError}
+                  </pre>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Check the browser console for detailed logs
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
