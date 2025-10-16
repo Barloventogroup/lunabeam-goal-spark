@@ -1228,6 +1228,52 @@ export default function TestComponents() {
                     </p>
                   </div>
                 )}
+
+                {habitTestType === 'dangerous-emoji' && (
+                  <div className="text-xs mt-3 space-y-2 border-t pt-2">
+                    <p className="font-semibold">✅ Verification Checklist:</p>
+                    <ul className="list-disc list-inside pl-2 space-y-1 text-muted-foreground">
+                      <li>Console shows "⚠️ LAYER 1 SAFETY VIOLATION"</li>
+                      <li>Error mentions dangerous emojis or weapons</li>
+                      <li>Check safety_violations_log for entry</li>
+                      <li>Look for triggered_emojis: ['🔫', '💣', '💥'] in new column</li>
+                      <li><strong>Key test:</strong> Verify WEAPON EMOJIS were detected</li>
+                      <li>Verify violation_layer = 'layer_1_keywords_and_emojis'</li>
+                      <li>Confirm title (🔫💣) and motivation (💥) emojis were flagged</li>
+                      <li>Note: "history" and "warfare" keywords are safe in educational context</li>
+                    </ul>
+                    <p className="mt-2 text-fuchsia-600 dark:text-fuchsia-400 font-medium">
+                      This test proves Layer 1 scans for dangerous WEAPON EMOJIS in habit wizard!
+                    </p>
+                  </div>
+                )}
+
+                {habitTestType === 'dangerous-emoji-code' && (
+                  <div className="text-xs mt-3 space-y-2 border-t pt-2">
+                    <p className="font-semibold">✅ Verification Checklist:</p>
+                    <ul className="list-disc list-inside pl-2 space-y-1 text-muted-foreground">
+                      <li>Console shows "⚠️ LAYER 1 SAFETY VIOLATION"</li>
+                      <li>Error mentions inappropriate content or weapon code words</li>
+                      <li>Check safety_violations_log for entry</li>
+                      <li>Look for triggered_emoji_codes: ['boom stick', 'pew pew'] in new column</li>
+                      <li><strong>Key test:</strong> Verify WEAPON CODE WORDS were detected</li>
+                      <li>Verify violation_layer = 'layer_1_keywords_and_emojis'</li>
+                      <li>Confirm "boom stick" in title flagged as weapon slang</li>
+                      <li>Confirm "pew pew" in motivation flagged as shooting sounds</li>
+                      <li>Note: These are colloquial terms that might trigger false positives</li>
+                    </ul>
+                    <p className="mt-2 text-pink-600 dark:text-pink-400 font-medium">
+                      This test proves Layer 1 detects weapon CODE WORDS in habit wizard!
+                    </p>
+                    <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
+                      <p className="font-semibold text-blue-800 dark:text-blue-200">💡 Context Matters:</p>
+                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                        "Boom stick" and "pew pew" might be used in gaming contexts. Consider if additional 
+                        context checking is needed to reduce false positives while maintaining safety.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </AlertDescription>
           </Alert>
@@ -1556,6 +1602,65 @@ export default function TestComponents() {
                     <p className="mt-2 text-purple-600 dark:text-purple-400 font-medium">
                       This test proves Layer 1 scans the MOTIVATION field for self-harm content!
                     </p>
+                  </div>
+                )}
+
+                {testType === 'dangerous-emoji' && (
+                  <div className="text-xs mt-3 space-y-2 border-t pt-2">
+                    <p className="font-semibold">✅ Verification Checklist:</p>
+                    <ul className="list-disc list-inside pl-2 space-y-1 text-muted-foreground">
+                      <li>Console shows "⚠️ LAYER 1 SAFETY VIOLATION"</li>
+                      <li>Error mentions dangerous emojis or inappropriate content</li>
+                      <li>Check safety_violations_log for entry</li>
+                      <li>Look for triggered_emojis: ['🍆', '🍑', '💦'] in new column</li>
+                      <li><strong>Key test:</strong> Verify EMOJIS were detected, not keywords</li>
+                      <li>Verify violation_layer = 'layer_1_keywords_and_emojis'</li>
+                      <li>Confirm both title (🍆🍑) and motivation (💦) emojis were flagged</li>
+                      <li>Verify NO false positives from words like "cook" or "meals"</li>
+                    </ul>
+                    <p className="mt-2 text-fuchsia-600 dark:text-fuchsia-400 font-medium">
+                      This test proves Layer 1 scans for dangerous EMOJIS across all fields!
+                    </p>
+                    <div className="mt-3 p-2 bg-amber-50 dark:bg-amber-950/20 rounded border border-amber-200 dark:border-amber-800">
+                      <p className="font-semibold text-amber-800 dark:text-amber-200">🔍 Database Check:</p>
+                      <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                        Run this query in Supabase SQL Editor:
+                      </p>
+                      <code className="block text-xs bg-white dark:bg-gray-900 p-2 rounded mt-1 overflow-x-auto">
+                        SELECT triggered_emojis, triggered_keywords, emoji_combination_detected, created_at<br/>
+                        FROM safety_violations_log<br/>
+                        WHERE goal_title LIKE '%🍆%' OR goal_title LIKE '%🍑%'<br/>
+                        ORDER BY created_at DESC LIMIT 1;
+                      </code>
+                    </div>
+                  </div>
+                )}
+
+                {testType === 'dangerous-emoji-code' && (
+                  <div className="text-xs mt-3 space-y-2 border-t pt-2">
+                    <p className="font-semibold">✅ Verification Checklist:</p>
+                    <ul className="list-disc list-inside pl-2 space-y-1 text-muted-foreground">
+                      <li>Console shows "⚠️ LAYER 1 SAFETY VIOLATION"</li>
+                      <li>Error mentions inappropriate content or code words</li>
+                      <li>Check safety_violations_log for entry</li>
+                      <li>Look for triggered_emoji_codes: ['peach', 'eggplant', 'splash'] in new column</li>
+                      <li><strong>Key test:</strong> Verify CODE WORDS were detected (text, not emoji symbols)</li>
+                      <li>Verify violation_layer = 'layer_1_keywords_and_emojis'</li>
+                      <li>Confirm "peach" and "eggplant" in title flagged as sexual code words</li>
+                      <li>Confirm "splash" in motivation flagged as sexual code word</li>
+                      <li>Verify the cooking context did NOT make it safe (context-aware blocking)</li>
+                    </ul>
+                    <p className="mt-2 text-pink-600 dark:text-pink-400 font-medium">
+                      This test proves Layer 1 detects emoji CODE WORDS (text) not just emoji symbols!
+                    </p>
+                    <div className="mt-3 p-2 bg-amber-50 dark:bg-amber-950/20 rounded border border-amber-200 dark:border-amber-800">
+                      <p className="font-semibold text-amber-800 dark:text-amber-200">⚠️ Important Note:</p>
+                      <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                        This test may have a higher false positive rate. Words like "peach" and "eggplant" 
+                        are legitimate in cooking contexts. Consider refining the code word list or adding 
+                        context-aware checking in future iterations.
+                      </p>
+                    </div>
                   </div>
                 )}
                 {testType === 'safe' && (
