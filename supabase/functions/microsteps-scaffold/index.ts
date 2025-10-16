@@ -187,7 +187,10 @@ Deno.serve(async (req) => {
 
     const goalLower = payload.goalTitle.toLowerCase();
     const motivationLower = (payload.motivation || '').toLowerCase();
-    const combinedInput = `${goalLower} ${motivationLower}`;
+    const barrier1Lower = (payload.barrier1 || '').toLowerCase();
+    const barrier2Lower = (payload.barrier2 || '').toLowerCase();
+    const barrierContextLower = (payload.barrierContext || '').toLowerCase();
+    const combinedInput = `${goalLower} ${motivationLower} ${barrier1Lower} ${barrier2Lower} ${barrierContextLower}`;
 
     const triggeredKeywords = dangerousKeywords.filter(keyword => 
       combinedInput.includes(keyword)
