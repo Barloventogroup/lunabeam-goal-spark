@@ -93,9 +93,9 @@ interface ValidationResult {
   warnings: string[];
 }
 
-// Lovable AI Configuration
+// OpenAI Configuration
 const MAX_GENERATION_ATTEMPTS = 3;
-const AI_MODEL = 'google/gemini-2.5-flash';
+const AI_MODEL = 'gpt-5-mini-2025-08-07'; // Fast, cost-efficient GPT-5 variant
 const AI_TIMEOUT_MS = 60000; // 60 seconds per attempt
 
 // Dangerous Keywords Array (from requirements section 5.1)
@@ -614,15 +614,15 @@ function validateBasicFormat(steps: GeneratedStep[], input: PMGoalCreationInput)
 }
 
 /**
- * Call Lovable AI Gateway to generate PM steps with retry logic
+ * Call OpenAI API to generate PM steps with retry logic
  */
 async function callAIWithRetry(
   payload: PMGoalCreationInput,
   retryGuidance: string = ''
 ): Promise<GeneratedStep[]> {
-  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-  if (!lovableApiKey) {
-    throw new Error('LOVABLE_API_KEY not configured');
+  const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!openaiApiKey) {
+    throw new Error('OPENAI_API_KEY not configured');
   }
   
   const systemPrompt = buildPMSystemPrompt(payload);
@@ -641,11 +641,11 @@ async function callAIWithRetry(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
       
-      console.log('📤 Calling Lovable AI Gateway...');
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      console.log('📤 Calling OpenAI API...');
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${lovableApiKey}`,
+          'Authorization': `Bearer ${openaiApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -653,7 +653,8 @@ async function callAIWithRetry(
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
-          ]
+          ],
+          max_completion_tokens: 4000
         }),
         signal: controller.signal
       });
@@ -664,22 +665,22 @@ async function callAIWithRetry(
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ AI Gateway error:', response.status, errorText);
+        console.error('❌ OpenAI API error:', response.status, errorText);
         
         // Handle specific error codes
         if (response.status === 429) {
-          lastError = new Error('Rate limit exceeded. Please try again in a moment.');
+          lastError = new Error('OpenAI rate limit exceeded. Please try again in a moment.');
           if (attempt < MAX_GENERATION_ATTEMPTS) {
             const backoffDelay = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s
             console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
             await new Promise(resolve => setTimeout(resolve, backoffDelay));
             continue;
           }
-        } else if (response.status === 402) {
-          throw new Error('Payment required. Please add credits to your Lovable AI workspace.');
+        } else if (response.status === 401) {
+          throw new Error('OpenAI API key invalid or expired. Please check your OPENAI_API_KEY.');
         } else if (response.status === 408 || response.status === 504) {
           // Timeout/gateway timeout - retry
-          lastError = new Error(`Gateway timeout (${response.status})`);
+          lastError = new Error(`Request timeout (${response.status})`);
           if (attempt < MAX_GENERATION_ATTEMPTS) {
             const backoffDelay = Math.pow(2, attempt - 1) * 1000;
             console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
@@ -688,7 +689,7 @@ async function callAIWithRetry(
           }
         } else if (response.status >= 500) {
           // Server error - retry
-          lastError = new Error(`AI service error (${response.status})`);
+          lastError = new Error(`OpenAI service error (${response.status})`);
           if (attempt < MAX_GENERATION_ATTEMPTS) {
             const backoffDelay = Math.pow(2, attempt - 1) * 1000;
             console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
@@ -697,21 +698,21 @@ async function callAIWithRetry(
           }
         }
         
-        throw new Error(`AI Gateway error: ${response.status}`);
+        throw new Error(`OpenAI API error: ${response.status}`);
       }
       
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content;
       
       if (!content) {
-        throw new Error('AI returned empty response');
+        throw new Error('OpenAI returned empty response');
       }
       
-      console.log('📥 AI response received, parsing JSON...');
+      console.log('📥 OpenAI response received, parsing JSON...');
       const parsed: GenerationResponse = JSON.parse(content);
       
       if (!parsed.steps || !Array.isArray(parsed.steps)) {
-        throw new Error('AI response missing "steps" array');
+        throw new Error('OpenAI response missing "steps" array');
       }
       
       console.log(`✅ Successfully generated ${parsed.steps.length} steps on attempt ${attempt}`);
@@ -723,8 +724,8 @@ async function callAIWithRetry(
       if (error.name === 'AbortError' || error.message?.includes('aborted')) {
         console.error(`❌ Attempt ${attempt} timed out after ${attemptDuration}ms`);
         lastError = new Error(`Request timed out after ${AI_TIMEOUT_MS / 1000}s`);
-      } else if (error.message?.includes('Payment required') || error.message?.includes('Rate limit')) {
-        // Don't retry payment/rate limit errors
+      } else if (error.message?.includes('API key') || error.message?.includes('Rate limit')) {
+        // Don't retry auth/rate limit errors
         throw error;
       } else {
         console.error(`❌ Attempt ${attempt} failed:`, error.message);
@@ -1212,7 +1213,7 @@ serve(async (req) => {
 
       console.log('✅ Layer 1 safety check passed');
 
-      // 8. Generate steps using Lovable AI Gateway with retry logic
+      // 8. Generate steps using OpenAI API with retry logic
       console.log('🤖 Starting AI step generation with Layer 2 safety...');
       const generationStart = Date.now();
 
