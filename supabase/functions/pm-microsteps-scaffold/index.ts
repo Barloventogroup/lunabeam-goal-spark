@@ -1421,7 +1421,7 @@ serve(async (req) => {
 
       // 9. Prepare final response with metadata
       const response = {
-        microSteps: generatedSteps,
+        steps: generatedSteps,
         metadata: {
           modelUsed: AI_MODEL,
           generatedAt: new Date().toISOString(),
