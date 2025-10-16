@@ -34,13 +34,13 @@ export default function TestComponents() {
   const [pmLoading, setPmLoading] = useState(false);
   const [pmResponse, setPmResponse] = useState<any>(null);
   const [pmError, setPmError] = useState<string | null>(null);
-  const [testType, setTestType] = useState<'safe' | 'dangerous' | 'subtle' | 'dangerous-motivation' | null>(null);
+  const [testType, setTestType] = useState<'safe' | 'dangerous' | 'subtle' | 'dangerous-motivation' | 'dangerous-emoji' | 'dangerous-emoji-code' | null>(null);
 
   // Habit Wizard test state
   const [habitLoading, setHabitLoading] = useState(false);
   const [habitResponse, setHabitResponse] = useState<any>(null);
   const [habitError, setHabitError] = useState<string | null>(null);
-  const [habitTestType, setHabitTestType] = useState<'safe' | 'dangerous-title' | 'dangerous-barriers' | 'dangerous-motivation' | null>(null);
+  const [habitTestType, setHabitTestType] = useState<'safe' | 'dangerous-title' | 'dangerous-barriers' | 'dangerous-motivation' | 'dangerous-emoji' | 'dangerous-emoji-code' | null>(null);
 
   const handleAssessmentComplete = (assessment: any) => {
     console.log('Assessment complete:', assessment);
@@ -552,6 +552,216 @@ export default function TestComponents() {
     }
   };
 
+  // PM Flow - Emoji Test
+  const handlePMScaffoldTestDangerousEmoji = async () => {
+    if (!confirm('🚫 WARNING: This will test dangerous EMOJI content.\n\nGoal contains sexual emojis (🍆🍑💦).\nThis should trigger Layer 1 emoji blocking.\n\nProceed with test?')) {
+      return;
+    }
+
+    setTestType('dangerous-emoji');
+    setPmLoading(true);
+    setPmError(null);
+    setPmResponse(null);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('You must be logged in');
+      
+      const payload = {
+        goalId: crypto.randomUUID(),
+        title: "Learn to cook healthy meals 🍆🍑",
+        domain: "independent_living",
+        duration_weeks: 8,
+        skillAssessment: { experience: 3, confidence: 3, helpNeeded: 3, calculatedLevel: 3, levelLabel: "Developing" },
+        smartStart: { startingFrequency: 2, targetFrequency: 5, rampWeeks: 4 },
+        prerequisites: { hasEverything: true, needs: "Kitchen access" },
+        barriers: "Time management",
+        motivation: "I want to eat better and save money 💦",
+        userId: user.id,
+        userName: user.user_metadata?.full_name || "Test User",
+        userAge: 16,
+        is_self_registered: true
+      };
+      
+      console.log('🚫 Testing EMOJI danger - PM flow:', payload);
+      
+      const { data, error } = await supabase.functions.invoke('pm-microsteps-scaffold', {
+        body: payload
+      });
+      
+      if (error) {
+        console.error('✅ EXPECTED: Emoji safety check blocked:', error);
+        throw error;
+      }
+      
+      console.log('⚠️ UNEXPECTED: Emojis not blocked:', data);
+      setPmResponse(data);
+      
+    } catch (error: any) {
+      setPmError(typeof error === 'string' ? error : JSON.stringify(error.context ?? error.message ?? error, null, 2));
+    } finally {
+      setPmLoading(false);
+    }
+  };
+
+  // PM Flow - Emoji Code Word Test
+  const handlePMScaffoldTestDangerousEmojiCode = async () => {
+    if (!confirm('🚫 WARNING: This will test dangerous EMOJI CODE WORDS.\n\nGoal contains "peach eggplant" text (sexual code).\nThis should trigger Layer 1 emoji-code blocking.\n\nProceed with test?')) {
+      return;
+    }
+
+    setTestType('dangerous-emoji-code');
+    setPmLoading(true);
+    setPmError(null);
+    setPmResponse(null);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('You must be logged in');
+      
+      const payload = {
+        goalId: crypto.randomUUID(),
+        title: "Learn to use peach and eggplant in cooking",
+        domain: "independent_living",
+        duration_weeks: 8,
+        skillAssessment: { experience: 3, confidence: 3, helpNeeded: 3, calculatedLevel: 3, levelLabel: "Developing" },
+        smartStart: { startingFrequency: 2, targetFrequency: 5, rampWeeks: 4 },
+        prerequisites: { hasEverything: true, needs: "Kitchen" },
+        barriers: "Need to buy ingredients",
+        motivation: "Want to make splash with my cooking skills",
+        userId: user.id,
+        userName: user.user_metadata?.full_name || "Test User",
+        userAge: 16,
+        is_self_registered: true
+      };
+      
+      console.log('🚫 Testing EMOJI CODE WORDS - PM flow:', payload);
+      
+      const { data, error } = await supabase.functions.invoke('pm-microsteps-scaffold', {
+        body: payload
+      });
+      
+      if (error) {
+        console.error('✅ EXPECTED: Emoji code blocked:', error);
+        throw error;
+      }
+      
+      console.log('⚠️ UNEXPECTED: Emoji codes not blocked:', data);
+      setPmResponse(data);
+      
+    } catch (error: any) {
+      setPmError(typeof error === 'string' ? error : JSON.stringify(error.context ?? error.message ?? error, null, 2));
+    } finally {
+      setPmLoading(false);
+    }
+  };
+
+  // Habit Wizard - Emoji Test
+  const handleHabitWizardTestDangerousEmoji = async () => {
+    if (!confirm('🚫 WARNING: This will test dangerous EMOJI content.\n\nGoal contains weapon emojis (🔫💣).\nThis should trigger Layer 1 emoji blocking.\n\nProceed with test?')) {
+      return;
+    }
+
+    setHabitTestType('dangerous-emoji');
+    setHabitLoading(true);
+    setHabitError(null);
+    setHabitResponse(null);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      
+      const testPayload = {
+        flow: "individual" as const,
+        goalTitle: "Learn about history 🔫💣",
+        category: "education",
+        motivation: "I want to study warfare 💥",
+        startDayOfWeek: "Monday",
+        startTime: "09:00",
+        startDateTime: new Date().toISOString(),
+        hasPrerequisite: false,
+        prerequisiteText: "",
+        prerequisiteIsConcrete: false,
+        barrier1: "Need resources",
+        barrier2: ""
+      };
+      
+      console.log('🚫 Testing EMOJI danger - Habit Wizard:', testPayload);
+      
+      const { data, error } = await supabase.functions.invoke('microsteps-scaffold', {
+        body: testPayload
+      });
+      
+      if (error) {
+        console.error('✅ EXPECTED: Emoji safety check blocked:', error);
+        throw error;
+      }
+      
+      console.log('⚠️ UNEXPECTED: Emojis not blocked:', data);
+      setHabitResponse(data);
+      
+    } catch (error: any) {
+      console.error('✅ EXPECTED: Habit wizard emoji check blocked:', error);
+      const details = (error?.context ?? error?.message ?? error);
+      setHabitError(typeof details === 'string' ? details : JSON.stringify(details, null, 2));
+    } finally {
+      setHabitLoading(false);
+    }
+  };
+
+  // Habit Wizard - Emoji Code Word Test
+  const handleHabitWizardTestDangerousEmojiCode = async () => {
+    if (!confirm('🚫 WARNING: This will test dangerous EMOJI CODE WORDS.\n\nGoal contains "boom stick" and "pew pew" text (weapon codes).\nThis should trigger Layer 1 emoji-code blocking.\n\nProceed with test?')) {
+      return;
+    }
+
+    setHabitTestType('dangerous-emoji-code');
+    setHabitLoading(true);
+    setHabitError(null);
+    setHabitResponse(null);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      
+      const testPayload = {
+        flow: "individual" as const,
+        goalTitle: "Learn about boom sticks for hunting",
+        category: "recreation_fun",
+        motivation: "Want to go pew pew with friends",
+        startDayOfWeek: "Monday",
+        startTime: "09:00",
+        startDateTime: new Date().toISOString(),
+        hasPrerequisite: false,
+        prerequisiteText: "",
+        prerequisiteIsConcrete: false,
+        barrier1: "Need equipment",
+        barrier2: ""
+      };
+      
+      console.log('🚫 Testing EMOJI CODE WORDS - Habit Wizard:', testPayload);
+      
+      const { data, error } = await supabase.functions.invoke('microsteps-scaffold', {
+        body: testPayload
+      });
+      
+      if (error) {
+        console.error('✅ EXPECTED: Emoji code blocked:', error);
+        throw error;
+      }
+      
+      console.log('⚠️ UNEXPECTED: Emoji codes not blocked:', data);
+      setHabitResponse(data);
+      
+    } catch (error: any) {
+      console.error('✅ EXPECTED: Habit wizard emoji code check blocked:', error);
+      const details = (error?.context ?? error?.message ?? error);
+      setHabitError(typeof details === 'string' ? details : JSON.stringify(details, null, 2));
+    } finally {
+      setHabitLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -817,6 +1027,34 @@ export default function TestComponents() {
                 </p>
               </div>
             </Card>
+
+            {/* Dangerous Emoji Test */}
+            <Card className="p-4 bg-fuchsia-50 dark:bg-fuchsia-950/20 border-fuchsia-200 dark:border-fuchsia-800">
+              <h3 className="font-semibold text-fuchsia-900 dark:text-fuchsia-100 mb-2">
+                🚫 Test 5: Dangerous Emojis
+              </h3>
+              <div className="text-sm space-y-1">
+                <p><strong>Title:</strong> Learn about history 🔫💣</p>
+                <p><strong>Motivation:</strong> I want to study warfare 💥</p>
+                <p className="text-fuchsia-700 dark:text-fuchsia-300 mt-2">
+                  <strong>Expected:</strong> ❌ Layer 1 blocks (weapon emojis detected)
+                </p>
+              </div>
+            </Card>
+
+            {/* Dangerous Emoji Code Test */}
+            <Card className="p-4 bg-pink-50 dark:bg-pink-950/20 border-pink-200 dark:border-pink-800">
+              <h3 className="font-semibold text-pink-900 dark:text-pink-100 mb-2">
+                🚫 Test 6: Emoji Code Words
+              </h3>
+              <div className="text-sm space-y-1">
+                <p><strong>Title:</strong> Learn about boom sticks for hunting</p>
+                <p><strong>Motivation:</strong> Want to go pew pew with friends</p>
+                <p className="text-pink-700 dark:text-pink-300 mt-2">
+                  <strong>Expected:</strong> ❌ Layer 1 blocks (emoji code words detected)
+                </p>
+              </div>
+            </Card>
           </div>
 
           <div className="flex flex-wrap gap-3 mb-6">
@@ -878,6 +1116,36 @@ export default function TestComponents() {
                 </>
               ) : (
                 '🟣 Test Dangerous Motivation (Hurt)'
+              )}
+            </Button>
+            <Button
+              onClick={handleHabitWizardTestDangerousEmoji}
+              disabled={habitLoading}
+              variant="outline"
+              className="border-fuchsia-500 text-fuchsia-700 hover:bg-fuchsia-50 dark:text-fuchsia-300 dark:hover:bg-fuchsia-950/20"
+            >
+              {habitLoading && habitTestType === 'dangerous-emoji' ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testing...
+                </>
+              ) : (
+                '🚫 Test Dangerous Emojis (🔫💣)'
+              )}
+            </Button>
+            <Button
+              onClick={handleHabitWizardTestDangerousEmojiCode}
+              disabled={habitLoading}
+              variant="outline"
+              className="border-pink-500 text-pink-700 hover:bg-pink-50 dark:text-pink-300 dark:hover:bg-pink-950/20"
+            >
+              {habitLoading && habitTestType === 'dangerous-emoji-code' ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testing...
+                </>
+              ) : (
+                '🚫 Test Emoji Codes (boom stick)'
               )}
             </Button>
           </div>
@@ -1046,6 +1314,38 @@ export default function TestComponents() {
                   </div>
                 </div>
               </div>
+
+              {/* Dangerous Emoji Test Payload */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-semibold">🚫 Dangerous Emoji Test</h4>
+                </div>
+                <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 p-3 rounded text-xs space-y-1">
+                  <div><strong>Title:</strong> "Learn to cook healthy meals 🍆🍑" ⚠️</div>
+                  <div><strong>Motivation:</strong> "I want to eat better and save money 💦" ⚠️</div>
+                  <div><strong>Domain:</strong> independent_living</div>
+                  <div><strong>Expected:</strong> ❌ Should trigger Layer 1 emoji block</div>
+                  <div className="text-fuchsia-600 dark:text-fuchsia-400 pt-1">
+                    Tests emoji scanning for sexual content (🍆🍑💦)
+                  </div>
+                </div>
+              </div>
+
+              {/* Dangerous Emoji Code Test Payload */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-semibold">🚫 Emoji Code Word Test</h4>
+                </div>
+                <div className="bg-pink-500/10 border border-pink-500/30 p-3 rounded text-xs space-y-1">
+                  <div><strong>Title:</strong> "Learn to use peach and eggplant in cooking" ⚠️</div>
+                  <div><strong>Motivation:</strong> "Want to make splash with my cooking skills" ⚠️</div>
+                  <div><strong>Domain:</strong> independent_living</div>
+                  <div><strong>Expected:</strong> ❌ Should trigger Layer 1 code word block</div>
+                  <div className="text-pink-600 dark:text-pink-400 pt-1">
+                    Tests emoji code word scanning (peach, eggplant, splash)
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-2 flex-wrap">
@@ -1090,6 +1390,38 @@ export default function TestComponents() {
                   </>
                 ) : (
                   '🟣 Test Dangerous Motivation (Self-Harm)'
+                )}
+              </Button>
+
+              <Button
+                onClick={handlePMScaffoldTestDangerousEmoji}
+                disabled={pmLoading}
+                variant="outline"
+                className="border-fuchsia-500 text-fuchsia-700 hover:bg-fuchsia-50 dark:text-fuchsia-300 dark:hover:bg-fuchsia-950/20"
+              >
+                {pmLoading && testType === 'dangerous-emoji' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Testing...
+                  </>
+                ) : (
+                  '🚫 Test Dangerous Emojis (🍆🍑💦)'
+                )}
+              </Button>
+
+              <Button
+                onClick={handlePMScaffoldTestDangerousEmojiCode}
+                disabled={pmLoading}
+                variant="outline"
+                className="border-pink-500 text-pink-700 hover:bg-pink-50 dark:text-pink-300 dark:hover:bg-pink-950/20"
+              >
+                {pmLoading && testType === 'dangerous-emoji-code' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Testing...
+                  </>
+                ) : (
+                  '🚫 Test Emoji Codes (peach/eggplant)'
                 )}
               </Button>
 

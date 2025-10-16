@@ -871,6 +871,7 @@ export type Database = {
           barriers: string | null
           compliance_notified: boolean | null
           created_at: string
+          emoji_combination_detected: boolean | null
           goal_category: string | null
           goal_title: string
           helper_notified: boolean | null
@@ -879,6 +880,8 @@ export type Database = {
           motivation: string | null
           skill_level: number | null
           supporter_notified: boolean | null
+          triggered_emoji_codes: string[] | null
+          triggered_emojis: string[] | null
           triggered_keywords: string[] | null
           user_age: number | null
           user_email: string | null
@@ -891,6 +894,7 @@ export type Database = {
           barriers?: string | null
           compliance_notified?: boolean | null
           created_at?: string
+          emoji_combination_detected?: boolean | null
           goal_category?: string | null
           goal_title: string
           helper_notified?: boolean | null
@@ -899,6 +903,8 @@ export type Database = {
           motivation?: string | null
           skill_level?: number | null
           supporter_notified?: boolean | null
+          triggered_emoji_codes?: string[] | null
+          triggered_emojis?: string[] | null
           triggered_keywords?: string[] | null
           user_age?: number | null
           user_email?: string | null
@@ -911,6 +917,7 @@ export type Database = {
           barriers?: string | null
           compliance_notified?: boolean | null
           created_at?: string
+          emoji_combination_detected?: boolean | null
           goal_category?: string | null
           goal_title?: string
           helper_notified?: boolean | null
@@ -919,6 +926,8 @@ export type Database = {
           motivation?: string | null
           skill_level?: number | null
           supporter_notified?: boolean | null
+          triggered_emoji_codes?: string[] | null
+          triggered_emojis?: string[] | null
           triggered_keywords?: string[] | null
           user_age?: number | null
           user_email?: string | null

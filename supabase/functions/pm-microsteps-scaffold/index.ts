@@ -101,8 +101,47 @@ const dangerousKeywords = [
   'drive alone', 'use knife', 'medication without supervision', 'inject'
 ];
 
+// Dangerous Emojis Array
+const dangerousEmojis = [
+  // Violence & Weapons
+  '🔫', '🔪', '💣', '🗡️', '⚔️', '🧨', '⛓️', '🪓',
+  
+  // Drugs & Substances
+  '💊', '💉', '🚬', '🍃', '🌿',
+  
+  // Sexual Content
+  '🍆', '🍑', '🍌', '🌮', '🌭', '💦', '👅', '🔞', '🍒',
+  
+  // Self-Harm Indicators
+  '🩸', '⚰️', '🪦',
+  
+  // Illegal Activity
+  '🏴‍☠️', '💀'
+];
+
+// Emoji Code Words (text alternatives users might type)
+const emojiCodeWords = [
+  'peach', 'eggplant', 'cherries', 'banana', 'taco', 'hotdog',
+  'water drops', 'splash', 'drip', 'wet',
+  'herb', 'green leaf', 'plant',
+  'pill', 'needle', 'injection',
+  'gun emoji', 'knife emoji', 'bomb emoji',
+  'boom stick', 'fire stick', 'pew pew'
+];
+
+// Dangerous Emoji Combinations (patterns that appear together)
+const dangerousEmojiCombinations = [
+  { emojis: ['🍆', '🍑'], reason: 'sexual_content' },
+  { emojis: ['🍆', '💦'], reason: 'sexual_content' },
+  { emojis: ['🍑', '💦'], reason: 'sexual_content' },
+  { emojis: ['💊', '💰'], reason: 'drug_dealing' },
+  { emojis: ['🔫', '😈'], reason: 'violent_intent' },
+  { emojis: ['🔪', '😈'], reason: 'violent_intent' },
+  { emojis: ['💣', '🏢'], reason: 'terrorism' }
+];
+
 // Layer 1 Safety Check Function
-function checkLayer1Safety(payload: PMGoalCreationInput): string[] | null {
+function checkLayer1Safety(payload: PMGoalCreationInput): { triggered: boolean; keywords: string[]; emojis: string[]; emojiCodes: string[] } {
   const titleLower = payload.title.toLowerCase();
   const motivationLower = (payload.motivation || '').toLowerCase();
   const barriersLower = (payload.barriers || '').toLowerCase();
@@ -110,11 +149,39 @@ function checkLayer1Safety(payload: PMGoalCreationInput): string[] | null {
   
   const combinedInput = `${titleLower} ${motivationLower} ${barriersLower} ${prerequisitesLower}`;
   
+  // Check text keywords
   const triggeredKeywords = dangerousKeywords.filter(keyword =>
     combinedInput.includes(keyword.toLowerCase())
   );
   
-  return triggeredKeywords.length > 0 ? triggeredKeywords : null;
+  // Check for dangerous emojis
+  const fullText = `${payload.title} ${payload.motivation || ''} ${payload.barriers || ''} ${payload.prerequisites?.needs || ''}`;
+  const triggeredEmojis = dangerousEmojis.filter(emoji =>
+    fullText.includes(emoji)
+  );
+  
+  // Check for emoji code words
+  const triggeredEmojiCodes = emojiCodeWords.filter(code =>
+    combinedInput.includes(code)
+  );
+  
+  // Check for dangerous emoji combinations
+  const hasDangerousCombination = dangerousEmojiCombinations.some(combo => {
+    return combo.emojis.every(emoji => fullText.includes(emoji));
+  });
+  
+  if (hasDangerousCombination) {
+    triggeredEmojis.push('emoji_combination');
+  }
+  
+  const hasViolation = triggeredKeywords.length > 0 || triggeredEmojis.length > 0 || triggeredEmojiCodes.length > 0;
+  
+  return {
+    triggered: hasViolation,
+    keywords: triggeredKeywords,
+    emojis: triggeredEmojis,
+    emojiCodes: triggeredEmojiCodes
+  };
 }
 
 // Safety Violation Notification Helper
@@ -501,15 +568,19 @@ serve(async (req) => {
       console.log('✅ All validations passed');
       console.log(`⏱️ Validation took ${Date.now() - startTime}ms`);
 
-      // 7. LAYER 1: Fast keyword safety check
+      // 7. LAYER 1: Fast keyword and emoji safety check
       console.log('🔍 Running Layer 1 safety check...');
       const safetyCheckStart = Date.now();
       
-      const triggeredKeywords = checkLayer1Safety(payload);
+      const safetyResult = checkLayer1Safety(payload);
       console.log(`⏱️ Safety check took ${Date.now() - safetyCheckStart}ms`);
 
-      if (triggeredKeywords) {
-        console.error('⚠️ LAYER 1 SAFETY VIOLATION detected:', triggeredKeywords);
+      if (safetyResult.triggered) {
+        console.error('⚠️ LAYER 1 SAFETY VIOLATION detected:', {
+          keywords: safetyResult.keywords,
+          emojis: safetyResult.emojis,
+          emojiCodes: safetyResult.emojiCodes
+        });
 
         // Get user profile for logging
         const { data: profile } = await supabase
@@ -517,6 +588,12 @@ serve(async (req) => {
           .select('email, is_self_registered')
           .eq('user_id', userId)
           .single();
+
+        // Build detailed reason
+        const reasons = [];
+        if (safetyResult.keywords.length > 0) reasons.push(`keywords: ${safetyResult.keywords.join(', ')}`);
+        if (safetyResult.emojis.length > 0) reasons.push(`emojis: ${safetyResult.emojis.join(', ')}`);
+        if (safetyResult.emojiCodes.length > 0) reasons.push(`emoji codes: ${safetyResult.emojiCodes.join(', ')}`);
 
         // Log to safety_violations_log
         const violationLog: SafetyViolationLog = {
@@ -526,8 +603,8 @@ serve(async (req) => {
           goal_category: payload.domain,
           motivation: payload.motivation,
           barriers: payload.barriers,
-          triggered_keywords: triggeredKeywords,
-          violation_reason: `Explicit dangerous keywords detected: ${triggeredKeywords.join(', ')}`,
+          triggered_keywords: [...safetyResult.keywords, ...safetyResult.emojis, ...safetyResult.emojiCodes],
+          violation_reason: `Triggered: ${reasons.join(' | ')}`,
           user_email: profile?.email || null,
           user_age: payload.userAge || null,
           skill_level: payload.skillAssessment.calculatedLevel,
@@ -551,7 +628,7 @@ serve(async (req) => {
           payload.title,
           'layer_1_keywords',
           violationLog.violation_reason,
-          triggeredKeywords
+          [...safetyResult.keywords, ...safetyResult.emojis, ...safetyResult.emojiCodes]
         ).catch(err => console.error('Notification error:', err));
 
         // Return error to user immediately
@@ -560,7 +637,13 @@ serve(async (req) => {
             error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
             code: 'SAFETY_VIOLATION',
             safety_violation: true,
-            no_retry: true
+            no_retry: true,
+            details: 'Content includes inappropriate keywords, emojis, or coded language.',
+            triggered: {
+              keywords: safetyResult.keywords.length > 0,
+              emojis: safetyResult.emojis.length > 0,
+              emojiCodes: safetyResult.emojiCodes.length > 0
+            }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

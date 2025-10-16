@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ============= LAYER 1: FAST KEYWORD REJECTION =============
+    // ============= LAYER 1: FAST KEYWORD & EMOJI REJECTION =============
     const dangerousKeywords = [
       'kill', 'suicide', 'self-harm', 'self harm', 'cut myself', 'hurt myself',
       'trafficking', 'illegal', 'steal', 'theft', 'fraud', 'scam',
@@ -181,8 +181,46 @@ Deno.serve(async (req) => {
       'sell drugs', 'buy drugs', 'drug deal', 'black market',
       'hack', 'bypass security', 'break into', 'weapon', 'bomb', 'gun',
       'sexually explicit', 'porn', 'xxx', 'sex tape',
-      'revenge', 'harm someone', 'hurt someone', 'get back at',
-      '💣', '🔫', '🔪', '💥', '💊', '💉', '🚬', '🧨', '⚔️', '🗡️'
+      'revenge', 'harm someone', 'hurt someone', 'get back at'
+    ];
+
+    // Dangerous Emojis Array
+    const dangerousEmojis = [
+      // Violence & Weapons
+      '🔫', '🔪', '💣', '🗡️', '⚔️', '🧨', '⛓️', '🪓',
+      
+      // Drugs & Substances
+      '💊', '💉', '🚬', '🍃', '🌿',
+      
+      // Sexual Content
+      '🍆', '🍑', '🍌', '🌮', '🌭', '💦', '👅', '🔞', '🍒',
+      
+      // Self-Harm Indicators
+      '🩸', '⚰️', '🪦',
+      
+      // Illegal Activity
+      '🏴‍☠️', '💀'
+    ];
+
+    // Emoji Code Words (text alternatives users might type)
+    const emojiCodeWords = [
+      'peach', 'eggplant', 'cherries', 'banana', 'taco', 'hotdog',
+      'water drops', 'splash', 'drip', 'wet',
+      'herb', 'green leaf', 'plant',
+      'pill', 'needle', 'injection',
+      'gun emoji', 'knife emoji', 'bomb emoji',
+      'boom stick', 'fire stick', 'pew pew'
+    ];
+
+    // Dangerous Emoji Combinations (patterns that appear together)
+    const dangerousEmojiCombinations = [
+      { emojis: ['🍆', '🍑'], reason: 'sexual_content' },
+      { emojis: ['🍆', '💦'], reason: 'sexual_content' },
+      { emojis: ['🍑', '💦'], reason: 'sexual_content' },
+      { emojis: ['💊', '💰'], reason: 'drug_dealing' },
+      { emojis: ['🔫', '😈'], reason: 'violent_intent' },
+      { emojis: ['🔪', '😈'], reason: 'violent_intent' },
+      { emojis: ['💣', '🏢'], reason: 'terrorism' }
     ];
 
     const goalLower = payload.goalTitle.toLowerCase();
@@ -192,18 +230,51 @@ Deno.serve(async (req) => {
     const barrierContextLower = (payload.barrierContext || '').toLowerCase();
     const combinedInput = `${goalLower} ${motivationLower} ${barrier1Lower} ${barrier2Lower} ${barrierContextLower}`;
 
+    // Check text keywords
     const triggeredKeywords = dangerousKeywords.filter(keyword => 
       combinedInput.includes(keyword)
     );
 
-    if (triggeredKeywords.length > 0 && userId) {
-      console.error('⚠️ LAYER 1 SAFETY VIOLATION: Dangerous keywords detected:', triggeredKeywords);
+    // Check for dangerous emojis
+    const fullText = `${payload.goalTitle} ${payload.motivation || ''} ${payload.barrier1 || ''} ${payload.barrier2 || ''} ${payload.barrierContext || ''}`;
+    const triggeredEmojis = dangerousEmojis.filter(emoji =>
+      fullText.includes(emoji)
+    );
+
+    // Check for emoji code words
+    const triggeredEmojiCodes = emojiCodeWords.filter(code =>
+      combinedInput.includes(code)
+    );
+
+    // Check for dangerous emoji combinations
+    const hasDangerousCombination = dangerousEmojiCombinations.some(combo => {
+      return combo.emojis.every(emoji => fullText.includes(emoji));
+    });
+
+    if (hasDangerousCombination) {
+      triggeredEmojis.push('emoji_combination');
+    }
+
+    const hasViolation = triggeredKeywords.length > 0 || triggeredEmojis.length > 0 || triggeredEmojiCodes.length > 0;
+
+    if (hasViolation && userId) {
+      console.error('⚠️ LAYER 1 SAFETY VIOLATION: Detected violations:', {
+        keywords: triggeredKeywords,
+        emojis: triggeredEmojis,
+        emojiCodes: triggeredEmojiCodes
+      });
       
       const { createClient } = await import('jsr:@supabase/supabase-js@2');
       const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
+
+      // Build detailed reason
+      const reasons = [];
+      if (triggeredKeywords.length > 0) reasons.push(`keywords: ${triggeredKeywords.join(', ')}`);
+      if (triggeredEmojis.length > 0) reasons.push(`emojis: ${triggeredEmojis.join(', ')}`);
+      if (triggeredEmojiCodes.length > 0) reasons.push(`emoji codes: ${triggeredEmojiCodes.join(', ')}`);
       
       // Log to database
       await supabase.from('safety_violations_log').insert({
@@ -213,18 +284,24 @@ Deno.serve(async (req) => {
         goal_category: payload.category,
         motivation: payload.motivation,
         barriers: `${payload.barrier1}, ${payload.barrier2}`,
-        triggered_keywords: triggeredKeywords,
-        violation_reason: `Explicit dangerous keywords: ${triggeredKeywords.join(', ')}`
+        triggered_keywords: [...triggeredKeywords, ...triggeredEmojis, ...triggeredEmojiCodes],
+        violation_reason: `Triggered: ${reasons.join(' | ')}`
       });
       
       // Notify compliance & supporter
-      await notifySafetyViolation(supabase, userId, payload.goalTitle, 'layer_1_keywords', triggeredKeywords.join(', '));
+      await notifySafetyViolation(supabase, userId, payload.goalTitle, 'layer_1_keywords', reasons.join(' | '));
       
       return new Response(
         JSON.stringify({ 
           error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
           safety_violation: true,
-          no_retry: true
+          no_retry: true,
+          details: 'Content includes inappropriate keywords, emojis, or coded language.',
+          triggered: {
+            keywords: triggeredKeywords.length > 0,
+            emojis: triggeredEmojis.length > 0,
+            emojiCodes: triggeredEmojiCodes.length > 0
+          }
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
