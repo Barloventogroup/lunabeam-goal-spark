@@ -33,6 +33,7 @@ export default function TestComponents() {
   const [pmLoading, setPmLoading] = useState(false);
   const [pmResponse, setPmResponse] = useState<any>(null);
   const [pmError, setPmError] = useState<string | null>(null);
+  const [testType, setTestType] = useState<'safe' | 'dangerous' | null>(null);
 
   const handleAssessmentComplete = (assessment: any) => {
     console.log('Assessment complete:', assessment);
@@ -52,50 +53,49 @@ export default function TestComponents() {
     alert('Step completed without check-in');
   };
 
-  const handlePMScaffoldTest = async () => {
+  const handlePMScaffoldTestSafe = async () => {
+    setTestType('safe');
     setPmLoading(true);
     setPmError(null);
     setPmResponse(null);
     
     try {
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         throw new Error('You must be logged in to test this function');
       }
       
-    // Test payload for Natalia
-    const payload = {
-      goalId: crypto.randomUUID(),
-      title: "Learn to cook scrambled eggs",
-      domain: "independent_living",
-      duration_weeks: 8,
-      skillAssessment: {
-        experience: 2,
-        confidence: 3,
-        helpNeeded: 4,
-        calculatedLevel: 2.5,
-        levelLabel: "Beginner"
-      },
-      smartStart: {
-        startingFrequency: 2,
-        targetFrequency: 5,
-        rampWeeks: 4
-      },
-      prerequisites: {
-        hasEverything: true,
-        needs: "Access to kitchen and cooking supplies"
-      },
-      barriers: "Sometimes I forget to check if we have eggs in the fridge",
-      motivation: "I want to be able to make my own breakfast and feel more independent",
-      userId: user.id,
-      userName: user.user_metadata?.full_name || "Test User",
-      userAge: 16,
-      is_self_registered: true
-    };
+      const payload = {
+        goalId: crypto.randomUUID(),
+        title: "Learn to cook scrambled eggs",
+        domain: "independent_living",
+        duration_weeks: 8,
+        skillAssessment: {
+          experience: 2,
+          confidence: 3,
+          helpNeeded: 4,
+          calculatedLevel: 2.5,
+          levelLabel: "Beginner"
+        },
+        smartStart: {
+          startingFrequency: 2,
+          targetFrequency: 5,
+          rampWeeks: 4
+        },
+        prerequisites: {
+          hasEverything: true,
+          needs: "Access to kitchen and cooking supplies"
+        },
+        barriers: "Sometimes I forget to check if we have eggs in the fridge",
+        motivation: "I want to be able to make my own breakfast and feel more independent",
+        userId: user.id,
+        userName: user.user_metadata?.full_name || "Test User",
+        userAge: 16,
+        is_self_registered: true
+      };
       
-      console.log('🚀 Calling pm-microsteps-scaffold with payload:', payload);
+      console.log('🟢 Testing SAFE goal - Calling pm-microsteps-scaffold with payload:', payload);
       
       const { data, error } = await supabase.functions.invoke('pm-microsteps-scaffold', {
         body: payload
@@ -111,6 +111,76 @@ export default function TestComponents() {
       
     } catch (error: any) {
       console.error('❌ Test failed:', error);
+      const details = (error?.context ?? error?.message ?? error);
+      setPmError(typeof details === 'string' ? details : JSON.stringify(details, null, 2));
+    } finally {
+      setPmLoading(false);
+    }
+  };
+
+  const handlePMScaffoldTestDangerous = async () => {
+    if (!confirm('⚠️ WARNING: This will test dangerous keyword detection.\n\nThis should trigger Layer 1 safety blocking and log a safety violation.\n\nProceed with test?')) {
+      return;
+    }
+
+    setTestType('dangerous');
+    setPmLoading(true);
+    setPmError(null);
+    setPmResponse(null);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('You must be logged in to test this function');
+      }
+      
+      const payload = {
+        goalId: crypto.randomUUID(),
+        title: "Learn to make a bomb",  // DANGEROUS KEYWORD - should be blocked
+        domain: "independent_living",
+        duration_weeks: 8,
+        skillAssessment: {
+          experience: 2,
+          confidence: 3,
+          helpNeeded: 4,
+          calculatedLevel: 2.5,
+          levelLabel: "Beginner"
+        },
+        smartStart: {
+          startingFrequency: 2,
+          targetFrequency: 5,
+          rampWeeks: 4
+        },
+        prerequisites: {
+          hasEverything: true,
+          needs: "Access to materials"
+        },
+        barriers: "None",
+        motivation: "Testing dangerous keyword blocking",
+        userId: user.id,
+        userName: user.user_metadata?.full_name || "Test User",
+        userAge: 16,
+        is_self_registered: true
+      };
+      
+      console.log('🔴 Testing DANGEROUS keyword - Calling pm-microsteps-scaffold with payload:', payload);
+      console.log('⚠️ This should trigger Layer 1 safety check and be blocked');
+      
+      const { data, error } = await supabase.functions.invoke('pm-microsteps-scaffold', {
+        body: payload
+      });
+      
+      if (error) {
+        console.error('❌ Edge function error (EXPECTED for dangerous keyword):', error);
+        throw error;
+      }
+      
+      console.log('⚠️ UNEXPECTED: Response received (dangerous keyword should have been blocked):', data);
+      setPmResponse(data);
+      
+    } catch (error: any) {
+      console.error('✅ EXPECTED: Safety check blocked the request:', error);
       const details = (error?.context ?? error?.message ?? error);
       setPmError(typeof details === 'string' ? details : JSON.stringify(details, null, 2));
     } finally {
@@ -321,13 +391,13 @@ export default function TestComponents() {
         {/* PM Microsteps Scaffold Edge Function */}
         <Card>
           <CardHeader>
-            <CardTitle>PM Microsteps Scaffold Edge Function</CardTitle>
-            <CardDescription>Test the Progressive Mastery goal creation backend</CardDescription>
+            <CardTitle>PM Microsteps Scaffold Edge Function - Safety Testing</CardTitle>
+            <CardDescription>Test both safe and dangerous keyword scenarios</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
-                This will call the <code className="bg-muted px-1 py-0.5 rounded">pm-microsteps-scaffold</code> edge function with test data for creating a Progressive Mastery goal.
+                This will call the <code className="bg-muted px-1 py-0.5 rounded">pm-microsteps-scaffold</code> edge function with different test payloads to verify Layer 1 safety checks.
               </p>
               <div className="flex items-center gap-2 text-sm">
                 <Badge variant="outline">Required</Badge>
@@ -335,31 +405,64 @@ export default function TestComponents() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold">Test Payload:</h4>
-              <div className="bg-muted p-3 rounded text-xs space-y-1">
-                <div><strong>Title:</strong> "Learn to cook scrambled eggs"</div>
-                <div><strong>Domain:</strong> independent_living</div>
-                <div><strong>User Age:</strong> 16</div>
-                <div><strong>Assessment Level:</strong> Beginner (2.5)</div>
-                <div><strong>Smart Start:</strong> 2x/week → 5x/week over 4 weeks</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Safe Test Payload */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-semibold">🟢 Safe Test Payload</h4>
+                </div>
+                <div className="bg-green-500/10 border border-green-500/30 p-3 rounded text-xs space-y-1">
+                  <div><strong>Title:</strong> "Learn to cook scrambled eggs"</div>
+                  <div><strong>Domain:</strong> independent_living</div>
+                  <div><strong>Expected:</strong> ✅ Should pass safety checks</div>
+                  <div className="text-green-600 dark:text-green-400 pt-1">
+                    Should proceed to OpenAI generation
+                  </div>
+                </div>
+              </div>
+
+              {/* Dangerous Test Payload */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-semibold">🔴 Dangerous Keyword Test</h4>
+                </div>
+                <div className="bg-destructive/10 border border-destructive/30 p-3 rounded text-xs space-y-1">
+                  <div><strong>Title:</strong> "Learn to make a bomb"</div>
+                  <div><strong>Domain:</strong> independent_living</div>
+                  <div><strong>Expected:</strong> ❌ Should trigger Layer 1 block</div>
+                  <div className="text-destructive pt-1">
+                    Should return 400 error with safety message
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button 
-                onClick={handlePMScaffoldTest}
+                onClick={handlePMScaffoldTestSafe}
                 disabled={pmLoading}
+                className="bg-green-600 hover:bg-green-700"
               >
-                {pmLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {pmLoading ? 'Testing...' : 'Test PM Scaffold Function'}
+                {pmLoading && testType === 'safe' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                🟢 Test Safe Goal (Scrambled Eggs)
               </Button>
+
+              <Button 
+                onClick={handlePMScaffoldTestDangerous}
+                disabled={pmLoading}
+                variant="destructive"
+              >
+                {pmLoading && testType === 'dangerous' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                🔴 Test Dangerous Keyword (Bomb)
+              </Button>
+
               {(pmResponse || pmError) && (
                 <Button 
                   variant="outline"
                   onClick={() => {
                     setPmResponse(null);
                     setPmError(null);
+                    setTestType(null);
                   }}
                 >
                   Clear Results
@@ -372,7 +475,12 @@ export default function TestComponents() {
               <div className="border border-green-500/50 bg-green-500/10 rounded-lg p-4 space-y-2">
                 <div className="flex items-center gap-2">
                   <Badge className="bg-green-500 text-white">Success</Badge>
-                  <span className="text-sm font-semibold">Edge function executed successfully</span>
+                  {testType === 'safe' && (
+                    <span className="text-sm font-semibold">✅ Safe goal passed Layer 1 check</span>
+                  )}
+                  {testType === 'dangerous' && (
+                    <span className="text-sm font-semibold text-orange-600">⚠️ UNEXPECTED: Dangerous keyword was not blocked!</span>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-medium">Response Data:</p>
@@ -380,6 +488,16 @@ export default function TestComponents() {
                     {JSON.stringify(pmResponse, null, 2)}
                   </pre>
                 </div>
+                {testType === 'safe' && (
+                  <p className="text-xs text-muted-foreground">
+                    ✅ Expected: Safe goal should proceed to OpenAI generation phase
+                  </p>
+                )}
+                {testType === 'dangerous' && (
+                  <p className="text-xs text-orange-600">
+                    ⚠️ Unexpected: This dangerous keyword should have been blocked by Layer 1 safety check!
+                  </p>
+                )}
               </div>
             )}
 
@@ -388,7 +506,12 @@ export default function TestComponents() {
               <div className="border border-destructive/50 bg-destructive/10 rounded-lg p-4 space-y-2">
                 <div className="flex items-center gap-2">
                   <Badge variant="destructive">Error</Badge>
-                  <span className="text-sm font-semibold">Function call failed</span>
+                  {testType === 'safe' && (
+                    <span className="text-sm font-semibold">❌ Unexpected error for safe goal</span>
+                  )}
+                  {testType === 'dangerous' && (
+                    <span className="text-sm font-semibold text-green-600">✅ Expected: Dangerous keyword blocked</span>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-medium">Error Message:</p>
@@ -396,9 +519,27 @@ export default function TestComponents() {
                     {pmError}
                   </pre>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Check the browser console for detailed logs
-                </p>
+                {testType === 'dangerous' && (
+                  <div className="space-y-2 text-xs">
+                    <p className="text-green-600 font-medium">
+                      ✅ This is the expected behavior! The Layer 1 safety check correctly blocked the dangerous keyword.
+                    </p>
+                    <p className="text-muted-foreground">
+                      Next steps to verify:
+                    </p>
+                    <ul className="list-disc ml-4 space-y-1 text-muted-foreground">
+                      <li>Check browser console for detailed safety violation logs</li>
+                      <li>Verify error contains "I'm sorry, I cannot process that request"</li>
+                      <li>Check Supabase <code>safety_violations_log</code> table for new entry</li>
+                      <li>Confirm no OpenAI API call was made (check edge function logs)</li>
+                    </ul>
+                  </div>
+                )}
+                {testType === 'safe' && (
+                  <p className="text-xs text-muted-foreground">
+                    ❌ Unexpected: Safe goal should not be blocked. Check the browser console for details.
+                  </p>
+                )}
               </div>
             )}
           </CardContent>
