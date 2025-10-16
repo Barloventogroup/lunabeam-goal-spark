@@ -65,33 +65,34 @@ export default function TestComponents() {
         throw new Error('You must be logged in to test this function');
       }
       
-      // Test payload for Natalia
-      const payload = {
-        title: "Learn to cook scrambled eggs",
-        domain: "independent_living",
-        assessmentData: {
-          experience: 2,
-          confidence: 3,
-          helpNeeded: 4,
-          calculatedLevel: 2.5,
-          levelLabel: "Beginner"
-        },
-        smartStart: {
-          startingFrequency: 2,
-          targetFrequency: 5,
-          rampWeeks: 4
-        },
-        prerequisites: {
-          hasEverything: true,
-          needs: "Access to kitchen and cooking supplies"
-        },
-        barriers: "Sometimes I forget to check if we have eggs in the fridge",
-        motivation: "I want to be able to make my own breakfast and feel more independent",
-        userId: user.id,
-        userName: user.user_metadata?.full_name || "Test User",
-        userAge: 16,
-        is_self_registered: true
-      };
+    // Test payload for Natalia
+    const payload = {
+      title: "Learn to cook scrambled eggs",
+      domain: "independent_living",
+      duration_weeks: 8,
+      assessmentData: {
+        experience: 2,
+        confidence: 3,
+        helpNeeded: 4,
+        calculatedLevel: 2.5,
+        levelLabel: "Beginner"
+      },
+      smartStart: {
+        startingFrequency: 2,
+        targetFrequency: 5,
+        rampWeeks: 4
+      },
+      prerequisites: {
+        hasEverything: true,
+        needs: "Access to kitchen and cooking supplies"
+      },
+      barriers: "Sometimes I forget to check if we have eggs in the fridge",
+      motivation: "I want to be able to make my own breakfast and feel more independent",
+      userId: user.id,
+      userName: user.user_metadata?.full_name || "Test User",
+      userAge: 16,
+      is_self_registered: true
+    };
       
       console.log('🚀 Calling pm-microsteps-scaffold with payload:', payload);
       
