@@ -746,6 +746,112 @@ async function callAIWithRetry(
   throw lastError || new Error('Step generation failed after all retries');
 }
 
+/**
+ * Fallback to Lovable AI Gateway if OpenAI fails
+ * Uses Google Gemini 2.5 Flash model for step generation
+ */
+async function callLovableAIWithRetry(
+  payload: PMGoalCreationInput,
+  retryGuidance: string = ''
+): Promise<GeneratedStep[]> {
+  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+  if (!lovableApiKey) {
+    throw new Error('LOVABLE_API_KEY not configured');
+  }
+  
+  const systemPrompt = buildPMSystemPrompt(payload);
+  const userPrompt = retryGuidance 
+    ? `${retryGuidance}\n\nNow generate the steps following all requirements.`
+    : `Generate ${payload.duration_weeks > 8 ? '10-12' : '8-10'} Progressive Mastery steps for this goal.`;
+  
+  let lastError: Error | null = null;
+  
+  for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
+    console.log(`🔄 Lovable AI fallback attempt ${attempt}/${MAX_GENERATION_ATTEMPTS}`);
+    const attemptStart = Date.now();
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+      
+      console.log('📤 Calling Lovable AI Gateway (fallback)...');
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ]
+        }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      const attemptDuration = Date.now() - attemptStart;
+      console.log(`⏱️ Lovable AI attempt ${attempt} took ${attemptDuration}ms`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Lovable AI error:', response.status, errorText);
+        
+        if (response.status === 429 || response.status === 402) {
+          lastError = new Error('Lovable AI rate limit or quota exceeded');
+          if (attempt < MAX_GENERATION_ATTEMPTS) {
+            const backoffDelay = Math.pow(2, attempt - 1) * 1000;
+            console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, backoffDelay));
+            continue;
+          }
+        }
+        
+        throw new Error(`Lovable AI error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      
+      if (!content) {
+        throw new Error('Lovable AI returned empty response');
+      }
+      
+      console.log('📥 Lovable AI response received, parsing JSON...');
+      const parsed: GenerationResponse = JSON.parse(content);
+      
+      if (!parsed.steps || !Array.isArray(parsed.steps)) {
+        throw new Error('Lovable AI response missing "steps" array');
+      }
+      
+      console.log(`✅ Lovable AI fallback generated ${parsed.steps.length} steps on attempt ${attempt}`);
+      return parsed.steps;
+      
+    } catch (error: any) {
+      const attemptDuration = Date.now() - attemptStart;
+      
+      if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+        console.error(`❌ Lovable AI attempt ${attempt} timed out after ${attemptDuration}ms`);
+        lastError = new Error(`Lovable AI timed out after ${AI_TIMEOUT_MS / 1000}s`);
+      } else {
+        console.error(`❌ Lovable AI attempt ${attempt} failed:`, error.message);
+        lastError = error;
+      }
+      
+      if (attempt < MAX_GENERATION_ATTEMPTS) {
+        const backoffDelay = Math.pow(2, attempt - 1) * 1000;
+        console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+      }
+    }
+  }
+  
+  console.error(`❌ All ${MAX_GENERATION_ATTEMPTS} Lovable AI attempts failed`);
+  throw lastError || new Error('Lovable AI fallback failed after all retries');
+}
+
 // Safety Violation Notification Helper
 async function notifySafetyViolation(
   supabase: any,
@@ -1213,13 +1319,14 @@ serve(async (req) => {
 
       console.log('✅ Layer 1 safety check passed');
 
-      // 8. Generate steps using OpenAI API with retry logic
+      // 8. Generate steps using OpenAI API with Lovable AI fallback
       console.log('🤖 Starting AI step generation with Layer 2 safety...');
       const generationStart = Date.now();
 
       let generatedSteps: GeneratedStep[] | null = null;
       
       try {
+        console.log('🤖 Attempting OpenAI generation (primary)...');
         const rawSteps = await callAIWithRetry(payload);
         
         // Check for Layer 2 safety signal
@@ -1232,31 +1339,67 @@ serve(async (req) => {
         const validation = validateBasicFormat(rawSteps, payload);
         
         if (validation.valid) {
-          console.log(`✅ Validation passed - generated ${rawSteps.length} steps`);
+          console.log(`✅ OpenAI validation passed - generated ${rawSteps.length} steps`);
           generatedSteps = rawSteps;
         } else {
-          console.error(`❌ Validation failed:`, validation.errors);
+          console.error(`❌ OpenAI validation failed:`, validation.errors);
           console.warn('⚠️ Returning steps despite validation errors to avoid blocking user');
           generatedSteps = rawSteps; // Allow through with warnings
         }
-      } catch (error: any) {
-        console.error(`❌ Step generation failed:`, error.message);
+      } catch (openaiError: any) {
+        console.warn('⚠️ OpenAI failed, trying Lovable AI Gateway fallback...', openaiError.message);
+        
+        try {
+          const rawSteps = await callLovableAIWithRetry(payload);
+          
+          // Check for Layer 2 safety signal
+          if (containsSafetySignal(rawSteps)) {
+            console.error('⚠️ Layer 2 safety violation detected in Lovable AI steps');
+            return await handleLayer2Violation(supabase, userId, payload, JSON.stringify(rawSteps));
+          }
+          
+          // Validate step format
+          const validation = validateBasicFormat(rawSteps, payload);
+          
+          if (validation.valid) {
+            console.log(`✅ Lovable AI validation passed - generated ${rawSteps.length} steps`);
+            generatedSteps = rawSteps;
+          } else {
+            console.warn('⚠️ Lovable AI validation warnings:', validation.errors);
+            generatedSteps = rawSteps; // Allow through with warnings
+          }
+          
+        } catch (lovableError: any) {
+          console.error('❌ Both OpenAI and Lovable AI failed:', {
+            openai: openaiError.message,
+            lovable: lovableError.message
+          });
+          
+          // Return error - frontend will use deterministic fallback
+          return new Response(
+            JSON.stringify({ 
+              error: 'AI generation temporarily unavailable. Please try again.',
+              code: 'AI_GENERATION_FAILED',
+              useFallback: true
+            }),
+            { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+      
+      // Ensure we have steps before continuing
+      if (!generatedSteps) {
+        console.error(`❌ Step generation failed: No steps generated`);
         
         // Return friendly error for user
         return new Response(
           JSON.stringify({ 
-            error: error.message?.includes('Payment required') 
-              ? 'AI credits exhausted. Please add credits to continue generating steps.'
-              : error.message?.includes('Rate limit')
-              ? 'AI rate limit reached. Please wait a moment and try again.'
-              : 'Step generation failed. Please try again in a moment.',
-            code: error.message?.includes('Payment') ? 'PAYMENT_REQUIRED' 
-                : error.message?.includes('Rate limit') ? 'RATE_LIMIT'
-                : 'GENERATION_FAILED',
+            error: 'Step generation failed. Please try again in a moment.',
+            code: 'GENERATION_FAILED',
             useFallback: true // Signal frontend to use fallback generator
           }),
           { 
-            status: error.message?.includes('Payment') ? 402 : 500, 
+            status: 500, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
           }
         );
