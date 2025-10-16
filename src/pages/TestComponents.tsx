@@ -33,7 +33,7 @@ export default function TestComponents() {
   const [pmLoading, setPmLoading] = useState(false);
   const [pmResponse, setPmResponse] = useState<any>(null);
   const [pmError, setPmError] = useState<string | null>(null);
-  const [testType, setTestType] = useState<'safe' | 'dangerous' | null>(null);
+  const [testType, setTestType] = useState<'safe' | 'dangerous' | 'subtle' | null>(null);
 
   const handleAssessmentComplete = (assessment: any) => {
     console.log('Assessment complete:', assessment);
@@ -181,6 +181,77 @@ export default function TestComponents() {
       
     } catch (error: any) {
       console.error('✅ EXPECTED: Safety check blocked the request:', error);
+      const details = (error?.context ?? error?.message ?? error);
+      setPmError(typeof details === 'string' ? details : JSON.stringify(details, null, 2));
+    } finally {
+      setPmLoading(false);
+    }
+  };
+
+  const handlePMScaffoldTestSubtle = async () => {
+    if (!confirm('🟡 WARNING: This will test subtle dangerous content in the barriers field.\n\nTitle appears safe but barriers contain "sell drugs".\nThis should trigger Layer 1 safety blocking.\n\nProceed with test?')) {
+      return;
+    }
+
+    setTestType('subtle');
+    setPmLoading(true);
+    setPmError(null);
+    setPmResponse(null);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('You must be logged in to test this function');
+      }
+      
+      const payload = {
+        goalId: crypto.randomUUID(),
+        title: "Make money online",  // Safe-looking title
+        domain: "employment",
+        duration_weeks: 8,
+        skillAssessment: {
+          experience: 2,
+          confidence: 3,
+          helpNeeded: 4,
+          calculatedLevel: 2.5,
+          levelLabel: "Beginner"
+        },
+        smartStart: {
+          startingFrequency: 2,
+          targetFrequency: 5,
+          rampWeeks: 4
+        },
+        prerequisites: {
+          hasEverything: true,
+          needs: "Internet access"
+        },
+        barriers: "I need to sell drugs to make ends meet",  // DANGEROUS KEYWORD in barriers field
+        motivation: "I want to improve my financial situation",
+        userId: user.id,
+        userName: user.user_metadata?.full_name || "Test User",
+        userAge: 16,
+        is_self_registered: true
+      };
+      
+      console.log('🟡 Testing SUBTLE danger (barriers field) - Calling pm-microsteps-scaffold with payload:', payload);
+      console.log('⚠️ Title is safe but barriers contain dangerous keyword "sell drugs"');
+      console.log('🔍 This tests that Layer 1 scans ALL fields, not just the title');
+      
+      const { data, error } = await supabase.functions.invoke('pm-microsteps-scaffold', {
+        body: payload
+      });
+      
+      if (error) {
+        console.error('❌ Edge function error (EXPECTED for dangerous keyword in barriers):', error);
+        throw error;
+      }
+      
+      console.log('⚠️ UNEXPECTED: Response received (dangerous keyword in barriers should have been blocked):', data);
+      setPmResponse(data);
+      
+    } catch (error: any) {
+      console.error('✅ EXPECTED: Safety check blocked the request (barriers field scanned):', error);
       const details = (error?.context ?? error?.message ?? error);
       setPmError(typeof details === 'string' ? details : JSON.stringify(details, null, 2));
     } finally {
@@ -405,7 +476,7 @@ export default function TestComponents() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Safe Test Payload */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -435,6 +506,22 @@ export default function TestComponents() {
                   </div>
                 </div>
               </div>
+
+              {/* Subtle Danger Test Payload */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-semibold">🟡 Subtle Danger Test</h4>
+                </div>
+                <div className="bg-yellow-500/10 border border-yellow-500/30 p-3 rounded text-xs space-y-1">
+                  <div><strong>Title:</strong> "Make money online" (appears safe)</div>
+                  <div><strong>Barriers:</strong> "I need to sell drugs..." ⚠️</div>
+                  <div><strong>Domain:</strong> employment</div>
+                  <div><strong>Expected:</strong> ❌ Should trigger Layer 1 block</div>
+                  <div className="text-yellow-700 dark:text-yellow-400 pt-1">
+                    Tests field-level scanning beyond title
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-2 flex-wrap">
@@ -454,6 +541,16 @@ export default function TestComponents() {
               >
                 {pmLoading && testType === 'dangerous' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 🔴 Test Dangerous Keyword (Bomb)
+              </Button>
+
+              <Button 
+                onClick={handlePMScaffoldTestSubtle}
+                disabled={pmLoading}
+                variant="outline"
+                className="border-yellow-600 text-yellow-700 hover:bg-yellow-50 dark:text-yellow-400 dark:hover:bg-yellow-950"
+              >
+                {pmLoading && testType === 'subtle' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                🟡 Test Subtle Danger (Barriers Field)
               </Button>
 
               {(pmResponse || pmError) && (
@@ -479,7 +576,10 @@ export default function TestComponents() {
                     <span className="text-sm font-semibold">✅ Safe goal passed Layer 1 check</span>
                   )}
                   {testType === 'dangerous' && (
-                    <span className="text-sm font-semibold text-orange-600">⚠️ UNEXPECTED: Dangerous keyword was not blocked!</span>
+                    <span className="text-sm font-semibold text-orange-600">⚠️ UNEXPECTED: Dangerous keyword in title was not blocked!</span>
+                  )}
+                  {testType === 'subtle' && (
+                    <span className="text-sm font-semibold text-orange-600">⚠️ UNEXPECTED: Dangerous keyword in barriers was not blocked!</span>
                   )}
                 </div>
                 <div className="space-y-1">
@@ -495,7 +595,13 @@ export default function TestComponents() {
                 )}
                 {testType === 'dangerous' && (
                   <p className="text-xs text-orange-600">
-                    ⚠️ Unexpected: This dangerous keyword should have been blocked by Layer 1 safety check!
+                    ⚠️ Unexpected: This dangerous keyword in title should have been blocked by Layer 1 safety check!
+                  </p>
+                )}
+                {testType === 'subtle' && (
+                  <p className="text-xs text-orange-600">
+                    ⚠️ Unexpected: This dangerous keyword in barriers field should have been blocked by Layer 1 safety check!
+                    <br/>Layer 1 must scan ALL text fields, not just the title.
                   </p>
                 )}
               </div>
@@ -510,7 +616,10 @@ export default function TestComponents() {
                     <span className="text-sm font-semibold">❌ Unexpected error for safe goal</span>
                   )}
                   {testType === 'dangerous' && (
-                    <span className="text-sm font-semibold text-green-600">✅ Expected: Dangerous keyword blocked</span>
+                    <span className="text-sm font-semibold text-green-600">✅ Expected: Dangerous keyword in title blocked</span>
+                  )}
+                  {testType === 'subtle' && (
+                    <span className="text-sm font-semibold text-green-600">✅ Expected: Dangerous keyword in barriers blocked</span>
                   )}
                 </div>
                 <div className="space-y-1">
@@ -522,7 +631,7 @@ export default function TestComponents() {
                 {testType === 'dangerous' && (
                   <div className="space-y-2 text-xs">
                     <p className="text-green-600 font-medium">
-                      ✅ This is the expected behavior! The Layer 1 safety check correctly blocked the dangerous keyword.
+                      ✅ This is the expected behavior! The Layer 1 safety check correctly blocked the dangerous keyword in title.
                     </p>
                     <p className="text-muted-foreground">
                       Next steps to verify:
@@ -532,6 +641,22 @@ export default function TestComponents() {
                       <li>Verify error contains "I'm sorry, I cannot process that request"</li>
                       <li>Check Supabase <code>safety_violations_log</code> table for new entry</li>
                       <li>Confirm no OpenAI API call was made (check edge function logs)</li>
+                    </ul>
+                  </div>
+                )}
+                {testType === 'subtle' && (
+                  <div className="space-y-2 text-xs">
+                    <p className="text-green-600 font-medium">
+                      ✅ This confirms Layer 1 scans ALL fields, not just the title!
+                    </p>
+                    <p className="text-muted-foreground">
+                      This test verifies field-level scanning:
+                    </p>
+                    <ul className="list-disc ml-4 space-y-1 text-muted-foreground">
+                      <li>Expected triggered keywords: ['sell drugs'] or ['drugs']</li>
+                      <li>Check Supabase <code>safety_violations_log</code> table shows both <code>goal_title</code> AND <code>barriers</code> fields were scanned</li>
+                      <li>Verify the title "Make money online" was logged (shows it checks safe-looking titles too)</li>
+                      <li>This mimics real-world scenarios where users might hide dangerous content in other fields</li>
                     </ul>
                   </div>
                 )}
