@@ -95,6 +95,9 @@ verify_jwt = true
 [functions.generate-profile-summary]
 verify_jwt = false
 
+[functions.pm-microsteps-scaffold]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 inspector_port = 8083
