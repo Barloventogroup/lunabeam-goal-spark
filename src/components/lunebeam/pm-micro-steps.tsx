@@ -22,6 +22,7 @@ interface PMStepsProps {
 
 export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
+  const value = data.motivation || '';
   
   return (
     <QuestionScreen
@@ -30,13 +31,14 @@ export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, g
       goalTitle={data.goalTitle}
       questionIcon="💭"
       questionText={`Why does this matter to ${name}?`}
-      helpText="Understanding motivation helps maintain commitment when practice gets tough."
+      helpText="Understanding motivation helps maintain commitment when practice gets tough. Please write at least 10 characters."
       inputType="textarea"
-      value={data.motivation || ''}
+      value={value}
       onChange={(value) => updateData({ motivation: value })}
       onBack={goBack}
       onContinue={goNext}
-      onSkip={goNext}
+      required
+      continueDisabled={value.trim().length < 10}
       hideHeader
       hideFooter
     />

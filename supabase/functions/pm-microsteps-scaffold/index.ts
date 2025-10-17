@@ -305,20 +305,15 @@ async function handleLayer2Violation(
  * Get domain-specific guidance for PM step generation
  */
 function getDomainGuidance(domain: string, skillLevel: number): string {
-  const levelLabel = skillLevel <= 2 ? 'emerging' : skillLevel <= 4 ? 'developing' : 'advancing';
+  const lv = skillLevel <= 2 ? 'emerging' : skillLevel <= 4 ? 'developing' : 'advancing';
   
   const domainGuidelines: Record<string, string> = {
-    independent_living: `**Independent Living (Lv ${skillLevel}):** Daily skills (cooking, cleaning, hygiene, money). ${levelLabel === 'emerging' ? 'Small steps, high support, checklists' : levelLabel === 'developing' ? 'Moderate independence, decision-making' : 'Full independence, problem-solving'}. Safety-first for cooking/chemicals/money. Reduce support over time.`,
-    
-    employment: `**Employment (Lv ${skillLevel}):** Career skills & readiness. ${levelLabel === 'emerging' ? 'Exploration, role-play, guided practice' : levelLabel === 'developing' ? 'Real applications (interviews, resume), professional communication' : 'Career advancement, networking, leadership'}. Progression: Explore → Prep → Apply → Interview → Start → Retain.`,
-    
-    education: `**Education (Lv ${skillLevel}):** Study habits & learning strategies. ${levelLabel === 'emerging' ? 'Foundation skills, visual aids, routines' : levelLabel === 'developing' ? 'Time management, note-taking, independent study' : 'Research, critical thinking, self-directed'}. Academic integrity required. Encourage self-advocacy.`,
-    
-    social_skills: `**Social Skills (Lv ${skillLevel}):** Communication & relationships. ${levelLabel === 'emerging' ? 'Greetings, turn-taking, scripts, role-play' : levelLabel === 'developing' ? 'Conversation, social cues, group dynamics, reflection' : 'Complex situations, conflict resolution, advocacy, leadership'}. Neurodiversity-affirming. Safety: consent, boundaries.`,
-    
-    health: `**Health (Lv ${skillLevel}):** Physical & mental wellness. ${levelLabel === 'emerging' ? 'Simple routines (brushing, meds with reminders, hygiene)' : levelLabel === 'developing' ? 'Consistent habits, self-monitoring (sleep logs, mood tracking)' : 'Independent management (scheduling appointments, medical advocacy)'}. Verify with healthcare providers. Normalize seeking support.`,
-    
-    recreation_fun: `**Recreation (Lv ${skillLevel}):** Hobbies & leisure. ${levelLabel === 'emerging' ? 'Simple, structured activities for enjoyment' : levelLabel === 'developing' ? 'Balance solo/group, try new things with support' : 'Independent planning, social leadership'}. Joy-focused, not just skill-building. Include adaptive equipment if needed.`
+    independent_living: `IL(${skillLevel}): ${lv === 'emerging' ? 'Small steps, checklists, high support' : lv === 'developing' ? 'Moderate independence' : 'Full autonomy'}`,
+    employment: `Employ(${skillLevel}): ${lv === 'emerging' ? 'Explore → role-play' : lv === 'developing' ? 'Apply → interview' : 'Advance → network'}`,
+    education: `Edu(${skillLevel}): ${lv === 'emerging' ? 'Routines, visual aids' : lv === 'developing' ? 'Time mgmt, notes' : 'Research, self-directed'}`,
+    social_skills: `Social(${skillLevel}): ${lv === 'emerging' ? 'Greetings, scripts' : lv === 'developing' ? 'Groups, cues' : 'Leadership, advocacy'}`,
+    health: `Health(${skillLevel}): ${lv === 'emerging' ? 'Simple habits, reminders' : lv === 'developing' ? 'Self-monitoring' : 'Independent mgmt'}`,
+    recreation_fun: `Rec(${skillLevel}): ${lv === 'emerging' ? 'Structured, simple' : lv === 'developing' ? 'Solo/group balance' : 'Lead activities'}`
   };
   
   return domainGuidelines[domain] || domainGuidelines.independent_living;
@@ -331,35 +326,33 @@ function buildPMSystemPrompt(input: PMGoalCreationInput): string {
   const domainGuidance = getDomainGuidance(input.domain, input.skillAssessment.calculatedLevel);
   const motivation = input.motivation || "Learning and improving this skill";
   
-  return `Expert transition skills coach for neurodivergent learners (ages 14-26). Generate personalized Progressive Mastery practice steps.
+  return `Progressive Mastery coach (ages 14-26). Generate 6-8 personalized steps.
 
-# SAFETY (Layer 2)
-**REFUSE** goals involving: violence, self-harm, illegal activities, sexual content, dangerous activities, harassment, content inappropriate for ages 14-26.
-**If unsafe, return:** {"steps": [{"title": "[SAFETY_VIOLATION_SIGNAL]", "description": "[SAFETY_VIOLATION_SIGNAL]", "estimatedDuration": 0, "supportLevel": "high", "difficulty": 1, "weekNumber": "Week 1", "phase": 1}]}
+**SAFETY**: Refuse violence, self-harm, illegal, sexual, dangerous, harassment, inappropriate content.
+If unsafe: return [{"title": "[SAFETY_VIOLATION_SIGNAL]", "description": "[SAFETY_VIOLATION_SIGNAL]", "estimatedDuration": 0, "supportLevel": "high", "difficulty": 1, "weekNumber": "Week 1", "phase": 1}]
 
-# CONTEXT
-**Goal:** ${input.title} | **Domain:** ${input.domain} | **Duration:** ${input.duration_weeks}w | **Skill:** ${input.skillAssessment.calculatedLevel}/6 (${input.skillAssessment.levelLabel})
-**Frequency:** ${input.smartStart.startingFrequency}x/w → ${input.smartStart.targetFrequency}x/w (ramp: ${input.smartStart.rampWeeks}w)
-**Motivation:** ${motivation}${input.barriers ? ` | **Barriers:** ${input.barriers}` : ''}${!input.prerequisites.hasEverything ? ` | **Prerequisites:** ${input.prerequisites.needs}` : ''}${input.teachingHelper ? ` | **Helper:** ${input.teachingHelper.helperName}` : ''}
+**CONTEXT**
+Goal: ${input.title} | Domain: ${domainGuidance} | ${input.duration_weeks}w | Lv ${input.skillAssessment.calculatedLevel} (${input.skillAssessment.levelLabel})
+Frequency: ${input.smartStart.startingFrequency}→${input.smartStart.targetFrequency}x/w (${input.smartStart.rampWeeks}w ramp)
+Motivation: ${motivation}${input.barriers ? ` | Barriers: ${input.barriers}` : ''}${!input.prerequisites.hasEverything ? ` | Needs: ${input.prerequisites.needs}` : ''}${input.teachingHelper ? ` | Helper: ${input.teachingHelper.helperName}` : ''}
 
-${domainGuidance}
+**PHASES**
+1. Foundation (1-2w): HIGH support, 5-15min basics
+2. Guided (3-4w): MED-HIGH support, 15-30min practice
+3. Independence (5-6w): MED-LOW support, 30-45min
+4. Mastery (7+w): LOW support, full independence
 
-# FRAMEWORK
-Generate **6-8 steps** across 4 phases:
-1. **Foundation (Wks 1-2):** HIGH support, basic skills, safety, 5-15min
-2. **Guided (Wks 3-4):** MEDIUM-HIGH support, repetition, checklists, 15-30min
-3. **Independence (Wks 5-6):** MEDIUM-LOW support, variations, self-assessment, 30-45min
-4. **Mastery (Wks 7+):** LOW-MINIMAL support, full independence, new contexts
+**RULES**
+- Concrete & measurable (no "exercise more", use "walk 15min 3x/w")
+- Right-sized for skill level (Lv1: 2min tasks; Lv5: 20min)
+- Clear what/when/how
+- Address barriers directly
+- Sequential progression (no level jumps)
+- 60%+ steps reference "${input.title}"
+- No placeholders ([Name], [Goal])
 
-# REQUIREMENTS
-**Required fields:** title (10-80 chars, no placeholders), description (50-400 chars, specific), estimatedDuration (mins), supportLevel (high→none), difficulty (1-5, increasing), weekNumber, phase (1-4), prerequisites (array), safetyNotes (string|null), qualityIndicators (2-4 items), independenceIndicators (2-3 items), practiceCount
-**Quality:** 60%+ steps must reference "${input.title}". No placeholders ([Name], [Goal]). Specific actions only. Progressive difficulty.
-
-# OUTPUT
-JSON only (no markdown):
-{"steps": [{"title": "...", "description": "...", "estimatedDuration": 15, "supportLevel": "high", "difficulty": 1, "weekNumber": "Week 1", "phase": 1, "prerequisites": [], "safetyNotes": null, "qualityIndicators": ["..."], "independenceIndicators": ["..."], "practiceCount": 5}]}
-
-If unsafe: return SAFETY_VIOLATION_SIGNAL structure.`;
+**OUTPUT JSON**
+{"steps": [{"title": "...", "description": "...", "estimatedDuration": 15, "supportLevel": "high", "difficulty": 1, "weekNumber": "Week 1", "phase": 1, "prerequisites": [], "safetyNotes": null, "qualityIndicators": ["..."], "independenceIndicators": ["..."], "practiceCount": 5}]}`;
 }
 
 /**
@@ -689,7 +682,13 @@ async function callLovableAIWithRetry(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
-      console.log('📤 Calling Lovable AI Gateway (primary)...');
+      // Select model based on complexity
+      const skillLevel = payload.skillAssessment.calculatedLevel;
+      const isSimple = skillLevel <= 3 && payload.duration_weeks <= 8;
+      const selectedModel = isSimple ? 'google/gemini-2.5-flash-lite' : 'google/gemini-2.5-flash';
+      const maxTokens = isSimple ? 800 : 1200;
+      
+      console.log(`📤 Calling Lovable AI Gateway (${selectedModel}, max ${maxTokens} tokens)...`);
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -697,14 +696,14 @@ async function callLovableAIWithRetry(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: selectedModel,
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
           ],
           tools,
           tool_choice: { type: 'function', function: { name: 'generate_pm_steps' } },
-          max_completion_tokens: 1200
+          max_completion_tokens: maxTokens
         }),
         signal: controller.signal
       });
