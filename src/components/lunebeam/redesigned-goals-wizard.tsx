@@ -1506,13 +1506,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   duration: 5000
                 });
                 
+                // Add mode: 'sync' to force synchronous generation
+                const syncPayload = { ...pmPayload, mode: 'sync' };
+                console.log('[PM Wizard] Outbound payload with mode:', syncPayload.mode);
+                
                 const { data: syncData, error: syncError } = await supabase.functions.invoke('pm-microsteps-scaffold', {
-                  body: pmPayload
+                  body: syncPayload
                 });
                 
                 setIsGeneratingSteps(false);
                 
-                if (syncError || !syncData?.steps || syncData.steps.length === 0) {
+                // Defensive handling for queued status
+                if (syncData?.status === 'queued') {
+                  console.warn('⚠️ Received queued status in sync mode (unexpected)');
+                  toast({
+                    title: 'AI enhancing in background',
+                    description: 'Your goal is created. Practice steps will appear shortly.',
+                    duration: 4000
+                  });
+                  // Continue to goal detail page - no error
+                } else if (syncError || !syncData?.steps || syncData.steps.length === 0) {
                   console.error('❌ Sync AI generation failed:', syncError);
                   toast({
                     title: 'AI temporarily unavailable',
@@ -1520,55 +1533,27 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     variant: 'destructive'
                   });
                   throw new Error('AI generation failed');
-                }
-                
-                // Map and insert AI steps
-                const aiSteps = syncData.steps.map((step: any, index: number) => ({
-                  goal_id: createdGoal.id,
-                  title: step.title,
-                  notes: step.description || '',
-                  explainer: step.description || '',
-                  estimated_effort_min: step.estimatedDuration || 30,
-                  step_type: 'habit',
-                  status: 'not_started',
-                  order_index: index,
-                  is_planned: true,
-                  due_date: step.weekNumber ? 
-                    calculateStepDueDate(data.startDate, step.weekNumber) : 
-                    undefined,
-                  pm_metadata: {
-                    version: 1,
-                    source: 'pm-microsteps-scaffold',
-                    phase: step.phase,
-                    weekNumber: step.weekNumber,
-                    supportLevel: step.supportLevel,
-                    difficulty: step.difficulty,
-                    safetyNotes: step.safetyNotes,
-                    qualityIndicators: step.qualityIndicators,
-                    independenceIndicators: step.independenceIndicators,
-                    practiceCount: step.practiceCount,
-                    enhanced: true,
-                    modelUsed: syncData.metadata?.modelUsed,
-                    aiProvider: syncData.metadata?.aiProvider
+                } else {
+                  // Success: Fetch steps from DB (server should have inserted them)
+                  console.log(`[PM Wizard] AI returned ${syncData.steps.length} steps, fetching from DB...`);
+                  
+                  const fetchedSteps = await stepsService.getSteps(createdGoal.id);
+                  
+                  if (fetchedSteps.length > 0) {
+                    console.log(`✅ DB fetch successful: ${fetchedSteps.length} steps`);
+                    toast({
+                      title: 'Goal Created! 🚀',
+                      description: `Your AI-personalized learning journey begins now with ${fetchedSteps.length} steps!`
+                    });
+                  } else {
+                    console.warn('⚠️ No steps in DB yet');
+                    toast({
+                      title: 'Goal Created',
+                      description: 'Steps will appear shortly. You can also enhance from the goal page.',
+                      duration: 4000
+                    });
                   }
-                }));
-                
-                const { error: insertError } = await supabase
-                  .from('steps')
-                  .insert(aiSteps);
-                
-                setIsGeneratingSteps(false);
-                
-                if (insertError) {
-                  console.error('❌ Failed to save AI steps:', insertError);
-                  throw new Error('Failed to save AI-generated steps');
                 }
-                
-                console.log(`✅ Saved ${aiSteps.length} AI-generated steps`);
-                toast({
-                  title: 'Goal Created! 🚀',
-                  description: `Your AI-personalized learning journey begins now with ${aiSteps.length} steps!`
-                });
               } else {
                 // ASYNC MODE: Trigger background AI enhancement (fire-and-forget, non-blocking)
                 console.log('🤖 Triggering background AI enhancement...');
