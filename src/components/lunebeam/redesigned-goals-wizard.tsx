@@ -1936,7 +1936,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="pb-4 pt-0">
-        <CardTitle className="text-xl">{getStepTitle()}</CardTitle>
+        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground mt-2">
           {text.step1.subtitle}
         </p>
@@ -2057,7 +2057,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return (
       <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="pb-4 pt-0">
-          <CardTitle className="text-xl">
+          <CardTitle className="text-2xl">
             Why does this matter to {name}?
           </CardTitle>
           <p className="text-muted-foreground">
@@ -2089,7 +2089,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="pb-4 pt-0">
-        <CardTitle className="text-xl">{text.step3.question}</CardTitle>
+        <CardTitle className="text-2xl">{text.step3.question}</CardTitle>
         {/* Inline helper text - always visible */}
         <p className="text-sm text-muted-foreground mt-3 italic">
           {text.step3.helperText}
@@ -2210,7 +2210,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     
     return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="pb-4 pt-0">
-        <CardTitle className="text-xl">{getStepTitle()}</CardTitle>
+        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">
           {isProject 
             ? "Set your project timeline and first learning session"
@@ -2703,7 +2703,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="pb-4 pt-0">
-        <CardTitle className="text-xl">🎁 Rewards (Optional)</CardTitle>
+        <CardTitle className="text-2xl">🎁 Rewards (Optional)</CardTitle>
         <p className="text-muted-foreground">{text.step7.subtitle}</p>
       </CardHeader>
       

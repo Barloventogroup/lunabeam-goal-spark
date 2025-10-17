@@ -28,7 +28,6 @@ export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, g
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
-      goalTitle={data.goalTitle}
       questionIcon="💭"
       questionText={`Why does this matter to ${name}?`}
       helpText="Understanding motivation helps maintain commitment when practice gets tough. Please write at least 10 characters."
@@ -52,7 +51,6 @@ export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
-      goalTitle={data.goalTitle}
       questionIcon="✅"
       questionText={`Does ${name} have what's needed to start?`}
       inputType="yesno"
@@ -203,7 +201,6 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
-      goalTitle={data.goalTitle}
       goalContext={levelContext}
       questionIcon="🤔"
       questionText={`Which part usually feels the trickiest when ${name === 'you' ? 'you' : name} start${name === 'you' ? '' : 's'} this?`}
@@ -312,7 +309,6 @@ export const PMStep5_Experience: React.FC<PMStepsProps> = ({ data, updateData, g
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
-      goalTitle={data.goalTitle}
       questionIcon="📊"
       questionText={`How much experience with ${data.goalTitle?.toLowerCase()}?`}
       inputType="radio"
@@ -344,7 +340,6 @@ export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, g
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
-      goalTitle={data.goalTitle}
       questionIcon="😊"
       questionText="How confident do you feel about this?"
       inputType="radio"
@@ -412,7 +407,6 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
-      goalTitle={data.goalTitle}
       questionIcon="👥"
       questionText="How much help do you need right now?"
       inputType="radio"
@@ -461,7 +455,6 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
-      goalTitle={data.goalTitle}
       goalContext={levelContext}
       questionIcon="👥"
       questionText="Who can help you learn this?"
@@ -522,7 +515,6 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
-      goalTitle={data.goalTitle}
       goalContext={levelContext}
       questionIcon="🎯"
       questionText="Your Practice Plan"
