@@ -327,26 +327,33 @@ function buildPMSystemPrompt(input: PMGoalCreationInput): string {
   const motivation = input.motivation || "Learning and improving this skill";
   const freq = input.smartStart.startingFrequency;
   const weeks = input.duration_weeks;
+  const targetSteps = Math.ceil(freq * weeks * 0.75);
   
-  return `Generate ${Math.ceil(freq * weeks * 0.75)} steps for: "${input.title}" (${input.domain})
+  return `You are a transition skills coach. Generate ${targetSteps} Progressive Mastery steps for: "${input.title}" (${input.domain})
 
-CONTEXT:
-- Skill: Lv${input.skillAssessment.calculatedLevel} (${input.skillAssessment.levelLabel})
-- Motivation: ${motivation}
-- Practice: ${freq}×/week for ${weeks} weeks
-${input.teachingHelper ? `- Helper: ${input.teachingHelper.helperName}` : '- Learning alone'}
+STUDENT CONTEXT:
+• Skill Level: ${input.skillAssessment.calculatedLevel}/6 (${input.skillAssessment.levelLabel})
+• Motivation: ${motivation}
+• Practice: ${freq}×/week × ${weeks} weeks
+${input.teachingHelper ? `• Helper: ${input.teachingHelper.helperName}` : '• Learning independently'}
 ${domainGuidance}
 
-REQUIREMENTS:
-1. Start at current level, progress gradually
-2. Mix habits (5-10min) + practice (15-30min)
-3. Specific, actionable titles (10-15 words max)
-4. Safe, age-appropriate, practical
-5. Build on previous steps
+STEP REQUIREMENTS:
+1. Generate EXACTLY ${targetSteps} steps total
+2. Each step must have: title, description, estimatedDuration (minutes), supportLevel, difficulty (1-6), weekNumber, phase (1-4)
+3. Progress from Foundation (high support) → Guided (medium) → Independent (low) → Mastery (minimal)
+4. Titles: 8-12 words, action-oriented, specific
+5. Description: 20-40 words with concrete example
+6. Steps build on each other sequentially
+7. Age-appropriate, safe, practical
 
-PHASES: Foundation (HIGH support) → Guided (MED) → Independent (LOW) → Mastery (MINIMAL)
+SUPPORT PHASES:
+• Phase 1 (HIGH): 1-on-1 help, demonstrations, simple tasks
+• Phase 2 (MED): Guided practice, check-ins, verbal prompts
+• Phase 3 (LOW): Brief supervision, problem-solving support
+• Phase 4 (MINIMAL): Independent with questions available
 
-VALIDATION: No harmful/unsafe/illegal content. Age-appropriate only.`;
+Use generate_pm_steps function to return ${targetSteps} steps.`;
 }
 
 /**
@@ -602,30 +609,31 @@ async function callLovableAIWithRetry(
     ? `${retryGuidance}\n\nNow generate the steps following all requirements.`
     : `Generate 6-8 Progressive Mastery steps for this goal.`;
 
-  // Tool schema to force structured output (optimized for speed)
+  // Simplified tool schema for faster response
   const tools = [
     {
       type: 'function',
       function: {
         name: 'generate_pm_steps',
-        description: 'Generate 6-8 Progressive Mastery steps',
+        description: 'Generate Progressive Mastery steps for skill building',
         parameters: {
           type: 'object',
           properties: {
             steps: {
               type: 'array',
+              description: 'Array of progressive learning steps',
               items: {
                 type: 'object',
                 properties: {
-                  title: { type: 'string' },
-                  description: { type: 'string' },
-                  estimatedDuration: { type: 'number' },
+                  title: { type: 'string', description: 'Action-oriented step title' },
+                  description: { type: 'string', description: 'Brief guidance with example' },
+                  estimatedDuration: { type: 'number', description: 'Minutes per session' },
                   supportLevel: { type: 'string', enum: ['high', 'medium', 'low', 'minimal', 'none'] },
-                  difficulty: { type: 'number' },
-                  weekNumber: { type: 'string' },
-                  phase: { type: 'number' },
+                  difficulty: { type: 'number', description: 'Difficulty level 1-6' },
+                  weekNumber: { type: 'string', description: 'Target week(s)' },
+                  phase: { type: 'number', description: 'Learning phase 1-4' },
                   prerequisites: { type: 'array', items: { type: 'string' } },
-                  safetyNotes: { anyOf: [{ type: 'string' }, { type: 'null' }] },
+                  safetyNotes: { type: 'string' },
                   qualityIndicators: { type: 'array', items: { type: 'string' } },
                   independenceIndicators: { type: 'array', items: { type: 'string' } },
                   practiceCount: { type: 'number' }
