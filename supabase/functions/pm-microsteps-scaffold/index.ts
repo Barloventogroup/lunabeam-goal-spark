@@ -105,10 +105,11 @@ interface ValidationResult {
 }
 
 // AI Configuration
+// Build: 2025-10-17T02:00:00Z - Increased timeout to 30s for reliable sync generation
 const MAX_LOVABLE_ATTEMPTS = 2; // Lovable AI gets 2 fast attempts
 const MAX_OPENAI_ATTEMPTS = 1; // OpenAI gets 1 fallback attempt
 const AI_MODEL = 'gpt-5-mini-2025-08-07'; // Fast, cost-efficient GPT-5 variant
-const AI_TIMEOUT_MS = 22000; // 22 seconds per attempt (increased for sync mode reliability)
+const AI_TIMEOUT_MS = 30000; // 30 seconds per attempt (increased for reliable sync mode)
 
 // Dangerous Keywords Array (from requirements section 5.1)
 const dangerousKeywords = [
