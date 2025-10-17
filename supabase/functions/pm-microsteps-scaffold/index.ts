@@ -327,7 +327,8 @@ function buildPMSystemPrompt(input: PMGoalCreationInput): string {
   const motivation = input.motivation || "Learning and improving this skill";
   const freq = input.smartStart.startingFrequency;
   const weeks = input.duration_weeks;
-  const targetSteps = Math.ceil(freq * weeks * 0.75);
+  // Clamp targetSteps to 6-8 to match validation and reduce model confusion
+  const targetSteps = Math.min(8, Math.max(6, Math.ceil(freq * weeks * 0.75)));
   
   return `You are a transition skills coach. Generate ${targetSteps} Progressive Mastery steps for: "${input.title}" (${input.domain})
 
@@ -1695,6 +1696,7 @@ serve(async (req) => {
       
       const response = {
         steps: generatedSteps,
+        microSteps: generatedSteps, // Backward-compat alias
         metadata: {
           modelUsed: 'google/gemini-2.5-flash',
           aiProvider: 'lovable-ai',

@@ -529,7 +529,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         userId: goal.owner_id,
         userName: ownerProfile?.first_name || 'User',
         userAge: undefined,
-        is_self_registered: true
+        is_self_registered: true,
+        mode: PM_DISABLE_FALLBACK ? 'sync' : 'async' // Force sync when fallback disabled
       };
       
       console.log('[PM Generation] Calling pm-microsteps-scaffold with payload:', {
@@ -575,8 +576,22 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         throw error;
       }
       
-      if (!data?.microSteps || data.microSteps.length === 0) {
+      // Normalize response shape: prefer steps, fall back to microSteps
+      const stepsToUse = data?.steps || data?.microSteps;
+      
+      if (!stepsToUse || stepsToUse.length === 0) {
         console.warn('[PM Generation] No steps returned');
+        
+        // Handle queued status for async mode
+        if (data?.status === 'queued' && !PM_DISABLE_FALLBACK) {
+          toast({
+            title: "AI enhancing in background",
+            description: "Your practice plan is being created. Check back soon!",
+            duration: 4000
+          });
+          return;
+        }
+        
         if (PM_DISABLE_FALLBACK) {
           toast({
             title: "AI temporarily unavailable",
@@ -589,11 +604,11 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         return;
       }
       
-      console.log(`[PM Generation] Received ${data.microSteps.length} steps, saving to database`);
+      console.log(`[PM Generation] Received ${stepsToUse.length} steps, saving to database`);
       
       // Transform and save steps
       const startDate = goal.start_date ? new Date(goal.start_date) : new Date();
-      const stepsToInsert = data.microSteps.map((step: any, index: number) => ({
+      const stepsToInsert = stepsToUse.map((step: any, index: number) => ({
         goal_id: goal.id,
         title: step.title,
         notes: step.description || '',
@@ -641,7 +656,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       
       toast({
         title: "Practice plan created!",
-        description: `Generated ${data.microSteps.length} personalized steps.`,
+        description: `Generated ${stepsToUse.length} personalized steps.`,
         duration: 4000
       });
       
