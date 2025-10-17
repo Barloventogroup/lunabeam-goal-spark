@@ -320,11 +320,50 @@ function getDomainGuidance(domain: string, skillLevel: number): string {
 }
 
 /**
+ * Sanitize user input to prevent garbage data degrading LLM quality
+ */
+function sanitizeInput(input: string): string {
+  if (!input) return '';
+  
+  // Trim to 240 chars
+  let clean = input.slice(0, 240);
+  
+  // Remove URLs
+  clean = clean.replace(/https?:\/\/[^\s]+/gi, '');
+  
+  // Remove excessive repeated punctuation (keep single)
+  clean = clean.replace(/([!?.]){3,}/g, '$1');
+  
+  // Remove excessive whitespace
+  clean = clean.replace(/\s+/g, ' ');
+  
+  // Strip most emojis and non-text symbols (keep basic punctuation)
+  clean = clean.replace(/[^\w\s.,!?'-]/g, '');
+  
+  return clean.trim();
+}
+
+/**
  * Build the comprehensive system prompt for PM step generation
  */
 function buildPMSystemPrompt(input: PMGoalCreationInput): string {
   const domainGuidance = getDomainGuidance(input.domain, input.skillAssessment.calculatedLevel);
-  const motivation = input.motivation || "Learning and improving this skill";
+  
+  // Sanitize motivation and barriers
+  const rawMotivation = input.motivation || "Learning and improving this skill";
+  const rawBarriers = input.barriers || '';
+  const sanitizedMotivation = sanitizeInput(rawMotivation);
+  const sanitizedBarriers = sanitizeInput(rawBarriers);
+  
+  // Log sanitization (no PII)
+  if (rawMotivation.length !== sanitizedMotivation.length) {
+    console.log(`Sanitized motivation: ${rawMotivation.length} → ${sanitizedMotivation.length} chars`);
+  }
+  if (rawBarriers.length !== sanitizedBarriers.length) {
+    console.log(`Sanitized barriers: ${rawBarriers.length} → ${sanitizedBarriers.length} chars`);
+  }
+  
+  const motivation = sanitizedMotivation || "Learning and improving this skill";
   const freq = input.smartStart.startingFrequency;
   const weeks = input.duration_weeks;
   // Clamp targetSteps to 6-8 to match validation and reduce model confusion
@@ -335,6 +374,7 @@ function buildPMSystemPrompt(input: PMGoalCreationInput): string {
 STUDENT CONTEXT:
 • Skill Level: ${input.skillAssessment.calculatedLevel}/6 (${input.skillAssessment.levelLabel})
 • Motivation: ${motivation}
+${sanitizedBarriers ? `• Barriers: ${sanitizedBarriers}` : ''}
 • Practice: ${freq}×/week × ${weeks} weeks
 ${input.teachingHelper ? `• Helper: ${input.teachingHelper.helperName}` : '• Learning independently'}
 ${domainGuidance}
@@ -468,12 +508,13 @@ async function callAIWithRetry(
       description: 'Return 6–8 PM steps',
       parameters: {
         type: 'object',
-        properties: {
-          steps: {
-            type: 'array',
-            minItems: 6,
-            maxItems: 8,
-            items: {
+            properties: {
+              steps: {
+                type: 'array',
+                description: 'MUST return between 6 and 8 steps',
+                minItems: 6,
+                maxItems: 8,
+                items: {
               type: 'object',
               properties: {
                 title: { type: 'string' },
@@ -622,7 +663,9 @@ async function callLovableAIWithRetry(
           properties: {
             steps: {
               type: 'array',
-              description: 'Array of progressive learning steps',
+              description: 'MUST return between 6 and 8 progressive learning steps',
+              minItems: 6,
+              maxItems: 8,
               items: {
                 type: 'object',
                 properties: {
@@ -688,8 +731,14 @@ async function callLovableAIWithRetry(
       let selectedModel: string;
       let maxTokens: number;
       
+      // Force flash on second attempt if first failed with lite
+      if (attempt === 2 && lastError?.message?.includes('Flash-lite returned 0 steps')) {
+        selectedModel = 'google/gemini-2.5-flash';
+        maxTokens = 1200;
+        console.log(`🧠 RETRY: Using flash (1200t) after flash-lite failed`);
+      }
       // Tier 1: Ultra-fast for very simple goals (beginner, short duration)
-      if (skillLevel <= 2 && durationWeeks <= 6) {
+      else if (skillLevel <= 2 && durationWeeks <= 6) {
         selectedModel = 'google/gemini-2.5-flash-lite';
         maxTokens = 600;
         console.log(`⚡ Using flash-lite (600t) for simple goal (skill=${skillLevel}, ${durationWeeks}w)`);
@@ -752,26 +801,46 @@ async function callLovableAIWithRetry(
       const choice = data.choices?.[0];
       const toolCalls = choice?.message?.tool_calls || choice?.tool_calls;
 
+      let extractedSteps: GeneratedStep[] = [];
+      
       if (toolCalls && Array.isArray(toolCalls)) {
         const fnCall = toolCalls.find((tc: any) => tc.type === 'function' && tc.function?.name === 'generate_pm_steps');
         if (fnCall) {
           const args = JSON.parse(fnCall.function.arguments || '{}');
           if (args?.steps && Array.isArray(args.steps)) {
-            console.log(`🛠️ Parsed tool_calls with ${args.steps.length} steps`);
-            return args.steps as GeneratedStep[];
+            extractedSteps = args.steps;
+            console.log(`🛠️ Parsed tool_calls with ${extractedSteps.length} steps`);
           }
         }
-        console.warn('⚠️ tool_calls present but could not parse steps');
       }
 
-      const content = choice?.message?.content ?? '';
-      const parsed = tryExtractJson(content);
-      if (parsed?.steps && Array.isArray(parsed.steps)) {
-        console.log(`🧩 Fallback JSON extraction succeeded with ${parsed.steps.length} steps`);
-        return parsed.steps;
+      // Try JSON extraction if tool_calls didn't work
+      if (extractedSteps.length === 0) {
+        const content = choice?.message?.content ?? '';
+        const parsed = tryExtractJson(content);
+        if (parsed?.steps && Array.isArray(parsed.steps)) {
+          extractedSteps = parsed.steps;
+          console.log(`🧩 Fallback JSON extraction succeeded with ${extractedSteps.length} steps`);
+        }
       }
 
-      throw new Error('Lovable AI response missing steps');
+      // CRITICAL: Treat 0 steps as failure
+      if (extractedSteps.length < 6) {
+        console.error(`❌ Parsed tool_calls with ${extractedSteps.length} steps (need ≥6) → escalating`);
+        
+        // If this was flash-lite and we got 0 steps, retry with flash
+        if (selectedModel === 'google/gemini-2.5-flash-lite' && extractedSteps.length === 0 && attempt < MAX_LOVABLE_ATTEMPTS) {
+          console.log('🔄 Escalating to flash for retry...');
+          lastError = new Error('Flash-lite returned 0 steps, retrying with flash');
+          // Force next attempt to use flash by continuing the loop
+          await new Promise(resolve => setTimeout(resolve, 500));
+          continue;
+        }
+        
+        throw new Error(`AI returned ${extractedSteps.length} steps (need ≥6)`);
+      }
+
+      return extractedSteps;
     } catch (error: any) {
       const attemptDuration = Date.now() - attemptStart;
 
@@ -1561,6 +1630,12 @@ serve(async (req) => {
         console.log('🤖 Attempting Lovable AI generation (primary)...');
         const rawSteps = await callLovableAIWithRetry(payload);
         
+        // CRITICAL: Check if we got enough steps
+        if (rawSteps.length < 6) {
+          console.error(`❌ Lovable AI returned only ${rawSteps.length} steps (need ≥6), escalating to OpenAI...`);
+          throw new Error(`Insufficient steps: ${rawSteps.length} (need ≥6)`);
+        }
+        
         // Check for Layer 2 safety signal
         if (containsSafetySignal(rawSteps)) {
           console.error('⚠️ Layer 2 safety violation detected in generated steps');
@@ -1582,7 +1657,13 @@ serve(async (req) => {
         console.warn('⚠️ Lovable AI failed, trying OpenAI fallback...', lovableError.message);
         
         try {
-          const rawSteps = await callAIWithRetry(payload);
+          const rawSteps = await callAIWithRetry(payload, 'Previous attempt returned insufficient steps. You MUST return exactly 6-8 complete steps.');
+          
+          // CRITICAL: Check OpenAI steps too
+          if (rawSteps.length < 6) {
+            console.error(`❌ OpenAI also returned only ${rawSteps.length} steps (need ≥6)`);
+            throw new Error(`Insufficient OpenAI steps: ${rawSteps.length}`);
+          }
           
           // Check for Layer 2 safety signal
           if (containsSafetySignal(rawSteps)) {
@@ -1620,31 +1701,20 @@ serve(async (req) => {
       }
       
       // Ensure we have steps before continuing
-      if (!generatedSteps) {
-        console.error(`❌ Step generation failed: No steps generated`);
+      if (!generatedSteps || generatedSteps.length < 6) {
+        console.error(`❌ Step generation failed: ${generatedSteps?.length || 0} steps (need ≥6)`);
         
-        // Return friendly error for user
+        // Return 503 with useFallback flag - frontend will generate deterministic steps
         return new Response(
           JSON.stringify({ 
-            error: 'Step generation failed. Please try again in a moment.',
+            error: 'AI generation temporarily unavailable. Please try again.',
             code: 'GENERATION_FAILED',
             useFallback: true // Signal frontend to use fallback generator
           }),
           { 
-            status: 500, 
+            status: 503, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
           }
-        );
-      }
-
-      if (!generatedSteps) {
-        return new Response(
-          JSON.stringify({
-            error: 'Step generation failed unexpectedly',
-            code: 'GENERATION_UNKNOWN_ERROR',
-            useFallback: true
-          }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
