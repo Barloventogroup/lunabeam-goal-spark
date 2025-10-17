@@ -1095,10 +1095,21 @@ export const StepsList: React.FC<StepsListProps> = ({
                             
                             <TableCell className="p-2">
                               <div className="space-y-1">
-                                <div className="flex items-center gap-2">
+                                 <div className="flex items-center gap-2">
                                   <span className={`text-sm font-medium ${isBlocked ? 'text-muted-foreground/60' : 'text-foreground'}`}>
                                     {cleanStepTitle(step.title)}
                                   </span>
+                                  {(step as any).pm_metadata?.enhanced && (
+                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-primary/10 text-primary">
+                                      AI
+                                    </Badge>
+                                  )}
+                                  {(step as any).pm_metadata?.source === 'deterministic_fallback' && 
+                                   !(step as any).pm_metadata?.enhanced && (
+                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-muted text-muted-foreground">
+                                      Fallback
+                                    </Badge>
+                                  )}
                                   {getStepIcon(step)}
                                 </div>
                                 {precursorText && (

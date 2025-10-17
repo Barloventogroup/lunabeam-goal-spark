@@ -1526,15 +1526,33 @@ serve(async (req) => {
               return;
             }
             
-            // Update existing steps in database with AI-enhanced content
-            console.log(`🔄 [${taskId}] Phase 2: Updating ${generatedSteps.length} steps in database...`);
+            // Fetch existing step IDs first
+            console.log(`🔄 [${taskId}] Phase 2: Fetching existing steps for goal ${payload.goalId}...`);
+            const { data: existingSteps, error: fetchError } = await supabase
+              .from('steps')
+              .select('id, order_index')
+              .eq('goal_id', payload.goalId)
+              .order('order_index', { ascending: true });
+            
+            if (fetchError || !existingSteps) {
+              console.error(`❌ [${taskId}] Failed to fetch existing steps:`, fetchError);
+              return;
+            }
+            
+            console.log(`📋 [${taskId}] Found ${existingSteps.length} existing steps, AI generated ${generatedSteps.length}`);
+            const existingIds = existingSteps.map(s => s.id);
+            
+            // Update existing steps by ID (not order_index)
+            console.log(`🔄 [${taskId}] Phase 2: Updating ${Math.min(existingIds.length, generatedSteps.length)} steps in database...`);
             const updateStart = Date.now();
             let successCount = 0;
             let failCount = 0;
             
-            for (let i = 0; i < generatedSteps.length; i++) {
+            const updateCount = Math.min(existingIds.length, generatedSteps.length);
+            for (let i = 0; i < updateCount; i++) {
               const aiStep = generatedSteps[i];
-              console.log(`📝 [${taskId}] Updating step ${i + 1}/${generatedSteps.length}: "${aiStep.title.slice(0, 50)}..."`);
+              const stepId = existingIds[i];
+              console.log(`📝 [${taskId}] Updating step ${i + 1}/${updateCount} (ID: ${stepId}): "${aiStep.title.slice(0, 50)}..."`);
               
               const { error: updateError } = await supabase
                 .from('steps')
@@ -1562,15 +1580,80 @@ serve(async (req) => {
                     generationTimeMs: Date.now() - genStart
                   }
                 })
-                .eq('goal_id', payload.goalId)
-                .eq('order_index', i);
+                .eq('id', stepId);
               
               if (updateError) {
                 failCount++;
-                console.error(`❌ [${taskId}] Failed to update step ${i + 1}:`, updateError);
+                console.error(`❌ [${taskId}] Failed to update step ${i + 1} (ID: ${stepId}):`, updateError);
               } else {
                 successCount++;
-                console.log(`✅ [${taskId}] Step ${i + 1}/${generatedSteps.length} updated successfully`);
+                console.log(`✅ [${taskId}] Step ${i + 1}/${updateCount} updated successfully`);
+              }
+            }
+            
+            // Delete excess fallback steps if AI generated fewer
+            if (existingIds.length > generatedSteps.length) {
+              const surplusIds = existingIds.slice(generatedSteps.length);
+              console.log(`🗑️ [${taskId}] Deleting ${surplusIds.length} excess fallback steps...`);
+              const { error: deleteError } = await supabase
+                .from('steps')
+                .delete()
+                .in('id', surplusIds);
+              
+              if (deleteError) {
+                console.error(`❌ [${taskId}] Failed to delete excess steps:`, deleteError);
+              } else {
+                console.log(`✅ [${taskId}] Deleted ${surplusIds.length} excess fallback steps`);
+              }
+            }
+            
+            // Insert new steps if AI generated more than fallback
+            if (generatedSteps.length > existingIds.length) {
+              const newSteps = generatedSteps.slice(existingIds.length);
+              console.log(`➕ [${taskId}] Inserting ${newSteps.length} additional AI steps...`);
+              
+              for (let i = 0; i < newSteps.length; i++) {
+                const aiStep = newSteps[i];
+                const orderIndex = existingIds.length + i;
+                
+                const { error: insertError } = await supabase
+                  .from('steps')
+                  .insert({
+                    goal_id: payload.goalId,
+                    title: aiStep.title,
+                    notes: aiStep.description || '',
+                    explainer: aiStep.description || '',
+                    estimated_effort_min: aiStep.estimatedDuration || 30,
+                    order_index: orderIndex,
+                    status: 'not_started',
+                    is_planned: true,
+                    step_type: 'habit',
+                    pm_metadata: {
+                      version: 1,
+                      source: 'pm-microsteps-scaffold',
+                      phase: aiStep.phase,
+                      weekNumber: aiStep.weekNumber,
+                      supportLevel: aiStep.supportLevel,
+                      difficulty: aiStep.difficulty,
+                      safetyNotes: aiStep.safetyNotes,
+                      qualityIndicators: aiStep.qualityIndicators || [],
+                      independenceIndicators: aiStep.independenceIndicators || [],
+                      practiceCount: aiStep.practiceCount || 1,
+                      prerequisites: aiStep.prerequisites || [],
+                      enhanced: true,
+                      enhancedAt: new Date().toISOString(),
+                      modelUsed: AI_MODEL,
+                      aiProvider: aiProvider,
+                      generationTimeMs: Date.now() - genStart
+                    }
+                  });
+                
+                if (insertError) {
+                  console.error(`❌ [${taskId}] Failed to insert new step ${i + 1}:`, insertError);
+                } else {
+                  successCount++;
+                  console.log(`✅ [${taskId}] Inserted new step ${i + 1}/${newSteps.length}`);
+                }
               }
             }
             
