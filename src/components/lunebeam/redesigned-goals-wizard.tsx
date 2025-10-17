@@ -1560,11 +1560,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     throw new Error('Failed to create practice plan');
                   }
                   
-                  toast({
-                    title: 'Goal Created! 🚀',
-                    description: `AI unavailable. Added a solid starter plan with ${fallbackSteps.length} steps — you can enhance later!`,
-                    duration: 5000
-                  });
+          toast({
+            title: 'Goal Created! 🚀',
+            description: `AI unavailable. Added a solid starter plan with ${fallbackSteps.length} steps — you can enhance later!`,
+            duration: 2000
+          });
                 } else {
                   // Success: Fetch steps from DB (server should have inserted them)
                   console.log(`[PM Wizard] AI returned ${syncData.steps.length} steps, fetching from DB...`);
@@ -1573,17 +1573,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   
                   if (fetchedSteps.length > 0) {
                     console.log(`✅ DB fetch successful: ${fetchedSteps.length} steps`);
-                    toast({
-                      title: 'Goal Created! 🚀',
-                      description: `Your AI-personalized learning journey begins now with ${fetchedSteps.length} steps!`
-                    });
+            toast({
+              title: 'Goal Created! 🚀',
+              description: `Your AI-personalized learning journey begins now with ${fetchedSteps.length} steps!`,
+              duration: 2000
+            });
                   } else {
                     console.warn('⚠️ No steps in DB yet');
-                    toast({
-                      title: 'Goal Created',
-                      description: 'Steps will appear shortly. You can also enhance from the goal page.',
-                      duration: 4000
-                    });
+            toast({
+              title: 'Goal Created',
+              description: 'Steps will appear shortly. You can also enhance from the goal page.',
+              duration: 2000
+            });
                   }
                 }
               } else {
@@ -1642,7 +1643,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             : (data.recipient === 'self' ? 'Goal created! 🎯' : `Goal assigned to ${data.supportedPersonName}! 🎯`),
           description: data.goalType === 'progressive_mastery'
             ? 'Your learning journey begins now!'
-            : 'Your personalized micro-steps are being generated.'
+            : 'Your personalized micro-steps are being generated.',
+          duration: 2000
         });
         
         // Celebration animation
@@ -1932,9 +1934,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const renderStep1 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
+    return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
+      <CardHeader className="pb-4 pt-0">
+        <CardTitle className="text-xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground mt-2">
           {text.step1.subtitle}
         </p>
@@ -2053,9 +2055,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
     
     return (
-      <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl">
+      <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
+        <CardHeader className="pb-4 pt-0">
+          <CardTitle className="text-xl">
             Why does this matter to {name}?
           </CardTitle>
           <p className="text-muted-foreground">
@@ -2085,9 +2087,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const renderStep3 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">{text.step3.question}</CardTitle>
+    return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
+      <CardHeader className="pb-4 pt-0">
+        <CardTitle className="text-xl">{text.step3.question}</CardTitle>
         {/* Inline helper text - always visible */}
         <p className="text-sm text-muted-foreground mt-3 italic">
           {text.step3.helperText}
@@ -2166,9 +2168,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       }
     };
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
+    return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
+      <CardHeader className="pb-4 pt-0">
+        <CardTitle className="text-xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">{text.step5.subtitle}</p>
       </CardHeader>
       
@@ -2206,9 +2208,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const isProject = data.goalType === 'new_skill';
     const isHabitOrPractice = data.goalType === 'reminder' || data.goalType === 'practice';
     
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
+    return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
+      <CardHeader className="pb-4 pt-0">
+        <CardTitle className="text-xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">
           {isProject 
             ? "Set your project timeline and first learning session"
@@ -2619,9 +2621,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     const individualName = data.recipient === 'other' ? data.supportedPersonName || 'they' : 'you';
     
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">What is the necessary level of adult involvement during the action?</CardTitle>
+    return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
+      <CardHeader className="pb-4 pt-0">
+        <CardTitle className="text-xl">What is the necessary level of adult involvement during the action?</CardTitle>
         <p className="text-muted-foreground">{text.step7.subtitle}</p>
       </CardHeader>
       
@@ -2699,9 +2701,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const renderStep7 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl">🎁 Rewards (Optional)</CardTitle>
+    return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
+      <CardHeader className="pb-4 pt-0">
+        <CardTitle className="text-xl">🎁 Rewards (Optional)</CardTitle>
         <p className="text-muted-foreground">{text.step7.subtitle}</p>
       </CardHeader>
       
@@ -3445,8 +3447,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }} />
         </div>
         
+        {/* Persistent Goal Title - shown after step 1 */}
+        {data.goalTitle && (
+          <div className="mt-4 pt-4 border-t">
+            <h2 className="text-lg font-semibold text-center truncate">{data.goalTitle}</h2>
+          </div>
+        )}
+        
         {/* Current Step - fills remaining space */}
-        <div className="flex-1 overflow-auto pb-24">
+        <div className="flex-1 overflow-auto pt-0 pb-24">
           {renderCurrentStep()}
         </div>
         

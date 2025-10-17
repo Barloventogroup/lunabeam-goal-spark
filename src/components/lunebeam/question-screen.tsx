@@ -284,9 +284,9 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
         </div>
       )}
 
-      {/* Main Content - Centered */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="max-w-2xl w-full space-y-8">
+      {/* Main Content - Top Aligned */}
+      <div className="flex-1 px-6 pt-6 pb-0 overflow-auto">
+        <div className="max-w-2xl mx-auto w-full space-y-8">
           {/* Goal Context */}
           {(goalTitle || goalContext) && (
             <div className="text-center space-y-1">
@@ -301,7 +301,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
 
           {/* Question */}
           <div className="text-center">
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center justify-center gap-2 flex-wrap">
+            <h1 className="text-xl md:text-2xl font-bold flex items-center justify-center gap-2 flex-wrap">
               {questionIcon && <span>{questionIcon}</span>}
               <span>{questionText}</span>
             </h1>
