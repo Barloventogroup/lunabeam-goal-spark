@@ -632,78 +632,149 @@ async function callAIWithRetry(
   payload: PMGoalCreationInput,
   retryGuidance: string = ''
 ): Promise<GeneratedStep[]> {
-  const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-  if (!openaiApiKey) {
-    throw new Error('OPENAI_API_KEY not configured');
+  // Use Lovable AI Gateway for OpenAI fallback to keep secrets in Supabase
+  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+  if (!lovableApiKey) {
+    throw new Error('LOVABLE_API_KEY not configured');
   }
-  
+
   const systemPrompt = buildPMSystemPrompt(payload);
-  
-  const userPrompt = retryGuidance 
+  const userPrompt = retryGuidance
     ? `${retryGuidance}\n\nNow generate the steps following all requirements.`
     : `Generate 6-8 Progressive Mastery steps for this goal.`;
-  
-  console.log(`🔄 OpenAI fallback attempt (single try)`);
+
+  // Define tool-calling schema to force structured output
+  const tools = [
+    {
+      type: 'function',
+      function: {
+        name: 'generate_pm_steps',
+        description: 'Return 6–8 Progressive Mastery steps for the goal',
+        parameters: {
+          type: 'object',
+          properties: {
+            steps: {
+              type: 'array',
+              minItems: 6,
+              maxItems: 8,
+              items: {
+                type: 'object',
+                additionalProperties: false,
+                properties: {
+                  title: { type: 'string' },
+                  description: { type: 'string' },
+                  estimatedDuration: { type: 'number' },
+                  supportLevel: { type: 'string', enum: ['high', 'medium', 'low', 'minimal', 'none'] },
+                  difficulty: { type: 'number', minimum: 1, maximum: 6 },
+                  weekNumber: { type: 'string' },
+                  phase: { type: 'number', minimum: 1, maximum: 4 },
+                  prerequisites: { type: 'array', items: { type: 'string' } },
+                  safetyNotes: { anyOf: [{ type: 'string' }, { type: 'null' }] },
+                  qualityIndicators: { type: 'array', items: { type: 'string' } },
+                  independenceIndicators: { type: 'array', items: { type: 'string' } },
+                  practiceCount: { type: 'number' }
+                },
+                required: ['title', 'description', 'estimatedDuration', 'supportLevel', 'difficulty', 'weekNumber', 'phase']
+              }
+            }
+          },
+          required: ['steps'],
+          additionalProperties: false
+        }
+      }
+    }
+  ];
+
+  // Helper to robustly parse JSON from content if tool_calls are missing
+  const tryExtractJson = (content: string): GenerationResponse | null => {
+    try {
+      const fenced = content.match(/```(?:json)?\n([\s\S]*?)```/i);
+      if (fenced) return JSON.parse(fenced[1]);
+      // Braces scan
+      const start = content.indexOf('{');
+      if (start !== -1) {
+        let depth = 0;
+        for (let i = start; i < content.length; i++) {
+          const ch = content[i];
+          if (ch === '{') depth++;
+          if (ch === '}') depth--;
+          if (depth === 0) {
+            const slice = content.slice(start, i + 1);
+            return JSON.parse(slice);
+          }
+        }
+      }
+    } catch { /* ignore */ }
+    return null;
+  };
+
+  console.log(`🔄 OpenAI fallback via Lovable Gateway (single try)`);
   const attemptStart = Date.now();
-  
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
-    
-    console.log('📤 Calling OpenAI API...');
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
+        Authorization: `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: AI_MODEL,
+        model: 'openai/gpt-5-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
+        tools,
+        tool_choice: { type: 'function', function: { name: 'generate_pm_steps' } },
         max_completion_tokens: 1200
       }),
       signal: controller.signal
     });
-      
+
     clearTimeout(timeoutId);
     const attemptDuration = Date.now() - attemptStart;
-    console.log(`⏱️ OpenAI attempt took ${attemptDuration}ms`);
-    
+    console.log(`⏱️ OpenAI (gateway) attempt took ${attemptDuration}ms`);
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('❌ OpenAI (gateway) error:', response.status, errorText);
+      throw new Error(`OpenAI (gateway) error: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-    
-    if (!content) {
-      throw new Error('OpenAI returned empty response');
+    const choice = data.choices?.[0];
+    const toolCalls = choice?.message?.tool_calls || choice?.tool_calls;
+
+    if (toolCalls && Array.isArray(toolCalls)) {
+      const fnCall = toolCalls.find((tc: any) => tc.type === 'function' && tc.function?.name === 'generate_pm_steps');
+      if (fnCall) {
+        const args = JSON.parse(fnCall.function.arguments || '{}');
+        if (args?.steps && Array.isArray(args.steps)) {
+          console.log(`🛠️ Parsed tool_calls with ${args.steps.length} steps`);
+          return args.steps as GeneratedStep[];
+        }
+      }
+      console.warn('⚠️ tool_calls present but could not parse steps');
     }
-    
-    console.log('📥 OpenAI response received, parsing JSON...');
-    const parsed: GenerationResponse = JSON.parse(content);
-    
-    if (!parsed.steps || !Array.isArray(parsed.steps)) {
-      throw new Error('OpenAI response missing "steps" array');
+
+    const content = choice?.message?.content ?? '';
+    const parsed = tryExtractJson(content);
+    if (parsed?.steps && Array.isArray(parsed.steps)) {
+      console.log(`🧩 Fallback JSON extraction succeeded with ${parsed.steps.length} steps`);
+      return parsed.steps;
     }
-    
-    console.log(`✅ OpenAI generated ${parsed.steps.length} steps`);
-    return parsed.steps;
-    
+
+    throw new Error('OpenAI (gateway) response missing steps');
   } catch (error: any) {
     const attemptDuration = Date.now() - attemptStart;
-    
     if (error.name === 'AbortError' || error.message?.includes('aborted')) {
-      console.error(`❌ OpenAI timed out after ${attemptDuration}ms`);
+      console.error(`❌ OpenAI (gateway) timed out after ${attemptDuration}ms`);
       throw new Error(`Request timed out after ${AI_TIMEOUT_MS / 1000}s`);
     }
-    
-    console.error(`❌ OpenAI failed:`, error.message);
+    console.error('❌ OpenAI (gateway) failed:', error?.message || error);
     throw error;
   }
 }
@@ -720,27 +791,91 @@ async function callLovableAIWithRetry(
   if (!lovableApiKey) {
     throw new Error('LOVABLE_API_KEY not configured');
   }
-  
+
   const systemPrompt = buildPMSystemPrompt(payload);
-  const userPrompt = retryGuidance 
+  const userPrompt = retryGuidance
     ? `${retryGuidance}\n\nNow generate the steps following all requirements.`
     : `Generate 6-8 Progressive Mastery steps for this goal.`;
-  
+
+  // Tool schema to force structured output
+  const tools = [
+    {
+      type: 'function',
+      function: {
+        name: 'generate_pm_steps',
+        description: 'Return 6–8 Progressive Mastery steps for the goal',
+        parameters: {
+          type: 'object',
+          properties: {
+            steps: {
+              type: 'array',
+              minItems: 6,
+              maxItems: 8,
+              items: {
+                type: 'object',
+                additionalProperties: false,
+                properties: {
+                  title: { type: 'string' },
+                  description: { type: 'string' },
+                  estimatedDuration: { type: 'number' },
+                  supportLevel: { type: 'string', enum: ['high', 'medium', 'low', 'minimal', 'none'] },
+                  difficulty: { type: 'number', minimum: 1, maximum: 6 },
+                  weekNumber: { type: 'string' },
+                  phase: { type: 'number', minimum: 1, maximum: 4 },
+                  prerequisites: { type: 'array', items: { type: 'string' } },
+                  safetyNotes: { anyOf: [{ type: 'string' }, { type: 'null' }] },
+                  qualityIndicators: { type: 'array', items: { type: 'string' } },
+                  independenceIndicators: { type: 'array', items: { type: 'string' } },
+                  practiceCount: { type: 'number' }
+                },
+                required: ['title', 'description', 'estimatedDuration', 'supportLevel', 'difficulty', 'weekNumber', 'phase']
+              }
+            }
+          },
+          required: ['steps'],
+          additionalProperties: false
+        }
+      }
+    }
+  ];
+
+  // Helper to robustly parse JSON from content if tool_calls are missing
+  const tryExtractJson = (content: string): GenerationResponse | null => {
+    try {
+      const fenced = content.match(/```(?:json)?\n([\s\S]*?)```/i);
+      if (fenced) return JSON.parse(fenced[1]);
+      const start = content.indexOf('{');
+      if (start !== -1) {
+        let depth = 0;
+        for (let i = start; i < content.length; i++) {
+          const ch = content[i];
+          if (ch === '{') depth++;
+          if (ch === '}') depth--;
+          if (depth === 0) {
+            const slice = content.slice(start, i + 1);
+            return JSON.parse(slice);
+          }
+        }
+      }
+    } catch { /* ignore */ }
+    return null;
+  };
+
   let lastError: Error | null = null;
-  
+
   for (let attempt = 1; attempt <= MAX_LOVABLE_ATTEMPTS; attempt++) {
     console.log(`🔄 Lovable AI attempt ${attempt}/${MAX_LOVABLE_ATTEMPTS}`);
     const attemptStart = Date.now();
-    
+
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
-      
-      console.log('📤 Calling Lovable AI Gateway (fallback)...');
+
+      console.log('📤 Calling Lovable AI Gateway (primary)...');
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${lovableApiKey}`,
+          Authorization: `Bearer ${lovableApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -748,52 +883,62 @@ async function callLovableAIWithRetry(
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
-          ]
+          ],
+          tools,
+          tool_choice: { type: 'function', function: { name: 'generate_pm_steps' } },
+          max_completion_tokens: 1200
         }),
         signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
       const attemptDuration = Date.now() - attemptStart;
       console.log(`⏱️ Lovable AI attempt ${attempt} took ${attemptDuration}ms`);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ Lovable AI error:', response.status, errorText);
-        
+
         if (response.status === 429 || response.status === 402) {
           lastError = new Error('Lovable AI rate limit or quota exceeded');
-          if (attempt < MAX_GENERATION_ATTEMPTS) {
-            const backoffDelay = Math.pow(2, attempt - 1) * 1000;
+          if (attempt < MAX_LOVABLE_ATTEMPTS) {
+            const backoffDelay = attempt === 1 ? 1000 : 2000; // 1s then 2s
             console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
             await new Promise(resolve => setTimeout(resolve, backoffDelay));
             continue;
           }
         }
-        
+
         throw new Error(`Lovable AI error: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
-      
-      if (!content) {
-        throw new Error('Lovable AI returned empty response');
+      const choice = data.choices?.[0];
+      const toolCalls = choice?.message?.tool_calls || choice?.tool_calls;
+
+      if (toolCalls && Array.isArray(toolCalls)) {
+        const fnCall = toolCalls.find((tc: any) => tc.type === 'function' && tc.function?.name === 'generate_pm_steps');
+        if (fnCall) {
+          const args = JSON.parse(fnCall.function.arguments || '{}');
+          if (args?.steps && Array.isArray(args.steps)) {
+            console.log(`🛠️ Parsed tool_calls with ${args.steps.length} steps`);
+            return args.steps as GeneratedStep[];
+          }
+        }
+        console.warn('⚠️ tool_calls present but could not parse steps');
       }
-      
-      console.log('📥 Lovable AI response received, parsing JSON...');
-      const parsed: GenerationResponse = JSON.parse(content);
-      
-      if (!parsed.steps || !Array.isArray(parsed.steps)) {
-        throw new Error('Lovable AI response missing "steps" array');
+
+      const content = choice?.message?.content ?? '';
+      const parsed = tryExtractJson(content);
+      if (parsed?.steps && Array.isArray(parsed.steps)) {
+        console.log(`🧩 Fallback JSON extraction succeeded with ${parsed.steps.length} steps`);
+        return parsed.steps;
       }
-      
-      console.log(`✅ Lovable AI generated ${parsed.steps.length} steps on attempt ${attempt}`);
-      return parsed.steps;
-      
+
+      throw new Error('Lovable AI response missing steps');
     } catch (error: any) {
       const attemptDuration = Date.now() - attemptStart;
-      
+
       if (error.name === 'AbortError' || error.message?.includes('aborted')) {
         console.error(`❌ Lovable AI attempt ${attempt} timed out after ${attemptDuration}ms`);
         lastError = new Error(`Lovable AI timed out after ${AI_TIMEOUT_MS / 1000}s`);
@@ -801,7 +946,7 @@ async function callLovableAIWithRetry(
         console.error(`❌ Lovable AI attempt ${attempt} failed:`, error.message);
         lastError = error;
       }
-      
+
       if (attempt < MAX_LOVABLE_ATTEMPTS) {
         const backoffDelay = attempt === 1 ? 1000 : 2000; // 1s then 2s
         console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
@@ -809,7 +954,7 @@ async function callLovableAIWithRetry(
       }
     }
   }
-  
+
   console.error(`❌ All ${MAX_LOVABLE_ATTEMPTS} Lovable AI attempts failed`);
   throw lastError || new Error('Lovable AI failed after all retries');
 }
