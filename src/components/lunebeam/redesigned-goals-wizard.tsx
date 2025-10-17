@@ -83,7 +83,7 @@ const categories = [{
   emoji: '🏠',
   description: 'Life skills for independence',
   examples: 'Cooking, cleaning, budgeting, transportation',
-  detailedExamples: ['Cook a meal from scratch', 'Clean room weekly', 'Track monthly budget', 'Learn public transportation', 'Do laundry independently', 'Grocery shopping']
+  detailedExamples: ['Cook a meal from scratch', 'Clean room', 'Track monthly budget', 'Learn public transportation', 'Do laundry independently', 'Grocery shopping']
 }, {
   id: 'social_skills',
   title: 'Social / Self-Advocacy',
@@ -146,7 +146,7 @@ const exampleGoalsByCategory: Record<string, ExampleGoal[]> = {
   ],
   independent_living: [
     { id: 'cook-meal', title: 'Cook a meal from scratch', description: 'Learn to prepare complete meals independently', suggestedType: 'progressive_mastery', categoryId: 'independent_living' },
-    { id: 'clean-room', title: 'Clean room weekly', description: 'Maintain a clean living space through regular cleaning', suggestedType: 'reminder', categoryId: 'independent_living' },
+    { id: 'clean-room', title: 'Clean room', description: 'Learn to clean and organize your room effectively', suggestedType: 'progressive_mastery', categoryId: 'independent_living' },
     { id: 'track-budget', title: 'Track monthly budget', description: 'Develop financial awareness through budget tracking', suggestedType: 'reminder', categoryId: 'independent_living' },
     { id: 'public-transport', title: 'Learn public transportation', description: 'Master navigating buses, trains, and routes independently', suggestedType: 'progressive_mastery', categoryId: 'independent_living' },
     { id: 'laundry-independent', title: 'Do laundry independently', description: 'Learn the complete laundry process from start to finish', suggestedType: 'progressive_mastery', categoryId: 'independent_living' },
@@ -1833,10 +1833,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   setModalView('categories');
                   setSelectedCategoryForModal(null);
 
-                  toast({
-                    title: "Goal idea selected!",
-                    description: `"${goal.title}" has been added. Continue to customize it.`,
-                  });
                 }}
               >
                 <CardContent className="p-4">
@@ -1845,9 +1841,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {goal.description}
                     </p>
-                    <Badge className={cn("text-xs border", badge.color)}>
-                      {badge.text}
-                    </Badge>
                   </div>
                 </CardContent>
               </Card>

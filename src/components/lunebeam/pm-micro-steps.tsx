@@ -210,13 +210,12 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
       inputType="custom"
       onBack={goBack}
       onContinue={goNext}
-      onSkip={goNext}
       hideHeader
       hideFooter
     >
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground text-center mb-6">
-          start building the plan to crush this goal
+          Identifying barriers helps create a personalized practice plan that works around your challenges
         </p>
 
         {level === 5 && (

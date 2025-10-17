@@ -374,10 +374,12 @@ function buildPMSystemPrompt(input: PMGoalCreationInput): string {
 STUDENT CONTEXT:
 • Skill Level: ${input.skillAssessment.calculatedLevel}/6 (${input.skillAssessment.levelLabel})
 • Motivation: ${motivation}
-${sanitizedBarriers ? `• Barriers: ${sanitizedBarriers}` : ''}
 • Practice: ${freq}×/week × ${weeks} weeks
 ${input.teachingHelper ? `• Helper: ${input.teachingHelper.helperName}` : '• Learning independently'}
 ${domainGuidance}
+
+CRITICAL - USER'S IDENTIFIED CHALLENGES: ${sanitizedBarriers}
+${sanitizedBarriers ? 'Each step MUST directly address or provide strategies to work around these specific barriers. Do not ignore these challenges.' : ''}
 
 STEP REQUIREMENTS:
 1. Generate EXACTLY ${targetSteps} steps total
