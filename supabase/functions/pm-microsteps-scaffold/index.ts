@@ -104,10 +104,11 @@ interface ValidationResult {
   warnings: string[];
 }
 
-// OpenAI Configuration
-const MAX_GENERATION_ATTEMPTS = 3;
+// AI Configuration
+const MAX_LOVABLE_ATTEMPTS = 2; // Lovable AI gets 2 fast attempts
+const MAX_OPENAI_ATTEMPTS = 1; // OpenAI gets 1 fallback attempt
 const AI_MODEL = 'gpt-5-mini-2025-08-07'; // Fast, cost-efficient GPT-5 variant
-const AI_TIMEOUT_MS = 60000; // 60 seconds per attempt
+const AI_TIMEOUT_MS = 12000; // 12 seconds per attempt
 
 // Dangerous Keywords Array (from requirements section 5.1)
 const dangerousKeywords = [
@@ -454,7 +455,7 @@ ${domainGuidance}
 
 # PROGRESSIVE MASTERY FRAMEWORK
 
-Generate **8-12 practice steps** following this 4-phase structure:
+Generate **6-8 practice steps** following this 4-phase structure:
 
 **Phase 1 (Weeks 1-2): Foundation with High Support**
 - Support Level: HIGH
@@ -545,8 +546,8 @@ function validateBasicFormat(steps: GeneratedStep[], input: PMGoalCreationInput)
   const errors: string[] = [];
   const warnings: string[] = [];
   
-  if (steps.length < 8 || steps.length > 12) {
-    errors.push(`Expected 8-12 steps, got ${steps.length}`);
+  if (steps.length < 6 || steps.length > 10) {
+    errors.push(`Expected 6-10 steps, got ${steps.length}`);
   }
   
   const goalKeywords = input.title.toLowerCase()
@@ -625,7 +626,7 @@ function validateBasicFormat(steps: GeneratedStep[], input: PMGoalCreationInput)
 }
 
 /**
- * Call OpenAI API to generate PM steps with retry logic
+ * Call OpenAI API to generate PM steps (single attempt, used as fallback)
  */
 async function callAIWithRetry(
   payload: PMGoalCreationInput,
@@ -640,126 +641,76 @@ async function callAIWithRetry(
   
   const userPrompt = retryGuidance 
     ? `${retryGuidance}\n\nNow generate the steps following all requirements.`
-    : `Generate ${payload.duration_weeks > 8 ? '10-12' : '8-10'} Progressive Mastery steps for this goal.`;
+    : `Generate 6-8 Progressive Mastery steps for this goal.`;
   
-  let lastError: Error | null = null;
+  console.log(`🔄 OpenAI fallback attempt (single try)`);
+  const attemptStart = Date.now();
   
-  for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
-    console.log(`🔄 Generation attempt ${attempt}/${MAX_GENERATION_ATTEMPTS}`);
-    const attemptStart = Date.now();
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
     
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+    console.log('📤 Calling OpenAI API...');
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        max_completion_tokens: 1200
+      }),
+      signal: controller.signal
+    });
       
-      console.log('📤 Calling OpenAI API...');
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: AI_MODEL,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          max_completion_tokens: 4000
-        }),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      const attemptDuration = Date.now() - attemptStart;
-      console.log(`⏱️ Attempt ${attempt} took ${attemptDuration}ms`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ OpenAI API error:', response.status, errorText);
-        
-        // Handle specific error codes
-        if (response.status === 429) {
-          lastError = new Error('OpenAI rate limit exceeded. Please try again in a moment.');
-          if (attempt < MAX_GENERATION_ATTEMPTS) {
-            const backoffDelay = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s
-            console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
-            await new Promise(resolve => setTimeout(resolve, backoffDelay));
-            continue;
-          }
-        } else if (response.status === 401) {
-          throw new Error('OpenAI API key invalid or expired. Please check your OPENAI_API_KEY.');
-        } else if (response.status === 408 || response.status === 504) {
-          // Timeout/gateway timeout - retry
-          lastError = new Error(`Request timeout (${response.status})`);
-          if (attempt < MAX_GENERATION_ATTEMPTS) {
-            const backoffDelay = Math.pow(2, attempt - 1) * 1000;
-            console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
-            await new Promise(resolve => setTimeout(resolve, backoffDelay));
-            continue;
-          }
-        } else if (response.status >= 500) {
-          // Server error - retry
-          lastError = new Error(`OpenAI service error (${response.status})`);
-          if (attempt < MAX_GENERATION_ATTEMPTS) {
-            const backoffDelay = Math.pow(2, attempt - 1) * 1000;
-            console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
-            await new Promise(resolve => setTimeout(resolve, backoffDelay));
-            continue;
-          }
-        }
-        
-        throw new Error(`OpenAI API error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
-      
-      if (!content) {
-        throw new Error('OpenAI returned empty response');
-      }
-      
-      console.log('📥 OpenAI response received, parsing JSON...');
-      const parsed: GenerationResponse = JSON.parse(content);
-      
-      if (!parsed.steps || !Array.isArray(parsed.steps)) {
-        throw new Error('OpenAI response missing "steps" array');
-      }
-      
-      console.log(`✅ Successfully generated ${parsed.steps.length} steps on attempt ${attempt}`);
-      return parsed.steps;
-      
-    } catch (error: any) {
-      const attemptDuration = Date.now() - attemptStart;
-      
-      if (error.name === 'AbortError' || error.message?.includes('aborted')) {
-        console.error(`❌ Attempt ${attempt} timed out after ${attemptDuration}ms`);
-        lastError = new Error(`Request timed out after ${AI_TIMEOUT_MS / 1000}s`);
-      } else if (error.message?.includes('API key') || error.message?.includes('Rate limit')) {
-        // Don't retry auth/rate limit errors
-        throw error;
-      } else {
-        console.error(`❌ Attempt ${attempt} failed:`, error.message);
-        lastError = error;
-      }
-      
-      // Exponential backoff for retries
-      if (attempt < MAX_GENERATION_ATTEMPTS) {
-        const backoffDelay = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s
-        console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
-        await new Promise(resolve => setTimeout(resolve, backoffDelay));
-      }
+    clearTimeout(timeoutId);
+    const attemptDuration = Date.now() - attemptStart;
+    console.log(`⏱️ OpenAI attempt took ${attemptDuration}ms`);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status}`);
     }
+    
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      throw new Error('OpenAI returned empty response');
+    }
+    
+    console.log('📥 OpenAI response received, parsing JSON...');
+    const parsed: GenerationResponse = JSON.parse(content);
+    
+    if (!parsed.steps || !Array.isArray(parsed.steps)) {
+      throw new Error('OpenAI response missing "steps" array');
+    }
+    
+    console.log(`✅ OpenAI generated ${parsed.steps.length} steps`);
+    return parsed.steps;
+    
+  } catch (error: any) {
+    const attemptDuration = Date.now() - attemptStart;
+    
+    if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+      console.error(`❌ OpenAI timed out after ${attemptDuration}ms`);
+      throw new Error(`Request timed out after ${AI_TIMEOUT_MS / 1000}s`);
+    }
+    
+    console.error(`❌ OpenAI failed:`, error.message);
+    throw error;
   }
-  
-  // All attempts failed
-  console.error(`❌ All ${MAX_GENERATION_ATTEMPTS} generation attempts failed`);
-  throw lastError || new Error('Step generation failed after all retries');
 }
 
 /**
- * Fallback to Lovable AI Gateway if OpenAI fails
- * Uses Google Gemini 2.5 Flash model for step generation
+ * Primary AI provider: Lovable AI Gateway (Google Gemini 2.5 Flash)
+ * Fast, reliable, and recommended for step generation
  */
 async function callLovableAIWithRetry(
   payload: PMGoalCreationInput,
@@ -773,12 +724,12 @@ async function callLovableAIWithRetry(
   const systemPrompt = buildPMSystemPrompt(payload);
   const userPrompt = retryGuidance 
     ? `${retryGuidance}\n\nNow generate the steps following all requirements.`
-    : `Generate ${payload.duration_weeks > 8 ? '10-12' : '8-10'} Progressive Mastery steps for this goal.`;
+    : `Generate 6-8 Progressive Mastery steps for this goal.`;
   
   let lastError: Error | null = null;
   
-  for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
-    console.log(`🔄 Lovable AI fallback attempt ${attempt}/${MAX_GENERATION_ATTEMPTS}`);
+  for (let attempt = 1; attempt <= MAX_LOVABLE_ATTEMPTS; attempt++) {
+    console.log(`🔄 Lovable AI attempt ${attempt}/${MAX_LOVABLE_ATTEMPTS}`);
     const attemptStart = Date.now();
     
     try {
@@ -837,7 +788,7 @@ async function callLovableAIWithRetry(
         throw new Error('Lovable AI response missing "steps" array');
       }
       
-      console.log(`✅ Lovable AI fallback generated ${parsed.steps.length} steps on attempt ${attempt}`);
+      console.log(`✅ Lovable AI generated ${parsed.steps.length} steps on attempt ${attempt}`);
       return parsed.steps;
       
     } catch (error: any) {
@@ -851,16 +802,16 @@ async function callLovableAIWithRetry(
         lastError = error;
       }
       
-      if (attempt < MAX_GENERATION_ATTEMPTS) {
-        const backoffDelay = Math.pow(2, attempt - 1) * 1000;
+      if (attempt < MAX_LOVABLE_ATTEMPTS) {
+        const backoffDelay = attempt === 1 ? 1000 : 2000; // 1s then 2s
         console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, backoffDelay));
       }
     }
   }
   
-  console.error(`❌ All ${MAX_GENERATION_ATTEMPTS} Lovable AI attempts failed`);
-  throw lastError || new Error('Lovable AI fallback failed after all retries');
+  console.error(`❌ All ${MAX_LOVABLE_ATTEMPTS} Lovable AI attempts failed`);
+  throw lastError || new Error('Lovable AI failed after all retries');
 }
 
 // Safety Violation Notification Helper
@@ -1371,12 +1322,12 @@ serve(async (req) => {
             let generatedSteps: GeneratedStep[] | null = null;
             let aiProvider = 'none';
             
-            // Try OpenAI first
+            // Try Lovable AI first (faster, recommended)
             try {
-              console.log(`🤖 [${taskId}] Attempting OpenAI generation (model: ${AI_MODEL})...`);
-              const openaiStart = Date.now();
-              const rawSteps = await callAIWithRetry(payload);
-              console.log(`✅ [${taskId}] OpenAI returned ${rawSteps.length} steps in ${Date.now() - openaiStart}ms`);
+              console.log(`🤖 [${taskId}] Attempting Lovable AI generation (Gemini 2.5 Flash)...`);
+              const lovableStart = Date.now();
+              const rawSteps = await callLovableAIWithRetry(payload);
+              console.log(`✅ [${taskId}] Lovable AI returned ${rawSteps.length} steps in ${Date.now() - lovableStart}ms`);
               
               console.log(`🔍 [${taskId}] Checking for safety violations...`);
               if (containsSafetySignal(rawSteps)) {
@@ -1389,36 +1340,36 @@ serve(async (req) => {
               const validation = validateBasicFormat(rawSteps, payload);
               if (validation.valid || rawSteps.length > 0) {
                 generatedSteps = rawSteps;
-                aiProvider = 'openai';
-                console.log(`✅ [${taskId}] OpenAI validation passed - ${rawSteps.length} AI-enhanced steps ready`);
+                aiProvider = 'lovable';
+                console.log(`✅ [${taskId}] Lovable AI validation passed - ${rawSteps.length} AI-enhanced steps ready`);
               } else {
-                console.warn(`⚠️ [${taskId}] OpenAI validation warnings:`, validation.errors);
+                console.warn(`⚠️ [${taskId}] Lovable AI validation warnings:`, validation.errors);
               }
             } catch (err: any) {
-              console.error(`❌ [${taskId}] OpenAI failed:`, {
+              console.error(`❌ [${taskId}] Lovable AI failed:`, {
                 error: err.message,
                 stack: err.stack?.slice(0, 200),
                 name: err.name
               });
-              console.log(`🔄 [${taskId}] Falling back to Lovable AI...`);
+              console.log(`🔄 [${taskId}] Falling back to OpenAI...`);
               
               try {
-                console.log(`🤖 [${taskId}] Attempting Lovable AI generation...`);
-                const lovableStart = Date.now();
-                const rawSteps = await callLovableAIWithRetry(payload);
-                console.log(`✅ [${taskId}] Lovable AI returned ${rawSteps.length} steps in ${Date.now() - lovableStart}ms`);
+                console.log(`🤖 [${taskId}] Attempting OpenAI generation (${AI_MODEL})...`);
+                const openaiStart = Date.now();
+                const rawSteps = await callAIWithRetry(payload);
+                console.log(`✅ [${taskId}] OpenAI returned ${rawSteps.length} steps in ${Date.now() - openaiStart}ms`);
                 
                 if (!containsSafetySignal(rawSteps)) {
                   generatedSteps = rawSteps;
-                  aiProvider = 'lovable';
-                  console.log(`✅ [${taskId}] Lovable AI generated ${rawSteps.length} steps`);
+                  aiProvider = 'openai';
+                  console.log(`✅ [${taskId}] OpenAI generated ${rawSteps.length} steps`);
                 } else {
-                  console.error(`⚠️ [${taskId}] Lovable AI safety violation detected`);
+                  console.error(`⚠️ [${taskId}] OpenAI safety violation detected`);
                 }
-              } catch (lovableErr: any) {
-                console.error(`❌ [${taskId}] Lovable AI failed:`, {
-                  error: lovableErr.message,
-                  stack: lovableErr.stack?.slice(0, 200)
+              } catch (openaiErr: any) {
+                console.error(`❌ [${taskId}] OpenAI failed:`, {
+                  error: openaiErr.message,
+                  stack: openaiErr.stack?.slice(0, 200)
                 });
                 console.error(`❌ [${taskId}] Both AI providers failed - keeping deterministic steps`);
                 return;
@@ -1543,8 +1494,8 @@ serve(async (req) => {
       let generatedSteps: GeneratedStep[] | null = null;
       
       try {
-        console.log('🤖 Attempting OpenAI generation (primary)...');
-        const rawSteps = await callAIWithRetry(payload);
+        console.log('🤖 Attempting Lovable AI generation (primary)...');
+        const rawSteps = await callLovableAIWithRetry(payload);
         
         // Check for Layer 2 safety signal
         if (containsSafetySignal(rawSteps)) {
@@ -1556,22 +1507,22 @@ serve(async (req) => {
         const validation = validateBasicFormat(rawSteps, payload);
         
         if (validation.valid) {
-          console.log(`✅ OpenAI validation passed - generated ${rawSteps.length} steps`);
+          console.log(`✅ Lovable AI validation passed - generated ${rawSteps.length} steps`);
           generatedSteps = rawSteps;
         } else {
-          console.error(`❌ OpenAI validation failed:`, validation.errors);
+          console.error(`❌ Lovable AI validation failed:`, validation.errors);
           console.warn('⚠️ Returning steps despite validation errors to avoid blocking user');
           generatedSteps = rawSteps; // Allow through with warnings
         }
-      } catch (openaiError: any) {
-        console.warn('⚠️ OpenAI failed, trying Lovable AI Gateway fallback...', openaiError.message);
+      } catch (lovableError: any) {
+        console.warn('⚠️ Lovable AI failed, trying OpenAI fallback...', lovableError.message);
         
         try {
-          const rawSteps = await callLovableAIWithRetry(payload);
+          const rawSteps = await callAIWithRetry(payload);
           
           // Check for Layer 2 safety signal
           if (containsSafetySignal(rawSteps)) {
-            console.error('⚠️ Layer 2 safety violation detected in Lovable AI steps');
+            console.error('⚠️ Layer 2 safety violation detected in OpenAI steps');
             return await handleLayer2Violation(supabase, userId, payload, JSON.stringify(rawSteps));
           }
           
@@ -1579,17 +1530,17 @@ serve(async (req) => {
           const validation = validateBasicFormat(rawSteps, payload);
           
           if (validation.valid) {
-            console.log(`✅ Lovable AI validation passed - generated ${rawSteps.length} steps`);
+            console.log(`✅ OpenAI validation passed - generated ${rawSteps.length} steps`);
             generatedSteps = rawSteps;
           } else {
-            console.warn('⚠️ Lovable AI validation warnings:', validation.errors);
+            console.warn('⚠️ OpenAI validation warnings:', validation.errors);
             generatedSteps = rawSteps; // Allow through with warnings
           }
           
-        } catch (lovableError: any) {
-          console.error('❌ Both OpenAI and Lovable AI failed:', {
-            openai: openaiError.message,
-            lovable: lovableError.message
+        } catch (openaiError: any) {
+          console.error('❌ Both Lovable AI and OpenAI failed:', {
+            lovable: lovableError.message,
+            openai: openaiError.message
           });
           
           // Return error - frontend will use deterministic fallback
