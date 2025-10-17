@@ -590,6 +590,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [showBrowseModal, setShowBrowseModal] = useState(false);
   const [modalView, setModalView] = useState<'categories' | 'examples'>('categories');
   const [selectedCategoryForModal, setSelectedCategoryForModal] = useState<typeof categories[0] | null>(null);
+  const [isGeneratingSteps, setIsGeneratingSteps] = useState(false);
   const {
     toast
   } = useToast();
@@ -1375,11 +1376,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               if (PM_DISABLE_FALLBACK) {
                 // PURE AI MODE: No fallback, wait for AI in sync mode
                 console.log('🤖 Pure AI mode: Generating with AI (sync)...');
+                setIsGeneratingSteps(true);
                 
                 toast({
-                  title: 'Generating with AI...',
-                  description: 'Creating your personalized practice steps (may take up to 25 seconds)',
-                  duration: 3000
+                  title: '✨ Generating personalized steps...',
+                  description: 'AI is creating your practice plan (about 20 seconds)',
+                  duration: 5000
                 });
               } else {
                 // STEP 1: Generate deterministic steps INSTANTLY
@@ -1496,9 +1498,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               if (PM_DISABLE_FALLBACK) {
                 // SYNC MODE: Wait for AI and insert steps directly
                 console.log('🤖 Calling AI in sync mode...');
+                
+                // Update progress toast
+                toast({
+                  title: '🧠 AI is thinking...',
+                  description: 'Analyzing your skill level and creating perfect practice steps',
+                  duration: 5000
+                });
+                
                 const { data: syncData, error: syncError } = await supabase.functions.invoke('pm-microsteps-scaffold', {
                   body: pmPayload
                 });
+                
+                setIsGeneratingSteps(false);
                 
                 if (syncError || !syncData?.steps || syncData.steps.length === 0) {
                   console.error('❌ Sync AI generation failed:', syncError);
@@ -1544,6 +1556,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 const { error: insertError } = await supabase
                   .from('steps')
                   .insert(aiSteps);
+                
+                setIsGeneratingSteps(false);
                 
                 if (insertError) {
                   console.error('❌ Failed to save AI steps:', insertError);

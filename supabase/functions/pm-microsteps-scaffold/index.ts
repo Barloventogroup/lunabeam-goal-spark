@@ -308,95 +308,17 @@ function getDomainGuidance(domain: string, skillLevel: number): string {
   const levelLabel = skillLevel <= 2 ? 'emerging' : skillLevel <= 4 ? 'developing' : 'advancing';
   
   const domainGuidelines: Record<string, string> = {
-    independent_living: `
-**Independent Living Domain Guidelines:**
-- Focus on practical daily living skills (cooking, cleaning, personal hygiene, money management)
-- Level ${skillLevel} (${levelLabel}): ${
-  skillLevel <= 2 
-    ? 'Break tasks into very small steps with high support. Include reminders and checklists.'
-    : skillLevel <= 4
-    ? 'Moderate independence with support available. Include decision-making opportunities.'
-    : 'Encourage full independence with minimal supervision. Focus on problem-solving.'
-}
-- Safety is paramount: Always include safety checks for cooking, cleaning chemicals, money handling
-- Build toward long-term independence: Each step should reduce support level over time
-- Include concrete quality indicators (e.g., "food is cooked to safe temperature", "sink is free of food particles")
-`,
+    independent_living: `**Independent Living (Lv ${skillLevel}):** Daily skills (cooking, cleaning, hygiene, money). ${levelLabel === 'emerging' ? 'Small steps, high support, checklists' : levelLabel === 'developing' ? 'Moderate independence, decision-making' : 'Full independence, problem-solving'}. Safety-first for cooking/chemicals/money. Reduce support over time.`,
     
-    employment: `
-**Employment Domain Guidelines:**
-- Focus on career exploration, job readiness, workplace skills, and job retention
-- Level ${skillLevel} (${levelLabel}): ${
-  skillLevel <= 2
-    ? 'Start with exploration and basic skills. Use role-playing and guided practice.'
-    : skillLevel <= 4
-    ? 'Include real-world applications like mock interviews, resume building. Practice professional communication.'
-    : 'Focus on career advancement, networking, and leadership skills. Encourage independent job search.'
-}
-- Professional context: Use workplace-appropriate language and scenarios
-- Include soft skills: Communication, time management, teamwork, problem-solving
-- Progression: Exploration → Preparation → Application → Interview → Job Start → Retention
-`,
+    employment: `**Employment (Lv ${skillLevel}):** Career skills & readiness. ${levelLabel === 'emerging' ? 'Exploration, role-play, guided practice' : levelLabel === 'developing' ? 'Real applications (interviews, resume), professional communication' : 'Career advancement, networking, leadership'}. Progression: Explore → Prep → Apply → Interview → Start → Retain.`,
     
-    education: `
-**Education Domain Guidelines:**
-- Focus on academic skills, study habits, classroom participation, and learning strategies
-- Level ${skillLevel} (${levelLabel}): ${
-  skillLevel <= 2
-    ? 'Focus on foundational study skills. Use visual aids and structured routines.'
-    : skillLevel <= 4
-    ? 'Build time management and note-taking skills. Introduce independent study strategies.'
-    : 'Emphasize advanced research, critical thinking, and self-directed learning.'
-}
-- Academic integrity: Always emphasize honest, original work
-- Include self-advocacy: Encourage asking for help, accommodations when needed
-- Balance: Mix academic tasks with organizational and social-emotional learning
-`,
+    education: `**Education (Lv ${skillLevel}):** Study habits & learning strategies. ${levelLabel === 'emerging' ? 'Foundation skills, visual aids, routines' : levelLabel === 'developing' ? 'Time management, note-taking, independent study' : 'Research, critical thinking, self-directed'}. Academic integrity required. Encourage self-advocacy.`,
     
-    social_skills: `
-**Social Skills Domain Guidelines:**
-- Focus on communication, friendship, emotional regulation, and social problem-solving
-- Level ${skillLevel} (${levelLabel}): ${
-  skillLevel <= 2
-    ? 'Start with basic greetings, turn-taking, personal space. Use scripts and role-play.'
-    : skillLevel <= 4
-    ? 'Practice conversation skills, reading social cues, group dynamics. Include reflection.'
-    : 'Focus on complex social situations, conflict resolution, advocacy, leadership.'
-}
-- Neurodiversity-affirming: Respect different communication styles, avoid forcing eye contact
-- Safety: Include consent, boundaries, recognizing unsafe situations
-- Authenticity: Help learner develop genuine connections, not just "masking"
-`,
+    social_skills: `**Social Skills (Lv ${skillLevel}):** Communication & relationships. ${levelLabel === 'emerging' ? 'Greetings, turn-taking, scripts, role-play' : levelLabel === 'developing' ? 'Conversation, social cues, group dynamics, reflection' : 'Complex situations, conflict resolution, advocacy, leadership'}. Neurodiversity-affirming. Safety: consent, boundaries.`,
     
-    health: `
-**Health Domain Guidelines:**
-- Focus on physical health, mental wellness, medical self-management, healthy habits
-- Level ${skillLevel} (${levelLabel}): ${
-  skillLevel <= 2
-    ? 'Simple daily routines: brushing teeth, taking medications with reminders, basic hygiene.'
-    : skillLevel <= 4
-    ? 'Build consistency in health habits. Introduce self-monitoring (sleep logs, mood tracking).'
-    : 'Focus on independent health management: scheduling appointments, advocating in medical settings.'
-}
-- Medical safety: Always verify with healthcare providers for medication, diet, exercise changes
-- Mental health: Normalize seeking support, include coping strategies
-- Sustainable habits: Emphasize gradual, realistic changes over extreme goals
-`,
+    health: `**Health (Lv ${skillLevel}):** Physical & mental wellness. ${levelLabel === 'emerging' ? 'Simple routines (brushing, meds with reminders, hygiene)' : levelLabel === 'developing' ? 'Consistent habits, self-monitoring (sleep logs, mood tracking)' : 'Independent management (scheduling appointments, medical advocacy)'}. Verify with healthcare providers. Normalize seeking support.`,
     
-    recreation_fun: `
-**Recreation & Fun Domain Guidelines:**
-- Focus on hobbies, leisure activities, social recreation, and personal interests
-- Level ${skillLevel} (${levelLabel}): ${
-  skillLevel <= 2
-    ? 'Simple, structured activities with clear steps. Focus on enjoyment and engagement.'
-    : skillLevel <= 4
-    ? 'Balance solo and group activities. Encourage trying new things with support.'
-    : 'Foster independence in planning and organizing activities. Include social leadership opportunities.'
-}
-- Joy-focused: This domain is about enjoyment, not just skill-building
-- Inclusion: Suggest adaptive equipment or modifications if needed
-- Social connection: Where appropriate, build in opportunities to share interests with others
-`
+    recreation_fun: `**Recreation (Lv ${skillLevel}):** Hobbies & leisure. ${levelLabel === 'emerging' ? 'Simple, structured activities for enjoyment' : levelLabel === 'developing' ? 'Balance solo/group, try new things with support' : 'Independent planning, social leadership'}. Joy-focused, not just skill-building. Include adaptive equipment if needed.`
   };
   
   return domainGuidelines[domain] || domainGuidelines.independent_living;
@@ -407,137 +329,37 @@ function getDomainGuidance(domain: string, skillLevel: number): string {
  */
 function buildPMSystemPrompt(input: PMGoalCreationInput): string {
   const domainGuidance = getDomainGuidance(input.domain, input.skillAssessment.calculatedLevel);
+  const motivation = input.motivation || "Learning and improving this skill";
   
-  return `You are an expert transition skills coach specializing in Progressive Mastery for neurodivergent learners (ages 14-26). Your role is to generate personalized, theory-aligned practice steps that build independence gradually.
+  return `Expert transition skills coach for neurodivergent learners (ages 14-26). Generate personalized Progressive Mastery practice steps.
 
-# CRITICAL SAFETY INSTRUCTIONS (Layer 2)
+# SAFETY (Layer 2)
+**REFUSE** goals involving: violence, self-harm, illegal activities, sexual content, dangerous activities, harassment, content inappropriate for ages 14-26.
+**If unsafe, return:** {"steps": [{"title": "[SAFETY_VIOLATION_SIGNAL]", "description": "[SAFETY_VIOLATION_SIGNAL]", "estimatedDuration": 0, "supportLevel": "high", "difficulty": 1, "weekNumber": "Week 1", "phase": 1}]}
 
-**YOU MUST REFUSE** to generate steps for goals involving:
-1. Violence, self-harm, or harm to others
-2. Illegal activities (drugs, theft, hacking, underage drinking/smoking, etc.)
-3. Sexual content or exploitation
-4. Dangerous activities without proper safety measures
-5. Harassment, bullying, manipulation, or revenge
-6. Content inappropriate for minors (ages 14-26)
-
-**If you detect ANY safety concerns:**
-- Return EXACTLY this JSON structure (nothing else):
-  {
-    "steps": [
-      {
-        "title": "[SAFETY_VIOLATION_SIGNAL]",
-        "description": "[SAFETY_VIOLATION_SIGNAL]",
-        "estimatedDuration": 0,
-        "supportLevel": "high",
-        "difficulty": 1,
-        "weekNumber": "Week 1",
-        "phase": 1
-      }
-    ]
-  }
-- DO NOT explain why or provide alternative suggestions
-- DO NOT generate any steps
-
-# GOAL CONTEXT
-
-**Goal:** ${input.title}
-**Domain:** ${input.domain}
-**Duration:** ${input.duration_weeks} weeks
-**Skill Level:** ${input.skillAssessment.calculatedLevel}/6 (${input.skillAssessment.levelLabel})
-**Starting Frequency:** ${input.smartStart.startingFrequency}x per week
-**Target Frequency:** ${input.smartStart.targetFrequency}x per week
-**Ramp Period:** ${input.smartStart.rampWeeks} weeks
-**Motivation:** ${input.motivation}
-${input.barriers ? `**Barriers:** ${input.barriers}` : ''}
-${input.prerequisites.hasEverything ? '' : `**Prerequisites Needed:** ${input.prerequisites.needs}`}
-${input.teachingHelper ? `**Teaching Helper:** ${input.teachingHelper.helperName} (Support types: ${input.teachingHelper.supportTypes.join(', ')})` : '**Learning:** Independently'}
+# CONTEXT
+**Goal:** ${input.title} | **Domain:** ${input.domain} | **Duration:** ${input.duration_weeks}w | **Skill:** ${input.skillAssessment.calculatedLevel}/6 (${input.skillAssessment.levelLabel})
+**Frequency:** ${input.smartStart.startingFrequency}x/w → ${input.smartStart.targetFrequency}x/w (ramp: ${input.smartStart.rampWeeks}w)
+**Motivation:** ${motivation}${input.barriers ? ` | **Barriers:** ${input.barriers}` : ''}${!input.prerequisites.hasEverything ? ` | **Prerequisites:** ${input.prerequisites.needs}` : ''}${input.teachingHelper ? ` | **Helper:** ${input.teachingHelper.helperName}` : ''}
 
 ${domainGuidance}
 
-# PROGRESSIVE MASTERY FRAMEWORK
+# FRAMEWORK
+Generate **6-8 steps** across 4 phases:
+1. **Foundation (Wks 1-2):** HIGH support, basic skills, safety, 5-15min
+2. **Guided (Wks 3-4):** MEDIUM-HIGH support, repetition, checklists, 15-30min
+3. **Independence (Wks 5-6):** MEDIUM-LOW support, variations, self-assessment, 30-45min
+4. **Mastery (Wks 7+):** LOW-MINIMAL support, full independence, new contexts
 
-Generate **6-8 practice steps** following this 4-phase structure:
+# REQUIREMENTS
+**Required fields:** title (10-80 chars, no placeholders), description (50-400 chars, specific), estimatedDuration (mins), supportLevel (high→none), difficulty (1-5, increasing), weekNumber, phase (1-4), prerequisites (array), safetyNotes (string|null), qualityIndicators (2-4 items), independenceIndicators (2-3 items), practiceCount
+**Quality:** 60%+ steps must reference "${input.title}". No placeholders ([Name], [Goal]). Specific actions only. Progressive difficulty.
 
-**Phase 1 (Weeks 1-2): Foundation with High Support**
-- Support Level: HIGH
-- Focus: Basic skill introduction, building confidence
-- Include: Safety training, tool familiarization, success criteria
-- Steps should be short (5-15 min), highly structured
+# OUTPUT
+JSON only (no markdown):
+{"steps": [{"title": "...", "description": "...", "estimatedDuration": 15, "supportLevel": "high", "difficulty": 1, "weekNumber": "Week 1", "phase": 1, "prerequisites": [], "safetyNotes": null, "qualityIndicators": ["..."], "independenceIndicators": ["..."], "practiceCount": 5}]}
 
-**Phase 2 (Weeks 3-4): Guided Practice**
-- Support Level: MEDIUM-HIGH
-- Focus: Repetition with decreasing prompts
-- Include: Checklists, self-monitoring, problem-solving practice
-- Steps should be moderate (15-30 min), some independence
-
-**Phase 3 (Weeks 5-6): Developing Independence**
-- Support Level: MEDIUM-LOW
-- Focus: More complex variations, decision-making
-- Include: Quality self-assessment, efficiency improvements
-- Steps should be longer (30-45 min), mostly independent
-
-**Phase 4 (Weeks 7-${input.duration_weeks}): Mastery & Generalization**
-- Support Level: LOW to MINIMAL
-- Focus: Full independence, adapting to new contexts
-- Include: Teaching others, handling unexpected challenges
-- Steps should be comprehensive (45-60 min), fully independent
-
-# STEP QUALITY REQUIREMENTS
-
-Each step MUST include:
-1. **title**: Clear, action-oriented (10-80 chars). NO placeholders like "[Goal]" or "[Name]"
-2. **description**: Detailed instructions (50-400 chars). Specific, concrete, actionable
-3. **estimatedDuration**: Realistic time in minutes
-4. **supportLevel**: "high" | "medium" | "low" | "minimal" | "none" (decreasing over time)
-5. **difficulty**: 1-5 rating (increasing gradually)
-6. **weekNumber**: "Week X" or "Week X-Y" (aligned with duration)
-7. **phase**: 1, 2, 3, or 4 (matching Progressive Mastery phases)
-8. **prerequisites**: Array of what must be mastered first (can be empty for Phase 1)
-9. **safetyNotes**: Important safety considerations (or null if none)
-10. **qualityIndicators**: 2-4 concrete signs of success
-11. **independenceIndicators**: 2-3 signs learner is ready for less support
-12. **practiceCount**: Recommended number of practice attempts for this step
-
-# VALIDATION CHECKS
-
-**Title & Description Quality:**
-- NO generic placeholders ("[Name]", "[Goal]", "[Helper]")
-- NO vague actions ("practice", "continue", "keep going")
-- YES specific, concrete actions
-
-**Goal Alignment:**
-- At least 60% of steps MUST explicitly reference the goal: "${input.title}"
-- Use goal-specific vocabulary, not generic skill-building
-
-**Progressive Difficulty:**
-- Steps get progressively harder (difficulty should increase)
-- Support level should decrease over time
-- Practice count should decrease as independence grows
-
-# OUTPUT FORMAT
-
-Return ONLY valid JSON matching this schema (no markdown, no explanation):
-
-{
-  "steps": [
-    {
-      "title": "Start with the activation cue",
-      "description": "When [trigger], I will [first concrete action]. Use a timer and checklist.",
-      "estimatedDuration": 15,
-      "supportLevel": "high",
-      "difficulty": 1,
-      "weekNumber": "Week 1",
-      "phase": 1,
-      "prerequisites": [],
-      "safetyNotes": "Ask for help if you feel unsafe or unsure",
-      "qualityIndicators": ["Completes without assistance", "Follows all safety rules"],
-      "independenceIndicators": ["Asks clarifying questions", "Refers to checklist without prompting"],
-      "practiceCount": 5
-    }
-  ]
-}
-
-**Remember:** If ANY safety concerns arise, return the SAFETY_VIOLATION_SIGNAL structure instead.`;
+If unsafe: return SAFETY_VIOLATION_SIGNAL structure.`;
 }
 
 /**
@@ -641,50 +463,45 @@ async function callAIWithRetry(
 
   const systemPrompt = buildPMSystemPrompt(payload);
   const userPrompt = retryGuidance
-    ? `${retryGuidance}\n\nNow generate the steps following all requirements.`
-    : `Generate 6-8 Progressive Mastery steps for this goal.`;
+    ? `${retryGuidance}\n\nGenerate steps.`
+    : `Generate 6-8 steps.`;
 
-  // Define tool-calling schema to force structured output
-  const tools = [
-    {
-      type: 'function',
-      function: {
-        name: 'generate_pm_steps',
-        description: 'Return 6–8 Progressive Mastery steps for the goal',
-        parameters: {
-          type: 'object',
-          properties: {
-            steps: {
-              type: 'array',
-              minItems: 6,
-              maxItems: 8,
-              items: {
-                type: 'object',
-                additionalProperties: false,
-                properties: {
-                  title: { type: 'string' },
-                  description: { type: 'string' },
-                  estimatedDuration: { type: 'number' },
-                  supportLevel: { type: 'string', enum: ['high', 'medium', 'low', 'minimal', 'none'] },
-                  difficulty: { type: 'number', minimum: 1, maximum: 6 },
-                  weekNumber: { type: 'string' },
-                  phase: { type: 'number', minimum: 1, maximum: 4 },
-                  prerequisites: { type: 'array', items: { type: 'string' } },
-                  safetyNotes: { anyOf: [{ type: 'string' }, { type: 'null' }] },
-                  qualityIndicators: { type: 'array', items: { type: 'string' } },
-                  independenceIndicators: { type: 'array', items: { type: 'string' } },
-                  practiceCount: { type: 'number' }
-                },
-                required: ['title', 'description', 'estimatedDuration', 'supportLevel', 'difficulty', 'weekNumber', 'phase']
-              }
+  const tools = [{
+    type: 'function',
+    function: {
+      name: 'generate_pm_steps',
+      description: 'Return 6–8 PM steps',
+      parameters: {
+        type: 'object',
+        properties: {
+          steps: {
+            type: 'array',
+            minItems: 6,
+            maxItems: 8,
+            items: {
+              type: 'object',
+              properties: {
+                title: { type: 'string' },
+                description: { type: 'string' },
+                estimatedDuration: { type: 'number' },
+                supportLevel: { type: 'string', enum: ['high', 'medium', 'low', 'minimal', 'none'] },
+                difficulty: { type: 'number', minimum: 1, maximum: 6 },
+                weekNumber: { type: 'string' },
+                phase: { type: 'number', minimum: 1, maximum: 4 },
+                prerequisites: { type: 'array', items: { type: 'string' } },
+                safetyNotes: { anyOf: [{ type: 'string' }, { type: 'null' }] },
+                qualityIndicators: { type: 'array', items: { type: 'string' } },
+                independenceIndicators: { type: 'array', items: { type: 'string' } },
+                practiceCount: { type: 'number' }
+              },
+              required: ['title', 'description', 'estimatedDuration', 'supportLevel', 'difficulty', 'weekNumber', 'phase']
             }
-          },
-          required: ['steps'],
-          additionalProperties: false
-        }
+          }
+        },
+        required: ['steps']
       }
     }
-  ];
+  }];
 
   // Helper to robustly parse JSON from content if tool_calls are missing
   const tryExtractJson = (content: string): GenerationResponse | null => {
