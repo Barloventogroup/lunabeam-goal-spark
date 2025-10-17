@@ -161,6 +161,28 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       loadSteps(activeGoal.id);
     }
   }, [activeGoal?.id, loadSteps]);
+
+  // Auto-refresh steps when AI enhancement completes
+  useEffect(() => {
+    if (!activeGoal?.id) return;
+
+    const channel = supabase
+      .channel(`steps-dashboard-${activeGoal.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'steps',
+        filter: `goal_id=eq.${activeGoal.id}`
+      }, (payload) => {
+        console.log('[HomeDashboard] Steps updated, reloading...', payload);
+        loadSteps(activeGoal.id);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeGoal?.id, loadSteps]);
   const recentCheckIns = activeGoal ? getRecentCheckIns(activeGoal.id) : [];
 
   // Calculate stats

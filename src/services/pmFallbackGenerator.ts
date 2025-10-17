@@ -80,49 +80,49 @@ const DOMAIN_TEMPLATES: Record<string, (title: string, weeks: number) => Fallbac
   independent_living: (title, weeks) => {
     const steps: FallbackStep[] = [
       {
-        title: "Watch demonstration of the skill with helper",
-        notes: "Have your helper show you each step. Ask questions about anything unclear.",
+        title: `Watch demonstration of "${title}" with helper`,
+        notes: `Have your helper show you each step of "${title}". Ask questions about anything unclear.`,
         estimatedDuration: 20,
         pm_metadata: { phase: 'learn', weekNumber: '1', supportLevel: 'high', difficulty: 1 },
         weekIndex: 1
       },
       {
-        title: "Try the task with full helper support",
-        notes: "Do it together step-by-step. Helper guides you through each part.",
+        title: `Try "${title}" with full helper support`,
+        notes: `Do "${title}" together step-by-step. Helper guides you through each part.`,
         estimatedDuration: 30,
         pm_metadata: { phase: 'learn', weekNumber: '1', supportLevel: 'high', difficulty: 2 },
         weekIndex: 1
       },
       {
-        title: "Practice with helper nearby for questions",
+        title: `Practice "${title}" with helper nearby for questions`,
         notes: "Do most steps yourself. Ask for help when stuck.",
         estimatedDuration: 30,
         pm_metadata: { phase: 'practice', weekNumber: '2', supportLevel: 'medium', difficulty: 2 },
         weekIndex: 2
       },
       {
-        title: "Complete task independently, show helper result",
+        title: `Complete "${title}" independently, show helper result`,
         notes: "Do the full task on your own. Show your work to helper for feedback.",
         estimatedDuration: 40,
         pm_metadata: { phase: 'practice', weekNumber: '2-3', supportLevel: 'medium', difficulty: 3 },
         weekIndex: 2
       },
       {
-        title: "Do task independently 3 times this week",
+        title: `Do "${title}" independently 3 times this week`,
         notes: "Build consistency. Notice what gets easier each time.",
         estimatedDuration: 35,
         pm_metadata: { phase: 'apply', weekNumber: '3', supportLevel: 'low', difficulty: 3 },
         weekIndex: 3
       },
       {
-        title: "Troubleshoot: What if something goes wrong?",
+        title: `Troubleshoot "${title}": What if something goes wrong?`,
         notes: "Practice handling 2 common problems. Know when to ask for help.",
         estimatedDuration: 25,
         pm_metadata: { phase: 'apply', weekNumber: '3-4', supportLevel: 'low', difficulty: 3 },
         weekIndex: 3
       },
       {
-        title: "Complete task fully independently for 2 weeks",
+        title: `Complete "${title}" fully independently for 2 weeks`,
         notes: "Maintain quality and consistency. Track your progress.",
         estimatedDuration: 35,
         pm_metadata: { phase: 'master', weekNumber: '4+', supportLevel: 'minimal', difficulty: 4 },

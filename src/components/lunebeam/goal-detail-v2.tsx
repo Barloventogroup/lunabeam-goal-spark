@@ -67,6 +67,42 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     loadGoalData();
   }, [goalId]);
 
+  // Auto-refresh when AI enhancement completes
+  useEffect(() => {
+    if (!goalId) return;
+
+    let hasShownToast = false;
+
+    const channel = supabase
+      .channel(`steps-updates-${goalId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'steps',
+        filter: `goal_id=eq.${goalId}`
+      }, (payload) => {
+        console.log('[GoalDetail] Steps updated, reloading...', payload);
+        loadGoalData();
+        
+        // Show toast once when AI enhancement completes
+        if (!hasShownToast && payload.eventType === 'UPDATE') {
+          const step = payload.new as any;
+          if (step?.pm_metadata?.enhanced) {
+            hasShownToast = true;
+            toast({
+              title: "Your practice steps were enhanced ✨",
+              description: "AI has personalized your learning path",
+            });
+          }
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [goalId, toast]);
+
   useEffect(() => {
     // Trigger daily generation check for habit goals
     if (goal) {
