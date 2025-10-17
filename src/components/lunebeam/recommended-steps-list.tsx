@@ -934,17 +934,6 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
                               }`}>
                                 {cleanStepTitle(mainStep.title)}
                               </span>
-                              {(mainStep as any).pm_metadata?.enhanced && (
-                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-primary/10 text-primary">
-                                  AI
-                                </Badge>
-                              )}
-                              {(mainStep as any).pm_metadata?.source === 'deterministic_fallback' && 
-                               !(mainStep as any).pm_metadata?.enhanced && (
-                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-muted text-muted-foreground">
-                                  Fallback
-                                </Badge>
-                              )}
                               {subSteps.length > 0 && (
                                 <Badge variant="secondary" className={`text-xs ${isBlocked ? 'opacity-50' : ''}`}>
                                   {subSteps.filter(s => s.completed_at).length}/{subSteps.length} substeps

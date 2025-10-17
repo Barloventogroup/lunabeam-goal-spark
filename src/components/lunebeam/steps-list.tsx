@@ -1099,17 +1099,6 @@ export const StepsList: React.FC<StepsListProps> = ({
                                   <span className={`text-sm font-medium ${isBlocked ? 'text-muted-foreground/60' : 'text-foreground'}`}>
                                     {cleanStepTitle(step.title)}
                                   </span>
-                                  {(step as any).pm_metadata?.enhanced && (
-                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-primary/10 text-primary">
-                                      AI
-                                    </Badge>
-                                  )}
-                                  {(step as any).pm_metadata?.source === 'deterministic_fallback' && 
-                                   !(step as any).pm_metadata?.enhanced && (
-                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-muted text-muted-foreground">
-                                      Fallback
-                                    </Badge>
-                                  )}
                                   {getStepIcon(step)}
                                 </div>
                                 {precursorText && (

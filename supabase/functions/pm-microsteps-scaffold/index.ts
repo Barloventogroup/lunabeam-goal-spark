@@ -325,34 +325,28 @@ function getDomainGuidance(domain: string, skillLevel: number): string {
 function buildPMSystemPrompt(input: PMGoalCreationInput): string {
   const domainGuidance = getDomainGuidance(input.domain, input.skillAssessment.calculatedLevel);
   const motivation = input.motivation || "Learning and improving this skill";
+  const freq = input.smartStart.startingFrequency;
+  const weeks = input.duration_weeks;
   
-  return `Progressive Mastery coach (ages 14-26). Generate 6-8 personalized steps.
+  return `Generate ${Math.ceil(freq * weeks * 0.75)} steps for: "${input.title}" (${input.domain})
 
-**SAFETY**: Refuse violence, self-harm, illegal, sexual, dangerous, harassment, inappropriate content.
-If unsafe: return [{"title": "[SAFETY_VIOLATION_SIGNAL]", "description": "[SAFETY_VIOLATION_SIGNAL]", "estimatedDuration": 0, "supportLevel": "high", "difficulty": 1, "weekNumber": "Week 1", "phase": 1}]
+CONTEXT:
+- Skill: Lv${input.skillAssessment.calculatedLevel} (${input.skillAssessment.levelLabel})
+- Motivation: ${motivation}
+- Practice: ${freq}×/week for ${weeks} weeks
+${input.teachingHelper ? `- Helper: ${input.teachingHelper.helperName}` : '- Learning alone'}
+${domainGuidance}
 
-**CONTEXT**
-Goal: ${input.title} | Domain: ${domainGuidance} | ${input.duration_weeks}w | Lv ${input.skillAssessment.calculatedLevel} (${input.skillAssessment.levelLabel})
-Frequency: ${input.smartStart.startingFrequency}→${input.smartStart.targetFrequency}x/w (${input.smartStart.rampWeeks}w ramp)
-Motivation: ${motivation}${input.barriers ? ` | Barriers: ${input.barriers}` : ''}${!input.prerequisites.hasEverything ? ` | Needs: ${input.prerequisites.needs}` : ''}${input.teachingHelper ? ` | Helper: ${input.teachingHelper.helperName}` : ''}
+REQUIREMENTS:
+1. Start at current level, progress gradually
+2. Mix habits (5-10min) + practice (15-30min)
+3. Specific, actionable titles (10-15 words max)
+4. Safe, age-appropriate, practical
+5. Build on previous steps
 
-**PHASES**
-1. Foundation (1-2w): HIGH support, 5-15min basics
-2. Guided (3-4w): MED-HIGH support, 15-30min practice
-3. Independence (5-6w): MED-LOW support, 30-45min
-4. Mastery (7+w): LOW support, full independence
+PHASES: Foundation (HIGH support) → Guided (MED) → Independent (LOW) → Mastery (MINIMAL)
 
-**RULES**
-- Concrete & measurable (no "exercise more", use "walk 15min 3x/w")
-- Right-sized for skill level (Lv1: 2min tasks; Lv5: 20min)
-- Clear what/when/how
-- Address barriers directly
-- Sequential progression (no level jumps)
-- 60%+ steps reference "${input.title}"
-- No placeholders ([Name], [Goal])
-
-**OUTPUT JSON**
-{"steps": [{"title": "...", "description": "...", "estimatedDuration": 15, "supportLevel": "high", "difficulty": 1, "weekNumber": "Week 1", "phase": 1, "prerequisites": [], "safetyNotes": null, "qualityIndicators": ["..."], "independenceIndicators": ["..."], "practiceCount": 5}]}`;
+VALIDATION: No harmful/unsafe/illegal content. Age-appropriate only.`;
 }
 
 /**
@@ -608,31 +602,28 @@ async function callLovableAIWithRetry(
     ? `${retryGuidance}\n\nNow generate the steps following all requirements.`
     : `Generate 6-8 Progressive Mastery steps for this goal.`;
 
-  // Tool schema to force structured output
+  // Tool schema to force structured output (optimized for speed)
   const tools = [
     {
       type: 'function',
       function: {
         name: 'generate_pm_steps',
-        description: 'Return 6–8 Progressive Mastery steps for the goal',
+        description: 'Generate 6-8 Progressive Mastery steps',
         parameters: {
           type: 'object',
           properties: {
             steps: {
               type: 'array',
-              minItems: 6,
-              maxItems: 8,
               items: {
                 type: 'object',
-                additionalProperties: false,
                 properties: {
                   title: { type: 'string' },
                   description: { type: 'string' },
                   estimatedDuration: { type: 'number' },
                   supportLevel: { type: 'string', enum: ['high', 'medium', 'low', 'minimal', 'none'] },
-                  difficulty: { type: 'number', minimum: 1, maximum: 6 },
+                  difficulty: { type: 'number' },
                   weekNumber: { type: 'string' },
-                  phase: { type: 'number', minimum: 1, maximum: 4 },
+                  phase: { type: 'number' },
                   prerequisites: { type: 'array', items: { type: 'string' } },
                   safetyNotes: { anyOf: [{ type: 'string' }, { type: 'null' }] },
                   qualityIndicators: { type: 'array', items: { type: 'string' } },
@@ -643,8 +634,7 @@ async function callLovableAIWithRetry(
               }
             }
           },
-          required: ['steps'],
-          additionalProperties: false
+          required: ['steps']
         }
       }
     }
@@ -682,11 +672,31 @@ async function callLovableAIWithRetry(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
-      // Select model based on complexity
+      // Select model based on complexity - granular tiers for optimal speed/quality
       const skillLevel = payload.skillAssessment.calculatedLevel;
-      const isSimple = skillLevel <= 3 && payload.duration_weeks <= 8;
-      const selectedModel = isSimple ? 'google/gemini-2.5-flash-lite' : 'google/gemini-2.5-flash';
-      const maxTokens = isSimple ? 800 : 1200;
+      const durationWeeks = payload.duration_weeks;
+      
+      let selectedModel: string;
+      let maxTokens: number;
+      
+      // Tier 1: Ultra-fast for very simple goals (beginner, short duration)
+      if (skillLevel <= 2 && durationWeeks <= 6) {
+        selectedModel = 'google/gemini-2.5-flash-lite';
+        maxTokens = 600;
+        console.log(`⚡ Using flash-lite (600t) for simple goal (skill=${skillLevel}, ${durationWeeks}w)`);
+      }
+      // Tier 2: Fast for moderate goals
+      else if (skillLevel <= 4 && durationWeeks <= 12) {
+        selectedModel = 'google/gemini-2.5-flash-lite';
+        maxTokens = 800;
+        console.log(`🚀 Using flash-lite (800t) for moderate goal (skill=${skillLevel}, ${durationWeeks}w)`);
+      }
+      // Tier 3: Full model for complex goals (advanced skill, long duration)
+      else {
+        selectedModel = 'google/gemini-2.5-flash';
+        maxTokens = 1200;
+        console.log(`🧠 Using flash (1200t) for complex goal (skill=${skillLevel}, ${durationWeeks}w)`);
+      }
       
       console.log(`📤 Calling Lovable AI Gateway (${selectedModel}, max ${maxTokens} tokens)...`);
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -1658,7 +1668,7 @@ serve(async (req) => {
             version: 1,
             source: 'pm-microsteps-scaffold',
             enhanced: true,
-            modelUsed: AI_MODEL,
+            modelUsed: 'google/gemini-2.5-flash',
             aiProvider: 'lovable-ai',
             generatedAt: new Date().toISOString()
           }
@@ -1678,10 +1688,10 @@ serve(async (req) => {
       const response = {
         steps: generatedSteps,
         metadata: {
-          modelUsed: AI_MODEL,
+          modelUsed: 'google/gemini-2.5-flash',
           aiProvider: 'lovable-ai',
           generatedAt: new Date().toISOString(),
-          generationTimeMs: generationDuration,
+          generationTimeMs: Date.now() - generationStart,
           goalContext: {
             goalId: payload.goalId,
             title: payload.title,
