@@ -7,6 +7,11 @@ declare const EdgeRuntime: {
   waitUntil(promise: Promise<any>): void;
 };
 
+// Add shutdown handler to trace function lifecycle
+addEventListener('beforeunload', (ev: any) => {
+  console.log('⚠️ Edge function shutting down:', ev.detail?.reason || 'unknown reason');
+});
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -1349,52 +1354,92 @@ serve(async (req) => {
         
         // Start background AI generation using waitUntil
         const backgroundTask = async () => {
+          // Generate unique task ID for tracking
+          const taskId = crypto.randomUUID().slice(0, 8);
+          console.log(`🚀 [${taskId}] Background task STARTED for goal: ${payload.goalId}`);
+          console.log(`📊 [${taskId}] Task context:`, {
+            goalTitle: payload.title,
+            domain: payload.domain,
+            userId: userId,
+            mode: 'async'
+          });
+          
           try {
-            console.log('🔄 Background: Starting AI step generation...');
+            console.log(`🔄 [${taskId}] Phase 1: Starting AI step generation...`);
             const genStart = Date.now();
             
             let generatedSteps: GeneratedStep[] | null = null;
+            let aiProvider = 'none';
             
             // Try OpenAI first
             try {
+              console.log(`🤖 [${taskId}] Attempting OpenAI generation (model: ${AI_MODEL})...`);
+              const openaiStart = Date.now();
               const rawSteps = await callAIWithRetry(payload);
+              console.log(`✅ [${taskId}] OpenAI returned ${rawSteps.length} steps in ${Date.now() - openaiStart}ms`);
               
+              console.log(`🔍 [${taskId}] Checking for safety violations...`);
               if (containsSafetySignal(rawSteps)) {
-                console.error('⚠️ Background: Layer 2 safety violation detected');
+                console.error(`⚠️ [${taskId}] Layer 2 safety violation detected - aborting enhancement`);
                 return; // Don't update steps, keep deterministic ones
               }
+              console.log(`✅ [${taskId}] Safety check passed`);
               
+              console.log(`🔍 [${taskId}] Validating step format...`);
               const validation = validateBasicFormat(rawSteps, payload);
               if (validation.valid || rawSteps.length > 0) {
                 generatedSteps = rawSteps;
-                console.log(`✅ Background: Generated ${rawSteps.length} AI-enhanced steps`);
+                aiProvider = 'openai';
+                console.log(`✅ [${taskId}] OpenAI validation passed - ${rawSteps.length} AI-enhanced steps ready`);
+              } else {
+                console.warn(`⚠️ [${taskId}] OpenAI validation warnings:`, validation.errors);
               }
             } catch (err: any) {
-              console.warn('⚠️ Background: OpenAI failed, trying Lovable AI...', err.message);
+              console.error(`❌ [${taskId}] OpenAI failed:`, {
+                error: err.message,
+                stack: err.stack?.slice(0, 200),
+                name: err.name
+              });
+              console.log(`🔄 [${taskId}] Falling back to Lovable AI...`);
               
               try {
+                console.log(`🤖 [${taskId}] Attempting Lovable AI generation...`);
+                const lovableStart = Date.now();
                 const rawSteps = await callLovableAIWithRetry(payload);
+                console.log(`✅ [${taskId}] Lovable AI returned ${rawSteps.length} steps in ${Date.now() - lovableStart}ms`);
+                
                 if (!containsSafetySignal(rawSteps)) {
                   generatedSteps = rawSteps;
-                  console.log(`✅ Background: Lovable AI generated ${rawSteps.length} steps`);
+                  aiProvider = 'lovable';
+                  console.log(`✅ [${taskId}] Lovable AI generated ${rawSteps.length} steps`);
+                } else {
+                  console.error(`⚠️ [${taskId}] Lovable AI safety violation detected`);
                 }
               } catch (lovableErr: any) {
-                console.error('❌ Background: Both AI providers failed', lovableErr.message);
-                // Keep deterministic steps, no update needed
+                console.error(`❌ [${taskId}] Lovable AI failed:`, {
+                  error: lovableErr.message,
+                  stack: lovableErr.stack?.slice(0, 200)
+                });
+                console.error(`❌ [${taskId}] Both AI providers failed - keeping deterministic steps`);
                 return;
               }
             }
             
             if (!generatedSteps || generatedSteps.length === 0) {
-              console.warn('⚠️ Background: No steps generated, keeping deterministic steps');
+              console.warn(`⚠️ [${taskId}] No steps generated, keeping deterministic steps`);
               return;
             }
             
             // Update existing steps in database with AI-enhanced content
-            console.log(`🔄 Background: Updating ${generatedSteps.length} steps with AI enhancements...`);
+            console.log(`🔄 [${taskId}] Phase 2: Updating ${generatedSteps.length} steps in database...`);
+            const updateStart = Date.now();
+            let successCount = 0;
+            let failCount = 0;
             
             for (let i = 0; i < generatedSteps.length; i++) {
               const aiStep = generatedSteps[i];
+              console.log(`📝 [${taskId}] Updating step ${i + 1}/${generatedSteps.length}: "${aiStep.title.slice(0, 50)}..."`);
+              
               const { error: updateError } = await supabase
                 .from('steps')
                 .update({
@@ -1417,6 +1462,7 @@ serve(async (req) => {
                     enhanced: true,
                     enhancedAt: new Date().toISOString(),
                     modelUsed: AI_MODEL,
+                    aiProvider: aiProvider,
                     generationTimeMs: Date.now() - genStart
                   }
                 })
@@ -1424,14 +1470,20 @@ serve(async (req) => {
                 .eq('order_index', i);
               
               if (updateError) {
-                console.error(`❌ Background: Failed to update step ${i}:`, updateError);
+                failCount++;
+                console.error(`❌ [${taskId}] Failed to update step ${i + 1}:`, updateError);
+              } else {
+                successCount++;
+                console.log(`✅ [${taskId}] Step ${i + 1}/${generatedSteps.length} updated successfully`);
               }
             }
             
-            console.log(`✅ Background: Successfully enhanced ${generatedSteps.length} steps in ${Date.now() - genStart}ms`);
+            console.log(`✅ [${taskId}] Database update complete: ${successCount} success, ${failCount} failed in ${Date.now() - updateStart}ms`);
             
             // Send notification to user
-            await supabase.from('notifications').insert({
+            console.log(`🔔 [${taskId}] Phase 3: Sending notification to user ${userId}...`);
+            const notifStart = Date.now();
+            const { error: notifError } = await supabase.from('notifications').insert({
               user_id: userId,
               type: 'goal_enhanced',
               title: 'Practice Steps Enhanced! ✨',
@@ -1439,13 +1491,44 @@ serve(async (req) => {
               data: { goalId: payload.goalId, stepsCount: generatedSteps.length }
             });
             
+            if (notifError) {
+              console.error(`❌ [${taskId}] Notification failed:`, notifError);
+            } else {
+              console.log(`✅ [${taskId}] Notification sent in ${Date.now() - notifStart}ms`);
+            }
+            
+            console.log(`🎉 [${taskId}] Background task COMPLETED successfully in ${Date.now() - genStart}ms`);
+            console.log(`📊 [${taskId}] Final stats:`, {
+              totalTime: Date.now() - genStart,
+              stepsEnhanced: successCount,
+              stepsFailed: failCount,
+              aiProvider: aiProvider
+            });
+            
           } catch (bgError: any) {
-            console.error('❌ Background task error:', bgError);
+            console.error(`❌ [${taskId}] Background task FAILED with error:`, {
+              error: bgError.message,
+              stack: bgError.stack,
+              name: bgError.name
+            });
+            // Don't throw - log and allow function to complete
+          } finally {
+            console.log(`🏁 [${taskId}] Background task exiting`);
           }
         };
         
         // Use EdgeRuntime.waitUntil to keep function alive for background task
-        EdgeRuntime.waitUntil(backgroundTask());
+        console.log('⏳ Registering background task with EdgeRuntime.waitUntil...');
+        EdgeRuntime.waitUntil(
+          backgroundTask().catch(err => {
+            console.error('❌ waitUntil promise rejected:', {
+              error: err.message,
+              stack: err.stack
+            });
+            // Don't re-throw - just log
+          })
+        );
+        console.log('✅ Background task registered successfully');
         
         return immediateResponse;
       }
