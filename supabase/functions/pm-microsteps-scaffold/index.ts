@@ -108,7 +108,7 @@ interface ValidationResult {
 const MAX_LOVABLE_ATTEMPTS = 2; // Lovable AI gets 2 fast attempts
 const MAX_OPENAI_ATTEMPTS = 1; // OpenAI gets 1 fallback attempt
 const AI_MODEL = 'gpt-5-mini-2025-08-07'; // Fast, cost-efficient GPT-5 variant
-const AI_TIMEOUT_MS = 12000; // 12 seconds per attempt
+const AI_TIMEOUT_MS = 22000; // 22 seconds per attempt (increased for sync mode reliability)
 
 // Dangerous Keywords Array (from requirements section 5.1)
 const dangerousKeywords = [
@@ -1812,14 +1812,57 @@ serve(async (req) => {
         );
       }
 
-      const generationDuration = Date.now() - generationStart;
-      console.log(`⏱️ Total generation time: ${generationDuration}ms`);
-
-      // 9. Prepare final response with metadata
+      // 9. Prepare final response with metadata and insert steps if needed
+      
+      // Check if goal has existing steps
+      const { data: existingSteps, error: fetchError } = await supabase
+        .from('steps')
+        .select('id')
+        .eq('goal_id', payload.goalId);
+      
+      if (fetchError) {
+        console.error('❌ Failed to check existing steps:', fetchError);
+      } else if (!existingSteps || existingSteps.length === 0) {
+        // No steps exist - insert AI-generated steps directly
+        console.log('➕ No existing steps found, inserting AI-generated steps...');
+        
+        const stepsToInsert = generatedSteps.map((step, idx) => ({
+          goal_id: payload.goalId,
+          title: step.title,
+          notes: step.description,
+          explainer: step.description,
+          estimated_effort_min: step.estimatedDuration,
+          step_type: 'habit',
+          is_planned: true,
+          status: 'not_started',
+          order_index: idx,
+          pm_metadata: {
+            ...step,
+            version: 1,
+            source: 'pm-microsteps-scaffold',
+            enhanced: true,
+            modelUsed: AI_MODEL,
+            aiProvider: 'lovable-ai',
+            generatedAt: new Date().toISOString()
+          }
+        }));
+        
+        const { error: insertError } = await supabase
+          .from('steps')
+          .insert(stepsToInsert);
+        
+        if (insertError) {
+          console.error('❌ Failed to insert steps:', insertError);
+        } else {
+          console.log(`✅ Inserted ${stepsToInsert.length} AI-generated steps`);
+        }
+      }
+      
       const response = {
         steps: generatedSteps,
         metadata: {
           modelUsed: AI_MODEL,
+          aiProvider: 'lovable-ai',
           generatedAt: new Date().toISOString(),
           generationTimeMs: generationDuration,
           goalContext: {

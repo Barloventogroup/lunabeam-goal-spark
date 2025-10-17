@@ -27,6 +27,7 @@ import { SkillAssessmentWizard } from './skill-assessment-wizard';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
 import { notificationsService } from '@/services/notificationsService';
 import { addWeeks } from 'date-fns';
+import { PM_DISABLE_FALLBACK } from '@/services/config';
 import { QuestionScreen } from './question-screen';
 import {
   PMStep2_Motivation,
@@ -1371,75 +1372,86 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 return details ? `${barriersText}. ${details}` : barriersText;
               })();
 
-              // STEP 1: Generate deterministic steps INSTANTLY
-              console.log('⚡ Generating instant deterministic steps...');
-              const { generatePMFallbackSteps } = await import('@/services/pmFallbackGenerator');
-              
-              const domainMap: Record<string, string> = {
-                'independent-living': 'independent_living',
-                'education': 'education',
-                'postsecondary': 'postsecondary',
-                'recreation': 'recreation_fun',
-                'social': 'social_skills',
-                'employment': 'employment',
-                'self-advocacy': 'self_advocacy',
-                'health': 'health'
-              };
-              
-              const fallbackDomain = domainMap[mapCategoryToDomain(data.category) || 'independent_living'] || 'independent_living';
-              const deterministicSteps = generatePMFallbackSteps(
-                data.goalTitle,
-                fallbackDomain,
-                data.pmPracticePlan?.durationWeeks || durationWeeks || 6
-              );
-              
-              console.log(`✅ Generated ${deterministicSteps.length} deterministic steps instantly`);
-              
-              // STEP 2: Save deterministic steps to database immediately
-              const stepsToInsert = deterministicSteps.map((step: any, index: number) => ({
-                goal_id: createdGoal.id,
-                title: step.title,
-                notes: step.notes || '',
-                explainer: step.notes || '',
-                estimated_effort_min: step.estimatedDuration || 30,
-                status: 'not_started',
-                order_index: index,
-                is_required: true,
-                due_date: step.weekIndex ? 
-                  calculateStepDueDate(data.startDate, step.weekIndex) : 
-                  undefined,
-                pm_metadata: {
-                  ...step.pm_metadata,
-                  version: 1,
-                  source: 'deterministic_fallback',
-                  enhanced: false
+              if (PM_DISABLE_FALLBACK) {
+                // PURE AI MODE: No fallback, wait for AI in sync mode
+                console.log('🤖 Pure AI mode: Generating with AI (sync)...');
+                
+                toast({
+                  title: 'Generating with AI...',
+                  description: 'Creating your personalized practice steps (may take up to 25 seconds)',
+                  duration: 3000
+                });
+              } else {
+                // STEP 1: Generate deterministic steps INSTANTLY
+                console.log('⚡ Generating instant deterministic steps...');
+                const { generatePMFallbackSteps } = await import('@/services/pmFallbackGenerator');
+                
+                const domainMap: Record<string, string> = {
+                  'independent-living': 'independent_living',
+                  'education': 'education',
+                  'postsecondary': 'postsecondary',
+                  'recreation': 'recreation_fun',
+                  'social': 'social_skills',
+                  'employment': 'employment',
+                  'self-advocacy': 'self_advocacy',
+                  'health': 'health'
+                };
+                
+                const fallbackDomain = domainMap[mapCategoryToDomain(data.category) || 'independent_living'] || 'independent_living';
+                const deterministicSteps = generatePMFallbackSteps(
+                  data.goalTitle,
+                  fallbackDomain,
+                  data.pmPracticePlan?.durationWeeks || durationWeeks || 6
+                );
+                
+                console.log(`✅ Generated ${deterministicSteps.length} deterministic steps instantly`);
+                
+                // STEP 2: Save deterministic steps to database immediately
+                const stepsToInsert = deterministicSteps.map((step: any, index: number) => ({
+                  goal_id: createdGoal.id,
+                  title: step.title,
+                  notes: step.notes || '',
+                  explainer: step.notes || '',
+                  estimated_effort_min: step.estimatedDuration || 30,
+                  status: 'not_started',
+                  order_index: index,
+                  is_required: true,
+                  due_date: step.weekIndex ? 
+                    calculateStepDueDate(data.startDate, step.weekIndex) : 
+                    undefined,
+                  pm_metadata: {
+                    ...step.pm_metadata,
+                    version: 1,
+                    source: 'deterministic_fallback',
+                    enhanced: false
+                  }
+                }));
+                
+                const { error: insertError } = await supabase
+                  .from('steps')
+                  .insert(stepsToInsert);
+                
+                if (insertError) {
+                  console.error('❌ Failed to save deterministic steps:', insertError);
+                  throw new Error('Failed to save practice steps');
                 }
-              }));
-              
-              const { error: insertError } = await supabase
-                .from('steps')
-                .insert(stepsToInsert);
-              
-              if (insertError) {
-                console.error('❌ Failed to save deterministic steps:', insertError);
-                throw new Error('Failed to save practice steps');
+                
+                console.log(`✅ Saved ${stepsToInsert.length} deterministic steps to database`);
+                
+                // STEP 3: Show immediate success to user
+                toast({
+                  title: 'Goal Created! 🚀',
+                  description: `Your learning journey begins now! We've created ${stepsToInsert.length} practice steps. AI is personalizing them...`
+                });
               }
               
-              console.log(`✅ Saved ${stepsToInsert.length} deterministic steps to database`);
-              
-              // STEP 3: Show immediate success to user
-              toast({
-                title: 'Goal Created! 🚀',
-                description: `Your learning journey begins now! We've created ${stepsToInsert.length} practice steps. AI is personalizing them...`
-              });
-              
-              // STEP 4: Build complete PM payload for async AI enhancement
+              // Build complete PM payload for AI enhancement
               const pmPayload = {
                 goalId: createdGoal.id,
                 title: data.goalTitle,
                 domain: mapCategoryToDomain(data.category) || 'independent_living',
                 duration_weeks: data.pmPracticePlan?.durationWeeks || durationWeeks || 6,
-                mode: 'async', // Enable async mode for instant response
+                mode: PM_DISABLE_FALLBACK ? 'sync' : 'async', // Sync mode if fallback disabled
                 
                 // Skill assessment from wizard
                 skillAssessment: {
@@ -1481,21 +1493,85 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 is_self_registered: data.recipient === 'self'
               };
               
-              // STEP 5: Trigger async AI enhancement (fire-and-forget, non-blocking)
-              console.log('🤖 Triggering background AI enhancement...');
-              supabase.functions.invoke('pm-microsteps-scaffold', {
-                body: pmPayload
-              }).then(({ data: asyncData, error: asyncError }) => {
-                if (asyncError) {
-                  console.warn('⚠️ Async AI enhancement failed (non-critical):', asyncError);
-                } else {
-                  console.log('✅ AI enhancement queued:', asyncData);
+              if (PM_DISABLE_FALLBACK) {
+                // SYNC MODE: Wait for AI and insert steps directly
+                console.log('🤖 Calling AI in sync mode...');
+                const { data: syncData, error: syncError } = await supabase.functions.invoke('pm-microsteps-scaffold', {
+                  body: pmPayload
+                });
+                
+                if (syncError || !syncData?.steps || syncData.steps.length === 0) {
+                  console.error('❌ Sync AI generation failed:', syncError);
+                  toast({
+                    title: 'AI temporarily unavailable',
+                    description: 'Please try creating the goal again.',
+                    variant: 'destructive'
+                  });
+                  throw new Error('AI generation failed');
                 }
-              }).catch(err => {
-                console.warn('⚠️ Async enhancement error (non-critical):', err);
-              });
-              
-              // Note: We DO NOT await AI enhancement - goal and steps are already created
+                
+                // Map and insert AI steps
+                const aiSteps = syncData.steps.map((step: any, index: number) => ({
+                  goal_id: createdGoal.id,
+                  title: step.title,
+                  notes: step.description || '',
+                  explainer: step.description || '',
+                  estimated_effort_min: step.estimatedDuration || 30,
+                  step_type: 'habit',
+                  status: 'not_started',
+                  order_index: index,
+                  is_planned: true,
+                  due_date: step.weekNumber ? 
+                    calculateStepDueDate(data.startDate, step.weekNumber) : 
+                    undefined,
+                  pm_metadata: {
+                    version: 1,
+                    source: 'pm-microsteps-scaffold',
+                    phase: step.phase,
+                    weekNumber: step.weekNumber,
+                    supportLevel: step.supportLevel,
+                    difficulty: step.difficulty,
+                    safetyNotes: step.safetyNotes,
+                    qualityIndicators: step.qualityIndicators,
+                    independenceIndicators: step.independenceIndicators,
+                    practiceCount: step.practiceCount,
+                    enhanced: true,
+                    modelUsed: syncData.metadata?.modelUsed,
+                    aiProvider: syncData.metadata?.aiProvider
+                  }
+                }));
+                
+                const { error: insertError } = await supabase
+                  .from('steps')
+                  .insert(aiSteps);
+                
+                if (insertError) {
+                  console.error('❌ Failed to save AI steps:', insertError);
+                  throw new Error('Failed to save AI-generated steps');
+                }
+                
+                console.log(`✅ Saved ${aiSteps.length} AI-generated steps`);
+                toast({
+                  title: 'Goal Created! 🚀',
+                  description: `Your AI-personalized learning journey begins now with ${aiSteps.length} steps!`
+                });
+              } else {
+                // ASYNC MODE: Trigger background AI enhancement (fire-and-forget, non-blocking)
+                console.log('🤖 Triggering background AI enhancement...');
+                supabase.functions.invoke('pm-microsteps-scaffold', {
+                  body: pmPayload
+                }).then(({ data: asyncData, error: asyncError }) => {
+                  if (asyncError) {
+                    console.warn('⚠️ Async AI enhancement failed (non-critical):', asyncError);
+                  } else {
+                    console.log('✅ AI enhancement queued:', asyncData);
+                  }
+                }).catch(err => {
+                  console.warn('⚠️ Async enhancement error (non-critical):', err);
+                });
+                
+                // Note: We DO NOT await AI enhancement - goal and steps are already created
+              }
               
             } catch (pmStepsError: any) {
               console.error('❌ Unexpected error during PM step generation:', pmStepsError);

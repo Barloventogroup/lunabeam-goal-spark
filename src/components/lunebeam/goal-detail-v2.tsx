@@ -30,6 +30,7 @@ import { getDomainDisplayName } from '@/utils/domainUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { generateMicroStepsSmart } from '@/services/microStepsGenerator';
 import { GoalFactorSummary } from './goal-factor-summary';
+import { PM_DISABLE_FALLBACK } from '@/services/config';
 import { RecommendedStepsList } from './recommended-steps-list';
 import { SupporterSetupStepsList } from './supporter-setup-steps-list';
 import { StepsChat } from './steps-chat';
@@ -557,6 +558,15 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         
         // Check if we should use fallback
         if (data?.useFallback || error.message?.includes('timeout') || error.message?.includes('failed')) {
+          if (PM_DISABLE_FALLBACK) {
+            toast({
+              title: "AI temporarily unavailable",
+              description: "Please try again in a moment.",
+              variant: "destructive"
+            });
+            setGeneratingSteps(false);
+            return;
+          }
           console.warn('[PM Generation] Using fallback generator');
           await generatePMFallbackSteps();
           return;
@@ -566,7 +576,15 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       }
       
       if (!data?.microSteps || data.microSteps.length === 0) {
-        console.warn('[PM Generation] No steps returned, using fallback');
+        console.warn('[PM Generation] No steps returned');
+        if (PM_DISABLE_FALLBACK) {
+          toast({
+            title: "AI temporarily unavailable",
+            description: "Please try again in a moment.",
+            variant: "destructive"
+          });
+          return;
+        }
         await generatePMFallbackSteps();
         return;
       }
