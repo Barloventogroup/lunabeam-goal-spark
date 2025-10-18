@@ -312,6 +312,7 @@ const INDIVIDUAL_FLOW_TEXT = {
     subtitle: "Choose who will be working on this goal"
   },
   step1: {
+    question: "What do you want to achieve?",
     subtitle: "Describe what you want to achieve and choose how you'll approach it"
   },
   step2: {
@@ -356,6 +357,7 @@ const getSupporterFlowText = (name?: string) => ({
     subtitle: "Choose who will be working on this goal"
   },
   step1: {
+    question: `What should ${name || 'they'} work on?`,
     subtitle: `Describe the specific action ${name || 'they'} need${name ? 's' : ''} to achieve. Be clear and concrete.`
   },
   step2: {
@@ -1964,121 +1966,140 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const renderStep1 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
-    return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="pb-4 pt-0">
-        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground mt-2">
-          {text.step1.subtitle}
-        </p>
-      </CardHeader>
-      
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Textarea 
-            id="goal-title" 
-            placeholder="e.g., Practice guitar for 30 minutes daily" 
-            value={data.goalTitle} 
-            onChange={e => updateData({ goalTitle: e.target.value })} 
-            className="text-lg py-3 min-h-[76px] resize-none" 
-            rows={3} 
-          />
-        </div>
-        
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label>Need inspiration?</Label>
+    const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
+
+    return (
+      <QuestionScreen
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        questionIcon="🎯"
+        questionText={text.step1.question}
+        helpText={text.step1.subtitle}
+        inputType="custom"
+        onBack={prevStep}
+        onContinue={nextStep}
+        continueDisabled={!data.goalTitle?.trim() || !data.goalType}
+        hideHeader
+        hideFooter
+      >
+        <div className="space-y-8">
+          {/* Goal Title Textarea */}
+          <div className="space-y-2">
+            <Textarea 
+              id="goal-title" 
+              placeholder={`e.g., Practice guitar for 30 minutes daily`}
+              value={data.goalTitle} 
+              onChange={e => updateData({ goalTitle: e.target.value })} 
+              className="text-lg py-3 min-h-[76px] resize-none" 
+              rows={3} 
+            />
           </div>
           
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-auto py-4 border-2 border-dashed hover:border-primary hover:bg-primary/5"
-            onClick={() => setShowBrowseModal(true)}
-          >
-            <div className="flex items-center gap-3">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <div className="text-left flex-1">
-                <div className="font-semibold">Browse Goal Ideas</div>
-                <div className="text-xs text-muted-foreground font-normal">
-                  Explore 50+ example goals organized by category
+          {/* Browse Goals Button */}
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-auto py-4 border-2 border-dashed hover:border-primary hover:bg-primary/5"
+              onClick={() => setShowBrowseModal(true)}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <div className="text-left flex-1">
+                  <div className="font-semibold">Browse Goal Ideas</div>
+                  <div className="text-xs text-muted-foreground font-normal">
+                    Explore 50+ example goals organized by category
+                  </div>
                 </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </div>
-          </Button>
-          
-          {data.category && (
-            <div className="text-xs text-muted-foreground text-center animate-fade-in">
-              Selected category: <span className="font-medium">{categories.find(c => c.id === data.category)?.title}</span>
-            </div>
-          )}
-        </div>
+            </Button>
+            
+            {data.category && (
+              <div className="text-xs text-muted-foreground text-center animate-fade-in">
+                Selected category: <span className="font-medium">
+                  {categories.find(c => c.id === data.category)?.title}
+                </span>
+              </div>
+            )}
+          </div>
 
-        {/* Type Selection */}
-        <div className="space-y-3 pt-4 border-t">
-          <Label>How familiar are you with this activity?</Label>
-          
-          {/* Habit Option */}
-          <Card 
-            className={cn(
-              "cursor-pointer hover:shadow-md transition-all border-2",
-              data.goalType === 'reminder' 
-                ? "border-primary bg-primary/5" 
-                : "border-border hover:border-primary/50"
-            )} 
-            onClick={() => {
-              if (data.goalType !== 'reminder') {
-                switchGoalType('reminder');
-              }
-            }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                {data.goalType === 'reminder' && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
-                <span className="text-2xl">🔄</span>
-                <div className="text-left flex-1">
-                  <div className="font-semibold">Yes, I already know how to do this</div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    Track consistency and build a routine
+          {/* Goal Type Selection */}
+          <div className="space-y-4 pt-4 border-t">
+            <p className="text-sm font-medium text-center">
+              How familiar are {name === 'you' ? 'you' : `is ${name}`} with this activity?
+            </p>
+            
+            {/* Habit Option - Radio Style Card */}
+            <Card 
+              className={cn(
+                "cursor-pointer hover:shadow-md transition-all border-2",
+                data.goalType === 'reminder' 
+                  ? "border-primary bg-primary/5" 
+                  : "border-border hover:border-primary/50"
+              )} 
+              onClick={() => {
+                if (data.goalType !== 'reminder') {
+                  switchGoalType('reminder');
+                }
+              }}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <RadioGroup value={data.goalType || ''}>
+                    <RadioGroupItem value="reminder" id="habit-type" />
+                  </RadioGroup>
+                  <span className="text-2xl">🔄</span>
+                  <div className="text-left flex-1">
+                    <Label htmlFor="habit-type" className="font-semibold cursor-pointer">
+                      Yes, {name === 'you' ? "I" : "they"} already know how to do this
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Track consistency and build a routine
+                    </p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Progressive Mastery Option */}
-          <Card 
-            className={cn(
-              "cursor-pointer hover:shadow-md transition-all border-2 relative",
-              data.goalType === 'progressive_mastery' 
-                ? "border-primary bg-primary/5" 
-                : "border-border hover:border-primary/50"
-            )} 
-            onClick={() => {
-              if (data.goalType !== 'progressive_mastery') {
-                switchGoalType('progressive_mastery');
-              }
-            }}
-          >
-            <Badge className="absolute top-2 right-2 text-xs bg-amber-100 text-amber-700 border-amber-200">
-              Recommended for learning
-            </Badge>
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                {data.goalType === 'progressive_mastery' && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
-                <span className="text-2xl">🎯</span>
-                <div className="text-left flex-1">
-                  <div className="font-semibold">No, I'm learning or improving this skill</div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    Track your progress from beginner to independent
+              </CardContent>
+            </Card>
+            
+            {/* Progressive Mastery Option - Radio Style Card */}
+            <Card 
+              className={cn(
+                "cursor-pointer hover:shadow-md transition-all border-2 relative",
+                data.goalType === 'progressive_mastery' 
+                  ? "border-primary bg-primary/5" 
+                  : "border-border hover:border-primary/50"
+              )} 
+              onClick={() => {
+                if (data.goalType !== 'progressive_mastery') {
+                  switchGoalType('progressive_mastery');
+                }
+              }}
+            >
+              <Badge className="absolute top-2 right-2 text-xs bg-amber-100 text-amber-700 border-amber-200">
+                Recommended for learning
+              </Badge>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <RadioGroup value={data.goalType || ''}>
+                    <RadioGroupItem value="progressive_mastery" id="pm-type" />
+                  </RadioGroup>
+                  <span className="text-2xl">🎯</span>
+                  <div className="text-left flex-1">
+                    <Label htmlFor="pm-type" className="font-semibold cursor-pointer">
+                      No, {name === 'you' ? "I'm" : "they're"} learning or improving this skill
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Track progress from beginner to independent
+                    </p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </CardContent>
-    </Card>;
+      </QuestionScreen>
+    );
   };
   const renderStep2 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
