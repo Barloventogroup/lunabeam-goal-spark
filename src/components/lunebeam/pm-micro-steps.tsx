@@ -491,27 +491,22 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
   const level = data.pmAssessment?.calculatedLevel || 3;
   
   // Use a sensible default target frequency based on skill level
-  // Beginners: 3×, Intermediate: 4×, Advanced: 5×
   const defaultTargetFreq = level <= 2 ? 3 : (level >= 4 ? 5 : 4);
-  const targetFreq = data.pmPracticePlan?.targetFrequency || defaultTargetFreq;
+  const targetFreq = data.pmTargetFrequency || defaultTargetFreq;
   
   const smartStartPlan = progressiveMasteryService.suggestStartFrequency(level, targetFreq);
   const smartStartFreq = smartStartPlan.suggested_initial;
   
   // Auto-set target frequency if not already set
   React.useEffect(() => {
-    if (!data.pmPracticePlan?.targetFrequency) {
+    if (!data.pmTargetFrequency) {
       updateData({
-        pmPracticePlan: {
-          ...data.pmPracticePlan,
-          targetFrequency: defaultTargetFreq
-        }
+        pmTargetFrequency: defaultTargetFreq
       });
     }
   }, []);
   
-  const isComplete = data.pmPracticePlan?.startingFrequency && 
-                     data.pmPracticePlan?.durationWeeks !== undefined;
+  const isComplete = !!data.pmTargetFrequency;
   
   return (
     <QuestionScreen
@@ -519,8 +514,8 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
       totalSteps={totalSteps}
       goalContext={levelContext}
       questionIcon="🎯"
-      questionText="Your Practice Plan"
-      helpText="Let's set up your learning schedule"
+      questionText="How often would you like to practice?"
+      helpText="We'll help you build up gradually to this frequency"
       inputType="custom"
       onBack={goBack}
       onContinue={goNext}
@@ -530,205 +525,136 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
     >
       <div className="space-y-6">
         {/* Smart Start Suggestion */}
-        {(
-          <Card className="bg-primary/5 border-primary/20 animate-in fade-in duration-300">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div className="flex-1 space-y-3">
-                  <div className="font-semibold">💡 Smart Start: Begin with {smartStartFreq}× per week</div>
-                  <p className="text-sm text-muted-foreground">
-                    {smartStartPlan.rationale}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        updateData({
-                          pmPracticePlan: {
-                            ...data.pmPracticePlan,
-                            startingFrequency: smartStartFreq,
-                            targetFrequency: smartStartFreq,
-                            smartStartAccepted: true
-                          }
-                        });
-                      }}
-                      variant={data.pmPracticePlan?.smartStartAccepted ? 'default' : 'secondary'}
-                    >
-                      ✓ Sounds good
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setShowCustomSelector(!showCustomSelector);
-                        if (!showCustomSelector) {
-                          updateData({
-                            pmPracticePlan: {
-                              ...data.pmPracticePlan,
-                              smartStartAccepted: false
-                            }
-                          });
-                        }
-                      }}
-                    >
-                      {showCustomSelector ? 'Hide options ▲' : 'Let me choose ▼'}
-                    </Button>
-                  </div>
-                </div>
+        <Card className="bg-primary/5 border-primary/20 animate-in fade-in duration-300">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <Sparkles className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-3">
+                <div className="font-semibold">💡 Recommended: {smartStartFreq}× per week</div>
+                <p className="text-sm text-muted-foreground">
+                  {smartStartPlan.rationale}
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    updateData({
+                      pmTargetFrequency: smartStartFreq
+                    });
+                  }}
+                  variant={data.pmTargetFrequency === smartStartFreq ? 'default' : 'secondary'}
+                >
+                  ✓ Use {smartStartFreq}×/week
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardContent>
+        </Card>
         
-        {/* Custom Frequency Selector */}
-        {showCustomSelector && (
-          <Card className="bg-accent/50 border-primary/30 animate-in fade-in slide-in-from-top-2 duration-300">
-            <CardContent className="p-4 space-y-3">
-              <Label className="text-sm font-semibold">Choose your starting frequency:</Label>
-              <div className="grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4, 5, 6, 7].map(freq => (
-                  <Button
-                    key={freq}
-                    variant={data.pmPracticePlan?.startingFrequency === freq && !data.pmPracticePlan?.smartStartAccepted ? 'default' : 'outline'}
-                    onClick={() => {
-                      updateData({
-                        pmPracticePlan: {
-                          ...data.pmPracticePlan,
-                          startingFrequency: freq,
-                          targetFrequency: freq,
-                          smartStartAccepted: false
-                        }
-                      });
-                    }}
-                    className="h-12"
-                  >
-                    {freq}×
-                  </Button>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                per week
-              </p>
-            </CardContent>
-          </Card>
-        )}
-        
-        {/* Q2: Duration */}
+        {/* Frequency Selector */}
         <div className="space-y-3">
-          <Label className="text-base">How long do you want to work on this?</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { weeks: 8, label: '8 weeks', description: 'Build solid skills' },
-              { weeks: 12, label: '12 weeks', description: 'Deep learning' },
-              { weeks: 16, label: '16 weeks', description: 'Mastery journey' },
-              { weeks: null, label: 'Ongoing', description: 'No end date' }
-            ].map(option => (
+          <Label className="text-base">Or choose your own frequency:</Label>
+          <div className="grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4, 5, 6, 7].map(freq => (
               <Button
-                key={option.weeks || 'ongoing'}
-                variant={data.pmPracticePlan?.durationWeeks === option.weeks ? 'default' : 'outline'}
-                onClick={() => updateData({
-                  pmPracticePlan: {
-                    ...data.pmPracticePlan,
-                    durationWeeks: option.weeks
-                  }
-                })}
-                className="h-16 flex flex-col items-center justify-center"
+                key={freq}
+                variant={data.pmTargetFrequency === freq ? 'default' : 'outline'}
+                onClick={() => {
+                  updateData({
+                    pmTargetFrequency: freq
+                  });
+                }}
+                className="h-12"
               >
-                <span className="font-semibold">{option.label}</span>
-                <span className="text-xs text-muted-foreground">{option.description}</span>
+                {freq}×
               </Button>
             ))}
           </div>
+          <p className="text-xs text-muted-foreground text-center">
+            per week
+          </p>
         </div>
-        
-        {/* Preview Summary - 2x2 Grid */}
-        {data.pmPracticePlan?.startingFrequency && data.pmPracticePlan?.durationWeeks !== undefined && (
-          <Card className="bg-accent animate-in fade-in duration-300 mt-4">
+      </div>
+    </QuestionScreen>
+  );
+};
+
+export const PMStep10_Duration: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
+  const { Popover, PopoverContent, PopoverTrigger } = require('@/components/ui/popover');
+  const { Calendar } = require('@/components/ui/calendar');
+  const { CalendarIcon } = require('lucide-react');
+  
+  const isComplete = !!data.startDate;
+  
+  return (
+    <QuestionScreen
+      currentStep={currentStep}
+      totalSteps={totalSteps}
+      questionIcon="📅"
+      questionText="When will you practice?"
+      helpText="Choose your practice schedule"
+      inputType="custom"
+      onBack={goBack}
+      onContinue={goNext}
+      continueDisabled={!isComplete}
+      hideHeader
+      hideFooter
+    >
+      <div className="space-y-6">
+        {/* Start Date - Required */}
+        <div className="space-y-2">
+          <Label className="flex items-center gap-1 text-base font-medium">
+            <span>Start Date</span>
+            <span className="text-destructive">*</span>
+          </Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left h-12">
+                <CalendarIcon className="h-4 w-4 mr-2" />
+                {data.startDate ? format(data.startDate, 'PPP') : 'Pick start date'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar 
+                mode="single" 
+                selected={data.startDate} 
+                onSelect={(date: Date) => date && updateData({ startDate: date })}
+                disabled={(date: Date) => date < new Date()}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* End Date - Optional */}
+        <div className="space-y-2">
+          <Label className="text-base font-medium">End Date (Optional)</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left h-12">
+                <CalendarIcon className="h-4 w-4 mr-2" />
+                {data.endDate ? format(data.endDate, 'PPP') : 'Open-ended (no end date)'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar 
+                mode="single" 
+                selected={data.endDate} 
+                onSelect={(date?: Date) => updateData({ endDate: date })}
+                disabled={(date: Date) => !data.startDate || date <= data.startDate}
+              />
+            </PopoverContent>
+          </Popover>
+          <p className="text-xs text-muted-foreground">
+            💡 Leave open-ended if you want to practice indefinitely
+          </p>
+        </div>
+
+        {/* Calculate duration in weeks if both dates selected */}
+        {data.startDate && data.endDate && (
+          <Card className="bg-primary/10 border-primary/20 animate-in fade-in duration-300">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Target className="h-5 w-5 text-primary" />
-                <div className="font-semibold">📊 Your Plan</div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3">
-                {/* Learning Goal */}
-                <div className="rounded-2xl bg-blue-50/50 p-3 border border-gray-200">
-                  <h4 className="text-xs font-semibold text-blue-700 mb-2">Learning Goal</h4>
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold">{data.goalTitle}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Level: {data.pmAssessment?.levelLabel || 'Beginner'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Challenges */}
-                <div className="rounded-2xl bg-orange-50/50 p-3 border border-gray-200">
-                  <h4 className="text-xs font-semibold text-orange-700 mb-2">Challenges</h4>
-                  <div className="space-y-1">
-                    {data.barriers?.priority1 && (
-                      <p className="text-xs flex items-center gap-1">
-                        <Badge variant="destructive" className="text-[10px] px-1 h-4">1st</Badge>
-                        <span className="capitalize">{data.barriers.priority1.replace(/_/g, ' ')}</span>
-                      </p>
-                    )}
-                    {data.barriers?.priority2 && (
-                      <p className="text-xs flex items-center gap-1">
-                        <Badge variant="outline" className="text-[10px] px-1 h-4">2nd</Badge>
-                        <span className="capitalize">{data.barriers.priority2.replace(/_/g, ' ')}</span>
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Practice Schedule */}
-                <div className="rounded-2xl bg-emerald-50/50 p-3 border border-gray-200">
-                  <h4 className="text-xs font-semibold text-emerald-700 mb-2">Practice Schedule</h4>
-                  <div className="space-y-1">
-                    <p className="text-xs">
-                      <span className="text-muted-foreground">Practice:</span>{' '}
-                      <span className="font-medium">{data.pmPracticePlan.startingFrequency}×/week</span>
-                    </p>
-                    <p className="text-xs">
-                      <span className="text-muted-foreground">Duration:</span>{' '}
-                      <span className="font-medium">
-                        {data.pmPracticePlan.durationWeeks ? `${data.pmPracticePlan.durationWeeks} weeks` : 'Ongoing'}
-                      </span>
-                    </p>
-                    {data.pmPracticePlan.durationWeeks && (
-                      <p className="text-xs text-muted-foreground">
-                        Ends: {format(addWeeks(new Date(), data.pmPracticePlan.durationWeeks), 'MMM d, yyyy')}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Learning Support */}
-                <div className="rounded-2xl bg-purple-50/50 p-3 border border-gray-200">
-                  <h4 className="text-xs font-semibold text-purple-700 mb-2">Learning Support</h4>
-                  <div className="space-y-1">
-                    <p className="text-xs">
-                      <span className="text-muted-foreground">Mode:</span>{' '}
-                      <span className="font-medium">
-                        {data.pmHelper?.helperId === 'none' ? 'Independent' : 'With helper'}
-                      </span>
-                    </p>
-                    {data.pmHelper?.helperName && data.pmHelper.helperId !== 'none' && (
-                      <p className="text-xs">
-                        <span className="text-muted-foreground">Helper:</span>{' '}
-                        <span className="font-medium">{data.pmHelper.helperName}</span>
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {data.pmPracticePlan.smartStartAccepted && (
-                <p className="text-xs text-primary flex items-center gap-1 mt-2">
-                  <Sparkles className="h-3 w-3" /> Smart Start frequency applied
-                </p>
-              )}
+              <p className="text-sm font-medium">
+                Duration: {Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))} weeks
+              </p>
             </CardContent>
           </Card>
         )}

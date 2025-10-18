@@ -37,7 +37,8 @@ import {
   PMStep6_Confidence,
   PMStep7_HelpNeeded,
   PMStep8_Helper,
-  PMStep9_PracticePlan
+  PMStep9_PracticePlan,
+  PMStep10_Duration
 } from './pm-micro-steps';
 interface RedesignedGoalsWizardProps {
   onComplete: (goalData: any) => void;
@@ -1233,28 +1234,30 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               // PM-specific fields for Summary tab
               domain: data.category,
               frequency: data.frequency,
-              pmAssessment: data.goalType === 'progressive_mastery' ? {
-                q1_experience: data.pmAssessment?.q1_experience,
-                q2_confidence: data.pmAssessment?.q2_confidence,
-                q3_help_needed: data.pmAssessment?.q3_help_needed,
-                calculatedLevel: data.pmAssessment?.calculatedLevel,
-                levelLabel: data.pmAssessment?.levelLabel
+              pmAssessment: data.goalType === 'progressive_mastery' && data.pmSkillAssessment ? {
+                q1_experience: data.pmSkillAssessment.q1_experience,
+                q2_confidence: data.pmSkillAssessment.q2_confidence,
+                q3_help_needed: data.pmSkillAssessment.q3_help_needed,
+                calculatedLevel: data.pmSkillAssessment.calculated_level,
+                levelLabel: data.pmSkillAssessment.level_label
               } : undefined,
-              pmPracticePlan: data.goalType === 'progressive_mastery' && data.pmPracticePlan ? {
-                targetFrequency: data.pmPracticePlan.targetFrequency,
-                startingFrequency: data.pmPracticePlan.startingFrequency,
-                durationWeeks: data.pmPracticePlan.durationWeeks,
-                smartStartAccepted: data.pmPracticePlan.smartStartAccepted
+              pmPracticePlan: data.goalType === 'progressive_mastery' ? {
+                targetFrequency: data.pmTargetFrequency,
+                startingFrequency: data.pmTargetFrequency,
+                durationWeeks: data.endDate && data.startDate 
+                  ? Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                  : null,
+                smartStartAccepted: true
               } : undefined,
               barriers: data.goalType === 'progressive_mastery' && data.barriers ? {
                 priority1: data.barriers.priority1,
                 priority2: data.barriers.priority2,
                 details: data.barriers.details
               } : undefined,
-              pmHelper: data.goalType === 'progressive_mastery' && data.pmHelper ? {
-                helperId: data.pmHelper.helperId,
-                helperName: data.pmHelper.helperName,
-                supportTypes: data.pmHelper.supportTypes
+              pmHelper: data.goalType === 'progressive_mastery' && data.pmTeachingHelper ? {
+                helperId: data.pmTeachingHelper.id,
+                helperName: data.pmTeachingHelper.name,
+                supportTypes: data.pmTeachingHelper.relationship
               } : undefined
             }
           }
@@ -3059,100 +3062,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     );
   };
 
-  const renderPMSmartStart = () => {
-    const suggestion = progressiveMasteryService.suggestStartFrequency(
-      data.pmSkillAssessment?.calculated_level || 1,
-      data.pmTargetFrequency || 3
-    );
-
-    const selectedFrequency = pmCustomFrequency || suggestion.suggested_initial;
-
-    return (
-      <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl">Your Smart Start Plan</CardTitle>
-          <Badge variant="secondary">
-            {data.pmSkillAssessment?.level_label || 'Beginner'} Level
-          </Badge>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
-          {/* Suggestion Card */}
-          <div className="p-4 bg-primary/10 border-2 border-primary rounded-lg space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">We recommend starting with</p>
-                <p className="text-3xl font-bold text-primary">
-                  {suggestion.suggested_initial}x per week
-                </p>
-              </div>
-              <Sparkles className="h-8 w-8 text-primary" />
-            </div>
-            
-            <p className="text-sm">{suggestion.rationale}</p>
-            <p className="text-sm text-muted-foreground">{suggestion.phase_guidance}</p>
-          </div>
-
-          {/* Accept or Customize */}
-          <div className="space-y-3">
-            <Button
-              onClick={() => {
-                setPMSuggestionAccepted(true);
-                setPMCustomFrequency(undefined);
-              }}
-              variant={pmSuggestionAccepted && !pmCustomFrequency ? 'default' : 'outline'}
-              className="w-full"
-            >
-              ✓ Accept Suggestion ({suggestion.suggested_initial}x/week)
-            </Button>
-            
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or customize</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-4 gap-2">
-              {[1, 2, 3, 4, 5, 6, 7].map(freq => (
-                <Button
-                  key={freq}
-                  variant={pmCustomFrequency === freq ? 'default' : 'outline'}
-                  onClick={() => {
-                    setPMCustomFrequency(freq);
-                    setPMSuggestionAccepted(false);
-                  }}
-                  className="h-12"
-                >
-                  {freq}x
-                </Button>
-              ))}
-            </div>
-
-            <Button 
-              onClick={() => {
-                const plan = {
-                  ...suggestion,
-                  user_selected_initial: selectedFrequency,
-                  suggestion_accepted: pmSuggestionAccepted
-                };
-                updateData({ 
-                  pmSmartStartPlan: plan,
-                  frequency: selectedFrequency 
-                });
-                nextStep();
-              }}
-              className="w-full"
-            >
-              Continue with {selectedFrequency}x/week
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
 
   const renderPMTeachingHelper = () => {
 
@@ -3250,40 +3159,70 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
 
   const renderPMDuration = () => {
-    const options = [
-      { weeks: 8, label: '8 weeks', description: 'Short intensive practice' },
-      { weeks: 12, label: '12 weeks', description: 'Recommended for most skills' },
-      { weeks: 16, label: '16 weeks', description: 'Extended deep practice' },
-      { weeks: null, label: 'Ongoing', description: 'No end date, practice indefinitely' }
-    ];
-
     return (
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl">How long do you want to practice?</CardTitle>
-          <p className="text-muted-foreground">Choose a duration that gives you time to build mastery</p>
+          <CardTitle className="text-2xl">When will you practice?</CardTitle>
+          <p className="text-muted-foreground">Choose your practice schedule</p>
         </CardHeader>
         
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Start Date - Required */}
           <div className="space-y-2">
-            {options.map(option => (
-              <Card
-                key={option.weeks || 'ongoing'}
-                className={cn(
-                  "cursor-pointer hover:shadow-md transition-all border-2",
-                  data.pmDurationWeeks === option.weeks ? "border-primary bg-primary/5" : "border-border"
-                )}
-                onClick={() => updateData({ pmDurationWeeks: option.weeks })}
-              >
-                <CardContent className="p-4">
-                  <div className="text-left">
-                    <div className="font-medium">{option.label}</div>
-                    <div className="text-sm text-muted-foreground">{option.description}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <Label className="flex items-center gap-1 text-base font-medium">
+              <span>Start Date</span>
+              <span className="text-destructive">*</span>
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left h-12">
+                  <CalendarIcon className="h-4 w-4 mr-2" />
+                  {data.startDate ? format(data.startDate, 'PPP') : 'Pick start date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar 
+                  mode="single" 
+                  selected={data.startDate} 
+                  onSelect={(date) => date && updateData({ startDate: date })}
+                  disabled={(date) => date < new Date()}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
+
+          {/* End Date - Optional */}
+          <div className="space-y-2">
+            <Label className="text-base font-medium">End Date (Optional)</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left h-12">
+                  <CalendarIcon className="h-4 w-4 mr-2" />
+                  {data.endDate ? format(data.endDate, 'PPP') : 'Open-ended (no end date)'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar 
+                  mode="single" 
+                  selected={data.endDate} 
+                  onSelect={(date) => updateData({ endDate: date || undefined })}
+                  disabled={(date) => !data.startDate || date <= data.startDate}
+                />
+              </PopoverContent>
+            </Popover>
+            <p className="text-xs text-muted-foreground">
+              💡 Leave open-ended if you want to practice indefinitely
+            </p>
+          </div>
+
+          {/* Calculate duration in weeks if both dates selected */}
+          {data.startDate && data.endDate && (
+            <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+              <p className="text-sm font-medium">
+                Duration: {Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))} weeks
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -3546,13 +3485,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 1: return renderStep1(); // Goal description + type
         case 2: return <PMStep2_Motivation {...pmStepProps} />; // Motivation
         case 3: return <PMStep3_Prerequisites {...pmStepProps} />; // Prerequisites
-        case 4: return <PMStep5_Experience {...pmStepProps} />; // Experience (moved up)
+        case 4: return <PMStep5_Experience {...pmStepProps} />; // Experience
         case 5: return <PMStep6_Confidence {...pmStepProps} />; // Confidence
         case 6: return <PMStep7_HelpNeeded {...pmStepProps} />; // Help Needed + Calculate Level
-        case 7: return <PMStep4_Barriers {...pmStepProps} onSwitchToHabit={() => switchGoalType('reminder')} />; // Barriers (moved after level calc - NOW CONTEXTUAL)
+        case 7: return <PMStep4_Barriers {...pmStepProps} onSwitchToHabit={() => switchGoalType('reminder')} />; // Barriers
         case 8: return <PMStep8_Helper {...pmStepProps} />; // Helper Selection
-        case 9: return <PMStep9_PracticePlan {...pmStepProps} />; // Practice Plan (target + Smart Start + duration)
-        case 10: return renderConfirmStep(); // PM: Summary
+        case 9: return <PMStep9_PracticePlan {...pmStepProps} />; // Practice frequency
+        case 10: return <PMStep10_Duration {...pmStepProps} />; // Duration with date pickers
+        case 11: return renderConfirmStep(); // PM: Summary
         default: return null;
       }
     }
@@ -3572,8 +3512,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   // Update last step index for Progressive Mastery flow
-  const lastStepIndex = data.goalType === 'progressive_mastery' ? 10 : (isSupporter ? 8 : 7);
-  const totalSteps = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 9 : 8);
+  const lastStepIndex = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 8 : 7);
+  const totalSteps = data.goalType === 'progressive_mastery' ? 12 : (isSupporter ? 9 : 8);
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
 
@@ -3584,8 +3524,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
       if (currentStep === 4 || currentStep === 5 || currentStep === 6) return { label: 'Skill Assessment', index: 2, total: 5 };
       if (currentStep === 7) return { label: 'Context & Challenges', index: 3, total: 5 };
-      if (currentStep === 8 || currentStep === 9) return { label: 'Support & Practice Plan', index: 4, total: 5 };
-      if (currentStep === 10) return { label: 'Review & Confirm', index: 5, total: 5 };
+      if (currentStep === 8 || currentStep === 9 || currentStep === 10) return { label: 'Support & Practice Plan', index: 4, total: 5 };
+      if (currentStep === 11) return { label: 'Review & Confirm', index: 5, total: 5 };
     }
     
     if (actuallySupportsAnyone) {
