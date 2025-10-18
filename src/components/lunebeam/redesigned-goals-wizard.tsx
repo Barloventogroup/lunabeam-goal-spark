@@ -1228,7 +1228,34 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               primarySupporterName: data.primarySupporterName,
               supportedPersonName: data.supportedPersonName,
               supportedPersonId: data.supportedPersonId,
-              recipient: data.recipient
+              recipient: data.recipient,
+              
+              // PM-specific fields for Summary tab
+              domain: data.category,
+              frequency: data.frequency,
+              pmAssessment: data.goalType === 'progressive_mastery' ? {
+                q1_experience: data.pmAssessment?.q1_experience,
+                q2_confidence: data.pmAssessment?.q2_confidence,
+                q3_help_needed: data.pmAssessment?.q3_help_needed,
+                calculatedLevel: data.pmAssessment?.calculatedLevel,
+                levelLabel: data.pmAssessment?.levelLabel
+              } : undefined,
+              pmPracticePlan: data.goalType === 'progressive_mastery' && data.pmPracticePlan ? {
+                targetFrequency: data.pmPracticePlan.targetFrequency,
+                startingFrequency: data.pmPracticePlan.startingFrequency,
+                durationWeeks: data.pmPracticePlan.durationWeeks,
+                smartStartAccepted: data.pmPracticePlan.smartStartAccepted
+              } : undefined,
+              barriers: data.goalType === 'progressive_mastery' && data.barriers ? {
+                priority1: data.barriers.priority1,
+                priority2: data.barriers.priority2,
+                details: data.barriers.details
+              } : undefined,
+              pmHelper: data.goalType === 'progressive_mastery' && data.pmHelper ? {
+                helperId: data.pmHelper.helperId,
+                helperName: data.pmHelper.helperName,
+                supportTypes: data.pmHelper.supportTypes
+              } : undefined
             }
           }
         };
