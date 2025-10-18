@@ -1587,8 +1587,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   
           toast({
             title: 'Goal Created! 🚀',
-            description: `AI unavailable. Added a solid starter plan with ${fallbackSteps.length} steps — you can enhance later!`,
-            duration: 2000
+            description: `Your personalized plan begins now with ${fallbackSteps.length} steps!`,
+            duration: 3000
           });
                 } else {
                   // Success: Fetch steps from DB (server should have inserted them)
@@ -1600,8 +1600,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     console.log(`✅ DB fetch successful: ${fetchedSteps.length} steps`);
             toast({
               title: 'Goal Created! 🚀',
-              description: `Your AI-personalized learning journey begins now with ${fetchedSteps.length} steps!`,
-              duration: 2000
+              description: `Your personalized plan begins now with ${fetchedSteps.length} steps!`,
+              duration: 3000
             });
                   } else {
                     console.warn('⚠️ No steps in DB yet');
@@ -1662,15 +1662,20 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           }
         }
 
-        toast({
-          title: data.goalType === 'progressive_mastery' 
-            ? 'Progressive Mastery Goal Created! 🚀' 
-            : (data.recipient === 'self' ? 'Goal created! 🎯' : `Goal assigned to ${data.supportedPersonName}! 🎯`),
-          description: data.goalType === 'progressive_mastery'
-            ? 'Your learning journey begins now!'
-            : 'Your personalized micro-steps are being generated.',
-          duration: 2000
-        });
+        // Only show this toast for habit goals (PM toasts are shown earlier in the flow)
+        if (data.goalType !== 'progressive_mastery') {
+          // Fetch the created steps count
+          const fetchedSteps = await stepsService.getSteps(createdGoal.id);
+          const stepCount = fetchedSteps?.length || 0;
+          
+          toast({
+            title: 'Goal Created! 🚀',
+            description: stepCount > 0 
+              ? `Your personalized plan begins now with ${stepCount} steps!`
+              : 'Your personalized micro-steps are being generated.',
+            duration: 3000
+          });
+        }
         
         // Celebration animation
         setTimeout(() => {

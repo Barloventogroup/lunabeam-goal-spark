@@ -201,243 +201,190 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
     return parts.join(' ');
   };
 
-  // Consolidated single-card summary
+  // Consolidated single-card summary with 2x2 grid
   return (
     <Card>
-      <CardContent className="py-8 space-y-6">
+      <CardContent className="py-6 space-y-4">
         {/* Goal Title */}
         <h1 className="text-2xl md:text-3xl font-bold text-center leading-tight">{goal.title}</h1>
 
-        {/* PM Starting Level Section */}
-        {isPMGoal && wizardContext.pmAssessment && (
-          <>
-            <Separator />
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Target className="h-5 w-5" />
-                <h2 className="text-lg font-semibold">Your Starting Level</h2>
-              </div>
-              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div className="text-center mb-4">
-                  <p className="text-2xl font-bold">
+        {/* 2x2 Grid Summary (Matching Creation Flow) */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* The Goal / Learning Goal */}
+          <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200">
+            <h4 className="text-sm font-semibold text-blue-700 mb-2">
+              {isPMGoal ? 'Learning Goal' : 'The Goal'}
+            </h4>
+            <div className="space-y-1.5">
+              {isPMGoal && wizardContext?.pmAssessment && (
+                <p className="text-sm">
+                  <span className="text-muted-foreground text-xs">Level:</span>{' '}
+                  <span className="font-semibold">
                     {wizardContext.pmAssessment.levelLabel} {['🌱', '🌿', '🌳', '🎯', '⭐'][wizardContext.pmAssessment.calculatedLevel - 1]}
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground block">Experience:</span>
-                    <span className="font-medium">
-                      {wizardContext.pmAssessment.q1_experience === 1 ? 'Brand new' : 
-                       wizardContext.pmAssessment.q1_experience === 2 ? 'Just started' :
-                       wizardContext.pmAssessment.q1_experience === 3 ? 'Some experience' :
-                       wizardContext.pmAssessment.q1_experience === 4 ? 'Pretty experienced' : 'Very experienced'}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground block">Confidence:</span>
-                    <span className="font-medium">
-                      {wizardContext.pmAssessment.q2_confidence === 1 ? 'Not confident' : 
-                       wizardContext.pmAssessment.q2_confidence === 2 ? 'A little nervous' :
-                       wizardContext.pmAssessment.q2_confidence === 3 ? 'Somewhat confident' :
-                       wizardContext.pmAssessment.q2_confidence === 4 ? 'Pretty confident' : 'Very confident'}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground block">Help needed:</span>
-                    <span className="font-medium">
-                      {wizardContext.pmAssessment.q3_help_needed === 1 ? 'Full help' : 
-                       wizardContext.pmAssessment.q3_help_needed === 2 ? 'A lot' :
-                       wizardContext.pmAssessment.q3_help_needed === 3 ? 'Some help' :
-                       wizardContext.pmAssessment.q3_help_needed === 4 ? 'A little' : 'No help'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Why it Matters Section */}
-        {motivation && (
-          <>
-            <Separator />
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">💡</span>
-                <h2 className="text-lg font-semibold">Why it Matters</h2>
-              </div>
-              <div className="bg-primary/5 dark:bg-primary/10 rounded-lg p-4">
-                <p className="text-base md:text-lg leading-relaxed">
-                  {motivation}
+                  </span>
                 </p>
-              </div>
+              )}
+              {goal.domain && (
+                <p className="text-sm">
+                  <span className="text-muted-foreground text-xs">Category:</span>{' '}
+                  <span className="font-medium">{getDomainDisplayName(goal.domain)}</span>
+                </p>
+              )}
+              {motivation && (
+                <p className="text-sm">
+                  <span className="text-muted-foreground text-xs">Why:</span>{' '}
+                  <span className="font-medium">{motivation.length > 60 ? motivation.substring(0, 60) + '...' : motivation}</span>
+                </p>
+              )}
             </div>
-          </>
-        )}
-
-        {/* The Game Plan Section */}
-        {(wizardContext.startDate || wizardContext.timeOfDay || wizardContext.customTime || prerequisite || isPMGoal) && (
-          <>
-            <Separator />
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Calendar className="h-5 w-5" />
-                <h2 className="text-lg font-semibold">The Game Plan</h2>
-              </div>
-              <div className="space-y-3">
-                {wizardContext.startDate && (
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">Starts:</span>
-                    <p className="text-base font-medium">{formatStartDate()}</p>
-                  </div>
-                )}
-                {isPMGoal && wizardContext.pmSchedule && (
-                  <>
-                    <div>
-                      <span className="text-sm font-medium text-muted-foreground">Practice:</span>
-                      <p className="text-base font-medium">
-                        Start {wizardContext.pmSchedule.startingFrequency}×/week → Building to {wizardContext.pmSchedule.targetFrequency}×/week
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-muted-foreground">Duration:</span>
-                      <p className="text-base font-medium">{wizardContext.pmSchedule.durationWeeks} weeks</p>
-                    </div>
-                  </>
-                )}
-                {!isPMGoal && (wizardContext.timeOfDay || wizardContext.customTime) && (
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">Time:</span>
-                    <p className="text-base font-medium capitalize">{formatTimeDisplay()}</p>
-                  </div>
-                )}
-                
-                <div className="pt-2">
-                  <span className="text-sm font-medium text-muted-foreground block mb-2">Prerequisites:</span>
-                  {prerequisite ? (
-                    <p className="text-sm leading-relaxed">{prerequisite}</p>
-                  ) : (
-                    <div className="text-muted-foreground italic text-sm">
-                      <p className="font-medium text-foreground mb-1">None set</p>
-                      <div className="space-y-1.5 mt-2">
-                        <p className="text-xs font-medium text-muted-foreground">💭 Consider:</p>
-                        {getPrerequisiteSuggestions(goal.title, goal.domain).map((suggestion, idx) => (
-                          <p key={idx} className="flex items-start gap-2 text-xs">
-                            <span>•</span>
-                            <span>{suggestion}</span>
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Roadblocks Section */}
-        {(challenges.length > 0 || (isPMGoal && wizardContext.barriers)) && (
-          <>
-            <Separator />
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <AlertCircle className="h-5 w-5 text-destructive" />
-                <h2 className="text-lg font-semibold text-destructive">Roadblocks</h2>
-              </div>
-              <div className="border-l-4 border-destructive pl-4">
-                <p className="text-sm text-muted-foreground mb-3">Challenges you might face:</p>
-                {isPMGoal && wizardContext.barriers ? (
-                  <div className="space-y-3">
-                    {wizardContext.barriers.priority1 && (
-                      <div className="flex items-start gap-2">
-                        <Badge variant="destructive" className="mt-0.5">1st</Badge>
-                        <span className="capitalize">{wizardContext.barriers.priority1.replace(/_/g, ' ')}</span>
-                      </div>
-                    )}
-                    {wizardContext.barriers.priority2 && (
-                      <div className="flex items-start gap-2">
-                        <Badge variant="outline" className="mt-0.5">2nd</Badge>
-                        <span className="capitalize">{wizardContext.barriers.priority2.replace(/_/g, ' ')}</span>
-                      </div>
-                    )}
-                    {wizardContext.barriers.details && (
-                      <p className="text-sm text-muted-foreground italic pl-2 border-l-2 border-muted mt-2">
-                        {wizardContext.barriers.details}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <ul className="space-y-2">
-                    {challenges.map((challenge: string, idx: number) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-destructive mt-0.5">•</span>
-                        <span className="capitalize">{challenge.replace(/_/g, ' ')}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Support System Section */}
-        <Separator />
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Users className="h-5 w-5" />
-            <h2 className="text-lg font-semibold">Support System</h2>
           </div>
-          <p className="text-sm text-muted-foreground mb-3">Who's on your team?</p>
-          
-          {hasSupport ? (
-            <div className="space-y-1">
-              {isPMGoal && wizardContext.pmHelper?.helperName ? (
+
+          {/* Challenges */}
+          <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200">
+            <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
+            <div className="space-y-1.5">
+              {isPMGoal && wizardContext?.barriers ? (
                 <>
-                  <p className="text-sm text-muted-foreground">Learning with:</p>
-                  <p className="font-medium text-base">{wizardContext.pmHelper.helperName}</p>
-                  {wizardContext.pmHelper.supportTypes && (
-                    <p className="text-sm text-muted-foreground capitalize">
-                      Support: {wizardContext.pmHelper.supportTypes.join(', ').replace(/_/g, ' ')}
+                  {wizardContext.barriers.priority1 && (
+                    <p className="text-sm flex items-center gap-2">
+                      <Badge variant="destructive" className="text-xs">1st</Badge>
+                      <span className="capitalize">{wizardContext.barriers.priority1.replace(/_/g, ' ')}</span>
+                    </p>
+                  )}
+                  {wizardContext.barriers.priority2 && (
+                    <p className="text-sm flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">2nd</Badge>
+                      <span className="capitalize">{wizardContext.barriers.priority2.replace(/_/g, ' ')}</span>
+                    </p>
+                  )}
+                  {wizardContext.barriers.details && (
+                    <p className="text-xs text-muted-foreground italic mt-1">
+                      {wizardContext.barriers.details}
+                    </p>
+                  )}
+                </>
+              ) : challenges.length > 0 ? (
+                challenges.map((challenge: string, idx: number) => (
+                  <p key={idx} className="text-sm flex items-start gap-2">
+                    <span className="text-destructive mt-0.5">•</span>
+                    <span className="capitalize">{challenge.replace(/_/g, ' ')}</span>
+                  </p>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground italic">No challenges noted</p>
+              )}
+              {wizardContext?.prerequisite && (
+                <p className="text-sm mt-2">
+                  <span className="text-muted-foreground text-xs">Prerequisites:</span>{' '}
+                  <span className="font-medium">{wizardContext.prerequisite}</span>
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* When & How Often / Practice Schedule */}
+          <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200">
+            <h4 className="text-sm font-semibold text-emerald-700 mb-2">
+              {isPMGoal ? 'Practice Schedule' : 'When & How Often'}
+            </h4>
+            <div className="space-y-1.5">
+              {wizardContext?.startDate && (
+                <p className="text-sm">
+                  <span className="text-muted-foreground text-xs">Starts:</span>{' '}
+                  <span className="font-medium">{formatStartDate()}</span>
+                </p>
+              )}
+              {isPMGoal && wizardContext?.pmPracticePlan ? (
+                <>
+                  <p className="text-sm">
+                    <span className="text-muted-foreground text-xs">Practice:</span>{' '}
+                    <span className="font-medium">
+                      {wizardContext.pmPracticePlan.startingFrequency}×/week
+                    </span>
+                  </p>
+                  <p className="text-sm">
+                    <span className="text-muted-foreground text-xs">Duration:</span>{' '}
+                    <span className="font-medium">
+                      {wizardContext.pmPracticePlan.durationWeeks ? `${wizardContext.pmPracticePlan.durationWeeks} weeks` : 'Ongoing'}
+                    </span>
+                  </p>
+                </>
+              ) : (
+                <>
+                  {wizardContext?.frequency && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Frequency:</span>{' '}
+                      <span className="font-medium">{wizardContext.frequency}</span>
+                    </p>
+                  )}
+                  {wizardContext?.selectedDays && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Days:</span>{' '}
+                      <span className="font-medium">{wizardContext.selectedDays.join(', ')}</span>
+                    </p>
+                  )}
+                  {wizardContext?.customTime && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Time:</span>{' '}
+                      <span className="font-medium">{wizardContext.customTime}</span>
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* The Team / Learning Support */}
+          <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200">
+            <h4 className="text-sm font-semibold text-purple-700 mb-2">
+              {isPMGoal ? 'Learning Support' : 'The Team'}
+            </h4>
+            <div className="space-y-1.5">
+              {isPMGoal && wizardContext?.pmHelper ? (
+                <>
+                  <p className="text-sm">
+                    <span className="text-muted-foreground text-xs">Mode:</span>{' '}
+                    <span className="font-medium">
+                      {wizardContext.pmHelper.helperId === 'none' ? 'Independent' : 'With helper'}
+                    </span>
+                  </p>
+                  {wizardContext.pmHelper.helperName && wizardContext.pmHelper.helperId !== 'none' && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Helper:</span>{' '}
+                      <span className="font-medium">{wizardContext.pmHelper.helperName}</span>
                     </p>
                   )}
                 </>
               ) : (
                 <>
-                  {wizardContext.primarySupporterName && (
-                    <p className="font-medium text-base">{wizardContext.primarySupporterName}</p>
-                  )}
-                  {wizardContext.primarySupporterRole && (
-                    <p className="text-sm text-muted-foreground capitalize">
-                      {wizardContext.primarySupporterRole.replace(/_/g, ' ')}
+                  {wizardContext?.supportContext && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Working:</span>{' '}
+                      <span className="font-medium capitalize">{wizardContext.supportContext.replace(/_/g, ' ')}</span>
                     </p>
                   )}
-                  {wizardContext.supportContext && (
-                    <p className="text-sm capitalize">
-                      {wizardContext.supportContext.replace(/_/g, ' ')}
+                  {wizardContext?.primarySupporterName && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Supporter:</span>{' '}
+                      <span className="font-medium">{wizardContext.primarySupporterName}</span>
                     </p>
+                  )}
+                  {!wizardContext?.primarySupporterName && onInviteSupporter && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="w-full mt-2"
+                      onClick={onInviteSupporter}
+                    >
+                      👉 Find a supporter
+                    </Button>
                   )}
                 </>
               )}
             </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-muted-foreground">
-                Currently: <span className="font-medium text-foreground">Alone</span>
-              </p>
-              {onInviteSupporter && (
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={onInviteSupporter}
-                >
-                  👉 Find a supporter
-                </Button>
-              )}
-            </div>
-          )}
+          </div>
         </div>
+
       </CardContent>
     </Card>
   );

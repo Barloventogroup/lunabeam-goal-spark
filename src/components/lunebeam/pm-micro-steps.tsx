@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Sparkles, Target, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { format, addWeeks } from 'date-fns';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
 import { useToast } from '@/hooks/use-toast';
@@ -441,13 +442,14 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
   const options = [
     { 
       value: 'none', 
-      label: "I'll learn on my own", 
-      description: 'Prefer to figure it out myself' 
+      label: "I'll work on this independently", 
+      description: 'Practice on my own' 
     },
     ...userSupporters.map(s => ({
       value: s.id,
       label: s.name,
-      description: s.name
+      avatar: s.profile?.avatar_url,
+      description: 'Supporter'
     }))
   ];
   
@@ -457,7 +459,7 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
       totalSteps={totalSteps}
       goalContext={levelContext}
       questionIcon="👥"
-      questionText="Who can help you learn this?"
+      questionText="Who can help you with this?"
       inputType="radio"
       options={options}
       value={data.pmHelper?.helperId}
@@ -617,10 +619,10 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
           <Label className="text-base">How long do you want to work on this?</Label>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { weeks: 8, label: '8 weeks' },
-              { weeks: 12, label: '12 weeks' },
-              { weeks: 16, label: '16 weeks' },
-              { weeks: null, label: 'Ongoing' }
+              { weeks: 8, label: '8 weeks', description: 'Build solid skills' },
+              { weeks: 12, label: '12 weeks', description: 'Deep learning' },
+              { weeks: 16, label: '16 weeks', description: 'Mastery journey' },
+              { weeks: null, label: 'Ongoing', description: 'No end date' }
             ].map(option => (
               <Button
                 key={option.weeks || 'ongoing'}
@@ -634,37 +636,99 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                 className="h-16 flex flex-col items-center justify-center"
               >
                 <span className="font-semibold">{option.label}</span>
+                <span className="text-xs text-muted-foreground">{option.description}</span>
               </Button>
             ))}
           </div>
         </div>
         
-        {/* Preview Summary */}
+        {/* Preview Summary - 2x2 Grid */}
         {data.pmPracticePlan?.startingFrequency && data.pmPracticePlan?.durationWeeks !== undefined && (
-          <Card className="bg-accent animate-in fade-in duration-300">
+          <Card className="bg-accent animate-in fade-in duration-300 mt-4">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-3">
                 <Target className="h-5 w-5 text-primary" />
-                <div>
-                  <div className="font-semibold">📊 Your Plan</div>
-                  <p className="text-sm text-muted-foreground">
-                    {data.pmPracticePlan.smartStartAccepted && (
-                      <span className="inline-flex items-center gap-1 text-primary">
-                        <Sparkles className="h-3 w-3" /> Smart Start: 
-                      </span>
-                    )}
-                    Practice {data.pmPracticePlan.startingFrequency}× per week 
-                    {data.pmPracticePlan.durationWeeks 
-                      ? ` for ${data.pmPracticePlan.durationWeeks} weeks`
-                      : ' (ongoing)'}
-                  </p>
-                  {data.pmPracticePlan.durationWeeks && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      End date: {format(addWeeks(new Date(), data.pmPracticePlan.durationWeeks), 'MMMM d, yyyy')}
+                <div className="font-semibold">📊 Your Plan</div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                {/* Learning Goal */}
+                <div className="rounded-2xl bg-blue-50/50 p-3 border border-gray-200">
+                  <h4 className="text-xs font-semibold text-blue-700 mb-2">Learning Goal</h4>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold">{data.goalTitle}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Level: {data.pmAssessment?.levelLabel || 'Beginner'}
                     </p>
-                  )}
+                  </div>
+                </div>
+
+                {/* Challenges */}
+                <div className="rounded-2xl bg-orange-50/50 p-3 border border-gray-200">
+                  <h4 className="text-xs font-semibold text-orange-700 mb-2">Challenges</h4>
+                  <div className="space-y-1">
+                    {data.barriers?.priority1 && (
+                      <p className="text-xs flex items-center gap-1">
+                        <Badge variant="destructive" className="text-[10px] px-1 h-4">1st</Badge>
+                        <span className="capitalize">{data.barriers.priority1.replace(/_/g, ' ')}</span>
+                      </p>
+                    )}
+                    {data.barriers?.priority2 && (
+                      <p className="text-xs flex items-center gap-1">
+                        <Badge variant="outline" className="text-[10px] px-1 h-4">2nd</Badge>
+                        <span className="capitalize">{data.barriers.priority2.replace(/_/g, ' ')}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Practice Schedule */}
+                <div className="rounded-2xl bg-emerald-50/50 p-3 border border-gray-200">
+                  <h4 className="text-xs font-semibold text-emerald-700 mb-2">Practice Schedule</h4>
+                  <div className="space-y-1">
+                    <p className="text-xs">
+                      <span className="text-muted-foreground">Practice:</span>{' '}
+                      <span className="font-medium">{data.pmPracticePlan.startingFrequency}×/week</span>
+                    </p>
+                    <p className="text-xs">
+                      <span className="text-muted-foreground">Duration:</span>{' '}
+                      <span className="font-medium">
+                        {data.pmPracticePlan.durationWeeks ? `${data.pmPracticePlan.durationWeeks} weeks` : 'Ongoing'}
+                      </span>
+                    </p>
+                    {data.pmPracticePlan.durationWeeks && (
+                      <p className="text-xs text-muted-foreground">
+                        Ends: {format(addWeeks(new Date(), data.pmPracticePlan.durationWeeks), 'MMM d, yyyy')}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Learning Support */}
+                <div className="rounded-2xl bg-purple-50/50 p-3 border border-gray-200">
+                  <h4 className="text-xs font-semibold text-purple-700 mb-2">Learning Support</h4>
+                  <div className="space-y-1">
+                    <p className="text-xs">
+                      <span className="text-muted-foreground">Mode:</span>{' '}
+                      <span className="font-medium">
+                        {data.pmHelper?.helperId === 'none' ? 'Independent' : 'With helper'}
+                      </span>
+                    </p>
+                    {data.pmHelper?.helperName && data.pmHelper.helperId !== 'none' && (
+                      <p className="text-xs">
+                        <span className="text-muted-foreground">Helper:</span>{' '}
+                        <span className="font-medium">{data.pmHelper.helperName}</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
+
+              {data.pmPracticePlan.smartStartAccepted && (
+                <p className="text-xs text-primary flex items-center gap-1 mt-2">
+                  <Sparkles className="h-3 w-3" /> Smart Start frequency applied
+                </p>
+              )}
             </CardContent>
           </Card>
         )}
