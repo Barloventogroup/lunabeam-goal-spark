@@ -197,7 +197,9 @@ const dangerousEmojiCombinations = [
 function checkLayer1Safety(payload: PMGoalCreationInput): { triggered: boolean; keywords: string[]; emojis: string[]; emojiCodes: string[] } {
   const titleLower = payload.title.toLowerCase();
   const motivationLower = (payload.motivation || '').toLowerCase();
-  const barriersLower = (payload.barriers || '').toLowerCase();
+  // Handle structured barriers object or legacy string format
+  const barriersContext = typeof payload.barriers === 'string' ? payload.barriers : (payload.barriers?.context || '');
+  const barriersLower = barriersContext.toLowerCase();
   const prerequisitesLower = (payload.prerequisites?.needs || '').toLowerCase();
   
   const combinedInput = `${titleLower} ${motivationLower} ${barriersLower} ${prerequisitesLower}`;
@@ -208,7 +210,7 @@ function checkLayer1Safety(payload: PMGoalCreationInput): { triggered: boolean; 
   );
   
   // Check for dangerous emojis
-  const fullText = `${payload.title} ${payload.motivation || ''} ${payload.barriers || ''} ${payload.prerequisites?.needs || ''}`;
+  const fullText = `${payload.title} ${payload.motivation || ''} ${barriersContext} ${payload.prerequisites?.needs || ''}`;
   const triggeredEmojis = dangerousEmojis.filter(emoji =>
     fullText.includes(emoji)
   );
