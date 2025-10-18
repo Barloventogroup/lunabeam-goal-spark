@@ -3315,9 +3315,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <span>Goal Summary</span>
             </h3>
             
-            <Card>
-              <CardContent className="p-3">
-                <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
                   {/* The Goal */}
                   <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200">
                     <h4 className="text-sm font-semibold text-blue-700 mb-2">The Goal</h4>
@@ -3479,8 +3477,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Proposal notice */}
