@@ -2046,14 +2046,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <RadioGroup value={data.goalType || ''}>
-                    <RadioGroupItem value="reminder" id="habit-type" />
-                  </RadioGroup>
                   <span className="text-2xl">🔄</span>
                   <div className="text-left flex-1">
-                    <Label htmlFor="habit-type" className="font-semibold cursor-pointer">
+                    <div className="font-semibold">
                       Yes, {name === 'you' ? "I" : "they"} already know how to do this
-                    </Label>
+                    </div>
                     <p className="text-sm text-muted-foreground mt-1">
                       Track consistency and build a routine
                     </p>
@@ -2081,14 +2078,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               </Badge>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <RadioGroup value={data.goalType || ''}>
-                    <RadioGroupItem value="progressive_mastery" id="pm-type" />
-                  </RadioGroup>
                   <span className="text-2xl">🎯</span>
                   <div className="text-left flex-1">
-                    <Label htmlFor="pm-type" className="font-semibold cursor-pointer">
+                    <div className="font-semibold">
                       No, {name === 'you' ? "I'm" : "they're"} learning or improving this skill
-                    </Label>
+                    </div>
                     <p className="text-sm text-muted-foreground mt-1">
                       Track progress from beginner to independent
                     </p>
