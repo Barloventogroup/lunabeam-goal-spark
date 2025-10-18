@@ -427,6 +427,142 @@ function getSupporterBarrierTemplate(barrierId: string, vars: ActionableVariable
 }
 
 /**
+ * Parse keywords from barrier context for PM flow
+ */
+function parseBarrierKeywords(context: string): Record<string, boolean> {
+  const contextLower = context.toLowerCase();
+  return {
+    sofa: contextLower.includes('sofa') || contextLower.includes('couch'),
+    gaming: contextLower.includes('gaming') || contextLower.includes('game') || contextLower.includes('video'),
+    phone: contextLower.includes('phone') || contextLower.includes('texting'),
+    tv: contextLower.includes('tv') || contextLower.includes('television') || contextLower.includes('watching'),
+    bed: contextLower.includes('bed') || contextLower.includes('bedroom'),
+    musicStand: contextLower.includes('music stand') || contextLower.includes('equipment'),
+    supplies: contextLower.includes('supplies') || contextLower.includes('materials') || contextLower.includes('tools'),
+    overwhelmed: contextLower.includes('overwhelm') || contextLower.includes('too much') || contextLower.includes('stressed'),
+    forget: contextLower.includes('forget') || contextLower.includes('remember') || contextLower.includes('memory'),
+    procrastinate: contextLower.includes('procrastin') || contextLower.includes('put off') || contextLower.includes('delay'),
+    distracted: contextLower.includes('distract') || contextLower.includes('focus') || contextLower.includes('attention'),
+  };
+}
+
+/**
+ * Generate barrier-specific activation steps for PM flow (individual)
+ */
+export function getPMBarrierTemplate(
+  barrierId: string,
+  context: string,
+  goalTitle: string,
+  skillLevel: number
+): { title: string; description: string; estimatedDuration: number } {
+  
+  const keywords = parseBarrierKeywords(context);
+  const goalObject = extractGoalObject(goalTitle);
+  
+  const templates: Record<string, { title: string; description: string }> = {
+    initiation: keywords.sofa || keywords.bed ? {
+      title: `Stand up and take one step toward practice`,
+      description: `At practice time, your only job is to push off the ${keywords.sofa ? 'sofa' : 'bed'} and take one step toward where you'll practice ${goalObject}. Nothing else required yet.`
+    } : keywords.gaming || keywords.tv ? {
+      title: `Pause and take one step toward practice`,
+      description: `At practice time, pause your ${keywords.gaming ? 'game' : 'show'} and stand up. Take one step toward where you'll practice ${goalObject}. You can come back after.`
+    } : {
+      title: `Touch the practice materials`,
+      description: `At practice time, your only job is to touch what you need for ${goalObject}. Pick it up, put it down. That's it. The hard part is starting.`
+    },
+    
+    attention: keywords.phone ? {
+      title: `Put phone in another room, set 20-minute timer`,
+      description: `Before starting ${goalObject}, walk your phone to another room (not just out of reach). Then set a visible 20-minute timer and focus on just one small part of practice.`
+    } : keywords.distracted ? {
+      title: `Set up distraction-free zone for 15 minutes`,
+      description: `Clear your practice space of everything except what you need for ${goalObject}. Set a 15-minute timer. Focus on the smallest possible piece of the task.`
+    } : {
+      title: `Set visible 20-minute timer for focused work`,
+      description: `Before starting ${goalObject}, set a timer you can see for 20 minutes. Tell yourself you only need to focus for these 20 minutes, then you can take a break.`
+    },
+    
+    time: keywords.forget || keywords.musicStand || keywords.supplies ? {
+      title: `Put practice materials by the door tonight`,
+      description: `Tonight before bed, gather everything you need for ${goalObject} and put it by the door. Set two phone alarms: one for 10 minutes before practice, one for practice time.`
+    } : {
+      title: `Set two alarms: prep reminder and start time`,
+      description: `Set two alarms for ${goalObject}: one 10 minutes before practice time (to gather materials), and one at practice time. Label them clearly so you know what to do.`
+    },
+    
+    planning: keywords.overwhelmed ? {
+      title: `Write down the tiniest first step (under 5 minutes)`,
+      description: `On paper, break ${goalObject} into the smallest possible first action that takes under 5 minutes. Just do that one tiny piece. Ignore the rest for now.`
+    } : {
+      title: `Number paper 1-2-3, write one mini-action per number`,
+      description: `Get paper and number it 1, 2, 3. For each number, write one tiny action for ${goalObject}. Each action should take less than 10 minutes. Just follow the numbers.`
+    }
+  };
+  
+  const template = templates[barrierId] || templates.initiation;
+  
+  return {
+    ...template,
+    estimatedDuration: barrierId === 'attention' ? 20 : 5
+  };
+}
+
+/**
+ * Generate barrier-specific supporter steps for PM flow
+ */
+export function getPMSupporterBarrierTemplate(
+  barrierId: string,
+  context: string,
+  goalTitle: string,
+  helperName: string
+): { title: string; description: string; estimatedDuration: number } {
+  
+  const keywords = parseBarrierKeywords(context);
+  const goalObject = extractGoalObject(goalTitle);
+  
+  const templates: Record<string, { title: string; description: string }> = {
+    initiation: keywords.sofa || keywords.bed ? {
+      title: `${helperName} helps them stand and walk to practice area`,
+      description: `At practice time, ${helperName} goes to where they are, offers a hand, and walks together to the practice area for ${goalObject}. Stay nearby for the first 5 minutes.`
+    } : {
+      title: `${helperName} hands them materials and stays nearby`,
+      description: `At practice time, ${helperName} brings the materials for ${goalObject} to them, places them within reach, and sits nearby for the first 5 minutes of practice.`
+    },
+    
+    attention: keywords.phone ? {
+      title: `${helperName} collects phone, sets timer, checks in at 20 min`,
+      description: `${helperName} asks for their phone at practice time, puts it in another room, and sets a visible 20-minute timer. Checks in when timer rings to celebrate focus.`
+    } : {
+      title: `${helperName} sets up space and 20-minute timer`,
+      description: `${helperName} helps clear the practice space before ${goalObject}, sets a visible 20-minute timer, and checks in halfway through to see if they need support.`
+    },
+    
+    time: keywords.forget || keywords.supplies ? {
+      title: `${helperName} preps materials the night before`,
+      description: `The night before, ${helperName} helps gather everything needed for ${goalObject} and puts it by the door. Sets two alarms (prep + start) together.`
+    } : {
+      title: `${helperName} gives 10-minute and start-time reminders`,
+      description: `${helperName} gives a friendly 10-minute warning before ${goalObject} practice, then a start-time check-in. Helps gather materials during the 10-minute window.`
+    },
+    
+    planning: keywords.overwhelmed ? {
+      title: `${helperName} breaks task into one 5-minute action`,
+      description: `Together, ${helperName} and them write down just the first tiny step for ${goalObject} (under 5 minutes). ${helperName} reassures them that's all they need to do today.`
+    } : {
+      title: `${helperName} creates numbered 1-2-3 mini-step list together`,
+      description: `${helperName} sits down with paper, numbers 1-2-3, and together they write one small action per number for ${goalObject}. ${helperName} stays nearby as they follow the list.`
+    }
+  };
+  
+  const template = templates[barrierId] || templates.initiation;
+  
+  return {
+    ...template,
+    estimatedDuration: barrierId === 'attention' ? 20 : 10
+  };
+}
+
+/**
  * Generates a natural, varied goal completion step - simplified for natural language
  */
 function getSmartCompletionStep(goalAction: string, goalTitle: string, flow: 'individual' | 'supporter'): MicroStep {

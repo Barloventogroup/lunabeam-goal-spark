@@ -43,6 +43,12 @@ interface Prerequisites {
   needs?: string;
 }
 
+interface Barriers {
+  priority1: string;  // 'initiation' | 'attention' | 'time' | 'planning'
+  priority2: string;  // Same options
+  context: string;    // Free text details
+}
+
 interface PMGoalCreationInput {
   goalId: string;
   title: string;
@@ -52,7 +58,7 @@ interface PMGoalCreationInput {
   smartStart: SmartStart;
   teachingHelper?: TeachingHelper;
   prerequisites: Prerequisites;
-  barriers?: string;
+  barriers?: Barriers;  // Now structured instead of just string
   motivation: string;
   userId: string;
   userName: string;
@@ -349,18 +355,18 @@ function sanitizeInput(input: string): string {
 function buildPMSystemPrompt(input: PMGoalCreationInput): string {
   const domainGuidance = getDomainGuidance(input.domain, input.skillAssessment.calculatedLevel);
   
-  // Sanitize motivation and barriers
+  // Sanitize motivation and barriers context
   const rawMotivation = input.motivation || "Learning and improving this skill";
-  const rawBarriers = input.barriers || '';
+  const rawBarriersContext = typeof input.barriers === 'string' ? input.barriers : (input.barriers?.context || '');
   const sanitizedMotivation = sanitizeInput(rawMotivation);
-  const sanitizedBarriers = sanitizeInput(rawBarriers);
+  const sanitizedBarriers = sanitizeInput(rawBarriersContext);
   
   // Log sanitization (no PII)
   if (rawMotivation.length !== sanitizedMotivation.length) {
     console.log(`Sanitized motivation: ${rawMotivation.length} → ${sanitizedMotivation.length} chars`);
   }
-  if (rawBarriers.length !== sanitizedBarriers.length) {
-    console.log(`Sanitized barriers: ${rawBarriers.length} → ${sanitizedBarriers.length} chars`);
+  if (rawBarriersContext.length !== sanitizedBarriers.length) {
+    console.log(`Sanitized barriers: ${rawBarriersContext.length} → ${sanitizedBarriers.length} chars`);
   }
   
   const motivation = sanitizedMotivation || "Learning and improving this skill";
@@ -368,6 +374,29 @@ function buildPMSystemPrompt(input: PMGoalCreationInput): string {
   const weeks = input.duration_weeks;
   // Clamp targetSteps to 6-8 to match validation and reduce model confusion
   const targetSteps = Math.min(8, Math.max(6, Math.ceil(freq * weeks * 0.75)));
+  
+  // Handle structured barriers
+  const priority1 = typeof input.barriers === 'object' ? input.barriers.priority1 : '';
+  const priority2 = typeof input.barriers === 'object' ? input.barriers.priority2 : '';
+  
+  // Build barrier-specific guidance
+  const barrierGuidance = priority1 ? `
+CRITICAL - USER'S IDENTIFIED BARRIERS:
+• PRIMARY BARRIER: ${priority1.toUpperCase()} ${priority1 ? '(High Priority)' : ''}
+• SECONDARY BARRIER: ${priority2 ? priority2.toUpperCase() : 'None'} ${priority2 ? '(Medium Priority)' : ''}
+• USER'S SPECIFIC STRUGGLE: ${sanitizedBarriers}
+
+BARRIER-SPECIFIC REQUIREMENTS:
+${priority1 === 'initiation' ? '• First 2 steps MUST focus on making it easy to START (reduce friction, create activation cues, lower entry barriers)' : ''}
+${priority1 === 'attention' ? '• First 2 steps MUST include strategies for MAINTAINING FOCUS (timers, distraction management, environment setup)' : ''}
+${priority1 === 'time' ? '• First 2 steps MUST address TIME AWARENESS (alarms, visual schedules, external reminders, time estimation)' : ''}
+${priority1 === 'planning' ? '• First 2 steps MUST break down WHAT TO DO (mini-steps, checklists, clear sequences, decision simplification)' : ''}
+
+Each step must directly address these barriers using the specific context: "${sanitizedBarriers}"
+` : sanitizedBarriers ? `
+CRITICAL - USER'S IDENTIFIED CHALLENGES: ${sanitizedBarriers}
+Each step MUST directly address or provide strategies to work around these specific barriers.
+` : '';
   
   return `You are a transition skills coach. Generate ${targetSteps} Progressive Mastery steps for: "${input.title}" (${input.domain})
 
@@ -377,9 +406,7 @@ STUDENT CONTEXT:
 • Practice: ${freq}×/week × ${weeks} weeks
 ${input.teachingHelper ? `• Helper: ${input.teachingHelper.helperName}` : '• Learning independently'}
 ${domainGuidance}
-
-CRITICAL - USER'S IDENTIFIED CHALLENGES: ${sanitizedBarriers}
-${sanitizedBarriers ? 'Each step MUST directly address or provide strategies to work around these specific barriers. Do not ignore these challenges.' : ''}
+${barrierGuidance}
 
 STEP REQUIREMENTS:
 1. Generate EXACTLY ${targetSteps} steps total
@@ -397,6 +424,179 @@ SUPPORT PHASES:
 • Phase 4 (MINIMAL): Independent with questions available
 
 Use generate_pm_steps function to return ${targetSteps} steps.`;
+}
+
+/**
+ * Generate hybrid steps: template-based activation + AI-generated progression
+ */
+function generateHybridPMSteps(
+  input: PMGoalCreationInput,
+  aiGeneratedSteps: GeneratedStep[]
+): GeneratedStep[] {
+  
+  // If no structured barriers, return AI steps as-is
+  if (!input.barriers || typeof input.barriers === 'string' || !input.barriers.priority1) {
+    console.log('No structured barriers, using AI-only generation');
+    return aiGeneratedSteps;
+  }
+  
+  console.log('Applying hybrid generation with barriers:', {
+    priority1: input.barriers.priority1,
+    priority2: input.barriers.priority2,
+    hasContext: !!input.barriers.context
+  });
+  
+  // Extract goal object for templates
+  const goalObject = input.title.toLowerCase().replace(/^(learn|practice|improve|master)\s+/i, '').trim();
+  
+  // Generate barrier-specific Step 1
+  const isSupporter = !!input.teachingHelper;
+  const helperName = input.teachingHelper?.helperName || 'Helper';
+  
+  // Parse keywords for context-aware customization
+  const keywords = parseBarrierKeywords(input.barriers.context);
+  
+  // Create Step 1: Barrier-Specific Activation
+  const activationTemplate = isSupporter 
+    ? getPMSupporterBarrierTemplate(input.barriers.priority1, input.barriers.context, input.title, helperName)
+    : getPMBarrierTemplate(input.barriers.priority1, input.barriers.context, input.title, input.skillAssessment.calculatedLevel);
+  
+  const step1: GeneratedStep = {
+    title: activationTemplate.title,
+    description: activationTemplate.description,
+    estimatedDuration: activationTemplate.estimatedDuration,
+    supportLevel: 'high',
+    difficulty: 1,
+    weekNumber: 'Week 1',
+    phase: 1,
+    safetyNotes: null
+  };
+  
+  // Use AI-generated steps 2-8 for progression, but keep their original content
+  const progressionSteps = aiGeneratedSteps.slice(1, 8).map((step, index) => ({
+    ...step,
+    weekNumber: `Week ${Math.ceil((index + 2) / 2)}`,
+    phase: Math.min(4, Math.ceil((index + 2) / 2))
+  }));
+  
+  console.log(`Hybrid generation: 1 template step + ${progressionSteps.length} AI steps`);
+  
+  return [step1, ...progressionSteps];
+}
+
+/**
+ * Helper function to parse barrier keywords (duplicated from microStepsGenerator.ts for edge function use)
+ */
+function parseBarrierKeywords(context: string): Record<string, boolean> {
+  const contextLower = context.toLowerCase();
+  return {
+    sofa: contextLower.includes('sofa') || contextLower.includes('couch'),
+    gaming: contextLower.includes('gaming') || contextLower.includes('game'),
+    phone: contextLower.includes('phone'),
+    tv: contextLower.includes('tv') || contextLower.includes('television'),
+    bed: contextLower.includes('bed'),
+    forget: contextLower.includes('forget') || contextLower.includes('remember'),
+    overwhelmed: contextLower.includes('overwhelm') || contextLower.includes('too much'),
+    distracted: contextLower.includes('distract') || contextLower.includes('focus'),
+  };
+}
+
+/**
+ * Generate PM barrier templates (edge function version - simplified)
+ */
+function getPMBarrierTemplate(barrierId: string, context: string, goalTitle: string, skillLevel: number) {
+  const keywords = parseBarrierKeywords(context);
+  const goalObject = goalTitle.toLowerCase().replace(/^(learn|practice|improve|master)\s+/i, '').trim();
+  
+  const templates: Record<string, any> = {
+    initiation: keywords.sofa || keywords.bed ? {
+      title: `Stand up and take one step toward practice`,
+      description: `At practice time, your only job is to push off the ${keywords.sofa ? 'sofa' : 'bed'} and take one step toward where you'll practice ${goalObject}. Nothing else required yet.`,
+      estimatedDuration: 5
+    } : {
+      title: `Touch the practice materials`,
+      description: `At practice time, your only job is to touch what you need for ${goalObject}. Pick it up, put it down. That's it.`,
+      estimatedDuration: 5
+    },
+    attention: keywords.phone ? {
+      title: `Put phone in another room, set 20-minute timer`,
+      description: `Before starting ${goalObject}, walk your phone to another room. Set a visible 20-minute timer and focus on just one small part.`,
+      estimatedDuration: 20
+    } : {
+      title: `Set visible 20-minute timer for focused work`,
+      description: `Set a timer you can see for 20 minutes for ${goalObject}. Focus just on these 20 minutes.`,
+      estimatedDuration: 20
+    },
+    time: keywords.forget ? {
+      title: `Put practice materials by the door tonight`,
+      description: `Tonight, gather everything for ${goalObject} and put it by the door. Set two alarms.`,
+      estimatedDuration: 5
+    } : {
+      title: `Set two alarms: prep and start time`,
+      description: `Set alarms 10 minutes before and at practice time for ${goalObject}.`,
+      estimatedDuration: 5
+    },
+    planning: keywords.overwhelmed ? {
+      title: `Write down the tiniest first step`,
+      description: `Break ${goalObject} into the smallest action (under 5 minutes). Just do that one piece.`,
+      estimatedDuration: 5
+    } : {
+      title: `Number paper 1-2-3, write mini-actions`,
+      description: `Number paper 1-2-3. Write one tiny action per number for ${goalObject}.`,
+      estimatedDuration: 5
+    }
+  };
+  
+  return templates[barrierId] || templates.initiation;
+}
+
+/**
+ * Generate PM supporter barrier templates (edge function version)
+ */
+function getPMSupporterBarrierTemplate(barrierId: string, context: string, goalTitle: string, helperName: string) {
+  const keywords = parseBarrierKeywords(context);
+  const goalObject = goalTitle.toLowerCase().replace(/^(learn|practice|improve|master)\s+/i, '').trim();
+  
+  const templates: Record<string, any> = {
+    initiation: keywords.sofa || keywords.bed ? {
+      title: `${helperName} helps them stand and walk to practice area`,
+      description: `${helperName} goes to where they are, offers a hand, and walks together to practice ${goalObject}. Stays nearby for 5 minutes.`,
+      estimatedDuration: 10
+    } : {
+      title: `${helperName} hands them materials and stays nearby`,
+      description: `${helperName} brings materials for ${goalObject}, places them within reach, and sits nearby.`,
+      estimatedDuration: 10
+    },
+    attention: keywords.phone ? {
+      title: `${helperName} collects phone, sets timer`,
+      description: `${helperName} asks for phone, puts it away, sets 20-minute timer for ${goalObject}.`,
+      estimatedDuration: 20
+    } : {
+      title: `${helperName} sets up space and timer`,
+      description: `${helperName} clears practice space, sets 20-minute timer for ${goalObject}.`,
+      estimatedDuration: 20
+    },
+    time: keywords.forget ? {
+      title: `${helperName} preps materials the night before`,
+      description: `${helperName} helps gather everything for ${goalObject} and puts it by the door. Sets alarms together.`,
+      estimatedDuration: 10
+    } : {
+      title: `${helperName} gives 10-minute and start reminders`,
+      description: `${helperName} gives friendly reminders before ${goalObject} practice.`,
+      estimatedDuration: 10
+    },
+    planning: keywords.overwhelmed ? {
+      title: `${helperName} breaks task into 5-minute action`,
+      description: `Together write just the first tiny step for ${goalObject} (under 5 minutes).`,
+      estimatedDuration: 10
+    } : {
+      title: `${helperName} creates 1-2-3 mini-step list`,
+      description: `${helperName} numbers paper 1-2-3, writes small actions for ${goalObject} together.`,
+      estimatedDuration: 10
+    }
+  };
+  
+  return templates[barrierId] || templates.initiation;
 }
 
 /**
@@ -1433,6 +1633,10 @@ serve(async (req) => {
               return;
             }
             
+            // Apply hybrid generation if structured barriers exist
+            const finalSteps = generateHybridPMSteps(payload, generatedSteps);
+            console.log(`✅ [${taskId}] Generated ${finalSteps.length} final steps (hybrid: ${finalSteps !== generatedSteps})`);
+            
             // Fetch existing step IDs first
             console.log(`🔄 [${taskId}] Phase 2: Fetching existing steps for goal ${payload.goalId}...`);
             const { data: existingSteps, error: fetchError } = await supabase
@@ -1446,18 +1650,18 @@ serve(async (req) => {
               return;
             }
             
-            console.log(`📋 [${taskId}] Found ${existingSteps.length} existing steps, AI generated ${generatedSteps.length}`);
+            console.log(`📋 [${taskId}] Found ${existingSteps.length} existing steps, generated ${finalSteps.length} final steps`);
             const existingIds = existingSteps.map(s => s.id);
             
             // Update existing steps by ID (not order_index)
-            console.log(`🔄 [${taskId}] Phase 2: Updating ${Math.min(existingIds.length, generatedSteps.length)} steps in database...`);
+            console.log(`🔄 [${taskId}] Phase 2: Updating ${Math.min(existingIds.length, finalSteps.length)} steps in database...`);
             const updateStart = Date.now();
             let successCount = 0;
             let failCount = 0;
             
-            const updateCount = Math.min(existingIds.length, generatedSteps.length);
+            const updateCount = Math.min(existingIds.length, finalSteps.length);
             for (let i = 0; i < updateCount; i++) {
-              const aiStep = generatedSteps[i];
+              const aiStep = finalSteps[i];
               const stepId = existingIds[i];
               console.log(`📝 [${taskId}] Updating step ${i + 1}/${updateCount} (ID: ${stepId}): "${aiStep.title.slice(0, 50)}..."`);
               
@@ -1499,8 +1703,8 @@ serve(async (req) => {
             }
             
             // Delete excess fallback steps if AI generated fewer
-            if (existingIds.length > generatedSteps.length) {
-              const surplusIds = existingIds.slice(generatedSteps.length);
+            if (existingIds.length > finalSteps.length) {
+              const surplusIds = existingIds.slice(finalSteps.length);
               console.log(`🗑️ [${taskId}] Deleting ${surplusIds.length} excess fallback steps...`);
               const { error: deleteError } = await supabase
                 .from('steps')
@@ -1515,8 +1719,8 @@ serve(async (req) => {
             }
             
             // Insert new steps if AI generated more than fallback
-            if (generatedSteps.length > existingIds.length) {
-              const newSteps = generatedSteps.slice(existingIds.length);
+            if (finalSteps.length > existingIds.length) {
+              const newSteps = finalSteps.slice(existingIds.length);
               console.log(`➕ [${taskId}] Inserting ${newSteps.length} additional AI steps...`);
               
               for (let i = 0; i < newSteps.length; i++) {

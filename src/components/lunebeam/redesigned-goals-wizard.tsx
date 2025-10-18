@@ -1479,7 +1479,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 
                 // Motivation and barriers
                 motivation: motivationText,
-                barriers: barriersText,
+                barriers: {
+                  priority1: data.barriers?.priority1 || '',
+                  priority2: data.barriers?.priority2 || '',
+                  context: barriersText
+                },
                 
                 // Teaching helper if selected
                 teachingHelper: data.pmHelper?.helperId && data.pmHelper.helperId !== 'none' ? {
