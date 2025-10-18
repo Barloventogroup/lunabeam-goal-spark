@@ -41,6 +41,16 @@ interface WizardData {
   supportedPersonName?: string;
   supporterName?: string;
   goalType?: string;
+  barriers?: {
+    priority1?: string;
+    priority2?: string;
+    context?: string;
+  };
+  teachingHelper?: {
+    helperId: string | 'none';
+    helperName: string;
+    relationship: 'parent' | 'coach' | 'friend' | 'supporter';
+  };
 }
 
 /**
@@ -180,6 +190,10 @@ function translateToActionableVariables(data: WizardData): ActionableVariables {
   const dayOfWeek = format(data.startDate, 'EEEE');
   const startTime = data.customTime ? formatDisplayTime(data.customTime) : '8:00 AM';
   
+  // Handle new barrier structure (priority-based) or fallback to old structure
+  const barrier1 = data.barriers?.priority1 || data.challengeAreas?.[0] || null;
+  const barrier2 = data.barriers?.priority2 || data.challengeAreas?.[1] || null;
+  
   return {
     goalAction: convertToActionPhrase(data.goalTitle || 'your goal'),
     goalObject: extractGoalObject(data.goalTitle || 'your goal'),
@@ -191,8 +205,8 @@ function translateToActionableVariables(data: WizardData): ActionableVariables {
     frequencyPerWeek: data.selectedDays?.length || 7,
     hasPrerequisite: data.hasPrerequisites === true && !!data.customPrerequisites,
     prerequisiteText: data.customPrerequisites || '',
-    barrier1: data.challengeAreas?.[0] || null,
-    barrier2: data.challengeAreas?.[1] || null,
+    barrier1,
+    barrier2,
   };
 }
 
@@ -598,15 +612,16 @@ export async function generateMicroStepsSmart(
                                    prereqText.length < 50 && // Short = likely concrete
                                    !uncertaintyKeywords.some(kw => prereqText.toLowerCase().includes(kw));
     
-    const barrier1 = data.challengeAreas?.[0] || 'initiation';
-    const barrier2 = data.challengeAreas?.[1] || inferSecondBarrier(
+    // Handle new barrier structure (priority-based) or fallback to old structure  
+    const barrier1 = data.barriers?.priority1 || data.challengeAreas?.[0] || 'initiation';
+    const barrier2 = data.barriers?.priority2 || data.challengeAreas?.[1] || inferSecondBarrier(
       barrier1,
       data.goalType || 'reminder',
       data.category || 'general'
     );
 
     // Log inference for debugging
-    if (!data.challengeAreas?.[1]) {
+    if (!data.barriers?.priority2 && !data.challengeAreas?.[1]) {
       console.log('[Barrier Inference]', {
         barrier1,
         inferredBarrier2: barrier2,
@@ -634,6 +649,16 @@ export async function generateMicroStepsSmart(
       contextHints.push('This is LEISURE reading (book, novel), not academic study. Use "book" not "textbook" or "study materials".');
     }
 
+    // Get helper name for personalization
+    const helperName = data.teachingHelper?.helperName || data.supporterName || '';
+    
+    // Combine barrier context from new structure or old field
+    const barrierContextCombined = [
+      data.barriers?.context, 
+      data.barrierContext, 
+      ...contextHints
+    ].filter(Boolean).join(' ');
+
     const payload = {
       flow,
       goalTitle: data.goalTitle,
@@ -647,9 +672,9 @@ export async function generateMicroStepsSmart(
       prerequisiteIsConcrete,
       barrier1,
       barrier2,
-      barrierContext: [data.barrierContext, ...contextHints].filter(Boolean).join(' '),
+      barrierContext: barrierContextCombined,
       supportedPersonName: data.supportedPersonName || '',
-      supporterName: data.supporterName || '',
+      supporterName: helperName,
     };
 
     console.log('[generateMicroStepsSmart] Calling AI service with payload:', payload);

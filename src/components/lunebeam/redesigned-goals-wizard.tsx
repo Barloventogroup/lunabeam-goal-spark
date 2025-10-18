@@ -119,6 +119,17 @@ interface ExampleGoal {
   categoryId: string;
 }
 
+interface FrequencySuggestion {
+  frequency: number;
+  rationale: string;
+}
+
+interface TeachingHelper {
+  helperId: string | 'none';
+  helperName: string;
+  relationship: 'parent' | 'coach' | 'friend' | 'supporter';
+}
+
 const exampleGoalsByCategory: Record<string, ExampleGoal[]> = {
   health: [
     { id: 'walk-daily', title: 'Walk daily for 30 minutes', description: 'Build cardiovascular health and energy through regular walking', suggestedType: 'reminder', categoryId: 'health' },
@@ -409,6 +420,7 @@ interface WizardData {
     priority1?: string;
     priority2?: string;
     details?: string;
+    context?: string;
   };
 
   // Old fields for backward compatibility
@@ -430,6 +442,14 @@ interface WizardData {
   selectedDays?: string[];
   timeOfDay?: string;
   customTime?: string;
+  isOngoing?: boolean;
+  
+  // Teaching helper (habit flow enhancement)
+  teachingHelper?: TeachingHelper;
+  
+  // Frequency suggestion (habit flow enhancement)
+  frequencySuggestion?: FrequencySuggestion;
+  frequencySuggestionAccepted?: boolean;
 
   // Step 7: Context/Support (unified)
   supportContext?: string;
@@ -591,6 +611,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [modalView, setModalView] = useState<'categories' | 'examples'>('categories');
   const [selectedCategoryForModal, setSelectedCategoryForModal] = useState<typeof categories[0] | null>(null);
   const [isGeneratingSteps, setIsGeneratingSteps] = useState(false);
+  const [showFrequencySuggestion, setShowFrequencySuggestion] = useState(false);
   const {
     toast
   } = useToast();
@@ -2157,21 +2178,76 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const handleChallengeToggle = (challengeId: string) => {
       const current = data.challengeAreas || [];
       const isSelected = current.includes(challengeId);
+      
       if (isSelected) {
         // Deselect
+        const newAreas = current.filter(id => id !== challengeId);
         updateData({
-          challengeAreas: current.filter(id => id !== challengeId)
+          challengeAreas: newAreas,
+          barriers: {
+            priority1: newAreas[0],
+            priority2: newAreas[1],
+            context: data.barriers?.context || ''
+          }
         });
       } else {
         // Select (limit to 2)
         if (current.length < 2) {
+          const newAreas = [...current, challengeId];
           updateData({
-            challengeAreas: [...current, challengeId]
+            challengeAreas: newAreas,
+            barriers: {
+              priority1: newAreas[0],
+              priority2: newAreas[1],
+              context: data.barriers?.context || ''
+            }
           });
+          
+          // Generate frequency suggestion when 2 barriers are selected
+          if (newAreas.length === 2) {
+            generateFrequencySuggestion(newAreas[0], newAreas[1]);
+          }
         }
       }
     };
+
+    const generateFrequencySuggestion = (barrier1: string, barrier2: string) => {
+      const suggestions: Record<string, FrequencySuggestion> = {
+        'time': { frequency: 2, rationale: "Starting small gives you time to build the habit without feeling overwhelmed." },
+        'initiation': { frequency: 7, rationale: "Daily repetition helps overcome starting difficulty and builds momentum." },
+        'attention': { frequency: 3, rationale: "A few days per week lets you maintain focus while building the habit gradually." },
+        'planning': { frequency: 3, rationale: "Regular but not daily practice helps you develop structure without burnout." }
+      };
+
+      const suggestion = suggestions[barrier1] || { frequency: 3, rationale: "This frequency balances consistency with sustainability." };
+      updateData({ frequencySuggestion: suggestion });
+      setShowFrequencySuggestion(true);
+    };
+
+    const getBarrierPrompt = (barrierId: string) => {
+      const prompts: Record<string, string> = {
+        'initiation': "When do you typically struggle to get started? Morning, evening, or specific situations?",
+        'time': "When do you typically forget? Morning, evening, or specific situations?",
+        'attention': "What typically distracts you during this activity?",
+        'planning': "What makes it hard to know what to do next?"
+      };
+      return prompts[barrierId] || "Tell us more about this challenge";
+    };
+
+    const getBarrierPlaceholder = (barrierId: string) => {
+      const placeholders: Record<string, string> = {
+        'initiation': "e.g., I struggle more in the mornings when I'm tired...",
+        'time': "e.g., I forget when I'm distracted by my phone...",
+        'attention': "e.g., My phone notifications pull me away...",
+        'planning': "e.g., I get stuck after the first step..."
+      };
+      return placeholders[barrierId] || "Share specific details...";
+    };
+    
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
+    const primaryBarrier = data.challengeAreas?.[0];
+    const primaryBarrierLabel = challengeAreas.find(c => c.id === primaryBarrier)?.label;
+    
     return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="pb-4 pt-0">
         <CardTitle className="text-xl">{getStepTitle()}</CardTitle>
@@ -2184,7 +2260,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           const selectionOrder = data.challengeAreas?.indexOf(challenge.id);
           const priorityLabel = selectionOrder === 0 ? '1st Priority' : selectionOrder === 1 ? '2nd Priority' : null;
           return <Card key={challenge.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2 relative", isSelected ? "border-primary bg-primary/5" : "border-border")} onClick={() => handleChallengeToggle(challenge.id)}>
-            {isSelected && priorityLabel && <Badge className="absolute top-2 right-2 text-xs">
+            {isSelected && priorityLabel && <Badge className="absolute top-2 right-2 text-xs bg-primary/80 text-primary-foreground">
                 {priorityLabel}
               </Badge>}
             <CardContent className="p-4">
@@ -2199,12 +2275,33 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </Card>;
         })}
         
-        <div className="space-y-2 pt-4 border-t">
-          <Label htmlFor="custom-challenges">Tell us more</Label>
-          <Textarea id="custom-challenges" placeholder="Share any additional details here..." value={data.customChallenges || ''} onChange={e => updateData({
-            customChallenges: e.target.value
-          })} className="min-h-[80px] resize-none" rows={3} />
-        </div>
+        {/* Structured barrier context - shows after 2 barriers selected */}
+        {data.challengeAreas?.length === 2 && primaryBarrier && (
+          <div className="space-y-2 pt-4 border-t animate-in fade-in slide-in-from-top-2 duration-300">
+            <Label htmlFor="barrier-context">Tell us more about "{primaryBarrierLabel}"</Label>
+            <p className="text-sm text-muted-foreground">
+              {getBarrierPrompt(primaryBarrier)}
+            </p>
+            <Textarea 
+              id="barrier-context"
+              placeholder={getBarrierPlaceholder(primaryBarrier)}
+              value={data.barriers?.context || ''}
+              onChange={e => updateData({
+                barriers: {
+                  ...data.barriers,
+                  priority1: data.challengeAreas![0],
+                  priority2: data.challengeAreas![1],
+                  context: e.target.value
+                }
+              })}
+              className="min-h-[80px] resize-none"
+              rows={3}
+            />
+            <p className="text-sm text-green-600 flex items-center gap-1 mt-2">
+              Great! Being honest about challenges is the first step to overcoming them. 💪
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>;
   };
@@ -2234,6 +2331,58 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <p className="text-sm text-muted-foreground">
               How often will {actuallySupportsAnyone ? (data.supportedPersonName || 'they') : 'you'} practice or perform this habit?
             </p>
+
+            {/* Smart frequency suggestion */}
+            {showFrequencySuggestion && data.frequencySuggestion && !data.frequencySuggestionAccepted && (
+              <Card className="bg-blue-50 border-blue-200 animate-in fade-in slide-in-from-top-2 duration-300">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Sparkles className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-blue-900">Recommended Start</p>
+                      <p className="text-sm text-blue-700 mt-1">
+                        Based on your challenges, we suggest starting with {data.frequencySuggestion.frequency} {data.frequencySuggestion.frequency === 1 ? 'day' : 'days'} per week. {data.frequencySuggestion.rationale}
+                      </p>
+                      <div className="flex gap-2 mt-3">
+                        <Button 
+                          size="sm" 
+                          onClick={() => {
+                            const dayOptions = [
+                              ['mon'],
+                              ['mon', 'thu'],
+                              ['mon', 'wed', 'fri'],
+                              ['mon', 'wed', 'fri', 'sat'],
+                              ['mon', 'tue', 'wed', 'thu', 'fri'],
+                              ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
+                              ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+                            ];
+                            const suggestedDays = dayOptions[data.frequencySuggestion!.frequency - 1] || [];
+                            updateData({ 
+                              selectedDays: suggestedDays,
+                              frequency: data.frequencySuggestion!.frequency,
+                              frequencySuggestionAccepted: true
+                            });
+                            setShowFrequencySuggestion(false);
+                          }}
+                        >
+                          Use This
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => {
+                            setShowFrequencySuggestion(false);
+                            updateData({ frequencySuggestionAccepted: false });
+                          }}
+                        >
+                          I'll Choose
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             
             {/* Quick select options */}
             <div className="grid grid-cols-3 gap-2">
@@ -2334,13 +2483,23 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>
             
             {data.selectedDays && data.selectedDays.length > 0 && (
-              <p className="text-sm text-muted-foreground text-center">
-                {data.selectedDays.length === 7 
-                  ? "Every day of the week"
-                  : data.selectedDays.length === 1
-                  ? "Once per week on " + data.selectedDays[0].toUpperCase()
-                  : `${data.selectedDays.length} days per week: ${data.selectedDays.map(d => d.toUpperCase()).join(', ')}`}
-              </p>
+              <div className="text-center p-4 bg-green-50 rounded-lg animate-in fade-in duration-300">
+                <p className="text-sm text-green-700 font-medium">
+                  ✓ {data.selectedDays.length} {data.selectedDays.length === 1 ? 'day' : 'days'}/week scheduled
+                </p>
+                <p className="text-xs text-green-600 mt-1">
+                  {data.selectedDays.length === 7 
+                    ? "Every day of the week"
+                    : data.selectedDays.length === 1
+                    ? data.selectedDays[0].toUpperCase()
+                    : data.selectedDays.map(d => d.toUpperCase()).join(', ')}
+                </p>
+                {data.frequencySuggestionAccepted && (
+                  <p className="text-xs text-green-600 mt-1">
+                    Smart choice! Starting with {data.selectedDays.length} days builds confidence without burnout.
+                  </p>
+                )}
+              </div>
             )}
           </div>
         )}
