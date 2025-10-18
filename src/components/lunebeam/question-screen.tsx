@@ -8,11 +8,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface QuestionOption {
   value: string | number;
   label: string;
   icon?: string;
+  avatar?: string;
   description?: string;
 }
 
@@ -153,7 +155,13 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                       'peer-focus-visible:ring-2 peer-focus-visible:ring-primary'
                     )}
                   >
-                    {option.icon && (
+                    {option.avatar && (
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        <AvatarImage src={option.avatar} />
+                        <AvatarFallback>{option.label[0]}</AvatarFallback>
+                      </Avatar>
+                    )}
+                    {option.icon && !option.avatar && (
                       <span className="text-2xl flex-shrink-0 mt-0.5">{option.icon}</span>
                     )}
                     <div className="flex-1 min-w-0">
@@ -192,7 +200,13 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                         'peer-focus-visible:ring-2 peer-focus-visible:ring-primary'
                       )}
                     >
-                      {option.icon && (
+                      {option.avatar && (
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage src={option.avatar} />
+                          <AvatarFallback>{option.label[0]}</AvatarFallback>
+                        </Avatar>
+                      )}
+                      {option.icon && !option.avatar && (
                         <span className="text-2xl flex-shrink-0 mt-0.5">{option.icon}</span>
                       )}
                       <div className="flex-1 min-w-0">

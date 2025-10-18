@@ -2085,99 +2085,75 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
     
     return (
-      <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardHeader className="pb-4 pt-0">
-          <CardTitle className="text-2xl">
-            Why does this matter to {name}?
-          </CardTitle>
-          <p className="text-muted-foreground">
-            Understanding motivation helps maintain commitment when practice gets tough.
-          </p>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="motivation">Share your motivation</Label>
-            <Textarea 
-              id="motivation"
-              placeholder="e.g., I want to feel healthier and have more energy..."
-              value={data.motivation || ''} 
-              onChange={e => updateData({ motivation: e.target.value })}
-              className="min-h-[120px] resize-none" 
-              rows={5}
-              autoFocus
-            />
-            <p className="text-xs text-muted-foreground">
-              Take a moment to reflect on what drives you
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <QuestionScreen
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        questionIcon="💭"
+        questionText={`Why does this matter to ${name}?`}
+        helpText="Understanding motivation helps maintain commitment when practice gets tough. Take a moment to reflect on what drives you."
+        inputType="textarea"
+        value={data.motivation || ''}
+        onChange={(value) => updateData({ motivation: value })}
+        onBack={() => prevStep()}
+        onContinue={() => nextStep()}
+        required
+        continueDisabled={!data.motivation?.trim() || data.motivation.trim().length < 10}
+        hideHeader
+        hideFooter
+      />
     );
   };
   const renderStep3 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
-    return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="pb-4 pt-0">
-        <CardTitle className="text-2xl">{text.step3.question}</CardTitle>
-        {/* Inline helper text - always visible */}
-        <p className="text-sm text-muted-foreground mt-3 italic">
-          {text.step3.helperText}
-        </p>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {/* Choice 1: Ready */}
-        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", !data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-          hasPrerequisites: false
-        })}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Check className="h-5 w-5 text-primary" />
-              <div className="text-left flex-1">
-                <div className="font-semibold">{text.step3.options.yes.title}</div>
-                <div className="text-sm text-muted-foreground">{text.step3.options.yes.description}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Choice 2: Need Something */}
-        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.hasPrerequisites ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-          hasPrerequisites: true
-        })}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-500" />
-              <div className="text-left flex-1">
-                <div className="font-semibold">{text.step3.options.no.title}</div>
-                <div className="text-sm text-muted-foreground">{text.step3.options.no.description}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Conditional Input - only shows if "need something" is selected */}
-        {data.hasPrerequisites && (
-          <div className="space-y-2 pt-4 border-t animate-in fade-in slide-in-from-top-2 duration-300">
-            <Label htmlFor="prerequisite-item">
-              {text.step3.conditionalInput.label}
-            </Label>
+    
+    return (
+      <QuestionScreen
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        questionIcon="✅"
+        questionText={text.step3.question}
+        helpText={text.step3.helperText}
+        inputType="yesno"
+        options={[
+          {
+            value: 'no',
+            label: text.step3.options.yes.title,
+            icon: '✅',
+            description: text.step3.options.yes.description
+          },
+          {
+            value: 'yes',
+            label: text.step3.options.no.title,
+            icon: '⚠️',
+            description: text.step3.options.no.description
+          }
+        ]}
+        value={data.hasPrerequisites ? 'yes' : 'no'}
+        onChange={(value) => updateData({ hasPrerequisites: value === 'yes' })}
+        expandOnValue="yes"
+        expandedContent={
+          <div className="space-y-2">
+            <Label htmlFor="prerequisite-item">{text.step3.conditionalInput.label}</Label>
             <Input
               id="prerequisite-item"
               placeholder={text.step3.conditionalInput.placeholder}
               value={data.customPrerequisites || ''}
               onChange={(e) => updateData({ customPrerequisites: e.target.value })}
-              className="min-h-[44px]"
               autoFocus
             />
             <p className="text-xs text-muted-foreground">
               Focus on the single most important thing needed to begin
             </p>
           </div>
-        )}
-      </CardContent>
-    </Card>;
+        }
+        onBack={() => prevStep()}
+        onContinue={() => nextStep()}
+        required
+        continueDisabled={data.hasPrerequisites && !data.customPrerequisites}
+        hideHeader
+        hideFooter
+      />
+    );
   };
   const renderStep4 = () => {
     const handleChallengeToggle = (challengeId: string) => {
@@ -2253,32 +2229,55 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const primaryBarrier = data.challengeAreas?.[0];
     const primaryBarrierLabel = challengeAreas.find(c => c.id === primaryBarrier)?.label;
     
-    return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="pb-4 pt-0">
-        <CardTitle className="text-xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">{text.step5.subtitle}</p>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {challengeAreas.map(challenge => {
-          const isSelected = data.challengeAreas?.includes(challenge.id) || false;
-          const selectionOrder = data.challengeAreas?.indexOf(challenge.id);
-          const priorityLabel = selectionOrder === 0 ? '1st Priority' : selectionOrder === 1 ? '2nd Priority' : null;
-          return <Card key={challenge.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2 relative", isSelected ? "border-primary bg-primary/5" : "border-border")} onClick={() => handleChallengeToggle(challenge.id)}>
-            {isSelected && priorityLabel && <Badge className="absolute top-2 right-2 text-xs bg-primary/80 text-primary-foreground">
-                {priorityLabel}
-              </Badge>}
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
-                <div className="text-left flex-1">
-                  <div className="font-semibold">{challenge.label}</div>
-                  <div className="text-sm text-muted-foreground">({challenge.description})</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>;
-        })}
+    return (
+      <QuestionScreen
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        questionIcon="🤔"
+        questionText={getStepTitle()}
+        helpText="Identifying barriers helps create a personalized practice plan"
+        inputType="custom"
+        onBack={() => prevStep()}
+        onContinue={() => nextStep()}
+        hideHeader
+        hideFooter
+      >
+        <div className="space-y-3">
+          {challengeAreas.map(challenge => {
+            const isSelected = data.challengeAreas?.includes(challenge.id) || false;
+            const selectionOrder = data.challengeAreas?.indexOf(challenge.id);
+            const priorityLabel = selectionOrder === 0 ? '1st' : selectionOrder === 1 ? '2nd' : null;
+            
+            return (
+              <Card 
+                key={challenge.id} 
+                className={cn(
+                  "cursor-pointer transition-all border-2 relative", 
+                  isSelected ? "border-primary bg-accent" : "border-border hover:border-primary/50 hover:bg-accent/50"
+                )} 
+                onClick={() => handleChallengeToggle(challenge.id)}
+              >
+                {isSelected && priorityLabel && (
+                  <Badge 
+                    variant={priorityLabel === '1st' ? 'destructive' : 'outline'}
+                    className="absolute top-2 right-2 text-xs"
+                  >
+                    {priorityLabel} Priority
+                  </Badge>
+                )}
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+                    <div className="text-left flex-1">
+                      <div className="font-semibold">{challenge.label}</div>
+                      <div className="text-sm text-muted-foreground">({challenge.description})</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
         
         {/* Structured barrier context - shows after 2 barriers selected */}
         {data.challengeAreas?.length === 2 && primaryBarrier && (
@@ -2299,7 +2298,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   context: e.target.value
                 }
               })}
-              className="min-h-[80px] resize-none"
+              className="resize-none text-lg"
               rows={3}
             />
             <p className="text-sm text-green-600 flex items-center gap-1 mt-2">
@@ -2307,8 +2306,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </p>
           </div>
         )}
-      </CardContent>
-    </Card>;
+      </QuestionScreen>
+    );
   };
   const renderStep5 = () => {
     const isProject = data.goalType === 'new_skill';
@@ -2789,83 +2788,74 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     const individualName = data.recipient === 'other' ? data.supportedPersonName || 'they' : 'you';
     
-    return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="pb-4 pt-0">
-        <CardTitle className="text-xl">What is the necessary level of adult involvement during the action?</CardTitle>
-        <p className="text-muted-foreground">{text.step7.subtitle}</p>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {/* Support Context Selection */}
-        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.supportContext === 'alone' ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
-          supportContext: 'alone',
-          selectedSupporters: [],
-          primarySupporterId: undefined,
-          primarySupporterName: undefined
-        })}>
-          <CardContent className="p-6">
-            <div className="flex items-start gap-3">
-              {data.supportContext === 'alone' && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
-              <div className="text-left flex-1">
-                <div className="text-base font-semibold">
-                  {data.recipient === 'other' ? 'Independently' : 'Alone'}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {data.recipient === 'other' ? `${individualName} will work on this independently` : "I'll work on this independently"}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.supportContext === 'with_supporters' ? "border-primary bg-primary/5" : "border-border")} onClick={() => setShowSupporterDialog(true)}>
-          <CardContent className="p-6">
-            <div className="flex items-start gap-3">
-              {data.supportContext === 'with_supporters' && <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />}
-              <div className="text-left flex-1">
-                <div className="text-base font-semibold">
-                  {data.recipient === 'other' ? 'With Support' : 'Select an Ally'}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {data.selectedSupporters && data.selectedSupporters.length > 0 ? `${data.selectedSupporters.length} ${data.selectedSupporters.length === 1 ? 'supporter' : 'supporters'} selected` : data.recipient === 'other' ? `Choose supporters to help ${individualName}` : 'Choose your supporters'}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Show selected supporters */}
-        {data.selectedSupporters && data.selectedSupporters.length > 0 && data.supportContext === 'with_supporters' && (
-          <div className="mt-6 pt-6 border-t">
-            <div className="mb-3">
-              <h3 className="font-semibold text-sm">Selected Supporters</h3>
-              <p className="text-xs text-muted-foreground">
-                These people will help with this goal
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              {data.selectedSupporters.map(supporterId => {
-                const supporter = userSupporters.find(s => s.id === supporterId);
-                if (!supporter) return null;
-                
-                return (
-                  <div key={supporterId} className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={supporter.profile?.avatar_url} />
-                      <AvatarFallback className="text-xs">
-                        {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium text-sm">{supporter.name}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>;
+    const supportOptions = [
+      {
+        value: 'none',
+        label: data.recipient === 'other' ? 'Independently' : "I'll work on this independently",
+        description: data.recipient === 'other' ? `${individualName} will work on this independently` : "Work on this alone"
+      },
+      ...userSupporters.map(supporter => ({
+        value: supporter.id,
+        label: supporter.name,
+        avatar: supporter.profile?.avatar_url,
+        description: 'Supporter'
+      }))
+    ];
+    
+    return (
+      <QuestionScreen
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        questionIcon="👥"
+        questionText="Who can help you with this?"
+        inputType="radio"
+        options={supportOptions}
+        value={data.teachingHelper?.helperId || 'none'}
+        onChange={(value) => {
+          if (value === 'none') {
+            updateData({
+              supportContext: 'alone',
+              selectedSupporters: [],
+              primarySupporterId: undefined,
+              primarySupporterName: undefined,
+              teachingHelper: {
+                helperId: 'none',
+                helperName: 'Independent',
+                relationship: 'supporter'
+              }
+            });
+          } else {
+            const supporter = userSupporters.find(s => s.id === value);
+            updateData({
+              supportContext: 'with_supporters',
+              selectedSupporters: [value],
+              primarySupporterId: value,
+              primarySupporterName: supporter?.name,
+              teachingHelper: {
+                helperId: value,
+                helperName: supporter?.name || '',
+                relationship: 'supporter'
+              }
+            });
+          }
+        }}
+        onBack={() => prevStep()}
+        onContinue={() => nextStep()}
+        onSkip={() => {
+          updateData({
+            supportContext: 'alone',
+            teachingHelper: {
+              helperId: 'none',
+              helperName: 'Independent',
+              relationship: 'supporter'
+            }
+          });
+          nextStep();
+        }}
+        hideHeader
+        hideFooter
+      />
+    );
   };
   const renderStep7 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
