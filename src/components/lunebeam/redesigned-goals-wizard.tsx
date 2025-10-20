@@ -2019,8 +2019,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               placeholder="Name your new Goal"
               value={data.goalTitle} 
               onChange={e => updateData({ goalTitle: e.target.value })} 
-              className="text-lg py-3 min-h-[76px] resize-none" 
-              rows={3} 
+              className="text-lg py-3 min-h-[48px] resize-none" 
+              rows={1} 
             />
           </div>
           
