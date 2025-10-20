@@ -2036,9 +2036,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <Sparkles className="h-5 w-5 text-primary" />
                 <div className="text-left flex-1">
                   <div className="font-semibold">Browse Goal Ideas</div>
-                  <div className="text-xs text-muted-foreground font-normal">
-                    Explore 50+ example goals organized by category
-                  </div>
+              <div className="text-xs text-muted-foreground font-normal">
+                Explore 50+ example goals
+              </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
