@@ -300,7 +300,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
 
       {/* Main Content - Top Aligned */}
       <div className="flex-1 px-6 pt-6 pb-0 overflow-auto">
-        <div className="max-w-2xl mx-auto w-full space-y-8">
+        <div className="max-w-2xl mx-auto w-full space-y-4">
           {/* Goal Context */}
           {(goalTitle || goalContext) && (
             <div className="text-center space-y-1">

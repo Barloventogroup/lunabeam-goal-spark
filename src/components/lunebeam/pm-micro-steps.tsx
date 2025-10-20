@@ -310,13 +310,15 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
 };
 
 export const PMStep5_Experience: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
+  const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
+  
   return (
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
       goalTitle={goalTitle}
       questionIcon="📊"
-      questionText={`How much experience with ${data.goalTitle?.toLowerCase()}?`}
+      questionText={`How much experience ${name === 'you' ? 'do you have' : `does ${name} have`} with this goal?`}
       inputType="radio"
       options={[
         { value: 1, label: "Brand new to this", icon: '🌱', description: 'Never tried before' },
@@ -342,13 +344,15 @@ export const PMStep5_Experience: React.FC<PMStepsProps> = ({ data, updateData, g
 };
 
 export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
+  const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
+  
   return (
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
       goalTitle={goalTitle}
       questionIcon="😊"
-      questionText="How confident do you feel about this?"
+      questionText={`How confident ${name === 'you' ? 'do you feel' : `does ${name} feel`} about this?`}
       inputType="radio"
       options={[
         { value: 1, label: "Not confident at all", icon: '😰', description: 'This feels really scary' },
@@ -375,6 +379,7 @@ export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, g
 
 export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const { toast } = useToast();
+  const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   
   const handleContinue = () => {
     // Calculate level after Q3 is answered
@@ -416,7 +421,7 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
       totalSteps={totalSteps}
       goalTitle={goalTitle}
       questionIcon="👥"
-      questionText="How much help do you need right now?"
+      questionText={`How much help ${name === 'you' ? 'do you need' : `does ${name} need`} right now?`}
       inputType="radio"
       options={[
         { value: 1, label: "Full help - do it for me", icon: '👥👥', description: 'Someone else does it' },
@@ -442,6 +447,8 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
 };
 
 export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, userSupporters, goalTitle }) => {
+  const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
+  
   const levelContext = data.pmAssessment?.calculatedLevel 
     ? `Starting Level: ${data.pmAssessment.levelLabel} ${['🌱', '🌿', '🌳', '🎯', '⭐'][data.pmAssessment.calculatedLevel - 1]}`
     : undefined;
@@ -449,7 +456,7 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
   const options = [
     { 
       value: 'none', 
-      label: "I'll work on this independently", 
+      label: name === 'you' ? "I'll work on this independently" : `${name} will work on this independently`, 
       description: 'Practice on my own' 
     },
     ...userSupporters.map(s => ({
@@ -467,7 +474,7 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
       goalTitle={goalTitle}
       goalContext={levelContext}
       questionIcon="👥"
-      questionText="Who can help you with this?"
+      questionText={`Who can help ${name === 'you' ? 'you' : name} with this goal?`}
       inputType="radio"
       options={options}
       value={data.pmHelper?.helperId}
@@ -491,6 +498,7 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
 
 export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const [showCustomSelector, setShowCustomSelector] = React.useState(false);
+  const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   
   const levelContext = data.pmAssessment?.calculatedLevel 
     ? `Starting Level: ${data.pmAssessment.levelLabel} ${['🌱', '🌿', '🌳', '🎯', '⭐'][data.pmAssessment.calculatedLevel - 1]}`
@@ -523,7 +531,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
       goalTitle={goalTitle}
       goalContext={levelContext}
       questionIcon="🎯"
-      questionText="How often would you like to practice?"
+      questionText={`How often would ${name === 'you' ? 'you' : name} like to practice?`}
       helpText="We'll help you build up gradually to this frequency"
       inputType="custom"
       onBack={goBack}
@@ -561,7 +569,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
         
         {/* Frequency Selector */}
         <div className="space-y-3">
-          <Label className="text-base">Or choose your own frequency:</Label>
+          <Label className="text-base">Let me choose:</Label>
           <div className="grid grid-cols-4 gap-2">
             {[1, 2, 3, 4, 5, 6, 7].map(freq => (
               <Button
