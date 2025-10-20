@@ -2379,8 +2379,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <h2 className="text-xl font-semibold text-muted-foreground tracking-wide truncate">{data.goalTitle}</h2>
           </div>
         )}
-        <CardTitle className="text-3xl font-bold text-center">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground text-center text-base mt-2">
+        <CardTitle className="text-3xl font-bold text-left">{getStepTitle()}</CardTitle>
+        <p className="text-muted-foreground text-left text-base mt-2">
           {isProject 
             ? "Set your project timeline and first learning session"
             : "Set your practice schedule"
