@@ -10,7 +10,15 @@ import { format, addWeeks } from 'date-fns';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Calendar } from '@/components/ui/calendar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -631,8 +639,8 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
               <span>Start Date</span>
               <span className="text-destructive">*</span>
             </Label>
-            <Drawer>
-              <DrawerTrigger asChild>
+            <Sheet>
+              <SheetTrigger asChild>
                 <Button variant="outline" className="w-full justify-between text-left h-12">
                   <div className="flex items-center">
                     <CalendarIcon className="h-4 w-4 mr-2" />
@@ -640,20 +648,20 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   </div>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
-              </DrawerTrigger>
-          <DrawerContent side="right">
-            <DrawerHeader className="flex flex-row items-center gap-4 border-b pb-4">
-              <DrawerClose asChild>
+              </SheetTrigger>
+          <SheetContent side="right" className="w-full sm:max-w-md p-0">
+            <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-4 pt-6">
+              <SheetClose asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <ChevronLeft className="h-5 w-5" />
                   <span className="sr-only">Close</span>
                 </Button>
-              </DrawerClose>
+              </SheetClose>
               <div className="flex-1">
-                <DrawerTitle>Select Start Date</DrawerTitle>
-                <DrawerDescription>Choose when you want to start practicing</DrawerDescription>
+                <SheetTitle>Select Start Date</SheetTitle>
+                <SheetDescription>Choose when you want to start practicing</SheetDescription>
               </div>
-            </DrawerHeader>
+            </SheetHeader>
             <ScrollArea className="h-[calc(100vh-140px)] w-full">
               <div className="flex flex-col gap-6 p-4">
                 {[0, 1, 2].map((monthOffset) => {
@@ -693,16 +701,16 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   );
                 })}
               </div>
-            </ScrollArea>
-          </DrawerContent>
-            </Drawer>
+              </ScrollArea>
+            </SheetContent>
+          </Sheet>
           </div>
 
           {/* End Date - Optional */}
           <div className="space-y-2">
             <Label className="text-base font-medium">End Date (Optional)</Label>
-            <Drawer>
-              <DrawerTrigger asChild>
+            <Sheet>
+              <SheetTrigger asChild>
                 <Button variant="outline" className="w-full justify-between text-left h-12">
                   <div className="flex items-center">
                     <CalendarIcon className="h-4 w-4 mr-2" />
@@ -710,20 +718,20 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   </div>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
-              </DrawerTrigger>
-          <DrawerContent side="right">
-            <DrawerHeader className="flex flex-row items-center gap-4 border-b pb-4">
-              <DrawerClose asChild>
+              </SheetTrigger>
+          <SheetContent side="right" className="w-full sm:max-w-md p-0">
+            <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-4 pt-6">
+              <SheetClose asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <ChevronLeft className="h-5 w-5" />
                   <span className="sr-only">Close</span>
                 </Button>
-              </DrawerClose>
+              </SheetClose>
               <div className="flex-1">
-                <DrawerTitle>Select End Date (Optional)</DrawerTitle>
-                <DrawerDescription>Choose when you want to complete this goal, or leave open-ended</DrawerDescription>
+                <SheetTitle>Select End Date (Optional)</SheetTitle>
+                <SheetDescription>Choose when you want to complete this goal, or leave open-ended</SheetDescription>
               </div>
-            </DrawerHeader>
+            </SheetHeader>
             <ScrollArea className="h-[calc(100vh-140px)] w-full">
               <div className="flex flex-col gap-6 p-4">
                 {[0, 1, 2, 3, 4, 5].map((monthOffset) => {
@@ -762,9 +770,9 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   );
                 })}
               </div>
-            </ScrollArea>
-          </DrawerContent>
-            </Drawer>
+              </ScrollArea>
+            </SheetContent>
+          </Sheet>
             <p className="text-xs text-muted-foreground">
               💡 Leave open-ended if you want to practice indefinitely
             </p>
