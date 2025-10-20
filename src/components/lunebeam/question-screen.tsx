@@ -303,7 +303,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
         <div className="max-w-2xl mx-auto w-full space-y-4">
           {/* Goal Context */}
           {(goalTitle || goalContext) && (
-            <div className="text-center space-y-1">
+            <div className="text-left space-y-1">
               {goalTitle && (
                 <h2 className="text-xl font-semibold">{goalTitle}</h2>
               )}
