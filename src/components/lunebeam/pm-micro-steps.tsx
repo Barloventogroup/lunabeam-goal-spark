@@ -4,12 +4,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Target, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format, addWeeks } from 'date-fns';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 
 interface PMStepsProps {
   data: any;
@@ -598,10 +600,6 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
 };
 
 export const PMStep10_Duration: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
-  const { Popover, PopoverContent, PopoverTrigger } = require('@/components/ui/popover');
-  const { Calendar } = require('@/components/ui/calendar');
-  const { CalendarIcon } = require('lucide-react');
-  
   const isComplete = !!data.startDate;
   
   return (
