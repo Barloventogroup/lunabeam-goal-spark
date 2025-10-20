@@ -211,6 +211,12 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
     
     return (
       <div className="min-h-screen bg-background">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+          <h1 className="text-xl font-bold">Goals</h1>
+          <p className="text-sm text-muted-foreground">Create and track your progress</p>
+        </div>
+        
         <div className="p-4">
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'own' | 'individual')}>
             <TabsList className="grid w-full grid-cols-2">
@@ -241,6 +247,12 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+        <h1 className="text-xl font-bold">Goals</h1>
+        <p className="text-sm text-muted-foreground">Create and track your progress</p>
+      </div>
+      
       {renderCurrentView()}
     </div>
   );
