@@ -10,7 +10,7 @@ import { format, addWeeks } from 'date-fns';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Calendar } from '@/components/ui/calendar';
 
 interface PMStepsProps {
@@ -630,8 +630,8 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
               <span>Start Date</span>
               <span className="text-destructive">*</span>
             </Label>
-            <Popover>
-              <PopoverTrigger asChild>
+            <Drawer>
+              <DrawerTrigger asChild>
                 <Button variant="outline" className="w-full justify-between text-left h-12">
                   <div className="flex items-center">
                     <CalendarIcon className="h-4 w-4 mr-2" />
@@ -639,38 +639,45 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   </div>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar 
-                  mode="single" 
-                  selected={data.startDate} 
-                  onSelect={(date: Date | undefined) => {
-                    if (!date) return;
-                    const durationWeeks = date && data.endDate 
-                      ? Math.ceil((data.endDate.getTime() - date.getTime()) / (7 * 24 * 60 * 60 * 1000))
-                      : null;
-                    updateData({ 
-                      startDate: date,
-                      pmPracticePlan: {
-                        ...data.pmPracticePlan,
-                        targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
-                        startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
-                        smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
-                        durationWeeks: durationWeeks
-                      }
-                    });
-                  }}
-                  disabled={(date: Date) => date < new Date()}
-                />
-              </PopoverContent>
-            </Popover>
+              </DrawerTrigger>
+              <DrawerContent side="right">
+                <DrawerHeader>
+                  <DrawerTitle>Select Start Date</DrawerTitle>
+                  <DrawerDescription>Choose when you want to start practicing</DrawerDescription>
+                </DrawerHeader>
+                <div className="p-4 flex justify-center">
+                  <Calendar 
+                    mode="single" 
+                    selected={data.startDate} 
+                    onSelect={(date: Date | undefined) => {
+                      if (!date) return;
+                      const durationWeeks = date && data.endDate 
+                        ? Math.ceil((data.endDate.getTime() - date.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                        : null;
+                      updateData({ 
+                        startDate: date,
+                        pmPracticePlan: {
+                          ...data.pmPracticePlan,
+                          targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
+                          startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
+                          smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
+                          durationWeeks: durationWeeks
+                        }
+                      });
+                    }}
+                    disabled={(date: Date) => date < new Date()}
+                    className="pointer-events-auto"
+                  />
+                </div>
+              </DrawerContent>
+            </Drawer>
           </div>
 
           {/* End Date - Optional */}
           <div className="space-y-2">
             <Label className="text-base font-medium">End Date (Optional)</Label>
-            <Popover>
-              <PopoverTrigger asChild>
+            <Drawer>
+              <DrawerTrigger asChild>
                 <Button variant="outline" className="w-full justify-between text-left h-12">
                   <div className="flex items-center">
                     <CalendarIcon className="h-4 w-4 mr-2" />
@@ -678,30 +685,42 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   </div>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar 
-                  mode="single" 
-                  selected={data.endDate} 
-                  onSelect={(date?: Date) => {
-                    const durationWeeks = data.startDate && date 
-                      ? Math.ceil((date.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
-                      : null;
-                    updateData({ 
-                      endDate: date,
-                      pmPracticePlan: {
-                        ...data.pmPracticePlan,
-                        targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
-                        startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
-                        smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
-                        durationWeeks: durationWeeks
-                      }
-                    });
-                  }}
-                  disabled={(date: Date) => !data.startDate || date <= data.startDate}
-                />
-              </PopoverContent>
-            </Popover>
+              </DrawerTrigger>
+              <DrawerContent side="right">
+                <DrawerHeader>
+                  <DrawerTitle>Select End Date (Optional)</DrawerTitle>
+                  <DrawerDescription>Choose when you want to complete this goal, or leave open-ended</DrawerDescription>
+                </DrawerHeader>
+                <div className="p-4 flex justify-center">
+                  <Calendar 
+                    mode="single" 
+                    selected={data.endDate} 
+                    onSelect={(date?: Date) => {
+                      const durationWeeks = data.startDate && date 
+                        ? Math.ceil((date.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                        : null;
+                      updateData({ 
+                        endDate: date,
+                        pmPracticePlan: {
+                          ...data.pmPracticePlan,
+                          targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
+                          startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
+                          smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
+                          durationWeeks: durationWeeks
+                        }
+                      });
+                    }}
+                    disabled={(date: Date) => !data.startDate || date <= data.startDate}
+                    className="pointer-events-auto"
+                  />
+                </div>
+                <DrawerFooter>
+                  <DrawerClose asChild>
+                    <Button variant="outline">Close</Button>
+                  </DrawerClose>
+                </DrawerFooter>
+              </DrawerContent>
+            </Drawer>
             <p className="text-xs text-muted-foreground">
               💡 Leave open-ended if you want to practice indefinitely
             </p>
