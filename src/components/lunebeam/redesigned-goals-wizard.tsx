@@ -2043,14 +2043,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
             </Button>
-            
-            {data.category && (
-              <div className="text-xs text-muted-foreground text-center animate-fade-in">
-                Selected category: <span className="font-medium">
-                  {categories.find(c => c.id === data.category)?.title}
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Tracking Mode Selection */}
