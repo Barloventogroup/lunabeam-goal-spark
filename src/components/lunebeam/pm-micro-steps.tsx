@@ -509,6 +509,7 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
 
 export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const [showCustomSelector, setShowCustomSelector] = React.useState(false);
+  const datesSectionRef = React.useRef<HTMLDivElement>(null);
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   
   const levelContext = data.pmAssessment?.calculatedLevel 
@@ -544,6 +545,15 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
   
   const isComplete = !!data.pmPracticePlan?.targetFrequency && !!data.startDate;
   
+  // Auto-scroll to dates section when frequency is selected but no start date
+  React.useEffect(() => {
+    if (data.pmPracticePlan?.targetFrequency && !data.startDate && datesSectionRef.current) {
+      setTimeout(() => {
+        datesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }, [data.pmPracticePlan?.targetFrequency, data.startDate]);
+  
   return (
     <QuestionScreen
       currentStep={currentStep}
@@ -551,7 +561,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
       goalTitle={goalTitle}
       goalContext={levelContext}
       questionIcon="🎯"
-      questionText={`How often would ${name === 'you' ? 'you' : name} like to practice?`}
+      questionText={`Set ${name === 'you' ? 'your' : name + "'s"} practice schedule`}
       inputType="custom"
       onBack={goBack}
       onContinue={goNext}
@@ -631,8 +641,23 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
           </p>
         </div>
 
+        {/* Scroll Indicator - shows when frequency selected but no start date */}
+        {data.pmPracticePlan?.targetFrequency && !data.startDate && (
+          <div className="flex flex-col items-center gap-2 py-4 animate-bounce">
+            <div className="text-sm font-medium text-primary">
+              ⬇️ Please scroll down to select your start date
+            </div>
+          </div>
+        )}
+
         {/* Date Selection */}
-        <div className="space-y-6 pt-4 border-t">
+        <div 
+          ref={datesSectionRef}
+          className={cn(
+            "space-y-6 pt-4 border-t",
+            data.pmPracticePlan?.targetFrequency && !data.startDate && "animate-pulse border-primary"
+          )}
+        >
           {/* Start Date - Required */}
           <div className="space-y-2">
             <Label className="flex items-center gap-1 text-base font-medium">
