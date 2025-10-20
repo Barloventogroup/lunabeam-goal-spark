@@ -509,6 +509,8 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
 
 export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const [showCustomSelector, setShowCustomSelector] = React.useState(false);
+  const [startDateSheetOpen, setStartDateSheetOpen] = React.useState(false);
+  const [endDateSheetOpen, setEndDateSheetOpen] = React.useState(false);
   const datesSectionRef = React.useRef<HTMLDivElement>(null);
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   
@@ -664,7 +666,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
               <span>Start Date</span>
               <span className="text-destructive">*</span>
             </Label>
-            <Sheet>
+            <Sheet open={startDateSheetOpen} onOpenChange={setStartDateSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="outline" className="w-full justify-between text-left h-12">
                   <div className="flex items-center">
@@ -715,6 +717,8 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                               durationWeeks: durationWeeks
                             }
                           });
+                          // Close the sheet after selection
+                          setTimeout(() => setStartDateSheetOpen(false), 150);
                         }}
                         disabled={(date: Date) => date < new Date()}
                         className="pointer-events-auto w-full"
@@ -734,7 +738,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
           {/* End Date - Optional */}
           <div className="space-y-2">
             <Label className="text-base font-medium">End Date (Optional)</Label>
-            <Sheet>
+            <Sheet open={endDateSheetOpen} onOpenChange={setEndDateSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="outline" className="w-full justify-between text-left h-12">
                   <div className="flex items-center">
@@ -784,6 +788,8 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                               durationWeeks: durationWeeks
                             }
                           });
+                          // Close the sheet after selection
+                          setTimeout(() => setEndDateSheetOpen(false), 150);
                         }}
                         disabled={(date: Date) => !data.startDate || date <= data.startDate}
                         className="pointer-events-auto w-full"
