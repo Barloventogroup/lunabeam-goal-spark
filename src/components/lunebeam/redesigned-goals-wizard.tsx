@@ -3281,8 +3281,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
     return <>
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardHeader className="text-center pb-4">
+        <CardHeader className="text-center pb-4 space-y-2">
           <h1 className="text-2xl md:text-3xl font-bold">Commitment & Activation</h1>
+          {data.goalTitle && (
+            <p className="text-xl font-semibold text-primary">{data.goalTitle}</p>
+          )}
           <p className="text-muted-foreground">{text.confirm.subtitle}</p>
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
