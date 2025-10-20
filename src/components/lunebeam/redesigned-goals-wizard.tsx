@@ -9,8 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle, Shield, HandHelping, HelpCircle } from 'lucide-react';
-import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
+import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle, Shield, HandHelping } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -2076,22 +2075,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">🔁</span>
                   <div className="text-left flex-1">
-                    <div className="font-semibold flex items-center gap-2">
+                    <div className="font-semibold">
                       Habit
-                      <HoverCard>
-                        <HoverCardTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-6 w-6 p-0 hover:bg-transparent">
-                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                          </Button>
-                        </HoverCardTrigger>
-                        <HoverCardContent className="w-80">
-                          <p className="text-sm">
-                            Focuses on predictable steps, consistent effort, and building habits 
-                            (e.g., "We will sit down for 15 minutes of quiet time daily"). 
-                            Great for establishing structure and reducing overwhelm.
-                          </p>
-                        </HoverCardContent>
-                      </HoverCard>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
                       Track Consistency and build a routine
@@ -2117,22 +2102,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">🎯</span>
                   <div className="text-left flex-1">
-                    <div className="font-semibold flex items-center gap-2">
+                    <div className="font-semibold">
                       Skill
-                      <HoverCard>
-                        <HoverCardTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-6 w-6 p-0 hover:bg-transparent">
-                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                          </Button>
-                        </HoverCardTrigger>
-                        <HoverCardContent className="w-80">
-                          <p className="text-sm">
-                            Focuses on acquiring a specific functional skill or reaching a personal benchmark 
-                            (e.g., "Complete a task list using a visual schedule independently"). 
-                            Success is reaching a defined point.
-                          </p>
-                        </HoverCardContent>
-                      </HoverCard>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
                       Focus on one skill until you're good, or achieve a concrete, visible win
@@ -2158,24 +2129,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">🌈</span>
                   <div className="text-left flex-1">
-                    <div className="font-semibold flex items-center gap-2">
+                    <div className="font-semibold">
                       State
-                      <HoverCard>
-                        <HoverCardTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-6 w-6 p-0 hover:bg-transparent">
-                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                          </Button>
-                        </HoverCardTrigger>
-                        <HoverCardContent className="w-80">
-                          <p className="text-sm">
-                            Focuses on the desired holistic result, positive feeling, or preferred environment 
-                            (e.g., "Create a calm and clutter-free living space" or "Feel more comfortable in social gatherings").
-                          </p>
-                        </HoverCardContent>
-                      </HoverCard>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Aim for a better feeling or setup in your life—something that makes your day easier, calmer, or happier
+                      Create a better feeling or environment that makes daily life easier
                     </p>
                   </div>
                 </div>
