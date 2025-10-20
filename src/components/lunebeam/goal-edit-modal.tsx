@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, CalendarIcon, X, AlertTriangle } from 'lucide-react';
+import { Calendar, CalendarIcon, X, AlertTriangle, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   Dialog,
@@ -145,13 +145,16 @@ export const GoalEditModal: React.FC<GoalEditModalProps> = ({
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal bg-background border-border",
+                    "w-full justify-between text-left font-normal bg-background border-border",
                     !dueDate && "text-muted-foreground",
                     validationError && "border-destructive"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
+                  <div className="flex items-center">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 bg-white dark:bg-gray-800 border shadow-lg pointer-events-auto" align="start">

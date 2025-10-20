@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon } from 'lucide-react';
+import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format, addWeeks } from 'date-fns';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
@@ -632,9 +632,12 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
             </Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left h-12">
-                  <CalendarIcon className="h-4 w-4 mr-2" />
-                  {data.startDate ? format(data.startDate, 'PPP') : 'Pick start date'}
+                <Button variant="outline" className="w-full justify-between text-left h-12">
+                  <div className="flex items-center">
+                    <CalendarIcon className="h-4 w-4 mr-2" />
+                    {data.startDate ? format(data.startDate, 'PPP') : 'Pick start date'}
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -668,9 +671,12 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
             <Label className="text-base font-medium">End Date (Optional)</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left h-12">
-                  <CalendarIcon className="h-4 w-4 mr-2" />
-                  {data.endDate ? format(data.endDate, 'PPP') : 'Open-ended (no end date)'}
+                <Button variant="outline" className="w-full justify-between text-left h-12">
+                  <div className="flex items-center">
+                    <CalendarIcon className="h-4 w-4 mr-2" />
+                    {data.endDate ? format(data.endDate, 'PPP') : 'Open-ended (no end date)'}
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
