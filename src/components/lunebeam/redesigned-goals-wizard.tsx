@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle, Shield, HandHelping } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle, Shield, HandHelping, HelpCircle } from 'lucide-react';
+import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -407,6 +408,7 @@ interface WizardData {
   // Step 1: Goal description
   goalTitle: string;
   category?: string;
+  trackingMode?: 'habit' | 'skill' | 'state';
 
   // Step 2: Motivation (SHARED - free text, not dropdown)
   motivation?: string;
@@ -2006,7 +2008,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         inputType="custom"
         onBack={prevStep}
         onContinue={nextStep}
-        continueDisabled={!data.goalTitle?.trim() || !data.goalType}
+        continueDisabled={!data.goalTitle?.trim() || !data.trackingMode}
         hideHeader
         hideFooter
       >
@@ -2052,67 +2054,128 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             )}
           </div>
 
-          {/* Goal Type Selection */}
+          {/* Tracking Mode Selection */}
           <div className="space-y-4 pt-4 border-t">
             <p className="text-sm font-medium text-center">
-              How familiar are {name === 'you' ? 'you' : `is ${name}`} with this activity?
+              How would {name === 'you' ? 'you' : name} like to measure this goal?
             </p>
             
-            {/* Habit Option - Radio Style Card */}
+            {/* Habit Card */}
             <Card 
               className={cn(
                 "cursor-pointer hover:shadow-md transition-all border-2",
-                data.goalType === 'reminder' 
+                data.trackingMode === 'habit' 
                   ? "border-primary bg-primary/5" 
                   : "border-border hover:border-primary/50"
               )} 
               onClick={() => {
-                if (data.goalType !== 'reminder') {
-                  switchGoalType('reminder');
-                }
+                updateData({ trackingMode: 'habit', goalType: 'reminder' });
               }}
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">🔄</span>
+                  <span className="text-2xl">🔁</span>
                   <div className="text-left flex-1">
-                    <div className="font-semibold">
-                      Yes, {name === 'you' ? "I" : "they"} already know how to do this
+                    <div className="font-semibold flex items-center gap-2">
+                      Habit
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 p-0 hover:bg-transparent">
+                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-80">
+                          <p className="text-sm">
+                            Focuses on predictable steps, consistent effort, and building habits 
+                            (e.g., "We will sit down for 15 minutes of quiet time daily"). 
+                            Great for establishing structure and reducing overwhelm.
+                          </p>
+                        </HoverCardContent>
+                      </HoverCard>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Track consistency and build a routine
+                      Track Consistency and build a routine
                     </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            {/* Progressive Mastery Option - Radio Style Card */}
+            {/* Skill Card */}
             <Card 
               className={cn(
-                "cursor-pointer hover:shadow-md transition-all border-2 relative",
-                data.goalType === 'progressive_mastery' 
+                "cursor-pointer hover:shadow-md transition-all border-2",
+                data.trackingMode === 'skill' 
                   ? "border-primary bg-primary/5" 
                   : "border-border hover:border-primary/50"
               )} 
               onClick={() => {
-                if (data.goalType !== 'progressive_mastery') {
-                  switchGoalType('progressive_mastery');
-                }
+                updateData({ trackingMode: 'skill', goalType: 'progressive_mastery' });
               }}
             >
-              <Badge className="absolute top-2 right-2 text-xs bg-amber-100 text-amber-700 border-amber-200">
-                Recommended for learning
-              </Badge>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">🎯</span>
                   <div className="text-left flex-1">
-                    <div className="font-semibold">
-                      No, {name === 'you' ? "I'm" : "they're"} learning or improving this skill
+                    <div className="font-semibold flex items-center gap-2">
+                      Skill
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 p-0 hover:bg-transparent">
+                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-80">
+                          <p className="text-sm">
+                            Focuses on acquiring a specific functional skill or reaching a personal benchmark 
+                            (e.g., "Complete a task list using a visual schedule independently"). 
+                            Success is reaching a defined point.
+                          </p>
+                        </HoverCardContent>
+                      </HoverCard>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Track progress from beginner to independent
+                      Focus on one skill until you're good, or achieve a concrete, visible win
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* State Card */}
+            <Card 
+              className={cn(
+                "cursor-pointer hover:shadow-md transition-all border-2",
+                data.trackingMode === 'state' 
+                  ? "border-primary bg-primary/5" 
+                  : "border-border hover:border-primary/50"
+              )} 
+              onClick={() => {
+                updateData({ trackingMode: 'state', goalType: 'reminder' });
+              }}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🌈</span>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold flex items-center gap-2">
+                      State
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 p-0 hover:bg-transparent">
+                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-80">
+                          <p className="text-sm">
+                            Focuses on the desired holistic result, positive feeling, or preferred environment 
+                            (e.g., "Create a calm and clutter-free living space" or "Feel more comfortable in social gatherings").
+                          </p>
+                        </HoverCardContent>
+                      </HoverCard>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Aim for a better feeling or setup in your life—something that makes your day easier, calmer, or happier
                     </p>
                   </div>
                 </div>
