@@ -2047,8 +2047,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
           {/* Tracking Mode Selection */}
           <div className="space-y-4 pt-4 border-t">
-            <p className="text-2xl md:text-3xl font-medium text-left">
-              How would {name === 'you' ? 'you' : name} like to measure this goal?
+            <p className="text-2xl md:text-3xl font-bold text-left">
+              What type of goal is this?
             </p>
             
             {/* Habit Card */}
