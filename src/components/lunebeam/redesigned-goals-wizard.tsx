@@ -2016,7 +2016,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="space-y-2">
             <Textarea 
               id="goal-title" 
-              placeholder={`e.g., Practice guitar for 30 minutes daily`}
+              placeholder="name your new goal"
               value={data.goalTitle} 
               onChange={e => updateData({ goalTitle: e.target.value })} 
               className="text-lg py-3 min-h-[76px] resize-none" 
