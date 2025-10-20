@@ -13,17 +13,20 @@ import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal, Step } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-
 interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
   refreshTrigger?: number; // Optional prop to trigger refresh
 }
-
 type GoalsTab = 'active' | 'completed';
-
-export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger }) => {
+export const GoalsList: React.FC<GoalsListProps> = ({
+  onNavigate,
+  refreshTrigger
+}) => {
   const [goals, setGoals] = useState<Goal[]>([]);
-  const [stepsCount, setStepsCount] = useState<Record<string, { required: number; done: number }>>({});
+  const [stepsCount, setStepsCount] = useState<Record<string, {
+    required: number;
+    done: number;
+  }>>({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<GoalsTab>('active');
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,14 +35,14 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [allProfiles, setAllProfiles] = useState<Record<string, any>>({});
   const [filterCreator, setFilterCreator] = useState<string>("all");
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const GOALS_PER_PAGE = 10;
 
   // Helper to count unique completion days for habit goals
   const getUniqueCompletionDays = (steps: Step[]): number => {
     const completionDates = new Set<string>();
-    
     steps.forEach(step => {
       if (step.status === 'done' && step.updated_at) {
         // Extract date only (YYYY-MM-DD)
@@ -47,48 +50,45 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
         completionDates.add(date);
       }
     });
-    
     return completionDates.size;
   };
-
   const loadGoals = async () => {
     try {
       let goalsData: Goal[];
-      
+
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       setCurrentUser(user);
-      
       if (activeTab === 'completed') {
         // Get completed goals
-        goalsData = await goalsService.getGoals({ 
-          status: 'completed' 
+        goalsData = await goalsService.getGoals({
+          status: 'completed'
         });
       } else {
         // Get active goals (planned, active, paused - not completed or archived)
         const allGoals = await goalsService.getGoals();
-        goalsData = allGoals.filter(goal => 
-          goal.status !== 'completed' && goal.status !== 'archived'
-        );
+        goalsData = allGoals.filter(goal => goal.status !== 'completed' && goal.status !== 'archived');
       }
-      
+
       // Build profiles lookup by fetching profiles separately
       const profiles: Record<string, any> = {};
       const userIds = new Set<string>();
-      
+
       // Collect all unique user IDs from goals
       for (const goal of goalsData) {
         if (goal.owner_id) userIds.add(goal.owner_id);
         if (goal.created_by) userIds.add(goal.created_by);
       }
-      
+
       // Fetch profiles for all unique user IDs
       if (userIds.size > 0) {
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('user_id, first_name')
-          .in('user_id', Array.from(userIds));
-        
+        const {
+          data: profilesData
+        } = await supabase.from('profiles').select('user_id, first_name').in('user_id', Array.from(userIds));
         if (profilesData) {
           for (const profile of profilesData) {
             profiles[profile.user_id] = profile;
@@ -96,37 +96,33 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
         }
       }
       setAllProfiles(profiles);
-      
       setGoals(goalsData);
 
       // OPTIMIZED: Batch substep queries to reduce database calls
-      const counts: Record<string, { required: number; done: number }> = {};
-      
+      const counts: Record<string, {
+        required: number;
+        done: number;
+      }> = {};
+
       // Step 1: Fetch all steps for all goals
       const stepsPromises = goalsData.map(goal => stepsService.getSteps(goal.id));
       const allStepsArrays = await Promise.all(stepsPromises);
-      
+
       // Step 2: Collect ALL step IDs and organize by goal
       const allStepIds: string[] = [];
       const stepsByGoal: Record<string, Step[]> = {};
-      
       allStepsArrays.forEach((steps, index) => {
         const goal = goalsData[index];
-        const actionableSteps = steps.filter(s => 
-          ((!s.type || s.type === 'action') || (s.step_type && s.step_type !== 'container')) && 
-          !s.hidden && 
-          s.status !== 'skipped'
-        );
+        const actionableSteps = steps.filter(s => (!s.type || s.type === 'action' || s.step_type && s.step_type !== 'container') && !s.hidden && s.status !== 'skipped');
         stepsByGoal[goal.id] = actionableSteps;
         allStepIds.push(...actionableSteps.map(s => s.id));
       });
-      
+
       // Step 3: Single batched query for ALL substeps
-      const { data: allSubsteps } = await supabase
-        .from('substeps')
-        .select('*')
-        .in('step_id', allStepIds);
-      
+      const {
+        data: allSubsteps
+      } = await supabase.from('substeps').select('*').in('step_id', allStepIds);
+
       // Step 4: Group substeps by step_id for fast lookup
       const substepsByStepId: Record<string, any[]> = {};
       (allSubsteps || []).forEach(substep => {
@@ -135,20 +131,18 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
         }
         substepsByStepId[substep.step_id].push(substep);
       });
-      
+
       // Step 5: Calculate counts using grouped data
       for (const goal of goalsData) {
         try {
           const actionableSteps = stepsByGoal[goal.id] || [];
-          
+
           // Check if this is a habit goal
           const isHabit = goal.frequency_per_week && goal.frequency_per_week > 0;
-          
           if (isHabit) {
             // For habits: count unique completion days
             const uniqueDays = getUniqueCompletionDays(actionableSteps);
             const plannedDays = (goal.frequency_per_week || 0) * (goal.duration_weeks || 1);
-            
             counts[goal.id] = {
               required: plannedDays,
               done: uniqueDays
@@ -157,10 +151,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
             // For non-habits: count steps/substeps (existing logic)
             let totalCompletableItems = 0;
             let completedItems = 0;
-            
             for (const step of actionableSteps) {
               const stepSubsteps = substepsByStepId[step.id] || [];
-              
               if (stepSubsteps.length > 0) {
                 // If step has substeps, count each substep
                 totalCompletableItems += stepSubsteps.length;
@@ -171,7 +163,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                 completedItems += step.status === 'done' ? 1 : 0;
               }
             }
-            
             counts[goal.id] = {
               required: totalCompletableItems,
               done: completedItems
@@ -179,7 +170,10 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
           }
         } catch (error) {
           console.error(`Failed to load steps for goal ${goal.id}:`, error);
-          counts[goal.id] = { required: 0, done: 0 };
+          counts[goal.id] = {
+            required: 0,
+            done: 0
+          };
         }
       }
       setStepsCount(counts);
@@ -194,15 +188,13 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       setLoading(false);
     }
   };
-
   useEffect(() => {
     // Reset to first page when tab changes
     setCurrentPage(1);
-    
+
     // OPTIMIZED: Run sanitization only once per user session
     const sanitizationKey = `goals_sanitization_v1_${currentUser?.id}`;
     const hasRunSanitization = sessionStorage.getItem(sanitizationKey);
-    
     if (!hasRunSanitization && currentUser?.id) {
       // First load - run sanitization
       goalsService.sanitizeExistingGoalDescriptions().then(() => {
@@ -217,32 +209,38 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'destructive';
-      case 'medium': return 'default';
-      case 'low': return 'secondary';
-      default: return 'default';
+      case 'high':
+        return 'destructive';
+      case 'medium':
+        return 'default';
+      case 'low':
+        return 'secondary';
+      default:
+        return 'default';
     }
   };
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'active';
-      case 'completed': return 'default';
-      case 'paused': return 'secondary';
-      case 'planned': return 'planned';
-      default: return 'default';
+      case 'active':
+        return 'active';
+      case 'completed':
+        return 'default';
+      case 'paused':
+        return 'secondary';
+      case 'planned':
+        return 'planned';
+      default:
+        return 'default';
     }
   };
-
   const handleDeleteGoal = async (goalId: string, goalTitle: string) => {
     try {
       await goalsService.deleteGoal(goalId);
-      
       toast({
         title: 'Goal archived',
-        description: `"${goalTitle}" has been moved to your archive`,
+        description: `"${goalTitle}" has been moved to your archive`
       });
-      
+
       // Reload goals to reflect the change
       loadGoals();
     } catch (error) {
@@ -254,7 +252,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       });
     }
   };
-
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return null;
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -264,38 +261,36 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       year: 'numeric'
     });
   };
-
   const sanitizeDescription = (text?: string): string => {
     if (!text) return '';
     let out = text.trim();
-    
+
     // Fix frequency patterns
     out = out.replace(/(\d+)x\/week/gi, '$1 times per week');
     out = out.replace(/Daily for (\d+) times per week/gi, '$1 times per week');
     out = out.replace(/Daily for (\d+)x\/week/gi, '$1 times per week');
-    
+
     // Fix double parentheses and nested structures
-    out = out.replace(/\(\s*\([^)]+\)\s*\)/g, (match) => {
+    out = out.replace(/\(\s*\([^)]+\)\s*\)/g, match => {
       const inner = match.replace(/^\(\s*\(/, '(').replace(/\)\s*\)$/, ')');
       return inner;
     });
-    
+
     // Remove outer parentheses around trailing "with ..." clauses
     out = out.replace(/\.?\s*\((with [^)]+)\)\s*$/i, '. $1');
-    
+
     // Fix awkward "to relax/enjoy" patterns
     out = out.replace(/to relax\/enjoy/gi, 'to relax and enjoy');
-    
+
     // Fix standalone "with" clauses at the end
     out = out.replace(/\.\s*with\s+([A-Z])/g, ' with $1');
-    
+
     // Fix double spaces and ensure proper spacing
     out = out.replace(/\s{2,}/g, ' ');
     out = out.replace(/\s*\.\s*\./g, '.');
-    
+
     // Ensure single ending period
     out = out.replace(/\.+\s*$/, '.');
-    
     return out;
   };
 
@@ -311,19 +306,19 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   const startIndex = (currentPage - 1) * GOALS_PER_PAGE;
   const endIndex = startIndex + GOALS_PER_PAGE;
   const currentGoals = filteredGoals.slice(startIndex, endIndex);
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // Scroll to top when changing pages
     const scrollContainer = document.querySelector('[data-scroll-container]');
     if (scrollContainer) {
-      scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollContainer.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     }
   };
-
   if (loading) {
-    return (
-      <div className="flex flex-col h-screen bg-background">
+    return <div className="flex flex-col h-screen bg-background">
         {/* Fixed Header Skeleton */}
         <div className="flex-shrink-0 space-y-4 px-4 pt-6 pb-4 bg-background border-b">
           <div className="flex justify-between items-center">
@@ -341,8 +336,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
         {/* Content Skeleton */}
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="animate-pulse">
+            {[1, 2, 3].map(i => <Card key={i} className="animate-pulse">
                 <CardHeader className="pb-3">
                   <div className="space-y-3">
                     <div className="h-6 bg-muted rounded w-3/4" />
@@ -356,42 +350,32 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                   <div className="h-2 bg-muted rounded w-full mb-2" />
                   <div className="h-4 bg-muted rounded w-full" />
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="flex flex-col h-screen bg-background">
+  return <div className="flex flex-col h-screen bg-background">
       {/* Fixed Header */}
       <div className="flex-shrink-0 space-y-4 px-4 pt-6 pb-4 bg-background border-b border-border shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
         <div className="flex justify-between items-center">
           <h2>Goals</h2>
           
           {/* Circular Add Button */}
-          <Button 
-            onClick={() => onNavigate('create-goal')}
-            className="w-10 h-10 rounded-full p-0 bg-primary hover:bg-primary/90"
-            size="sm"
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
+          
         </div>
 
         {/* Tab Navigation with Pagination */}
         <div className="space-y-3">
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as GoalsTab)} className="w-full">
+          <Tabs value={activeTab} onValueChange={value => setActiveTab(value as GoalsTab)} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="completed">Completed</TabsTrigger>
             </TabsList>
           </Tabs>
 
-          {/* Filter Controls with Goal Count */}
-          <div className="flex items-center justify-between gap-3">
+          {/* Filter Controls */}
+          <div className="flex gap-2">
             <Select value={filterCreator} onValueChange={setFilterCreator}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Filter by creator" />
@@ -402,89 +386,48 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                 <SelectItem value="others">Created by others</SelectItem>
               </SelectContent>
             </Select>
-            
-            {/* Goal Count Indicator */}
-            <div className="flex items-center gap-2">
-              <Badge 
-                variant={filteredGoals.length < goals.length ? "default" : "secondary"}
-                className="text-xs font-medium"
-              >
-                {filteredGoals.length === goals.length ? (
-                  <span>{goals.length} {goals.length === 1 ? 'goal' : 'goals'}</span>
-                ) : (
-                  <span>{filteredGoals.length} of {goals.length} goals</span>
-                )}
-              </Badge>
-            </div>
           </div>
 
           {/* Pagination Controls - Top Right */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
+          {totalPages > 1 && <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
                 Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="flex items-center gap-1"
-                >
+                <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="flex items-center gap-1">
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </Button>
                 
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <Button
-                      key={page}
-                      variant={currentPage === page ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handlePageChange(page)}
-                      className="w-8 h-8 p-0"
-                    >
+                  {Array.from({
+                length: totalPages
+              }, (_, i) => i + 1).map(page => <Button key={page} variant={currentPage === page ? "default" : "outline"} size="sm" onClick={() => handlePageChange(page)} className="w-8 h-8 p-0">
                       {page}
-                    </Button>
-                  ))}
+                    </Button>)}
                 </div>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="flex items-center gap-1"
-                >
+                <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="flex items-center gap-1">
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
-          )}
+            </div>}
         </div>
       </div>
 
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto" data-scroll-container>
         <div className="px-4 py-4">
-          {filteredGoals.length === 0 ? (
-            <Card>
+          {filteredGoals.length === 0 ? <Card>
               <CardContent className="text-center py-8">
                 <h3>
                   {activeTab === 'completed' ? 'No completed goals yet' : 'No active goals yet'}
                 </h3>
                 <p className="text-body-sm text-muted-foreground mb-4">
-                  {filteredGoals.length === 0 && goals.length > 0
-                    ? 'No goals match your current filter.'
-                    : activeTab === 'completed' 
-                      ? 'Complete some goals to see them here!'
-                      : 'Create your first goal to get started on your journey!'
-                  }
+                  {filteredGoals.length === 0 && goals.length > 0 ? 'No goals match your current filter.' : activeTab === 'completed' ? 'Complete some goals to see them here!' : 'Create your first goal to get started on your journey!'}
                 </p>
-                {activeTab === 'active' && (
-                  <div className="space-y-2">
+                {activeTab === 'active' && <div className="space-y-2">
                     <Button onClick={() => onNavigate('create-goal')} variant="outline">
                       <Plus className="h-4 w-4 mr-2" />
                       Create Your First Goal
@@ -492,62 +435,46 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                     <p className="text-xs text-muted-foreground">
                       Or suggest a goal for someone you support
                     </p>
-                  </div>
-                )}
+                  </div>}
               </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {currentGoals.map((goal) => {
-                 const stepCount = stepsCount[goal.id] || { required: goal.progress?.actionable || 0, done: goal.progress?.done || 0 };
-                const progressPct = goal.progress_pct || (goal.progress ? goal.progress.percent : 0);
-                
-                // Determine ownership context
-                const isOwnGoal = goal.owner_id === currentUser?.id;
-                const isCreatedByMe = goal.created_by === currentUser?.id;
-                const ownerName = allProfiles[goal.owner_id]?.first_name || 'Unknown';
-                const creatorName = allProfiles[goal.created_by]?.first_name || 'Unknown';
+            </Card> : <div className="space-y-4">
+              {currentGoals.map(goal => {
+            const stepCount = stepsCount[goal.id] || {
+              required: goal.progress?.actionable || 0,
+              done: goal.progress?.done || 0
+            };
+            const progressPct = goal.progress_pct || (goal.progress ? goal.progress.percent : 0);
 
-                return (
-                  <Card 
-                    key={goal.id} 
-                    className="cursor-pointer hover:shadow-md transition-shadow"
-                  >
+            // Determine ownership context
+            const isOwnGoal = goal.owner_id === currentUser?.id;
+            const isCreatedByMe = goal.created_by === currentUser?.id;
+            const ownerName = allProfiles[goal.owner_id]?.first_name || 'Unknown';
+            const creatorName = allProfiles[goal.created_by]?.first_name || 'Unknown';
+            return <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow">
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
-                        <div 
-                          className="flex-1 cursor-pointer"
-                          onClick={() => onNavigate('goal-detail', goal.id)}
-                        >
+                        <div className="flex-1 cursor-pointer" onClick={() => onNavigate('goal-detail', goal.id)}>
                           <h4 className="mb-2 capitalize">{goal.title}</h4>
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <Badge variant={getStatusColor(goal.status)}>
                               {goal.status === 'active' ? 'In Progress' : goal.status}
                             </Badge>
-                            {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && (
-                              <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>
-                            )}
+                            {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>}
                             
                             {/* Ownership badges */}
-                            {!isOwnGoal && (
-                              <Badge variant="outline" className="text-xs">
+                            {!isOwnGoal && <Badge variant="outline" className="text-xs">
                                 <Users className="h-3 w-3 mr-1" />
                                 For {ownerName}
-                              </Badge>
-                            )}
-                            {!isCreatedByMe && isOwnGoal && (
-                              <Badge variant="outline" className="text-xs">
+                              </Badge>}
+                            {!isCreatedByMe && isOwnGoal && <Badge variant="outline" className="text-xs">
                                 <UserCheck className="h-3 w-3 mr-1" />
                                 Created by {creatorName}
-                              </Badge>
-                            )}
+                              </Badge>}
                           </div>
-                          {goal.due_date && (
-                            <div className="flex items-center gap-1 text-body-sm text-muted-foreground">
+                          {goal.due_date && <div className="flex items-center gap-1 text-body-sm text-muted-foreground">
                               <Calendar className="h-4 w-4" />
                               Due {formatDate(goal.due_date)}
-                            </div>
-                          )}
+                            </div>}
                         </div>
                 <div className="flex items-start gap-2">
                   <div className="text-right">
@@ -555,29 +482,18 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                       {Math.round(progressPct)}%
                     </div>
                     <div className="text-caption">
-                      {stepCount.done} of {stepCount.required} {
-                        goal.frequency_per_week && goal.frequency_per_week > 0 
-                          ? 'days completed' 
-                          : 'steps done'
-                      }
+                      {stepCount.done} of {stepCount.required} {goal.frequency_per_week && goal.frequency_per_week > 0 ? 'days completed' : 'steps done'}
                     </div>
                     {/* Show streak for habits if exists */}
-                    {goal.frequency_per_week && goal.frequency_per_week > 0 && goal.streak_count > 0 && (
-                      <div className="text-xs text-muted-foreground mt-1">
+                    {goal.frequency_per_week && goal.frequency_per_week > 0 && goal.streak_count > 0 && <div className="text-xs text-muted-foreground mt-1">
                         🔥 {goal.streak_count} day streak
-                      </div>
-                    )}
+                      </div>}
                   </div>
                   
                   {/* Goal Menu */}
                   <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-8 w-8 p-0 bg-transparent hover:bg-gray-100"
-                                onClick={(e) => e.stopPropagation()}
-                              >
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-transparent hover:bg-gray-100" onClick={e => e.stopPropagation()}>
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -596,10 +512,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                               </DropdownMenuItem>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <DropdownMenuItem 
-                                    className="text-destructive focus:text-destructive cursor-pointer"
-                                    onSelect={(e) => e.preventDefault()}
-                                  >
+                                  <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onSelect={e => e.preventDefault()}>
                                     <Trash2 className="h-4 w-4 mr-2" />
                                     Archive Goal
                                   </DropdownMenuItem>
@@ -613,10 +526,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Keep Goal</AlertDialogCancel>
-                                    <AlertDialogAction 
-                                      onClick={() => handleDeleteGoal(goal.id, goal.title)}
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
+                                    <AlertDialogAction onClick={() => handleDeleteGoal(goal.id, goal.title)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                       Archive Goal
                                     </AlertDialogAction>
                                   </AlertDialogFooter>
@@ -628,11 +538,9 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                       </div>
                     </CardHeader>
                     <CardContent onClick={() => onNavigate('goal-detail', goal.id)}>
-                      {goal.description && (
-                        <p className="text-body-sm text-muted-foreground mb-3 line-clamp-2 capitalize">
+                      {goal.description && <p className="text-body-sm text-muted-foreground mb-3 line-clamp-2 capitalize">
                           {sanitizeDescription(goal.description)}
-                        </p>
-                      )}
+                        </p>}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center text-body-sm">
                           <span>Progress</span>
@@ -640,23 +548,16 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                         </div>
                         <Progress value={progressPct} className="h-2" />
                       </div>
-                      {goal.tags?.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-3">
-                          {goal.tags.map((tag, index) => (
-                            <Badge key={index} variant="outline" className="text-caption">
+                      {goal.tags?.length > 0 && <div className="flex flex-wrap gap-1 mt-3">
+                          {goal.tags.map((tag, index) => <Badge key={index} variant="outline" className="text-caption">
                               {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
+                            </Badge>)}
+                        </div>}
                     </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+                  </Card>;
+          })}
+            </div>}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
