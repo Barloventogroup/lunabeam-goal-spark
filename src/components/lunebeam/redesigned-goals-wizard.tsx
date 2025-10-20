@@ -2133,6 +2133,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       <QuestionScreen
         currentStep={currentStep}
         totalSteps={totalSteps}
+        goalTitle={data.goalTitle}
         questionIcon="💭"
         questionText={`Why does this matter to ${name}?`}
         helpText="Understanding motivation helps maintain commitment when practice gets tough. Take a moment to reflect on what drives you."
@@ -2155,6 +2156,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       <QuestionScreen
         currentStep={currentStep}
         totalSteps={totalSteps}
+        goalTitle={data.goalTitle}
         questionIcon="✅"
         questionText={text.step3.question}
         helpText={text.step3.helperText}
@@ -2278,6 +2280,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       <QuestionScreen
         currentStep={currentStep}
         totalSteps={totalSteps}
+        goalTitle={data.goalTitle}
         questionIcon="🤔"
         questionText={getStepTitle()}
         helpText="Identifying barriers helps create a personalized practice plan"
@@ -2360,6 +2363,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     
     return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="pb-4 pt-0">
+        {data.goalTitle && (
+          <div className="text-center pb-4 border-b mb-4">
+            <h2 className="text-xl font-semibold truncate">{data.goalTitle}</h2>
+          </div>
+        )}
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">
           {isProject 
@@ -2851,6 +2859,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       <QuestionScreen
         currentStep={currentStep}
         totalSteps={totalSteps}
+        goalTitle={data.goalTitle}
         questionIcon="👥"
         questionText="Who can help you with this?"
         inputType="radio"
@@ -2906,6 +2915,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="pb-4 pt-0">
+        {data.goalTitle && (
+          <div className="text-center pb-4 border-b mb-4">
+            <h2 className="text-xl font-semibold truncate">{data.goalTitle}</h2>
+          </div>
+        )}
         <CardTitle className="text-2xl">🎁 Rewards (Optional)</CardTitle>
         <p className="text-muted-foreground">{text.step7.subtitle}</p>
       </CardHeader>
@@ -3475,6 +3489,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     totalSteps: 10,
     userSupporters,
     currentUserId: '',
+    goalTitle: data.goalTitle,
   };
 
   const renderCurrentStep = () => {
@@ -3582,13 +3597,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           width: `${section.index / section.total * 100}%`
         }} />
         </div>
-        
-        {/* Persistent Goal Title - shown after step 1 */}
-        {data.goalTitle && (
-          <div className="mt-4 pt-4 border-t">
-            <h2 className="text-lg font-semibold text-center truncate">{data.goalTitle}</h2>
-          </div>
-        )}
         
         {/* Current Step - fills remaining space */}
         <div className="flex-1 overflow-auto pt-0 pb-24">

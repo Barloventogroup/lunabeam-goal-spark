@@ -19,9 +19,10 @@ interface PMStepsProps {
   currentStep: number;
   totalSteps: number;
   userSupporters: Array<{ id: string; name: string; profile?: { avatar_url?: string } }>;
+  goalTitle?: string;
 }
 
-export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
+export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   const value = data.motivation || '';
   
@@ -29,6 +30,7 @@ export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, g
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
+      goalTitle={goalTitle}
       questionIcon="💭"
       questionText={`Why does this matter to ${name}?`}
       helpText="Understanding motivation helps maintain commitment when practice gets tough. Please write at least 10 characters."
@@ -45,13 +47,14 @@ export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, g
   );
 };
 
-export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
+export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   
   return (
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
+      goalTitle={goalTitle}
       questionIcon="✅"
       questionText={`Does ${name} have what's needed to start?`}
       inputType="yesno"
@@ -109,7 +112,7 @@ export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData
   );
 };
 
-export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () => void }> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, onSwitchToHabit }) => {
+export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () => void }> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle, onSwitchToHabit }) => {
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   const level = data.pmAssessment?.calculatedLevel || 3;
   const levelLabel = data.pmAssessment?.levelLabel || 'Developing';
@@ -202,6 +205,7 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
+      goalTitle={goalTitle}
       goalContext={levelContext}
       questionIcon="🤔"
       questionText={`Which part usually feels the trickiest when ${name === 'you' ? 'you' : name} start${name === 'you' ? '' : 's'} this?`}
@@ -305,11 +309,12 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
   );
 };
 
-export const PMStep5_Experience: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
+export const PMStep5_Experience: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   return (
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
+      goalTitle={goalTitle}
       questionIcon="📊"
       questionText={`How much experience with ${data.goalTitle?.toLowerCase()}?`}
       inputType="radio"
@@ -336,11 +341,12 @@ export const PMStep5_Experience: React.FC<PMStepsProps> = ({ data, updateData, g
   );
 };
 
-export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
+export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   return (
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
+      goalTitle={goalTitle}
       questionIcon="😊"
       questionText="How confident do you feel about this?"
       inputType="radio"
@@ -367,7 +373,7 @@ export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, g
   );
 };
 
-export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
+export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const { toast } = useToast();
   
   const handleContinue = () => {
@@ -408,6 +414,7 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
+      goalTitle={goalTitle}
       questionIcon="👥"
       questionText="How much help do you need right now?"
       inputType="radio"
@@ -434,7 +441,7 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
   );
 };
 
-export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, userSupporters }) => {
+export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, userSupporters, goalTitle }) => {
   const levelContext = data.pmAssessment?.calculatedLevel 
     ? `Starting Level: ${data.pmAssessment.levelLabel} ${['🌱', '🌿', '🌳', '🎯', '⭐'][data.pmAssessment.calculatedLevel - 1]}`
     : undefined;
@@ -457,6 +464,7 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
+      goalTitle={goalTitle}
       goalContext={levelContext}
       questionIcon="👥"
       questionText="Who can help you with this?"
@@ -481,7 +489,7 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
   );
 };
 
-export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
+export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const [showCustomSelector, setShowCustomSelector] = React.useState(false);
   
   const levelContext = data.pmAssessment?.calculatedLevel 
@@ -512,6 +520,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
+      goalTitle={goalTitle}
       goalContext={levelContext}
       questionIcon="🎯"
       questionText="How often would you like to practice?"
@@ -578,7 +587,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
   );
 };
 
-export const PMStep10_Duration: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps }) => {
+export const PMStep10_Duration: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const { Popover, PopoverContent, PopoverTrigger } = require('@/components/ui/popover');
   const { Calendar } = require('@/components/ui/calendar');
   const { CalendarIcon } = require('lucide-react');
@@ -589,6 +598,7 @@ export const PMStep10_Duration: React.FC<PMStepsProps> = ({ data, updateData, go
     <QuestionScreen
       currentStep={currentStep}
       totalSteps={totalSteps}
+      goalTitle={goalTitle}
       questionIcon="📅"
       questionText="When will you practice?"
       helpText="Choose your practice schedule"
