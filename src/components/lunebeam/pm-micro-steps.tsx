@@ -510,21 +510,30 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
   
   // Use a sensible default target frequency based on skill level
   const defaultTargetFreq = level <= 2 ? 3 : (level >= 4 ? 5 : 4);
-  const targetFreq = data.pmTargetFrequency || defaultTargetFreq;
+  const targetFreq = data.pmPracticePlan?.targetFrequency || defaultTargetFreq;
   
   const smartStartPlan = progressiveMasteryService.suggestStartFrequency(level, targetFreq);
   const smartStartFreq = smartStartPlan.suggested_initial;
   
-  // Auto-set target frequency if not already set
+  // Auto-set practice plan if not already set
   React.useEffect(() => {
-    if (!data.pmTargetFrequency) {
+    if (!data.pmPracticePlan?.targetFrequency) {
+      const durationWeeks = data.startDate && data.endDate 
+        ? Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
+        : null;
+      
       updateData({
-        pmTargetFrequency: defaultTargetFreq
+        pmPracticePlan: {
+          targetFrequency: defaultTargetFreq,
+          startingFrequency: smartStartFreq,
+          smartStartAccepted: false,
+          durationWeeks: durationWeeks
+        }
       });
     }
   }, []);
   
-  const isComplete = !!data.pmTargetFrequency && !!data.startDate;
+  const isComplete = !!data.pmPracticePlan?.targetFrequency && !!data.startDate;
   
   return (
     <QuestionScreen
@@ -555,11 +564,20 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                 <Button
                   size="sm"
                   onClick={() => {
+                    const durationWeeks = data.startDate && data.endDate 
+                      ? Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                      : null;
+                    
                     updateData({
-                      pmTargetFrequency: smartStartFreq
+                      pmPracticePlan: {
+                        targetFrequency: smartStartFreq,
+                        startingFrequency: smartStartFreq,
+                        smartStartAccepted: true,
+                        durationWeeks: durationWeeks
+                      }
                     });
                   }}
-                  variant={data.pmTargetFrequency === smartStartFreq ? 'default' : 'secondary'}
+                  variant={data.pmPracticePlan?.targetFrequency === smartStartFreq ? 'default' : 'secondary'}
                 >
                   ✓ Use {smartStartFreq}×/week
                 </Button>
@@ -575,10 +593,19 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
             {[1, 2, 3, 4, 5, 6, 7].map(freq => (
               <Button
                 key={freq}
-                variant={data.pmTargetFrequency === freq ? 'default' : 'outline'}
+                variant={data.pmPracticePlan?.targetFrequency === freq ? 'default' : 'outline'}
                 onClick={() => {
+                  const durationWeeks = data.startDate && data.endDate 
+                    ? Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                    : null;
+                  
                   updateData({
-                    pmTargetFrequency: freq
+                    pmPracticePlan: {
+                      targetFrequency: freq,
+                      startingFrequency: smartStartFreq,
+                      smartStartAccepted: false,
+                      durationWeeks: durationWeeks
+                    }
                   });
                 }}
                 className="h-12"
@@ -614,7 +641,22 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                 <Calendar 
                   mode="single" 
                   selected={data.startDate} 
-                  onSelect={(date: Date | undefined) => date && updateData({ startDate: date })}
+                  onSelect={(date: Date | undefined) => {
+                    if (!date) return;
+                    const durationWeeks = date && data.endDate 
+                      ? Math.ceil((data.endDate.getTime() - date.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                      : null;
+                    updateData({ 
+                      startDate: date,
+                      pmPracticePlan: {
+                        ...data.pmPracticePlan,
+                        targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
+                        startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
+                        smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
+                        durationWeeks: durationWeeks
+                      }
+                    });
+                  }}
                   disabled={(date: Date) => date < new Date()}
                 />
               </PopoverContent>
@@ -635,7 +677,21 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                 <Calendar 
                   mode="single" 
                   selected={data.endDate} 
-                  onSelect={(date?: Date) => updateData({ endDate: date })}
+                  onSelect={(date?: Date) => {
+                    const durationWeeks = data.startDate && date 
+                      ? Math.ceil((date.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                      : null;
+                    updateData({ 
+                      endDate: date,
+                      pmPracticePlan: {
+                        ...data.pmPracticePlan,
+                        targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
+                        startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
+                        smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
+                        durationWeeks: durationWeeks
+                      }
+                    });
+                  }}
                   disabled={(date: Date) => !data.startDate || date <= data.startDate}
                 />
               </PopoverContent>
