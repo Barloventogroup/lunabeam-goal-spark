@@ -21,9 +21,10 @@ type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wiza
 interface TabGoalsProps {
   onWizardStateChange?: (isWizardActive: boolean) => void;
   initialGoalId?: string | null;
+  triggerCreate?: boolean;
 }
 
-export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initialGoalId }) => {
+export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initialGoalId, triggerCreate }) => {
   const [currentView, setCurrentView] = useState<GoalsView>('list');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -55,6 +56,13 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
       onWizardStateChange?.(false);
     }
   }, [initialGoalId, onWizardStateChange]);
+
+  // Handle trigger create from FAB
+  useEffect(() => {
+    if (triggerCreate) {
+      handleNavigate('create-goal');
+    }
+  }, [triggerCreate]);
 
   const handleNavigate = (view: string, data?: any) => {
     switch (view) {

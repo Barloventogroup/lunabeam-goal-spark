@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Target, Users, User, MessageCircle, ArrowLeft } from 'lucide-react';
+import { Home, Target, Users, User, MessageCircle, ArrowLeft, Plus } from 'lucide-react';
 import { TabHome } from './tab-home';
 import { TabGoals } from './tab-goals';
 import { TabTeam } from './tab-team';
@@ -18,6 +18,7 @@ export const BottomTabs: React.FC = () => {
   const [isWizardActive, setIsWizardActive] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [youTabInitialView, setYouTabInitialView] = useState<'profile' | 'notifications'>('profile');
+  const [triggerCreateGoal, setTriggerCreateGoal] = useState(false);
   const { loadGoals, userContext } = useStore();
 
   const tabs = [
@@ -54,6 +55,15 @@ export const BottomTabs: React.FC = () => {
     }
   }, [activeTab, loadGoals]);
 
+  // Handle FAB click to create goal
+  const handleCreateGoal = () => {
+    setActiveTab('goals');
+    setSelectedGoalId(null);
+    setTriggerCreateGoal(true);
+    // Reset trigger after a short delay to allow TabGoals to respond
+    setTimeout(() => setTriggerCreateGoal(false), 100);
+  };
+
   const renderActiveTab = () => {
     // Route supporters to supporter-specific home dashboard
     if (userContext?.userType === 'supporter') {
@@ -74,7 +84,7 @@ export const BottomTabs: React.FC = () => {
             }}
           />;
         case 'goals':
-          return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} />;
+          return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} triggerCreate={triggerCreateGoal} />;
         case 'team':
           return <TabTeam />; // Show supporter's community view
         case 'you':
@@ -106,7 +116,7 @@ export const BottomTabs: React.FC = () => {
           }}
         />;
       case 'goals':
-        return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} />;
+        return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} triggerCreate={triggerCreateGoal} />;
       case 'team':
         return userContext?.userType === 'individual' ? <TabTeamIndividual /> : <TabTeam />;
       case 'you':
@@ -153,6 +163,17 @@ export const BottomTabs: React.FC = () => {
       <div className={`flex-1 ${isWizardActive ? 'pb-0' : 'pb-20'}`}>
         {renderActiveTab()}
       </div>
+
+      {/* Floating Action Button - Create Goal */}
+      {!isWizardActive && (
+        <button
+          onClick={handleCreateGoal}
+          className="fixed bottom-24 right-6 z-50 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 flex items-center justify-center"
+          aria-label="Create new goal"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      )}
 
       {/* Bottom tab bar - hidden during wizard */}
       {!isWizardActive && (
