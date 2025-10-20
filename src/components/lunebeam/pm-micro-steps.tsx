@@ -524,7 +524,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
     }
   }, []);
   
-  const isComplete = !!data.pmTargetFrequency;
+  const isComplete = !!data.pmTargetFrequency && !!data.startDate;
   
   return (
     <QuestionScreen
@@ -594,89 +594,74 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
             We'll help you build up gradually to this frequency
           </p>
         </div>
-      </div>
-    </QuestionScreen>
-  );
-};
 
-export const PMStep10_Duration: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
-  const isComplete = !!data.startDate;
-  
-  return (
-    <QuestionScreen
-      currentStep={currentStep}
-      totalSteps={totalSteps}
-      goalTitle={goalTitle}
-      questionIcon="📅"
-      questionText="When will you practice?"
-      helpText="Choose your practice schedule"
-      inputType="custom"
-      onBack={goBack}
-      onContinue={goNext}
-      continueDisabled={!isComplete}
-      hideHeader
-      hideFooter
-    >
-      <div className="space-y-6">
-        {/* Start Date - Required */}
-        <div className="space-y-2">
-          <Label className="flex items-center gap-1 text-base font-medium">
-            <span>Start Date</span>
-            <span className="text-destructive">*</span>
-          </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left h-12">
-                <CalendarIcon className="h-4 w-4 mr-2" />
-                {data.startDate ? format(data.startDate, 'PPP') : 'Pick start date'}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar 
-                mode="single" 
-                selected={data.startDate} 
-                onSelect={(date: Date) => date && updateData({ startDate: date })}
-                disabled={(date: Date) => date < new Date()}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+        {/* Date Selection */}
+        <div className="space-y-6 pt-4 border-t">
+          {/* Start Date - Required */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1 text-base font-medium">
+              <span>Start Date</span>
+              <span className="text-destructive">*</span>
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left h-12">
+                  <CalendarIcon className="h-4 w-4 mr-2" />
+                  {data.startDate ? format(data.startDate, 'PPP') : 'Pick start date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar 
+                  mode="single" 
+                  selected={data.startDate} 
+                  onSelect={(date: Date | undefined) => date && updateData({ startDate: date })}
+                  disabled={(date: Date) => date < new Date()}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
 
-        {/* End Date - Optional */}
-        <div className="space-y-2">
-          <Label className="text-base font-medium">End Date (Optional)</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left h-12">
-                <CalendarIcon className="h-4 w-4 mr-2" />
-                {data.endDate ? format(data.endDate, 'PPP') : 'Open-ended (no end date)'}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar 
-                mode="single" 
-                selected={data.endDate} 
-                onSelect={(date?: Date) => updateData({ endDate: date })}
-                disabled={(date: Date) => !data.startDate || date <= data.startDate}
-              />
-            </PopoverContent>
-          </Popover>
-          <p className="text-xs text-muted-foreground">
-            💡 Leave open-ended if you want to practice indefinitely
+          {/* End Date - Optional */}
+          <div className="space-y-2">
+            <Label className="text-base font-medium">End Date (Optional)</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left h-12">
+                  <CalendarIcon className="h-4 w-4 mr-2" />
+                  {data.endDate ? format(data.endDate, 'PPP') : 'Open-ended (no end date)'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar 
+                  mode="single" 
+                  selected={data.endDate} 
+                  onSelect={(date?: Date) => updateData({ endDate: date })}
+                  disabled={(date: Date) => !data.startDate || date <= data.startDate}
+                />
+              </PopoverContent>
+            </Popover>
+            <p className="text-xs text-muted-foreground">
+              💡 Leave open-ended if you want to practice indefinitely
+            </p>
+          </div>
+
+          {/* Calculate duration in weeks if both dates selected */}
+          {data.startDate && data.endDate && (
+            <Card className="bg-primary/10 border-primary/20 animate-in fade-in duration-300">
+              <CardContent className="p-4">
+                <p className="text-sm font-medium">
+                  Duration: {Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))} weeks
+                </p>
+              </CardContent>
+            </Card>
+          )}
+          
+          <p className="text-sm text-muted-foreground text-center">
+            Choose your practice schedule
           </p>
         </div>
-
-        {/* Calculate duration in weeks if both dates selected */}
-        {data.startDate && data.endDate && (
-          <Card className="bg-primary/10 border-primary/20 animate-in fade-in duration-300">
-            <CardContent className="p-4">
-              <p className="text-sm font-medium">
-                Duration: {Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))} weeks
-              </p>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </QuestionScreen>
   );
 };
+

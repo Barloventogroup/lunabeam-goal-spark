@@ -37,8 +37,7 @@ import {
   PMStep6_Confidence,
   PMStep7_HelpNeeded,
   PMStep8_Helper,
-  PMStep9_PracticePlan,
-  PMStep10_Duration
+  PMStep9_PracticePlan
 } from './pm-micro-steps';
 interface RedesignedGoalsWizardProps {
   onComplete: (goalData: any) => void;
@@ -960,8 +959,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 6: return !!data.pmAssessment?.q3_help_needed; // Help Needed REQUIRED (moved up from step 7)
         case 7: return true; // Barriers OPTIONAL (moved after level calc - now contextual)
         case 8: return true; // Helper OPTIONAL
-        case 9: return !!data.pmTargetFrequency; // Practice Frequency REQUIRED
-        case 10: return !!data.startDate; // Duration start date REQUIRED
+        case 9: return !!data.pmTargetFrequency && !!data.startDate; // Practice Frequency + dates REQUIRED
         default: return false;
       }
     }
@@ -3505,9 +3503,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 6: return <PMStep7_HelpNeeded {...pmStepProps} />; // Help Needed + Calculate Level
         case 7: return <PMStep4_Barriers {...pmStepProps} onSwitchToHabit={() => switchGoalType('reminder')} />; // Barriers
         case 8: return <PMStep8_Helper {...pmStepProps} />; // Helper Selection
-        case 9: return <PMStep9_PracticePlan {...pmStepProps} />; // Practice frequency
-        case 10: return <PMStep10_Duration {...pmStepProps} />; // Duration with date pickers
-        case 11: return renderConfirmStep(); // PM: Summary
+        case 9: return <PMStep9_PracticePlan {...pmStepProps} />; // Practice frequency + dates
+        case 10: return renderConfirmStep(); // PM: Summary
         default: return null;
       }
     }
@@ -3527,8 +3524,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   // Update last step index for Progressive Mastery flow
-  const lastStepIndex = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 8 : 7);
-  const totalSteps = data.goalType === 'progressive_mastery' ? 12 : (isSupporter ? 9 : 8);
+  const lastStepIndex = data.goalType === 'progressive_mastery' ? 10 : (isSupporter ? 8 : 7);
+  const totalSteps = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 9 : 8);
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
 
@@ -3539,8 +3536,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
       if (currentStep === 4 || currentStep === 5 || currentStep === 6) return { label: 'Skill Assessment', index: 2, total: 5 };
       if (currentStep === 7) return { label: 'Context & Challenges', index: 3, total: 5 };
-      if (currentStep === 8 || currentStep === 9 || currentStep === 10) return { label: 'Support & Practice Plan', index: 4, total: 5 };
-      if (currentStep === 11) return { label: 'Review & Confirm', index: 5, total: 5 };
+      if (currentStep === 8 || currentStep === 9) return { label: 'Support & Practice Plan', index: 4, total: 5 };
+      if (currentStep === 10) return { label: 'Review & Confirm', index: 5, total: 5 };
     }
     
     if (actuallySupportsAnyone) {
