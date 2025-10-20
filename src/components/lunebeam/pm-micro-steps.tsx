@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon, ChevronRight } from 'lucide-react';
+import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format, addWeeks } from 'date-fns';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Calendar } from '@/components/ui/calendar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PMStepsProps {
   data: any;
@@ -640,36 +641,60 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </DrawerTrigger>
-              <DrawerContent side="right">
-                <DrawerHeader>
-                  <DrawerTitle>Select Start Date</DrawerTitle>
-                  <DrawerDescription>Choose when you want to start practicing</DrawerDescription>
-                </DrawerHeader>
-                <div className="p-4 flex justify-center">
-                  <Calendar 
-                    mode="single" 
-                    selected={data.startDate} 
-                    onSelect={(date: Date | undefined) => {
-                      if (!date) return;
-                      const durationWeeks = date && data.endDate 
-                        ? Math.ceil((data.endDate.getTime() - date.getTime()) / (7 * 24 * 60 * 60 * 1000))
-                        : null;
-                      updateData({ 
-                        startDate: date,
-                        pmPracticePlan: {
-                          ...data.pmPracticePlan,
-                          targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
-                          startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
-                          smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
-                          durationWeeks: durationWeeks
-                        }
-                      });
-                    }}
-                    disabled={(date: Date) => date < new Date()}
-                    className="pointer-events-auto"
-                  />
-                </div>
-              </DrawerContent>
+          <DrawerContent side="right">
+            <DrawerHeader className="flex flex-row items-center gap-4 border-b pb-4">
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <ChevronLeft className="h-5 w-5" />
+                  <span className="sr-only">Close</span>
+                </Button>
+              </DrawerClose>
+              <div className="flex-1">
+                <DrawerTitle>Select Start Date</DrawerTitle>
+                <DrawerDescription>Choose when you want to start practicing</DrawerDescription>
+              </div>
+            </DrawerHeader>
+            <ScrollArea className="h-[calc(100vh-140px)] w-full">
+              <div className="flex flex-col gap-6 p-4">
+                {[0, 1, 2].map((monthOffset) => {
+                  const displayMonth = new Date();
+                  displayMonth.setMonth(displayMonth.getMonth() + monthOffset);
+                  
+                  return (
+                    <div key={monthOffset} className="border-b last:border-b-0 pb-6 last:pb-0">
+                      <Calendar 
+                        mode="single" 
+                        selected={data.startDate}
+                        month={displayMonth}
+                        onMonthChange={() => {}}
+                        onSelect={(date: Date | undefined) => {
+                          if (!date) return;
+                          const durationWeeks = date && data.endDate 
+                            ? Math.ceil((data.endDate.getTime() - date.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                            : null;
+                          updateData({ 
+                            startDate: date,
+                            pmPracticePlan: {
+                              ...data.pmPracticePlan,
+                              targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
+                              startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
+                              smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
+                              durationWeeks: durationWeeks
+                            }
+                          });
+                        }}
+                        disabled={(date: Date) => date < new Date()}
+                        className="pointer-events-auto w-full"
+                        classNames={{
+                          nav: "hidden"
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </DrawerContent>
             </Drawer>
           </div>
 
@@ -686,40 +711,59 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </DrawerTrigger>
-              <DrawerContent side="right">
-                <DrawerHeader>
-                  <DrawerTitle>Select End Date (Optional)</DrawerTitle>
-                  <DrawerDescription>Choose when you want to complete this goal, or leave open-ended</DrawerDescription>
-                </DrawerHeader>
-                <div className="p-4 flex justify-center">
-                  <Calendar 
-                    mode="single" 
-                    selected={data.endDate} 
-                    onSelect={(date?: Date) => {
-                      const durationWeeks = data.startDate && date 
-                        ? Math.ceil((date.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
-                        : null;
-                      updateData({ 
-                        endDate: date,
-                        pmPracticePlan: {
-                          ...data.pmPracticePlan,
-                          targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
-                          startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
-                          smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
-                          durationWeeks: durationWeeks
-                        }
-                      });
-                    }}
-                    disabled={(date: Date) => !data.startDate || date <= data.startDate}
-                    className="pointer-events-auto"
-                  />
-                </div>
-                <DrawerFooter>
-                  <DrawerClose asChild>
-                    <Button variant="outline">Close</Button>
-                  </DrawerClose>
-                </DrawerFooter>
-              </DrawerContent>
+          <DrawerContent side="right">
+            <DrawerHeader className="flex flex-row items-center gap-4 border-b pb-4">
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <ChevronLeft className="h-5 w-5" />
+                  <span className="sr-only">Close</span>
+                </Button>
+              </DrawerClose>
+              <div className="flex-1">
+                <DrawerTitle>Select End Date (Optional)</DrawerTitle>
+                <DrawerDescription>Choose when you want to complete this goal, or leave open-ended</DrawerDescription>
+              </div>
+            </DrawerHeader>
+            <ScrollArea className="h-[calc(100vh-140px)] w-full">
+              <div className="flex flex-col gap-6 p-4">
+                {[0, 1, 2, 3, 4, 5].map((monthOffset) => {
+                  const displayMonth = new Date();
+                  displayMonth.setMonth(displayMonth.getMonth() + monthOffset);
+                  
+                  return (
+                    <div key={monthOffset} className="border-b last:border-b-0 pb-6 last:pb-0">
+                      <Calendar 
+                        mode="single" 
+                        selected={data.endDate}
+                        month={displayMonth}
+                        onMonthChange={() => {}}
+                        onSelect={(date?: Date) => {
+                          const durationWeeks = data.startDate && date 
+                            ? Math.ceil((date.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                            : null;
+                          updateData({ 
+                            endDate: date,
+                            pmPracticePlan: {
+                              ...data.pmPracticePlan,
+                              targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
+                              startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
+                              smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
+                              durationWeeks: durationWeeks
+                            }
+                          });
+                        }}
+                        disabled={(date: Date) => !data.startDate || date <= data.startDate}
+                        className="pointer-events-auto w-full"
+                        classNames={{
+                          nav: "hidden"
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </DrawerContent>
             </Drawer>
             <p className="text-xs text-muted-foreground">
               💡 Leave open-ended if you want to practice indefinitely
