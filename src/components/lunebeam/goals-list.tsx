@@ -390,8 +390,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
             </TabsList>
           </Tabs>
 
-          {/* Filter Controls */}
-          <div className="flex gap-2">
+          {/* Filter Controls with Goal Count */}
+          <div className="flex items-center justify-between gap-3">
             <Select value={filterCreator} onValueChange={setFilterCreator}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Filter by creator" />
@@ -402,6 +402,20 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
                 <SelectItem value="others">Created by others</SelectItem>
               </SelectContent>
             </Select>
+            
+            {/* Goal Count Indicator */}
+            <div className="flex items-center gap-2">
+              <Badge 
+                variant={filteredGoals.length < goals.length ? "default" : "secondary"}
+                className="text-xs font-medium"
+              >
+                {filteredGoals.length === goals.length ? (
+                  <span>{goals.length} {goals.length === 1 ? 'goal' : 'goals'}</span>
+                ) : (
+                  <span>{filteredGoals.length} of {goals.length} goals</span>
+                )}
+              </Badge>
+            </div>
           </div>
 
           {/* Pagination Controls - Top Right */}

@@ -32,6 +32,7 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
 }) => {
   const { user } = useAuth();
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [totalGoalsCount, setTotalGoalsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
 
@@ -79,6 +80,31 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
           setLoading(false);
           return;
         }
+      }
+
+      // Get total count before filtering
+      let countQuery = supabase
+        .from('goals')
+        .select('id', { count: 'exact', head: true });
+
+      if (selectedIndividualId) {
+        countQuery = countQuery.eq('owner_id', selectedIndividualId);
+      } else {
+        const { data: supporters } = await supabase
+          .from('supporters')
+          .select('individual_id')
+          .eq('supporter_id', user.id);
+
+        if (supporters && supporters.length > 0) {
+          const individualIds = supporters.map(s => s.individual_id);
+          countQuery = countQuery.in('owner_id', individualIds);
+        }
+      }
+
+      const { count: totalCount } = await countQuery;
+
+      if (totalCount !== null) {
+        setTotalGoalsCount(totalCount);
       }
 
       if (filter !== 'all') {
@@ -165,29 +191,43 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
           </p>
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex gap-2">
-          <Button
-            variant={filter === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter('all')}
+        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+          {/* Goal Count Indicator */}
+          <Badge 
+            variant={filter !== 'all' ? "default" : "secondary"}
+            className="text-xs font-medium"
           >
-            All
-          </Button>
-          <Button
-            variant={filter === 'active' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter('active')}
-          >
-            Active
-          </Button>
-          <Button
-            variant={filter === 'completed' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter('completed')}
-          >
-            Completed
-          </Button>
+            {filter === 'all' ? (
+              <span>{totalGoalsCount} {totalGoalsCount === 1 ? 'goal' : 'goals'}</span>
+            ) : (
+              <span>{goals.length} of {totalGoalsCount} goals</span>
+            )}
+          </Badge>
+          
+          {/* Filter Buttons */}
+          <div className="flex gap-2">
+            <Button
+              variant={filter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter('all')}
+            >
+              All
+            </Button>
+            <Button
+              variant={filter === 'active' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter('active')}
+            >
+              Active
+            </Button>
+            <Button
+              variant={filter === 'completed' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter('completed')}
+            >
+              Completed
+            </Button>
+          </div>
         </div>
       </div>
 
