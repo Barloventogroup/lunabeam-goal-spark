@@ -540,7 +540,8 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
           startingFrequency: smartStartFreq,
           smartStartAccepted: false,
           durationWeeks: durationWeeks
-        }
+        },
+        pmTargetFrequency: defaultTargetFreq
       });
     }
   }, []);
@@ -595,7 +596,8 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                         startingFrequency: smartStartFreq,
                         smartStartAccepted: true,
                         durationWeeks: durationWeeks
-                      }
+                      },
+                      pmTargetFrequency: smartStartFreq
                     });
                   }}
                   variant={data.pmPracticePlan?.targetFrequency === smartStartFreq ? 'default' : 'secondary'}
@@ -626,7 +628,8 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                       startingFrequency: smartStartFreq,
                       smartStartAccepted: false,
                       durationWeeks: durationWeeks
-                    }
+                    },
+                    pmTargetFrequency: freq
                   });
                 }}
                 className="h-12"
