@@ -314,8 +314,8 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
           )}
 
           {/* Question */}
-          <div className="text-center">
-          <h1 className="text-2xl md:text-3xl font-bold flex items-center justify-center gap-2 flex-wrap">
+          <div className="text-left">
+          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2 flex-wrap">
             <span>{questionText}</span>
           </h1>
           </div>
