@@ -2079,7 +2079,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       Habit
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      showing up regularly to build a stable, repeatable pattern in your day.
+                      Showing up regularly to build a stable, repeatable pattern in your day.
                     </p>
                   </div>
                 </div>
