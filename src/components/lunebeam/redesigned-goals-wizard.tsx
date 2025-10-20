@@ -2373,14 +2373,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const isHabitOrPractice = data.goalType === 'reminder' || data.goalType === 'practice';
     
     return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
-      <CardHeader className="pb-4 pt-0">
+      <CardHeader className="pb-6 pt-0">
         {data.goalTitle && (
-          <div className="text-center pb-4 border-b mb-4">
-            <h2 className="text-xl font-semibold truncate">{data.goalTitle}</h2>
+          <div className="text-center pb-4 border-b mb-6">
+            <h2 className="text-xl font-semibold text-muted-foreground tracking-wide truncate">{data.goalTitle}</h2>
           </div>
         )}
-        <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
-        <p className="text-muted-foreground">
+        <CardTitle className="text-3xl font-bold text-center">{getStepTitle()}</CardTitle>
+        <p className="text-muted-foreground text-center text-base mt-2">
           {isProject 
             ? "Set your project timeline and first learning session"
             : "Set your practice schedule"
