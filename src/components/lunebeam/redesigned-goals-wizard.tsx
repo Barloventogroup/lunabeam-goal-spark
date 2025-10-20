@@ -6,6 +6,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -1870,43 +1879,53 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
   const renderCategoriesModal = () => {
     return (
-      <div className="space-y-4">
-        <div className="text-center pb-2">
-          <h2 className="text-2xl font-bold">Browse Goal Ideas</h2>
-          <p className="text-muted-foreground mt-2">
-            Pick a category to explore example goals
-          </p>
-        </div>
+      <div className="flex flex-col h-full">
+        <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-6 pt-6">
+          <SheetClose asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <X className="h-5 w-5" />
+              <span className="sr-only">Close</span>
+            </Button>
+          </SheetClose>
+          <div className="flex-1 text-left">
+            <SheetTitle>Browse Goal Ideas</SheetTitle>
+            <SheetDescription>
+              Pick a category to explore example goals
+            </SheetDescription>
+          </div>
+        </SheetHeader>
 
-        <div className="grid grid-cols-1 gap-3 max-h-[60vh] overflow-y-auto px-1">
-          {categories.map((category) => {
-            return (
-              <Card
-                key={category.id}
-                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-2 hover:border-primary/50"
-                onClick={() => {
-                  setSelectedCategoryForModal(category);
-                  setModalView('examples');
-                }}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <span className="text-2xl">{category.emoji}</span>
+        <ScrollArea className="flex-1 px-6 py-4">
+          <div className="grid grid-cols-1 gap-3">
+            {categories.map((category) => {
+              return (
+                <Card
+                  key={category.id}
+                  className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-2 hover:border-primary/50"
+                  onClick={() => {
+                    setSelectedCategoryForModal(category);
+                    setModalView('examples');
+                  }}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-2xl">{category.emoji}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base mb-1">{category.title}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {category.description}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base mb-1">{category.title}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {category.description}
-                      </p>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </ScrollArea>
       </div>
     );
   };
@@ -1917,96 +1936,98 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const exampleGoals = exampleGoalsByCategory[selectedCategoryForModal.id] || [];
 
     return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 pb-2 border-b">
+      <div className="flex flex-col h-full">
+        <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-6 pt-6">
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
+            className="h-8 w-8"
             onClick={() => {
               setModalView('categories');
               setSelectedCategoryForModal(null);
             }}
-            className="gap-2"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back
+            <ArrowLeft className="h-5 w-5" />
+            <span className="sr-only">Back to categories</span>
           </Button>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold flex items-center gap-2">
+          <div className="flex-1 text-left">
+            <SheetTitle className="flex items-center gap-2">
               <span>{selectedCategoryForModal.emoji}</span>
               {selectedCategoryForModal.title}
-            </h2>
-            <p className="text-sm text-muted-foreground">
+            </SheetTitle>
+            <SheetDescription>
               {selectedCategoryForModal.description}
+            </SheetDescription>
+          </div>
+        </SheetHeader>
+
+        <ScrollArea className="flex-1 px-6 py-4">
+          <div className="space-y-3">
+            {exampleGoals.map((goal) => {
+              const getBadge = () => {
+                switch (goal.suggestedType) {
+                  case 'progressive_mastery':
+                    return { text: '🎯 Progressive Mastery', color: 'bg-purple-100 text-purple-700 border-purple-200' };
+                  case 'reminder':
+                    return { text: '🔄 Habit', color: 'bg-blue-100 text-blue-700 border-blue-200' };
+                  case 'practice':
+                    return { text: '📈 Practice', color: 'bg-green-100 text-green-700 border-green-200' };
+                  case 'new_skill':
+                    return { text: '⭐ New Skill', color: 'bg-amber-100 text-amber-700 border-amber-200' };
+                  default:
+                    return { text: '🎯 Goal', color: 'bg-gray-100 text-gray-700 border-gray-200' };
+                }
+              };
+
+              const badge = getBadge();
+
+              return (
+                <Card
+                  key={goal.id}
+                  className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.01] border-2 hover:border-primary/50"
+                  onClick={() => {
+                    updateData({
+                      goalTitle: goal.title,
+                      category: goal.categoryId,
+                      goalType: goal.suggestedType
+                    });
+
+                    setShowBrowseModal(false);
+                    setModalView('categories');
+                    setSelectedCategoryForModal(null);
+
+                  }}
+                >
+                  <CardContent className="p-4">
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-base">{goal.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {goal.description}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          <div className="text-center pt-4 mt-4 border-t">
+            <p className="text-xs text-muted-foreground">
+              Click any goal to use it as a starting point
             </p>
           </div>
-        </div>
-
-        <div className="space-y-3 max-h-[55vh] overflow-y-auto px-1">
-          {exampleGoals.map((goal) => {
-            const getBadge = () => {
-              switch (goal.suggestedType) {
-                case 'progressive_mastery':
-                  return { text: '🎯 Progressive Mastery', color: 'bg-purple-100 text-purple-700 border-purple-200' };
-                case 'reminder':
-                  return { text: '🔄 Habit', color: 'bg-blue-100 text-blue-700 border-blue-200' };
-                case 'practice':
-                  return { text: '📈 Practice', color: 'bg-green-100 text-green-700 border-green-200' };
-                case 'new_skill':
-                  return { text: '⭐ New Skill', color: 'bg-amber-100 text-amber-700 border-amber-200' };
-                default:
-                  return { text: '🎯 Goal', color: 'bg-gray-100 text-gray-700 border-gray-200' };
-              }
-            };
-
-            const badge = getBadge();
-
-            return (
-              <Card
-                key={goal.id}
-                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.01] border-2 hover:border-primary/50"
-                onClick={() => {
-                  updateData({
-                    goalTitle: goal.title,
-                    category: goal.categoryId,
-                    goalType: goal.suggestedType
-                  });
-
-                  setShowBrowseModal(false);
-                  setModalView('categories');
-                  setSelectedCategoryForModal(null);
-
-                }}
-              >
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-base">{goal.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {goal.description}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        <div className="text-center pt-2 border-t">
-          <p className="text-xs text-muted-foreground">
-            Click any goal to use it as a starting point
-          </p>
-        </div>
+        </ScrollArea>
       </div>
     );
   };
 
   const renderBrowseModal = () => {
     return (
-      <Dialog open={showBrowseModal} onOpenChange={setShowBrowseModal}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col p-6">
+      <Sheet open={showBrowseModal} onOpenChange={setShowBrowseModal}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl p-0 overflow-hidden">
           {modalView === 'categories' ? renderCategoriesModal() : renderExampleGoalsModal()}
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     );
   };
 
