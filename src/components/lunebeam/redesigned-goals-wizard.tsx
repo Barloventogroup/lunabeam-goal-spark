@@ -960,8 +960,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 6: return !!data.pmAssessment?.q3_help_needed; // Help Needed REQUIRED (moved up from step 7)
         case 7: return true; // Barriers OPTIONAL (moved after level calc - now contextual)
         case 8: return true; // Helper OPTIONAL
-        case 9: return !!data.pmPracticePlan?.targetFrequency && !!data.pmPracticePlan?.startingFrequency && data.pmPracticePlan?.durationWeeks !== undefined; // Practice Plan REQUIRED
-        case 10: return true; // Ready to confirm
+        case 9: return !!data.pmTargetFrequency; // Practice Frequency REQUIRED
+        case 10: return !!data.startDate; // Duration start date REQUIRED
         default: return false;
       }
     }

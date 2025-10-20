@@ -532,7 +532,6 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
       goalContext={levelContext}
       questionIcon="🎯"
       questionText={`How often would ${name === 'you' ? 'you' : name} like to practice?`}
-      helpText="We'll help you build up gradually to this frequency"
       inputType="custom"
       onBack={goBack}
       onContinue={goNext}
@@ -588,6 +587,9 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
           </div>
           <p className="text-xs text-muted-foreground text-center">
             per week
+          </p>
+          <p className="text-sm text-muted-foreground text-center mt-4">
+            We'll help you build up gradually to this frequency
           </p>
         </div>
       </div>
