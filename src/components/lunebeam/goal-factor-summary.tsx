@@ -416,6 +416,27 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                       <span className="font-medium">{customTime ? formatDisplayTime(customTime) : timeOfDay}</span>
                     </p>
                   )}
+                  {pmPracticePlan?.startTime && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Practice Time:</span>{' '}
+                      <span className="font-medium">{formatDisplayTime(pmPracticePlan.startTime)}</span>
+                    </p>
+                  )}
+                  {pmPracticePlan?.sendAdvanceReminder && pmPracticePlan?.startTime && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Reminder:</span>{' '}
+                      <span className="font-medium">10 min before ({(() => {
+                        const [hours, minutes] = pmPracticePlan.startTime.split(':');
+                        const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
+                        const reminderMinutes = totalMinutes >= 10 ? totalMinutes - 10 : totalMinutes + 1440 - 10;
+                        const reminderHour = Math.floor(reminderMinutes / 60) % 24;
+                        const reminderMin = reminderMinutes % 60;
+                        const period = reminderHour >= 12 ? 'PM' : 'AM';
+                        const displayHour = reminderHour % 12 || 12;
+                        return `${displayHour}:${String(reminderMin).padStart(2, '0')} ${period}`;
+                      })()})</span>
+                    </p>
+                  )}
                   {pmPracticePlan?.smartStartAccepted && pmPracticePlan.startingFrequency !== pmPracticePlan.targetFrequency && (
                     <p className="text-xs text-muted-foreground italic mt-2">
                       Smart Start: Building up to {pmPracticePlan.targetFrequency}x/week

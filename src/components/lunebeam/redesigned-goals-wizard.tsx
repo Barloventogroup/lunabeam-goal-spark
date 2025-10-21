@@ -553,6 +553,8 @@ interface WizardData {
     startingFrequency: number;
     smartStartAccepted: boolean;
     durationWeeks: number | null;
+    startTime?: string;
+    sendAdvanceReminder?: boolean;
   };
   
   // Old PM fields for backward compatibility
@@ -3367,6 +3369,27 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         <p className="text-sm">
                           <span className="text-muted-foreground text-xs">Time:</span>{' '}
                           <span className="font-medium">{data.customTime ? formatDisplayTime(data.customTime) : data.timeOfDay}</span>
+                        </p>
+                      )}
+                      {data.pmPracticePlan?.startTime && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Practice Time:</span>{' '}
+                          <span className="font-medium">{formatDisplayTime(data.pmPracticePlan.startTime)}</span>
+                        </p>
+                      )}
+                      {data.pmPracticePlan?.sendAdvanceReminder && data.pmPracticePlan?.startTime && (
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Reminder:</span>{' '}
+                          <span className="font-medium">10 min before ({(() => {
+                            const [hours, minutes] = data.pmPracticePlan.startTime.split(':');
+                            const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
+                            const reminderMinutes = totalMinutes >= 10 ? totalMinutes - 10 : totalMinutes + 1440 - 10;
+                            const reminderHour = Math.floor(reminderMinutes / 60) % 24;
+                            const reminderMin = reminderMinutes % 60;
+                            const period = reminderHour >= 12 ? 'PM' : 'AM';
+                            const displayHour = reminderHour % 12 || 12;
+                            return `${displayHour}:${String(reminderMin).padStart(2, '0')} ${period}`;
+                          })()})</span>
                         </p>
                       )}
                     </div>
