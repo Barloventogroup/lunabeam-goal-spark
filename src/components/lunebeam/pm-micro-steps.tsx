@@ -35,6 +35,7 @@ interface PMStepsProps {
   goalTitle?: string;
   setShowingResultsInterstitial?: (showing: boolean) => void;
   interstitialData?: { level: number; label: string } | null;
+  showingResultsInterstitial?: boolean;
 }
 
 export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
@@ -392,7 +393,7 @@ export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, g
   );
 };
 
-export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle, setShowingResultsInterstitial, interstitialData }) => {
+export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle, setShowingResultsInterstitial, interstitialData, showingResultsInterstitial }) => {
   const { toast } = useToast();
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
 
@@ -494,10 +495,8 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
     );
   };
 
-  // Show results interstitial if assessment is complete and wizard triggered it
-  // Check both pmAssessment (PM flow) and pmSkillAssessment (habit flow)
-  const calculatedLevel = data.pmAssessment?.calculatedLevel || data.pmSkillAssessment?.calculatedLevel;
-  if (calculatedLevel && setShowingResultsInterstitial) {
+  // Show interstitial results screen only when explicitly triggered
+  if (showingResultsInterstitial) {
     return renderResultsInterstitial();
   }
   

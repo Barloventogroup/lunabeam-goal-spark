@@ -2218,8 +2218,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const primaryBarrier = data.challengeAreas?.[0];
     const primaryBarrierLabel = challengeAreas.find(c => c.id === primaryBarrier)?.label;
     
-    // Calculate level context for habit flow
-    const assessment = data.pmSkillAssessment;
+    // Calculate level context - use whichever assessment has data
+    const assessment = data.pmSkillAssessment || data.pmAssessment;
     const levelContext = assessment?.calculatedLevel 
       ? `Starting level: ${getSkillLevelDisplay(assessment).emoji} ${getSkillLevelDisplay(assessment).label}`
       : undefined;
@@ -3750,6 +3750,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     goalTitle: data.goalTitle,
     setShowingResultsInterstitial,
     interstitialData,
+    showingResultsInterstitial,
   };
 
   const renderCurrentStep = () => {
@@ -3859,6 +3860,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
   // Get current section information based on step and role
   const getStepSection = () => {
+    // Get skill level for dynamic labeling
+    const assessment = data.pmSkillAssessment || data.pmAssessment;
+    const skillLevel = assessment?.calculatedLevel || 1;
+    
     // Progressive Mastery flow
     if (data.goalType === 'progressive_mastery') {
       if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
@@ -3869,20 +3874,28 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
     
     if (actuallySupportsAnyone) {
-      // Supporter flow - 5 sections
+      // Supporter flow - 5 sections (habit flow)
       if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
       if (currentStep === 4 || currentStep === 5 || currentStep === 6 || currentStep === 7) return { label: 'Skill Assessment', index: 2, total: 5 };
       if (currentStep === 8) return { label: 'Challenges', index: 3, total: 5 };
-      if (currentStep === 9) return { label: 'When and How Often', index: 4, total: 5 };
-      if (currentStep === 9) return { label: 'The Team', index: 4, total: 5 };
+      // Step 9 is dynamic based on skill level
+      if (currentStep === 9) {
+        return skillLevel >= 4 
+          ? { label: 'When and How Often', index: 4, total: 5 }
+          : { label: 'The Team', index: 4, total: 5 };
+      }
       if (currentStep === 10 || currentStep === 11) return { label: 'Commitment & Activation', index: 5, total: 5 };
     } else {
-      // Non-supporter flow - 5 sections
+      // Non-supporter flow - 5 sections (habit flow)
       if (currentStep! >= 1 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep === 4 || currentStep === 5 || currentStep === 6) return { label: 'Skill Assessment', index: 2, total: 5 };
-      if (currentStep === 7) return { label: 'Challenges', index: 3, total: 5 };
-      if (currentStep === 8) return { label: 'When and How Often', index: 4, total: 5 };
-      if (currentStep === 9) return { label: 'The Team', index: 4, total: 5 };
+      if (currentStep === 4 || currentStep === 5 || currentStep === 6 || currentStep === 7) return { label: 'Skill Assessment', index: 2, total: 5 };
+      if (currentStep === 8) return { label: 'Challenges', index: 3, total: 5 };
+      // Step 9 is dynamic based on skill level
+      if (currentStep === 9) {
+        return skillLevel >= 4
+          ? { label: 'When and How Often', index: 4, total: 5 }
+          : { label: 'The Team', index: 4, total: 5 };
+      }
       if (currentStep === 10) return { label: 'Your First Steps', index: 5, total: 5 };
     }
     return { label: '', index: 0, total: 5 };
@@ -3898,9 +3911,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       (data.goalType !== 'progressive_mastery' && currentStep === 7);
       
     if (isSkillAssessmentComplete) {
-      const assessment = data.goalType === 'progressive_mastery' 
-        ? data.pmAssessment 
-        : data.pmSkillAssessment;
+      // Use whichever assessment has data
+      const assessment = data.pmAssessment || data.pmSkillAssessment;
         
       if (assessment?.q1_experience && 
           assessment?.q2_confidence && 
@@ -3926,9 +3938,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             }
           });
         } else {
+          // Habit flow - keep both assessment objects in sync
           updateData({
             pmSkillAssessment: {
               ...data.pmSkillAssessment,
+              calculatedLevel: level,
+              levelLabel: label
+            },
+            pmAssessment: {
+              ...data.pmAssessment,
               calculatedLevel: level,
               levelLabel: label
             }
