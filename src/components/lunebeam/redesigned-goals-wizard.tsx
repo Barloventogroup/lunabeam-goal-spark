@@ -955,7 +955,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const getStepTitle = () => {
     const isForOther = data.recipient === 'other';
     const name = data.supportedPersonName;
-    const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+    const skillLevel = (data.goalType === 'progressive_mastery' 
+      ? data.pmAssessment?.calculatedLevel 
+      : data.pmSkillAssessment?.calculatedLevel) || 1;
 
     // Progressive Mastery flow titles
     if (data.goalType === 'progressive_mastery') {
@@ -1186,7 +1188,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Challenge areas (barriers)
         return (data.challengeAreas?.length || 0) > 0;
       case 9: {
-        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+        const skillLevel = (data.goalType === 'progressive_mastery' 
+          ? data.pmAssessment?.calculatedLevel 
+          : data.pmSkillAssessment?.calculatedLevel) || 1;
         
         if (skillLevel >= 4) {
           // High skill: habit flow - validate scheduling
@@ -1213,7 +1217,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }
       }
       case 10: {
-        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+        const skillLevel = (data.goalType === 'progressive_mastery' 
+          ? data.pmAssessment?.calculatedLevel 
+          : data.pmSkillAssessment?.calculatedLevel) || 1;
         
         if (skillLevel >= 4) {
           // Habit flow: validate support context
@@ -1227,7 +1233,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }
       }
       case 11: {
-        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+        const skillLevel = (data.goalType === 'progressive_mastery' 
+          ? data.pmAssessment?.calculatedLevel 
+          : data.pmSkillAssessment?.calculatedLevel) || 1;
         if (skillLevel >= 4) {
           return true; // Habit flow: rewards optional
         } else {
@@ -3114,11 +3122,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
 
   const renderPMTeachingHelper = () => {
+    // Get skill level from the correct source based on goalType
+    const assessment = data.goalType === 'progressive_mastery' 
+      ? data.pmAssessment 
+      : data.pmSkillAssessment;
+    const skillLevel = assessment?.calculatedLevel || 1;
+    
     // Determine recommended option based on skill level
     const getRecommendation = () => {
-      if (!data.pmAssessment) return 'helper'; // Default to helper if no assessment
+      if (!assessment) return 'helper'; // Default to helper if no assessment
       
-      const level = data.pmAssessment.calculatedLevel;
+      const level = assessment.calculatedLevel;
       
       if (level <= 2) {
         // Beginner/Novice: Strongly recommend helper
@@ -3141,41 +3155,41 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-2xl">Who can help you learn this skill?</CardTitle>
           <p className="text-muted-foreground">
-            {data.pmAssessment?.calculatedLevel <= 2
+            {skillLevel <= 2
               ? "🎯 We strongly recommend selecting a helper to guide you"
-              : data.pmAssessment?.calculatedLevel >= 4
+              : skillLevel >= 4
               ? "You're ready to practice independently! Helpers are optional for feedback."
               : "Choose how you'd like to approach this goal"}
           </p>
         </CardHeader>
         
         {/* Skill Level Context Banner */}
-        {data.pmAssessment && (
+        {assessment && (
           <div className="px-6 pb-4">
             <div className={cn(
               "p-4 rounded-lg border-2",
-              data.pmAssessment.calculatedLevel <= 2 
+              skillLevel <= 2 
                 ? "bg-amber-50/50 border-amber-200" 
-                : data.pmAssessment.calculatedLevel >= 4
+                : skillLevel >= 4
                 ? "bg-green-50/50 border-green-200"
                 : "bg-blue-50/50 border-blue-200"
             )}>
               <div className="flex items-start gap-3">
                 <div className="text-2xl">
-                  {getSkillLevelDisplay(data.pmAssessment).emoji}
+                  {getSkillLevelDisplay(assessment).emoji}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">
-                    {data.pmAssessment.calculatedLevel <= 2 
+                    {skillLevel <= 2 
                       ? "🎯 Recommended: Work with a helper"
-                      : data.pmAssessment.calculatedLevel >= 4
+                      : skillLevel >= 4
                       ? "✨ You're ready to practice independently!"
-                      : `Your skill level: ${data.pmAssessment.levelLabel}`}
+                      : `Your skill level: ${assessment.levelLabel}`}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {data.pmAssessment.calculatedLevel <= 2 
+                    {skillLevel <= 2 
                       ? "Since you're just starting out, having guidance will help you learn faster and more safely."
-                      : data.pmAssessment.calculatedLevel >= 4
+                      : skillLevel >= 4
                       ? "You have strong experience with this skill."
                       : "💡 You have some experience! A helper can help you master this skill."}
                   </p>
@@ -3188,7 +3202,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             {/* Conditionally render order based on skill level */}
-            {data.pmAssessment?.calculatedLevel <= 2 ? (
+            {skillLevel <= 2 ? (
               <>
                 {/* Helpers first for beginners */}
                 {userSupporters.length > 0 ? (
@@ -3219,11 +3233,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                               )}
                             </div>
                             <div className="text-sm text-muted-foreground capitalize">
-                              {data.pmAssessment?.calculatedLevel <= 2
+                              {skillLevel <= 2
                                 ? "Will guide you step-by-step"
-                                : data.pmAssessment?.calculatedLevel === 3
+                                : skillLevel === 3
                                 ? "Can help accelerate your progress"
-                                : "Available for occasional feedback"}
+                                : "Optional: Get Feedback From Me"}
                             </div>
                           </div>
                         </div>
@@ -3235,7 +3249,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     <p className="text-sm text-muted-foreground">
                       No helpers available yet
                     </p>
-                    {data.pmAssessment?.calculatedLevel <= 2 && (
+                    {skillLevel <= 2 && (
                       <p className="text-xs text-amber-600">
                         💡 Consider inviting a supporter from Settings to help you get started
                       </p>
@@ -3249,7 +3263,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     "cursor-pointer hover:shadow-md transition-all border-2",
                     pmSelectedHelperId === 'none' ? "border-primary bg-primary/5" : "border-border",
                     shouldEmphasizeSolo && "ring-2 ring-primary/20",
-                    data.pmAssessment?.calculatedLevel <= 2 && "opacity-60 hover:opacity-100 border-amber-300"
+                    skillLevel <= 2 && "opacity-60 hover:opacity-100 border-amber-300"
                   )}
                   onClick={() => setPMSelectedHelperId('none')}
                 >
@@ -3264,9 +3278,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           )}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {data.pmAssessment?.calculatedLevel >= 4
+                          {skillLevel >= 4
                             ? "Perfect for your skill level - practice independently"
-                            : data.pmAssessment?.calculatedLevel === 3
+                            : skillLevel === 3
                             ? "You can manage this on your own"
                             : "⚠️ Consider starting with a helper first"}
                         </div>
@@ -3297,9 +3311,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           )}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {data.pmAssessment?.calculatedLevel >= 4
+                          {skillLevel >= 4
                             ? "Perfect for your skill level - practice independently"
-                            : data.pmAssessment?.calculatedLevel === 3
+                            : skillLevel === 3
                             ? "You can manage this on your own"
                             : "I'll practice independently (may take longer)"}
                         </div>
@@ -3337,9 +3351,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                               )}
                             </div>
                             <div className="text-sm text-muted-foreground capitalize">
-                              {data.pmAssessment?.calculatedLevel <= 2
+                              {skillLevel <= 2
                                 ? "Will guide you step-by-step"
-                                : data.pmAssessment?.calculatedLevel === 3
+                                : skillLevel === 3
                                 ? "Can help accelerate your progress"
                                 : "Optional: Get feedback from me"}
                             </div>
@@ -3774,18 +3788,20 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       case 8: return renderStep4(); // Challenge areas (barriers)
       case 9: {
         // Dynamic branching based on skill level
-        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+        const skillLevel = data.pmSkillAssessment?.calculatedLevel || 1;
         
         if (skillLevel >= 4) {
-          // High skill: continue with habit flow - show intro first
-          return showSchedulingIntro ? renderHabitSchedulingIntro() : renderStep5();
+          // High skill: continue with habit flow - show intro first, then practice schedule
+          return showSchedulingIntro ? renderHabitSchedulingIntro() : <PMStep9_PracticePlan {...pmStepProps} />;
         } else {
           // Low skill: switch to PM and show helper selection
           return renderPMTeachingHelper();
         }
       }
       case 10: {
-        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+        const skillLevel = (data.goalType === 'progressive_mastery' 
+          ? data.pmAssessment?.calculatedLevel 
+          : data.pmSkillAssessment?.calculatedLevel) || 1;
         
         if (skillLevel >= 4) {
           // Habit flow: support context
@@ -3796,7 +3812,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }
       }
       case 11: {
-        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+        const skillLevel = (data.goalType === 'progressive_mastery' 
+          ? data.pmAssessment?.calculatedLevel 
+          : data.pmSkillAssessment?.calculatedLevel) || 1;
         
         if (skillLevel >= 4) {
           // Habit flow: rewards (supporters only) or confirm
@@ -3811,7 +3829,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   // Update last step index based on goal type and skill level
-  const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+  const skillLevel = (data.goalType === 'progressive_mastery' 
+    ? data.pmAssessment?.calculatedLevel 
+    : data.pmSkillAssessment?.calculatedLevel) || 1;
   const lastStepIndex = (() => {
     if (data.goalType === 'progressive_mastery') {
       return 11;
@@ -3948,13 +3968,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     
     // Special handling for skill level branching in habit flow (step 8 → 9 transition)
     if (data.goalType !== 'progressive_mastery' && currentStep === 8) {
-      const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+      const skillLevel = data.pmSkillAssessment?.calculatedLevel || 1;
       
       if (skillLevel <= 3) {
-        // Switch to Progressive Mastery
+        // Switch to Progressive Mastery - copy skill assessment data properly
         updateData({ 
           goalType: 'progressive_mastery',
-          pmAssessment: data.pmAssessment,
+          pmAssessment: {
+            q1_experience: data.pmSkillAssessment?.q1_experience,
+            q2_confidence: data.pmSkillAssessment?.q2_confidence,
+            q3_help_needed: data.pmSkillAssessment?.q3_help_needed,
+            calculatedLevel: data.pmSkillAssessment?.calculatedLevel,
+            levelLabel: data.pmSkillAssessment?.levelLabel
+          },
           barriers: data.barriers,
           challengeAreas: data.challengeAreas
         });
@@ -3968,7 +3994,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     
     // Special handling for scheduling intro in habit flow (step 9)
     if (data.goalType !== 'progressive_mastery' && currentStep === 9) {
-      const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+      const skillLevel = data.pmSkillAssessment?.calculatedLevel || 1;
       
       if (skillLevel >= 4 && showSchedulingIntro) {
         setShowSchedulingIntro(false);
