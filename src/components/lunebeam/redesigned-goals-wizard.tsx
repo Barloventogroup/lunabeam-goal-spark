@@ -1468,13 +1468,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 calculatedLevel: data.pmSkillAssessment.calculated_level,
                 levelLabel: data.pmSkillAssessment.level_label
               } : undefined,
-              pmPracticePlan: data.goalType === 'progressive_mastery' ? {
-                targetFrequency: data.pmPracticePlan?.targetFrequency ?? data.pmTargetFrequency ?? data.frequency,
-                startingFrequency: data.pmPracticePlan?.startingFrequency ?? data.pmTargetFrequency ?? data.frequency,
-                durationWeeks: (data.pmPracticePlan?.durationWeeks ?? (data.endDate && data.startDate 
+              pmPracticePlan: data.pmPracticePlan ? {
+                targetFrequency: data.pmPracticePlan.targetFrequency ?? data.pmTargetFrequency ?? data.frequency,
+                startingFrequency: data.pmPracticePlan.startingFrequency ?? data.pmTargetFrequency ?? data.frequency,
+                durationWeeks: (data.pmPracticePlan.durationWeeks ?? (data.endDate && data.startDate 
                   ? Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
                   : null)),
-                smartStartAccepted: data.pmPracticePlan?.smartStartAccepted ?? true
+                smartStartAccepted: data.pmPracticePlan.smartStartAccepted ?? true,
+                startTime: data.pmPracticePlan.startTime,
+                sendAdvanceReminder: data.pmPracticePlan.sendAdvanceReminder ?? true
               } : undefined,
               barriers: data.barriers ? {
                 priority1: data.barriers.priority1,
