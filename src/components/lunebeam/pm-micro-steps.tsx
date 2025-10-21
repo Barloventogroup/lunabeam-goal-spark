@@ -622,6 +622,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
       
       updateData({
         pmPracticePlan: {
+          ...data.pmPracticePlan,
           targetFrequency: defaultTargetFreq,
           startingFrequency: smartStartFreq,
           smartStartAccepted: false,
@@ -633,6 +634,14 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
   }, []);
   
   const isComplete = !!data.pmPracticePlan?.targetFrequency && !!data.startDate && !!data.pmPracticePlan?.startTime;
+
+  console.log('PMStep9_PracticePlan - validation check:', {
+    targetFrequency: data.pmPracticePlan?.targetFrequency,
+    startDate: data.startDate,
+    startTime: data.pmPracticePlan?.startTime,
+    isComplete,
+    fullPmPracticePlan: data.pmPracticePlan
+  });
   
   // Auto-scroll to dates section when frequency is selected but no start date
   React.useEffect(() => {
@@ -678,6 +687,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                     
                     updateData({
                       pmPracticePlan: {
+                        ...data.pmPracticePlan,
                         targetFrequency: smartStartFreq,
                         startingFrequency: smartStartFreq,
                         smartStartAccepted: true,
@@ -710,6 +720,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   
                   updateData({
                     pmPracticePlan: {
+                      ...data.pmPracticePlan,
                       targetFrequency: freq,
                       startingFrequency: smartStartFreq,
                       smartStartAccepted: false,
