@@ -334,10 +334,10 @@ export const PMStep5_Experience: React.FC<PMStepsProps> = ({ data, updateData, g
       inputType="radio"
       options={[
         { value: 1, label: "Brand new to this", icon: '🌱', description: 'Never tried before' },
-        { value: 2, label: "Tried once or twice", icon: '🌿', description: 'Just getting started' },
-        { value: 3, label: "Some experience", icon: '🌳', description: 'Done it a few times' },
-        { value: 4, label: "Pretty experienced", icon: '🎯', description: 'Do this regularly' },
-        { value: 5, label: "Very experienced", icon: '⭐', description: 'Can do well independently' }
+        { value: 2, label: "Tried once or twice", icon: '📚', description: 'Just getting started' },
+        { value: 3, label: "Some experience", icon: '🚀', description: 'Done it a few times' },
+        { value: 4, label: "Pretty experienced", icon: '⭐', description: 'Do this regularly' },
+        { value: 5, label: "Very experienced", icon: '🏆', description: 'Can do well independently' }
       ]}
       value={data.pmAssessment?.q1_experience}
       onChange={(value) => updateData({
