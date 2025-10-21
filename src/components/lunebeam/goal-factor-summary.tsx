@@ -7,6 +7,36 @@ import { AlertCircle, Users, Calendar, Target } from 'lucide-react';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal } from '@/types';
 
+// Utility functions for formatting
+const truncate = (text: string | undefined, maxLen: number) => {
+  if (!text) return text;
+  return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
+};
+
+const formatDisplayTime = (hhmm?: string) => {
+  if (!hhmm) return '';
+  const [H, M] = hhmm.split(':').map(Number);
+  const period = H >= 12 ? 'PM' : 'AM';
+  const hour12 = H % 12 || 12;
+  return `${hour12}:${M.toString().padStart(2, '0')} ${period}`;
+};
+
+const abbreviateDays = (days: string[]) => {
+  const dayAbbreviations: Record<string, string> = {
+    'Monday': 'M', 'Tuesday': 'Tu', 'Wednesday': 'W',
+    'Thursday': 'Th', 'Friday': 'F', 'Saturday': 'Sa', 'Sunday': 'Su'
+  };
+  return days.map(d => dayAbbreviations[d] || d.substring(0, 2)).join(', ');
+};
+
+// Challenge areas for PM goals (matching wizard)
+const challengeAreas = [
+  { id: 'initiation', label: 'Just Starting', description: 'Initiation' },
+  { id: 'attention', label: 'Staying Focused', description: 'Attention' },
+  { id: 'time', label: 'Remembering', description: 'Time' },
+  { id: 'planning', label: 'Knowing What\'s Next', description: 'Planning' }
+];
+
 // Helper to get context-aware prerequisite suggestions
 function getPrerequisiteSuggestions(goalTitle: string, goalDomain?: string): string[] {
   const titleLower = goalTitle.toLowerCase();
@@ -139,6 +169,251 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
 
   // Detect if this is a PM goal
   const isPMGoal = wizardContext.goalType === 'progressive_mastery' || wizardContext.pmAssessment;
+
+  // If PM goal with full context, use Commitment & Activation layout
+  if (isPMGoal && wizardContext.pmAssessment) {
+    const { pmAssessment, pmPracticePlan, pmHelper, selectedDays, customTime, timeOfDay } = wizardContext;
+    
+    // Get category label
+    const categories = [
+      { id: 'health', label: 'Health & Well Being' },
+      { id: 'education', label: 'Education - High School / Academic Readiness' },
+      { id: 'employment', label: 'Employment' },
+      { id: 'independent_living', label: 'Independent Living' },
+      { id: 'social_skills', label: 'Social / Self-Advocacy' },
+      { id: 'postsecondary', label: 'Postsecondary Education' },
+      { id: 'fun_recreation', label: 'Fun & Recreation' }
+    ];
+    const categoryLabel = categories.find(c => c.id === goal.domain)?.label;
+    
+    // Get motivation label
+    const motivations = [
+      { id: 'independence', label: 'To be more independent' },
+      { id: 'employment', label: 'For work or career' },
+      { id: 'social', label: 'To connect with others' },
+      { id: 'health', label: 'For my health' },
+      { id: 'education', label: 'For school or learning' },
+      { id: 'enjoyment', label: 'Because I enjoy it' },
+      { id: 'responsibility', label: 'It\'s my responsibility' },
+      { id: 'other', label: 'Other reason' }
+    ];
+    const motivationLabel = wizardContext.goalMotivation 
+      ? motivations.find(m => m.id === wizardContext.goalMotivation)?.label || wizardContext.customMotivation
+      : undefined;
+    
+    // Get goal type label
+    const goalTypeLabel = 'Progressive Mastery';
+    
+    // Format days of week
+    const abbreviatedDays = selectedDays && selectedDays.length > 0 
+      ? abbreviateDays(selectedDays) 
+      : undefined;
+    
+    return (
+      <Card>
+        <CardContent className="py-6 space-y-4">
+          {/* Goal Title */}
+          <h1 className="text-2xl md:text-3xl font-bold text-center leading-tight">{goal.title}</h1>
+
+          {/* Skill Assessment Summary */}
+          <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200">
+            <h4 className="text-sm font-semibold text-purple-700 mb-3">Skill Assessment</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-sm">
+                  <span className="text-muted-foreground text-xs">Experience:</span>{' '}
+                  <span className="font-medium">
+                    {['Brand new', 'Tried once/twice', 'Some experience', 'Pretty experienced', 'Very experienced'][pmAssessment.q1_experience - 1]}
+                  </span>
+                </p>
+              </div>
+              <div>
+                <p className="text-sm">
+                  <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
+                  <span className="font-medium">
+                    {['Not confident', 'A little nervous', 'Somewhat confident', 'Pretty confident', 'Very confident'][pmAssessment.q2_confidence - 1]}
+                  </span>
+                </p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-sm">
+                  <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
+                  <span className="font-medium">
+                    {['Full help', 'A lot', 'Some help', 'A little', 'No help'][pmAssessment.q3_help_needed - 1]}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Goal Summary - 2x2 Grid matching Commitment & Activation */}
+          <div className="space-y-2">
+            <h3 className="text-base font-semibold flex items-center gap-2">
+              <span>✨</span>
+              <span>Goal Summary</span>
+            </h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {/* The Goal */}
+              <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200">
+                <h4 className="text-sm font-semibold text-blue-700 mb-2">The Goal</h4>
+                <div className="space-y-1.5">
+                  <p className="text-sm">
+                    <span className="text-muted-foreground text-xs">Goal:</span>{' '}
+                    <span className="font-semibold">{goal.title}</span>
+                  </p>
+                  {categoryLabel && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Category:</span>{' '}
+                      <span className="font-medium">{categoryLabel}</span>
+                    </p>
+                  )}
+                  {motivationLabel && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Why:</span>{' '}
+                      <span className="font-medium">{truncate(motivationLabel, 40)}</span>
+                    </p>
+                  )}
+                  {goalTypeLabel && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Type:</span>{' '}
+                      <span className="font-medium">{goalTypeLabel}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Challenges */}
+              <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200">
+                <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
+                <div className="space-y-1.5">
+                  {wizardContext.barriers?.priority1 && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">1st Priority:</span>{' '}
+                      <span className="font-medium">
+                        {challengeAreas.find(c => c.id === wizardContext.barriers.priority1)?.label || wizardContext.barriers.priority1}
+                      </span>
+                    </p>
+                  )}
+                  {wizardContext.barriers?.priority2 && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">2nd Priority:</span>{' '}
+                      <span className="font-medium">
+                        {challengeAreas.find(c => c.id === wizardContext.barriers.priority2)?.label || wizardContext.barriers.priority2}
+                      </span>
+                    </p>
+                  )}
+                  {wizardContext.barriers?.details && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Details:</span>{' '}
+                      <span className="font-medium">{truncate(wizardContext.barriers.details, 50)}</span>
+                    </p>
+                  )}
+                  {wizardContext.prerequisites && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Prerequisites:</span>{' '}
+                      <span className="font-medium">
+                        {wizardContext.prerequisites.ready ? 'Ready to start' : 'Need some things'}
+                        {!wizardContext.prerequisites.ready && wizardContext.prerequisites.needs && 
+                          ` - ${truncate(wizardContext.prerequisites.needs, 30)}`}
+                      </span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Practice Schedule */}
+              <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200">
+                <h4 className="text-sm font-semibold text-emerald-700 mb-2">Practice Schedule</h4>
+                <div className="space-y-1.5">
+                  {goal.start_date && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Starts:</span>{' '}
+                      <span className="font-medium">{new Date(goal.start_date).toLocaleDateString()}</span>
+                    </p>
+                  )}
+                  {wizardContext.endDate && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Ends:</span>{' '}
+                      <span className="font-medium">{new Date(wizardContext.endDate).toLocaleDateString()}</span>
+                    </p>
+                  )}
+                  {pmPracticePlan && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Frequency:</span>{' '}
+                      <span className="font-medium">
+                        {pmPracticePlan.smartStartAccepted && pmPracticePlan.startingFrequency !== pmPracticePlan.targetFrequency
+                          ? `Starting ${pmPracticePlan.startingFrequency}x/week`
+                          : `${pmPracticePlan.targetFrequency}x/week`}
+                      </span>
+                    </p>
+                  )}
+                  {abbreviatedDays && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Days:</span>{' '}
+                      <span className="font-medium">{abbreviatedDays}</span>
+                    </p>
+                  )}
+                  {(timeOfDay || customTime) && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground text-xs">Time:</span>{' '}
+                      <span className="font-medium">{customTime ? formatDisplayTime(customTime) : timeOfDay}</span>
+                    </p>
+                  )}
+                  {pmPracticePlan?.smartStartAccepted && pmPracticePlan.startingFrequency !== pmPracticePlan.targetFrequency && (
+                    <p className="text-xs text-muted-foreground italic mt-2">
+                      Smart Start: Building up to {pmPracticePlan.targetFrequency}x/week
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Learning Support */}
+              <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200">
+                <h4 className="text-sm font-semibold text-purple-700 mb-2">Learning Support</h4>
+                <div className="space-y-1.5">
+                  {pmHelper && (
+                    <>
+                      <p className="text-sm">
+                        <span className="text-muted-foreground text-xs">Learning:</span>{' '}
+                        <span className="font-medium">
+                          {pmHelper.helperId === 'none' ? 'Independently' : 'With support'}
+                        </span>
+                      </p>
+                      {pmHelper.helperId !== 'none' && (
+                        <>
+                          {pmHelper.helperName && (
+                            <p className="text-sm">
+                              <span className="text-muted-foreground text-xs">Helper:</span>{' '}
+                              <span className="font-medium">{pmHelper.helperName}</span>
+                            </p>
+                          )}
+                          {pmHelper.supportTypes && (
+                            <p className="text-sm">
+                              <span className="text-muted-foreground text-xs">Relationship:</span>{' '}
+                              <span className="font-medium capitalize">{pmHelper.supportTypes.replace(/_/g, ' ')}</span>
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Invite Supporter Button */}
+          {onInviteSupporter && (
+            <Button onClick={onInviteSupporter} variant="outline" className="w-full">
+              <Users className="h-4 w-4 mr-2" />
+              Invite Teaching Helper
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Format motivation display
   const formatMotivation = (): string => {

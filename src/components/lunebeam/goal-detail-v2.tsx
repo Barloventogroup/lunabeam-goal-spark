@@ -1506,16 +1506,48 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 const helper = md.teaching_helper || {};
                 const toTitle = (s?: string) => s ? s.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : undefined;
                 const hasAssessment = typeof sa.q1_familiarity === 'number' || typeof sa.q2_confidence === 'number' || typeof sa.q3_independence === 'number' || typeof sa.q3_help_needed === 'number';
+                
+                // Reconstruct barriers from various possible sources
+                const reconstructedBarriers = (() => {
+                  if (md.barriers && typeof md.barriers === 'object') {
+                    return md.barriers;
+                  }
+                  // Try to reconstruct from old format
+                  const priority1 = md.barrier_priority1 || md.challenge_priority1;
+                  const priority2 = md.barrier_priority2 || md.challenge_priority2;
+                  const details = md.barrier_details || md.challenge_details;
+                  if (priority1 || priority2 || details) {
+                    return { priority1, priority2, details };
+                  }
+                  return undefined;
+                })();
+                
+                // Reconstruct prerequisites
+                const reconstructedPrerequisites = (() => {
+                  if (md.prerequisites && typeof md.prerequisites === 'object') {
+                    return md.prerequisites;
+                  }
+                  if (md.prerequisites_ready !== undefined) {
+                    return {
+                      ready: md.prerequisites_ready,
+                      needs: md.prerequisites_needs
+                    };
+                  }
+                  return undefined;
+                })();
+                
                 return {
                   ...existingContext,
                   goalTitle: goal.title,
                   goalType: 'progressive_mastery',
+                  goalTypeLabel: 'Progressive Mastery',
                   domain: goal.domain,
                   frequency: goal.frequency_per_week,
                   startDate: goal.start_date,
                   endDate: goal.due_date,
                   selectedDays: md.selected_days || [],
                   customTime: md.custom_time,
+                  timeOfDay: md.time_of_day,
                   pmAssessment: hasAssessment ? {
                     q1_experience: sa.q1_familiarity,
                     q2_confidence: sa.q2_confidence,
@@ -1536,7 +1568,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                   } : undefined,
                   goalMotivation: md.motivation,
                   customMotivation: md.motivation_text,
-                  barriers: md.barriers
+                  barriers: reconstructedBarriers,
+                  prerequisites: reconstructedPrerequisites
                 };
               }
               return existingContext;
