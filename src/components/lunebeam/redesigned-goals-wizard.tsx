@@ -52,7 +52,7 @@ const getSkillLevelDisplay = (assessment: any): { label: string; emoji: string }
     label = label.charAt(0).toUpperCase() + label.slice(1);
   }
   
-  const emojis = ['🌱', '📚', '🚀', '⭐', '🏆'];
+  const emojis = ['🌱', '🌿', '🌳', '🎯', '⭐'];
   const emoji = emojis[level - 1] || '🌱';
   
   return { label: label || 'Beginner', emoji };
@@ -2788,17 +2788,41 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     const individualName = data.recipient === 'other' ? data.supportedPersonName || 'they' : 'you';
     
+    // Get skill level for intelligent recommendations
+    const assessment = data.pmSkillAssessment || data.pmAssessment;
+    const skillLevel = assessment?.calculatedLevel || 1;
+    const isHighSkill = skillLevel >= 4;
+    
+    // Auto-set to independent for high skill users if not already set
+    React.useEffect(() => {
+      if (isHighSkill && !data.teachingHelper?.helperId) {
+        updateData({
+          supportContext: 'alone',
+          selectedSupporters: [],
+          teachingHelper: {
+            helperId: 'none',
+            helperName: 'Independent',
+            relationship: 'supporter'
+          }
+        });
+      }
+    }, [isHighSkill]);
+    
     const supportOptions = [
       {
         value: 'none',
-        label: data.recipient === 'other' ? 'Independently' : "I'll work on this independently",
-        description: data.recipient === 'other' ? `${individualName} will work on this independently` : "Work on this alone"
+        label: data.recipient === 'other' ? 'Independently' : "On my own (I'll work on this independently)",
+        description: isHighSkill 
+          ? "✅ Recommended - Perfect for your skill level"
+          : data.recipient === 'other' ? `${individualName} will work on this independently` : "Work on this alone"
       },
       ...userSupporters.map(supporter => ({
         value: supporter.id,
         label: supporter.name,
         avatar: supporter.profile?.avatar_url,
-        description: 'Supporter'
+        description: isHighSkill 
+          ? 'Optional: Get feedback if needed'
+          : 'Get support and guidance'
       }))
     ];
     
@@ -2809,6 +2833,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         goalTitle={data.goalTitle}
         questionIcon="👥"
         questionText="Who can help you with this?"
+        helpText={isHighSkill 
+          ? "You're skilled enough to work independently, but supporters are available if you want feedback"
+          : undefined}
         inputType="radio"
         options={supportOptions}
         value={data.teachingHelper?.helperId || 'none'}
@@ -3444,7 +3471,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const categoryLabel = categories.find(c => c.id === data.category)?.title;
     
     // Infer goal type from flow context
-    const goalTypeLabel = data.pmAssessment ? 'Progressive Mastery' : 'New Habit';
+    const goalTypeLabel = data.goalType === 'progressive_mastery' ? 'Progressive Mastery' : 'Habit';
     
     // Fix: Read barriers from new structure
     const barrier1Label = data.barriers?.priority1 ? 
@@ -3680,12 +3707,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       {/* Habit flow: show support context and supporters */}
                       {!data.pmHelper && (
                         <>
-                          {supportContextLabel && (
-                            <p className="text-sm">
-                              <span className="text-muted-foreground text-xs">Working:</span>{' '}
-                              <span className="font-medium">{supportContextLabel}</span>
-                            </p>
-                          )}
+                          <p className="text-sm">
+                            <span className="text-muted-foreground text-xs">Working:</span>{' '}
+                            <span className="font-medium">
+                              {data.supportContext === 'alone' ? 'Independently' : supportContextLabel || 'With support'}
+                            </span>
+                          </p>
                           {data.supportContext !== 'alone' && data.primarySupporterName && (
                             <p className="text-sm">
                               <span className="text-muted-foreground text-xs">Supporter:</span>{' '}
