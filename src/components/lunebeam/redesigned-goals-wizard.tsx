@@ -1283,7 +1283,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           status: 'active' as const,
           priority: 'medium' as const,
           goal_type: (() => {
-            if (data.goalType === 'progressive_mastery') return 'progressive_mastery';
+            if (data.goalType === 'progressive_mastery') return undefined; // NULL passes CHECK constraint
             if (data.goalType === 'reminder') return 'reminder';
             if (data.goalType === 'practice') return 'practice';
             if (data.goalType === 'new_skill') return 'new_skill';
