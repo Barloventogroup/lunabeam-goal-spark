@@ -3040,9 +3040,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <CardTitle className="text-2xl">Who can help you learn this skill?</CardTitle>
           <p className="text-muted-foreground">
             {data.pmAssessment?.calculatedLevel <= 2
-              ? "We recommend selecting a helper to guide you through the learning process"
+              ? "🎯 We strongly recommend selecting a helper to guide you"
               : data.pmAssessment?.calculatedLevel >= 4
-              ? "You're ready to practice on your own, or choose a helper for occasional feedback"
+              ? "You're ready to practice independently! Helpers are optional for feedback."
               : "Choose how you'd like to approach this goal"}
           </p>
         </CardHeader>
@@ -3064,14 +3064,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">
-                    Your skill level: {data.pmAssessment.levelLabel}
+                    {data.pmAssessment.calculatedLevel <= 2 
+                      ? "🎯 Recommended: Work with a helper"
+                      : data.pmAssessment.calculatedLevel >= 4
+                      ? "✨ You're ready to practice independently!"
+                      : `Your skill level: ${data.pmAssessment.levelLabel}`}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {data.pmAssessment.calculatedLevel <= 2 
-                      ? "Having a helper guide you through the early stages will help you build confidence and proper technique."
+                      ? "Since you're just starting out, having guidance will help you learn faster and more safely."
                       : data.pmAssessment.calculatedLevel >= 4
-                      ? "You're doing great! A helper can provide occasional feedback, but you're ready to practice independently."
-                      : "You have some experience. A helper can accelerate your progress, but you could also manage on your own."}
+                      ? "You have strong experience with this skill."
+                      : "💡 You have some experience! A helper can help you master this skill."}
                   </p>
                 </div>
               </div>
@@ -3142,7 +3146,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   className={cn(
                     "cursor-pointer hover:shadow-md transition-all border-2",
                     pmSelectedHelperId === 'none' ? "border-primary bg-primary/5" : "border-border",
-                    shouldEmphasizeSolo && "ring-2 ring-primary/20"
+                    shouldEmphasizeSolo && "ring-2 ring-primary/20",
+                    data.pmAssessment?.calculatedLevel <= 2 && "opacity-60 hover:opacity-100 border-amber-300"
                   )}
                   onClick={() => setPMSelectedHelperId('none')}
                 >
@@ -3161,7 +3166,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                             ? "Perfect for your skill level - practice independently"
                             : data.pmAssessment?.calculatedLevel === 3
                             ? "You can manage this on your own"
-                            : "I'll practice independently (may take longer)"}
+                            : "⚠️ Consider starting with a helper first"}
                         </div>
                       </div>
                     </div>
@@ -3234,7 +3239,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                                 ? "Will guide you step-by-step"
                                 : data.pmAssessment?.calculatedLevel === 3
                                 ? "Can help accelerate your progress"
-                                : "Available for occasional feedback"}
+                                : "Optional: Get feedback from me"}
                             </div>
                           </div>
                         </div>
