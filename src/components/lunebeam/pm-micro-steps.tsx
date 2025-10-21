@@ -879,7 +879,8 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                       durationWeeks: data.pmPracticePlan?.durationWeeks || null,
                       startTime: time,
                       sendAdvanceReminder: data.pmPracticePlan?.sendAdvanceReminder ?? true
-                    }
+                    },
+                    customTime: time
                   });
                 }}
                 open={timePickerOpen}

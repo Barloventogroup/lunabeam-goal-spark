@@ -1196,20 +1196,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           // High skill: habit flow - validate scheduling
           if (showSchedulingIntro) return true; // Can proceed from intro
           
-          const hasTime = !!data.customTime;
+          const hasTime = !!(data.pmPracticePlan?.startTime || data.customTime || data.timeOfDay);
+          const hasFreq = !!(data.pmPracticePlan?.targetFrequency ?? data.pmTargetFrequency);
+          const hasStartDate = !!data.startDate;
+          
+          console.log('Step 9 validation (habit flow):', { hasTime, hasFreq, hasStartDate, skillLevel });
+          
           if (data.goalType === 'new_skill') {
-            if (!hasTime || !data.projectCompletionDate) return false;
+            if (!hasTime || !hasStartDate || !data.projectCompletionDate) return false;
             const projectValidation = validateDateRange(data.startDate, data.projectCompletionDate, 'new_skill');
             return projectValidation.isValid;
           } else {
-            if (!hasTime || (data.selectedDays?.length || 0) === 0) return false;
-            if (data.endDate) {
-              const dateValidation = validateDateRange(data.startDate, data.endDate, data.goalType);
-              if (!dateValidation.isValid) return false;
-              const occurrenceValidation = validateOccurrencesInDateRange(data.startDate, data.endDate, data.selectedDays);
-              return occurrenceValidation.isValid;
-            }
-            return true;
+            return hasFreq && hasStartDate && hasTime;
           }
         } else {
           // Low skill: PM flow - validate helper selection
