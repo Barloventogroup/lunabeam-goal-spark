@@ -34,6 +34,7 @@ interface PMStepsProps {
   userSupporters: Array<{ id: string; name: string; profile?: { avatar_url?: string } }>;
   goalTitle?: string;
   setShowingResultsInterstitial?: (showing: boolean) => void;
+  interstitialData?: { level: number; label: string } | null;
 }
 
 export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
@@ -391,7 +392,7 @@ export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, g
   );
 };
 
-export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle, setShowingResultsInterstitial }) => {
+export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle, setShowingResultsInterstitial, interstitialData }) => {
   const { toast } = useToast();
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
 
@@ -427,10 +428,10 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
       ? data.supportedPersonName 
       : 'you';
     const isOther = data.recipient === 'other';
-    // Support both PM flow (pmAssessment) and habit flow (pmSkillAssessment)
+    // Use interstitialData if provided, otherwise fall back to stored data
     const assessment = data.pmAssessment || data.pmSkillAssessment;
-    const calculatedLevel = assessment?.calculatedLevel || 1;
-    const levelLabel = assessment?.levelLabel || 'Beginner';
+    const calculatedLevel = interstitialData?.level || assessment?.calculatedLevel || 1;
+    const levelLabel = interstitialData?.label || assessment?.levelLabel || 'Beginner';
     
     return (
       <div className="fixed inset-0 z-50 bg-background flex items-center justify-center p-4 animate-fade-in">

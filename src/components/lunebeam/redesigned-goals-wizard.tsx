@@ -2218,11 +2218,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const primaryBarrier = data.challengeAreas?.[0];
     const primaryBarrierLabel = challengeAreas.find(c => c.id === primaryBarrier)?.label;
     
+    // Calculate level context for habit flow
+    const assessment = data.pmSkillAssessment;
+    const levelContext = assessment?.calculatedLevel 
+      ? `Starting level: ${getSkillLevelDisplay(assessment).emoji} ${getSkillLevelDisplay(assessment).label}`
+      : undefined;
+    
     return (
       <QuestionScreen
         currentStep={currentStep}
         totalSteps={totalSteps}
         goalTitle={data.goalTitle}
+        goalContext={levelContext}
         questionIcon="🤔"
         questionText={getStepTitle()}
         helpText="Identifying barriers helps create a personalized practice plan"
@@ -3727,6 +3734,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
   // State for interstitial screen
   const [showingResultsInterstitial, setShowingResultsInterstitial] = useState(false);
+  const [interstitialData, setInterstitialData] = useState<{level: number; label: string} | null>(null);
   const [showSchedulingIntro, setShowSchedulingIntro] = useState(true);
 
   // Props for PM micro-steps
@@ -3741,6 +3749,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     currentUserId: '',
     goalTitle: data.goalTitle,
     setShowingResultsInterstitial,
+    interstitialData,
   };
 
   const renderCurrentStep = () => {
@@ -3863,8 +3872,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       // Supporter flow - 5 sections
       if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
       if (currentStep === 4 || currentStep === 5 || currentStep === 6 || currentStep === 7) return { label: 'Skill Assessment', index: 2, total: 5 };
-      if (currentStep === 8) return { label: 'Challenge', index: 3, total: 5 };
-      if (currentStep === 8) return { label: 'When and How Often', index: 4, total: 5 };
+      if (currentStep === 8) return { label: 'Challenges', index: 3, total: 5 };
+      if (currentStep === 9) return { label: 'When and How Often', index: 4, total: 5 };
       if (currentStep === 9) return { label: 'The Team', index: 4, total: 5 };
       if (currentStep === 10 || currentStep === 11) return { label: 'Commitment & Activation', index: 5, total: 5 };
     } else {
@@ -3905,6 +3914,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         const label = progressiveMasteryService.getSkillLevelLabel(level);
         
+        // Store calculated values for interstitial
+        setInterstitialData({ level, label });
+        
         if (data.goalType === 'progressive_mastery') {
           updateData({
             pmAssessment: {
@@ -3927,6 +3939,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         setTimeout(() => {
           setShowingResultsInterstitial(false);
+          setInterstitialData(null);
           nextStep();
         }, 3000);
         
