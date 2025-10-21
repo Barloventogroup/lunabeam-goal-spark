@@ -1376,7 +1376,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
               <div>
                 <h3 className="font-semibold text-lg">Creating your micro-steps</h3>
-                {generationProgress.total > 0 ? (
+                {generationProgress && generationProgress.total > 0 ? (
                   <p className="text-sm text-muted-foreground mt-2">
                     Day {generationProgress.current} of {generationProgress.total}
                   </p>
