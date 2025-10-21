@@ -1484,6 +1484,39 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
             console.log('PM metadata saved successfully');
 
+            // Save complete wizard context for Summary tab display
+            const completeWizardContext = {
+              goalTitle: data.goalTitle,
+              goalType: 'progressive_mastery',
+              goalTypeLabel: 'Progressive Mastery',
+              category: data.category,
+              frequency: data.pmPracticePlan.targetFrequency,
+              startDate: data.startDate,
+              endDate: data.endDate,
+              selectedDays: data.selectedDays || [],
+              customTime: data.customTime,
+              timeOfDay: data.timeOfDay,
+              goalMotivation: data.goalMotivation,
+              customMotivation: data.customMotivation || data.motivation,
+              barriers: data.barriers,
+              prerequisites: data.prerequisites,
+              pmAssessment: {
+                q1_experience: assessment.q1_experience,
+                q2_confidence: assessment.q2_confidence,
+                q3_help_needed: assessment.q3_help_needed,
+                calculatedLevel: assessment.calculatedLevel,
+                levelLabel: assessment.levelLabel
+              },
+              pmPracticePlan: data.pmPracticePlan,
+              pmHelper: data.pmHelper
+            };
+
+            await goalsService.updateMetadata(createdGoal.id, {
+              wizardContext: completeWizardContext
+            });
+
+            console.log('Complete wizard context saved for Summary tab');
+
             // ============= HYBRID PM STEP GENERATION =============
             // Instant deterministic steps + async AI enhancement
             console.log('🚀 Starting hybrid PM step generation (instant + AI)...');
