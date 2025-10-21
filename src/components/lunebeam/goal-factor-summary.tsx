@@ -627,7 +627,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
           <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[160px]">
             <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
             <div className="space-y-1.5">
-              {isPMGoal && wizardContext?.barriers ? (
+              {wizardContext?.barriers ? (
                 <>
                   {wizardContext.barriers.priority1 && (
                     <p className="text-sm flex items-center gap-2">
@@ -724,7 +724,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               {isPMGoal ? 'Learning Support' : 'The Team'}
             </h4>
             <div className="space-y-1.5">
-              {isPMGoal && wizardContext?.pmHelper ? (
+              {wizardContext?.pmHelper ? (
                 <>
                   <p className="text-sm">
                     <span className="text-muted-foreground text-xs">Mode:</span>{' '}

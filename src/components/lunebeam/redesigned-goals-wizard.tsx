@@ -1476,7 +1476,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   : null)),
                 smartStartAccepted: data.pmPracticePlan?.smartStartAccepted ?? true
               } : undefined,
-              barriers: data.goalType === 'progressive_mastery' && data.barriers ? {
+              barriers: data.barriers ? {
                 priority1: data.barriers.priority1,
                 priority2: data.barriers.priority2,
                 details: data.barriers.details
@@ -1485,7 +1485,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 helperId: data.pmTeachingHelper.id,
                 helperName: data.pmTeachingHelper.name,
                 supportTypes: data.pmTeachingHelper.relationship
-              } : undefined
+              } : (data.teachingHelper ? {
+                helperId: data.teachingHelper.helperId || 'none',
+                helperName: data.teachingHelper.helperName || 'Independent',
+                supportTypes: data.teachingHelper.relationship || 'supporter'
+              } : undefined)
             }
           }
         };
