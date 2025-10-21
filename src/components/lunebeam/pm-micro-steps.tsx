@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon, ChevronRight, ChevronLeft, ChevronDown, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { TimePicker } from '@/components/ui/time-picker';
+import { TimeWheelPicker } from '@/components/ui/time-wheel-picker';
+import { Switch } from '@/components/ui/switch';
 import { format, addWeeks } from 'date-fns';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
 import { useToast } from '@/hooks/use-toast';
@@ -581,6 +582,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
   const [showCustomSelector, setShowCustomSelector] = React.useState(false);
   const [startDateSheetOpen, setStartDateSheetOpen] = React.useState(false);
   const [endDateSheetOpen, setEndDateSheetOpen] = React.useState(false);
+  const [timePickerOpen, setTimePickerOpen] = React.useState(false);
   const datesSectionRef = React.useRef<HTMLDivElement>(null);
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   
@@ -616,7 +618,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
     }
   }, []);
   
-  const isComplete = !!data.pmPracticePlan?.targetFrequency && !!data.startDate && !!data.pmPracticePlan?.reminderTime;
+  const isComplete = !!data.pmPracticePlan?.targetFrequency && !!data.startDate && !!data.pmPracticePlan?.startTime;
   
   // Auto-scroll to dates section when frequency is selected but no start date
   React.useEffect(() => {
@@ -808,16 +810,41 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
           </Sheet>
           </div>
 
-          {/* Reminder Time - Required when start date is set */}
+          {/* Start Time - Required when start date is set */}
           {data.startDate && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label className="flex items-center gap-1 text-base font-medium">
-                <span>Reminder Time</span>
+                <span>Start Time</span>
                 <span className="text-destructive">*</span>
               </Label>
-              <TimePicker
-                time={data.pmPracticePlan?.reminderTime || ""}
-                onTimeChange={(time) => {
+              
+              {/* Time Display Button */}
+              <Button 
+                variant="outline" 
+                className="w-full justify-between text-left h-12"
+                onClick={() => setTimePickerOpen(true)}
+              >
+                <div className="flex items-center">
+                  <Clock className="h-4 w-4 mr-2" />
+                  {data.pmPracticePlan?.startTime ? (
+                    (() => {
+                      const [hours, minutes] = data.pmPracticePlan.startTime.split(':');
+                      const hour = parseInt(hours);
+                      const period = hour >= 12 ? 'PM' : 'AM';
+                      const displayHour = hour % 12 || 12;
+                      return `${displayHour}:${minutes} ${period}`;
+                    })()
+                  ) : (
+                    'Select practice time'
+                  )}
+                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </Button>
+              
+              {/* Time Wheel Picker Drawer */}
+              <TimeWheelPicker
+                value={data.pmPracticePlan?.startTime}
+                onChange={(time) => {
                   updateData({
                     pmPracticePlan: {
                       ...data.pmPracticePlan,
@@ -825,15 +852,50 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                       startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
                       smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
                       durationWeeks: data.pmPracticePlan?.durationWeeks || null,
-                      reminderTime: time
+                      startTime: time,
+                      sendAdvanceReminder: data.pmPracticePlan?.sendAdvanceReminder ?? true
                     }
                   });
                 }}
-                className="w-full"
+                open={timePickerOpen}
+                onOpenChange={setTimePickerOpen}
               />
-              <p className="text-xs text-muted-foreground">
-                ⏰ We'll send you practice reminders at this time
-              </p>
+              
+              {/* Reminder Toggle - Only show when start time is selected */}
+              {data.pmPracticePlan?.startTime && (
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">Send reminder 10 minutes before</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      Get notified at {(() => {
+                        const [hours, minutes] = data.pmPracticePlan.startTime.split(':');
+                        const totalMinutes = parseInt(hours) * 60 + parseInt(minutes) - 10;
+                        const reminderHour = Math.floor(totalMinutes / 60);
+                        const reminderMin = totalMinutes % 60;
+                        const period = reminderHour >= 12 ? 'PM' : 'AM';
+                        const displayHour = reminderHour % 12 || 12;
+                        return `${displayHour}:${String(reminderMin).padStart(2, '0')} ${period}`;
+                      })()}
+                    </div>
+                  </div>
+                  <Switch
+                    checked={data.pmPracticePlan?.sendAdvanceReminder ?? true}
+                    onCheckedChange={(checked) => {
+                      updateData({
+                        pmPracticePlan: {
+                          ...data.pmPracticePlan,
+                          targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
+                          startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
+                          smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
+                          durationWeeks: data.pmPracticePlan?.durationWeeks || null,
+                          startTime: data.pmPracticePlan?.startTime,
+                          sendAdvanceReminder: checked
+                        }
+                      });
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
 
