@@ -34,6 +34,29 @@ const getHelpNeededLabel = (value: number): string => {
   };
   return labels[value as keyof typeof labels] || `${value}/5`;
 };
+
+const getSkillLevelDisplay = (assessment: any): { label: string; emoji: string } => {
+  // Handle both camelCase and snake_case
+  const level = assessment?.calculatedLevel || assessment?.calculated_level || 1;
+  let label = assessment?.levelLabel || assessment?.level_label || '';
+  
+  // Convert snake_case to Title Case (e.g., 'early_learner' → 'Early Learner')
+  if (label.includes('_')) {
+    label = label.split('_').map((word: string) => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  }
+  
+  // Ensure first letter is capitalized for camelCase labels
+  if (label && !label.includes(' ')) {
+    label = label.charAt(0).toUpperCase() + label.slice(1);
+  }
+  
+  const emojis = ['🌱', '📚', '🚀', '⭐', '🏆'];
+  const emoji = emojis[level - 1] || '🌱';
+  
+  return { label: label || 'Beginner', emoji };
+};
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -3211,16 +3234,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <div className="grid grid-cols-2 gap-4">
                   {/* Skill Assessment - Always first if exists */}
                   {data.pmAssessment && (
-                    <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[140px]">
+                    <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[160px]">
                       <h4 className="text-sm font-semibold text-red-700 mb-2 flex items-center gap-2">
-                        <span>🎯</span>
                         Skill Assessment
                       </h4>
                       <div className="space-y-1.5">
                         <p className="text-sm">
                           <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
                           <span className="font-semibold">
-                            {data.pmAssessment.levelLabel} {['🌱', '📚', '🚀', '⭐', '🏆'][data.pmAssessment.calculatedLevel - 1]}
+                            {(() => {
+                              const { label, emoji } = getSkillLevelDisplay(data.pmAssessment);
+                              return `${label} ${emoji}`;
+                            })()}
                           </span>
                         </p>
                         <p className="text-sm">
@@ -3240,7 +3265,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   )}
 
                   {/* The Goal */}
-                  <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[140px]">
+                  <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[160px]">
                     <h4 className="text-sm font-semibold text-blue-700 mb-2">The Goal</h4>
                     <div className="space-y-1.5">
                       <p className="text-sm">
@@ -3269,7 +3294,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </div>
 
                   {/* Challenges */}
-                  <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[140px]">
+                  <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[160px]">
                     <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
                     <div className="space-y-1.5">
                       {/* Show barriers priorities */}
@@ -3311,7 +3336,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </div>
 
                   {/* When and How Often */}
-                  <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[140px]">
+                  <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[160px]">
                     <h4 className="text-sm font-semibold text-emerald-700 mb-2">When & How Often</h4>
                     <div className="space-y-1.5">
                       {data.startDate && (
@@ -3348,7 +3373,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </div>
 
                   {/* The Team */}
-                  <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 min-h-[140px]">
+                  <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 min-h-[160px]">
                     <h4 className="text-sm font-semibold text-purple-700 mb-2">The Team</h4>
                     <div className="space-y-1.5">
                       {/* PM flow: show helper */}

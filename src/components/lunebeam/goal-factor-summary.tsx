@@ -41,6 +41,29 @@ const getHelpNeededLabel = (value: number): string => {
   return labels[value as keyof typeof labels] || `${value}/5`;
 };
 
+const getSkillLevelDisplay = (assessment: any): { label: string; emoji: string } => {
+  // Handle both camelCase and snake_case
+  const level = assessment?.calculatedLevel || assessment?.calculated_level || 1;
+  let label = assessment?.levelLabel || assessment?.level_label || '';
+  
+  // Convert snake_case to Title Case (e.g., 'early_learner' → 'Early Learner')
+  if (label.includes('_')) {
+    label = label.split('_').map((word: string) => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  }
+  
+  // Ensure first letter is capitalized for camelCase labels
+  if (label && !label.includes(' ')) {
+    label = label.charAt(0).toUpperCase() + label.slice(1);
+  }
+  
+  const emojis = ['🌱', '📚', '🚀', '⭐', '🏆'];
+  const emoji = emojis[level - 1] || '🌱';
+  
+  return { label: label || 'Beginner', emoji };
+};
+
 // Utility functions for formatting
 const truncate = (text: string | undefined, maxLen: number) => {
   if (!text) return text;
@@ -258,16 +281,18 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
             
             <div className="grid grid-cols-2 gap-4">
               {/* Skill Assessment - Always first */}
-              <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[140px]">
+              <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[160px]">
                 <h4 className="text-sm font-semibold text-red-700 mb-2 flex items-center gap-2">
-                  <span>🎯</span>
                   Skill Assessment
                 </h4>
                 <div className="space-y-1.5">
                   <p className="text-sm">
                     <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
                     <span className="font-semibold">
-                      {pmAssessment.levelLabel} {['🌱', '📚', '🚀', '⭐', '🏆'][pmAssessment.calculatedLevel - 1]}
+                      {(() => {
+                        const { label, emoji } = getSkillLevelDisplay(pmAssessment);
+                        return `${label} ${emoji}`;
+                      })()}
                     </span>
                   </p>
                   <p className="text-sm">
@@ -286,7 +311,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               </div>
 
               {/* The Goal */}
-              <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[140px]">
+              <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[160px]">
                 <h4 className="text-sm font-semibold text-blue-700 mb-2">The Goal</h4>
                 <div className="space-y-1.5">
                   <p className="text-sm">
@@ -315,7 +340,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               </div>
 
               {/* Challenges */}
-              <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[140px]">
+              <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[160px]">
                 <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
                 <div className="space-y-1.5">
                   {wizardContext.barriers?.priority1 && (
@@ -354,7 +379,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               </div>
 
               {/* Practice Schedule */}
-              <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[140px]">
+              <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[160px]">
                 <h4 className="text-sm font-semibold text-emerald-700 mb-2">Practice Schedule</h4>
                 <div className="space-y-1.5">
                   {goal.start_date && (
@@ -400,7 +425,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               </div>
 
               {/* Learning Support */}
-              <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 min-h-[140px]">
+              <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 min-h-[160px]">
                 <h4 className="text-sm font-semibold text-purple-700 mb-2">Learning Support</h4>
                 <div className="space-y-1.5">
                   {pmHelper && (
@@ -518,16 +543,18 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
         <div className="grid grid-cols-2 gap-3">
           {/* Skill Assessment - Always first if exists */}
           {wizardContext?.pmAssessment && (
-            <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[140px]">
+            <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[160px]">
               <h4 className="text-sm font-semibold text-red-700 mb-2 flex items-center gap-2">
-                <span>🎯</span>
                 Skill Assessment
               </h4>
               <div className="space-y-1.5">
                 <p className="text-sm">
                   <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
                   <span className="font-semibold">
-                    {wizardContext.pmAssessment.levelLabel} {['🌱', '📚', '🚀', '⭐', '🏆'][wizardContext.pmAssessment.calculatedLevel - 1]}
+                    {(() => {
+                      const { label, emoji } = getSkillLevelDisplay(wizardContext.pmAssessment);
+                      return `${label} ${emoji}`;
+                    })()}
                   </span>
                 </p>
                 <p className="text-sm">
@@ -547,7 +574,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
           )}
 
           {/* The Goal / Learning Goal */}
-          <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[140px]">
+          <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[160px]">
             <h4 className="text-sm font-semibold text-blue-700 mb-2">
               {isPMGoal ? 'Learning Goal' : 'The Goal'}
             </h4>
@@ -576,7 +603,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
           </div>
 
           {/* Challenges */}
-          <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[140px]">
+          <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[160px]">
             <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
             <div className="space-y-1.5">
               {isPMGoal && wizardContext?.barriers ? (
@@ -619,7 +646,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
           </div>
 
           {/* When & How Often / Practice Schedule */}
-          <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[140px]">
+          <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[160px]">
             <h4 className="text-sm font-semibold text-emerald-700 mb-2">
               {isPMGoal ? 'Practice Schedule' : 'When & How Often'}
             </h4>
@@ -671,7 +698,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
           </div>
 
           {/* The Team / Learning Support */}
-          <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 min-h-[140px]">
+          <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 min-h-[160px]">
             <h4 className="text-sm font-semibold text-purple-700 mb-2">
               {isPMGoal ? 'Learning Support' : 'The Team'}
             </h4>
