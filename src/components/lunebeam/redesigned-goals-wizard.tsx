@@ -3347,7 +3347,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         <p className="text-sm">
                           <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
                           <span className="font-semibold">
-                            {data.pmAssessment.levelLabel} {['🌱', '🌿', '🌳', '🎯', '⭐'][data.pmAssessment.calculatedLevel - 1]}
+                            {data.pmAssessment.levelLabel} {['🌱', '📚', '🚀', '⭐', '🏆'][data.pmAssessment.calculatedLevel - 1]}
                           </span>
                         </p>
                         <p className="text-sm">
