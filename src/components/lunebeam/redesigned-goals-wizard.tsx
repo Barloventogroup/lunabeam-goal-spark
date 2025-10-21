@@ -3926,6 +3926,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           : { label: 'The Team', index: 4, total: 5 };
       }
       if (currentStep === 10) return { label: 'Your First Steps', index: 5, total: 5 };
+      if (currentStep === 11) return { label: 'Commitment & Activation', index: 5, total: 5 };
     }
     return { label: '', index: 0, total: 5 };
   };
