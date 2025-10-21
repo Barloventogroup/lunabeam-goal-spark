@@ -3918,7 +3918,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     // Special handling for skill assessment (step 7 in PM, step 6 in regular)
     const isSkillAssessmentComplete = 
       (data.goalType === 'progressive_mastery' && currentStep === 7) ||
-      (data.goalType !== 'progressive_mastery' && currentStep === 6);
+      (data.goalType !== 'progressive_mastery' && currentStep === 7);
       
     if (isSkillAssessmentComplete) {
       const assessment = data.goalType === 'progressive_mastery' 

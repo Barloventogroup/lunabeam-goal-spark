@@ -427,8 +427,10 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
       ? data.supportedPersonName 
       : 'you';
     const isOther = data.recipient === 'other';
-    const calculatedLevel = data.pmAssessment?.calculatedLevel || 1;
-    const levelLabel = data.pmAssessment?.levelLabel || 'Beginner';
+    // Support both PM flow (pmAssessment) and habit flow (pmSkillAssessment)
+    const assessment = data.pmAssessment || data.pmSkillAssessment;
+    const calculatedLevel = assessment?.calculatedLevel || 1;
+    const levelLabel = assessment?.levelLabel || 'Beginner';
     
     return (
       <div className="fixed inset-0 z-50 bg-background flex items-center justify-center p-4 animate-fade-in">
@@ -492,7 +494,9 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
   };
 
   // Show results interstitial if assessment is complete and wizard triggered it
-  if (data.pmAssessment?.calculatedLevel && setShowingResultsInterstitial) {
+  // Check both pmAssessment (PM flow) and pmSkillAssessment (habit flow)
+  const calculatedLevel = data.pmAssessment?.calculatedLevel || data.pmSkillAssessment?.calculatedLevel;
+  if (calculatedLevel && setShowingResultsInterstitial) {
     return renderResultsInterstitial();
   }
   
