@@ -1368,8 +1368,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
   return (
     <div className="min-h-screen bg-background px-4 py-6 space-y-6">
-      {/* Loading overlay for step generation with progress */}
-      {generatingSteps && (
+      {/* Loading overlay for step generation with progress (only blocks Steps tab) */}
+      {generatingSteps && activeTab === 'steps' && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <Card className="w-80">
             <CardContent className="pt-6 text-center space-y-4">
