@@ -3012,71 +3012,237 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
 
   const renderPMTeachingHelper = () => {
+    // Determine recommended option based on skill level
+    const getRecommendation = () => {
+      if (!data.pmAssessment) return 'helper'; // Default to helper if no assessment
+      
+      const level = data.pmAssessment.calculatedLevel;
+      
+      if (level <= 2) {
+        // Beginner/Novice: Strongly recommend helper
+        return 'helper';
+      } else if (level >= 4) {
+        // Proficient/Advanced: On my own is fine
+        return 'solo';
+      } else {
+        // Intermediate: Slight preference for helper but both are good
+        return 'balanced';
+      }
+    };
+
+    const recommendation = getRecommendation();
+    const shouldEmphasizeHelper = recommendation === 'helper';
+    const shouldEmphasizeSolo = recommendation === 'solo';
 
     return (
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-2xl">Who can help you learn this skill?</CardTitle>
-          <p className="text-muted-foreground">Choose someone who will guide and support your progress</p>
+          <p className="text-muted-foreground">
+            {data.pmAssessment?.calculatedLevel <= 2
+              ? "We recommend selecting a helper to guide you through the learning process"
+              : data.pmAssessment?.calculatedLevel >= 4
+              ? "You're ready to practice on your own, or choose a helper for occasional feedback"
+              : "Choose how you'd like to approach this goal"}
+          </p>
         </CardHeader>
+        
+        {/* Skill Level Context Banner */}
+        {data.pmAssessment && (
+          <div className="px-6 pb-4">
+            <div className={cn(
+              "p-4 rounded-lg border-2",
+              data.pmAssessment.calculatedLevel <= 2 
+                ? "bg-amber-50/50 border-amber-200" 
+                : data.pmAssessment.calculatedLevel >= 4
+                ? "bg-green-50/50 border-green-200"
+                : "bg-blue-50/50 border-blue-200"
+            )}>
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">
+                  {getSkillLevelDisplay(data.pmAssessment).emoji}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">
+                    Your skill level: {data.pmAssessment.levelLabel}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {data.pmAssessment.calculatedLevel <= 2 
+                      ? "Having a helper guide you through the early stages will help you build confidence and proper technique."
+                      : data.pmAssessment.calculatedLevel >= 4
+                      ? "You're doing great! A helper can provide occasional feedback, but you're ready to practice independently."
+                      : "You have some experience. A helper can accelerate your progress, but you could also manage on your own."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            {/* On my own option */}
-            <Card
-              className={cn(
-                "cursor-pointer hover:shadow-md transition-all border-2",
-                pmSelectedHelperId === 'none' ? "border-primary bg-primary/5" : "border-border"
-              )}
-              onClick={() => setPMSelectedHelperId('none')}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
-                  <div className="text-left">
-                    <div className="font-medium">🦸 On my own</div>
-                    <div className="text-sm text-muted-foreground">
-                      I'll practice independently
-                    </div>
+            {/* Conditionally render order based on skill level */}
+            {data.pmAssessment?.calculatedLevel <= 2 ? (
+              <>
+                {/* Helpers first for beginners */}
+                {userSupporters.length > 0 ? (
+                  userSupporters.map(supporter => (
+                    <Card
+                      key={supporter.id}
+                      className={cn(
+                        "cursor-pointer hover:shadow-md transition-all border-2",
+                        pmSelectedHelperId === supporter.id ? "border-primary bg-primary/5" : "border-border",
+                        shouldEmphasizeHelper && "ring-2 ring-primary/20"
+                      )}
+                      onClick={() => setPMSelectedHelperId(supporter.id)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={supporter.profile?.avatar_url || undefined} />
+                            <AvatarFallback className="text-xs">
+                              {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-left flex-1">
+                            <div className="font-medium flex items-center gap-2">
+                              👤 {supporter.name}
+                              {shouldEmphasizeHelper && (
+                                <Badge variant="secondary" className="text-xs">Recommended</Badge>
+                              )}
+                            </div>
+                            <div className="text-sm text-muted-foreground capitalize">
+                              {data.pmAssessment?.calculatedLevel <= 2
+                                ? "Will guide you step-by-step"
+                                : data.pmAssessment?.calculatedLevel === 3
+                                ? "Can help accelerate your progress"
+                                : "Available for occasional feedback"}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-4 space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      No helpers available yet
+                    </p>
+                    {data.pmAssessment?.calculatedLevel <= 2 && (
+                      <p className="text-xs text-amber-600">
+                        💡 Consider inviting a supporter from Settings to help you get started
+                      </p>
+                    )}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Supporters list */}
-            {userSupporters.length > 0 ? (
-              userSupporters.map(supporter => (
+                )}
+                
+                {/* "On my own" last for beginners */}
                 <Card
-                  key={supporter.id}
                   className={cn(
                     "cursor-pointer hover:shadow-md transition-all border-2",
-                    pmSelectedHelperId === supporter.id ? "border-primary bg-primary/5" : "border-border"
+                    pmSelectedHelperId === 'none' ? "border-primary bg-primary/5" : "border-border",
+                    shouldEmphasizeSolo && "ring-2 ring-primary/20"
                   )}
-                  onClick={() => setPMSelectedHelperId(supporter.id)}
+                  onClick={() => setPMSelectedHelperId('none')}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src={supporter.profile?.avatar_url || undefined} />
-                        <AvatarFallback className="text-xs">
-                          {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
+                      {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
                       <div className="text-left flex-1">
-                        <div className="font-medium">👤 {supporter.name}</div>
-                        <div className="text-sm text-muted-foreground capitalize">
-                          Helper
+                        <div className="font-medium flex items-center gap-2">
+                          🦸 On my own
+                          {shouldEmphasizeSolo && (
+                            <Badge variant="secondary" className="text-xs">Recommended</Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {data.pmAssessment?.calculatedLevel >= 4
+                            ? "Perfect for your skill level - practice independently"
+                            : data.pmAssessment?.calculatedLevel === 3
+                            ? "You can manage this on your own"
+                            : "I'll practice independently (may take longer)"}
                         </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))
+              </>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No helpers available. You can add supporters later.
-              </p>
+              <>
+                {/* "On my own" first for intermediate/advanced */}
+                <Card
+                  className={cn(
+                    "cursor-pointer hover:shadow-md transition-all border-2",
+                    pmSelectedHelperId === 'none' ? "border-primary bg-primary/5" : "border-border",
+                    shouldEmphasizeSolo && "ring-2 ring-primary/20"
+                  )}
+                  onClick={() => setPMSelectedHelperId('none')}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                      <div className="text-left flex-1">
+                        <div className="font-medium flex items-center gap-2">
+                          🦸 On my own
+                          {shouldEmphasizeSolo && (
+                            <Badge variant="secondary" className="text-xs">Recommended</Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {data.pmAssessment?.calculatedLevel >= 4
+                            ? "Perfect for your skill level - practice independently"
+                            : data.pmAssessment?.calculatedLevel === 3
+                            ? "You can manage this on your own"
+                            : "I'll practice independently (may take longer)"}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Helpers second */}
+                {userSupporters.length > 0 && (
+                  userSupporters.map(supporter => (
+                    <Card
+                      key={supporter.id}
+                      className={cn(
+                        "cursor-pointer hover:shadow-md transition-all border-2",
+                        pmSelectedHelperId === supporter.id ? "border-primary bg-primary/5" : "border-border",
+                        shouldEmphasizeHelper && "ring-2 ring-primary/20"
+                      )}
+                      onClick={() => setPMSelectedHelperId(supporter.id)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={supporter.profile?.avatar_url || undefined} />
+                            <AvatarFallback className="text-xs">
+                              {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-left flex-1">
+                            <div className="font-medium flex items-center gap-2">
+                              👤 {supporter.name}
+                              {shouldEmphasizeHelper && (
+                                <Badge variant="secondary" className="text-xs">Recommended</Badge>
+                              )}
+                            </div>
+                            <div className="text-sm text-muted-foreground capitalize">
+                              {data.pmAssessment?.calculatedLevel <= 2
+                                ? "Will guide you step-by-step"
+                                : data.pmAssessment?.calculatedLevel === 3
+                                ? "Can help accelerate your progress"
+                                : "Available for occasional feedback"}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </>
             )}
           </div>
 
