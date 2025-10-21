@@ -1600,6 +1600,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 // Success: Steps generated
                 console.log(`[PM Wizard] AI returned ${syncData.steps.length} steps`);
                 
+                // Insert AI-generated steps into database
+                console.log('💾 Inserting steps into database...');
+                for (const aiStep of syncData.steps) {
+                  try {
+                    await stepsService.createStep(createdGoal.id, {
+                      title: aiStep.title,
+                      notes: aiStep.description,
+                      step_type: 'action',
+                      is_required: true,
+                      is_planned: true,
+                      estimated_effort_min: aiStep.estimatedMinutes || 15,
+                      is_supporter_step: false
+                    });
+                  } catch (stepError) {
+                    console.error('Failed to insert step:', aiStep.title, stepError);
+                    // Continue with other steps even if one fails
+                  }
+                }
+                console.log('✅ All steps inserted successfully');
+                
                 toast({
                   title: 'Goal Created! 🚀',
                   description: `Your personalized plan begins now with ${syncData.steps.length} steps!`,
