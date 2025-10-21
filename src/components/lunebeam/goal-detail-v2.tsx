@@ -30,7 +30,7 @@ import { getDomainDisplayName } from '@/utils/domainUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { generateMicroStepsSmart } from '@/services/microStepsGenerator';
 import { GoalFactorSummary } from './goal-factor-summary';
-import { PM_DISABLE_FALLBACK } from '@/services/config';
+
 import { RecommendedStepsList } from './recommended-steps-list';
 import { SupporterSetupStepsList } from './supporter-setup-steps-list';
 import { StepsChat } from './steps-chat';
@@ -530,7 +530,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         userName: ownerProfile?.first_name || 'User',
         userAge: undefined,
         is_self_registered: true,
-        mode: PM_DISABLE_FALLBACK ? 'sync' : 'async' // Force sync when fallback disabled
+        mode: 'sync'
       };
       
       console.log('[PM Generation] Calling pm-microsteps-scaffold with payload:', {
@@ -557,19 +557,14 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
           return;
         }
         
-        // Check if we should use fallback
-        if (data?.useFallback || error.message?.includes('timeout') || error.message?.includes('failed')) {
-          if (PM_DISABLE_FALLBACK) {
-            toast({
-              title: "AI temporarily unavailable",
-              description: "Please try again in a moment.",
-              variant: "destructive"
-            });
-            setGeneratingSteps(false);
-            return;
-          }
-          console.warn('[PM Generation] Using fallback generator');
-          await generatePMFallbackSteps();
+        // Check if AI is unavailable
+        if (data?.useFallback || error.message?.includes('timeout') || error.message?.includes('failed') || error.message?.includes('unavailable')) {
+          toast({
+            title: "AI temporarily unavailable",
+            description: "Please try again in a moment.",
+            variant: "destructive"
+          });
+          setGeneratingSteps(false);
           return;
         }
         
@@ -582,25 +577,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       if (!stepsToUse || stepsToUse.length === 0) {
         console.warn('[PM Generation] No steps returned');
         
-        // Handle queued status for async mode
-        if (data?.status === 'queued' && !PM_DISABLE_FALLBACK) {
-          toast({
-            title: "AI enhancing in background",
-            description: "Your practice plan is being created. Check back soon!",
-            duration: 4000
-          });
-          return;
-        }
-        
-        if (PM_DISABLE_FALLBACK) {
-          toast({
-            title: "AI temporarily unavailable",
-            description: "Please try again in a moment.",
-            variant: "destructive"
-          });
-          return;
-        }
-        await generatePMFallbackSteps();
+        toast({
+          title: "AI temporarily unavailable",
+          description: "Please try again in a moment.",
+          variant: "destructive"
+        });
+        setGeneratingSteps(false);
         return;
       }
       
@@ -665,87 +647,15 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       
     } catch (error: any) {
       console.error('[PM Generation] Error:', error);
-      
-      // Try fallback on any error
-      await generatePMFallbackSteps();
-    } finally {
-      setGeneratingSteps(false);
-    }
-  };
-
-  const generatePMFallbackSteps = async () => {
-    if (!goal) return;
-    
-    console.log('[Fallback] Using fallback PM step generator');
-    
-    try {
-      const { generatePMFallbackSteps } = await import('@/services/pmFallbackGenerator');
-      
-      const fallbackSteps = generatePMFallbackSteps(
-        goal.title,
-        goal.domain || 'independent_living',
-        goal.duration_weeks || 4
-      );
-      
-      const startDate = goal.start_date ? new Date(goal.start_date) : new Date();
-      
-      const stepsToInsert = fallbackSteps.map((step, index) => ({
-        goal_id: goal.id,
-        title: step.title,
-        notes: step.notes,
-        estimated_effort_min: step.estimatedDuration,
-        step_type: 'habit',
-        is_planned: true,
-        status: 'not_started',
-        order_index: index,
-        due_date: (() => {
-          const date = new Date(startDate);
-          date.setDate(date.getDate() + (step.weekIndex - 1) * 7);
-          return date.toISOString().split('T')[0];
-        })(),
-        pm_metadata: step.pm_metadata as any
-      }));
-      
-      const { error: insertError } = await supabase
-        .from('steps')
-        .insert(stepsToInsert);
-      
-      if (insertError) {
-        throw insertError;
-      }
-      
-      console.log(`[Fallback] Saved ${fallbackSteps.length} fallback steps`);
-      
-      await supabase
-        .from('goals')
-        .update({
-          status: 'active',
-          metadata: {
-            ...(goal as any).metadata,
-            generationStatus: 'complete',
-            generatedAt: new Date().toISOString(),
-            usedFallback: true
-          } as any
-        })
-        .eq('id', goal.id);
-      
-      toast({
-        title: "Starter plan created",
-        description: `Created a ${fallbackSteps.length}-step practice plan to get you started.`,
-        duration: 4000
-      });
-      
-      await loadGoalData();
-      
-    } catch (error: any) {
-      console.error('[Fallback] Failed to create fallback steps:', error);
       setGenerationError(true);
       
       toast({
-        title: "Could not create steps",
-        description: "You can add steps manually or try again later.",
+        title: "Could not generate steps",
+        description: "AI is temporarily unavailable. Please try again later.",
         variant: "destructive"
       });
+      
+      setGeneratingSteps(false);
     }
   };
 

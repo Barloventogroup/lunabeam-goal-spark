@@ -694,48 +694,6 @@ export async function generateMicroStepsSmart(
 }
 
 /**
- * Fallback generation: theory-aligned templates
- */
-export function generateMicroStepsFallback(
-  data: WizardData,
-  flow: 'individual' | 'supporter'
-): MicroStep[] {
-  const vars = translateToActionableVariables(data);
-  const steps: MicroStep[] = [];
-  const primaryBarrier = vars.barrier1 || 'initiation';
-  const secondaryBarrier = vars.barrier2 || 'attention';
-  
-  // SLOT 1: Prerequisite or Environmental Setup
-  if (vars.hasPrerequisite && vars.prerequisiteText) {
-    const prereqAction = parsePrerequisiteIntoAction(vars.prerequisiteText, vars.dayOfWeek, flow);
-    steps.push({
-      title: flow === 'supporter' ? 'Environmental prep' : `Get ready by ${vars.dayOfWeek}`,
-      description: prereqAction
-    });
-  }
-  
-  // SLOT 2: T-Zero Activation Cue (ALWAYS references START_TIME)
-  const activationTemplate = flow === 'supporter' 
-    ? getSupporterBarrierTemplate(primaryBarrier, vars)
-    : getIndividualBarrierTemplate(primaryBarrier, vars);
-  
-  steps.push(activationTemplate.activationStep);
-  
-  // SLOT 3: Primary Barrier Action
-  const barrierTemplate = flow === 'supporter'
-    ? getSupporterBarrierTemplate(secondaryBarrier, vars)
-    : getIndividualBarrierTemplate(secondaryBarrier, vars);
-  
-  steps.push(barrierTemplate.barrierStep);
-  
-  // SLOT 4: Goal Completion Action (NEW!)
-  const completionStep = getSmartCompletionStep(vars.goalAction, data.goalTitle, flow);
-  steps.push(completionStep);
-  
-  return steps.slice(0, 4);
-}
-
-/**
  * Parses prerequisite text into natural, flowing instructions
  */
 function parsePrerequisiteIntoAction(prereqText: string, dayOfWeek: string, flow: 'individual' | 'supporter'): string {
