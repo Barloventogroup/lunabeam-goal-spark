@@ -590,11 +590,19 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
   const datesSectionRef = React.useRef<HTMLDivElement>(null);
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   
-  // Support both PM flow (pmAssessment) and habit-to-PM flow (pmSkillAssessment)
-  const assessment = data.pmAssessment || data.pmSkillAssessment;
-  const levelContext = assessment?.calculatedLevel 
-    ? `Starting level: ${['🌱', '🌿', '🌳', '🎯', '⭐'][assessment.calculatedLevel - 1]} ${assessment.levelLabel}`
-    : undefined;
+    // Support both PM flow (pmAssessment) and habit-to-PM flow (pmSkillAssessment)
+    const assessment = data.pmAssessment || data.pmSkillAssessment;
+    
+    console.log('PMStep9_PracticePlan - assessment data:', {
+      pmAssessment: data.pmAssessment,
+      pmSkillAssessment: data.pmSkillAssessment,
+      assessment,
+      calculatedLevel: assessment?.calculatedLevel
+    });
+    
+    const levelContext = assessment?.calculatedLevel 
+      ? `Starting level: ${['🌱', '🌿', '🌳', '🎯', '⭐'][assessment.calculatedLevel - 1]} ${assessment.levelLabel}`
+      : undefined;
 
   const level = assessment?.calculatedLevel || 3;
   

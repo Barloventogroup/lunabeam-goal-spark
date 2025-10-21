@@ -3969,15 +3969,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             calculatedLevel: data.pmSkillAssessment?.calculatedLevel,
             levelLabel: data.pmSkillAssessment?.levelLabel
           },
-          barriers: data.barriers,
-          challengeAreas: data.challengeAreas
-        });
-        
-        toast({
-          title: "Switching to Progressive Mastery mode",
-          description: "We'll help you learn this skill step by step with guided practice! 🚀"
-        });
-      }
+        barriers: data.barriers,
+        challengeAreas: data.challengeAreas
+      });
+    }
     }
     
     // Special handling for scheduling intro in habit flow (step 9)
