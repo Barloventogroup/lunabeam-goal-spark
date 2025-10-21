@@ -1583,7 +1583,51 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         <TabsContent value="summary" className="mt-4">
           <GoalFactorSummary 
             goal={goal}
-            wizardContext={(goal as any).metadata?.wizardContext}
+            wizardContext={(() => {
+              const existingContext = (goal as any).metadata?.wizardContext;
+              
+              // If wizardContext exists and has all PM data, use it
+              if (existingContext && existingContext.goalType === 'progressive_mastery' && existingContext.pmAssessment) {
+                return existingContext;
+              }
+              
+              // For PM goals without complete wizardContext, reconstruct it from goal data
+              if (goal.goal_type === 'progressive_mastery' || (goal as any).pm_metadata) {
+                const pmMetadata = (goal as any).pm_metadata || {};
+                const metadata = (goal as any).metadata || {};
+                return {
+                  ...existingContext,
+                  goalTitle: goal.title,
+                  goalType: 'progressive_mastery',
+                  domain: goal.domain,
+                  frequency: goal.frequency_per_week,
+                  startDate: goal.start_date,
+                  endDate: goal.due_date,
+                  selectedDays: metadata.selected_days || [],
+                  customTime: pmMetadata.custom_time || metadata.custom_time,
+                  pmAssessment: pmMetadata.skill_assessment ? {
+                    q1_experience: pmMetadata.skill_assessment.q1_experience,
+                    q2_confidence: pmMetadata.skill_assessment.q2_confidence,
+                    q3_help_needed: pmMetadata.skill_assessment.q3_help_needed,
+                    calculatedLevel: pmMetadata.skill_assessment.calculated_level,
+                    levelLabel: pmMetadata.skill_assessment.level_label
+                  } : undefined,
+                  pmPracticePlan: {
+                    targetFrequency: goal.frequency_per_week,
+                    startingFrequency: goal.frequency_per_week,
+                    durationWeeks: goal.duration_weeks,
+                    smartStartAccepted: true
+                  },
+                  barriers: pmMetadata.barriers,
+                  pmHelper: pmMetadata.teaching_helper || pmMetadata.helper,
+                  goalMotivation: pmMetadata.motivation,
+                  customMotivation: pmMetadata.motivation_text,
+                  customChallenges: pmMetadata.barriers?.details
+                };
+              }
+              
+              return existingContext;
+            })()}
           />
         </TabsContent>
 

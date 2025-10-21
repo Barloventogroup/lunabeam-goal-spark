@@ -1311,6 +1311,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               customChallenges: data.customChallenges,
               prerequisite: data.customPrerequisites,
               startDate: data.startDate,
+              endDate: data.endDate,
               selectedDays: data.selectedDays,
               timeOfDay: data.timeOfDay,
               customTime: data.customTime,
