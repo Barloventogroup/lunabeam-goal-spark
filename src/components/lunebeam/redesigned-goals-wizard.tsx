@@ -2793,20 +2793,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const skillLevel = assessment?.calculatedLevel || 1;
     const isHighSkill = skillLevel >= 4;
     
-    // Auto-set to independent for high skill users if not already set
-    React.useEffect(() => {
-      if (isHighSkill && !data.teachingHelper?.helperId) {
-        updateData({
-          supportContext: 'alone',
-          selectedSupporters: [],
-          teachingHelper: {
-            helperId: 'none',
-            helperName: 'Independent',
-            relationship: 'supporter'
-          }
-        });
-      }
-    }, [isHighSkill]);
+    // (auto-select handled by top-level useEffect)
     
     const supportOptions = [
       {
@@ -3761,6 +3748,23 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [showingResultsInterstitial, setShowingResultsInterstitial] = useState(false);
   const [interstitialData, setInterstitialData] = useState<{level: number; label: string} | null>(null);
   const [showSchedulingIntro, setShowSchedulingIntro] = useState(true);
+
+  // Auto-select independent helper for high-skill habit flow at helper step
+  useEffect(() => {
+    const assessment = data.pmSkillAssessment || data.pmAssessment;
+    const level = assessment?.calculatedLevel || 1;
+    if (data.goalType !== 'progressive_mastery' && currentStep === 10 && level >= 4 && !data.teachingHelper?.helperId) {
+      updateData({
+        supportContext: 'alone',
+        selectedSupporters: [],
+        teachingHelper: {
+          helperId: 'none',
+          helperName: 'Independent',
+          relationship: 'supporter'
+        }
+      });
+    }
+  }, [data.goalType, currentStep, data.pmSkillAssessment?.calculatedLevel, data.pmAssessment?.calculatedLevel, data.teachingHelper?.helperId]);
 
   // Props for PM micro-steps
   const pmStepProps = {
