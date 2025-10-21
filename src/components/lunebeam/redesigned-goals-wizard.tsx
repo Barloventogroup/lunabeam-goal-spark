@@ -1521,12 +1521,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 // PURE AI MODE: No fallback, wait for AI in sync mode
                 console.log('🤖 Pure AI mode: Generating with AI (sync)...');
                 setIsGeneratingSteps(true);
-                
-                toast({
-                  title: '✨ Generating personalized steps...',
-                  description: 'AI is creating your practice plan (about 20 seconds)',
-                  duration: 5000
-                });
               } else {
                 // STEP 1: Generate deterministic steps INSTANTLY
                 console.log('⚡ Generating instant deterministic steps...');
@@ -1646,13 +1640,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               if (PM_DISABLE_FALLBACK) {
                 // SYNC MODE: Wait for AI and insert steps directly
                 console.log('🤖 Calling AI in sync mode...');
-                
-                // Update progress toast
-                toast({
-                  title: '🧠 AI is thinking...',
-                  description: 'Analyzing your skill level and creating perfect practice steps',
-                  duration: 5000
-                });
                 
                 // Add mode: 'sync' to force synchronous generation
                 const syncPayload = { ...pmPayload, mode: 'sync' };
@@ -3003,8 +2990,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="pb-4 pt-0">
         {data.goalTitle && (
-          <div className="text-center pb-4 border-b mb-4">
-            <h2 className="text-xl font-semibold truncate">{data.goalTitle}</h2>
+          <div className="text-left px-4 pb-4 border-b mb-4">
+            <h2 className="text-xl font-semibold">{data.goalTitle}</h2>
           </div>
         )}
         <CardTitle className="text-2xl">🎁 Rewards (Optional)</CardTitle>
@@ -3369,13 +3356,48 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
 
     return <>
+      {/* Loading overlay when generating PM steps */}
+      {data.goalType === 'progressive_mastery' && isGeneratingSteps && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+          <Card className="w-[90%] max-w-md p-8">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="relative">
+                {/* Hourglass animation */}
+                <div className="animate-bounce">
+                  <svg className="w-16 h-16 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zm-4-5l-4-4V4h8v3.5l-4 4z"/>
+                  </svg>
+                </div>
+                <div className="absolute inset-0 animate-spin rounded-full border-4 border-primary/20 border-t-primary"></div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold">Building Your Plan</h3>
+                <p className="text-muted-foreground">
+                  AI is analyzing your skill level and creating personalized practice steps...
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  This usually takes 15-20 seconds
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+      
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardHeader className="text-center pb-4 space-y-2">
-          <h1 className="text-2xl md:text-3xl font-bold">Commitment & Activation</h1>
+        <CardHeader className="pb-4 pt-0">
+          {/* Goal title ABOVE, left-aligned */}
           {data.goalTitle && (
-            <p className="text-xl font-semibold text-primary">{data.goalTitle}</p>
+            <div className="text-left px-4 pb-4 border-b mb-4">
+              <h2 className="text-xl font-semibold">{data.goalTitle}</h2>
+            </div>
           )}
-          <p className="text-muted-foreground">{text.confirm.subtitle}</p>
+          
+          {/* Main title left-aligned */}
+          <div className="space-y-2">
+            <h1 className="text-2xl md:text-3xl font-bold">Commitment & Activation</h1>
+            <p className="text-muted-foreground">{text.confirm.subtitle}</p>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
           {/* Goal Summary in 2-column grid */}
@@ -3547,6 +3569,67 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     </div>
                   </div>
                 </div>
+                
+                {/* PM-Specific Assessment Results */}
+                {data.goalType === 'progressive_mastery' && data.pmAssessment && (
+                  <div className="col-span-2 space-y-3 mt-4">
+                    {/* Skill Assessment Results */}
+                    <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200">
+                      <h4 className="text-sm font-semibold text-purple-700 mb-3">Skill Assessment</h4>
+                      <div className="space-y-2">
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
+                          <span className="font-semibold">
+                            {['Discovering 🌱', 'Exploring 🌿', 'Developing 🌳', 'Refining 🎯', 'Mastering ⭐'][data.pmAssessment.calculatedLevel - 1]}
+                          </span>
+                        </p>
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Experience:</span>{' '}
+                          <span className="font-medium">
+                            {['Brand new', 'Tried once/twice', 'Some experience', 'Pretty experienced', 'Very experienced'][data.pmAssessment.q1_experience - 1]}
+                          </span>
+                        </p>
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
+                          <span className="font-medium">
+                            {['Not confident', 'A little nervous', 'Somewhat confident', 'Pretty confident', 'Very confident'][data.pmAssessment.q2_confidence - 1]}
+                          </span>
+                        </p>
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
+                          <span className="font-medium">
+                            {['Full help', 'A lot', 'Some help', 'A little', 'No help'][data.pmAssessment.q3_help_needed - 1]}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Practice Plan */}
+                    {data.pmPracticePlan && (
+                      <div className="rounded-2xl bg-green-50/50 p-4 border border-gray-200">
+                        <h4 className="text-sm font-semibold text-green-700 mb-3">Practice Plan</h4>
+                        <div className="space-y-2">
+                          <p className="text-sm">
+                            <span className="text-muted-foreground text-xs">Frequency:</span>{' '}
+                            <span className="font-semibold">{data.pmPracticePlan.targetFrequency}× per week</span>
+                          </p>
+                          {data.pmPracticePlan.smartStartAccepted && (
+                            <p className="text-sm">
+                              <span className="text-muted-foreground text-xs">Smart Start:</span>{' '}
+                              <span className="font-medium">Starting at {data.pmPracticePlan.startingFrequency}×/week</span>
+                            </p>
+                          )}
+                          {data.pmPracticePlan.durationWeeks && (
+                            <p className="text-sm">
+                              <span className="text-muted-foreground text-xs">Duration:</span>{' '}
+                              <span className="font-medium">{data.pmPracticePlan.durationWeeks} weeks</span>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
           </div>
 
           {/* Proposal notice */}
