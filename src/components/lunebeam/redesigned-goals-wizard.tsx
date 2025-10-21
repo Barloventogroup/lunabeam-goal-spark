@@ -3587,7 +3587,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         setTimeout(() => {
           setShowingResultsInterstitial(false);
           nextStep();
-        }, 5000);
+        }, 3000);
         
         return;
       }

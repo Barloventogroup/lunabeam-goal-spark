@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from './drawer';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from './sheet';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
 import { ChevronLeft } from 'lucide-react';
@@ -126,19 +126,19 @@ export function TimeWheelPicker({ value, onChange, open, onOpenChange }: TimeWhe
   };
   
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent side="right" className="h-full w-full sm:max-w-md">
-        <DrawerHeader className="flex flex-row items-center gap-4 border-b pb-4 px-4 pt-6">
-          <DrawerClose asChild>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-md p-0">
+        <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-4 pt-6">
+          <SheetClose asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <ChevronLeft className="h-5 w-5" />
               <span className="sr-only">Close</span>
             </Button>
-          </DrawerClose>
+          </SheetClose>
           <div className="flex-1">
-            <DrawerTitle>Select Time</DrawerTitle>
+            <SheetTitle>Select Time</SheetTitle>
           </div>
-        </DrawerHeader>
+        </SheetHeader>
         
         {/* Wheel Picker Container */}
         <div className="flex-1 flex items-center justify-center px-4 relative">
@@ -203,7 +203,7 @@ export function TimeWheelPicker({ value, onChange, open, onOpenChange }: TimeWhe
             Confirm Time
           </Button>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </SheetContent>
+    </Sheet>
   );
 }
