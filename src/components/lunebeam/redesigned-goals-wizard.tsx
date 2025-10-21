@@ -18,7 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle, Shield, HandHelping } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle, Shield, HandHelping, Brain } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -3052,6 +3052,60 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     );
   };
 
+  const renderPMSkillAssessmentIntro = () => {
+    const recipientName = data.recipient === 'other' && data.supportedPersonName 
+      ? data.supportedPersonName 
+      : 'you';
+      
+    const isOther = data.recipient === 'other';
+    
+    return (
+      <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+        <CardContent className="pt-8 pb-6 px-6">
+          <div className="text-center space-y-6 max-w-2xl mx-auto">
+            {/* Icon */}
+            <div className="flex justify-center">
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+                <Brain className="h-10 w-10 text-primary" />
+              </div>
+            </div>
+
+            {/* Main message */}
+            <div className="space-y-3">
+              <h1 className="text-2xl md:text-3xl font-bold">
+                Let's check how good {isOther ? recipientName : 'you are'} {isOther ? 'is' : 'are'} at performing this goal independently
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                This quick assessment helps us create the perfect learning path
+              </p>
+            </div>
+
+            {/* What to expect */}
+            <div className="bg-muted/50 rounded-lg p-4 text-left">
+              <p className="text-sm text-muted-foreground font-medium mb-3">
+                {isOther ? "You'll answer" : "You'll answer"} 3 quick questions about:
+              </p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">•</span>
+                  <span>{isOther ? 'Their' : 'Your'} experience level with {data.goalTitle || data.pmSkillName}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">•</span>
+                  <span>{isOther ? 'Their' : 'Your'} confidence in doing it</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">•</span>
+                  <span>How much support {isOther ? 'they need' : 'you need'}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const renderPMSkillAssessment = () => {
     return (
       <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
@@ -3579,13 +3633,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 1: return renderStep1(); // Goal description + type
         case 2: return <PMStep2_Motivation {...pmStepProps} />; // Motivation
         case 3: return <PMStep3_Prerequisites {...pmStepProps} />; // Prerequisites
-        case 4: return <PMStep5_Experience {...pmStepProps} />; // Experience
-        case 5: return <PMStep6_Confidence {...pmStepProps} />; // Confidence
-        case 6: return <PMStep7_HelpNeeded {...pmStepProps} />; // Help Needed + Calculate Level
-        case 7: return <PMStep4_Barriers {...pmStepProps} onSwitchToHabit={() => switchGoalType('reminder')} />; // Barriers
-        case 8: return <PMStep8_Helper {...pmStepProps} />; // Helper Selection
-        case 9: return <PMStep9_PracticePlan {...pmStepProps} />; // Practice frequency + dates
-        case 10: return renderConfirmStep(); // PM: Summary
+        case 4: return renderPMSkillAssessmentIntro(); // NEW: Intro screen
+        case 5: return <PMStep5_Experience {...pmStepProps} />; // Experience
+        case 6: return <PMStep6_Confidence {...pmStepProps} />; // Confidence
+        case 7: return <PMStep7_HelpNeeded {...pmStepProps} />; // Help Needed + Calculate Level
+        case 8: return <PMStep4_Barriers {...pmStepProps} onSwitchToHabit={() => switchGoalType('reminder')} />; // Barriers
+        case 9: return <PMStep8_Helper {...pmStepProps} />; // Helper Selection
+        case 10: return <PMStep9_PracticePlan {...pmStepProps} />; // Practice frequency + dates
+        case 11: return renderConfirmStep(); // PM: Summary
         default: return null;
       }
     }
@@ -3608,8 +3663,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   };
   // Update last step index for Progressive Mastery flow
-  const lastStepIndex = data.goalType === 'progressive_mastery' ? 10 : (isSupporter ? 11 : 10);
-  const totalSteps = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 12 : 11);
+  const lastStepIndex = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 11 : 10);
+  const totalSteps = data.goalType === 'progressive_mastery' ? 12 : (isSupporter ? 12 : 11);
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
 
@@ -3618,10 +3673,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     // Progressive Mastery flow
     if (data.goalType === 'progressive_mastery') {
       if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep === 4 || currentStep === 5 || currentStep === 6) return { label: 'Skill Assessment', index: 2, total: 5 };
-      if (currentStep === 7) return { label: 'Context & Challenges', index: 3, total: 5 };
-      if (currentStep === 8 || currentStep === 9) return { label: 'Support & Practice Plan', index: 4, total: 5 };
-      if (currentStep === 10) return { label: 'Review & Confirm', index: 5, total: 5 };
+      if (currentStep === 4 || currentStep === 5 || currentStep === 6 || currentStep === 7) return { label: 'Skill Assessment', index: 2, total: 5 };
+      if (currentStep === 8) return { label: 'Context & Challenges', index: 3, total: 5 };
+      if (currentStep === 9 || currentStep === 10) return { label: 'Support & Practice Plan', index: 4, total: 5 };
+      if (currentStep === 11) return { label: 'Review & Confirm', index: 5, total: 5 };
     }
     
     if (actuallySupportsAnyone) {
