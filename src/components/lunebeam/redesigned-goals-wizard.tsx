@@ -103,7 +103,6 @@ import {
   PMStep5_Experience,
   PMStep6_Confidence,
   PMStep7_HelpNeeded,
-  PMStep8_Helper,
   PMStep9_PracticePlan
 } from './pm-micro-steps';
 interface RedesignedGoalsWizardProps {
@@ -3671,7 +3670,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 6: return <PMStep6_Confidence {...pmStepProps} />; // Confidence
         case 7: return <PMStep7_HelpNeeded {...pmStepProps} />; // Help Needed + Calculate Level
         case 8: return <PMStep4_Barriers {...pmStepProps} onSwitchToHabit={() => switchGoalType('reminder')} />; // Barriers
-        case 9: return <PMStep8_Helper {...pmStepProps} />; // Helper Selection
+        case 9: return renderPMTeachingHelper(); // Helper Selection with intelligent recommendations
         case 10: return <PMStep9_PracticePlan {...pmStepProps} />; // Practice frequency + dates
         case 11: return renderConfirmStep(); // PM: Summary
         default: return null;
