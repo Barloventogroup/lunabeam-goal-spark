@@ -3153,6 +3153,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return (
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="text-center pb-4">
+          {/* Goal Name Display */}
+          {data.goalTitle && (
+            <div className="mb-3">
+              <Badge variant="outline" className="text-base px-4 py-1.5">
+                {data.goalTitle}
+              </Badge>
+            </div>
+          )}
+          
+          {/* Starting Level Display */}
+          {assessment && (
+            <div className="mb-4 flex items-center justify-center gap-2">
+              <span className="text-3xl">{getSkillLevelDisplay(assessment).emoji}</span>
+              <div className="text-left">
+                <p className="text-sm text-muted-foreground">Your starting level</p>
+                <p className="font-semibold text-lg">{getSkillLevelDisplay(assessment).label}</p>
+              </div>
+            </div>
+          )}
+          
           <CardTitle className="text-2xl">Who can help you learn this skill?</CardTitle>
           <p className="text-muted-foreground">
             {skillLevel <= 2
