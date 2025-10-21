@@ -225,7 +225,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
   }
 
   // Detect if this is a PM goal
-  const isPMGoal = wizardContext.goalType === 'progressive_mastery' || wizardContext.pmAssessment;
+  const isPMGoal = wizardContext.goalType === 'progressive_mastery';
 
   // If PM goal with full context, use Commitment & Activation layout
   if (isPMGoal && wizardContext.pmAssessment) {
