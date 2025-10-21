@@ -209,9 +209,8 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
       <div className="flex-1 px-6 pt-6 pb-0 overflow-auto">
         <div className="max-w-2xl mx-auto w-full space-y-4">
           {/* Goal Context */}
-          {(goalTitle || goalContext) && <div className="text-left space-y-1">
-              {goalTitle && <h2 className="text-xl font-semibold">{goalTitle}</h2>}
-              {goalContext && <p className="text-sm text-muted-foreground">{goalContext}</p>}
+          {goalTitle && <div className="text-left space-y-1">
+              <h2 className="text-xl font-semibold">{goalTitle}</h2>
             </div>}
 
           {/* Question */}
