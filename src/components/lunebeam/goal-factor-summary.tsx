@@ -227,8 +227,8 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
   // Detect if this is a PM goal
   const isPMGoal = wizardContext.goalType === 'progressive_mastery';
 
-  // If PM goal with full context, use Commitment & Activation layout
-  if (isPMGoal && wizardContext.pmAssessment) {
+  // If goal has skill assessment data, use Commitment & Activation layout
+  if (wizardContext.pmAssessment) {
     const { pmAssessment, pmPracticePlan, pmHelper, selectedDays, customTime, timeOfDay } = wizardContext;
     
     // Get category label
@@ -259,7 +259,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
       : undefined;
     
     // Get goal type label
-    const goalTypeLabel = 'Progressive Mastery';
+    const goalTypeLabel = isPMGoal ? 'Progressive Mastery' : 'Habit';
     
     // Format days of week
     const abbreviatedDays = selectedDays && selectedDays.length > 0 
