@@ -208,6 +208,39 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
         {/* Goal Title */}
         <h1 className="text-2xl md:text-3xl font-bold text-center leading-tight">{goal.title}</h1>
 
+        {/* PM Skill Assessment (if PM goal with assessment) */}
+        {isPMGoal && wizardContext?.pmAssessment && (
+          <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 mb-4">
+            <h4 className="text-sm font-semibold text-purple-700 mb-3">Skill Assessment</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-sm">
+                  <span className="text-muted-foreground text-xs">Experience:</span>{' '}
+                  <span className="font-medium">
+                    {['Brand new', 'Tried once/twice', 'Some experience', 'Pretty experienced', 'Very experienced'][wizardContext.pmAssessment.q1_experience - 1]}
+                  </span>
+                </p>
+              </div>
+              <div>
+                <p className="text-sm">
+                  <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
+                  <span className="font-medium">
+                    {['Not confident', 'A little nervous', 'Somewhat confident', 'Pretty confident', 'Very confident'][wizardContext.pmAssessment.q2_confidence - 1]}
+                  </span>
+                </p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-sm">
+                  <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
+                  <span className="font-medium">
+                    {['Full help', 'A lot', 'Some help', 'A little', 'No help'][wizardContext.pmAssessment.q3_help_needed - 1]}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 2x2 Grid Summary (Matching Creation Flow) */}
         <div className="grid grid-cols-2 gap-3">
           {/* The Goal / Learning Goal */}
@@ -218,7 +251,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
             <div className="space-y-1.5">
               {isPMGoal && wizardContext?.pmAssessment && (
                 <p className="text-sm">
-                  <span className="text-muted-foreground text-xs">Level:</span>{' '}
+                  <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
                   <span className="font-semibold">
                     {wizardContext.pmAssessment.levelLabel} {['🌱', '🌿', '🌳', '🎯', '⭐'][wizardContext.pmAssessment.calculatedLevel - 1]}
                   </span>

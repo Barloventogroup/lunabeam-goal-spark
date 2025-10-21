@@ -1649,6 +1649,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   body: syncPayload
                 });
                 
+                // Show toast first (Stage 1)
+                toast({
+                  title: 'Goal Created! 🚀',
+                  description: 'Your personalized micro-steps are being generated.',
+                  duration: 3000
+                });
+                
+                // Then show overlay (Stage 2)
                 setIsGeneratingSteps(false);
                 
                 // Defensive handling for queued status
@@ -3361,22 +3369,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
           <Card className="w-[90%] max-w-md p-8">
             <div className="flex flex-col items-center gap-4 text-center">
-              <div className="relative">
-                {/* Hourglass animation */}
-                <div className="animate-bounce">
-                  <svg className="w-16 h-16 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zm-4-5l-4-4V4h8v3.5l-4 4z"/>
-                  </svg>
-                </div>
-                <div className="absolute inset-0 animate-spin rounded-full border-4 border-primary/20 border-t-primary"></div>
-              </div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
               <div className="space-y-2">
-                <h3 className="text-xl font-semibold">Building Your Plan</h3>
-                <p className="text-muted-foreground">
-                  AI is analyzing your skill level and creating personalized practice steps...
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  This usually takes 15-20 seconds
+                <h3 className="font-semibold text-lg">Creating your micro-steps</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  🎯 Personalizing your journey...
                 </p>
               </div>
             </div>
@@ -3385,14 +3382,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       )}
       
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardHeader className="pb-4 pt-0">
-          {/* Goal title ABOVE, left-aligned */}
-          {data.goalTitle && (
-            <div className="text-left px-4 pb-4 border-b mb-4">
-              <h2 className="text-xl font-semibold">{data.goalTitle}</h2>
-            </div>
-          )}
-          
+        <CardHeader className="pb-4 pt-6">
           {/* Main title left-aligned */}
           <div className="space-y-2">
             <h1 className="text-2xl md:text-3xl font-bold">Commitment & Activation</h1>
@@ -3604,30 +3594,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       </div>
                     </div>
 
-                    {/* Practice Plan */}
-                    {data.pmPracticePlan && (
-                      <div className="rounded-2xl bg-green-50/50 p-4 border border-gray-200">
-                        <h4 className="text-sm font-semibold text-green-700 mb-3">Practice Plan</h4>
-                        <div className="space-y-2">
-                          <p className="text-sm">
-                            <span className="text-muted-foreground text-xs">Frequency:</span>{' '}
-                            <span className="font-semibold">{data.pmPracticePlan.targetFrequency}× per week</span>
-                          </p>
-                          {data.pmPracticePlan.smartStartAccepted && (
-                            <p className="text-sm">
-                              <span className="text-muted-foreground text-xs">Smart Start:</span>{' '}
-                              <span className="font-medium">Starting at {data.pmPracticePlan.startingFrequency}×/week</span>
-                            </p>
-                          )}
-                          {data.pmPracticePlan.durationWeeks && (
-                            <p className="text-sm">
-                              <span className="text-muted-foreground text-xs">Duration:</span>{' '}
-                              <span className="font-medium">{data.pmPracticePlan.durationWeeks} weeks</span>
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
           </div>
