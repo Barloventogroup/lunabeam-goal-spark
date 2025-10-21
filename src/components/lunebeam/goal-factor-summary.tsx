@@ -7,6 +7,40 @@ import { AlertCircle, Users, Calendar, Target } from 'lucide-react';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal } from '@/types';
 
+// Helper functions to map assessment scores to labels
+const getExperienceLabel = (value: number): string => {
+  const labels = {
+    1: "Brand new to this",
+    2: "Tried once or twice",
+    3: "Some experience",
+    4: "Pretty experienced",
+    5: "Very experienced"
+  };
+  return labels[value as keyof typeof labels] || `${value}/5`;
+};
+
+const getConfidenceLabel = (value: number): string => {
+  const labels = {
+    1: "Not confident at all",
+    2: "A little nervous",
+    3: "Somewhat confident",
+    4: "Pretty confident",
+    5: "Very confident"
+  };
+  return labels[value as keyof typeof labels] || `${value}/5`;
+};
+
+const getHelpNeededLabel = (value: number): string => {
+  const labels = {
+    1: "Full help - do it for me",
+    2: "A lot - step-by-step guidance",
+    3: "Some help - available if stuck",
+    4: "A little - just check my work",
+    5: "No help - can do alone"
+  };
+  return labels[value as keyof typeof labels] || `${value}/5`;
+};
+
 // Utility functions for formatting
 const truncate = (text: string | undefined, maxLen: number) => {
   if (!text) return text;
@@ -238,15 +272,15 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                   </p>
                   <p className="text-sm">
                     <span className="text-muted-foreground text-xs">Experience:</span>{' '}
-                    <span className="font-medium">{pmAssessment.q1_experience}/5</span>
+                    <span className="font-medium">{getExperienceLabel(pmAssessment.q1_experience)}</span>
                   </p>
                   <p className="text-sm">
                     <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
-                    <span className="font-medium">{pmAssessment.q2_confidence}/5</span>
+                    <span className="font-medium">{getConfidenceLabel(pmAssessment.q2_confidence)}</span>
                   </p>
                   <p className="text-sm">
                     <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
-                    <span className="font-medium">{pmAssessment.q3_help_needed}/5</span>
+                    <span className="font-medium">{getHelpNeededLabel(pmAssessment.q3_help_needed)}</span>
                   </p>
                 </div>
               </div>
@@ -498,15 +532,15 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                 </p>
                 <p className="text-sm">
                   <span className="text-muted-foreground text-xs">Experience:</span>{' '}
-                  <span className="font-medium">{wizardContext.pmAssessment.q1_experience}/5</span>
+                  <span className="font-medium">{getExperienceLabel(wizardContext.pmAssessment.q1_experience)}</span>
                 </p>
                 <p className="text-sm">
                   <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
-                  <span className="font-medium">{wizardContext.pmAssessment.q2_confidence}/5</span>
+                  <span className="font-medium">{getConfidenceLabel(wizardContext.pmAssessment.q2_confidence)}</span>
                 </p>
                 <p className="text-sm">
                   <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
-                  <span className="font-medium">{wizardContext.pmAssessment.q3_help_needed}/5</span>
+                  <span className="font-medium">{getHelpNeededLabel(wizardContext.pmAssessment.q3_help_needed)}</span>
                 </p>
               </div>
             </div>

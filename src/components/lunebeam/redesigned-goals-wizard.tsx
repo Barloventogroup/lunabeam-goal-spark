@@ -1,5 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+
+// Helper functions to map assessment scores to labels
+const getExperienceLabel = (value: number): string => {
+  const labels = {
+    1: "Brand new to this",
+    2: "Tried once or twice",
+    3: "Some experience",
+    4: "Pretty experienced",
+    5: "Very experienced"
+  };
+  return labels[value as keyof typeof labels] || `${value}/5`;
+};
+
+const getConfidenceLabel = (value: number): string => {
+  const labels = {
+    1: "Not confident at all",
+    2: "A little nervous",
+    3: "Somewhat confident",
+    4: "Pretty confident",
+    5: "Very confident"
+  };
+  return labels[value as keyof typeof labels] || `${value}/5`;
+};
+
+const getHelpNeededLabel = (value: number): string => {
+  const labels = {
+    1: "Full help - do it for me",
+    2: "A lot - step-by-step guidance",
+    3: "Some help - available if stuck",
+    4: "A little - just check my work",
+    5: "No help - can do alone"
+  };
+  return labels[value as keyof typeof labels] || `${value}/5`;
+};
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -3191,15 +3225,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         </p>
                         <p className="text-sm">
                           <span className="text-muted-foreground text-xs">Experience:</span>{' '}
-                          <span className="font-medium">{data.pmAssessment.q1_experience}/5</span>
+                          <span className="font-medium">{getExperienceLabel(data.pmAssessment.q1_experience)}</span>
                         </p>
                         <p className="text-sm">
                           <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
-                          <span className="font-medium">{data.pmAssessment.q2_confidence}/5</span>
+                          <span className="font-medium">{getConfidenceLabel(data.pmAssessment.q2_confidence)}</span>
                         </p>
                         <p className="text-sm">
                           <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
-                          <span className="font-medium">{data.pmAssessment.q3_help_needed}/5</span>
+                          <span className="font-medium">{getHelpNeededLabel(data.pmAssessment.q3_help_needed)}</span>
                         </p>
                       </div>
                     </div>
