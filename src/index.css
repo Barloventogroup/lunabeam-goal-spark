@@ -277,4 +277,26 @@
   .text-overline {
     @apply text-xs font-medium uppercase tracking-wider text-muted-foreground;
   }
+
+  /* Animated dots for loading states */
+  @keyframes dot-pulse {
+    0%, 20%, 100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .animate-dot-pulse {
+    animation: dot-pulse 1.5s infinite;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 0.4s;
+  }
 }

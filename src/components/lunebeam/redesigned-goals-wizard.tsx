@@ -36,6 +36,7 @@ import { SkillAssessmentWizard } from './skill-assessment-wizard';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
 import { notificationsService } from '@/services/notificationsService';
 import { addWeeks } from 'date-fns';
+import { performSafetyCheck } from '@/services/safetyCheckService';
 
 import { QuestionScreen } from './question-screen';
 import {
@@ -1277,11 +1278,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           ? format(addWeeks(data.startDate, data.pmPracticePlan.durationWeeks), 'yyyy-MM-dd')
           : calculatedDueDate;
 
+        // ============= STEP 1: SAFETY CHECK FIRST =============
+        const safetyResult = await performSafetyCheck(data);
+        
+        if (!safetyResult.safe) {
+          toast({
+            title: "Cannot create goal",
+            description: safetyResult.errors.join('. '),
+            variant: "destructive",
+            duration: 10000
+          });
+          setLoading(false);
+          return;
+        }
+
+        // ============= STEP 2: CREATE GOAL WITH status='planned' =============
         const goalDataWithMetadata = {
           title: data.goalTitle,
           description: buildGoalDescription(),
           domain: mapCategoryToDomain(data.category) as GoalDomain,
-          status: 'active' as const,
+          status: 'planned' as const,
           priority: 'medium' as const,
           goal_type: (() => {
             if (data.goalType === 'progressive_mastery') return undefined; // NULL passes CHECK constraint
@@ -1356,68 +1372,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           }
         };
 
-        // ============= LAYER 1: SAFETY CHECK BEFORE GOAL CREATION =============
-        const dangerousKeywords = [
-          'kill', 'suicide', 'self-harm', 'self harm', 'cut myself', 'hurt myself',
-          'trafficking', 'illegal', 'steal', 'theft', 'fraud', 'scam',
-          'cocaine', 'heroin', 'meth', 'methamphetamine', 'weed', 'marijuana', '🌿',
-          'sell drugs', 'buy drugs', 'drug deal', 'black market',
-          'hack', 'bypass security', 'break into', 'weapon', 'bomb', 'gun',
-          'sexually explicit', 'porn', 'xxx', 'sex tape',
-          'revenge', 'harm someone', 'hurt someone', 'get back at',
-          '💣', '🔫', '🔪', '💥', '💊', '💉', '🚬', '🧨', '⚔️', '🗡️'
-        ];
-
-        // Only check the raw goal title, not the generated description (which may contain false positives)
-        const titleOnly = (data.goalTitle || '').toLowerCase();
-        // Use word boundary regex to match whole words only, not substrings
-        const triggeredKeywords = dangerousKeywords.filter(kw => {
-          const wordBoundaryRegex = new RegExp(`\\b${kw}\\b`, 'i');
-          return wordBoundaryRegex.test(titleOnly);
-        });
-
-        if (triggeredKeywords.length > 0) {
-          console.error('⚠️ SAFETY VIOLATION in goal creation:', triggeredKeywords);
-          
-          // Log to database
-          if (currentUser) {
-            await supabase.from('safety_violations_log').insert({
-              user_id: currentUser.id,
-              violation_layer: 'layer_1_keywords_goal_creation',
-              goal_title: data.goalTitle,
-              goal_category: data.category,
-              triggered_keywords: triggeredKeywords,
-              violation_reason: `Goal creation blocked: ${triggeredKeywords.join(', ')}`
-            });
-            
-            // Notify via email
-            try {
-              await supabase.functions.invoke('send-notification-email', {
-                body: {
-                  type: 'safety_violation',
-                  userId: currentUser.id,
-                  goalTitle: data.goalTitle,
-                  layer: 'layer_1_keywords_goal_creation',
-                  triggeredKeywords: triggeredKeywords
-                }
-              });
-            } catch (emailError) {
-              console.error('Failed to send safety violation email:', emailError);
-            }
-          }
-          
-          toast({
-            title: "Goal Cannot Be Created",
-            description: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
-            variant: "destructive",
-            duration: 10000,
-          });
-          
-          setLoading(false);
-          return; // EXIT - do not create goal
-        }
-
-        // Only now proceed with goal creation
+        // Safety check already performed, proceed with goal creation
         console.log('Creating goal with data:', {
           title: goalDataWithMetadata.title,
           goal_type: goalDataWithMetadata.goal_type,

@@ -1199,11 +1199,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       
       clearTimeout(timeoutId); // Clear timeout on success
       
-      // On success, mark generation as completed
+      // On success, mark generation as completed AND change status to 'active'
       if (failedDays.length === 0) {
         await supabase
           .from('goals')
           .update({ 
+            status: 'active',
             metadata: {
               ...goal?.metadata,
               generationStatus: 'completed',
@@ -1578,13 +1579,64 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </TabsContent>
 
         <TabsContent value="steps" className="mt-4">
-          <RecommendedStepsList
-            steps={steps}
-            goal={goal}
-            onStepsChange={loadGoalData}
-            onStepsUpdate={handleStepsUpdate}
-            onOpenStepChat={handleOpenStepChat}
-          />
+          {generatingSteps ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center py-12 text-center">
+                  <div className="space-y-3">
+                    <p className="text-lg text-muted-foreground">
+                      Microsteps being generated
+                      <span className="inline-flex ml-1">
+                        <span className="animate-dot-pulse">.</span>
+                        <span className="animate-dot-pulse animation-delay-200">.</span>
+                        <span className="animate-dot-pulse animation-delay-400">.</span>
+                      </span>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      This usually takes 10-20 seconds
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : generationError ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+                  <AlertCircle className="h-12 w-12 text-destructive" />
+                  <div className="space-y-2">
+                    <p className="text-lg font-semibold">Generation failed</p>
+                    <p className="text-sm text-muted-foreground max-w-md">
+                      We couldn't generate your personalized steps. This might be due to a temporary issue.
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => generateStepsForNewGoal()} 
+                    variant="default"
+                    className="mt-4"
+                  >
+                    Retry Generation
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : steps.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground py-8">
+                  No recommended steps yet
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <RecommendedStepsList
+              steps={steps}
+              goal={goal}
+              onStepsChange={loadGoalData}
+              onStepsUpdate={handleStepsUpdate}
+              onOpenStepChat={handleOpenStepChat}
+            />
+          )}
         </TabsContent>
 
         {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
