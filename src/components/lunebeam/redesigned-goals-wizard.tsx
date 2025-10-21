@@ -1098,7 +1098,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 6: return !!data.pmAssessment?.q2_confidence; // Confidence REQUIRED
         case 7: return !!data.pmAssessment?.q3_help_needed; // Help Needed REQUIRED
         case 8: return true; // Barriers OPTIONAL
-        case 9: return true; // Helper OPTIONAL
+        case 9: return !!pmSelectedHelperId; // Helper selection required
         case 10: {
           const freq = data.pmPracticePlan?.targetFrequency ?? data.pmTargetFrequency;
           return !!freq && !!data.startDate;
@@ -3250,31 +3250,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             )}
           </div>
 
-          <Button 
-            onClick={() => {
-              if (pmSelectedHelperId && pmSelectedHelperId !== 'none') {
-                const helper = userSupporters.find(s => s.id === pmSelectedHelperId);
-                updateData({ 
-                  pmHelper: {
-                    helperId: pmSelectedHelperId,
-                    helperName: helper?.name || 'Helper'
-                  }
-                });
-              } else {
-                updateData({ 
-                  pmHelper: {
-                    helperId: 'none',
-                    helperName: 'Independent'
-                  }
-                });
-              }
-              nextStep();
-            }}
-            className="w-full"
-            disabled={!pmSelectedHelperId}
-          >
-            Next
-          </Button>
+          {/* Continue button handles navigation */}
         </CardContent>
       </Card>
     );
@@ -3787,6 +3763,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }, 3000);
         
         return;
+      }
+    }
+    
+    // Special handling for helper selection (step 9 in PM)
+    if (data.goalType === 'progressive_mastery' && currentStep === 9) {
+      if (pmSelectedHelperId && pmSelectedHelperId !== 'none') {
+        const helper = userSupporters.find(s => s.id === pmSelectedHelperId);
+        updateData({ 
+          pmHelper: {
+            helperId: pmSelectedHelperId,
+            helperName: helper?.name || 'Helper'
+          }
+        });
+      } else {
+        updateData({ 
+          pmHelper: {
+            helperId: 'none',
+            helperName: 'Independent'
+          }
+        });
       }
     }
     
