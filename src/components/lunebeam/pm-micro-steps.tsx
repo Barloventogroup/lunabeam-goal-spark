@@ -31,6 +31,7 @@ interface PMStepsProps {
   totalSteps: number;
   userSupporters: Array<{ id: string; name: string; profile?: { avatar_url?: string } }>;
   goalTitle?: string;
+  setShowingResultsInterstitial?: (showing: boolean) => void;
 }
 
 export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
@@ -388,49 +389,9 @@ export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, g
   );
 };
 
-export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
+export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle, setShowingResultsInterstitial }) => {
   const { toast } = useToast();
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
-  const [showResults, setShowResults] = useState(false);
-  const [calculatedLevel, setCalculatedLevel] = useState<number>(0);
-  const [levelLabel, setLevelLabel] = useState<string>('');
-  
-  const handleContinue = () => {
-    // Calculate level after Q3 is answered
-    if (data.pmAssessment?.q1_experience && 
-        data.pmAssessment?.q2_confidence && 
-        data.pmAssessment?.q3_help_needed) {
-      
-      const level = progressiveMasteryService.calculateSkillLevel({
-        q1: data.pmAssessment.q1_experience,
-        q2: data.pmAssessment.q2_confidence,
-        q3: data.pmAssessment.q3_help_needed
-      });
-      
-      const label = progressiveMasteryService.getSkillLevelLabel(level);
-      
-      // Store in local state for display
-      setCalculatedLevel(level);
-      setLevelLabel(label);
-      
-      // Update wizard data
-      updateData({
-        pmAssessment: {
-          ...data.pmAssessment,
-          calculatedLevel: level,
-          levelLabel: label
-        }
-      });
-      
-      // Show results interstitial
-      setShowResults(true);
-      
-      // Auto-advance after 5 seconds
-      setTimeout(() => {
-        goNext();
-      }, 5000);
-    }
-  };
 
   const getLevelEmoji = (level: number): string => {
     const emojis = ['🌱', '📚', '🚀', '⭐', '🏆'];
@@ -464,6 +425,8 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
       ? data.supportedPersonName 
       : 'you';
     const isOther = data.recipient === 'other';
+    const calculatedLevel = data.pmAssessment?.calculatedLevel || 1;
+    const levelLabel = data.pmAssessment?.levelLabel || 'Beginner';
     
     return (
       <div className="fixed inset-0 z-50 bg-background flex items-center justify-center p-4 animate-fade-in">
@@ -526,8 +489,8 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
     );
   };
 
-  // Show results interstitial if assessment is complete
-  if (showResults) {
+  // Show results interstitial if assessment is complete and wizard triggered it
+  if (data.pmAssessment?.calculatedLevel && setShowingResultsInterstitial) {
     return renderResultsInterstitial();
   }
   
@@ -555,7 +518,7 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
         }
       })}
       onBack={goBack}
-      onContinue={handleContinue}
+      onContinue={goNext}
       required
       hideHeader
       hideFooter

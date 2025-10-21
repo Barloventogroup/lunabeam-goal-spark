@@ -1035,12 +1035,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 1: return data.goalTitle.trim().length > 0 && !!data.goalType;
         case 2: return true; // Motivation OPTIONAL
         case 3: return data.prerequisites?.ready === true || (data.prerequisites?.ready === false && !!data.prerequisites?.needs); // Prerequisites REQUIRED
-        case 4: return !!data.pmAssessment?.q1_experience; // Experience REQUIRED (moved up from step 5)
-        case 5: return !!data.pmAssessment?.q2_confidence; // Confidence REQUIRED (moved up from step 6)
-        case 6: return !!data.pmAssessment?.q3_help_needed; // Help Needed REQUIRED (moved up from step 7)
-        case 7: return true; // Barriers OPTIONAL (moved after level calc - now contextual)
-        case 8: return true; // Helper OPTIONAL
-        case 9: {
+        case 4: return true; // Skill Assessment Intro - always can proceed
+        case 5: return !!data.pmAssessment?.q1_experience; // Experience REQUIRED
+        case 6: return !!data.pmAssessment?.q2_confidence; // Confidence REQUIRED
+        case 7: return !!data.pmAssessment?.q3_help_needed; // Help Needed REQUIRED
+        case 8: return true; // Barriers OPTIONAL
+        case 9: return true; // Helper OPTIONAL
+        case 10: {
           const freq = data.pmPracticePlan?.targetFrequency ?? data.pmTargetFrequency;
           return !!freq && !!data.startDate;
         }
@@ -3612,6 +3613,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     </>;
   };
 
+  // State for interstitial screen
+  const [showingResultsInterstitial, setShowingResultsInterstitial] = useState(false);
+
   // Props for PM micro-steps
   const pmStepProps = {
     data,
@@ -3623,6 +3627,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     userSupporters,
     currentUserId: '',
     goalTitle: data.goalTitle,
+    setShowingResultsInterstitial,
   };
 
   const renderCurrentStep = () => {
@@ -3701,6 +3706,62 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
   const section = getStepSection();
 
+  // Handle Continue button with interstitial logic for skill assessment
+  const handleContinue = () => {
+    // Special handling for skill assessment (step 7 in PM, step 6 in regular)
+    const isSkillAssessmentComplete = 
+      (data.goalType === 'progressive_mastery' && currentStep === 7) ||
+      (data.goalType !== 'progressive_mastery' && currentStep === 6);
+      
+    if (isSkillAssessmentComplete) {
+      const assessment = data.goalType === 'progressive_mastery' 
+        ? data.pmAssessment 
+        : data.pmSkillAssessment;
+        
+      if (assessment?.q1_experience && 
+          assessment?.q2_confidence && 
+          assessment?.q3_help_needed) {
+        
+        const level = progressiveMasteryService.calculateSkillLevel({
+          q1: assessment.q1_experience,
+          q2: assessment.q2_confidence,
+          q3: assessment.q3_help_needed
+        });
+        
+        const label = progressiveMasteryService.getSkillLevelLabel(level);
+        
+        if (data.goalType === 'progressive_mastery') {
+          updateData({
+            pmAssessment: {
+              ...data.pmAssessment,
+              calculatedLevel: level,
+              levelLabel: label
+            }
+          });
+        } else {
+          updateData({
+            pmSkillAssessment: {
+              ...data.pmSkillAssessment,
+              calculatedLevel: level,
+              levelLabel: label
+            }
+          });
+        }
+        
+        setShowingResultsInterstitial(true);
+        
+        setTimeout(() => {
+          setShowingResultsInterstitial(false);
+          nextStep();
+        }, 5000);
+        
+        return;
+      }
+    }
+    
+    nextStep();
+  };
+
   // Show loading state while determining initial step
   if (currentStep === null) {
     return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
@@ -3742,8 +3803,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
         
         {/* Continue button - fixed bottom-right */}
-        {!isLastStep && <div className="fixed bottom-4 right-4 z-50">
-            <Button onClick={nextStep} disabled={!canProceed()} className="h-12 px-8 text-lg font-semibold shadow-lg">
+        {!isLastStep && !showingResultsInterstitial && <div className="fixed bottom-4 right-4 z-50">
+            <Button onClick={handleContinue} disabled={!canProceed()} className="h-12 px-8 text-lg font-semibold shadow-lg">
               Continue
               <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
