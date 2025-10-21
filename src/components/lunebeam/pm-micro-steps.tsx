@@ -983,10 +983,6 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
               </CardContent>
             </Card>
           )}
-          
-          <p className="text-sm text-muted-foreground text-center">
-            Choose your practice schedule
-          </p>
         </div>
       </div>
     </QuestionScreen>
