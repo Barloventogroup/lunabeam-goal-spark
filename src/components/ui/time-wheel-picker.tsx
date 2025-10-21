@@ -71,7 +71,7 @@ function TimeWheel({ values, selectedValue, onChange, formatValue }: TimeWheelPr
           <div
             key={val}
             className={cn(
-              "h-[44px] flex items-center justify-center snap-center cursor-pointer text-lg transition-all",
+              "h-[44px] flex items-center justify-center snap-center cursor-pointer text-base transition-all",
               selectedValue === val ? "font-bold text-foreground scale-110" : "text-muted-foreground"
             )}
             onClick={() => handleClick(val)}
@@ -180,7 +180,7 @@ export function TimeWheelPicker({ value, onChange, open, onOpenChange }: TimeWhe
                   <div
                     key={p}
                     className={cn(
-                      "h-[44px] flex items-center justify-center snap-center cursor-pointer text-lg transition-all",
+                      "h-[44px] flex items-center justify-center snap-center cursor-pointer text-base transition-all",
                       period === p ? "font-bold text-foreground scale-110" : "text-muted-foreground"
                     )}
                     onClick={() => setPeriod(p as 'AM' | 'PM')}
