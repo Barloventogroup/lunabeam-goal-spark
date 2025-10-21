@@ -3255,14 +3255,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               if (pmSelectedHelperId && pmSelectedHelperId !== 'none') {
                 const helper = userSupporters.find(s => s.id === pmSelectedHelperId);
                 updateData({ 
-                  pmTeachingHelper: {
-                    id: pmSelectedHelperId,
-                    name: helper?.name || 'Helper',
-                    relationship: 'parent'
+                  pmHelper: {
+                    helperId: pmSelectedHelperId,
+                    helperName: helper?.name || 'Helper'
                   }
                 });
               } else {
-                updateData({ pmTeachingHelper: undefined });
+                updateData({ 
+                  pmHelper: {
+                    helperId: 'none',
+                    helperName: 'Independent'
+                  }
+                });
               }
               nextStep();
             }}
