@@ -3175,8 +3175,38 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </h3>
             
             <div className="grid grid-cols-2 gap-4">
+                  {/* Skill Assessment - Always first if exists */}
+                  {data.pmAssessment && (
+                    <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[200px]">
+                      <h4 className="text-sm font-semibold text-red-700 mb-2 flex items-center gap-2">
+                        <span>🎯</span>
+                        Skill Assessment
+                      </h4>
+                      <div className="space-y-1.5">
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
+                          <span className="font-semibold">
+                            {data.pmAssessment.levelLabel} {['🌱', '📚', '🚀', '⭐', '🏆'][data.pmAssessment.calculatedLevel - 1]}
+                          </span>
+                        </p>
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Experience:</span>{' '}
+                          <span className="font-medium">{data.pmAssessment.q1_experience}/5</span>
+                        </p>
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
+                          <span className="font-medium">{data.pmAssessment.q2_confidence}/5</span>
+                        </p>
+                        <p className="text-sm">
+                          <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
+                          <span className="font-medium">{data.pmAssessment.q3_help_needed}/5</span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* The Goal */}
-                  <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200">
+                  <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[200px]">
                     <h4 className="text-sm font-semibold text-blue-700 mb-2">The Goal</h4>
                     <div className="space-y-1.5">
                       <p className="text-sm">
@@ -3205,7 +3235,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </div>
 
                   {/* Challenges */}
-                  <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200">
+                  <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[200px]">
                     <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
                     <div className="space-y-1.5">
                       {/* Show barriers priorities */}
@@ -3247,7 +3277,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </div>
 
                   {/* When and How Often */}
-                  <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200">
+                  <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[200px]">
                     <h4 className="text-sm font-semibold text-emerald-700 mb-2">When & How Often</h4>
                     <div className="space-y-1.5">
                       {data.startDate && (
@@ -3284,7 +3314,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </div>
 
                   {/* The Team */}
-                  <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200">
+                  <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 min-h-[200px]">
                     <h4 className="text-sm font-semibold text-purple-700 mb-2">The Team</h4>
                     <div className="space-y-1.5">
                       {/* PM flow: show helper */}
@@ -3336,43 +3366,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     </div>
                   </div>
                 </div>
-                
-                {/* PM-Specific Assessment Results */}
-                {data.goalType === 'progressive_mastery' && data.pmAssessment && (
-                  <div className="col-span-2 space-y-3 mt-4">
-                    {/* Skill Assessment Results */}
-                    <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200">
-                      <h4 className="text-sm font-semibold text-purple-700 mb-3">Skill Assessment</h4>
-                      <div className="space-y-2">
-                        <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
-                          <span className="font-semibold">
-                            {data.pmAssessment.levelLabel} {['🌱', '📚', '🚀', '⭐', '🏆'][data.pmAssessment.calculatedLevel - 1]}
-                          </span>
-                        </p>
-                        <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Experience:</span>{' '}
-                          <span className="font-medium">
-                            {['Brand new', 'Tried once/twice', 'Some experience', 'Pretty experienced', 'Very experienced'][data.pmAssessment.q1_experience - 1]}
-                          </span>
-                        </p>
-                        <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
-                          <span className="font-medium">
-                            {['Not confident', 'A little nervous', 'Somewhat confident', 'Pretty confident', 'Very confident'][data.pmAssessment.q2_confidence - 1]}
-                          </span>
-                        </p>
-                        <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
-                          <span className="font-medium">
-                            {['Full help', 'A lot', 'Some help', 'A little', 'No help'][data.pmAssessment.q3_help_needed - 1]}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                  </div>
-                )}
           </div>
 
           {/* Proposal notice */}
