@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from './drawer';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from './drawer';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
+import { ChevronLeft } from 'lucide-react';
 
 interface TimeWheelPickerProps {
   value?: string; // Format: "HH:MM" (24-hour)
@@ -126,9 +127,17 @@ export function TimeWheelPicker({ value, onChange, open, onOpenChange }: TimeWhe
   
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent side="bottom" className="h-[400px]">
-        <DrawerHeader className="border-b pb-4">
-          <DrawerTitle>Select Time</DrawerTitle>
+      <DrawerContent side="right" className="h-full w-full sm:max-w-md">
+        <DrawerHeader className="flex flex-row items-center gap-4 border-b pb-4 px-4 pt-6">
+          <DrawerClose asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <ChevronLeft className="h-5 w-5" />
+              <span className="sr-only">Close</span>
+            </Button>
+          </DrawerClose>
+          <div className="flex-1">
+            <DrawerTitle>Select Time</DrawerTitle>
+          </div>
         </DrawerHeader>
         
         {/* Wheel Picker Container */}

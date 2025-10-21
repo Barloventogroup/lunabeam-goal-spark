@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon, ChevronRight, ChevronLeft, ChevronDown, Clock } from 'lucide-react';
+import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon, ChevronRight, ChevronLeft, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { TimeWheelPicker } from '@/components/ui/time-wheel-picker';
 import { Switch } from '@/components/ui/switch';
@@ -748,7 +748,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                     <CalendarIcon className="h-4 w-4 mr-2" />
                     {data.startDate ? format(data.startDate, 'PPP') : 'Pick start date'}
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </SheetTrigger>
           <SheetContent side="right" className="w-full sm:max-w-md p-0">
@@ -838,7 +838,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                     'Select practice time'
                   )}
                 </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </Button>
               
               {/* Time Wheel Picker Drawer */}
@@ -909,7 +909,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                     <CalendarIcon className="h-4 w-4 mr-2" />
                     {data.endDate ? format(data.endDate, 'PPP') : 'Open-ended (no end date)'}
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </SheetTrigger>
           <SheetContent side="right" className="w-full sm:max-w-md p-0">
