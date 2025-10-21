@@ -83,7 +83,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
 }) => {
   const firstInputRef = useRef<HTMLTextAreaElement>(null);
   const percentage = currentStep / totalSteps * 100;
-  const canContinue = continueDisabled || required && !value;
+  const isContinueDisabled = continueDisabled || (required && !value);
 
   // Auto-focus first input on mount
   useEffect(() => {
@@ -97,7 +97,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
   // Keyboard support
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && !canContinue && inputType !== 'textarea') {
+      if (e.key === 'Enter' && !isContinueDisabled && inputType !== 'textarea') {
         e.preventDefault();
         onContinue();
       } else if (e.key === 'Escape') {
@@ -107,7 +107,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canContinue, inputType, onBack, onContinue]);
+  }, [isContinueDisabled, inputType, onBack, onContinue]);
   const renderInput = () => {
     if (customContent) {
       return customContent;
@@ -242,7 +242,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                 Skip for now
               </Button> : <div />}
 
-            <Button size="lg" onClick={onContinue} disabled={canContinue} className="gap-2">
+            <Button size="lg" onClick={onContinue} disabled={isContinueDisabled} className="gap-2">
               Continue
               <ArrowRight className="h-4 w-4" />
             </Button>
