@@ -151,6 +151,7 @@ export const SkillAssessmentWizard: React.FC<SkillAssessmentWizardProps> = ({
   onComplete,
   onBack
 }) => {
+  const [showIntro, setShowIntro] = useState(true);
   const [responses, setResponses] = useState<AssessmentResponses>({
     q1_familiarity: 0,
     q2_confidence: 0,
@@ -201,6 +202,76 @@ export const SkillAssessmentWizard: React.FC<SkillAssessmentWizardProps> = ({
   const getLevelEmoji = (level: number): string => {
     const emojis = ['🌱', '📚', '🚀', '⭐', '🏆'];
     return emojis[level - 1] || '🌱';
+  };
+
+  const renderIntroScreen = () => {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl">
+          <CardContent className="pt-8 pb-6 px-6">
+            <div className="text-center space-y-6">
+              {/* Icon */}
+              <div className="flex justify-center">
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Brain className="h-10 w-10 text-primary" />
+                </div>
+              </div>
+
+              {/* Main message */}
+              <div className="space-y-3">
+                <h1 className="text-2xl md:text-3xl font-bold">
+                  Let's check how good you are at performing this goal independently
+                </h1>
+                <p className="text-muted-foreground text-lg">
+                  This quick assessment helps us create the perfect learning path for you
+                </p>
+              </div>
+
+              {/* What to expect */}
+              <div className="bg-muted/50 rounded-lg p-4 text-left">
+                <p className="text-sm text-muted-foreground font-medium mb-3">
+                  You'll answer 3 quick questions about:
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>Your experience level with {goalTitle}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>Your confidence in doing it</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>How much support you need</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3 justify-center pt-4">
+                <Button
+                  variant="outline"
+                  onClick={onBack}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </Button>
+                <Button
+                  onClick={() => setShowIntro(false)}
+                  className="gap-2"
+                  size="lg"
+                >
+                  Continue
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   };
 
   const renderQuestion = (question: Question) => {
@@ -268,6 +339,11 @@ export const SkillAssessmentWizard: React.FC<SkillAssessmentWizardProps> = ({
       </div>
     );
   };
+
+  // Show intro screen first
+  if (showIntro) {
+    return renderIntroScreen();
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 animate-fade-in">
