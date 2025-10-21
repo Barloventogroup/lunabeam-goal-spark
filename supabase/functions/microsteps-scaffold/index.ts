@@ -307,7 +307,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // GEMINI JUDGE SERVICE: Up to 5 attempts with AI-guided refinement
+    // TWO-LAYER AI GENERATION: OpenAI → Gemini with Judge
     
     let microSteps = null;
     let attemptNumber = 1;
@@ -320,16 +320,151 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
     
-    for (attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber++) {
-      console.log(`\n=== ATTEMPT ${attemptNumber}/${maxAttempts} ===`);
-      
-      // Build prompts (no verb constraints - removed)
+    // ============= LAYER 1: TRY OPENAI FIRST =============
+    console.log('\n=== LAYER 1: OpenAI (gpt-5-mini) ===');
+    
+    try {
       const systemPrompt = buildSystemPrompt(payload.flow);
-      const userPrompt = buildUserPrompt(payload, attemptNumber, retryGuidance);
+      const userPrompt = buildUserPrompt(payload, 1, '');
+      
+      const openaiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'openai/gpt-5-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          tools: [{
+            type: "function",
+            function: {
+              name: "generate_microsteps",
+              description: "Generate exactly 4 theory-aligned micro-steps using natural, conversational language.",
+              parameters: {
+                type: "object",
+                properties: {
+                  microSteps: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string", maxLength: 60 },
+                        description: { type: "string", maxLength: 300 }
+                      },
+                      required: ["title", "description"]
+                    },
+                    minItems: 4,
+                    maxItems: 4
+                  }
+                },
+                required: ["microSteps"]
+              }
+            }
+          }],
+          tool_choice: { type: "function", function: { name: "generate_microsteps" } }
+        }),
+      });
 
-      try {
-        // Call Lovable AI Gateway
-        const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      if (openaiResponse.ok) {
+        const openaiData = await openaiResponse.json();
+        const toolCall = openaiData.choices?.[0]?.message?.tool_calls?.[0];
+        
+        if (toolCall && toolCall.function.name === 'generate_microsteps') {
+          const candidateSteps = JSON.parse(toolCall.function.arguments).microSteps;
+          
+          // Layer 2 Safety Check
+          const stepsJSON = JSON.stringify(candidateSteps);
+          if (stepsJSON.includes('[SAFETY_VIOLATION_SIGNAL]')) {
+            console.error('⚠️ LAYER 2 SAFETY VIOLATION detected from OpenAI');
+            if (userId) {
+              await supabase.from('safety_violations_log').insert({
+                user_id: userId,
+                violation_layer: 'layer_2_generation',
+                goal_title: payload.goalTitle,
+                goal_category: payload.category,
+                motivation: payload.motivation,
+                barriers: `${payload.barrier1}, ${payload.barrier2}`,
+                ai_response: stepsJSON,
+                violation_reason: 'OpenAI detected nuanced safety violation'
+              });
+              await notifySafetyViolation(supabase, userId, payload.goalTitle, 'layer_2_generation', 'OpenAI safety signal');
+            }
+            return new Response(
+              JSON.stringify({ 
+                error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
+                safety_violation: true,
+                no_retry: true
+              }),
+              { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          
+          if (Array.isArray(candidateSteps) && candidateSteps.length === 4) {
+            // Basic format check
+            const basicChecks = validateBasicFormat(candidateSteps, payload);
+            if (basicChecks.valid) {
+              // Gemini Judge validation
+              const judgeResult = await callGeminiJudge({
+                microSteps: candidateSteps,
+                originalInput: payload
+              });
+              
+              if (judgeResult.error) {
+                console.warn('⚠️ Gemini Judge unavailable, but OpenAI steps passed basic checks');
+              } else if (judgeResult.pass_fail === 'SAFETY_VIOLATION' || judgeResult.total_score === 0) {
+                console.error('⚠️ LAYER 3 SAFETY VIOLATION flagged by Judge');
+                if (userId) {
+                  await supabase.from('safety_violations_log').insert({
+                    user_id: userId,
+                    violation_layer: 'layer_3_judge',
+                    goal_title: payload.goalTitle,
+                    goal_category: payload.category,
+                    motivation: payload.motivation,
+                    barriers: `${payload.barrier1}, ${payload.barrier2}`,
+                    ai_response: JSON.stringify(candidateSteps),
+                    violation_reason: judgeResult.critique_for_retry
+                  });
+                  await notifySafetyViolation(supabase, userId, payload.goalTitle, 'layer_3_judge', judgeResult.critique_for_retry);
+                }
+                return new Response(
+                  JSON.stringify({ 
+                    error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
+                    safety_violation: true,
+                    no_retry: true
+                  }),
+                  { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                );
+              } else if (judgeResult.pass_fail === 'PASS' || !judgeResult.error) {
+                console.log('✅ OpenAI Layer SUCCESS (Judge score:', judgeResult.total_score, '/110)');
+                microSteps = candidateSteps;
+              }
+            }
+          }
+        }
+      } else if (openaiResponse.status === 429 || openaiResponse.status === 402) {
+        console.warn(`⚠️ OpenAI rate limit/payment: ${openaiResponse.status}`);
+      }
+    } catch (openaiError) {
+      console.warn('⚠️ OpenAI Layer failed:', openaiError);
+    }
+    
+    // ============= LAYER 2: FALLBACK TO GEMINI WITH JUDGE =============
+    if (!microSteps) {
+      console.log('\n=== LAYER 2: Gemini (with Judge retries) ===');
+      
+      for (attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber++) {
+        console.log(`\n=== Gemini Attempt ${attemptNumber}/${maxAttempts} ===`);
+        
+        const systemPrompt = buildSystemPrompt(payload.flow);
+        const userPrompt = buildUserPrompt(payload, attemptNumber, retryGuidance);
+
+        try {
+          // Call Lovable AI Gateway (Gemini)
+          const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${LOVABLE_API_KEY}`,
@@ -551,15 +686,17 @@ Deno.serve(async (req) => {
       }
     }
     
-    // Check if we got valid steps
+      }
+    }
+    
+    // Check if we got valid steps from either AI layer
     if (!microSteps) {
-      console.error('Failed to generate valid micro-steps after all attempts');
+      console.error('❌ Both AI layers failed to generate valid micro-steps');
       return new Response(
         JSON.stringify({ 
-          error: 'We cannot provide micro-steps at this time. Let\'s try again later.',
-          useFallback: true 
+          error: 'AI temporarily unavailable. Please try again later.'
         }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -571,7 +708,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in microsteps-scaffold:', error);
     return new Response(
-      JSON.stringify({ error: error.message, useFallback: true }),
+      JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

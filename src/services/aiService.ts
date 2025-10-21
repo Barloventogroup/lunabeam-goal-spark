@@ -104,7 +104,7 @@ export class AIService {
     }
   }
 
-  static async getMicroSteps(request: MicroStepsRequest): Promise<{ microSteps?: MicroStep[]; error?: string; useFallback?: boolean }> {
+  static async getMicroSteps(request: MicroStepsRequest): Promise<{ microSteps?: MicroStep[]; error?: string }> {
     try {
       console.log('[AIService.getMicroSteps] Invoking edge function with:', request);
       
@@ -120,18 +120,18 @@ export class AIService {
           status: error.status,
           details: error
         });
-        return { error: error.message, useFallback: true };
+        return { error: error.message };
       }
       
-      if (data?.useFallback) {
-        console.log('[AIService.getMicroSteps] AI requested fallback');
-        return { useFallback: true };
+      if (!data?.microSteps || data.microSteps.length === 0) {
+        console.error('[AIService.getMicroSteps] No micro-steps returned');
+        return { error: 'No micro-steps generated' };
       }
 
-      return { microSteps: data?.microSteps };
+      return { microSteps: data.microSteps };
     } catch (error) {
       console.error('[AIService.getMicroSteps] Exception:', error);
-      return { error: error.message, useFallback: true };
+      return { error: error.message };
     }
   }
 }

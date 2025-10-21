@@ -1576,12 +1576,12 @@ serve(async (req) => {
             let generatedSteps: GeneratedStep[] | null = null;
             let aiProvider = 'none';
             
-            // Try Lovable AI first (faster, recommended)
+            // Try OpenAI first
             try {
-              console.log(`🤖 [${taskId}] Attempting Lovable AI generation (Gemini 2.5 Flash)...`);
-              const lovableStart = Date.now();
-              const rawSteps = await callLovableAIWithRetry(payload);
-              console.log(`✅ [${taskId}] Lovable AI returned ${rawSteps.length} steps in ${Date.now() - lovableStart}ms`);
+              console.log(`🤖 [${taskId}] Attempting OpenAI generation (gpt-5-mini)...`);
+              const openaiStart = Date.now();
+              const rawSteps = await callAIWithRetry(payload);
+              console.log(`✅ [${taskId}] OpenAI returned ${rawSteps.length} steps in ${Date.now() - openaiStart}ms`);
               
               console.log(`🔍 [${taskId}] Checking for safety violations...`);
               if (containsSafetySignal(rawSteps)) {
@@ -1594,39 +1594,45 @@ serve(async (req) => {
               const validation = validateBasicFormat(rawSteps, payload);
               if (validation.valid || rawSteps.length > 0) {
                 generatedSteps = rawSteps;
-                aiProvider = 'lovable';
-                console.log(`✅ [${taskId}] Lovable AI validation passed - ${rawSteps.length} AI-enhanced steps ready`);
+                aiProvider = 'openai';
+                console.log(`✅ [${taskId}] OpenAI validation passed - ${rawSteps.length} AI-enhanced steps ready`);
               } else {
-                console.warn(`⚠️ [${taskId}] Lovable AI validation warnings:`, validation.errors);
+                console.warn(`⚠️ [${taskId}] OpenAI validation warnings:`, validation.errors);
+                // Still attempt fallback if validation had issues
               }
-            } catch (err: any) {
-              console.error(`❌ [${taskId}] Lovable AI failed:`, {
-                error: err.message,
-                stack: err.stack?.slice(0, 200),
-                name: err.name
-              });
-              console.log(`🔄 [${taskId}] Falling back to OpenAI...`);
+            } catch (openaiError: any) {
+              console.warn(`⚠️ [${taskId}] OpenAI failed (${openaiError.message}), trying Gemini fallback...`);
               
+              // Fallback to Gemini (Lovable AI)
               try {
-                console.log(`🤖 [${taskId}] Attempting OpenAI generation (${AI_MODEL})...`);
-                const openaiStart = Date.now();
-                const rawSteps = await callAIWithRetry(payload);
-                console.log(`✅ [${taskId}] OpenAI returned ${rawSteps.length} steps in ${Date.now() - openaiStart}ms`);
+                console.log(`🤖 [${taskId}] Attempting Gemini generation (Lovable AI)...`);
+                const geminiStart = Date.now();
+                const rawSteps = await callLovableAIWithRetry(payload);
+                console.log(`✅ [${taskId}] Gemini returned ${rawSteps.length} steps in ${Date.now() - geminiStart}ms`);
                 
-                if (!containsSafetySignal(rawSteps)) {
-                  generatedSteps = rawSteps;
-                  aiProvider = 'openai';
-                  console.log(`✅ [${taskId}] OpenAI generated ${rawSteps.length} steps`);
-                } else {
-                  console.error(`⚠️ [${taskId}] OpenAI safety violation detected`);
+                console.log(`🔍 [${taskId}] Checking for safety violations...`);
+                if (containsSafetySignal(rawSteps)) {
+                  console.error(`⚠️ [${taskId}] Layer 2 safety violation detected - aborting enhancement`);
+                  return;
                 }
-              } catch (openaiErr: any) {
-                console.error(`❌ [${taskId}] OpenAI failed:`, {
-                  error: openaiErr.message,
-                  stack: openaiErr.stack?.slice(0, 200)
+                console.log(`✅ [${taskId}] Safety check passed`);
+                
+                console.log(`🔍 [${taskId}] Validating step format...`);
+                const validation = validateBasicFormat(rawSteps, payload);
+                if (validation.valid || rawSteps.length > 0) {
+                  generatedSteps = rawSteps;
+                  aiProvider = 'gemini';
+                  console.log(`✅ [${taskId}] Gemini validation passed - ${rawSteps.length} AI-enhanced steps ready`);
+                } else {
+                  console.warn(`⚠️ [${taskId}] Gemini validation warnings:`, validation.errors);
+                }
+              } catch (geminiError: any) {
+                console.error(`❌ [${taskId}] Both OpenAI and Gemini failed:`, {
+                  openai: openaiError.message,
+                  gemini: geminiError.message
                 });
-                console.error(`❌ [${taskId}] Both AI providers failed - keeping deterministic steps`);
-                return;
+                console.warn(`⚠️ [${taskId}] AI enhancement failed, keeping deterministic steps`);
+                return; // Exit background task, deterministic steps remain
               }
             }
             
@@ -1828,25 +1834,25 @@ serve(async (req) => {
       // SYNC MODE: Original behavior - wait for AI generation
       console.log('⏳ Sync mode: Waiting for AI generation...');
 
-      // 8. Generate steps using OpenAI API with Lovable AI fallback
-      console.log('🤖 Starting AI step generation with Layer 2 safety...');
+      // 8. Generate steps using OpenAI FIRST, then Lovable AI (Gemini) fallback
+      console.log('🤖 Starting AI step generation (OpenAI → Gemini) with Layer 2 safety...');
       const generationStart = Date.now();
 
       let generatedSteps: GeneratedStep[] | null = null;
       
       try {
-        console.log('🤖 Attempting Lovable AI generation (primary)...');
-        const rawSteps = await callLovableAIWithRetry(payload);
+        console.log('🤖 Attempting OpenAI generation (primary)...');
+        const rawSteps = await callAIWithRetry(payload, '');
         
         // CRITICAL: Check if we got enough steps
         if (rawSteps.length < 6) {
-          console.error(`❌ Lovable AI returned only ${rawSteps.length} steps (need ≥6), escalating to OpenAI...`);
+          console.error(`❌ OpenAI returned only ${rawSteps.length} steps (need ≥6), escalating to Gemini...`);
           throw new Error(`Insufficient steps: ${rawSteps.length} (need ≥6)`);
         }
         
         // Check for Layer 2 safety signal
         if (containsSafetySignal(rawSteps)) {
-          console.error('⚠️ Layer 2 safety violation detected in generated steps');
+          console.error('⚠️ Layer 2 safety violation detected in OpenAI steps');
           return await handleLayer2Violation(supabase, userId, payload, JSON.stringify(rawSteps));
         }
         
@@ -1854,28 +1860,28 @@ serve(async (req) => {
         const validation = validateBasicFormat(rawSteps, payload);
         
         if (validation.valid) {
-          console.log(`✅ Lovable AI validation passed - generated ${rawSteps.length} steps`);
+          console.log(`✅ OpenAI validation passed - generated ${rawSteps.length} steps`);
           generatedSteps = rawSteps;
         } else {
-          console.error(`❌ Lovable AI validation failed:`, validation.errors);
+          console.error(`❌ OpenAI validation failed:`, validation.errors);
           console.warn('⚠️ Returning steps despite validation errors to avoid blocking user');
           generatedSteps = rawSteps; // Allow through with warnings
         }
-      } catch (lovableError: any) {
-        console.warn('⚠️ Lovable AI failed, trying OpenAI fallback...', lovableError.message);
+      } catch (openaiError: any) {
+        console.warn('⚠️ OpenAI failed, trying Gemini fallback...', openaiError.message);
         
         try {
-          const rawSteps = await callAIWithRetry(payload, 'Previous attempt returned insufficient steps. You MUST return exactly 6-8 complete steps.');
+          const rawSteps = await callLovableAIWithRetry(payload);
           
-          // CRITICAL: Check OpenAI steps too
+          // CRITICAL: Check Gemini steps too
           if (rawSteps.length < 6) {
-            console.error(`❌ OpenAI also returned only ${rawSteps.length} steps (need ≥6)`);
-            throw new Error(`Insufficient OpenAI steps: ${rawSteps.length}`);
+            console.error(`❌ Gemini also returned only ${rawSteps.length} steps (need ≥6)`);
+            throw new Error(`Insufficient Gemini steps: ${rawSteps.length}`);
           }
           
           // Check for Layer 2 safety signal
           if (containsSafetySignal(rawSteps)) {
-            console.error('⚠️ Layer 2 safety violation detected in OpenAI steps');
+            console.error('⚠️ Layer 2 safety violation detected in Gemini steps');
             return await handleLayer2Violation(supabase, userId, payload, JSON.stringify(rawSteps));
           }
           
@@ -1883,25 +1889,24 @@ serve(async (req) => {
           const validation = validateBasicFormat(rawSteps, payload);
           
           if (validation.valid) {
-            console.log(`✅ OpenAI validation passed - generated ${rawSteps.length} steps`);
+            console.log(`✅ Gemini validation passed - generated ${rawSteps.length} steps`);
             generatedSteps = rawSteps;
           } else {
-            console.warn('⚠️ OpenAI validation warnings:', validation.errors);
+            console.warn('⚠️ Gemini validation warnings:', validation.errors);
             generatedSteps = rawSteps; // Allow through with warnings
           }
           
-        } catch (openaiError: any) {
-          console.error('❌ Both Lovable AI and OpenAI failed:', {
-            lovable: lovableError.message,
-            openai: openaiError.message
+        } catch (geminiError: any) {
+          console.error('❌ Both OpenAI and Gemini failed:', {
+            openai: openaiError.message,
+            gemini: geminiError.message
           });
           
-          // Return error - frontend will use deterministic fallback
+          // Return error without useFallback flag
           return new Response(
             JSON.stringify({ 
-              error: 'AI generation temporarily unavailable. Please try again.',
-              code: 'AI_GENERATION_FAILED',
-              useFallback: true
+              error: 'AI temporarily unavailable. Please try again later.',
+              code: 'AI_GENERATION_FAILED'
             }),
             { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
@@ -1912,12 +1917,11 @@ serve(async (req) => {
       if (!generatedSteps || generatedSteps.length < 6) {
         console.error(`❌ Step generation failed: ${generatedSteps?.length || 0} steps (need ≥6)`);
         
-        // Return 503 with useFallback flag - frontend will generate deterministic steps
+        // Return 503 without useFallback flag
         return new Response(
           JSON.stringify({ 
-            error: 'AI generation temporarily unavailable. Please try again.',
-            code: 'GENERATION_FAILED',
-            useFallback: true // Signal frontend to use fallback generator
+            error: 'AI temporarily unavailable. Please try again later.',
+            code: 'GENERATION_FAILED'
           }),
           { 
             status: 503, 

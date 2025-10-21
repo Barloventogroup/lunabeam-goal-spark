@@ -173,35 +173,48 @@ export const SupporterGoalWizard: React.FC<SupporterGoalWizardProps> = ({
     setGeneratingSteps(true);
     try {
       // Generate individual steps
-      const individualMicroSteps = await generateMicroStepsSmart(data as any, 'supporter');
-      setIndividualSteps(individualMicroSteps);
+      try {
+        const individualMicroSteps = await generateMicroStepsSmart(data as any, 'supporter');
+        setIndividualSteps(individualMicroSteps);
+      } catch (error) {
+        console.error('Error generating individual steps:', error);
+        toast({
+          title: "AI temporarily unavailable",
+          description: "Could not generate micro-steps. You can add them manually later.",
+          variant: "destructive"
+        });
+        setIndividualSteps([]);
+      }
 
       // Generate supporter steps via edge function
-      const { data: supporterData, error } = await supabase.functions.invoke(
-        'supporter-microsteps-scaffold',
-        {
-          body: {
-            individualName: data.supportedPersonName,
-            prerequisiteDetail: data.customPrerequisites || 'necessary tools',
-            primaryMotivation: data.goalMotivation || 'independence',
-            startTime: data.customTime || '18:00',
-            startDay: format(data.startDate, 'EEEE'),
-            supporterRole: data.supporterRole,
-            goalTitle: data.goalTitle
+      try {
+        const { data: supporterData, error } = await supabase.functions.invoke(
+          'supporter-microsteps-scaffold',
+          {
+            body: {
+              individualName: data.supportedPersonName,
+              prerequisiteDetail: data.customPrerequisites || 'necessary tools',
+              primaryMotivation: data.goalMotivation || 'independence',
+              startTime: data.customTime || '18:00',
+              startDay: format(data.startDate, 'EEEE'),
+              supporterRole: data.supporterRole,
+              goalTitle: data.goalTitle
+            }
           }
-        }
-      );
+        );
 
-      if (error) throw error;
-      setSupporterSteps(supporterData.supporterSteps || []);
+        if (error) throw error;
+        setSupporterSteps(supporterData.supporterSteps || []);
+      } catch (error) {
+        console.error('Error generating supporter steps:', error);
+        toast({
+          title: "AI temporarily unavailable",
+          description: "Could not generate supporter steps. You can add them manually later.",
+          variant: "destructive"
+        });
+        setSupporterSteps([]);
+      }
 
-    } catch (error) {
-      console.error('Error generating steps:', error);
-      toast({
-        title: "Using fallback templates",
-        description: "Could not personalize all steps.",
-        variant: "default"
-      });
     } finally {
       setGeneratingSteps(false);
     }

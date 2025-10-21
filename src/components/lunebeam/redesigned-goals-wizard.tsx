@@ -1673,47 +1673,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     duration: 4000
                   });
                   // Continue to goal detail page - no error
-                } else if (syncError || syncData?.useFallback || !syncData?.steps || syncData.steps.length === 0) {
-                  // AI failed or returned useFallback flag - generate deterministic fallback steps
-                  console.warn('⚠️ AI unavailable or returned 0 steps, generating deterministic fallback...');
-                  
-                  const { generatePMFallbackSteps } = await import('@/services/pmFallbackGenerator');
-                  const fallbackSteps = generatePMFallbackSteps(
-                    createdGoal.title,
-                    createdGoal.domain || 'independent_living',
-                    durationWeeks || 6
-                  );
-                  
-                  console.log(`✅ Generated ${fallbackSteps.length} fallback steps`);
-                  
-                  // Insert fallback steps
-                  const stepsToInsert = fallbackSteps.map((step, idx) => ({
-                    goal_id: createdGoal.id,
-                    title: step.title,
-                    notes: step.notes,
-                    estimated_effort_min: step.estimatedDuration,
-                    step_type: 'habit',
-                    is_planned: true,
-                    status: 'not_started',
-                    order_index: idx,
-                    pm_metadata: step.pm_metadata as any
-                  }));
-                  
-                  const { error: insertError } = await supabase
-                    .from('steps')
-                    .insert(stepsToInsert);
-                  
-                  if (insertError) {
-                    console.error('❌ Failed to insert fallback steps:', insertError);
-                    throw new Error('Failed to create practice plan');
-                  }
-                  
+        } else if (syncError || !syncData?.steps || syncData.steps.length === 0) {
+          // AI failed - show error and proceed without steps
+          console.error('⚠️ AI unavailable or returned 0 steps');
+          
           toast({
-            title: 'Goal Created! 🚀',
-            description: `Your personalized plan begins now with ${fallbackSteps.length} steps!`,
-            duration: 3000
+            title: 'AI temporarily unavailable',
+            description: 'Please try again later. You can add steps manually from the goal detail page.',
+            variant: 'destructive',
+            duration: 5000
           });
-                } else {
+          
+          // Continue to goal detail without steps
+        } else {
                   // Success: Fetch steps from DB (server should have inserted them)
                   console.log(`[PM Wizard] AI returned ${syncData.steps.length} steps, fetching from DB...`);
                   

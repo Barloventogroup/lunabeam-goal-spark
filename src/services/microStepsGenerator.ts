@@ -678,18 +678,18 @@ export async function generateMicroStepsSmart(
     };
 
     console.log('[generateMicroStepsSmart] Calling AI service with payload:', payload);
-    const { microSteps, error, useFallback } = await AIService.getMicroSteps(payload);
-    console.log('[generateMicroStepsSmart] AI response:', { microSteps, error, useFallback, stepCount: microSteps?.length });
+    const { microSteps, error } = await AIService.getMicroSteps(payload);
+    console.log('[generateMicroStepsSmart] AI response:', { microSteps, error, stepCount: microSteps?.length });
     
-    if (error || useFallback || !microSteps || microSteps.length !== 4) {
-      console.warn('AI generation failed, using theory-aligned fallback. Reason:', { error, useFallback, stepCount: microSteps?.length });
-      return generateMicroStepsFallback(data, flow);
+    if (error || !microSteps || microSteps.length !== 4) {
+      console.error('AI generation failed:', { error, stepCount: microSteps?.length });
+      throw new Error(`AI temporarily unavailable: ${error || 'No steps generated'}`);
     }
     
     return microSteps;
   } catch (err) {
     console.error('Smart generation error:', err);
-    return generateMicroStepsFallback(data, flow);
+    throw err;
   }
 }
 

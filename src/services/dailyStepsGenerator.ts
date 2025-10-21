@@ -104,11 +104,14 @@ export const dailyStepsGenerator = {
         };
 
         // Generate individual steps
-        const individualSteps = await generateMicroStepsSmart(enrichedData, 'individual');
+        try {
+          const individualSteps = await generateMicroStepsSmart(enrichedData, 'individual');
 
-        if (!individualSteps || individualSteps.length === 0) {
-          throw new Error('No steps generated');
-        }
+          if (!individualSteps || individualSteps.length === 0) {
+            console.warn(`No AI steps generated for occurrence ${nextIndex + 1}, skipping`);
+            nextIndex++;
+            continue;
+          }
 
         // Save steps (same logic as in goal-detail-v2.tsx)
         const startTime = wizardContext.customTime || wizardContext.timeOfDay || '08:00';
@@ -190,35 +193,44 @@ export const dailyStepsGenerator = {
           
           const supporterSteps = await generateMicroStepsSmart(supporterEnrichedData, 'supporter');
           
-          for (let i = 0; i < supporterSteps.length; i++) {
-            const coachStep = supporterSteps[i];
-            
-            let stepDueDate: Date;
-            if (i === 0 && coachStep.title.toLowerCase().includes('prep')) {
-              stepDueDate = new Date(occurrenceDate);
-              stepDueDate.setHours(prepHour, prepMin, 0, 0);
-            } else if (i === 1 || coachStep.title.toLowerCase().includes('at ')) {
-              stepDueDate = new Date(occurrenceDate);
-            } else {
-              stepDueDate = new Date(occurrenceDate);
-              stepDueDate.setMinutes(startMinNum + 30);
+          if (!supporterSteps || supporterSteps.length === 0) {
+            console.warn(`No supporter steps generated for occurrence ${nextIndex + 1}, skipping supporter steps`);
+          } else {
+            for (let i = 0; i < supporterSteps.length; i++) {
+              const coachStep = supporterSteps[i];
+              
+              let stepDueDate: Date;
+              if (i === 0 && coachStep.title.toLowerCase().includes('prep')) {
+                stepDueDate = new Date(occurrenceDate);
+                stepDueDate.setHours(prepHour, prepMin, 0, 0);
+              } else if (i === 1 || coachStep.title.toLowerCase().includes('at ')) {
+                stepDueDate = new Date(occurrenceDate);
+              } else {
+                stepDueDate = new Date(occurrenceDate);
+                stepDueDate.setMinutes(startMinNum + 30);
+              }
+              
+              const timingHint = i === 0 
+                ? `\n\nℹ️ Recommended timing: Before individual starts at ${startTime}`
+                : `\n\nℹ️ Recommended timing: Around ${stepDueDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+              
+              await stepsService.createStep(goal.id, {
+                title: coachStep.title,
+                step_type: 'action',
+                is_required: false,
+                estimated_effort_min: 10,
+                is_planned: true,
+                notes: coachStep.description + timingHint,
+                is_supporter_step: true,
+                due_date: stepDueDate.toISOString()
+              });
             }
-            
-            const timingHint = i === 0 
-              ? `\n\nℹ️ Recommended timing: Before individual starts at ${startTime}`
-              : `\n\nℹ️ Recommended timing: Around ${stepDueDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-            
-            await stepsService.createStep(goal.id, {
-              title: coachStep.title,
-              step_type: 'action',
-              is_required: false,
-              estimated_effort_min: 10,
-              is_planned: true,
-              notes: coachStep.description + timingHint,
-              is_supporter_step: true,
-              due_date: stepDueDate.toISOString()
-            });
           }
+        }
+        } catch (stepGenError) {
+          console.error(`Error generating steps for occurrence ${nextIndex + 1}:`, stepGenError);
+          nextIndex++;
+          continue;
         }
 
         daysGenerated++;
