@@ -1585,16 +1585,17 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
             goal={goal}
             wizardContext={(() => {
               const existingContext = (goal as any).metadata?.wizardContext;
-              
-              // If wizardContext exists and has all PM data, use it
               if (existingContext && existingContext.goalType === 'progressive_mastery' && existingContext.pmAssessment) {
                 return existingContext;
               }
-              
-              // For PM goals without complete wizardContext, reconstruct it from goal data
-              if (goal.goal_type === 'progressive_mastery' || (goal as any).pm_metadata) {
-                const pmMetadata = (goal as any).pm_metadata || {};
-                const metadata = (goal as any).metadata || {};
+              // Reconstruct from goal.metadata for PM goals
+              if ((goal as any).goal_type === 'progressive_mastery' || (goal as any)?.metadata?.skill_assessment) {
+                const md = (goal as any).metadata || {};
+                const sa = md.skill_assessment || {};
+                const ss = md.smart_start || {};
+                const helper = md.teaching_helper || {};
+                const toTitle = (s?: string) => s ? s.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : undefined;
+                const hasAssessment = typeof sa.q1_familiarity === 'number' || typeof sa.q2_confidence === 'number' || typeof sa.q3_independence === 'number' || typeof sa.q3_help_needed === 'number';
                 return {
                   ...existingContext,
                   goalTitle: goal.title,
@@ -1603,29 +1604,31 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                   frequency: goal.frequency_per_week,
                   startDate: goal.start_date,
                   endDate: goal.due_date,
-                  selectedDays: metadata.selected_days || [],
-                  customTime: pmMetadata.custom_time || metadata.custom_time,
-                  pmAssessment: pmMetadata.skill_assessment ? {
-                    q1_experience: pmMetadata.skill_assessment.q1_experience,
-                    q2_confidence: pmMetadata.skill_assessment.q2_confidence,
-                    q3_help_needed: pmMetadata.skill_assessment.q3_help_needed,
-                    calculatedLevel: pmMetadata.skill_assessment.calculated_level,
-                    levelLabel: pmMetadata.skill_assessment.level_label
+                  selectedDays: md.selected_days || [],
+                  customTime: md.custom_time,
+                  pmAssessment: hasAssessment ? {
+                    q1_experience: sa.q1_familiarity,
+                    q2_confidence: sa.q2_confidence,
+                    q3_help_needed: typeof sa.q3_help_needed === 'number' ? sa.q3_help_needed : (typeof sa.q3_independence === 'number' ? 6 - sa.q3_independence : undefined),
+                    calculatedLevel: sa.calculated_level,
+                    levelLabel: toTitle(sa.level_label)
                   } : undefined,
                   pmPracticePlan: {
-                    targetFrequency: goal.frequency_per_week,
-                    startingFrequency: goal.frequency_per_week,
-                    durationWeeks: goal.duration_weeks,
-                    smartStartAccepted: true
+                    startingFrequency: ss.user_selected_initial ?? ss.suggested_initial ?? goal.frequency_per_week,
+                    targetFrequency: ss.target_frequency ?? goal.frequency_per_week,
+                    durationWeeks: goal.duration_weeks ?? null,
+                    smartStartAccepted: ss.suggestion_accepted ?? true
                   },
-                  barriers: pmMetadata.barriers,
-                  pmHelper: pmMetadata.teaching_helper || pmMetadata.helper,
-                  goalMotivation: pmMetadata.motivation,
-                  customMotivation: pmMetadata.motivation_text,
-                  customChallenges: pmMetadata.barriers?.details
+                  pmHelper: (helper && (helper.helper_id || helper.helper_name)) ? {
+                    helperId: helper.helper_id,
+                    helperName: helper.helper_name,
+                    supportTypes: helper.relationship
+                  } : undefined,
+                  goalMotivation: md.motivation,
+                  customMotivation: md.motivation_text,
+                  barriers: md.barriers
                 };
               }
-              
               return existingContext;
             })()}
           />

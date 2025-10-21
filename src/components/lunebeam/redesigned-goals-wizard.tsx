@@ -1283,7 +1283,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           status: 'active' as const,
           priority: 'medium' as const,
           goal_type: (() => {
-            if (data.goalType === 'progressive_mastery') return 'practice';
+            if (data.goalType === 'progressive_mastery') return 'progressive_mastery';
             if (data.goalType === 'reminder') return 'reminder';
             if (data.goalType === 'practice') return 'practice';
             if (data.goalType === 'new_skill') return 'new_skill';
@@ -1334,12 +1334,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 levelLabel: data.pmSkillAssessment.level_label
               } : undefined,
               pmPracticePlan: data.goalType === 'progressive_mastery' ? {
-                targetFrequency: data.pmTargetFrequency,
-                startingFrequency: data.pmTargetFrequency,
-                durationWeeks: data.endDate && data.startDate 
+                targetFrequency: data.pmPracticePlan?.targetFrequency ?? data.pmTargetFrequency ?? data.frequency,
+                startingFrequency: data.pmPracticePlan?.startingFrequency ?? data.pmTargetFrequency ?? data.frequency,
+                durationWeeks: (data.pmPracticePlan?.durationWeeks ?? (data.endDate && data.startDate 
                   ? Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
-                  : null,
-                smartStartAccepted: true
+                  : null)),
+                smartStartAccepted: data.pmPracticePlan?.smartStartAccepted ?? true
               } : undefined,
               barriers: data.goalType === 'progressive_mastery' && data.barriers ? {
                 priority1: data.barriers.priority1,
@@ -1429,7 +1429,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         if (data.goalType === 'progressive_mastery') {
           try {
             // Validate all required PM fields using new data structure
-            if (!data.pmAssessment?.q1_experience || !data.pmAssessment?.q2_confidence || !data.pmAssessment?.q3_help_needed) {
+            const assessment = data.pmSkillAssessment || data.pmAssessment;
+            if (!assessment?.q1_experience || !assessment?.q2_confidence || !assessment?.q3_help_needed) {
               throw new Error('Skill assessment is required');
             }
             if (!data.pmPracticePlan?.targetFrequency || !data.pmPracticePlan?.startingFrequency || data.pmPracticePlan?.durationWeeks === undefined) {
@@ -1438,23 +1439,23 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
             console.log('Saving PM metadata for goal:', createdGoal.id);
 
-            // Save skill assessment using new pmAssessment structure
+            // Save skill assessment using new structure
             await progressiveMasteryService.saveSkillAssessment(createdGoal.id, {
-              q1: data.pmAssessment.q1_experience,
-              q2: data.pmAssessment.q2_confidence,
-              q3: data.pmAssessment.q3_help_needed
+              q1: assessment.q1_experience,
+              q2: assessment.q2_confidence,
+              q3: assessment.q3_help_needed
             });
 
             // Calculate level and generate Smart Start plan
-            const level = data.pmAssessment.calculatedLevel ?? progressiveMasteryService.calculateSkillLevel({
-              q1: data.pmAssessment.q1_experience,
-              q2: data.pmAssessment.q2_confidence,
-              q3: data.pmAssessment.q3_help_needed
+            const level = assessment.calculatedLevel ?? progressiveMasteryService.calculateSkillLevel({
+              q1: assessment.q1_experience,
+              q2: assessment.q2_confidence,
+              q3: assessment.q3_help_needed
             });
             
             const plan = progressiveMasteryService.suggestStartFrequency(level, data.pmPracticePlan.targetFrequency);
 
-            // Save smart start plan using new pmPracticePlan structure
+            // Save smart start plan using pmPracticePlan structure
             await progressiveMasteryService.saveSmartStartPlan(
               createdGoal.id,
               plan,
@@ -1595,13 +1596,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 mode: PM_DISABLE_FALLBACK ? 'sync' : 'async', // Sync mode if fallback disabled
                 
                 // Skill assessment from wizard
-                skillAssessment: {
-                  experience: data.pmAssessment?.q1_experience || 3,
-                  confidence: data.pmAssessment?.q2_confidence || 3,
-                  helpNeeded: data.pmAssessment?.q3_help_needed || 3,
-                  calculatedLevel: data.pmAssessment?.calculatedLevel ?? level,
-                  levelLabel: data.pmAssessment?.levelLabel ?? 'Beginner'
-                },
+                  skillAssessment: {
+                    experience: (data.pmSkillAssessment || data.pmAssessment)?.q1_experience || 3,
+                    confidence: (data.pmSkillAssessment || data.pmAssessment)?.q2_confidence || 3,
+                    helpNeeded: (data.pmSkillAssessment || data.pmAssessment)?.q3_help_needed || 3,
+                    calculatedLevel: (data.pmSkillAssessment || data.pmAssessment)?.calculatedLevel ?? level,
+                    levelLabel: (data.pmSkillAssessment || data.pmAssessment)?.levelLabel ?? 'Beginner'
+                  },
                 
                 // Smart start plan from wizard
                 smartStart: {
