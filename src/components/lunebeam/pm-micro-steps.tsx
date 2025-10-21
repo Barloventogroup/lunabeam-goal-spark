@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon, ChevronRight, ChevronLeft, ChevronDown, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { TimePicker } from '@/components/ui/time-picker';
 import { format, addWeeks } from 'date-fns';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
 import { useToast } from '@/hooks/use-toast';
@@ -615,7 +616,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
     }
   }, []);
   
-  const isComplete = !!data.pmPracticePlan?.targetFrequency && !!data.startDate;
+  const isComplete = !!data.pmPracticePlan?.targetFrequency && !!data.startDate && !!data.pmPracticePlan?.reminderTime;
   
   // Auto-scroll to dates section when frequency is selected but no start date
   React.useEffect(() => {
@@ -806,6 +807,35 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
             </SheetContent>
           </Sheet>
           </div>
+
+          {/* Reminder Time - Required when start date is set */}
+          {data.startDate && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1 text-base font-medium">
+                <span>Reminder Time</span>
+                <span className="text-destructive">*</span>
+              </Label>
+              <TimePicker
+                time={data.pmPracticePlan?.reminderTime || ""}
+                onTimeChange={(time) => {
+                  updateData({
+                    pmPracticePlan: {
+                      ...data.pmPracticePlan,
+                      targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
+                      startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
+                      smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
+                      durationWeeks: data.pmPracticePlan?.durationWeeks || null,
+                      reminderTime: time
+                    }
+                  });
+                }}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                ⏰ We'll send you practice reminders at this time
+              </p>
+            </div>
+          )}
 
           {/* End Date - Optional */}
           <div className="space-y-2">
