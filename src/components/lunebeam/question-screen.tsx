@@ -221,13 +221,17 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
           </h1>
           </div>
 
+          {/* Help Text */}
+          {helpText && (
+            <div className="text-sm text-muted-foreground">
+              {helpText}
+            </div>
+          )}
+
           {/* Input */}
           <div className="space-y-4">
             {renderInput()}
           </div>
-
-          {/* Help Text */}
-          {helpText}
         </div>
       </div>
 
