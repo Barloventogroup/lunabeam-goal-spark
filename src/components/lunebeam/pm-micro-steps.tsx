@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { QuestionScreen } from './question-screen';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon, ChevronRight, ChevronLeft, ChevronDown } from 'lucide-react';
+import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon, ChevronRight, ChevronLeft, ChevronDown, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format, addWeeks } from 'date-fns';
 import { progressiveMasteryService } from '@/services/progressiveMasteryService';
@@ -391,6 +391,9 @@ export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, g
 export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const { toast } = useToast();
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
+  const [showResults, setShowResults] = useState(false);
+  const [calculatedLevel, setCalculatedLevel] = useState<number>(0);
+  const [levelLabel, setLevelLabel] = useState<string>('');
   
   const handleContinue = () => {
     // Calculate level after Q3 is answered
@@ -404,28 +407,131 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
         q3: data.pmAssessment.q3_help_needed
       });
       
-      const levelLabel = progressiveMasteryService.getSkillLevelLabel(level);
-      const levelEmojis = ['🌱', '🌿', '🌳', '🎯', '⭐'];
+      const label = progressiveMasteryService.getSkillLevelLabel(level);
       
+      // Store in local state for display
+      setCalculatedLevel(level);
+      setLevelLabel(label);
+      
+      // Update wizard data
       updateData({
         pmAssessment: {
           ...data.pmAssessment,
           calculatedLevel: level,
-          levelLabel: levelLabel
+          levelLabel: label
         }
       });
       
-      // Show celebration toast
-      toast({
-        title: `Your Starting Level: ${levelLabel} ${levelEmojis[level - 1]}`,
-        description: "Great! Now let's plan your learning journey.",
-        duration: 3000
-      });
+      // Show results interstitial
+      setShowResults(true);
+      
+      // Auto-advance after 5 seconds
+      setTimeout(() => {
+        goNext();
+      }, 5000);
     }
-    
-    goNext();
   };
+
+  const getLevelEmoji = (level: number): string => {
+    const emojis = ['🌱', '📚', '🚀', '⭐', '🏆'];
+    return emojis[level - 1] || '🌱';
+  };
+
+  const getLevelColor = (level: number): string => {
+    const colors = ['text-green-600', 'text-blue-600', 'text-purple-600', 'text-yellow-600', 'text-orange-600'];
+    return colors[level - 1] || 'text-green-600';
+  };
+
+  const getLevelDescription = (level: number): string => {
+    switch (level) {
+      case 1:
+        return "You're just starting out, and that's perfect! Everyone begins here. We'll guide you step by step.";
+      case 2:
+        return "You've got some basics down! We'll build on what you know and help you grow.";
+      case 3:
+        return "You're making great progress! We'll help you refine your skills and build confidence.";
+      case 4:
+        return "You're really skilled at this! We'll help you reach full mastery and independence.";
+      case 5:
+        return "You're already independent! We'll help you maintain consistency and keep improving.";
+      default:
+        return "Let's get started on your learning journey!";
+    }
+  };
+
+  const renderResultsInterstitial = () => {
+    const recipientName = data.recipient === 'other' && data.supportedPersonName 
+      ? data.supportedPersonName 
+      : 'you';
+    const isOther = data.recipient === 'other';
+    
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex items-center justify-center p-4 animate-fade-in">
+        <Card className="w-full max-w-2xl">
+          <CardContent className="pt-12 pb-8 px-8">
+            <div className="text-center space-y-8">
+              {/* Big emoji with scale animation */}
+              <div className="flex justify-center animate-scale-in">
+                <div className="text-8xl mb-4">
+                  {getLevelEmoji(calculatedLevel)}
+                </div>
+              </div>
+
+              {/* Level label */}
+              <div className="space-y-3">
+                <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                  {isOther ? `${recipientName}'s Starting Level` : 'Your Starting Level'}
+                </div>
+                <h1 className={cn("text-4xl md:text-5xl font-bold", getLevelColor(calculatedLevel))}>
+                  {levelLabel}
+                </h1>
+              </div>
+
+              {/* Progress bar showing level */}
+              <div className="space-y-3 max-w-md mx-auto">
+                <div className="h-3 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className={cn(
+                      "h-full rounded-full transition-all duration-1000 ease-out",
+                      calculatedLevel === 1 && "bg-green-500 w-[20%]",
+                      calculatedLevel === 2 && "bg-blue-500 w-[40%]",
+                      calculatedLevel === 3 && "bg-purple-500 w-[60%]",
+                      calculatedLevel === 4 && "bg-yellow-500 w-[80%]",
+                      calculatedLevel === 5 && "bg-orange-500 w-[100%]"
+                    )}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Beginner</span>
+                  <span>Independent</span>
+                </div>
+              </div>
+
+              {/* Encouraging description */}
+              <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
+                <p className="text-lg text-foreground leading-relaxed">
+                  {getLevelDescription(calculatedLevel)}
+                </p>
+              </div>
+
+              {/* Auto-continue indicator */}
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground animate-pulse">
+                <Clock className="h-4 w-4" />
+                <span>Continuing automatically...</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
+  // Show results interstitial if assessment is complete
+  if (showResults) {
+    return renderResultsInterstitial();
+  }
   
+  // Otherwise show the question
   return (
     <QuestionScreen
       currentStep={currentStep}
