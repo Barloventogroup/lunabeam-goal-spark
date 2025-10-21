@@ -1461,13 +1461,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               // PM-specific fields for Summary tab
               domain: data.category,
               frequency: data.frequency,
-              pmAssessment: data.pmSkillAssessment ? {
-                q1_experience: data.pmSkillAssessment.q1_experience,
-                q2_confidence: data.pmSkillAssessment.q2_confidence,
-                q3_help_needed: data.pmSkillAssessment.q3_help_needed,
-                calculatedLevel: data.pmSkillAssessment.calculated_level,
-                levelLabel: data.pmSkillAssessment.level_label
-              } : undefined,
+              pmAssessment: (() => {
+                const assessment = data.pmAssessment || data.pmSkillAssessment;
+                return assessment ? {
+                  q1_experience: assessment.q1_experience,
+                  q2_confidence: assessment.q2_confidence,
+                  q3_help_needed: assessment.q3_help_needed,
+                  calculatedLevel: assessment.calculatedLevel ?? assessment.calculated_level,
+                  levelLabel: assessment.levelLabel ?? assessment.level_label
+                } : undefined;
+              })(),
               pmPracticePlan: data.pmPracticePlan ? {
                 targetFrequency: data.pmPracticePlan.targetFrequency ?? data.pmTargetFrequency ?? data.frequency,
                 startingFrequency: data.pmPracticePlan.startingFrequency ?? data.pmTargetFrequency ?? data.frequency,

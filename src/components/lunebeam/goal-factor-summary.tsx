@@ -228,8 +228,9 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
   const isPMGoal = wizardContext.goalType === 'progressive_mastery';
 
   // If goal has skill assessment data, use Commitment & Activation layout
-  if (wizardContext.pmAssessment) {
-    const { pmAssessment, pmPracticePlan, pmHelper, selectedDays, customTime, timeOfDay } = wizardContext;
+  if (wizardContext.pmAssessment || wizardContext.pmSkillAssessment) {
+    const assessment = wizardContext.pmAssessment || wizardContext.pmSkillAssessment;
+    const { pmPracticePlan, pmHelper, selectedDays, customTime, timeOfDay } = wizardContext;
     
     // Get category label
     const categories = [
@@ -290,22 +291,22 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                     <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
                     <span className="font-semibold">
                       {(() => {
-                        const { label, emoji } = getSkillLevelDisplay(pmAssessment);
+                        const { label, emoji } = getSkillLevelDisplay(assessment);
                         return `${label} ${emoji}`;
                       })()}
                     </span>
                   </p>
                   <p className="text-sm">
                     <span className="text-muted-foreground text-xs">Experience:</span>{' '}
-                    <span className="font-medium">{getExperienceLabel(pmAssessment.q1_experience)}</span>
+                    <span className="font-medium">{getExperienceLabel(assessment.q1_experience)}</span>
                   </p>
                   <p className="text-sm">
                     <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
-                    <span className="font-medium">{getConfidenceLabel(pmAssessment.q2_confidence)}</span>
+                    <span className="font-medium">{getConfidenceLabel(assessment.q2_confidence)}</span>
                   </p>
                   <p className="text-sm">
                     <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
-                    <span className="font-medium">{getHelpNeededLabel(pmAssessment.q3_help_needed)}</span>
+                    <span className="font-medium">{getHelpNeededLabel(assessment.q3_help_needed)}</span>
                   </p>
                 </div>
               </div>
@@ -382,10 +383,14 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[160px]">
                 <h4 className="text-sm font-semibold text-emerald-700 mb-2">Practice Schedule</h4>
                 <div className="space-y-1.5">
-                  {goal.start_date && (
+                  {(wizardContext.startDate || goal.start_date) && (
                     <p className="text-sm">
                       <span className="text-muted-foreground text-xs">Starts:</span>{' '}
-                      <span className="font-medium">{new Date(goal.start_date).toLocaleDateString()}</span>
+                      <span className="font-medium">
+                        {wizardContext.startDate 
+                          ? new Date(wizardContext.startDate).toLocaleDateString('en-US')
+                          : new Date(goal.start_date).toLocaleDateString('en-US')}
+                      </span>
                     </p>
                   )}
                   {wizardContext.endDate && (

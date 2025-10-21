@@ -348,6 +348,10 @@ export const PMStep5_Experience: React.FC<PMStepsProps> = ({ data, updateData, g
         pmAssessment: {
           ...data.pmAssessment,
           q1_experience: parseInt(value)
+        },
+        pmSkillAssessment: {
+          ...(data.pmSkillAssessment || {}),
+          q1_experience: parseInt(value)
         }
       })}
       onBack={goBack}
@@ -381,6 +385,10 @@ export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, g
       onChange={(value) => updateData({
         pmAssessment: {
           ...data.pmAssessment,
+          q2_confidence: parseInt(value)
+        },
+        pmSkillAssessment: {
+          ...(data.pmSkillAssessment || {}),
           q2_confidence: parseInt(value)
         }
       })}
@@ -520,6 +528,10 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
       onChange={(value) => updateData({
         pmAssessment: {
           ...data.pmAssessment,
+          q3_help_needed: parseInt(value)
+        },
+        pmSkillAssessment: {
+          ...(data.pmSkillAssessment || {}),
           q3_help_needed: parseInt(value)
         }
       })}
