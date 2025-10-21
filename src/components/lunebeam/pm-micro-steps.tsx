@@ -593,7 +593,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
   // Support both PM flow (pmAssessment) and habit-to-PM flow (pmSkillAssessment)
   const assessment = data.pmAssessment || data.pmSkillAssessment;
   const levelContext = assessment?.calculatedLevel 
-    ? `Starting Level: ${assessment.levelLabel} ${['🌱', '🌿', '🌳', '🎯', '⭐'][assessment.calculatedLevel - 1]}`
+    ? `Starting level: ${['🌱', '🌿', '🌳', '🎯', '⭐'][assessment.calculatedLevel - 1]} ${assessment.levelLabel}`
     : undefined;
 
   const level = assessment?.calculatedLevel || 3;
