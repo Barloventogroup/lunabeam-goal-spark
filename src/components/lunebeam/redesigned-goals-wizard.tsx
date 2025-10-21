@@ -625,7 +625,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [showBrowseModal, setShowBrowseModal] = useState(false);
   const [modalView, setModalView] = useState<'categories' | 'examples'>('categories');
   const [selectedCategoryForModal, setSelectedCategoryForModal] = useState<typeof categories[0] | null>(null);
-  const [isGeneratingSteps, setIsGeneratingSteps] = useState(false);
   const [showFrequencySuggestion, setShowFrequencySuggestion] = useState(false);
   const {
     toast
@@ -1472,161 +1471,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             });
 
             console.log('Complete wizard context saved for Summary tab');
-
-            // ============= HYBRID PM STEP GENERATION =============
-            // Instant deterministic steps + async AI enhancement
-            console.log('🚀 Starting hybrid PM step generation (instant + AI)...');
-
-            try {
-              // Extract motivation text (already a string in data structure)
-              const motivationText = data.motivation || data.customMotivation || data.goalMotivation || '';
-
-              // Extract barriers text from PM structure
-              const barriersText = (() => {
-                const challengeAreas = [
-                  { id: 'time', label: 'Finding time to practice' },
-                  { id: 'motivation', label: 'Staying motivated' },
-                  { id: 'materials', label: 'Getting the right materials or equipment' },
-                  { id: 'space', label: 'Finding a good place to practice' },
-                  { id: 'confidence', label: 'Feeling confident enough to try' },
-                  { id: 'instructions', label: 'Understanding instructions' },
-                  { id: 'help', label: 'Getting help when I need it' },
-                  { id: 'sensory', label: 'Sensory challenges (sounds, textures, lights)' },
-                  { id: 'social', label: 'Social anxiety or pressure' },
-                  { id: 'physical', label: 'Physical limitations' }
-                ];
-
-                if (!data.barriers) return '';
-
-                const barrier1 = data.barriers.priority1 ? 
-                  challengeAreas.find(c => c.id === data.barriers.priority1)?.label : null;
-                const barrier2 = data.barriers.priority2 ? 
-                  challengeAreas.find(c => c.id === data.barriers.priority2)?.label : null;
-                const details = data.barriers.details || '';
-                
-                const barriersText = [barrier1, barrier2].filter(Boolean).join(', ');
-                return details ? `${barriersText}. ${details}` : barriersText;
-              })();
-
-              // Prepare for AI generation
-              console.log('🤖 Preparing for AI step generation...');
-              setIsGeneratingSteps(true);
-              
-              // Build complete PM payload for AI enhancement
-              const pmPayload = {
-                goalId: createdGoal.id,
-                title: data.goalTitle,
-                domain: mapCategoryToDomain(data.category) || 'independent_living',
-                duration_weeks: data.pmPracticePlan?.durationWeeks || durationWeeks || 6,
-                mode: 'sync',
-                
-                // Skill assessment from wizard
-                  skillAssessment: {
-                    experience: (data.pmSkillAssessment || data.pmAssessment)?.q1_experience || 3,
-                    confidence: (data.pmSkillAssessment || data.pmAssessment)?.q2_confidence || 3,
-                    helpNeeded: (data.pmSkillAssessment || data.pmAssessment)?.q3_help_needed || 3,
-                    calculatedLevel: (data.pmSkillAssessment || data.pmAssessment)?.calculatedLevel ?? level,
-                    levelLabel: (data.pmSkillAssessment || data.pmAssessment)?.levelLabel ?? 'Beginner'
-                  },
-                
-                // Smart start plan from wizard
-                smartStart: {
-                  startingFrequency: data.pmPracticePlan?.startingFrequency || 2,
-                  targetFrequency: data.pmPracticePlan?.targetFrequency || 4,
-                  rampWeeks: Math.ceil((data.pmPracticePlan?.durationWeeks || durationWeeks || 6) / 2)
-                },
-                
-                // Prerequisites from wizard
-                prerequisites: {
-                  hasEverything: data.prerequisites?.ready ?? true,
-                  needs: data.prerequisites?.needs || data.customPrerequisites || ''
-                },
-                
-                // Motivation and barriers
-                motivation: motivationText,
-                barriers: {
-                  priority1: data.barriers?.priority1 || '',
-                  priority2: data.barriers?.priority2 || '',
-                  context: barriersText
-                },
-                
-                // Teaching helper if selected
-                teachingHelper: data.pmHelper?.helperId && data.pmHelper.helperId !== 'none' ? {
-                  helperId: data.pmHelper.helperId,
-                  helperName: data.pmHelper.helperName ?? 'Helper',
-                  supportTypes: data.pmHelper.supportTypes ?? ['verbal']
-                } : null,
-                
-                // User context
-                userId: finalOwnerId,
-                userName: currentUser?.user_metadata?.full_name || 'User',
-                userAge: currentUser?.user_metadata?.age || null,
-                is_self_registered: data.recipient === 'self'
-              };
-              
-              // SYNC MODE: Wait for AI to generate steps
-              console.log('🤖 Calling AI in sync mode...');
-              
-              const { data: syncData, error: syncError } = await supabase.functions.invoke('pm-microsteps-scaffold', {
-                body: pmPayload
-              });
-              
-              setIsGeneratingSteps(false);
-              
-              if (syncError || !syncData?.steps || syncData.steps.length === 0) {
-                // AI failed - show error
-                console.error('⚠️ AI unavailable or returned 0 steps:', syncError);
-                
-                toast({
-                  title: 'AI temporarily unavailable',
-                  description: 'Please try creating this goal again later.',
-                  variant: 'destructive',
-                  duration: 5000
-                });
-                
-                // Continue to goal detail without steps
-              } else {
-                // Success: Steps generated
-                console.log(`[PM Wizard] AI returned ${syncData.steps.length} steps`);
-                
-                // Insert AI-generated steps into database
-                console.log('💾 Inserting steps into database...');
-                for (const aiStep of syncData.steps) {
-                  try {
-                    await stepsService.createStep(createdGoal.id, {
-                      title: aiStep.title,
-                      notes: aiStep.description,
-                      step_type: 'action',
-                      is_required: true,
-                      is_planned: true,
-                      estimated_effort_min: aiStep.estimatedMinutes || 15,
-                      is_supporter_step: false
-                    });
-                  } catch (stepError) {
-                    console.error('Failed to insert step:', aiStep.title, stepError);
-                    // Continue with other steps even if one fails
-                  }
-                }
-                console.log('✅ All steps inserted successfully');
-                
-                toast({
-                  title: 'Goal Created! 🚀',
-                  description: `Your personalized plan begins now with ${syncData.steps.length} steps!`,
-                  duration: 3000
-                });
-              }
-              
-            } catch (pmStepsError: any) {
-              console.error('❌ Unexpected error during PM step generation:', pmStepsError);
-              // Show error but don't block - goal is already saved
-              toast({
-                title: "Goal Created",
-                description: "Your goal was created. You can add practice steps manually from the goal details.",
-                variant: "default"
-              });
-            }
-
-            console.log('✅ PM goal creation flow complete');
+            console.log('✅ PM goal creation flow complete - steps will generate in background');
           } catch (pmError: any) {
             console.error('Failed to save Progressive Mastery metadata:', pmError);
             
@@ -3312,22 +3157,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
 
     return <>
-      {/* Loading overlay when generating PM steps */}
-      {data.goalType === 'progressive_mastery' && isGeneratingSteps && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-          <Card className="w-[90%] max-w-md p-8">
-            <div className="flex flex-col items-center gap-4 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-              <div className="space-y-2">
-                <h3 className="font-semibold text-lg">Creating your micro-steps</h3>
-                <p className="text-sm text-muted-foreground mt-2">
-                  🎯 Personalizing your journey...
-                </p>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
       
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="pb-4 pt-6">
