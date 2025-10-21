@@ -1663,16 +1663,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           });
         }
         
-        // Celebration animation
-        setTimeout(() => {
-          onComplete({
-            success: true,
-            goalTitle: data.goalTitle,
-            finalOwnerId,
-            isSupporter: data.recipient === 'other',
-            goalId: createdGoal.id
-          });
-        }, 500);
+        // Navigate immediately after goal creation
+        onComplete({
+          success: true,
+          goalTitle: data.goalTitle,
+          finalOwnerId,
+          isSupporter: data.recipient === 'other',
+          goalId: createdGoal.id
+        });
       }
     } catch (error) {
       console.error('Failed to create goal:', error);

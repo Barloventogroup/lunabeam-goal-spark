@@ -1279,28 +1279,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
   return (
     <div className="min-h-screen bg-background px-4 py-6 space-y-6">
-      {/* Loading overlay for step generation with progress (only blocks Steps tab) */}
-      {generatingSteps && activeTab === 'steps' && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-          <Card className="w-80">
-            <CardContent className="pt-6 text-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-              <div>
-                <h3 className="font-semibold text-lg">Creating your micro-steps</h3>
-                {generationProgress && generationProgress.total > 0 ? (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Day {generationProgress.current} of {generationProgress.total}
-                  </p>
-                ) : (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    🎯 Personalizing your journey...
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {/* Removed full-screen loading overlay - now using inline message in Recommended Steps tab */}
 
       {/* Error state with retry button */}
       {generationError && (
