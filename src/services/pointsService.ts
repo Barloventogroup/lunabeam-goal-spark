@@ -163,6 +163,16 @@ export const pointsService = {
 
   // Substeps management
   async getSubsteps(stepId: string): Promise<Substep[]> {
+    // Helper to validate UUID format
+    const isValidUUID = (v?: string): boolean =>
+      typeof v === 'string' &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
+
+    if (!isValidUUID(stepId)) {
+      console.warn('[pointsService] Skipping substeps fetch for invalid stepId:', stepId);
+      return [];
+    }
+
     const { data, error } = await supabase
       .from('substeps')
       .select('*')

@@ -203,8 +203,18 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
           // Exclude completed or skipped steps; include others with a due date
           if (step.status !== 'done' && step.status !== 'skipped') {
-            // Fetch substeps for this step
-            const substeps = await pointsService.getSubsteps(step.id);
+            // Fetch substeps for this step with error handling
+            let substeps: any[] = [];
+            try {
+              if (!step?.id || typeof step.id !== 'string') {
+                console.warn('[TabHome] Missing/invalid step.id, skipping substeps fetch. Step:', step);
+              } else {
+                substeps = await pointsService.getSubsteps(step.id);
+              }
+            } catch (e) {
+              console.warn('[TabHome] Failed to load substeps for step', step?.id, e);
+              substeps = [];
+            }
             const incompleteSubsteps = substeps.filter(sub => !sub.completed_at);
             
             if (incompleteSubsteps.length > 0) {
@@ -254,7 +264,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
       }
     }
 
-    console.log('All steps debug:', allStepsDebug);
+    const sample = allStepsDebug.slice(0, 5);
+    console.log(`All steps debug (sample size=${sample.length} of ${allStepsDebug.length}):`, sample);
     overdueSteps.sort((a, b) => b.dueDate.getTime() - a.dueDate.getTime());
     upcomingSteps.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
     return { 
@@ -267,8 +278,13 @@ export const TabHome: React.FC<TabHomeProps> = ({
   // Load steps data when goals change
   useEffect(() => {
     const loadStepsData = async () => {
-      const data = await getTodaysStepsAndNext();
-      setStepsData(data);
+      try {
+        const data = await getTodaysStepsAndNext();
+        setStepsData(data);
+      } catch (err) {
+        console.error('[TabHome] Failed to compute steps data:', err);
+        setStepsData({ todaysSteps: [], overdueSteps: [], upcomingSteps: [] });
+      }
     };
     
     if (goalsLoaded) {
