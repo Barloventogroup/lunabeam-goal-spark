@@ -955,41 +955,90 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const getStepTitle = () => {
     const isForOther = data.recipient === 'other';
     const name = data.supportedPersonName;
+    const skillLevel = data.pmAssessment?.calculatedLevel || 1;
 
-    // Use supporterTitles when step 0 exists (actuallySupportsAnyone), otherwise use nonSupporterTitles
-    const step8Title = data.goalType === 'new_skill' 
-      ? (actuallySupportsAnyone 
-        ? `When will ${isForOther ? name || 'they' : 'you'} work on this project?`
-        : "When will you work on this project?")
-      : (actuallySupportsAnyone
-        ? `Let's build a reliable structure for ${isForOther ? name || 'they' : 'you'}`
-        : "Let's start building the plan to crush this goal");
+    // Progressive Mastery flow titles
+    if (data.goalType === 'progressive_mastery') {
+      const pmSupporterTitles = [
+        'Who is this goal for?',
+        `What skill does ${isForOther ? name || 'they' : 'you'} want to learn?`,
+        `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`,
+        `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`,
+        'Quick Skill Check',
+        isForOther ? `How experienced is ${name || 'they'}?` : 'How experienced are you?',
+        isForOther ? `How confident is ${name || 'they'}?` : 'How confident are you?',
+        isForOther ? `How much help does ${name || 'they'} need?` : 'How much help do you need?',
+        'What might get in the way?',
+        'Who can help you learn this skill?',
+        'Set your practice schedule',
+        'Review Your Learning Plan'
+      ];
+      const pmNonSupporterTitles = [
+        'What skill do you want to learn?',
+        'Why does this matter to you?',
+        'Prerequisites check',
+        'Quick Skill Check',
+        'How experienced are you?',
+        'How confident are you?',
+        'How much help do you need?',
+        'What might get in the way?',
+        'Who can help you learn this skill?',
+        'Set your practice schedule',
+        'Review Your Learning Plan'
+      ];
+      if (actuallySupportsAnyone) {
+        return pmSupporterTitles[currentStep] || 'Create Your Goal';
+      } else {
+        return pmNonSupporterTitles[currentStep - 1] || 'Create Your Goal';
+      }
+    }
+
+    // Habit flow titles with dynamic branching
+    const step9Title = skillLevel >= 4
+      ? (data.goalType === 'new_skill'
+        ? (actuallySupportsAnyone
+          ? `When will ${isForOther ? name || 'they' : 'you'} work on this project?`
+          : "When will you work on this project?")
+        : (actuallySupportsAnyone
+          ? `Let's build a reliable structure for ${isForOther ? name || 'they' : 'you'}`
+          : "When will you do it?"))
+      : "Who can help you learn this skill?";
     
+    const step10Title = skillLevel >= 4
+      ? "Who's in your corner?"
+      : "Set your practice schedule";
+    
+    const step11Title = skillLevel >= 4
+      ? (isSupporter ? "Rewards & Incentives" : "Review Your Plan")
+      : "Review Your Learning Plan";
+
     const supporterTitles = [
-      'Who is this goal for?', 
-      `What is the one clear, observable action ${isForOther ? name || 'they' : 'you'} need${isForOther && name ? 's' : ''} to establish?`, 
-      `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`, 
-      `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, 
+      'Who is this goal for?',
+      `What is the one clear, observable action ${isForOther ? name || 'they' : 'you'} need${isForOther && name ? 's' : ''} to establish?`,
+      `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`,
+      `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`,
+      'Quick Skill Check',
       'Experience Level',
       'Confidence Level',
       'Support Needed',
-      `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`, 
-      step8Title, 
-      'Support context', 
-      'Rewards (Optional)', 
-      'Review and Create'
+      `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`,
+      step9Title,
+      step10Title,
+      step11Title,
+      'Review Your Plan'
     ];
     const nonSupporterTitles = [
-      'What do you want to do?', 
-      'Why does this matter to you?', 
-      'Prerequisites check', 
+      'What do you want to do?',
+      'Why does this matter to you?',
+      'Prerequisites check',
+      'Quick Skill Check',
       'Experience Level',
       'Confidence Level',
       'Support Needed',
-      'Which part usually feels the trickiest when you start this?', 
-      step8Title, 
-      'Support context', 
-      'Review and Create'
+      'Which part usually feels the trickiest when you start this?',
+      step9Title,
+      step10Title,
+      step11Title
     ];
     if (actuallySupportsAnyone) {
       return supporterTitles[currentStep] || '';
@@ -1121,66 +1170,72 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       case 3:
         // Prerequisites
         return true;
-        // Always can proceed
       case 4:
+        // Skill Assessment Intro - always can proceed
+        return true;
+      case 5:
         // Experience assessment
         return !!data.pmSkillAssessment?.q1_experience;
-      case 5:
+      case 6:
         // Confidence assessment
         return !!data.pmSkillAssessment?.q2_confidence;
-      case 6:
+      case 7:
         // Help Needed assessment
         return !!data.pmSkillAssessment?.q3_help_needed;
-      case 7:
-        // Challenge areas
-        return (data.challengeAreas?.length || 0) > 0;
       case 8:
-        // Scheduling - conditional validation based on goal type
-        const hasTime = !!data.customTime;
+        // Challenge areas (barriers)
+        return (data.challengeAreas?.length || 0) > 0;
+      case 9: {
+        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
         
-        if (data.goalType === 'new_skill') {
-          // Brand New Skill: validate project dates
-          if (!hasTime || !data.projectCompletionDate) return false;
+        if (skillLevel >= 4) {
+          // High skill: habit flow - validate scheduling
+          if (showSchedulingIntro) return true; // Can proceed from intro
           
-          const projectValidation = validateDateRange(
-            data.startDate, 
-            data.projectCompletionDate, 
-            'new_skill'
-          );
-          
-          return projectValidation.isValid;
-          
-        } else {
-          // New Habit or Getting Better: validate recurrence schedule
-          if (!hasTime || (data.selectedDays?.length || 0) === 0) return false;
-          
-          // If end date is specified, validate date range and occurrences
-          if (data.endDate) {
-            const dateValidation = validateDateRange(data.startDate, data.endDate, data.goalType);
-            if (!dateValidation.isValid) return false;
-            
-            const occurrenceValidation = validateOccurrencesInDateRange(
-              data.startDate,
-              data.endDate,
-              data.selectedDays
-            );
-            
-            return occurrenceValidation.isValid;
+          const hasTime = !!data.customTime;
+          if (data.goalType === 'new_skill') {
+            if (!hasTime || !data.projectCompletionDate) return false;
+            const projectValidation = validateDateRange(data.startDate, data.projectCompletionDate, 'new_skill');
+            return projectValidation.isValid;
+          } else {
+            if (!hasTime || (data.selectedDays?.length || 0) === 0) return false;
+            if (data.endDate) {
+              const dateValidation = validateDateRange(data.startDate, data.endDate, data.goalType);
+              if (!dateValidation.isValid) return false;
+              const occurrenceValidation = validateOccurrencesInDateRange(data.startDate, data.endDate, data.selectedDays);
+              return occurrenceValidation.isValid;
+            }
+            return true;
           }
-          
-          // Open-ended habit is valid
-          return true;
+        } else {
+          // Low skill: PM flow - validate helper selection
+          return !!pmSelectedHelperId;
         }
-      case 9:
-        // Support context validation
-        if (data.supportContext === 'alone') return true;
-        // Only require allies to be selected, NOT roles
-        if (!data.selectedSupporters || data.selectedSupporters.length === 0) return false;
-        return true;
-      case 10:
-        // Rewards (supporters only)
-        return true;
-      // Optional step
+      }
+      case 10: {
+        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+        
+        if (skillLevel >= 4) {
+          // Habit flow: validate support context
+          if (data.supportContext === 'alone') return true;
+          if (!data.selectedSupporters || data.selectedSupporters.length === 0) return false;
+          return true;
+        } else {
+          // PM flow: validate practice plan
+          const freq = data.pmPracticePlan?.targetFrequency ?? data.pmTargetFrequency;
+          return !!freq && !!data.startDate;
+        }
+      }
+      case 11: {
+        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+        if (skillLevel >= 4) {
+          return true; // Habit flow: rewards optional
+        } else {
+          return true; // PM flow: confirm (always can proceed)
+        }
+      }
+      case 12:
+        return true; // Final confirm (habit with supporters)
       default:
         return false;
     }
@@ -2963,6 +3018,54 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     );
   };
 
+  const renderHabitSchedulingIntro = () => {
+    return (
+      <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+        <CardContent className="pt-8 pb-6 px-6">
+          <div className="text-center space-y-6 max-w-2xl mx-auto">
+            {/* Icon */}
+            <div className="flex justify-center">
+              <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center">
+                <Target className="h-10 w-10 text-green-500" />
+              </div>
+            </div>
+
+            {/* Main message */}
+            <div className="space-y-3">
+              <h1 className="text-2xl md:text-3xl font-bold">
+                Let's start building the plan to crush this goal! 💪
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                You've got the skills - now let's create a schedule that works for you
+              </p>
+            </div>
+
+            {/* What's next */}
+            <div className="bg-green-500/5 rounded-lg p-4 text-left border border-green-500/10">
+              <p className="text-sm text-muted-foreground font-medium mb-3">
+                Next up:
+              </p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-0.5">•</span>
+                  <span>Set your practice schedule</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-0.5">•</span>
+                  <span>Choose who's in your corner</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-0.5">•</span>
+                  <span>Review and launch your goal</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const renderPMSkillAssessment = () => {
     return (
       <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
@@ -3622,6 +3725,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
   // State for interstitial screen
   const [showingResultsInterstitial, setShowingResultsInterstitial] = useState(false);
+  const [showSchedulingIntro, setShowSchedulingIntro] = useState(true);
 
   // Props for PM micro-steps
   const pmStepProps = {
@@ -3663,20 +3767,76 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       case 1: return renderStep1(); // Goal description + type
       case 2: return renderStep2(); // Motivation
       case 3: return renderStep3(); // Prerequisites
-      case 4: return <PMStep5_Experience {...pmStepProps} />; // Experience assessment
-      case 5: return <PMStep6_Confidence {...pmStepProps} />; // Confidence assessment
-      case 6: return <PMStep7_HelpNeeded {...pmStepProps} />; // Help Needed + Calculate Level
-      case 7: return renderStep4(); // Challenge areas
-      case 8: return renderStep5(); // Scheduling
-      case 9: return renderStep6(); // Support context
-      case 10: return isSupporter ? renderStep7() : renderConfirmStep(); // Rewards or confirm
-      case 11: return renderConfirmStep(); // Final confirm (supporters only)
+      case 4: return renderPMSkillAssessmentIntro(); // NEW: Skill Assessment Intro
+      case 5: return <PMStep5_Experience {...pmStepProps} />; // Experience assessment
+      case 6: return <PMStep6_Confidence {...pmStepProps} />; // Confidence assessment
+      case 7: return <PMStep7_HelpNeeded {...pmStepProps} />; // Help Needed + Results
+      case 8: return renderStep4(); // Challenge areas (barriers)
+      case 9: {
+        // Dynamic branching based on skill level
+        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+        
+        if (skillLevel >= 4) {
+          // High skill: continue with habit flow - show intro first
+          return showSchedulingIntro ? renderHabitSchedulingIntro() : renderStep5();
+        } else {
+          // Low skill: switch to PM and show helper selection
+          return renderPMTeachingHelper();
+        }
+      }
+      case 10: {
+        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+        
+        if (skillLevel >= 4) {
+          // Habit flow: support context
+          return renderStep6();
+        } else {
+          // PM flow: practice schedule
+          return <PMStep9_PracticePlan {...pmStepProps} />;
+        }
+      }
+      case 11: {
+        const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+        
+        if (skillLevel >= 4) {
+          // Habit flow: rewards (supporters only) or confirm
+          return isSupporter ? renderStep7() : renderConfirmStep();
+        } else {
+          // PM flow: confirm
+          return renderConfirmStep();
+        }
+      }
+      case 12: return renderConfirmStep(); // Final confirm (habit flow with supporters)
       default: return null;
     }
   };
-  // Update last step index for Progressive Mastery flow
-  const lastStepIndex = data.goalType === 'progressive_mastery' ? 11 : (isSupporter ? 11 : 10);
-  const totalSteps = data.goalType === 'progressive_mastery' ? 12 : (isSupporter ? 12 : 11);
+  // Update last step index based on goal type and skill level
+  const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+  const lastStepIndex = (() => {
+    if (data.goalType === 'progressive_mastery') {
+      return 11;
+    } else {
+      // Habit flow
+      if (skillLevel >= 4) {
+        return isSupporter ? 12 : 11;
+      } else {
+        return 11; // Low skill switches to PM flow
+      }
+    }
+  })();
+  
+  const totalSteps = (() => {
+    if (data.goalType === 'progressive_mastery') {
+      return 12;
+    } else {
+      // Habit flow
+      if (skillLevel >= 4) {
+        return isSupporter ? 13 : 12;
+      } else {
+        return 12; // Low skill switches to PM flow
+      }
+    }
+  })();
   const currentStepDisplay = isSupporter ? currentStep! + 1 : currentStep!;
   const isLastStep = currentStep === lastStepIndex;
 
@@ -3694,8 +3854,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     if (actuallySupportsAnyone) {
       // Supporter flow - 5 sections
       if (currentStep! >= 0 && currentStep! <= 3) return { label: 'The Goal', index: 1, total: 5 };
-      if (currentStep === 4 || currentStep === 5 || currentStep === 6) return { label: 'Skill Assessment', index: 2, total: 5 };
-      if (currentStep === 7) return { label: 'Challenge', index: 3, total: 5 };
+      if (currentStep === 4 || currentStep === 5 || currentStep === 6 || currentStep === 7) return { label: 'Skill Assessment', index: 2, total: 5 };
+      if (currentStep === 8) return { label: 'Challenge', index: 3, total: 5 };
       if (currentStep === 8) return { label: 'When and How Often', index: 4, total: 5 };
       if (currentStep === 9) return { label: 'The Team', index: 4, total: 5 };
       if (currentStep === 10 || currentStep === 11) return { label: 'Commitment & Activation', index: 5, total: 5 };
@@ -3783,6 +3943,56 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             helperName: 'Independent'
           }
         });
+      }
+    }
+    
+    // Special handling for skill level branching in habit flow (step 8 → 9 transition)
+    if (data.goalType !== 'progressive_mastery' && currentStep === 8) {
+      const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+      
+      if (skillLevel <= 3) {
+        // Switch to Progressive Mastery
+        updateData({ 
+          goalType: 'progressive_mastery',
+          pmAssessment: data.pmAssessment,
+          barriers: data.barriers,
+          challengeAreas: data.challengeAreas
+        });
+        
+        toast({
+          title: "Switching to Progressive Mastery mode",
+          description: "We'll help you learn this skill step by step with guided practice! 🚀"
+        });
+      }
+    }
+    
+    // Special handling for scheduling intro in habit flow (step 9)
+    if (data.goalType !== 'progressive_mastery' && currentStep === 9) {
+      const skillLevel = data.pmAssessment?.calculatedLevel || 1;
+      
+      if (skillLevel >= 4 && showSchedulingIntro) {
+        setShowSchedulingIntro(false);
+        return; // Don't advance step, just hide intro
+      }
+      
+      // Save helper selection for PM branch
+      if (skillLevel <= 3) {
+        if (pmSelectedHelperId && pmSelectedHelperId !== 'none') {
+          const helper = userSupporters.find(s => s.id === pmSelectedHelperId);
+          updateData({ 
+            pmHelper: {
+              helperId: pmSelectedHelperId,
+              helperName: helper?.name || 'Helper'
+            }
+          });
+        } else {
+          updateData({ 
+            pmHelper: {
+              helperId: 'none',
+              helperName: 'Independent'
+            }
+          });
+        }
       }
     }
     
