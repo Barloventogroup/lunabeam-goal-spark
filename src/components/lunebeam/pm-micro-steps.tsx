@@ -590,11 +590,13 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
   const datesSectionRef = React.useRef<HTMLDivElement>(null);
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   
-  const levelContext = data.pmAssessment?.calculatedLevel 
-    ? `Starting Level: ${data.pmAssessment.levelLabel} ${['🌱', '🌿', '🌳', '🎯', '⭐'][data.pmAssessment.calculatedLevel - 1]}`
+  // Support both PM flow (pmAssessment) and habit-to-PM flow (pmSkillAssessment)
+  const assessment = data.pmAssessment || data.pmSkillAssessment;
+  const levelContext = assessment?.calculatedLevel 
+    ? `Starting Level: ${assessment.levelLabel} ${['🌱', '🌿', '🌳', '🎯', '⭐'][assessment.calculatedLevel - 1]}`
     : undefined;
-  
-  const level = data.pmAssessment?.calculatedLevel || 3;
+
+  const level = assessment?.calculatedLevel || 3;
   
   // Use a sensible default target frequency based on skill level
   const defaultTargetFreq = level <= 2 ? 3 : (level >= 4 ? 5 : 4);
