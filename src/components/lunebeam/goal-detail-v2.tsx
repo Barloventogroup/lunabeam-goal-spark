@@ -1449,7 +1449,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-4">
+        <TabsList className="w-full max-w-4xl mx-auto px-4 justify-center gap-2">
           <TabsTrigger value="summary">
             Summary
           </TabsTrigger>
@@ -1475,8 +1475,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </TabsList>
 
         <TabsContent value="summary" className="mt-4">
-          <div className="max-w-4xl mx-auto">
-            <GoalFactorSummary 
+          <div className="max-w-4xl mx-auto px-4">
+            <GoalFactorSummary
               goal={goal}
               wizardContext={(() => {
                 const existingContext = (goal as any).metadata?.wizardContext;
@@ -1564,13 +1564,13 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-4">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto px-4">
             <GoalCalendarView goal={goal} steps={steps} />
           </div>
         </TabsContent>
 
         <TabsContent value="steps" className="mt-4">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto px-4">
             {generatingSteps ? (
               <Card>
                 <CardContent className="pt-6">
