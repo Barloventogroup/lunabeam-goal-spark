@@ -159,8 +159,9 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
             </Button>
           </div>
           
-          {/* Three-Month Calendar Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    {/* Three-Month Calendar Grid - Horizontal Scroll */}
+    <div className="overflow-x-auto -mx-4 px-4">
+      <div className="flex gap-4 min-w-max">
             {/* Previous Month - Only show if goal was active */}
             {showPreviousMonth && (
               <div className="flex flex-col items-center">
@@ -205,6 +206,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
               />
             </div>
           </div>
+        </div>
           
           {/* Compact Legend */}
           <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
