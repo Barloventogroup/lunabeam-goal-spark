@@ -134,18 +134,19 @@ export const TabTeam: React.FC = () => {
       const seenIndividualIds = new Set<string>();
       const allMembers: SupporterWithProfile[] = [];
 
-      // Add supporters (people who support me)
-      const supportersWithProfiles = await Promise.all(supportersData.map(async supporter => {
-        const {
-          data: profile
-        } = await supabase.from('profiles').select('first_name, avatar_url').eq('user_id', supporter.supporter_id).single();
-        return {
-          ...supporter,
-          profile: profile || {
-            first_name: 'Unknown User'
-          },
-          memberType: 'supporter' as const
-        };
+      // Add supporters (people who support me) - BATCH FETCH profiles
+      const supporterIds = supportersData.map(s => s.supporter_id);
+      const { data: supporterProfiles } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, avatar_url')
+        .in('user_id', supporterIds);
+      
+      const supporterProfileMap = new Map((supporterProfiles || []).map(p => [p.user_id, p]));
+      
+      const supportersWithProfiles = supportersData.map(supporter => ({
+        ...supporter,
+        profile: supporterProfileMap.get(supporter.supporter_id) || { first_name: 'Unknown User' },
+        memberType: 'supporter' as const
       }));
       allMembers.push(...supportersWithProfiles);
 
@@ -246,17 +247,20 @@ export const TabTeam: React.FC = () => {
 
       // No more provisioned individuals tracking from claims
 
-      // Fetch actual profile data for individuals I support
-      const individualsWithNames = await Promise.all(allMembers.filter(m => m.memberType === 'individual').map(async member => {
-        const {
-          data: profile
-        } = await supabase.from('profiles').select('first_name, avatar_url').eq('user_id', member.individual_id).single();
-        return {
-          ...member,
-          profile: profile || {
-            first_name: 'User'
-          }
-        };
+      // Fetch actual profile data for individuals I support - BATCH FETCH
+      const individuals = allMembers.filter(m => m.memberType === 'individual');
+      const individualIds = individuals.map(m => m.individual_id);
+      
+      const { data: individualProfiles } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, avatar_url')
+        .in('user_id', individualIds);
+      
+      const individualProfileMap = new Map((individualProfiles || []).map(p => [p.user_id, p]));
+      
+      const individualsWithNames = individuals.map(member => ({
+        ...member,
+        profile: individualProfileMap.get(member.individual_id) || { first_name: 'User' }
       }));
 
       // Replace individuals in allMembers with ones that have proper profile data
