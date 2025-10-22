@@ -2,8 +2,8 @@ import React from 'react';
 import { useStore } from '@/store/useStore';
 import { OnboardingFlow } from './onboarding-flow';
 import { BottomTabs } from '../navigation/bottom-tabs';
-import Lottie from 'lottie-react';
-import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
+import { Home, Target, Users, User } from 'lucide-react';
+import lunabeamLogo from '@/assets/lunabeam-logo.png';
 
 const AppRouter: React.FC = () => {
   const { isOnboardingComplete, profile, loadProfile } = useStore();
@@ -45,17 +45,45 @@ const AppRouter: React.FC = () => {
     onboardingComplete: isOnboardingComplete()
   });
 
-  // Show loading until profile is checked
+  // Show loading skeleton until profile is checked
   if (!profileLoaded) {
-    console.log('AppRouter: Showing loading...');
+    console.log('AppRouter: Showing loading skeleton...');
     return (
-      <div className="fixed inset-0 bg-white flex items-center justify-center overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <Lottie
-            animationData={loadingLunaAnimation}
-            loop={true}
-            style={{ width: '150vmax', height: '150vmax' }}
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Header with Logo */}
+        <div className="flex items-center justify-center p-4 border-b bg-card/80 backdrop-blur">
+          <img 
+            src={lunabeamLogo} 
+            alt="LunaBeam" 
+            className="h-8"
           />
+        </div>
+
+        {/* Grey Empty Body */}
+        <div className="flex-1 bg-muted/30 pb-20">
+          {/* Empty grey area */}
+        </div>
+
+        {/* Bottom Navigation Tabs Skeleton */}
+        <div className="fixed bottom-0 left-0 right-0 bg-card backdrop-blur border-t shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
+          <div className="flex items-center justify-around px-2 py-2">
+            {[
+              { label: 'Home', Icon: Home },
+              { label: 'Goals', Icon: Target },
+              { label: 'Community', Icon: Users },
+              { label: 'You', Icon: User }
+            ].map(({ label, Icon }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 rounded-lg text-muted-foreground"
+              >
+                <Icon className="h-5 w-5 mb-1" />
+                <span className="text-xs font-medium truncate">
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
