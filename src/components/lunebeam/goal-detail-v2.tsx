@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit, Users, UserCheck, AlertCircle, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useQueryClient } from '@tanstack/react-query';
 import { BackButton } from '@/components/ui/back-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,16 +27,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
+import { useGoalDetail, goalDetailKeys, useDeleteGoalMutation } from '@/hooks/useGoalDetail';
 import { goalsService, stepsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { generateMicroStepsSmart } from '@/services/microStepsGenerator';
-import { GoalFactorSummary } from './goal-factor-summary';
 import { cn } from '@/lib/utils';
 
 import { RecommendedStepsList } from './recommended-steps-list';
 import { SupporterSetupStepsList } from './supporter-setup-steps-list';
-import { GoalCalendarView } from './goal-calendar-view';
 import { StepsChat } from './steps-chat';
 import { StepChatModal } from './step-chat-modal';
 import { ProgressBar } from './progress-bar';
@@ -42,35 +43,42 @@ import { GoalEditModal } from './goal-edit-modal';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import type { Goal, Step, GoalProgress, Substep } from '@/types';
 
+// Lazy load heavy components (Phase 4)
+const GoalFactorSummary = lazy(() => import('./goal-factor-summary').then(m => ({ default: m.GoalFactorSummary })));
+const GoalCalendarView = lazy(() => import('./goal-calendar-view').then(m => ({ default: m.GoalCalendarView })));
+
 interface GoalDetailV2Props {
   goalId: string;
   onBack: () => void;
 }
 
 export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) => {
-  const [goal, setGoal] = useState<Goal | null>(null);
-  const [steps, setSteps] = useState<Step[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Use React Query hook for data fetching (Phase 1)
+  const { data, isLoading, refetch } = useGoalDetail(goalId);
+  const queryClient = useQueryClient();
+  const deleteGoalMutation = useDeleteGoalMutation();
+  
   const [showChat, setShowChat] = useState(false);
   const [showStepChat, setShowStepChat] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedStep, setSelectedStep] = useState<Step | null>(null);
   const [chatStep, setChatStep] = useState<Step | undefined>(undefined);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [ownerProfile, setOwnerProfile] = useState<any>(null);
-  const [creatorProfile, setCreatorProfile] = useState<any>(null);
   const [generatingSteps, setGeneratingSteps] = useState(false);
   const [generationError, setGenerationError] = useState(false);
   const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
-  const [isViewerSupporter, setIsViewerSupporter] = useState(false);
   const [activeTab, setActiveTab] = useState('summary');
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadGoalData();
-  }, [goalId]);
+  // Extract data from React Query result
+  const goal = data?.goal || null;
+  const steps = data?.steps || [];
+  const substeps = data?.substeps || [];
+  const currentUser = data?.user;
+  const ownerProfile = data?.ownerProfile;
+  const creatorProfile = data?.creatorProfile;
+  const isViewerSupporter = data?.isViewerSupporter || false;
 
-  // Auto-refresh when AI enhancement completes
+  // Smart real-time updates with React Query (Phase 3)
   useEffect(() => {
     if (!goalId) return;
 
@@ -84,8 +92,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         table: 'steps',
         filter: `goal_id=eq.${goalId}`
       }, (payload) => {
-        console.log('[GoalDetail] Steps updated, reloading...', payload);
-        loadGoalData();
+        console.log('[GoalDetail] Steps updated, invalidating cache...', payload);
+        // Instead of full reload, invalidate React Query cache
+        queryClient.invalidateQueries({ queryKey: goalDetailKeys.detail(goalId) });
         
         // Show toast once when AI enhancement completes
         if (!hasShownToast && payload.eventType === 'UPDATE') {
@@ -104,7 +113,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [goalId, toast]);
+  }, [goalId, toast, queryClient]);
 
   useEffect(() => {
     // Trigger daily generation check for habit goals
@@ -231,61 +240,46 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     }
   }, [goal?.id, steps.length]);
 
-  const calculateProgress = async (goalSteps: Step[]): Promise<GoalProgress> => {
-    const actionableSteps = goalSteps.filter(s => (!s.type || s.type === 'action') && !s.hidden && s.status !== 'skipped');
+  // Optimized progress calculation with useMemo (Phase 2)
+  const progress = useMemo(() => {
+    if (!steps || steps.length === 0) return { done: 0, actionable: 0, percent: 0 };
+    
+    const actionableSteps = steps.filter(s => 
+      (!s.type || s.type === 'action') && !s.hidden && s.status !== 'skipped'
+    );
+    
+    // Group substeps by step_id for O(1) lookup
+    const substepsByStep = substeps.reduce((acc, sub) => {
+      if (!acc[sub.step_id]) acc[sub.step_id] = [];
+      acc[sub.step_id].push(sub);
+      return acc;
+    }, {} as Record<string, Substep[]>);
     
     let totalCompletableItems = 0;
     let completedItems = 0;
     
-    // Batch fetch all substeps in a single query (fixes N+1 query problem)
-    if (actionableSteps.length > 0) {
-      const stepIds = actionableSteps.map(s => s.id);
+    actionableSteps.forEach(step => {
+      const stepSubsteps = substepsByStep[step.id] || [];
       
-      const { data: allSubsteps } = await supabase
-        .from('substeps')
-        .select('*')
-        .in('step_id', stepIds)
-        .order('created_at', { ascending: true });
-      
-      // Group substeps by step_id for O(1) lookup
-      const substepsByStep: Record<string, Substep[]> = {};
-      (allSubsteps || []).forEach(substep => {
-        if (!substepsByStep[substep.step_id]) {
-          substepsByStep[substep.step_id] = [];
-        }
-        substepsByStep[substep.step_id].push(substep as Substep);
-      });
-      
-      // Calculate progress using grouped data
-      actionableSteps.forEach(step => {
-        const stepSubsteps = substepsByStep[step.id] || [];
-        
-        if (stepSubsteps.length > 0) {
-          // If step has substeps, count each substep
-          totalCompletableItems += stepSubsteps.length;
-          completedItems += stepSubsteps.filter(sub => sub.completed_at).length;
-        } else {
-          // If no substeps, count the main step
-          totalCompletableItems += 1;
-          completedItems += step.status === 'done' ? 1 : 0;
-        }
-      });
-    }
-    
-    console.log('Goal progress calculation debug:', {
-      totalSteps: goalSteps.length,
-      actionableSteps: actionableSteps.length,
-      totalCompletableItems,
-      completedItems,
-      actionableStepsDetails: actionableSteps.map(s => ({ id: s.id, title: s.title, status: s.status, type: s.type, hidden: s.hidden }))
+      if (stepSubsteps.length > 0) {
+        // If step has substeps, count each substep
+        totalCompletableItems += stepSubsteps.length;
+        completedItems += stepSubsteps.filter(sub => sub.completed_at).length;
+      } else {
+        // If no substeps, count the main step
+        totalCompletableItems += 1;
+        completedItems += step.status === 'done' ? 1 : 0;
+      }
     });
     
     return {
       done: completedItems,
       actionable: totalCompletableItems,
-      percent: totalCompletableItems > 0 ? Math.round((completedItems / totalCompletableItems) * 100) : 0
+      percent: totalCompletableItems > 0 
+        ? Math.round((completedItems / totalCompletableItems) * 100) 
+        : 0
     };
-  };
+  }, [steps, substeps]);
 
   const triggerDailyGeneration = async () => {
     if (!goal?.id) return;
@@ -331,61 +325,14 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       .catch(err => console.error('Daily generation failed:', err));
   };
 
-  const loadGoalData = async () => {
-    try {
-      setLoading(true);
-      
-      // Get current user and goal data
-      const [{ data: { user } }, goalData, stepsData] = await Promise.all([
-        supabase.auth.getUser(),
-        goalsService.getGoal(goalId),
-        stepsService.getSteps(goalId)
-      ]);
-      
-      setCurrentUser(user);
-
-      if (goalData) {
-        // Fetch owner and creator profiles, and check if viewer is a supporter
-        const [ownerData, creatorData, supporterRelationship] = await Promise.all([
-          supabase.from('profiles').select('first_name, user_id').eq('user_id', goalData.owner_id).single(),
-          supabase.from('profiles').select('first_name, user_id').eq('user_id', goalData.created_by).single(),
-          user ? supabase.from('supporters').select('id, role, permission_level').eq('individual_id', goalData.owner_id).eq('supporter_id', user.id).maybeSingle() : Promise.resolve({ data: null })
-        ]);
-        
-        setOwnerProfile(ownerData.data);
-        setCreatorProfile(creatorData.data);
-        setIsViewerSupporter(!!supporterRelationship.data);
-        
-        // Use steps as-is, no auto-generation
-        const finalSteps = stepsData || [];
-
-        const progress = await calculateProgress(finalSteps);
-        setGoal({ ...goalData, progress });
-        setSteps(finalSteps);
-      } else {
-        toast({
-          title: "Goal not found",
-          description: "This goal might have been deleted or you don't have access to it.",
-          variant: "destructive",
-        });
-        onBack();
-      }
-    } catch (error) {
-      console.error('Failed to load goal:', error);
-      toast({
-        title: "Failed to load goal",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+  // Reload function simplified - now uses React Query cache invalidation
+  const loadGoalData = () => {
+    queryClient.invalidateQueries({ queryKey: goalDetailKeys.detail(goalId) });
   };
 
-  const handleStepsUpdate = async (updatedSteps: Step[], updatedGoal: Goal) => {
-    const progress = await calculateProgress(updatedSteps);
-    setSteps(updatedSteps);
-    setGoal({ ...updatedGoal, progress });
+  const handleStepsUpdate = async () => {
+    // Invalidate cache to refetch latest data
+    loadGoalData();
   };
 
   const handleOpenStepChat = (step: Step) => {
@@ -393,30 +340,19 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     setShowStepChat(true);
   };
 
-  const handleStepChatUpdate = async (newSteps: Step[]) => {
-    // Reload steps from database to get the latest data
-    try {
-      const updatedSteps = await stepsService.getSteps(goalId);
-      const progress = await calculateProgress(updatedSteps);
-      setSteps(updatedSteps);
-      if (goal) {
-        setGoal({ ...goal, progress });
-      }
-    } catch (error) {
-      console.error('Failed to reload steps:', error);
-    }
+  const handleStepChatUpdate = async () => {
+    // Invalidate cache to refetch latest data
+    loadGoalData();
   };
 
-  const handleGoalUpdate = (updatedGoal: Goal) => {
-    setGoal({
-      ...updatedGoal,
-      progress: goal?.progress // Preserve existing progress data
-    });
+  const handleGoalUpdate = () => {
+    // Invalidate cache to refetch latest data
+    loadGoalData();
   };
 
   const handleDeleteGoal = async () => {
     try {
-      await goalsService.deleteGoal(goalId);
+      await deleteGoalMutation.mutateAsync(goalId);
       toast({
         description: "Goal archived successfully."
       });
@@ -1282,15 +1218,36 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
     }
   };
 
-  if (loading || !goal) {
+  // Loading skeleton (Phase 6)
+  if (isLoading || !data) {
     return (
-      <div className="space-y-6">
+      <div className="min-h-screen bg-background px-4 py-6 space-y-6">
         <div className="flex items-center gap-2">
           <BackButton onClick={onBack} />
-          <h2 className="text-2xl font-bold">Loading...</h2>
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <div className="flex gap-2">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-5 w-32" />
+            </div>
+          </div>
         </div>
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-96 w-full" />
       </div>
     );
+  }
+
+  // Handle case where goal not found
+  if (!goal) {
+    toast({
+      title: "Goal not found",
+      description: "This goal might have been deleted or you don't have access to it.",
+      variant: "destructive",
+    });
+    onBack();
+    return null;
   }
 
   return (
@@ -1391,20 +1348,20 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </div>
 
         <div className="flex items-center gap-2">
-          {goal.progress && (
+          {progress && (
             <div className="flex items-center gap-3">
               <CircularProgress 
-                value={goal.progress.percent || 0} 
+                value={progress.percent || 0} 
                 size={36}
                 strokeWidth={3}
                 color="#2393CC"
               />
               <div className="text-right">
                 <div className="text-2xl font-bold text-primary">
-                  {goal.progress.percent}%
+                  {progress.percent}%
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {goal.progress.done}/{goal.progress.actionable} done
+                  {progress.done}/{progress.actionable} done
                 </div>
               </div>
             </div>
@@ -1492,8 +1449,10 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </div>
 
         <TabsContent value="summary" className="mt-4">
-          <div className="max-w-4xl mx-auto px-2 sm:px-4">
-            <GoalFactorSummary
+          {activeTab === 'summary' && (
+            <div className="max-w-4xl mx-auto px-2 sm:px-4">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <GoalFactorSummary
               goal={goal}
               wizardContext={(() => {
                 const existingContext = (goal as any).metadata?.wizardContext;
@@ -1576,19 +1535,26 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 }
                 return existingContext;
               })()}
-            />
-          </div>
+                />
+              </Suspense>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-4">
-          <div className="max-w-4xl mx-auto px-2 sm:px-4">
-            <GoalCalendarView goal={goal} steps={steps} />
-          </div>
+          {activeTab === 'calendar' && (
+            <div className="max-w-4xl mx-auto px-2 sm:px-4">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <GoalCalendarView goal={goal} steps={steps} />
+              </Suspense>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="steps" className="mt-4">
-          <div className="max-w-4xl mx-auto px-2 sm:px-4">
-            {generatingSteps ? (
+          {activeTab === 'steps' && (
+            <div className="max-w-4xl mx-auto px-2 sm:px-4">
+              {generatingSteps ? (
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-center py-12 text-center">
@@ -1645,20 +1611,23 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 onStepsUpdate={handleStepsUpdate}
                 onOpenStepChat={handleOpenStepChat}
               />
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </TabsContent>
 
         {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
           <TabsContent value="supporter" className="mt-4">
-            <div className="max-w-4xl mx-auto px-2 sm:px-4">
-              <SupporterSetupStepsList
+            {activeTab === 'supporter' && (
+              <div className="max-w-4xl mx-auto px-2 sm:px-4">
+                <SupporterSetupStepsList
                 steps={steps}
                 goal={goal}
                 onStepsChange={loadGoalData}
                 onStepsUpdate={handleStepsUpdate}
               />
-            </div>
+              </div>
+            )}
           </TabsContent>
         )}
       </Tabs>
