@@ -1475,155 +1475,161 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </TabsList>
 
         <TabsContent value="summary" className="mt-4">
-          <GoalFactorSummary 
-            goal={goal}
-            wizardContext={(() => {
-              const existingContext = (goal as any).metadata?.wizardContext;
-              if (existingContext && existingContext.goalType === 'progressive_mastery' && existingContext.pmAssessment) {
+          <div className="max-w-4xl mx-auto">
+            <GoalFactorSummary 
+              goal={goal}
+              wizardContext={(() => {
+                const existingContext = (goal as any).metadata?.wizardContext;
+                if (existingContext && existingContext.goalType === 'progressive_mastery' && existingContext.pmAssessment) {
+                  return existingContext;
+                }
+                // Reconstruct from goal.metadata for PM goals
+                if ((goal as any).goal_type === 'progressive_mastery' || (goal as any)?.metadata?.skill_assessment) {
+                  const md = (goal as any).metadata || {};
+                  const sa = md.skill_assessment || {};
+                  const ss = md.smart_start || {};
+                  const helper = md.teaching_helper || {};
+                  const toTitle = (s?: string) => s ? s.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : undefined;
+                  const hasAssessment = typeof sa.q1_familiarity === 'number' || typeof sa.q2_confidence === 'number' || typeof sa.q3_independence === 'number' || typeof sa.q3_help_needed === 'number';
+                  
+                  // Reconstruct barriers from various possible sources
+                  const reconstructedBarriers = (() => {
+                    if (md.barriers && typeof md.barriers === 'object') {
+                      return md.barriers;
+                    }
+                    // Try to reconstruct from old format
+                    const priority1 = md.barrier_priority1 || md.challenge_priority1;
+                    const priority2 = md.barrier_priority2 || md.challenge_priority2;
+                    const details = md.barrier_details || md.challenge_details;
+                    if (priority1 || priority2 || details) {
+                      return { priority1, priority2, details };
+                    }
+                    return undefined;
+                  })();
+                  
+                  // Reconstruct prerequisites
+                  const reconstructedPrerequisites = (() => {
+                    if (md.prerequisites && typeof md.prerequisites === 'object') {
+                      return md.prerequisites;
+                    }
+                    if (md.prerequisites_ready !== undefined) {
+                      return {
+                        ready: md.prerequisites_ready,
+                        needs: md.prerequisites_needs
+                      };
+                    }
+                    return undefined;
+                  })();
+                  
+                  return {
+                    ...existingContext,
+                    goalTitle: goal.title,
+                    goalType: 'progressive_mastery',
+                    goalTypeLabel: 'Progressive Mastery',
+                    domain: goal.domain,
+                    frequency: goal.frequency_per_week,
+                    startDate: goal.start_date,
+                    endDate: goal.due_date,
+                    selectedDays: md.selected_days || [],
+                    customTime: md.custom_time,
+                    timeOfDay: md.time_of_day,
+                    pmAssessment: hasAssessment ? {
+                      q1_experience: sa.q1_familiarity,
+                      q2_confidence: sa.q2_confidence,
+                      q3_help_needed: typeof sa.q3_help_needed === 'number' ? sa.q3_help_needed : (typeof sa.q3_independence === 'number' ? 6 - sa.q3_independence : undefined),
+                      calculatedLevel: sa.calculated_level,
+                      levelLabel: toTitle(sa.level_label)
+                    } : undefined,
+                    pmPracticePlan: {
+                      startingFrequency: ss.user_selected_initial ?? ss.suggested_initial ?? goal.frequency_per_week,
+                      targetFrequency: ss.target_frequency ?? goal.frequency_per_week,
+                      durationWeeks: goal.duration_weeks ?? null,
+                      smartStartAccepted: ss.suggestion_accepted ?? true
+                    },
+                    pmHelper: (helper && (helper.helper_id || helper.helper_name)) ? {
+                      helperId: helper.helper_id,
+                      helperName: helper.helper_name,
+                      supportTypes: helper.relationship
+                    } : undefined,
+                    goalMotivation: md.motivation,
+                    customMotivation: md.motivation_text,
+                    barriers: reconstructedBarriers,
+                    prerequisites: reconstructedPrerequisites
+                  };
+                }
                 return existingContext;
-              }
-              // Reconstruct from goal.metadata for PM goals
-              if ((goal as any).goal_type === 'progressive_mastery' || (goal as any)?.metadata?.skill_assessment) {
-                const md = (goal as any).metadata || {};
-                const sa = md.skill_assessment || {};
-                const ss = md.smart_start || {};
-                const helper = md.teaching_helper || {};
-                const toTitle = (s?: string) => s ? s.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : undefined;
-                const hasAssessment = typeof sa.q1_familiarity === 'number' || typeof sa.q2_confidence === 'number' || typeof sa.q3_independence === 'number' || typeof sa.q3_help_needed === 'number';
-                
-                // Reconstruct barriers from various possible sources
-                const reconstructedBarriers = (() => {
-                  if (md.barriers && typeof md.barriers === 'object') {
-                    return md.barriers;
-                  }
-                  // Try to reconstruct from old format
-                  const priority1 = md.barrier_priority1 || md.challenge_priority1;
-                  const priority2 = md.barrier_priority2 || md.challenge_priority2;
-                  const details = md.barrier_details || md.challenge_details;
-                  if (priority1 || priority2 || details) {
-                    return { priority1, priority2, details };
-                  }
-                  return undefined;
-                })();
-                
-                // Reconstruct prerequisites
-                const reconstructedPrerequisites = (() => {
-                  if (md.prerequisites && typeof md.prerequisites === 'object') {
-                    return md.prerequisites;
-                  }
-                  if (md.prerequisites_ready !== undefined) {
-                    return {
-                      ready: md.prerequisites_ready,
-                      needs: md.prerequisites_needs
-                    };
-                  }
-                  return undefined;
-                })();
-                
-                return {
-                  ...existingContext,
-                  goalTitle: goal.title,
-                  goalType: 'progressive_mastery',
-                  goalTypeLabel: 'Progressive Mastery',
-                  domain: goal.domain,
-                  frequency: goal.frequency_per_week,
-                  startDate: goal.start_date,
-                  endDate: goal.due_date,
-                  selectedDays: md.selected_days || [],
-                  customTime: md.custom_time,
-                  timeOfDay: md.time_of_day,
-                  pmAssessment: hasAssessment ? {
-                    q1_experience: sa.q1_familiarity,
-                    q2_confidence: sa.q2_confidence,
-                    q3_help_needed: typeof sa.q3_help_needed === 'number' ? sa.q3_help_needed : (typeof sa.q3_independence === 'number' ? 6 - sa.q3_independence : undefined),
-                    calculatedLevel: sa.calculated_level,
-                    levelLabel: toTitle(sa.level_label)
-                  } : undefined,
-                  pmPracticePlan: {
-                    startingFrequency: ss.user_selected_initial ?? ss.suggested_initial ?? goal.frequency_per_week,
-                    targetFrequency: ss.target_frequency ?? goal.frequency_per_week,
-                    durationWeeks: goal.duration_weeks ?? null,
-                    smartStartAccepted: ss.suggestion_accepted ?? true
-                  },
-                  pmHelper: (helper && (helper.helper_id || helper.helper_name)) ? {
-                    helperId: helper.helper_id,
-                    helperName: helper.helper_name,
-                    supportTypes: helper.relationship
-                  } : undefined,
-                  goalMotivation: md.motivation,
-                  customMotivation: md.motivation_text,
-                  barriers: reconstructedBarriers,
-                  prerequisites: reconstructedPrerequisites
-                };
-              }
-              return existingContext;
-            })()}
-          />
+              })()}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-4">
-          <GoalCalendarView goal={goal} steps={steps} />
+          <div className="max-w-4xl mx-auto">
+            <GoalCalendarView goal={goal} steps={steps} />
+          </div>
         </TabsContent>
 
         <TabsContent value="steps" className="mt-4">
-          {generatingSteps ? (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-center py-12 text-center">
-                  <div className="space-y-3">
-                    <p className="text-lg text-muted-foreground">
-                      Microsteps being generated
-                      <span className="inline-flex ml-1">
-                        <span className="animate-dot-pulse">.</span>
-                        <span className="animate-dot-pulse animation-delay-200">.</span>
-                        <span className="animate-dot-pulse animation-delay-400">.</span>
-                      </span>
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      This usually takes 10-20 seconds
-                    </p>
+          <div className="max-w-4xl mx-auto">
+            {generatingSteps ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-center py-12 text-center">
+                    <div className="space-y-3">
+                      <p className="text-lg text-muted-foreground">
+                        Microsteps being generated
+                        <span className="inline-flex ml-1">
+                          <span className="animate-dot-pulse">.</span>
+                          <span className="animate-dot-pulse animation-delay-200">.</span>
+                          <span className="animate-dot-pulse animation-delay-400">.</span>
+                        </span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        This usually takes 10-20 seconds
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : generationError ? (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-                  <AlertCircle className="h-12 w-12 text-destructive" />
-                  <div className="space-y-2">
-                    <p className="text-lg font-semibold">Generation failed</p>
-                    <p className="text-sm text-muted-foreground max-w-md">
-                      We couldn't generate your personalized steps. This might be due to a temporary issue.
-                    </p>
+                </CardContent>
+              </Card>
+            ) : generationError ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+                    <AlertCircle className="h-12 w-12 text-destructive" />
+                    <div className="space-y-2">
+                      <p className="text-lg font-semibold">Generation failed</p>
+                      <p className="text-sm text-muted-foreground max-w-md">
+                        We couldn't generate your personalized steps. This might be due to a temporary issue.
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={() => generateStepsForNewGoal()} 
+                      variant="default"
+                      className="mt-4"
+                    >
+                      Retry Generation
+                    </Button>
                   </div>
-                  <Button 
-                    onClick={() => generateStepsForNewGoal()} 
-                    variant="default"
-                    className="mt-4"
-                  >
-                    Retry Generation
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : steps.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground py-8">
-                  No recommended steps yet
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <RecommendedStepsList
-              steps={steps}
-              goal={goal}
-              onStepsChange={loadGoalData}
-              onStepsUpdate={handleStepsUpdate}
-              onOpenStepChat={handleOpenStepChat}
-            />
-          )}
+                </CardContent>
+              </Card>
+            ) : steps.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-center text-muted-foreground py-8">
+                    No recommended steps yet
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <RecommendedStepsList
+                steps={steps}
+                goal={goal}
+                onStepsChange={loadGoalData}
+                onStepsUpdate={handleStepsUpdate}
+                onOpenStepChat={handleOpenStepChat}
+              />
+            )}
+          </div>
         </TabsContent>
 
         {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
