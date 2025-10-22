@@ -1450,13 +1450,13 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full max-w-4xl mx-auto px-4 justify-center gap-2">
-          <TabsTrigger value="summary">
+          <TabsTrigger value="summary" className="min-w-[140px]">
             Summary
           </TabsTrigger>
-          <TabsTrigger value="calendar">
+          <TabsTrigger value="calendar" className="min-w-[140px]">
             Calendar
           </TabsTrigger>
-          <TabsTrigger value="steps">
+          <TabsTrigger value="steps" className="min-w-[140px]">
             Recommended Steps
             {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
               <Badge className="ml-2" variant="secondary">
@@ -1465,7 +1465,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
             )}
           </TabsTrigger>
           {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
-            <TabsTrigger value="supporter">
+            <TabsTrigger value="supporter" className="min-w-[140px]">
               Supporter Setup
               <Badge className="ml-2" variant="secondary">
                 {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
