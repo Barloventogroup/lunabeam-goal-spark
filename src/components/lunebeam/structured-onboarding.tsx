@@ -19,7 +19,6 @@ import { X, Loader2, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
-import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
 
 interface OnboardingData {
   role: 'individual' | 'parent' | '';
@@ -105,7 +104,6 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const [generatedProfile, setGeneratedProfile] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
   const { completeOnboarding, setProfile } = useStore();
 
   const getTotalSteps = () => {
@@ -280,26 +278,6 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
     
     setIsCreating(true);
     
-    // Check if user has seen welcome animation before
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('has_seen_welcome')
-          .eq('user_id', user.id)
-          .single();
-        
-        // Only show confetti if this is first time
-        if (!profileData?.has_seen_welcome) {
-          setShowConfetti(true);
-        }
-      }
-    } catch (error) {
-      console.warn('Could not check welcome status, showing confetti:', error);
-      setShowConfetti(true);
-    }
-    
     const localProfile = {
       first_name: data.name || 'User',
       strengths: data.superpowers,
@@ -377,18 +355,6 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           </Button>
         </div>
       </div>
-      
-      {/* Confetti Animation */}
-      {showConfetti && (
-        <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
-          <Lottie 
-            animationData={loadingLunaAnimation} 
-            loop={false}
-            onComplete={() => setShowConfetti(false)}
-            style={{ width: '100vw', height: '100vh' }}
-          />
-        </div>
-      )}
     </div>;
   }
 

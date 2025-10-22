@@ -20,7 +20,6 @@ import { X, ArrowLeft, Loader2, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
-import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
 
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
@@ -55,7 +54,6 @@ export function ParentOnboarding({
 }: ParentOnboardingProps) {
   const [currentStep, setCurrentStep] = useState(2);
   const [isCreating, setIsCreating] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
   const {
     toast
   } = useToast();
@@ -280,26 +278,6 @@ export function ParentOnboarding({
     
     setIsCreating(true);
     
-    // Check if user has seen welcome animation before
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('has_seen_welcome')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        // Only show confetti if this is first time
-        if (!profileData?.has_seen_welcome) {
-          setShowConfetti(true);
-        }
-      }
-    } catch (error) {
-      console.warn('Could not check welcome status, showing confetti:', error);
-      setShowConfetti(true);
-    }
-    
     const adminProfile = {
       first_name: data.adminName.trim() || 'Admin',
       strengths: [],
@@ -447,18 +425,6 @@ export function ParentOnboarding({
           </Button>
         </div>
       </div>
-      
-      {/* Confetti Animation */}
-        {showConfetti && (
-          <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
-            <Lottie 
-              animationData={loadingLunaAnimation} 
-              loop={false}
-              onComplete={() => setShowConfetti(false)}
-              style={{ width: '100vw', height: '100vh' }}
-            />
-          </div>
-        )}
     </div>;
   }
   return <div className="min-h-screen flex flex-col">
