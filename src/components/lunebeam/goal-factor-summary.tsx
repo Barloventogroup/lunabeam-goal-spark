@@ -280,7 +280,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               <span>Goal Summary</span>
             </h3>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Skill Assessment - Always first */}
               <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[160px]">
                 <h4 className="text-sm font-semibold text-red-700 mb-2 flex items-center gap-2">
@@ -560,7 +560,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
         <h1 className="text-2xl md:text-3xl font-bold text-center leading-tight">{goal.title}</h1>
 
         {/* 2x2 Grid Summary (Matching Creation Flow) */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Skill Assessment - Always first if exists */}
           {wizardContext?.pmAssessment && (
             <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[160px]">
