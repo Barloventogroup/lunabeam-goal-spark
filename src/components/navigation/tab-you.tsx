@@ -15,6 +15,7 @@ import { NotificationsList } from '../lunebeam/notifications-list';
 import { SettingsPrivacyView } from '../lunebeam/settings-privacy-view';
 import { notificationsService } from '@/services/notificationsService';
 import { supabase } from '@/integrations/supabase/client';
+import { NotificationBadge } from '../lunebeam/notification-badge';
 type YouView = 'profile' | 'rewards' | 'achievements' | 'rewardsHub' | 'profileDetail' | 'rewardBank' | 'rewardAdmin' | 'redemptionInbox' | 'notifications' | 'settingsPrivacy';
 
 interface TabYouProps {
@@ -141,11 +142,7 @@ export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
       <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">You</h1>
-          {unreadCount > 0 && (
-            <Badge variant="destructive" className="ml-2">
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </Badge>
-          )}
+          <NotificationBadge onNavigateToNotifications={() => setCurrentView('notifications')} />
         </div>
       </div>
 

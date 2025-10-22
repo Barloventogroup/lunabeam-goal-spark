@@ -17,6 +17,7 @@ import { PermissionsService, type Supporter } from '@/services/permissionsServic
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { InviteSupportersCard } from '@/components/lunebeam/invite-supporters-card';
+import { NotificationBadge } from '@/components/lunebeam/notification-badge';
 
 interface SupporterWithProfile extends Supporter {
   profile?: {
@@ -25,7 +26,11 @@ interface SupporterWithProfile extends Supporter {
   };
 }
 
-export const TabTeamIndividual: React.FC = () => {
+interface TabTeamIndividualProps {
+  onNavigateToNotifications?: () => void;
+}
+
+export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigateToNotifications }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [supporters, setSupporters] = useState<SupporterWithProfile[]>([]);
@@ -119,11 +124,16 @@ export const TabTeamIndividual: React.FC = () => {
         {/* Header */}
         <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">Community</h1>
-            {supporters.length > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {supporters.length}
-              </Badge>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold">Community</h1>
+              {supporters.length > 0 && (
+                <Badge variant="secondary">
+                  {supporters.length}
+                </Badge>
+              )}
+            </div>
+            {onNavigateToNotifications && (
+              <NotificationBadge onNavigateToNotifications={onNavigateToNotifications} />
             )}
           </div>
         </div>

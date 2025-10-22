@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { User, Users, UserPlus } from 'lucide-react';
+import { NotificationBadge } from '../lunebeam/notification-badge';
 import { useStore } from '../../store/useStore';
 import { getSupporterContext } from '@/utils/supporterUtils';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,9 +24,10 @@ interface TabGoalsProps {
   onWizardStateChange?: (isWizardActive: boolean) => void;
   initialGoalId?: string | null;
   triggerCreate?: boolean;
+  onNavigateToNotifications?: () => void;
 }
 
-export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initialGoalId, triggerCreate }) => {
+export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initialGoalId, triggerCreate, onNavigateToNotifications }) => {
   const [currentView, setCurrentView] = useState<GoalsView>('list');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -247,11 +249,16 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
         {!isWizardView && (
           <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold">Goals</h1>
-              {activeGoalsCount > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {activeGoalsCount}
-                </Badge>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold">Goals</h1>
+                {activeGoalsCount > 0 && (
+                  <Badge variant="secondary">
+                    {activeGoalsCount}
+                  </Badge>
+                )}
+              </div>
+              {onNavigateToNotifications && (
+                <NotificationBadge onNavigateToNotifications={onNavigateToNotifications} />
               )}
             </div>
           </div>
@@ -291,11 +298,16 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
       {!isWizardView && (
         <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">Goals</h1>
-            {activeGoalsCount > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {activeGoalsCount}
-              </Badge>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold">Goals</h1>
+              {activeGoalsCount > 0 && (
+                <Badge variant="secondary">
+                  {activeGoalsCount}
+                </Badge>
+              )}
+            </div>
+            {onNavigateToNotifications && (
+              <NotificationBadge onNavigateToNotifications={onNavigateToNotifications} />
             )}
           </div>
         </div>
