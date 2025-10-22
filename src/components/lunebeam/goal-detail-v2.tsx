@@ -33,6 +33,7 @@ import { GoalFactorSummary } from './goal-factor-summary';
 
 import { RecommendedStepsList } from './recommended-steps-list';
 import { SupporterSetupStepsList } from './supporter-setup-steps-list';
+import { GoalCalendarView } from './goal-calendar-view';
 import { StepsChat } from './steps-chat';
 import { StepChatModal } from './step-chat-modal';
 import { ProgressBar } from './progress-bar';
@@ -1448,9 +1449,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="summary">
             Summary
+          </TabsTrigger>
+          <TabsTrigger value="calendar">
+            Calendar
           </TabsTrigger>
           <TabsTrigger value="steps">
             Recommended Steps
@@ -1555,6 +1559,10 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               return existingContext;
             })()}
           />
+        </TabsContent>
+
+        <TabsContent value="calendar" className="mt-4">
+          <GoalCalendarView goal={goal} steps={steps} />
         </TabsContent>
 
         <TabsContent value="steps" className="mt-4">
