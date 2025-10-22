@@ -323,7 +323,7 @@ useEffect(() => {
         <Lottie
           animationData={loadingLunaAnimation}
           loop={false}
-          style={{ width: 600, height: 600 }}
+          style={{ width: 1080, height: 1080 }}
         />
       </div>
     );
