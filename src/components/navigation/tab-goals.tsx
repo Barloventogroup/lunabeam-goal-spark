@@ -10,6 +10,7 @@ import { GoalProposalsView } from '../lunebeam/goal-proposals-view';
 import { SupporterGoalWizard } from '../lunebeam/supporter-goal-wizard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { User, Users, UserPlus } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { getSupporterContext } from '@/utils/supporterUtils';
@@ -32,6 +33,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTab, setActiveTab] = useState<'own' | 'individual'>('own');
   const [supporterContext, setSupporterContext] = useState<any>(null);
+  const [activeGoalsCount, setActiveGoalsCount] = useState(0);
 
   const { userContext } = useStore();
 
@@ -47,6 +49,28 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
       getCurrentUser();
     }
   }, [userContext]);
+
+  // Load active goals count for badge
+  useEffect(() => {
+    const loadActiveGoalsCount = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { count } = await supabase
+          .from('goals')
+          .select('*', { count: 'exact', head: true })
+          .eq('owner_id', user.id)
+          .neq('status', 'completed');
+        
+        setActiveGoalsCount(count || 0);
+      } catch (error) {
+        console.error('Error loading active goals count:', error);
+      }
+    };
+    
+    loadActiveGoalsCount();
+  }, [refreshTrigger]);
 
   // Handle initial goal ID navigation
   useEffect(() => {
@@ -222,7 +246,14 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
         {/* Header - hidden during wizard */}
         {!isWizardView && (
           <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
-            <h1 className="text-xl font-bold">Goals</h1>
+            <div className="flex items-center justify-between">
+              <h1 className="text-xl font-bold">Goals</h1>
+              {activeGoalsCount > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {activeGoalsCount}
+                </Badge>
+              )}
+            </div>
           </div>
         )}
         
@@ -259,7 +290,14 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
       {/* Header - hidden during wizard */}
       {!isWizardView && (
         <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
-          <h1 className="text-xl font-bold">Goals</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold">Goals</h1>
+            {activeGoalsCount > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {activeGoalsCount}
+              </Badge>
+            )}
+          </div>
         </div>
       )}
       
