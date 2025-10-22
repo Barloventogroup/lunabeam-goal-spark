@@ -132,7 +132,7 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   const level = data.pmAssessment?.calculatedLevel || 3;
   const levelLabel = data.pmAssessment?.levelLabel || 'Developing';
-  const levelEmojis = ['🌱', '🌿', '🌳', '🎯', '⭐'];
+  const levelEmojis = ['🌱', '📚', '🚀', '⭐', '🏆'];
   
   const levelContext = `Starting Level: ${levelLabel} ${levelEmojis[level - 1]}`;
   
@@ -548,7 +548,7 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   
   const levelContext = data.pmAssessment?.calculatedLevel 
-    ? `Starting Level: ${data.pmAssessment.levelLabel} ${['🌱', '🌿', '🌳', '🎯', '⭐'][data.pmAssessment.calculatedLevel - 1]}`
+    ? `Starting Level: ${data.pmAssessment.levelLabel} ${['🌱', '📚', '🚀', '⭐', '🏆'][data.pmAssessment.calculatedLevel - 1]}`
     : undefined;
   
   const options = [
@@ -613,7 +613,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
     });
     
     const levelContext = assessment?.calculatedLevel 
-      ? `Starting level: ${['🌱', '🌿', '🌳', '🎯', '⭐'][assessment.calculatedLevel - 1]} ${assessment.levelLabel}`
+      ? `Starting level: ${['🌱', '📚', '🚀', '⭐', '🏆'][assessment.calculatedLevel - 1]} ${assessment.levelLabel}`
       : undefined;
 
   const level = assessment?.calculatedLevel || 3;

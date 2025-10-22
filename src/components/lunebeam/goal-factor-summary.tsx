@@ -415,12 +415,6 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                       <span className="font-medium">{abbreviatedDays}</span>
                     </p>
                   )}
-                  {(timeOfDay || customTime) && (
-                    <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Time:</span>{' '}
-                      <span className="font-medium">{customTime ? formatDisplayTime(customTime) : timeOfDay}</span>
-                    </p>
-                  )}
                   {pmPracticePlan?.startTime && (
                     <p className="text-sm">
                       <span className="text-muted-foreground text-xs">Practice Time:</span>{' '}

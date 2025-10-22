@@ -52,7 +52,7 @@ const getSkillLevelDisplay = (assessment: any): { label: string; emoji: string }
     label = label.charAt(0).toUpperCase() + label.slice(1);
   }
   
-  const emojis = ['🌱', '🌿', '🌳', '🎯', '⭐'];
+  const emojis = ['🌱', '📚', '🚀', '⭐', '🏆'];
   const emoji = emojis[level - 1] || '🌱';
   
   return { label: label || 'Beginner', emoji };
