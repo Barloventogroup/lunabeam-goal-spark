@@ -1449,7 +1449,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-4">
           <TabsTrigger value="summary">
             Summary
           </TabsTrigger>
