@@ -3,7 +3,6 @@ import { useStore } from '@/store/useStore';
 import { OnboardingFlow } from './onboarding-flow';
 import { BottomTabs } from '../navigation/bottom-tabs';
 import { Home, Target, Users, User } from 'lucide-react';
-import lunabeamLogo from '@/assets/lunabeam-logo.png';
 import Lottie from 'lottie-react';
 import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
 
@@ -84,9 +83,9 @@ const AppRouter: React.FC = () => {
         {/* Header with Logo */}
         <div className="flex items-center justify-center p-4 border-b bg-card/80 backdrop-blur">
           <img 
-            src={lunabeamLogo} 
-            alt="LunaBeam" 
-            className="h-8"
+            src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
+            alt="Lunabeam logo" 
+            className="h-7 w-auto object-contain"
           />
         </div>
 
@@ -150,9 +149,9 @@ const AppRouter: React.FC = () => {
         {/* Header with Logo */}
         <div className="flex items-center justify-center p-4 border-b bg-card/80 backdrop-blur">
           <img 
-            src={lunabeamLogo} 
-            alt="LunaBeam" 
-            className="h-8"
+            src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
+            alt="Lunabeam logo" 
+            className="h-7 w-auto object-contain"
           />
         </div>
 
