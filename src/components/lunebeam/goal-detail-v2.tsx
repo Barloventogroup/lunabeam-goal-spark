@@ -40,7 +40,7 @@ import { StepChatModal } from './step-chat-modal';
 import { ProgressBar } from './progress-bar';
 import { GoalEditModal } from './goal-edit-modal';
 import { CircularProgress } from '@/components/ui/circular-progress';
-import type { Goal, Step, GoalProgress } from '@/types';
+import type { Goal, Step, GoalProgress, Substep } from '@/types';
 
 interface GoalDetailV2Props {
   goalId: string;
@@ -234,28 +234,42 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const calculateProgress = async (goalSteps: Step[]): Promise<GoalProgress> => {
     const actionableSteps = goalSteps.filter(s => (!s.type || s.type === 'action') && !s.hidden && s.status !== 'skipped');
     
-    // Fetch substeps for all steps to include in count
     let totalCompletableItems = 0;
     let completedItems = 0;
     
-    for (const step of actionableSteps) {
-      const { data: substeps } = await supabase
+    // Batch fetch all substeps in a single query (fixes N+1 query problem)
+    if (actionableSteps.length > 0) {
+      const stepIds = actionableSteps.map(s => s.id);
+      
+      const { data: allSubsteps } = await supabase
         .from('substeps')
         .select('*')
-        .eq('step_id', step.id)
+        .in('step_id', stepIds)
         .order('created_at', { ascending: true });
       
-      const stepSubsteps = substeps || [];
+      // Group substeps by step_id for O(1) lookup
+      const substepsByStep: Record<string, Substep[]> = {};
+      (allSubsteps || []).forEach(substep => {
+        if (!substepsByStep[substep.step_id]) {
+          substepsByStep[substep.step_id] = [];
+        }
+        substepsByStep[substep.step_id].push(substep as Substep);
+      });
       
-      if (stepSubsteps.length > 0) {
-        // If step has substeps, count each substep
-        totalCompletableItems += stepSubsteps.length;
-        completedItems += stepSubsteps.filter(sub => sub.completed_at).length;
-      } else {
-        // If no substeps, count the main step
-        totalCompletableItems += 1;
-        completedItems += step.status === 'done' ? 1 : 0;
-      }
+      // Calculate progress using grouped data
+      actionableSteps.forEach(step => {
+        const stepSubsteps = substepsByStep[step.id] || [];
+        
+        if (stepSubsteps.length > 0) {
+          // If step has substeps, count each substep
+          totalCompletableItems += stepSubsteps.length;
+          completedItems += stepSubsteps.filter(sub => sub.completed_at).length;
+        } else {
+          // If no substeps, count the main step
+          totalCompletableItems += 1;
+          completedItems += step.status === 'done' ? 1 : 0;
+        }
+      });
     }
     
     console.log('Goal progress calculation debug:', {
