@@ -1450,35 +1450,32 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className={cn(
-          "flex flex-col sm:grid w-full max-w-4xl mx-auto",
-          isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 
-            ? "sm:grid-cols-4" 
-            : "sm:grid-cols-3"
-        )}>
-          <TabsTrigger value="summary">
-            Summary
-          </TabsTrigger>
-          <TabsTrigger value="steps">
-            Recommended Steps
-            {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
-              <Badge className="ml-2" variant="secondary">
-                {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="calendar">
-            Results
-          </TabsTrigger>
-          {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
-            <TabsTrigger value="supporter" className="min-w-[140px]">
-              Supporter Setup
-              <Badge className="ml-2" variant="secondary">
-                {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
-              </Badge>
+        <div className="w-full max-w-4xl mx-auto overflow-x-auto -mx-2 px-2">
+          <TabsList className="inline-flex w-auto min-w-full">
+            <TabsTrigger value="summary">
+              Summary
             </TabsTrigger>
-          )}
-        </TabsList>
+            <TabsTrigger value="steps">
+              Recommended Steps
+              {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
+                <Badge className="ml-2" variant="secondary">
+                  {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="calendar">
+              Results
+            </TabsTrigger>
+            {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
+              <TabsTrigger value="supporter" className="min-w-[140px]">
+                Supporter Setup
+                <Badge className="ml-2" variant="secondary">
+                  {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
+                </Badge>
+              </TabsTrigger>
+            )}
+          </TabsList>
+        </div>
 
         <TabsContent value="summary" className="mt-4">
           <div className="max-w-4xl mx-auto px-2 sm:px-4">
