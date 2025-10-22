@@ -66,7 +66,7 @@ const AppRouter: React.FC = () => {
     }
     
     onboardingCompleteRef.current = isNowComplete;
-  }, [isOnboardingComplete]);
+  }, [profile?.onboarding_complete, isOnboardingComplete]);
 
   console.log('AppRouter render:', {
     profileLoaded,
