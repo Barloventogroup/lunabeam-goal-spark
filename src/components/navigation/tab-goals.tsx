@@ -223,7 +223,6 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
         {!isWizardView && (
           <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
             <h1 className="text-xl font-bold">Goals</h1>
-            <p className="text-sm text-muted-foreground">Create and track your progress</p>
           </div>
         )}
         
@@ -261,7 +260,6 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
       {!isWizardView && (
         <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <h1 className="text-xl font-bold">Goals</h1>
-          <p className="text-sm text-muted-foreground">Create and track your progress</p>
         </div>
       )}
       

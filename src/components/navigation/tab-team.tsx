@@ -720,15 +720,8 @@ export const TabTeam: React.FC = () => {
   return <>
       <div className="min-h-screen bg-gradient-soft">
         {/* Header */}
-        <div className="p-4 bg-card/80 backdrop-blur border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">Community</h3>
-              <p className="text-foreground-soft">
-                Manage your support network ({combinedMembers.length} members)
-              </p>
-            </div>
-          </div>
+        <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+          <h1 className="text-xl font-bold">Community</h1>
         </div>
 
         <div className="p-4 space-y-6">

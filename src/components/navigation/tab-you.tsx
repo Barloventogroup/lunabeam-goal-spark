@@ -140,7 +140,6 @@ export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
       {/* Header */}
       <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
         <h1 className="text-xl font-bold">You</h1>
-        <p className="text-sm text-muted-foreground">Profile, settings, and achievements</p>
       </div>
 
       <div className="px-6 pt-4 pb-4">
