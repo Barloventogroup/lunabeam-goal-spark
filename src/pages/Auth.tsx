@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,8 @@ import { getSupporterInviteByToken } from '@/utils/supporterUtils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useStore } from '@/store/useStore';
+import Lottie from 'lottie-react';
+import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
 export default function Auth() {
   const {
     user,
@@ -27,6 +29,8 @@ export default function Auth() {
   const [showSupporterSetup, setShowSupporterSetup] = useState(false);
   const [supporterSetupData, setSupporterSetupData] = useState<{token: string, individualName: string, inviteeEmail: string} | null>(null);
   const [signingOut, setSigningOut] = useState(false);
+  const [showLoginAnimation, setShowLoginAnimation] = useState(false);
+  const pendingSignInRef = useRef(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -83,12 +87,12 @@ useEffect(() => {
 
   // Redirect to dashboard after successful authentication
   useEffect(() => {
-    if (user && !loading && !showPasswordSetup && !showSupporterSetup) {
+    if (user && !loading && !showPasswordSetup && !showSupporterSetup && !showLoginAnimation) {
       checkPasswordSetupNeeded();
     }
-  }, [user, loading, navigate, showPasswordSetup, showSupporterSetup]);
+  }, [user, loading, navigate, showPasswordSetup, showSupporterSetup, showLoginAnimation]);
   const checkPasswordSetupNeeded = async () => {
-    if (!user) return;
+    if (!user || showLoginAnimation) return;
     
     // Prevent redirect while supporter setup is active or when URL indicates supporter setup
     if (showSupporterSetup || searchParams.get('mode') === 'supporter-setup') {
@@ -130,9 +134,16 @@ useEffect(() => {
         setNeedsPasswordSetup(true);
         setShowPasswordSetup(true);
       } else {
-        navigate('/', {
-          replace: true
-        });
+        if (pendingSignInRef.current) {
+          setShowLoginAnimation(true);
+          setTimeout(() => {
+            setShowLoginAnimation(false);
+            pendingSignInRef.current = false;
+            navigate('/', { replace: true });
+          }, 2000);
+        } else {
+          navigate('/', { replace: true });
+        }
       }
     } catch (error) {
       console.error('Error checking password setup:', error);
@@ -214,10 +225,12 @@ useEffect(() => {
           }
         }
       } else {
+        pendingSignInRef.current = true;
         const {
           error
         } = await signIn(formData.email, formData.password);
         if (error) {
+          pendingSignInRef.current = false;
           const msg = (error?.message || '').toLowerCase();
           if (error?.status === 500 || msg.includes('database error querying schema') || msg.includes('unexpected_failure')) {
             const redirectUrl = `${window.location.origin}/auth/callback`;
@@ -237,8 +250,6 @@ useEffect(() => {
           } else {
             toast.error(error.message);
           }
-        } else {
-          toast.success('Welcome back!');
         }
       }
     } catch (error) {
@@ -304,6 +315,19 @@ useEffect(() => {
       setLoading(false);
     }
   };
+
+  // Show login animation
+  if (showLoginAnimation) {
+    return (
+      <div className="min-h-screen w-screen bg-white flex items-center justify-center">
+        <Lottie
+          animationData={loadingLunaAnimation}
+          loop={false}
+          style={{ width: 256, height: 256 }}
+        />
+      </div>
+    );
+  }
 
   // Show loading when signing out for claim
   if (signingOut) {
