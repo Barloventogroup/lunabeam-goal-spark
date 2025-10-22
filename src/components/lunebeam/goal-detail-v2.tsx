@@ -30,6 +30,7 @@ import { getDomainDisplayName } from '@/utils/domainUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { generateMicroStepsSmart } from '@/services/microStepsGenerator';
 import { GoalFactorSummary } from './goal-factor-summary';
+import { cn } from '@/lib/utils';
 
 import { RecommendedStepsList } from './recommended-steps-list';
 import { SupporterSetupStepsList } from './supporter-setup-steps-list';
@@ -1449,20 +1450,25 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full max-w-4xl mx-auto px-4 justify-center gap-2">
-          <TabsTrigger value="summary" className="min-w-[140px]">
+        <TabsList className={cn(
+          "grid w-full max-w-4xl mx-auto",
+          isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 
+            ? "grid-cols-4" 
+            : "grid-cols-3"
+        )}>
+          <TabsTrigger value="summary">
             Summary
           </TabsTrigger>
-          <TabsTrigger value="calendar" className="min-w-[140px]">
-            Calendar
-          </TabsTrigger>
-          <TabsTrigger value="steps" className="min-w-[140px]">
+          <TabsTrigger value="steps">
             Recommended Steps
             {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
               <Badge className="ml-2" variant="secondary">
                 {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length}
               </Badge>
             )}
+          </TabsTrigger>
+          <TabsTrigger value="calendar">
+            Results
           </TabsTrigger>
           {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
             <TabsTrigger value="supporter" className="min-w-[140px]">

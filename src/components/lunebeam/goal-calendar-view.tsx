@@ -1,9 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Goal, Step } from '@/types';
-import { format, parseISO, startOfDay, isAfter, isBefore, isSameDay, addDays } from 'date-fns';
+import { format, parseISO, startOfDay, isAfter, isBefore, isSameDay, addDays, addMonths, subMonths, startOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface GoalCalendarViewProps {
   goal: Goal;
@@ -11,6 +13,8 @@ interface GoalCalendarViewProps {
 }
 
 export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps }) => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
   // Calculate dates for calendar display
   const { plannedDates, completedDates, missedDates } = useMemo(() => {
     const planned: Date[] = [];
@@ -69,6 +73,14 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
     return { plannedDates: planned, completedDates: completed, missedDates: missed };
   }, [goal, steps]);
 
+  // Determine if previous month should be shown (only if goal existed then)
+  const showPreviousMonth = useMemo(() => {
+    if (!goal.start_date) return true;
+    const goalStart = startOfMonth(parseISO(goal.start_date));
+    const prevMonth = startOfMonth(subMonths(currentMonth, 1));
+    return !isBefore(prevMonth, goalStart);
+  }, [goal.start_date, currentMonth]);
+
   // Custom day renderer with styling
   const modifiers = {
     planned: plannedDates,
@@ -88,49 +100,110 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
       {/* Hero Metrics Card */}
       <Card>
         <CardContent className="pt-6 space-y-4">
-          {/* Goal Title */}
-          <h2 className="text-lg font-semibold text-foreground">{goal.title}</h2>
-          
-          {/* Primary Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Streak - Primary Motivation */}
+          {/* Primary Metrics - Left Aligned */}
+          <div className="flex flex-wrap items-start gap-8">
+            {/* Streak */}
             <div>
-              <div className="text-3xl font-bold text-primary">
+              <div className="text-4xl font-bold text-primary">
                 {goal.streak_count && goal.streak_count > 0 
-                  ? `🔥 ${goal.streak_count}-Day Streak` 
-                  : "Start Your Streak Today!"}
+                  ? `🔥 ${goal.streak_count}` 
+                  : "0"}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">Current Consistency</div>
+              <div className="text-sm text-muted-foreground mt-1">Day Streak</div>
             </div>
             
-            {/* Completed Days - Achievement */}
+            {/* Days Completed */}
             <div>
-              <div className="text-3xl font-bold text-green-600">
-                ✅ {completedDates.length} Days
+              <div className="text-4xl font-bold text-green-600">
+                ✅ {completedDates.length}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">Completed</div>
-              
-              {/* Missed Days - Inline */}
-              <div className="text-base font-normal text-red-400 mt-2">
-                ⚠️ {missedDates.length} Missed
+              <div className="text-sm text-muted-foreground mt-1">Days Completed</div>
+            </div>
+            
+            {/* Days Missed */}
+            <div>
+              <div className="text-4xl font-bold text-red-400">
+                ⚠️ {missedDates.length}
               </div>
+              <div className="text-sm text-muted-foreground mt-1">Days Missed</div>
             </div>
           </div>
-
         </CardContent>
       </Card>
 
-      {/* Calendar with Compact Legend */}
+      {/* Multi-Month Calendar with Navigation */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex justify-center">
-            <Calendar
-              mode="single"
-              modifiers={modifiers}
-              modifiersClassNames={modifiersClassNames}
-              className="rounded-md border-0"
-              showYearPicker
-            />
+          {/* Navigation Controls */}
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
+              aria-label="Previous month"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <span className="font-semibold text-lg min-w-[200px] text-center">
+              {format(currentMonth, 'MMMM yyyy')}
+            </span>
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
+              aria-label="Next month"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          {/* Three-Month Calendar Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Previous Month - Only show if goal was active */}
+            {showPreviousMonth && (
+              <div className="flex flex-col items-center">
+                <div className="text-sm text-muted-foreground mb-2">
+                  {format(subMonths(currentMonth, 1), 'MMMM')}
+                </div>
+                <Calendar
+                  mode="single"
+                  month={subMonths(currentMonth, 1)}
+                  modifiers={modifiers}
+                  modifiersClassNames={modifiersClassNames}
+                  className="rounded-md border-0"
+                />
+              </div>
+            )}
+            
+            {/* Current Month - Centered */}
+            <div className="flex flex-col items-center">
+              <div className="text-sm font-semibold mb-2">
+                {format(currentMonth, 'MMMM')}
+              </div>
+              <Calendar
+                mode="single"
+                month={currentMonth}
+                modifiers={modifiers}
+                modifiersClassNames={modifiersClassNames}
+                className="rounded-md border-0"
+              />
+            </div>
+            
+            {/* Next Month */}
+            <div className="flex flex-col items-center">
+              <div className="text-sm text-muted-foreground mb-2">
+                {format(addMonths(currentMonth, 1), 'MMMM')}
+              </div>
+              <Calendar
+                mode="single"
+                month={addMonths(currentMonth, 1)}
+                modifiers={modifiers}
+                modifiersClassNames={modifiersClassNames}
+                className="rounded-md border-0"
+              />
+            </div>
           </div>
           
           {/* Compact Legend */}
