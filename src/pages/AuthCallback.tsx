@@ -160,12 +160,14 @@ export default function AuthCallback() {
   // Show a simple loading state while processing
   if (status === 'success') {
     return (
-      <div className="min-h-screen w-screen bg-white flex items-center justify-center overflow-hidden">
-        <Lottie
-          animationData={loadingLunaAnimation}
-          loop={false}
-          style={{ width: '120vmax', height: '120vmax' }}
-        />
+      <div className="fixed inset-0 bg-white flex items-center justify-center overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <Lottie
+            animationData={loadingLunaAnimation}
+            loop={false}
+            style={{ width: '150vmax', height: '150vmax' }}
+          />
+        </div>
       </div>
     );
   }
