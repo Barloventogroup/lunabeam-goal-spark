@@ -1464,12 +1464,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="w-full max-w-4xl mx-auto overflow-x-auto -mx-2 px-2">
-          <TabsList className="inline-flex w-auto min-w-full">
-            <TabsTrigger value="summary">
+        <div className="w-full max-w-4xl mx-auto overflow-x-auto scrollbar-hide -mx-2 px-2 pb-2">
+          <TabsList className="inline-flex w-auto justify-start">
+            <TabsTrigger value="summary" className="shrink-0">
               Summary
             </TabsTrigger>
-            <TabsTrigger value="steps">
+            <TabsTrigger value="steps" className="shrink-0">
               Recommended Steps
               {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
                 <Badge className="ml-2" variant="secondary">
@@ -1477,11 +1477,11 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="calendar">
+            <TabsTrigger value="calendar" className="shrink-0">
               Results
             </TabsTrigger>
             {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
-              <TabsTrigger value="supporter" className="min-w-[140px]">
+              <TabsTrigger value="supporter" className="min-w-[140px] shrink-0">
                 Supporter Setup
                 <Badge className="ml-2" variant="secondary">
                   {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
