@@ -12,7 +12,7 @@ const AppRouter: React.FC = () => {
   const [profileLoaded, setProfileLoaded] = React.useState(false);
   const [showPostOnboardingAnimation, setShowPostOnboardingAnimation] = React.useState(false);
   const [showPostOnboardingSkeleton, setShowPostOnboardingSkeleton] = React.useState(false);
-  const onboardingCompleteRef = React.useRef(isOnboardingComplete());
+  const onboardingCompleteRef = React.useRef(false);
 
   // Load profile on component mount
   React.useEffect(() => {
