@@ -1451,10 +1451,10 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className={cn(
-          "grid w-full max-w-4xl mx-auto",
+          "flex flex-col sm:grid w-full max-w-4xl mx-auto",
           isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 
-            ? "grid-cols-4" 
-            : "grid-cols-3"
+            ? "sm:grid-cols-4" 
+            : "sm:grid-cols-3"
         )}>
           <TabsTrigger value="summary">
             Summary
@@ -1481,7 +1481,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </TabsList>
 
         <TabsContent value="summary" className="mt-4">
-          <div className="max-w-4xl mx-auto px-4">
+          <div className="max-w-4xl mx-auto px-2 sm:px-4">
             <GoalFactorSummary
               goal={goal}
               wizardContext={(() => {
@@ -1570,13 +1570,13 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-4">
-          <div className="max-w-4xl mx-auto px-4">
+          <div className="max-w-4xl mx-auto px-2 sm:px-4">
             <GoalCalendarView goal={goal} steps={steps} />
           </div>
         </TabsContent>
 
         <TabsContent value="steps" className="mt-4">
-          <div className="max-w-4xl mx-auto px-4">
+          <div className="max-w-4xl mx-auto px-2 sm:px-4">
             {generatingSteps ? (
               <Card>
                 <CardContent className="pt-6">
@@ -1640,12 +1640,14 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
         {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
           <TabsContent value="supporter" className="mt-4">
-            <SupporterSetupStepsList
-              steps={steps}
-              goal={goal}
-              onStepsChange={loadGoalData}
-              onStepsUpdate={handleStepsUpdate}
-            />
+            <div className="max-w-4xl mx-auto px-2 sm:px-4">
+              <SupporterSetupStepsList
+                steps={steps}
+                goal={goal}
+                onStepsChange={loadGoalData}
+                onStepsUpdate={handleStepsUpdate}
+              />
+            </div>
           </TabsContent>
         )}
       </Tabs>

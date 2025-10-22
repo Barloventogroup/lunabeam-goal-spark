@@ -97,35 +97,38 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
 
   return (
     <div className="space-y-4">
-      {/* Hero Metrics Card */}
+      {/* Hero Metrics Card - Triangle Formation */}
       <Card>
-        <CardContent className="pt-6 space-y-4">
-          {/* Primary Metrics - Left Aligned */}
-          <div className="flex flex-wrap items-start gap-8">
-            {/* Streak */}
-            <div>
-              <div className="text-4xl font-bold text-primary">
+        <CardContent className="pt-6 pb-8">
+          {/* Triangle Metrics Layout */}
+          <div className="flex flex-col items-center space-y-6">
+            {/* Streak - Top of Triangle (Most Prominent) */}
+            <div className="text-center">
+              <div className="text-6xl font-bold text-primary mb-2">
                 {goal.streak_count && goal.streak_count > 0 
                   ? `🔥 ${goal.streak_count}` 
-                  : "0"}
+                  : "🔥 0"}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">Day Streak</div>
+              <div className="text-base font-semibold text-muted-foreground">Day Streak</div>
             </div>
             
-            {/* Days Completed */}
-            <div>
-              <div className="text-4xl font-bold text-green-600">
-                ✅ {completedDates.length}
+            {/* Days Completed & Missed - Bottom of Triangle (Secondary) */}
+            <div className="flex items-start justify-center gap-12">
+              {/* Days Completed */}
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600 mb-1">
+                  ✅ {completedDates.length}
+                </div>
+                <div className="text-xs text-muted-foreground">Days Completed</div>
               </div>
-              <div className="text-sm text-muted-foreground mt-1">Days Completed</div>
-            </div>
-            
-            {/* Days Missed */}
-            <div>
-              <div className="text-4xl font-bold text-red-400">
-                ⚠️ {missedDates.length}
+              
+              {/* Days Missed */}
+              <div className="text-center">
+                <div className="text-3xl font-bold text-red-400 mb-1">
+                  ⚠️ {missedDates.length}
+                </div>
+                <div className="text-xs text-muted-foreground">Days Missed</div>
               </div>
-              <div className="text-sm text-muted-foreground mt-1">Days Missed</div>
             </div>
           </div>
         </CardContent>
@@ -145,7 +148,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
               <ChevronLeft className="h-4 w-4" />
             </Button>
             
-            <span className="font-semibold text-lg min-w-[200px] text-center">
+            <span className="font-semibold text-lg min-w-[200px] text-center text-foreground">
               {format(currentMonth, 'MMMM yyyy')}
             </span>
             
