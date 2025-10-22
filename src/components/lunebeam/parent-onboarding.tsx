@@ -20,7 +20,7 @@ import { X, ArrowLeft, Loader2, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
-import confettiAnimation from '@/assets/confetti-animation.json';
+import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
 
 interface ParentOnboardingData {
   adminName: string; // Admin's own name
@@ -452,7 +452,7 @@ export function ParentOnboarding({
       {showConfetti && (
         <div className="fixed inset-0 pointer-events-none z-50">
           <Lottie 
-            animationData={confettiAnimation} 
+            animationData={loadingLunaAnimation} 
             loop={false}
             onComplete={() => setShowConfetti(false)}
           />

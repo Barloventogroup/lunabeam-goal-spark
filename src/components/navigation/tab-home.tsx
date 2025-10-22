@@ -24,7 +24,7 @@ import { useGoals } from '@/hooks/useGoals';
 import { pointsService } from '../../services/pointsService';
 import { normalizeDomainForDisplay } from '../../utils/domainUtils';
 import { getWelcomeMessage } from '../../utils/userTypeUtils';
-import confettiAnimation from '@/assets/confetti-animation.json';
+import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
 import type { Goal } from '../../types';
 
 interface TabHomeProps {
@@ -547,7 +547,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
       {showConfetti && (
         <div className="fixed inset-0 pointer-events-none z-50">
           <Lottie 
-            animationData={confettiAnimation} 
+            animationData={loadingLunaAnimation} 
             loop={false}
             onComplete={() => setShowConfetti(false)}
           />
