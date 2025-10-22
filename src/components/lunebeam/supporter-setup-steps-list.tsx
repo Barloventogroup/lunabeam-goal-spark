@@ -83,24 +83,39 @@ export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = (
   // Fetch substeps for all steps
   useEffect(() => {
     const fetchAllSubsteps = async () => {
-      const substepsPromises = steps.map(async (step) => {
-        try {
-          const substeps = await pointsService.getSubsteps(step.id);
-          return { stepId: step.id, substeps };
-        } catch (error) {
-          console.error(`Error fetching substeps for step ${step.id}:`, error);
-          return { stepId: step.id, substeps: [] };
-        }
-      });
+      try {
+        // Batch fetch all substeps in a single query (fixes N+1 query problem)
+        const stepIds = steps.map(s => s.id);
+        
+        const { data: allSubsteps, error } = await supabase
+          .from('substeps')
+          .select('*')
+          .in('step_id', stepIds)
+          .order('created_at', { ascending: true });
 
-      const results = await Promise.all(substepsPromises);
-      const newSubstepsMap: Record<string, Substep[]> = {};
-      
-      results.forEach(({ stepId, substeps }) => {
-        newSubstepsMap[stepId] = dedupeSubsteps(substeps);
-      });
-      
-      setSubstepsMap(newSubstepsMap);
+        if (error) {
+          console.error('Error fetching substeps:', error);
+          return;
+        }
+
+        // Group substeps by step_id for O(1) lookup
+        const newSubstepsMap: Record<string, Substep[]> = {};
+        (allSubsteps || []).forEach(substep => {
+          if (!newSubstepsMap[substep.step_id]) {
+            newSubstepsMap[substep.step_id] = [];
+          }
+          newSubstepsMap[substep.step_id].push(substep as Substep);
+        });
+
+        // Apply deduplication to each step's substeps
+        Object.keys(newSubstepsMap).forEach(stepId => {
+          newSubstepsMap[stepId] = dedupeSubsteps(newSubstepsMap[stepId]);
+        });
+        
+        setSubstepsMap(newSubstepsMap);
+      } catch (error) {
+        console.error('Error fetching substeps:', error);
+      }
     };
 
     if (steps.length > 0) {

@@ -187,6 +187,44 @@ export const TabHome: React.FC<TabHomeProps> = ({
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Start of today
 
+    // Batch fetch all substeps in a single query (fixes N+1 query problem)
+    const allStepIds: string[] = [];
+    for (const goal of goals) {
+      if (goal.status === 'active' || goal.status === 'planned' || goal.status === 'paused') {
+        const goalSteps = steps[goal.id] || [];
+        goalSteps.forEach(step => {
+          if (step?.id && typeof step.id === 'string' && step.status !== 'done' && step.status !== 'skipped') {
+            allStepIds.push(step.id);
+          }
+        });
+      }
+    }
+
+    // Fetch all substeps in one query
+    let substepsByStepId: Record<string, any[]> = {};
+    if (allStepIds.length > 0) {
+      try {
+        const { data: allSubsteps, error } = await supabase
+          .from('substeps')
+          .select('*')
+          .in('step_id', allStepIds);
+        
+        if (error) {
+          console.warn('[TabHome] Error fetching substeps:', error);
+        } else {
+          // Group substeps by step_id
+          (allSubsteps || []).forEach(substep => {
+            if (!substepsByStepId[substep.step_id]) {
+              substepsByStepId[substep.step_id] = [];
+            }
+            substepsByStepId[substep.step_id].push(substep);
+          });
+        }
+      } catch (e) {
+        console.warn('[TabHome] Failed to batch fetch substeps:', e);
+      }
+    }
+
     for (const goal of goals) {
       // Include active/planned/paused goals
       if (goal.status === 'active' || goal.status === 'planned' || goal.status === 'paused') {
@@ -203,18 +241,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
           // Exclude completed or skipped steps; include others with a due date
           if (step.status !== 'done' && step.status !== 'skipped') {
-            // Fetch substeps for this step with error handling
-            let substeps: any[] = [];
-            try {
-              if (!step?.id || typeof step.id !== 'string') {
-                console.warn('[TabHome] Missing/invalid step.id, skipping substeps fetch. Step:', step);
-              } else {
-                substeps = await pointsService.getSubsteps(step.id);
-              }
-            } catch (e) {
-              console.warn('[TabHome] Failed to load substeps for step', step?.id, e);
-              substeps = [];
-            }
+            // Get pre-fetched substeps (already batched)
+            const substeps = substepsByStepId[step.id] || [];
             const incompleteSubsteps = substeps.filter(sub => !sub.completed_at);
             
             if (incompleteSubsteps.length > 0) {
