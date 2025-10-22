@@ -117,7 +117,7 @@ export const TabTeamIndividual: React.FC = () => {
     <div className="min-h-screen bg-background">
       <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
-        <div className="px-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+        <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold">Community</h1>
             {supporters.length > 0 && (
