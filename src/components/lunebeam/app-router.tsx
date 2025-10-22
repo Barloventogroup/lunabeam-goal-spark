@@ -81,7 +81,7 @@ const AppRouter: React.FC = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         {/* Header with Logo */}
-        <div className="flex items-center justify-center p-4 border-b bg-card/80 backdrop-blur">
+        <div className="flex items-center p-4 border-b bg-card/80 backdrop-blur">
           <img 
             src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
             alt="Lunabeam logo" 
@@ -147,7 +147,7 @@ const AppRouter: React.FC = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col animate-fade-in">
         {/* Header with Logo */}
-        <div className="flex items-center justify-center p-4 border-b bg-card/80 backdrop-blur">
+        <div className="flex items-center p-4 border-b bg-card/80 backdrop-blur">
           <img 
             src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
             alt="Lunabeam logo" 
