@@ -104,16 +104,33 @@ export const GoalsList: React.FC<GoalsListProps> = ({
         done: number;
       }> = {};
 
-      // Step 1: Fetch all steps for all goals
-      const stepsPromises = goalsData.map(goal => stepsService.getSteps(goal.id));
-      const allStepsArrays = await Promise.all(stepsPromises);
+      // Step 1: Fetch ALL steps for all goals in one query
+      const goalIds = goalsData.map(g => g.id);
 
-      // Step 2: Collect ALL step IDs and organize by goal
-      const allStepIds: string[] = [];
+      const { data: allSteps } = await supabase
+        .from('steps')
+        .select('*')
+        .in('goal_id', goalIds)
+        .order('order_index', { ascending: true });
+
+      // Step 2: Group steps by goal_id
       const stepsByGoal: Record<string, Step[]> = {};
-      allStepsArrays.forEach((steps, index) => {
-        const goal = goalsData[index];
-        const actionableSteps = steps.filter(s => (!s.type || s.type === 'action' || s.step_type && s.step_type !== 'container') && !s.hidden && s.status !== 'skipped');
+      (allSteps || []).forEach(step => {
+        if (!stepsByGoal[step.goal_id]) {
+          stepsByGoal[step.goal_id] = [];
+        }
+        stepsByGoal[step.goal_id].push(step as Step);
+      });
+
+      // Step 3: Filter actionable steps for each goal and collect step IDs
+      const allStepIds: string[] = [];
+      goalsData.forEach(goal => {
+        const steps = stepsByGoal[goal.id] || [];
+        const actionableSteps = steps.filter(s => 
+          (!s.type || s.type === 'action' || s.step_type && s.step_type !== 'container') 
+          && !s.hidden 
+          && s.status !== 'skipped'
+        );
         stepsByGoal[goal.id] = actionableSteps;
         allStepIds.push(...actionableSteps.map(s => s.id));
       });

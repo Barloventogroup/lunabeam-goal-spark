@@ -46,6 +46,25 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
     if (!user) return;
 
     try {
+      // Fetch supporters once and reuse
+      let individualIds: string[] = [];
+
+      if (!selectedIndividualId) {
+        const { data: supporters } = await supabase
+          .from('supporters')
+          .select('individual_id')
+          .eq('supporter_id', user.id);
+
+        individualIds = supporters?.map(s => s.individual_id) || [];
+
+        if (individualIds.length === 0) {
+          setGoals([]);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Build goals query
       let query = supabase
         .from('goals')
         .select(`
@@ -66,20 +85,8 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
         // Show goals for specific individual
         query = query.eq('owner_id', selectedIndividualId);
       } else {
-        // Show goals from all supported individuals
-        const { data: supporters } = await supabase
-          .from('supporters')
-          .select('individual_id')
-          .eq('supporter_id', user.id);
-
-        if (supporters && supporters.length > 0) {
-          const individualIds = supporters.map(s => s.individual_id);
-          query = query.in('owner_id', individualIds);
-        } else {
-          setGoals([]);
-          setLoading(false);
-          return;
-        }
+        // Use the individualIds we already fetched
+        query = query.in('owner_id', individualIds);
       }
 
       // Get total count before filtering
@@ -90,15 +97,8 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
       if (selectedIndividualId) {
         countQuery = countQuery.eq('owner_id', selectedIndividualId);
       } else {
-        const { data: supporters } = await supabase
-          .from('supporters')
-          .select('individual_id')
-          .eq('supporter_id', user.id);
-
-        if (supporters && supporters.length > 0) {
-          const individualIds = supporters.map(s => s.individual_id);
-          countQuery = countQuery.in('owner_id', individualIds);
-        }
+        // Reuse the same individualIds array
+        countQuery = countQuery.in('owner_id', individualIds);
       }
 
       const { count: totalCount } = await countQuery;
@@ -115,20 +115,25 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
 
       if (error) throw error;
 
-      // Get owner names separately
-      const goalsWithOwner = [];
-      for (const goal of data || []) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name')
-          .eq('user_id', goal.owner_id)
-          .single();
-        
-        goalsWithOwner.push({
-          ...goal,
-          owner_name: profile?.first_name || 'User'
-        });
-      }
+      // Batch profile fetching - collect unique owner IDs
+      const ownerIds = [...new Set((data || []).map(g => g.owner_id).filter(Boolean))];
+
+      // Fetch all profiles in one query
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, first_name')
+        .in('user_id', ownerIds);
+
+      // Build lookup map for O(1) access
+      const profileMap = new Map(
+        (profiles || []).map(p => [p.user_id, p])
+      );
+
+      // Attach owner names using the map
+      const goalsWithOwner = (data || []).map(goal => ({
+        ...goal,
+        owner_name: profileMap.get(goal.owner_id)?.first_name || 'User'
+      }));
 
       setGoals(goalsWithOwner);
 
