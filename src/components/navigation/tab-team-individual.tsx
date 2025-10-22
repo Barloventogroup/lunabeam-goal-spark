@@ -117,11 +117,8 @@ export const TabTeamIndividual: React.FC = () => {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto py-6 space-y-6">
         {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">Your Support Team</h1>
-          <p className="text-muted-foreground">
-            These people are here to help you succeed with your goals.
-          </p>
+        <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+          <h1 className="text-xl font-bold">Community</h1>
         </div>
 
         {/* Invite Supporters Section */}
