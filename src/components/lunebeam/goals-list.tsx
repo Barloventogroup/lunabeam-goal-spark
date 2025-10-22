@@ -9,9 +9,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight, Users, UserCheck } from 'lucide-react';
 import { goalsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
-import type { Goal } from '@/types';
+import type { Goal, GoalStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useGoals } from '@/hooks/useGoals';
 
 interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
@@ -24,71 +25,34 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   onNavigate,
   refreshTrigger
 }) => {
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<GoalsTab>('active');
   const [currentPage, setCurrentPage] = useState(1);
   const [filterCreator, setFilterCreator] = useState<string>("all");
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [allProfiles, setAllProfiles] = useState<Record<string, any>>({});
   const { toast } = useToast();
   const GOALS_PER_PAGE = 5;
 
-  const loadGoals = async () => {
-    try {
-      let goalsData: Goal[];
+  // Use React Query for goals fetching
+  const filters = activeTab === 'completed' ? { status: 'completed' as GoalStatus } : undefined;
+  const { data, isLoading, error, refetch } = useGoals(filters);
+  
+  const goals = data?.goals || [];
+  const allProfiles = data?.profiles || {};
 
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
+  // Get current user
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUser(user));
+  }, []);
 
-      if (activeTab === 'completed') {
-        goalsData = await goalsService.getGoals({ status: 'completed' });
-      } else {
-        const allGoals = await goalsService.getGoals();
-        goalsData = allGoals.filter(goal => goal.status !== 'completed' && goal.status !== 'archived');
-      }
-
-      // Build profiles lookup
-      const profiles: Record<string, any> = {};
-      const userIds = new Set<string>();
-
-      for (const goal of goalsData) {
-        if (goal.owner_id) userIds.add(goal.owner_id);
-        if (goal.created_by) userIds.add(goal.created_by);
-      }
-
-      if (userIds.size > 0) {
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('user_id, first_name')
-          .in('user_id', Array.from(userIds));
-        
-        if (profilesData) {
-          for (const profile of profilesData) {
-            profiles[profile.user_id] = profile;
-          }
-        }
-      }
-
-      setAllProfiles(profiles);
-      setGoals(goalsData);
-    } catch (error) {
-      console.error('Failed to load goals:', error);
-      toast({
-        title: 'Trouble loading your goals',
-        description: 'Give it a refresh when you\'re ready',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Reset page on tab change
   useEffect(() => {
     setCurrentPage(1);
-    loadGoals();
-  }, [activeTab, refreshTrigger]);
+  }, [activeTab]);
+
+  // Refetch on external trigger
+  useEffect(() => {
+    if (refreshTrigger) refetch();
+  }, [refreshTrigger, refetch]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -112,7 +76,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
         title: 'Goal archived',
         description: `"${goalTitle}" has been moved to your archive`
       });
-      loadGoals();
+      refetch();
     } catch (error) {
       console.error('Failed to delete goal:', error);
       toast({
@@ -154,7 +118,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex flex-col h-screen bg-background">
         <div className="flex-shrink-0 space-y-4 px-4 pt-6 pb-4 bg-background border-b">

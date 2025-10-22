@@ -20,6 +20,7 @@ import { useStore } from '../../store/useStore';
 import { supabase } from '../../integrations/supabase/client';
 import { useAuth } from '../auth/auth-provider';
 import { goalsService, stepsService } from '../../services/goalsService';
+import { useGoals } from '@/hooks/useGoals';
 import { pointsService } from '../../services/pointsService';
 import { normalizeDomainForDisplay } from '../../utils/domainUtils';
 import { getWelcomeMessage } from '../../utils/userTypeUtils';
@@ -64,12 +65,16 @@ export const TabHome: React.FC<TabHomeProps> = ({
     loadSteps
   } = useStore();
 
+  // Use React Query for goals
+  const { data: goalsData, isLoading: goalsLoading, refetch: refetchGoals } = useGoals();
+  const goalsFromQuery = goalsData?.goals || [];
+
   // Add effect to listen for tab visibility changes and refresh data
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         console.log('TabHome: Tab became visible, refreshing data');
-        loadGoals();
+        refetchGoals();
         loadPoints();
         // Refresh steps for active goals
         goals.forEach(goal => {
@@ -82,7 +87,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [loadGoals, loadPoints, loadSteps, goals]);
+  }, [refetchGoals, loadPoints, loadSteps, goals]);
 
   useEffect(() => {
     let isMounted = true;
@@ -91,7 +96,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
       await Promise.allSettled([loadProfile(), loadGoals(), loadPoints()]);
       if (!isMounted) return;
       setProfileLoaded(true);
-      setGoalsLoaded(true);
+      setGoalsLoaded(!goalsLoading);
       
       // Check if first-time user and show confetti
       const isFirstTime = goals.length === 0;
@@ -101,7 +106,14 @@ export const TabHome: React.FC<TabHomeProps> = ({
       // Steps will be loaded once goals are available in a separate effect
     })();
     return () => { isMounted = false; };
-  }, [loadProfile, loadGoals, loadPoints]);
+  }, [loadProfile, loadGoals, loadPoints, goalsLoading]);
+
+  // Sync React Query goals with Zustand store
+  useEffect(() => {
+    if (!goalsLoading && goalsFromQuery.length > 0) {
+      setGoalsLoaded(true);
+    }
+  }, [goalsLoading, goalsFromQuery]);
 
   // After goals load, fetch steps for active/planned goals to avoid UI flash and ensure freshness
   useEffect(() => {
@@ -112,23 +124,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
       }
     });
   }, [goalsLoaded, goals, loadSteps]);
-
-  // Refresh data when component becomes visible
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('TabHome: Periodic refresh');
-      loadGoals();
-      loadPoints();
-      // Also refresh steps for active goals
-      goals.forEach(goal => {
-        if (goal.status === 'active' || goal.status === 'planned') {
-          loadSteps(goal.id);
-        }
-      });
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [loadGoals, loadSteps, goals]);
 
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('dashboard')} />;

@@ -14,7 +14,17 @@ import Logout from "./pages/Logout";
 import TestComponents from "./pages/TestComponents";
 import { ProtectedRoute } from "./components/auth/protected-route";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000, // 2 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+      refetchOnWindowFocus: true,
+      refetchOnMount: 'always',
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
