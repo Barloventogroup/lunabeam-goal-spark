@@ -13,14 +13,11 @@ import type { Goal, GoalStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useGoals } from '@/hooks/useGoals';
-
 interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
   refreshTrigger?: number;
 }
-
 type GoalsTab = 'active' | 'completed';
-
 export const GoalsList: React.FC<GoalsListProps> = ({
   onNavigate,
   refreshTrigger
@@ -29,19 +26,31 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [filterCreator, setFilterCreator] = useState<string>("all");
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const GOALS_PER_PAGE = 5;
 
   // Use React Query for goals fetching
-  const filters = activeTab === 'completed' ? { status: 'completed' as GoalStatus } : undefined;
-  const { data, isLoading, error, refetch } = useGoals(filters);
-  
+  const filters = activeTab === 'completed' ? {
+    status: 'completed' as GoalStatus
+  } : undefined;
+  const {
+    data,
+    isLoading,
+    error,
+    refetch
+  } = useGoals(filters);
   const goals = data?.goals || [];
   const allProfiles = data?.profiles || {};
 
   // Get current user
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUser(user));
+    supabase.auth.getUser().then(({
+      data: {
+        user
+      }
+    }) => setCurrentUser(user));
   }, []);
 
   // Reset page on tab change
@@ -53,7 +62,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   useEffect(() => {
     if (refreshTrigger) refetch();
   }, [refreshTrigger, refetch]);
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -68,7 +76,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({
         return 'default';
     }
   };
-
   const handleDeleteGoal = async (goalId: string, goalTitle: string) => {
     try {
       await goalsService.deleteGoal(goalId);
@@ -86,7 +93,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({
       });
     }
   };
-
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return null;
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -109,18 +115,18 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   const startIndex = (currentPage - 1) * GOALS_PER_PAGE;
   const endIndex = startIndex + GOALS_PER_PAGE;
   const currentGoals = filteredGoals.slice(startIndex, endIndex);
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     const scrollContainer = document.querySelector('[data-scroll-container]');
     if (scrollContainer) {
-      scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollContainer.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     }
   };
-
   if (isLoading) {
-    return (
-      <div className="flex flex-col h-screen bg-background">
+    return <div className="flex flex-col h-screen bg-background">
         <div className="flex-shrink-0 space-y-4 px-4 pt-6 pb-4 bg-background border-b">
           <div className="flex justify-between items-center">
             <div className="h-8 w-24 bg-muted animate-pulse rounded" />
@@ -131,8 +137,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <Card key={i} className="animate-pulse">
+            {[1, 2, 3].map(i => <Card key={i} className="animate-pulse">
                 <CardHeader className="pb-3">
                   <div className="space-y-3">
                     <div className="h-6 bg-muted rounded w-3/4" />
@@ -142,20 +147,16 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                     </div>
                   </div>
                 </CardHeader>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="flex flex-col h-screen bg-background">
+  return <div className="flex flex-col h-screen bg-background">
       {/* Fixed Header */}
       <div className="flex-shrink-0 space-y-4 px-4 pt-6 pb-4 bg-background border-b border-border shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
         <div className="flex justify-between items-center">
-          <h2>Goals</h2>
+          
         </div>
 
         <div className="space-y-3">
@@ -179,56 +180,36 @@ export const GoalsList: React.FC<GoalsListProps> = ({
             </Select>
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
+          {totalPages > 1 && <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
                 Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="flex items-center gap-1"
-                >
+                <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="flex items-center gap-1">
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="flex items-center gap-1"
-                >
+                <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="flex items-center gap-1">
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
-          )}
+            </div>}
         </div>
       </div>
 
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto" data-scroll-container>
         <div className="px-4 py-4">
-          {filteredGoals.length === 0 ? (
-            <Card>
+          {filteredGoals.length === 0 ? <Card>
               <CardContent className="text-center py-8">
                 <h3>
                   {activeTab === 'completed' ? 'No completed goals yet' : 'No active goals yet'}
                 </h3>
                 <p className="text-body-sm text-muted-foreground mb-4">
-                  {filteredGoals.length === 0 && goals.length > 0 
-                    ? 'No goals match your current filter.' 
-                    : activeTab === 'completed' 
-                    ? 'Complete some goals to see them here!' 
-                    : 'Create your first goal to get started on your journey!'}
+                  {filteredGoals.length === 0 && goals.length > 0 ? 'No goals match your current filter.' : activeTab === 'completed' ? 'Complete some goals to see them here!' : 'Create your first goal to get started on your journey!'}
                 </p>
-                {activeTab === 'active' && (
-                  <div className="space-y-2">
+                {activeTab === 'active' && <div className="space-y-2">
                     <Button onClick={() => onNavigate('create-goal')} variant="outline">
                       <Plus className="h-4 w-4 mr-2" />
                       Create Your First Goal
@@ -236,20 +217,15 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                     <p className="text-xs text-muted-foreground">
                       Or suggest a goal for someone you support
                     </p>
-                  </div>
-                )}
+                  </div>}
               </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
+            </Card> : <div className="space-y-4">
               {currentGoals.map(goal => {
-                const isOwnGoal = goal.owner_id === currentUser?.id;
-                const isCreatedByMe = goal.created_by === currentUser?.id;
-                const ownerName = allProfiles[goal.owner_id]?.first_name || 'Unknown';
-                const creatorName = allProfiles[goal.created_by]?.first_name || 'Unknown';
-
-                return (
-                  <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow">
+            const isOwnGoal = goal.owner_id === currentUser?.id;
+            const isCreatedByMe = goal.created_by === currentUser?.id;
+            const ownerName = allProfiles[goal.owner_id]?.first_name || 'Unknown';
+            const creatorName = allProfiles[goal.created_by]?.first_name || 'Unknown';
+            return <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow">
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div className="flex-1 cursor-pointer" onClick={() => onNavigate('goal-detail', goal.id)}>
@@ -258,39 +234,26 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                             <Badge variant={getStatusColor(goal.status)}>
                               {goal.status === 'active' ? 'In Progress' : goal.status}
                             </Badge>
-                            {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && (
-                              <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>
-                            )}
+                            {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>}
                             
-                            {!isOwnGoal && (
-                              <Badge variant="outline" className="text-xs">
+                            {!isOwnGoal && <Badge variant="outline" className="text-xs">
                                 <Users className="h-3 w-3 mr-1" />
                                 For {ownerName}
-                              </Badge>
-                            )}
-                            {!isCreatedByMe && isOwnGoal && (
-                              <Badge variant="outline" className="text-xs">
+                              </Badge>}
+                            {!isCreatedByMe && isOwnGoal && <Badge variant="outline" className="text-xs">
                                 <UserCheck className="h-3 w-3 mr-1" />
                                 Created by {creatorName}
-                              </Badge>
-                            )}
+                              </Badge>}
                           </div>
-                          {goal.due_date && (
-                            <div className="flex items-center gap-1 text-body-sm text-muted-foreground">
+                          {goal.due_date && <div className="flex items-center gap-1 text-body-sm text-muted-foreground">
                               <Calendar className="h-4 w-4" />
                               Due {formatDate(goal.due_date)}
-                            </div>
-                          )}
+                            </div>}
                         </div>
                         
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 bg-transparent hover:bg-gray-100"
-                              onClick={e => e.stopPropagation()}
-                            >
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-transparent hover:bg-gray-100" onClick={e => e.stopPropagation()}>
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -309,10 +272,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                             </DropdownMenuItem>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive cursor-pointer"
-                                  onSelect={e => e.preventDefault()}
-                                >
+                                <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onSelect={e => e.preventDefault()}>
                                   <Trash2 className="h-4 w-4 mr-2" />
                                   Archive Goal
                                 </DropdownMenuItem>
@@ -326,10 +286,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Keep Goal</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteGoal(goal.id, goal.title)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
+                                  <AlertDialogAction onClick={() => handleDeleteGoal(goal.id, goal.title)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                     Archive Goal
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -339,13 +296,10 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                         </DropdownMenu>
                       </div>
                     </CardHeader>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+                  </Card>;
+          })}
+            </div>}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
