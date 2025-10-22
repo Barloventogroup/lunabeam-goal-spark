@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import Lottie from 'lottie-react';
+import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
 
 function getHashParams(hash: string) {
   const h = hash.startsWith('#') ? hash.slice(1) : hash;
@@ -158,14 +160,12 @@ export default function AuthCallback() {
   // Show a simple loading state while processing
   if (status === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="max-w-md w-full space-y-4 p-6 text-center">
-          <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-xl font-bold">✓</span>
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Email confirmed!</h1>
-          <p className="text-muted-foreground">Redirecting...</p>
-        </div>
+      <div className="min-h-screen w-screen bg-white flex items-center justify-center overflow-hidden">
+        <Lottie
+          animationData={loadingLunaAnimation}
+          loop={false}
+          style={{ width: '120vmax', height: '120vmax' }}
+        />
       </div>
     );
   }
