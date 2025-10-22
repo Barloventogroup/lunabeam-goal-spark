@@ -17,17 +17,19 @@ import { useStore } from '../../store/useStore';
 import { getSupporterContext } from '@/utils/supporterUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-
 type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wizard' | 'create-wizard' | 'create-wizard-supporter' | 'supporter-wizard' | 'proposals';
-
 interface TabGoalsProps {
   onWizardStateChange?: (isWizardActive: boolean) => void;
   initialGoalId?: string | null;
   triggerCreate?: boolean;
   onNavigateToNotifications?: () => void;
 }
-
-export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initialGoalId, triggerCreate, onNavigateToNotifications }) => {
+export const TabGoals: React.FC<TabGoalsProps> = ({
+  onWizardStateChange,
+  initialGoalId,
+  triggerCreate,
+  onNavigateToNotifications
+}) => {
   const [currentView, setCurrentView] = useState<GoalsView>('list');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -36,14 +38,19 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   const [activeTab, setActiveTab] = useState<'own' | 'individual'>('own');
   const [supporterContext, setSupporterContext] = useState<any>(null);
   const [activeGoalsCount, setActiveGoalsCount] = useState(0);
-
-  const { userContext } = useStore();
+  const {
+    userContext
+  } = useStore();
 
   // Get supporter context for supporters and hybrids
   useEffect(() => {
     if (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') {
       const getCurrentUser = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: {
+            user
+          }
+        } = await supabase.auth.getUser();
         if (user) {
           getSupporterContext(user.id).then(setSupporterContext);
         }
@@ -56,21 +63,23 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
   useEffect(() => {
     const loadActiveGoalsCount = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: {
+            user
+          }
+        } = await supabase.auth.getUser();
         if (!user) return;
-        
-        const { count } = await supabase
-          .from('goals')
-          .select('*', { count: 'exact', head: true })
-          .eq('owner_id', user.id)
-          .neq('status', 'completed');
-        
+        const {
+          count
+        } = await supabase.from('goals').select('*', {
+          count: 'exact',
+          head: true
+        }).eq('owner_id', user.id).neq('status', 'completed');
         setActiveGoalsCount(count || 0);
       } catch (error) {
         console.error('Error loading active goals count:', error);
       }
     };
-    
     loadActiveGoalsCount();
   }, [refreshTrigger]);
 
@@ -89,7 +98,6 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
       handleNavigate('create-goal');
     }
   }, [triggerCreate]);
-
   const handleNavigate = (view: string, data?: any) => {
     switch (view) {
       case 'goal-detail':
@@ -114,21 +122,18 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
         break;
     }
   };
-
   const handleCategorySelected = (category: string) => {
     setSelectedCategory(category);
     setCurrentView('create');
     onWizardStateChange?.(false);
   };
-
   const handleAiGoalCreated = (goal: any) => {
     setAiGoal(goal);
     setCurrentView('summary');
   };
-
   const handleWizardGoalCreated = (goalData?: any) => {
     setRefreshTrigger(prev => prev + 1);
-    
+
     // If goalId is provided, navigate to goal detail
     if (goalData?.goalId) {
       handleNavigate('goal-detail', goalData.goalId);
@@ -136,96 +141,40 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
       // Fallback to list view
       setCurrentView('list');
     }
-    
     onWizardStateChange?.(false);
   };
-
   const renderCurrentView = () => {
     switch (currentView) {
       case 'detail':
-        return selectedGoalId ? (
-          <GoalDetailV2 
-            goalId={selectedGoalId} 
-            onBack={() => handleNavigate('goals-list')}
-          />
-        ) : (
-          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />
-        );
+        return selectedGoalId ? <GoalDetailV2 goalId={selectedGoalId} onBack={() => handleNavigate('goals-list')} /> : <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />;
       case 'categories':
-        return (
-          <GoalCategories 
-            onSelectCategory={handleCategorySelected}
-            onBack={() => setCurrentView('list')}
-          />
-        );
+        return <GoalCategories onSelectCategory={handleCategorySelected} onBack={() => setCurrentView('list')} />;
       case 'create':
-        return selectedCategory ? (
-          <LuneAISession 
-            category={selectedCategory} 
-            onBack={() => setCurrentView('categories')} 
-            onGoalCreated={handleAiGoalCreated}
-          />
-        ) : (
-          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />
-        );
+        return selectedCategory ? <LuneAISession category={selectedCategory} onBack={() => setCurrentView('categories')} onGoalCreated={handleAiGoalCreated} /> : <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />;
       case 'summary':
-        return aiGoal ? (
-          <GoalSummary 
-            goal={aiGoal} 
-            onBack={() => setCurrentView('list')}
-            onComplete={() => setCurrentView('list')}
-          />
-        ) : (
-          <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />
-        );
+        return aiGoal ? <GoalSummary goal={aiGoal} onBack={() => setCurrentView('list')} onComplete={() => setCurrentView('list')} /> : <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />;
       case 'wizard':
-        return (
-          <GoalsWizard 
-            onComplete={handleWizardGoalCreated}
-            onBack={() => {
-              setCurrentView('list');
-              onWizardStateChange?.(false);
-            }}
-          />
-        );
+        return <GoalsWizard onComplete={handleWizardGoalCreated} onBack={() => {
+          setCurrentView('list');
+          onWizardStateChange?.(false);
+        }} />;
       case 'create-wizard':
-        return (
-          <RedesignedGoalsWizard 
-            onComplete={handleWizardGoalCreated}
-            onCancel={() => {
-              setCurrentView('list');
-              onWizardStateChange?.(false);
-            }}
-            isSupporter={userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin'}
-          />
-        );
+        return <RedesignedGoalsWizard onComplete={handleWizardGoalCreated} onCancel={() => {
+          setCurrentView('list');
+          onWizardStateChange?.(false);
+        }} isSupporter={userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin'} />;
       case 'create-wizard-supporter':
-        return (
-          <RedesignedGoalsWizard
-            onComplete={handleWizardGoalCreated}
-            onCancel={() => {
-              setCurrentView('list');
-              onWizardStateChange?.(false);
-            }}
-            isSupporter={true}
-          />
-        );
+        return <RedesignedGoalsWizard onComplete={handleWizardGoalCreated} onCancel={() => {
+          setCurrentView('list');
+          onWizardStateChange?.(false);
+        }} isSupporter={true} />;
       case 'supporter-wizard':
-        return (
-          <SupporterGoalWizard
-            onComplete={handleWizardGoalCreated}
-            onCancel={() => {
-              setCurrentView('list');
-              onWizardStateChange?.(false);
-            }}
-          />
-        );
+        return <SupporterGoalWizard onComplete={handleWizardGoalCreated} onCancel={() => {
+          setCurrentView('list');
+          onWizardStateChange?.(false);
+        }} />;
       case 'proposals':
-        return (
-          <GoalProposalsView 
-            onBack={() => setCurrentView('list')}
-          />
-        );
+        return <GoalProposalsView onBack={() => setCurrentView('list')} />;
       case 'list':
       default:
         return <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />;
@@ -234,38 +183,27 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
 
   // Check if we're in a wizard view
   const isWizardView = currentView === 'create-wizard' || currentView === 'create-wizard-supporter' || currentView === 'supporter-wizard' || currentView === 'wizard';
-  
-  // Show tabs for supporters and hybrids (but not in wizard views)
-  const showTabs = (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') 
-    && supporterContext?.supportedIndividuals?.length > 0 
-    && !isWizardView;
 
+  // Show tabs for supporters and hybrids (but not in wizard views)
+  const showTabs = (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') && supporterContext?.supportedIndividuals?.length > 0 && !isWizardView;
   if (showTabs) {
     const supportedIndividual = supporterContext.supportedIndividuals[0];
-    
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         {/* Header - hidden during wizard */}
-        {!isWizardView && (
-          <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+        {!isWizardView && <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold">Goals</h1>
-                {activeGoalsCount > 0 && (
-                  <Badge variant="secondary">
+                {activeGoalsCount > 0 && <Badge variant="secondary">
                     {activeGoalsCount}
-                  </Badge>
-                )}
+                  </Badge>}
               </div>
-              {onNavigateToNotifications && (
-                <NotificationBadge onNavigateToNotifications={onNavigateToNotifications} />
-              )}
+              {onNavigateToNotifications && <NotificationBadge onNavigateToNotifications={onNavigateToNotifications} />}
             </div>
-          </div>
-        )}
+          </div>}
         
         <div className="p-4">
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'own' | 'individual')}>
+          <Tabs value={activeTab} onValueChange={value => setActiveTab(value as 'own' | 'individual')}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="own">
                 Your Goals
@@ -288,32 +226,20 @@ export const TabGoals: React.FC<TabGoalsProps> = ({ onWizardStateChange, initial
             </TabsContent>
           </Tabs>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header - hidden during wizard */}
-      {!isWizardView && (
-        <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+      {!isWizardView && <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold">Goals</h1>
-              {activeGoalsCount > 0 && (
-                <Badge variant="secondary">
-                  {activeGoalsCount}
-                </Badge>
-              )}
+              {activeGoalsCount > 0}
             </div>
-            {onNavigateToNotifications && (
-              <NotificationBadge onNavigateToNotifications={onNavigateToNotifications} />
-            )}
+            {onNavigateToNotifications && <NotificationBadge onNavigateToNotifications={onNavigateToNotifications} />}
           </div>
-        </div>
-      )}
+        </div>}
       
       {renderCurrentView()}
-    </div>
-  );
+    </div>;
 };
