@@ -544,14 +544,15 @@ export const TabHome: React.FC<TabHomeProps> = ({
       )}
       
       {/* Confetti Animation for First-Time Users */}
-      {showConfetti && (
-        <div className="fixed inset-0 pointer-events-none z-50">
-          <Lottie 
-            animationData={loadingLunaAnimation} 
-            loop={false}
-            onComplete={() => setShowConfetti(false)}
-          />
-        </div>
-      )}
+        {showConfetti && (
+          <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+            <Lottie 
+              animationData={loadingLunaAnimation} 
+              loop={false}
+              onComplete={() => setShowConfetti(false)}
+              style={{ width: '100vw', height: '100vh' }}
+            />
+          </div>
+        )}
     </>;
 };

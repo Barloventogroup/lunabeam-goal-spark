@@ -380,11 +380,12 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       
       {/* Confetti Animation */}
       {showConfetti && (
-        <div className="fixed inset-0 pointer-events-none z-50">
+        <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
           <Lottie 
             animationData={loadingLunaAnimation} 
             loop={false}
             onComplete={() => setShowConfetti(false)}
+            style={{ width: '100vw', height: '100vh' }}
           />
         </div>
       )}
