@@ -78,108 +78,95 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
 
   const modifiersClassNames = {
     planned: 'ring-2 ring-blue-400 ring-inset',
-    completed: 'bg-green-500 text-white hover:bg-green-600 font-semibold',
-    missed: 'bg-red-500 text-white hover:bg-red-600 font-semibold',
+    completed: 'bg-green-500 text-white hover:bg-green-600 font-bold shadow-sm',
+    missed: 'bg-red-500 text-white hover:bg-red-600 font-bold shadow-sm',
   };
+
+  const successRate = plannedDates.length > 0 
+    ? Math.round((completedDates.length / plannedDates.length) * 100)
+    : 0;
 
   return (
     <div className="space-y-4">
-      {/* Streak Information */}
-      {(goal.streak_count || (goal as any).longest_streak) && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-3xl font-bold text-primary">
-                  {goal.streak_count || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">Current Streak</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-foreground">
-                  {(goal as any).longest_streak || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">Longest Streak</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Legend */}
+      {/* Hero Metrics Card */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-md border-2 border-blue-400 flex items-center justify-center">
-                <span className="text-xs">15</span>
+        <CardContent className="pt-6 space-y-4">
+          {/* Goal Title */}
+          <h2 className="text-lg font-semibold text-foreground">{goal.title}</h2>
+          
+          {/* Primary Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Streak - Primary Motivation */}
+            <div>
+              <div className="text-3xl font-bold text-primary">
+                {goal.streak_count && goal.streak_count > 0 
+                  ? `🔥 ${goal.streak_count}-Day Streak` 
+                  : "Start Your Streak Today!"}
               </div>
-              <span className="text-foreground">Planned</span>
+              <div className="text-sm text-muted-foreground mt-1">Current Consistency</div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-md bg-green-500 flex items-center justify-center">
-                <span className="text-xs text-white font-semibold">15</span>
+            
+            {/* Completed Days - Achievement */}
+            <div>
+              <div className="text-3xl font-bold text-green-600">
+                ✅ {completedDates.length} Days
               </div>
-              <span className="text-foreground">Completed</span>
+              <div className="text-sm text-muted-foreground mt-1">Completed</div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-md bg-red-500 flex items-center justify-center">
-                <span className="text-xs text-white font-semibold">15</span>
+          </div>
+
+          {/* Secondary Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border">
+            {/* Success Rate - Feedback */}
+            <div>
+              <div className="text-xl font-medium text-amber-500">
+                📊 {successRate}%
               </div>
-              <span className="text-foreground">Missed</span>
+              <div className="text-xs text-muted-foreground">Success Rate</div>
+            </div>
+            
+            {/* Missed Days - Accountability */}
+            <div>
+              <div className="text-base font-normal text-red-400">
+                ⚠️ {missedDates.length} Missed
+              </div>
+              <div className="text-xs text-muted-foreground">Days</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Calendar */}
+      {/* Calendar with Compact Legend */}
       <Card>
-        <CardContent className="pt-6 flex justify-center">
-          <Calendar
-            mode="single"
-            modifiers={modifiers}
-            modifiersClassNames={modifiersClassNames}
-            className="rounded-md border-0"
-            showYearPicker
-          />
+        <CardContent className="pt-6">
+          <div className="flex justify-center">
+            <Calendar
+              mode="single"
+              modifiers={modifiers}
+              modifiersClassNames={modifiersClassNames}
+              className="rounded-md border-0"
+              showYearPicker
+            />
+          </div>
+          
+          {/* Compact Legend */}
+          <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full border-2 border-blue-400" />
+              <span>Scheduled</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-green-500" />
+              <span>Completed</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <span>Missed</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Summary Stats */}
-      {plannedDates.length > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-blue-500">
-                  {plannedDates.length}
-                </div>
-                <div className="text-xs text-muted-foreground">Planned Days</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-green-500">
-                  {completedDates.length}
-                </div>
-                <div className="text-xs text-muted-foreground">Completed Days</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-red-500">
-                  {missedDates.length}
-                </div>
-                <div className="text-xs text-muted-foreground">Missed Days</div>
-              </div>
-            </div>
-            {plannedDates.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-border text-center">
-                <div className="text-2xl font-bold text-primary">
-                  {Math.round((completedDates.length / plannedDates.length) * 100)}%
-                </div>
-                <div className="text-xs text-muted-foreground">Completion Rate</div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
