@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Lottie from 'lottie-react';
 import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { CircularProgress } from '../ui/circular-progress';
 
@@ -358,13 +358,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
               <Coins className="h-4 w-4 text-yellow-600" />
               <span className="text-sm font-medium">{pointsSummary?.totalPoints || 0}</span>
             </div>
-            
-            {/* User Avatar */}
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-blue-500 text-white text-sm font-medium">
-                {profile?.first_name?.charAt(0)?.toUpperCase() || 'U'}
-              </AvatarFallback>
-            </Avatar>
             
             {/* Sign Out Button */}
             <Button
