@@ -82,9 +82,6 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
     missed: 'bg-red-500 text-white hover:bg-red-600 font-bold shadow-sm',
   };
 
-  const successRate = plannedDates.length > 0 
-    ? Math.round((completedDates.length / plannedDates.length) * 100)
-    : 0;
 
   return (
     <div className="space-y-4">
@@ -112,27 +109,14 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
                 ✅ {completedDates.length} Days
               </div>
               <div className="text-sm text-muted-foreground mt-1">Completed</div>
+              
+              {/* Missed Days - Inline */}
+              <div className="text-base font-normal text-red-400 mt-2">
+                ⚠️ {missedDates.length} Missed
+              </div>
             </div>
           </div>
 
-          {/* Secondary Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border">
-            {/* Success Rate - Feedback */}
-            <div>
-              <div className="text-xl font-medium text-amber-500">
-                📊 {successRate}%
-              </div>
-              <div className="text-xs text-muted-foreground">Success Rate</div>
-            </div>
-            
-            {/* Missed Days - Accountability */}
-            <div>
-              <div className="text-base font-normal text-red-400">
-                ⚠️ {missedDates.length} Missed
-              </div>
-              <div className="text-xs text-muted-foreground">Days</div>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
