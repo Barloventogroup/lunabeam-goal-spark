@@ -124,14 +124,7 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
         {/* Header */}
         <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold">Community</h1>
-              {supporters.length > 0 && (
-                <Badge variant="secondary">
-                  {supporters.length}
-                </Badge>
-              )}
-            </div>
+            <h1 className="text-xl font-bold">Community</h1>
             {onNavigateToNotifications && (
               <NotificationBadge onNavigateToNotifications={onNavigateToNotifications} />
             )}
