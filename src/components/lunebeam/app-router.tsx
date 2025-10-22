@@ -2,6 +2,8 @@ import React from 'react';
 import { useStore } from '@/store/useStore';
 import { OnboardingFlow } from './onboarding-flow';
 import { BottomTabs } from '../navigation/bottom-tabs';
+import Lottie from 'lottie-react';
+import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
 
 const AppRouter: React.FC = () => {
   const { isOnboardingComplete, profile, loadProfile } = useStore();
@@ -47,8 +49,14 @@ const AppRouter: React.FC = () => {
   if (!profileLoaded) {
     console.log('AppRouter: Showing loading...');
     return (
-      <div className="min-h-screen bg-gradient-soft flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="fixed inset-0 bg-white flex items-center justify-center overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <Lottie
+            animationData={loadingLunaAnimation}
+            loop={true}
+            style={{ width: '150vmax', height: '150vmax' }}
+          />
+        </div>
       </div>
     );
   }
