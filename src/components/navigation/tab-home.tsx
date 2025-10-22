@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Lottie from 'lottie-react';
 import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut } from 'lucide-react';
 import { Button } from '../ui/button';
 
@@ -24,7 +23,6 @@ import { useGoals } from '@/hooks/useGoals';
 import { pointsService } from '../../services/pointsService';
 import { normalizeDomainForDisplay } from '../../utils/domainUtils';
 import { getWelcomeMessage } from '../../utils/userTypeUtils';
-import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
 import type { Goal } from '../../types';
 
 interface TabHomeProps {
@@ -45,7 +43,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [goalsLoaded, setGoalsLoaded] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
   const [stepsData, setStepsData] = useState<{
     todaysSteps: any[];
     overdueSteps: any[];
@@ -98,11 +95,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
       setProfileLoaded(true);
       setGoalsLoaded(!goalsLoading);
       
-      // Check if first-time user and show confetti
-      const isFirstTime = goals.length === 0;
-      if (isFirstTime && profile?.onboarding_complete) {
-        setShowConfetti(true);
-      }
       // Steps will be loaded once goals are available in a separate effect
     })();
     return () => { isMounted = false; };
@@ -542,17 +534,5 @@ export const TabHome: React.FC<TabHomeProps> = ({
           weekOf={new Date().toISOString().split('T')[0]} 
         />
       )}
-      
-      {/* Confetti Animation for First-Time Users */}
-        {showConfetti && (
-          <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
-            <Lottie 
-              animationData={loadingLunaAnimation} 
-              loop={false}
-              onComplete={() => setShowConfetti(false)}
-              style={{ width: '100vw', height: '100vh' }}
-            />
-          </div>
-        )}
     </>;
 };
