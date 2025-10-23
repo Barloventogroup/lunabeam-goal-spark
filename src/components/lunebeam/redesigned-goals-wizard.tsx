@@ -541,6 +541,8 @@ interface WizardData {
     q3_help_needed: number;
     calculatedLevel?: number;
     levelLabel?: string;
+    skipped?: boolean;
+    simplifiedChoice?: 'confident' | 'learning';
   };
   pmHelper?: {
     helperId: string | 'none';
@@ -948,6 +950,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const prevStep = () => {
     const minStep = isSupporter ? 0 : 1;
+    
+    // Check if user used simplified assessment
+    const usedSimplifiedAssessment = data.pmSkillAssessment?.skipped === true || data.pmAssessment?.skipped === true;
+    
+    // If coming back from steps after simplified assessment, skip the detailed questions
+    if (usedSimplifiedAssessment && currentStep === 8) {
+      // From barriers (step 8), go back to intro (step 4)
+      setCurrentStep(4);
+      return;
+    }
+    
     if (currentStep > minStep) {
       setCurrentStep(currentStep - 1);
     }
@@ -3027,19 +3040,22 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       const level = choice === 'confident' ? 5 : 1;
       const levelLabel = choice === 'confident' ? 'Independent' : 'Beginner';
       
+      const assessmentData = {
+        q1_experience: level,
+        q2_confidence: level,
+        q3_help_needed: level,
+        calculatedLevel: level,
+        levelLabel: levelLabel,
+        skipped: true,
+        simplifiedChoice: choice
+      };
+      
       updateData({
-        pmSkillAssessment: {
-          q1_experience: level,
-          q2_confidence: level,
-          q3_help_needed: level,
-          calculatedLevel: level,
-          levelLabel: levelLabel,
-          skipped: true,
-          simplifiedChoice: choice
-        }
+        pmSkillAssessment: assessmentData,
+        pmAssessment: assessmentData  // Set both for consistency
       });
       
-      // Skip to step 10 (barriers) - bypassing detailed Q1-Q3
+      // Skip to step 8 (barriers) - bypassing detailed Q1-Q3
       setCurrentStep(8);
     };
     
