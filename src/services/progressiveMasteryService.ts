@@ -55,41 +55,46 @@ export const progressiveMasteryService = {
    * Implements Smart Start algorithm from PRD section 1.3.3
    * @param skillLevel - Calculated skill level (1-5)
    * @param targetFrequency - User's desired target frequency per week
+   * @param isSimplified - Whether this was from simplified assessment
    * @returns Smart Start plan with suggested frequency and guidance
    */
-  suggestStartFrequency(skillLevel: number, targetFrequency: number): SmartStartPlan {
+  suggestStartFrequency(skillLevel: number, targetFrequency: number, isSimplified: boolean = false): SmartStartPlan {
     let suggestedInitial: number;
     let rationale: string;
     let phaseGuidance: string;
+    
+    const rationalePrefix = isSimplified 
+      ? "Based on your self-assessment, " 
+      : "Based on your detailed responses, ";
 
     switch (skillLevel) {
       case 1: // Beginner
         suggestedInitial = Math.max(1, Math.ceil(targetFrequency * 0.3));
-        rationale = "Since this is brand new to you, we recommend starting with fewer days to build confidence and avoid burnout.";
+        rationale = rationalePrefix + "we recommend starting with fewer days to build confidence and avoid burnout.";
         phaseGuidance = "We'll increase gradually over 3 phases as you build the skill: Learning → Developing → Proficient.";
         break;
 
       case 2: // Early Learner
         suggestedInitial = Math.max(2, Math.round(targetFrequency * 0.4));
-        rationale = "You've tried before, so we'll start a bit higher than a complete beginner while still giving you room to grow.";
+        rationale = rationalePrefix + "we'll start a bit higher than a complete beginner while still giving you room to grow.";
         phaseGuidance = "We'll ramp up over 2-3 weeks as you develop consistency and confidence.";
         break;
 
       case 3: // Developing
         suggestedInitial = Math.round(targetFrequency * 0.6);
-        rationale = "You have some experience with this, so we can start at a moderate pace and increase as you continue developing your skills.";
+        rationale = rationalePrefix + "we can start at a moderate pace and increase as you continue developing your skills.";
         phaseGuidance = "We'll increase to your target over about 2 weeks as you continue developing.";
         break;
 
       case 4: // Proficient
         suggestedInitial = Math.max(4, Math.round(targetFrequency * 0.8));
-        rationale = "You're already proficient, so we're starting close to your target frequency.";
+        rationale = rationalePrefix + "we're starting close to your target frequency.";
         phaseGuidance = "We'll reach your full target in 1-2 weeks as you maintain and strengthen your skills.";
         break;
 
       case 5: // Independent
         suggestedInitial = targetFrequency;
-        rationale = "You're already independent with this skill, so we're starting at your target frequency right away.";
+        rationale = rationalePrefix + "we're starting at your target frequency right away.";
         phaseGuidance = "Focus on maintaining consistency and building on your strong foundation.";
         break;
 
@@ -110,9 +115,18 @@ export const progressiveMasteryService = {
   /**
    * Save skill assessment to goal metadata
    * @param goalId - Goal ID
-   * @param responses - Assessment responses (q1, q2, q3)
+   * @param responses - Assessment responses (q1, q2, q3) with optional skip info
    */
-  async saveSkillAssessment(goalId: string, responses: { q1: number; q2: number; q3: number }): Promise<void> {
+  async saveSkillAssessment(
+    goalId: string, 
+    responses: { 
+      q1: number; 
+      q2: number; 
+      q3: number;
+      skipped?: boolean;
+      simplifiedChoice?: 'confident' | 'learning';
+    }
+  ): Promise<void> {
     try {
       const calculatedLevel = this.calculateSkillLevel(responses);
       const levelLabel = this.getSkillLevelLabel(calculatedLevel).toLowerCase().replace(' ', '_') as SkillAssessment['level_label'];
@@ -124,6 +138,8 @@ export const progressiveMasteryService = {
         q3_independence: responses.q3,
         assessment_date: new Date().toISOString(),
         level_label: levelLabel,
+        skipped: responses.skipped || false,
+        simplified_choice: responses.simplifiedChoice || null,
       };
 
       await goalsService.updateMetadata(goalId, {

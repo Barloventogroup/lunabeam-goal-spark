@@ -54,6 +54,8 @@ export interface SkillAssessment {
   q3_independence: number;
   assessment_date: string;
   level_label: 'beginner' | 'early_learner' | 'developing' | 'proficient' | 'independent';
+  skipped?: boolean;
+  simplified_choice?: 'confident' | 'learning' | null;
 }
 
 export interface TeachingHelper {

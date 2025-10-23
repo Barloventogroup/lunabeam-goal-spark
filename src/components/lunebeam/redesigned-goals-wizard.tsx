@@ -75,7 +75,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle, Shield, HandHelping, Brain } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Sparkles, Calendar as CalendarIcon, Clock, Users, Heart, Home, Briefcase, GraduationCap, MessageSquare, Building, Star, PartyPopper, X, User, UserPlus, ChevronRight, Gift, Target, AlertCircle, Shield, HandHelping, Brain, CheckCircle2, ClipboardList } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -1513,9 +1513,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           try {
             // Validate all required PM fields using new data structure
             const assessment = data.pmSkillAssessment || data.pmAssessment;
-            if (!assessment?.q1_experience || !assessment?.q2_confidence || !assessment?.q3_help_needed) {
-              throw new Error('Skill assessment is required');
+            
+            // Only require detailed answers if user didn't use simplified choice
+            if (!assessment?.skipped) {
+              if (!assessment?.q1_experience || !assessment?.q2_confidence || !assessment?.q3_help_needed) {
+                throw new Error('Skill assessment is required');
+              }
+            } else {
+              // For simplified assessments, just verify calculated level exists
+              if (!assessment?.calculatedLevel) {
+                throw new Error('Skill level is required');
+              }
             }
+            
             if (!data.pmPracticePlan?.targetFrequency || !data.pmPracticePlan?.startingFrequency || data.pmPracticePlan?.durationWeeks === undefined) {
               throw new Error('Practice plan is required');
             }
@@ -1526,7 +1536,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             await progressiveMasteryService.saveSkillAssessment(createdGoal.id, {
               q1: assessment.q1_experience,
               q2: assessment.q2_confidence,
-              q3: assessment.q3_help_needed
+              q3: assessment.q3_help_needed,
+              skipped: assessment.skipped || false,
+              simplifiedChoice: assessment.simplifiedChoice
             });
 
             // Calculate level and generate Smart Start plan
@@ -1536,7 +1548,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               q3: assessment.q3_help_needed
             });
             
-            const plan = progressiveMasteryService.suggestStartFrequency(level, data.pmPracticePlan.targetFrequency);
+            const plan = progressiveMasteryService.suggestStartFrequency(
+              level, 
+              data.pmPracticePlan.targetFrequency,
+              assessment.skipped || false
+            );
 
             // Save smart start plan using pmPracticePlan structure
             await progressiveMasteryService.saveSmartStartPlan(
@@ -3007,6 +3023,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       
     const isOther = data.recipient === 'other';
     
+    const handleSimplifiedChoice = (choice: 'confident' | 'learning') => {
+      const level = choice === 'confident' ? 5 : 1;
+      const levelLabel = choice === 'confident' ? 'Independent' : 'Beginner';
+      
+      updateData({
+        pmSkillAssessment: {
+          q1_experience: level,
+          q2_confidence: level,
+          q3_help_needed: level,
+          calculatedLevel: level,
+          levelLabel: levelLabel,
+          skipped: true,
+          simplifiedChoice: choice
+        }
+      });
+      
+      // Skip to step 10 (barriers) - bypassing detailed Q1-Q3
+      setCurrentStep(8);
+    };
+    
     return (
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardContent className="pt-8 pb-6 px-6">
@@ -3024,29 +3060,53 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 Let's check how good {isOther ? recipientName : 'you are'} {isOther ? 'is' : 'are'} at performing this goal independently
               </h1>
               <p className="text-muted-foreground text-lg">
-                This quick assessment helps us create the perfect learning path
+                We can either do a quick 2-click assessment or ask 3 detailed questions
               </p>
             </div>
 
-            {/* What to expect */}
-            <div className="bg-muted/50 rounded-lg p-4 text-left">
-              <p className="text-sm text-muted-foreground font-medium mb-3">
-                {isOther ? "You'll answer" : "You'll answer"} 3 quick questions about:
-              </p>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-0.5">•</span>
-                  <span>{isOther ? 'Their' : 'Your'} experience level with {data.goalTitle || data.pmSkillName}</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-0.5">•</span>
-                  <span>{isOther ? 'Their' : 'Your'} confidence in doing it</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-0.5">•</span>
-                  <span>How much support {isOther ? 'they need' : 'you need'}</span>
-                </li>
-              </ul>
+            {/* Three choice options */}
+            <div className="space-y-3">
+              <Button
+                onClick={() => handleSimplifiedChoice('confident')}
+                variant="outline"
+                className="w-full h-auto p-4 flex flex-col items-start gap-2 hover:bg-primary/5 hover:border-primary"
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-semibold text-left">I'm already confident doing this</span>
+                </div>
+                <p className="text-sm text-muted-foreground text-left">
+                  {isOther ? 'They can' : 'I can'} do this independently without help
+                </p>
+              </Button>
+
+              <Button
+                onClick={() => handleSimplifiedChoice('learning')}
+                variant="outline"
+                className="w-full h-auto p-4 flex flex-col items-start gap-2 hover:bg-primary/5 hover:border-primary"
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <GraduationCap className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-semibold text-left">I'm still learning this skill</span>
+                </div>
+                <p className="text-sm text-muted-foreground text-left">
+                  {isOther ? 'They need' : 'I need'} practice and support to improve
+                </p>
+              </Button>
+
+              <Button
+                onClick={() => setCurrentStep(5)}
+                variant="outline"
+                className="w-full h-auto p-4 flex flex-col items-start gap-2 hover:bg-primary/5 hover:border-primary"
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <ClipboardList className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="font-semibold text-left">Let me answer detailed questions</span>
+                </div>
+                <p className="text-sm text-muted-foreground text-left">
+                  I want to provide more specific information (3 questions)
+                </p>
+              </Button>
             </div>
           </div>
         </CardContent>

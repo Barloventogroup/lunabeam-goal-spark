@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, lazy, Suspense } from 'react';
-import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit, Users, UserCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit, Users, UserCheck, AlertCircle, Loader2, Brain } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQueryClient } from '@tanstack/react-query';
 import { BackButton } from '@/components/ui/back-button';
@@ -1334,6 +1334,17 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 <Badge variant="outline" className="text-xs">
                   <UserCheck className="h-3 w-3 mr-1" />
                   Created by {creatorProfile.first_name}
+                </Badge>
+              )}
+              
+              {/* Progressive Mastery skill level badge */}
+              {(goal as any)?.metadata?.skill_assessment && (
+                <Badge variant="secondary" className="text-xs">
+                  <Brain className="h-3 w-3 mr-1" />
+                  {(goal as any).metadata.skill_assessment.level_label?.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Unknown'}
+                  {(goal as any).metadata.skill_assessment.skipped && (
+                    <span className="ml-1 text-muted-foreground">(Self-assessed)</span>
+                  )}
                 </Badge>
               )}
               
