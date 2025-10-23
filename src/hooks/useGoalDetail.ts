@@ -66,10 +66,10 @@ export function useGoalDetail(goalId: string) {
         substeps
       };
     },
-    staleTime: 2 * 60 * 1000, // Fresh for 2 minutes
+    staleTime: 3 * 60 * 1000, // Fresh for 3 minutes
     gcTime: 10 * 60 * 1000,   // Keep in cache for 10 minutes
     enabled: !!goalId,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false, // Disable aggressive refetch
     refetchOnMount: true
   });
 }

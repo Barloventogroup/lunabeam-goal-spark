@@ -44,16 +44,13 @@ export const BottomTabs: React.FC = () => {
     },
   ];
 
-  // Refresh data when switching to home tab and clear goal selection when leaving goals
+  // Clear goal selection when leaving goals tab
   useEffect(() => {
-    if (activeTab === 'home') {
-      console.log('Switched to home tab - refreshing data');
-      loadGoals();
-    } else if (activeTab !== 'goals') {
-      // Clear selected goal when leaving goals tab
+    if (activeTab !== 'goals') {
       setSelectedGoalId(null);
     }
-  }, [activeTab, loadGoals]);
+    // React Query handles data freshness automatically - no need to call loadGoals
+  }, [activeTab]);
 
   // Handle FAB click to create goal
   const handleCreateGoal = () => {

@@ -70,27 +70,24 @@ export const TabHome: React.FC<TabHomeProps> = ({
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        console.log('TabHome: Tab became visible, refreshing data');
-        refetchGoals();
-        loadPoints();
-        // Refresh steps for active goals
-        goals.forEach(goal => {
-          if (goal.status === 'active' || goal.status === 'planned') {
-            loadSteps(goal.id);
-          }
-        });
+        console.log('TabHome: Tab visible, React Query will refetch based on config');
+        // React Query handles refetch automatically via refetchOnWindowFocus
+        refetchGoals(); // Manual trigger is fine - React Query manages it
+        loadPoints(); // Keep this - not managed by React Query
+        // Remove aggressive steps loading - they load when needed
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [refetchGoals, loadPoints, loadSteps, goals]);
+  }, [refetchGoals, loadPoints]);
 
   useEffect(() => {
     let isMounted = true;
     (async () => {
-      console.log('TabHome mounted - loading data');
-      await Promise.allSettled([loadProfile(), loadGoals(), loadPoints()]);
+      console.log('TabHome mounted - loading essential data only');
+      // Remove loadGoals() - React Query already handles this via useGoals hook
+      await Promise.allSettled([loadProfile(), loadPoints()]);
       if (!isMounted) return;
       setProfileLoaded(true);
       setGoalsLoaded(!goalsLoading);
@@ -98,7 +95,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
       // Steps will be loaded once goals are available in a separate effect
     })();
     return () => { isMounted = false; };
-  }, [loadProfile, loadGoals, loadPoints, goalsLoading]);
+  }, [loadProfile, loadPoints, goalsLoading]);
 
   // Sync React Query goals with Zustand store
   useEffect(() => {

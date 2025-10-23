@@ -14,7 +14,13 @@ const AppRouter: React.FC = () => {
   const onboardingCompleteRef = React.useRef(false);
 
   // Load profile on component mount
+  const loadingRef = React.useRef(false);
+  
   React.useEffect(() => {
+    // Only run once on mount - prevent duplicate loads
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    
     const loadUserProfile = async () => {
       console.log('AppRouter: Loading profile...');
       try {
@@ -37,16 +43,18 @@ const AppRouter: React.FC = () => {
         console.error('AppRouter: Failed to load profile:', error);
       } finally {
         setProfileLoaded(true);
+        loadingRef.current = false;
         console.log('AppRouter: Profile loading complete');
       }
     };
     loadUserProfile();
-  }, [loadProfile]);
+  }, []); // Empty array - run only once on mount
 
   // Detect when onboarding completes and trigger post-onboarding animation
   React.useEffect(() => {
+    const currentOnboardingStatus = profile?.onboarding_complete ?? false;
     const wasOnboarding = !onboardingCompleteRef.current;
-    const isNowComplete = isOnboardingComplete();
+    const isNowComplete = currentOnboardingStatus;
     
     if (wasOnboarding && isNowComplete) {
       console.log('AppRouter: Onboarding just completed, showing transition animation');
@@ -65,7 +73,7 @@ const AppRouter: React.FC = () => {
     }
     
     onboardingCompleteRef.current = isNowComplete;
-  }, [profile?.onboarding_complete, isOnboardingComplete]);
+  }, [profile?.onboarding_complete]); // Only depend on the actual value
 
   console.log('AppRouter render:', {
     profileLoaded,
