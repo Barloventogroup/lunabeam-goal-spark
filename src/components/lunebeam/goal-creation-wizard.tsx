@@ -568,7 +568,7 @@ export const GoalCreationWizard: React.FC<GoalCreationWizardProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-[100dvh] bg-background p-4">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Progress */}
         <div className="flex items-center justify-center space-x-4">

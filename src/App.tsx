@@ -15,6 +15,8 @@ import Logout from "./pages/Logout";
 import TestComponents from "./pages/TestComponents";
 import { ProtectedRoute } from "./components/auth/protected-route";
 import { StatusBar, Style } from "@capacitor/status-bar";
+import BuildBadge from "./components/dev/BuildBadge";
+import SafeAreaDebugger from "./components/dev/SafeAreaDebugger";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +46,7 @@ const App = () => {
       }
     };
     configureStatusBar();
+    console.log('Build ID:', import.meta.env.VITE_BUILD_ID);
   }, []);
 
   return (
@@ -51,6 +54,8 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <SafeAreaDebugger />
+        <BuildBadge />
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />

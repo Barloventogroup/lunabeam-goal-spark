@@ -206,7 +206,7 @@ export const GoalWizardEnhanced: React.FC<GoalWizardEnhancedProps> = ({
   const externalResources = getExternalResources();
 
   return (
-    <div className="min-h-screen bg-gradient-soft p-4">
+    <div className="min-h-[100dvh] bg-gradient-soft p-4">
       <div className="max-w-md mx-auto py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">

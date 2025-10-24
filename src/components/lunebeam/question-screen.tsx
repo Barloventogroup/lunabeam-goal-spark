@@ -188,7 +188,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
         return null;
     }
   };
-  return <div className="min-h-screen bg-background flex flex-col animate-fade-in">
+  return <div className="min-h-[100dvh] bg-background flex flex-col animate-fade-in">
       {/* Header with Progress */}
       {!hideHeader && <div className="sticky top-0 bg-background border-b z-10 p-4">
           <div className="max-w-3xl mx-auto">

@@ -1221,7 +1221,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   // Loading skeleton (Phase 6)
   if (isLoading || !data) {
     return (
-      <div className="min-h-screen bg-background px-4 py-6 space-y-6">
+      <div className="min-h-[100dvh] bg-background px-4 py-6 space-y-6">
         <div className="flex items-center gap-2">
           <BackButton onClick={onBack} />
           <div className="flex-1 space-y-2">
@@ -1251,7 +1251,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-6 space-y-6">
+    <div className="min-h-[100dvh] bg-background px-4 py-6 space-y-6">
       {/* Removed full-screen loading overlay - now using inline message in Recommended Steps tab */}
 
       {/* Error state with retry button */}

@@ -206,7 +206,7 @@ export const SkillAssessmentWizard: React.FC<SkillAssessmentWizardProps> = ({
 
   const renderIntroScreen = () => {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-2xl">
           <CardContent className="pt-8 pb-6 px-6">
             <div className="text-center space-y-6">
@@ -346,7 +346,7 @@ export const SkillAssessmentWizard: React.FC<SkillAssessmentWizardProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 animate-fade-in">
+    <div className="min-h-[100dvh] bg-background p-4 md:p-8 animate-fade-in">
       <div className="max-w-3xl mx-auto">
         <Card>
           <CardContent className="p-6 space-y-6">

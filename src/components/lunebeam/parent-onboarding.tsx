@@ -383,7 +383,7 @@ export function ParentOnboarding({
     }
   };
   if (showProfile) {
-    return <div className="min-h-screen flex flex-col">
+    return <div className="min-h-[100dvh] flex flex-col">
       {/* Exit button */}
       <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
         <X className="h-4 w-4" />
@@ -427,7 +427,7 @@ export function ParentOnboarding({
       </div>
     </div>;
   }
-  return <div className="min-h-screen flex flex-col">
+  return <div className="min-h-[100dvh] flex flex-col">
       {/* Exit button */}
       <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
         <X className="h-4 w-4" />
