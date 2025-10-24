@@ -365,13 +365,13 @@ useEffect(() => {
   if (showPasswordSetup && needsPasswordSetup) {
     return <FirstTimePasswordSetup onComplete={handlePasswordSetupComplete} />;
   }
-  return <div className="min-h-[100dvh] pt-safe pb-safe flex items-center justify-center p-4" style={{
+  return <div className="min-h-[100dvh] pt-safe flex items-center justify-center overflow-y-auto" style={{
     backgroundImage: 'url(/lovable-uploads/9c1b5bdb-2b99-433d-8696-e539336f2074.png)',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
   }}>
-      <Card className="w-full max-w-xs shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
+      <Card className="w-full max-w-xs shadow-2xl border-0 bg-white/95 backdrop-blur-sm my-4 pb-safe">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-2">
             <img src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" alt="Lunabeam logo" className="h-11 w-auto object-cover object-center" />

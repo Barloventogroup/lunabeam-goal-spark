@@ -6,6 +6,9 @@
 
 @layer base {
   :root {
+    /* Keyboard height variable for iOS */
+    --kb-height: 0px;
+
     /* Core Background Colors */
     --background: 220 20% 98%;
     --background-soft: 215 25% 96%;
@@ -336,5 +339,10 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Keyboard open state - add bottom padding to prevent content being hidden */
+  body.keyboard-open .app-shell {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--kb-height));
   }
 }

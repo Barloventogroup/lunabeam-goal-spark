@@ -14,7 +14,9 @@ import Invitations from "./pages/Invitations";
 import Logout from "./pages/Logout";
 import TestComponents from "./pages/TestComponents";
 import { ProtectedRoute } from "./components/auth/protected-route";
+import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
+import { Keyboard } from "@capacitor/keyboard";
 import BuildBadge from "./components/dev/BuildBadge";
 import SafeAreaDebugger from "./components/dev/SafeAreaDebugger";
 
@@ -31,7 +33,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  // Configure StatusBar on app mount
+  // Configure StatusBar and Keyboard on app mount
   useEffect(() => {
     const configureStatusBar = async () => {
       try {
@@ -47,6 +49,32 @@ const App = () => {
     };
     configureStatusBar();
     console.log('Build ID:', import.meta.env.VITE_BUILD_ID);
+
+    // Configure keyboard handling on iOS
+    if (Capacitor.getPlatform() === 'ios') {
+      const setupKeyboard = async () => {
+        try {
+          const showListener = await Keyboard.addListener('keyboardWillShow', (info) => {
+            document.documentElement.style.setProperty('--kb-height', `${info.keyboardHeight}px`);
+            document.body.classList.add('keyboard-open');
+          });
+
+          const hideListener = await Keyboard.addListener('keyboardWillHide', () => {
+            document.documentElement.style.setProperty('--kb-height', '0px');
+            document.body.classList.remove('keyboard-open');
+          });
+
+          return () => {
+            showListener.remove();
+            hideListener.remove();
+          };
+        } catch (error) {
+          console.log('Keyboard listeners not available:', error);
+        }
+      };
+
+      setupKeyboard();
+    }
   }, []);
 
   return (
@@ -57,26 +85,28 @@ const App = () => {
         <SafeAreaDebugger />
         <BuildBadge />
         <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/auth/reset" element={<ResetPassword />} />
-            <Route path="/auth/request-reset" element={<RequestReset />} />
-            <Route path="/logout" element={<Logout />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            } />
-            <Route path="/invitations" element={
-              <ProtectedRoute>
-                <Invitations />
-              </ProtectedRoute>
-            } />
-            <Route path="/test-components" element={<TestComponents />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <div className="app-shell min-h-[100dvh] flex flex-col">
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/auth/reset" element={<ResetPassword />} />
+              <Route path="/auth/request-reset" element={<RequestReset />} />
+              <Route path="/logout" element={<Logout />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
+              } />
+              <Route path="/invitations" element={
+                <ProtectedRoute>
+                  <Invitations />
+                </ProtectedRoute>
+              } />
+              <Route path="/test-components" element={<TestComponents />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
