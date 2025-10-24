@@ -22,6 +22,7 @@ const Keyboard = registerPlugin<any>('Keyboard');
 const Style = { Dark: 'DARK', Light: 'LIGHT' } as const;
 import BuildBadge from "./components/dev/BuildBadge";
 import SafeAreaDebugger from "./components/dev/SafeAreaDebugger";
+import SafeAreaProbe from "./components/dev/SafeAreaProbe";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,7 +45,11 @@ const App = () => {
         await StatusBar.setOverlaysWebView({ overlay: true });
         // Set style to dark icons on light background (adjust based on theme)
         await StatusBar.setStyle({ style: Style.Dark });
-        console.log('StatusBar configured successfully');
+        
+        if (Capacitor.getPlatform() === 'ios') {
+          console.log('✅ iOS StatusBar configured: overlay=true, style=dark');
+          console.log('📱 Platform:', Capacitor.getPlatform());
+        }
       } catch (error) {
         // StatusBar not available (web) - silently ignore
         console.log('StatusBar not available:', error);
@@ -89,6 +94,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <SafeAreaDebugger />
+        <SafeAreaProbe />
         <BuildBadge />
         <BrowserRouter>
           <div className="app-shell min-h-[100dvh] flex flex-col">
