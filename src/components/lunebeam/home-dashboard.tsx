@@ -314,7 +314,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-[100dvh] bg-background p-4">
       <div className="max-w-md mx-auto py-6 space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">

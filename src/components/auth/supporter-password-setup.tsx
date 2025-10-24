@@ -160,14 +160,14 @@ export const SupporterPasswordSetup: React.FC<SupporterPasswordSetupProps> = ({
   // Show loading while processing
   if (userLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ 
+    <div className="min-h-[100dvh] flex items-center justify-center p-4" style={{
       backgroundImage: 'url(/lovable-uploads/9c1b5bdb-2b99-433d-8696-e539336f2074.png)', 
       backgroundSize: 'cover',
       backgroundPosition: 'center'

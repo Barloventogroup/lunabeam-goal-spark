@@ -175,7 +175,7 @@ export default function AuthCallback() {
   // Show error state only if there's an error
   if (status === 'error') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
         <div className="max-w-md w-full space-y-4 p-6 text-center">
           <h1 className="text-2xl font-bold text-foreground">Authentication Error</h1>
           <p className="text-muted-foreground mt-2">{msg}</p>
@@ -192,7 +192,7 @@ export default function AuthCallback() {
 
   // Show minimal loading for other states
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-[100dvh] flex items-center justify-center bg-background">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
     </div>
   );

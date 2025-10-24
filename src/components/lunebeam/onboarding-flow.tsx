@@ -77,7 +77,7 @@ export function OnboardingFlow() {
   // Show interstitial screen
   if (showInterstitial) {
     const isParent = roleData.role === 'parent';
-    return <div className="min-h-screen flex flex-col">
+    return <div className="min-h-[100dvh] flex flex-col">
         {/* Exit button */}
         <Button variant="ghost" size="sm" onClick={handleExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
           <X className="h-4 w-4" />
@@ -111,7 +111,7 @@ export function OnboardingFlow() {
       </div>;
   }
   if (showRoleSelection) {
-    return <div className="min-h-screen flex flex-col">
+    return <div className="min-h-[100dvh] flex flex-col">
         {/* Exit button */}
         <Button variant="ghost" size="sm" onClick={handleExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
           <X className="h-4 w-4" />

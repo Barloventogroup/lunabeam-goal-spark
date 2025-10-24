@@ -37,7 +37,7 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
   // Show interstitial screen
   if (showInterstitial) {
     return (
-      <div className="min-h-screen bg-gradient-soft">
+      <div className="min-h-[100dvh] bg-gradient-soft">
         <Card className="shadow-none border-0 h-screen w-full rounded-none relative">
           <CardContent className="p-6 h-full flex flex-col items-center justify-center">
             <h1 className="text-xl font-medium text-black mb-8 text-center">
@@ -55,7 +55,7 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
   }
 
   return (
-    <div className="min-h-screen bg-gradient-soft">
+    <div className="min-h-[100dvh] bg-gradient-soft">
         <Card className="shadow-none border-0 h-screen w-full rounded-none relative">
           <CardContent className="p-6 h-full flex flex-col overflow-y-auto">
             <div className="text-center">

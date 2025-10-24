@@ -334,7 +334,7 @@ useEffect(() => {
   // Show loading when signing out for claim
   if (signingOut) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{
+      <div className="min-h-[100dvh] flex items-center justify-center p-4" style={{
         backgroundImage: 'url(/lovable-uploads/9c1b5bdb-2b99-433d-8696-e539336f2074.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center'
@@ -430,6 +430,11 @@ useEffect(() => {
             {!isSupporterInvite && <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 {isSignUp ? 'Already have an account? Sign in' : <>Don't have an account? Sign up</>}
               </button>}
+          </div>
+          
+          {/* Build marker for verification */}
+          <div className="text-center mt-4">
+            <p className="text-xs text-muted-foreground/50">Build: 2025-10-24 14:30 UTC</p>
           </div>
         </CardContent>
       </Card>
