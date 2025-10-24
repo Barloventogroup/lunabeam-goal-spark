@@ -4165,37 +4165,39 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </div>;
   }
   return <div className="min-h-[100dvh] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col">
-      <div className="flex-1 flex flex-col p-4">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={currentStep === (isSupporter ? 0 : 1) ? onCancel : prevStep} className="p-2">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-xl font-bold">{section.label}</h1>
-            <p className="text-sm text-muted-foreground">
-              Step {section.index} of {section.total}
-            </p>
+      <div className="flex-1 flex flex-col">
+        {/* Header - sticky with safe area */}
+        <div className="sticky top-0 z-50 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-b px-4 pb-4 pt-safe">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={currentStep === (isSupporter ? 0 : 1) ? onCancel : prevStep} className="p-2">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-xl font-bold">{section.label}</h1>
+              <p className="text-sm text-muted-foreground">
+                Step {section.index} of {section.total}
+              </p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={onCancel}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-          <Button variant="ghost" size="sm" onClick={onCancel}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-        
-        {/* Progress Bar */}
-        <div className="w-full bg-muted rounded-full h-2">
-          <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{
-          width: `${section.index / section.total * 100}%`
-        }} />
+          
+          {/* Progress Bar */}
+          <div className="w-full bg-muted rounded-full h-2 mt-4">
+            <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{
+            width: `${section.index / section.total * 100}%`
+          }} />
+          </div>
         </div>
         
         {/* Current Step - fills remaining space */}
-        <div className="flex-1 overflow-auto pt-0 pb-24">
+        <div className="flex-1 overflow-auto px-4 pt-0 pb-24">
           {renderCurrentStep()}
         </div>
         
-        {/* Continue button - fixed bottom-right */}
-        {!isLastStep && !showingResultsInterstitial && <div className="fixed bottom-4 right-4 z-50">
+        {/* Continue button - fixed bottom-right with safe area */}
+        {!isLastStep && !showingResultsInterstitial && <div className="fixed right-4 z-50" style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}>
             <Button onClick={handleContinue} disabled={!canProceed()} className="h-12 px-8 text-lg font-semibold shadow-lg">
               Continue
               <ArrowRight className="h-5 w-5 ml-2" />

@@ -54,6 +54,9 @@ const App = () => {
     if (Capacitor.getPlatform() === 'ios') {
       const setupKeyboard = async () => {
         try {
+          // Prevent WKWebView from auto-resizing when keyboard opens
+          await Keyboard.setResizeMode({ mode: 'none' as any });
+          
           const showListener = await Keyboard.addListener('keyboardWillShow', (info) => {
             document.documentElement.style.setProperty('--kb-height', `${info.keyboardHeight}px`);
             document.body.classList.add('keyboard-open');

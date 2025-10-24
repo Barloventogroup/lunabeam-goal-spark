@@ -231,6 +231,10 @@
     @apply border-border;
   }
 
+  html, body, #root {
+    height: 100%;
+  }
+
   html {
     /* Prevent horizontal scroll */
     overflow-x: hidden;
@@ -250,6 +254,18 @@
     touch-action: manipulation;
   }
   
+  /* App shell with stable viewport and safe areas */
+  .app-shell {
+    min-height: 100dvh;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  
+  @supports (height: 100svh) {
+    .app-shell {
+      min-height: 100svh;
+    }
+  }
+  
   /* Safe area utilities for fixed headers/navigation */
   .pt-safe {
     padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
@@ -259,10 +275,6 @@
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
   }
 
-  #root {
-    max-width: 100vw;
-    overflow-x: hidden;
-  }
 
   /* Typography Scale */
   h1 {
