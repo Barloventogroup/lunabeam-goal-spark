@@ -266,18 +266,6 @@
     }
   }
   
-  /* ⚠️ DEPRECATED: Use Tailwind utilities instead
-   * - For fixed/sticky positioning: use .top-safe or .bottom-safe
-   * - For content padding: use .pt-safe-content or .pb-safe-content
-   * - These utilities below cause conflicts with fixed elements
-   */
-  .pt-safe {
-    padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
-  }
-  
-  .pb-safe {
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
-  }
 
 
   /* Typography Scale */
@@ -360,5 +348,29 @@
   /* Keyboard open state - add bottom padding to prevent content being hidden */
   body.keyboard-open .app-shell {
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--kb-height));
+  }
+}
+
+@layer utilities {
+  /* POSITIONING UTILITIES: Use these for fixed/sticky elements (headers/footers) */
+  .top-safe {
+    top: env(safe-area-inset-top, 0px);
+  }
+  .bottom-safe {
+    bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .left-safe {
+    left: env(safe-area-inset-left, 0px);
+  }
+  .right-safe {
+    right: env(safe-area-inset-right, 0px);
+  }
+  
+  /* CONTENT PADDING UTILITIES: Use these for content only */
+  .pt-safe-only {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .pb-safe-only {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
