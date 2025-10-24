@@ -311,10 +311,10 @@ export function TabInvitations() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-background to-muted/20">
       <div className="safe-area-padding">
         {/* Header */}
-        <div className="flex items-center gap-4 p-4 border-b border-border/60">
+        <div className="flex items-center gap-4 border-b border-border/60 pt-safe px-4 pb-4">
           <Button 
             variant="ghost" 
             size="sm"

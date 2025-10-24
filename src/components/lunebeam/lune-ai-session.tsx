@@ -385,10 +385,10 @@ Sound good?`,
   }
 
   return (
-    <div className="min-h-screen bg-gradient-soft">
-      <div className="max-w-md mx-auto h-screen flex flex-col">
+    <div className="min-h-[100dvh] bg-gradient-soft">
+      <div className="max-w-md mx-auto h-[100dvh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center gap-4 p-4 border-b border-gray-200 bg-card/80 backdrop-blur">
+        <div className="flex items-center gap-4 border-b border-gray-200 bg-card/80 backdrop-blur pt-safe px-4 pb-4">
           <BackButton onClick={onBack} />
           <div className="flex-1">
             <h1 className="text-xl font-bold">Lune</h1>

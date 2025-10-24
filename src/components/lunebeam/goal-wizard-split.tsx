@@ -338,9 +338,9 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-soft flex flex-col">
+    <div className="min-h-[100dvh] bg-gradient-soft flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-4 p-4 bg-background/50 backdrop-blur-sm border-b">
+      <div className="flex items-center gap-4 bg-background/50 backdrop-blur-sm border-b pt-safe px-4 pb-4">
         <Button 
           variant="ghost" 
           size="sm" 

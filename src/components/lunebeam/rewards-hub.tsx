@@ -27,9 +27,9 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
   showAdminFeatures = true
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-soft">
+    <div className="min-h-[100dvh] bg-gradient-soft">
       {/* Header */}
-      <div className="flex items-center gap-4 p-4 bg-card/80 backdrop-blur border-b border-gray-200">
+      <div className="flex items-center gap-4 bg-card/80 backdrop-blur border-b border-gray-200 pt-safe px-4 pb-4">
         <BackButton onClick={onBack} />
         <div className="flex-1">
           <h1 className="text-xl font-bold">Rewards</h1>
