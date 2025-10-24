@@ -14,9 +14,12 @@ import Invitations from "./pages/Invitations";
 import Logout from "./pages/Logout";
 import TestComponents from "./pages/TestComponents";
 import { ProtectedRoute } from "./components/auth/protected-route";
-import { Capacitor } from "@capacitor/core";
-import { StatusBar, Style } from "@capacitor/status-bar";
-import { Keyboard } from "@capacitor/keyboard";
+import { Capacitor, registerPlugin } from "@capacitor/core";
+
+// Use registerPlugin to avoid build-time dependency on plugin packages
+const StatusBar = registerPlugin<any>('StatusBar');
+const Keyboard = registerPlugin<any>('Keyboard');
+const Style = { Dark: 'DARK', Light: 'LIGHT' } as const;
 import BuildBadge from "./components/dev/BuildBadge";
 import SafeAreaDebugger from "./components/dev/SafeAreaDebugger";
 
