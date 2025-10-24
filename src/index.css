@@ -255,10 +255,10 @@
   }
   
   /* App shell with stable viewport and safe areas */
-  .app-shell {
-    min-height: 100dvh;
-    padding-top: env(safe-area-inset-top, 0px);
-  }
+.app-shell {
+  min-height: 100dvh;
+  /* Removed: padding-top causes double-offsetting with fixed headers */
+}
   
   @supports (height: 100svh) {
     .app-shell {
@@ -266,7 +266,11 @@
     }
   }
   
-  /* Safe area utilities for fixed headers/navigation */
+  /* ⚠️ DEPRECATED: Use Tailwind utilities instead
+   * - For fixed/sticky positioning: use .top-safe or .bottom-safe
+   * - For content padding: use .pt-safe-content or .pb-safe-content
+   * - These utilities below cause conflicts with fixed elements
+   */
   .pt-safe {
     padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
   }

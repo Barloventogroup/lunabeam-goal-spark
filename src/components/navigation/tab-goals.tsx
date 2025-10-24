@@ -188,12 +188,9 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
   const showTabs = (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') && supporterContext?.supportedIndividuals?.length > 0 && !isWizardView;
   if (showTabs) {
     const supportedIndividual = supporterContext.supportedIndividuals[0];
-    return <div className="min-h-[100dvh] bg-background" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
+    return <div className="min-h-[100dvh] bg-background pt-safe-content">
         {/* Header - hidden during wizard */}
-        {!isWizardView && <div 
-          className="fixed left-0 right-0 z-40 px-6 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200"
-          style={{ top: 'env(safe-area-inset-top, 0px)' }}
-        >
+        {!isWizardView && <div className="fixed left-0 right-0 top-safe z-40 px-6 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold">Goals</h1>

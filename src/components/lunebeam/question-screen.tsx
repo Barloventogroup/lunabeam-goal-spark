@@ -190,7 +190,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
   };
   return <div className="min-h-[100dvh] bg-background flex flex-col animate-fade-in">
       {/* Header with Progress */}
-      {!hideHeader && <div className="sticky top-0 bg-background border-b z-10 p-4">
+      {!hideHeader && <div className="sticky top-safe bg-background border-b z-10 p-4">
           <div className="max-w-3xl mx-auto">
             <div className="flex items-center justify-between mb-3">
               <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">

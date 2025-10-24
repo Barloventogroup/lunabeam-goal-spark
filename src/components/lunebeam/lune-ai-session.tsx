@@ -386,12 +386,9 @@ Sound good?`,
 
   return (
     <div className="min-h-[100dvh] bg-gradient-soft">
-      <div className="max-w-md mx-auto h-[100dvh] flex flex-col" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
+      <div className="max-w-md mx-auto h-[100dvh] flex flex-col pt-safe-content">
         {/* Header */}
-        <div 
-          className="fixed left-0 right-0 z-40 flex items-center gap-4 border-b border-gray-200 bg-card/80 backdrop-blur px-4 pb-4 pt-4"
-          style={{ top: 'env(safe-area-inset-top, 0px)' }}
-        >
+        <div className="fixed left-0 right-0 top-safe z-40 flex items-center gap-4 border-b border-gray-200 bg-card/80 backdrop-blur px-4 pb-4 pt-4">
           <BackButton onClick={onBack} />
           <div className="flex-1">
             <h1 className="text-xl font-bold">Lune</h1>
