@@ -1,12 +1,22 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 const SafeAreaProbe: React.FC = () => {
   const [insets, setInsets] = useState({ top: '0px', bottom: '0px', left: '0px', right: '0px' });
   
   const show = useMemo(() => {
     if (typeof window === 'undefined') return false;
+    
+    // Check URL parameters
     const params = new URLSearchParams(window.location.search);
-    return params.get('debug') === 'safearea';
+    const hashParams = new URLSearchParams(window.location.hash.split('?')[1]);
+    const hasDebugParam = params.get('debug') === 'safearea' || hashParams.get('debug') === 'safearea';
+    
+    // Auto-enable on native platforms in development mode
+    const isNative = Capacitor.isNativePlatform();
+    const isDev = import.meta.env.DEV;
+    
+    return hasDebugParam || (isNative && isDev);
   }, []);
 
   useEffect(() => {

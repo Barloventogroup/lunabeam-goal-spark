@@ -1,10 +1,20 @@
 import React, { useMemo } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 const SafeAreaDebugger: React.FC = () => {
   const show = useMemo(() => {
     if (typeof window === 'undefined') return false;
+    
+    // Check URL parameters
     const params = new URLSearchParams(window.location.search);
-    return params.get('debug') === 'safearea';
+    const hashParams = new URLSearchParams(window.location.hash.split('?')[1]);
+    const hasDebugParam = params.get('debug') === 'safearea' || hashParams.get('debug') === 'safearea';
+    
+    // Auto-enable on native platforms in development mode
+    const isNative = Capacitor.isNativePlatform();
+    const isDev = import.meta.env.DEV;
+    
+    return hasDebugParam || (isNative && isDev);
   }, []);
 
   if (!show) return null;
