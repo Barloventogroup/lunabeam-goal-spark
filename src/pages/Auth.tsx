@@ -365,7 +365,7 @@ useEffect(() => {
   if (showPasswordSetup && needsPasswordSetup) {
     return <FirstTimePasswordSetup onComplete={handlePasswordSetupComplete} />;
   }
-  return <div className="min-h-screen flex items-center justify-center p-4" style={{
+  return <div className="min-h-[100dvh] pt-safe pb-safe flex items-center justify-center p-4" style={{
     backgroundImage: 'url(/lovable-uploads/9c1b5bdb-2b99-433d-8696-e539336f2074.png)',
     backgroundSize: 'cover',
     backgroundPosition: 'center',

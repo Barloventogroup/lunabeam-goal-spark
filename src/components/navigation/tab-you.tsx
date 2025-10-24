@@ -137,9 +137,9 @@ export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
   if (currentView === 'settingsPrivacy') {
     return <SettingsPrivacyView onBack={() => setCurrentView('profile')} />;
   }
-  return <div className="min-h-screen bg-gradient-soft">
+  return <div className="min-h-[100dvh] bg-gradient-soft">
       {/* Header */}
-      <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+      <div className="px-6 pt-safe pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">You</h1>
           <NotificationBadge onNavigateToNotifications={() => setCurrentView('notifications')} />

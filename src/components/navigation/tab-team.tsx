@@ -718,9 +718,9 @@ export const TabTeam: React.FC = () => {
       </div>;
   }
   return <>
-      <div className="min-h-screen bg-gradient-soft">
+      <div className="min-h-[100dvh] bg-gradient-soft">
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+        <div className="px-6 pt-safe pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <h1 className="text-xl font-bold">Community</h1>
         </div>
 

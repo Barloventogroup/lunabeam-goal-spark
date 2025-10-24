@@ -188,9 +188,9 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
   const showTabs = (userContext?.userType === 'supporter' || userContext?.userType === 'hybrid' || userContext?.userType === 'admin') && supporterContext?.supportedIndividuals?.length > 0 && !isWizardView;
   if (showTabs) {
     const supportedIndividual = supporterContext.supportedIndividuals[0];
-    return <div className="min-h-screen bg-background">
+    return <div className="min-h-[100dvh] bg-background">
         {/* Header - hidden during wizard */}
-        {!isWizardView && <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+        {!isWizardView && <div className="px-6 pt-safe pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold">Goals</h1>
@@ -228,9 +228,9 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
         </div>
       </div>;
   }
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-[100dvh] bg-background">
       {/* Header - hidden during wizard */}
-      {!isWizardView && <div className="px-6 pt-6 pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+      {!isWizardView && <div className="px-6 pt-safe pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold">Goals</h1>
