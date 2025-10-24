@@ -87,10 +87,13 @@ const AppRouter: React.FC = () => {
   if (!profileLoaded) {
     console.log('AppRouter: Showing loading skeleton...');
     return (
-      <div className="min-h-[100dvh] bg-background flex flex-col max-w-full overflow-x-hidden">
+      <div className="min-h-[100dvh] bg-background flex flex-col max-w-full overflow-x-hidden" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
         {/* Header with Logo */}
-        <div className="flex items-center border-b bg-card/80 backdrop-blur pt-safe px-4 pb-4">
-          <img 
+        <div 
+          className="fixed left-0 right-0 z-40 flex items-center border-b bg-card/80 backdrop-blur px-4 pb-4 pt-4"
+          style={{ top: 'env(safe-area-inset-top, 0px)' }}
+        >
+          <img
             src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
             alt="Lunabeam logo" 
             className="h-7 w-auto object-contain"
@@ -153,10 +156,13 @@ const AppRouter: React.FC = () => {
   if (showPostOnboardingSkeleton) {
     console.log('AppRouter: Showing post-onboarding skeleton');
     return (
-      <div className="min-h-[100dvh] bg-background flex flex-col animate-fade-in max-w-full overflow-x-hidden">
+      <div className="min-h-[100dvh] bg-background flex flex-col animate-fade-in max-w-full overflow-x-hidden" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
         {/* Header with Logo */}
-        <div className="flex items-center border-b bg-card/80 backdrop-blur pt-safe px-4 pb-4">
-          <img 
+        <div 
+          className="fixed left-0 right-0 z-40 flex items-center border-b bg-card/80 backdrop-blur px-4 pb-4 pt-4"
+          style={{ top: 'env(safe-area-inset-top, 0px)' }}
+        >
+          <img
             src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
             alt="Lunabeam logo" 
             className="h-7 w-auto object-contain"

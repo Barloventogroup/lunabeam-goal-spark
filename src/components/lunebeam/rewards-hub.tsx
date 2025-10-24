@@ -27,9 +27,12 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
   showAdminFeatures = true
 }) => {
   return (
-    <div className="min-h-[100dvh] bg-gradient-soft">
+    <div className="min-h-[100dvh] bg-gradient-soft" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
       {/* Header */}
-      <div className="flex items-center gap-4 bg-card/80 backdrop-blur border-b border-gray-200 pt-safe px-4 pb-4">
+      <div 
+        className="fixed left-0 right-0 z-40 flex items-center gap-4 bg-card/80 backdrop-blur border-b border-gray-200 px-4 pb-4 pt-4"
+        style={{ top: 'env(safe-area-inset-top, 0px)' }}
+      >
         <BackButton onClick={onBack} />
         <div className="flex-1">
           <h1 className="text-xl font-bold">Rewards</h1>

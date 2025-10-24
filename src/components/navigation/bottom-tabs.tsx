@@ -134,7 +134,10 @@ export const BottomTabs: React.FC = () => {
   if (showChat) {
     return (
       <div className="min-h-[100dvh] bg-background">
-        <div className="flex items-center justify-between border-b bg-card/80 backdrop-blur pt-safe px-4 pb-4">
+        <div 
+          className="flex items-center justify-between border-b bg-card/80 backdrop-blur px-4 pb-4 pt-4"
+          style={{ top: 'env(safe-area-inset-top, 0px)' }}
+        >
           <button 
             onClick={() => setShowChat(false)}
             className="text-primary hover:text-primary/80 p-2 rounded-md hover:bg-muted transition-colors"
@@ -165,7 +168,8 @@ export const BottomTabs: React.FC = () => {
       {!isWizardActive && (
         <button
           onClick={handleCreateGoal}
-          className="fixed bottom-24 right-6 z-50 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 flex items-center justify-center"
+          className="fixed right-6 z-50 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 flex items-center justify-center"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 6rem)' }}
           aria-label="Create new goal"
         >
           <Plus className="h-6 w-6" />
@@ -174,7 +178,10 @@ export const BottomTabs: React.FC = () => {
 
       {/* Bottom tab bar - hidden during wizard */}
       {!isWizardActive && (
-        <div className="fixed bottom-0 left-0 right-0 bg-card backdrop-blur border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.1)] pb-safe">
+        <div 
+          className="fixed left-0 right-0 bg-card backdrop-blur border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]"
+          style={{ bottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
           <div className="flex items-center justify-around px-2 py-2">
             {tabs.map((tab) => {
               const Icon = tab.icon;

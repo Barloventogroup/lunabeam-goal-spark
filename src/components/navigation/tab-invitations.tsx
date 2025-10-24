@@ -311,10 +311,13 @@ export function TabInvitations() {
   );
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-background to-muted/20">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-background to-muted/20" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
       <div className="safe-area-padding">
         {/* Header */}
-        <div className="flex items-center gap-4 border-b border-border/60 pt-safe px-4 pb-4">
+        <div 
+          className="fixed left-0 right-0 z-40 flex items-center gap-4 border-b border-border/60 px-4 pb-4 pt-4"
+          style={{ top: 'env(safe-area-inset-top, 0px)' }}
+        >
           <Button 
             variant="ghost" 
             size="sm"

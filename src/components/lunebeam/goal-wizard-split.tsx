@@ -338,10 +338,13 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-soft flex flex-col">
+    <div className="min-h-[100dvh] bg-gradient-soft flex flex-col" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
       {/* Header */}
-      <div className="flex items-center gap-4 bg-background/50 backdrop-blur-sm border-b pt-safe px-4 pb-4">
-        <Button 
+      <div 
+        className="fixed left-0 right-0 z-40 flex items-center gap-4 bg-background/50 backdrop-blur-sm border-b px-4 pb-4 pt-4"
+        style={{ top: 'env(safe-area-inset-top, 0px)' }}
+      >
+        <Button
           variant="ghost" 
           size="sm" 
           onClick={handleBack}

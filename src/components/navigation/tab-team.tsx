@@ -718,9 +718,12 @@ export const TabTeam: React.FC = () => {
       </div>;
   }
   return <>
-      <div className="min-h-[100dvh] bg-gradient-soft">
+      <div className="min-h-[100dvh] bg-gradient-soft" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
         {/* Header */}
-        <div className="px-6 pt-safe pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+        <div 
+          className="fixed left-0 right-0 z-40 px-6 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200"
+          style={{ top: 'env(safe-area-inset-top, 0px)' }}
+        >
           <h1 className="text-xl font-bold">Community</h1>
         </div>
 

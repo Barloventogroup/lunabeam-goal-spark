@@ -248,8 +248,11 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-gradient-soft">
-        <div className="px-6 pt-safe pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+      <div className="min-h-[100dvh] bg-gradient-soft" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
+        <div 
+          className="fixed left-0 right-0 z-40 px-6 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200"
+          style={{ top: 'env(safe-area-inset-top, 0px)' }}
+        >
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={onBack}>
               <ArrowLeft className="h-4 w-4" />
@@ -276,10 +279,13 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
   const unreadCount = notifications.filter(n => !n.read_at).length;
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-soft">
+    <div className="min-h-[100dvh] bg-gradient-soft" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
       {/* Header */}
-      <div className="sticky top-0 z-10">
-        <div className="px-6 pt-safe pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+      <div 
+        className="sticky z-10"
+        style={{ top: 'env(safe-area-inset-top, 0px)' }}
+      >
+        <div className="px-6 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={onBack}>
               <ArrowLeft className="h-4 w-4" />

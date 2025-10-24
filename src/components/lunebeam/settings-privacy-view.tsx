@@ -69,9 +69,12 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-soft">
+    <div className="min-h-[100dvh] bg-gradient-soft" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
       {/* Header */}
-      <div className="px-6 pt-safe pb-4 bg-card/80 backdrop-blur border-b border-gray-200">
+      <div 
+        className="fixed left-0 right-0 z-40 px-6 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200"
+        style={{ top: 'env(safe-area-inset-top, 0px)' }}
+      >
         <div className="flex items-center gap-3 mb-2">
           <Button
             variant="ghost"
