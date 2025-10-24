@@ -135,7 +135,7 @@ export const BottomTabs: React.FC = () => {
     return (
       <div className="min-h-[100dvh] bg-background">
         <div 
-          className="flex items-center justify-between border-b bg-card/80 backdrop-blur px-4 pb-4 pt-4"
+          className="fixed left-0 right-0 z-40 flex items-center justify-between border-b bg-card/80 backdrop-blur px-4 pb-4 pt-4"
           style={{ top: 'env(safe-area-inset-top, 0px)' }}
         >
           <button 
@@ -150,7 +150,7 @@ export const BottomTabs: React.FC = () => {
           </div>
           <div></div>
         </div>
-        <div className="h-[calc(100vh-73px)]">
+        <div className="min-h-[100dvh]" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
           <AIChat context="general" />
         </div>
       </div>
