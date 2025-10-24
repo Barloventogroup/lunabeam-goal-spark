@@ -87,7 +87,7 @@ const AppRouter: React.FC = () => {
   if (!profileLoaded) {
     console.log('AppRouter: Showing loading skeleton...');
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col max-w-full overflow-x-hidden">
         {/* Header with Logo */}
         <div className="flex items-center p-4 border-b bg-card/80 backdrop-blur">
           <img 
@@ -153,7 +153,7 @@ const AppRouter: React.FC = () => {
   if (showPostOnboardingSkeleton) {
     console.log('AppRouter: Showing post-onboarding skeleton');
     return (
-      <div className="min-h-screen bg-background flex flex-col animate-fade-in">
+      <div className="min-h-screen bg-background flex flex-col animate-fade-in max-w-full overflow-x-hidden">
         {/* Header with Logo */}
         <div className="flex items-center p-4 border-b bg-card/80 backdrop-blur">
           <img 

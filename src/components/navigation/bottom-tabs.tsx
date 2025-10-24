@@ -155,9 +155,9 @@ export const BottomTabs: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col max-w-full overflow-x-hidden">
       {/* Main content */}
-      <div className={`flex-1 ${isWizardActive ? 'pb-0' : 'pb-20'}`}>
+      <div className={`flex-1 max-w-full ${isWizardActive ? 'pb-0' : 'pb-20'}`}>
         {renderActiveTab()}
       </div>
 
@@ -174,7 +174,7 @@ export const BottomTabs: React.FC = () => {
 
       {/* Bottom tab bar - hidden during wizard */}
       {!isWizardActive && (
-        <div className="fixed bottom-0 left-0 right-0 bg-card backdrop-blur border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
+        <div className="fixed bottom-0 left-0 right-0 bg-card backdrop-blur border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="flex items-center justify-around px-2 py-2">
             {tabs.map((tab) => {
               const Icon = tab.icon;

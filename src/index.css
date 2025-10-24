@@ -228,8 +228,31 @@
     @apply border-border;
   }
 
+  html {
+    /* Prevent horizontal scroll */
+    overflow-x: hidden;
+    max-width: 100vw;
+    /* Enable smooth iOS scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* Prevent zoom on double tap */
+    touch-action: manipulation;
+  }
+
   body {
     @apply bg-background text-foreground;
+    /* Prevent horizontal scroll */
+    overflow-x: hidden;
+    max-width: 100vw;
+    /* Safe area insets for iPhone notch/home indicator */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    /* Prevent zoom on double tap */
+    touch-action: manipulation;
+  }
+
+  #root {
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 
   /* Typography Scale */
