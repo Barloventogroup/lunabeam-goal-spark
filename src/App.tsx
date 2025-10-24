@@ -40,8 +40,8 @@ const App = () => {
   useEffect(() => {
     const configureStatusBar = async () => {
       try {
-        // Don't overlay the webview - this prevents notch overlap
-        await StatusBar.setOverlaysWebView({ overlay: false });
+        // Allow webview to extend under status bar - safe areas handled by CSS pt-safe
+        await StatusBar.setOverlaysWebView({ overlay: true });
         // Set style to dark icons on light background (adjust based on theme)
         await StatusBar.setStyle({ style: Style.Dark });
         console.log('StatusBar configured successfully');
