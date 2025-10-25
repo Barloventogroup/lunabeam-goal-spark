@@ -24,8 +24,10 @@ import { pointsService } from '../../services/pointsService';
 import { normalizeDomainForDisplay } from '../../utils/domainUtils';
 import { getWelcomeMessage } from '../../utils/userTypeUtils';
 import type { Goal } from '../../types';
+import type { EntryVariant } from '@/utils/entryExperience';
 
 interface TabHomeProps {
+  entryVariant?: EntryVariant;
   onOpenChat: () => void;
   onNavigateToGoals: (goalId?: string) => void;
   onNavigateToNotifications: () => void;
@@ -34,6 +36,7 @@ interface TabHomeProps {
 type HomeView = 'dashboard' | 'rewards' | 'checkin' | 'add-goal' | 'reward-bank';
 
 export const TabHome: React.FC<TabHomeProps> = ({
+  entryVariant = 'returning',
   onOpenChat,
   onNavigateToGoals,
   onNavigateToNotifications
@@ -130,7 +133,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
   // Active goals from store
   const activeGoals = goals.filter(goal => goal.status === 'active' || goal.status === 'planned');
-  const isFirstTime = goalsLoaded && activeGoals.length === 0;
+  // Use entryVariant prop to override local calculation - ensures consistent experience
+  const isFirstTime = entryVariant === 'first_time' || (goalsLoaded && activeGoals.length === 0);
   
   // Determine the correct name to display in greeting (synchronously to avoid flash)
   const getDisplayName = () => {

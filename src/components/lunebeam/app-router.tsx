@@ -5,13 +5,15 @@ import { BottomTabs } from '../navigation/bottom-tabs';
 import { Home, Target, Users, User } from 'lucide-react';
 import Lottie from 'lottie-react';
 import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
+import { resolveEntryVariant, EntryVariant } from '@/utils/entryExperience';
 
 const AppRouter: React.FC = () => {
-  const { isOnboardingComplete, profile, loadProfile } = useStore();
+  const { isOnboardingComplete, profile, loadProfile, goals } = useStore();
   const [profileLoaded, setProfileLoaded] = React.useState(false);
   const [showPostOnboardingAnimation, setShowPostOnboardingAnimation] = React.useState(false);
   const [showPostOnboardingSkeleton, setShowPostOnboardingSkeleton] = React.useState(false);
-  const onboardingCompleteRef = React.useRef(false);
+  const [entryVariant, setEntryVariant] = React.useState<EntryVariant>('returning');
+  const transitionShownRef = React.useRef(false);
 
   // Load profile on component mount
   const loadingRef = React.useRef(false);
@@ -26,7 +28,18 @@ const AppRouter: React.FC = () => {
       try {
         await loadProfile();
         const currentProfile = useStore.getState().profile;
+        const currentGoals = useStore.getState().goals;
         console.log('AppRouter: Profile loaded:', currentProfile);
+        
+        // Determine entry variant based on profile and goals
+        const activeGoalsCount = currentGoals.filter(g => g.status === 'active' || g.status === 'planned').length;
+        const variant = resolveEntryVariant({
+          onboardingComplete: currentProfile?.onboarding_complete || false,
+          goalsLoaded: true,
+          activeGoalsCount
+        });
+        setEntryVariant(variant);
+        console.log('AppRouter: Entry variant determined:', variant);
         
         // For new users, ensure we have a valid profile before proceeding
         if (!currentProfile) {
@@ -52,13 +65,37 @@ const AppRouter: React.FC = () => {
 
   // Detect when onboarding or sign-in completes and trigger animation
   React.useEffect(() => {
+    // Prevent showing animation more than once
+    if (transitionShownRef.current) return;
+    
     // Check if onboarding just completed (flag set by OnboardingFlow)
     const justCompletedOnboarding = sessionStorage.getItem('onboarding-just-completed') === 'true';
     // Check if sign-in just completed (flag set by Auth)
     const justSignedIn = sessionStorage.getItem('sign-in-just-completed') === 'true';
     
     if (justCompletedOnboarding || justSignedIn) {
-      console.log('AppRouter: Showing transition animation');
+      console.log('AppRouter: Showing transition animation', {
+        justCompletedOnboarding,
+        justSignedIn
+      });
+      
+      // Mark that we've shown the transition
+      transitionShownRef.current = true;
+      
+      // Determine variant based on the transition type
+      if (justCompletedOnboarding) {
+        setEntryVariant('first_time');
+      } else if (justSignedIn) {
+        // Compute variant from current state for returning users
+        const currentGoals = useStore.getState().goals;
+        const activeGoalsCount = currentGoals.filter(g => g.status === 'active' || g.status === 'planned').length;
+        const variant = resolveEntryVariant({
+          onboardingComplete: true, // They signed in, so onboarding is complete
+          goalsLoaded: true,
+          activeGoalsCount
+        });
+        setEntryVariant(variant);
+      }
       
       // Clear the flags immediately
       sessionStorage.removeItem('onboarding-just-completed');
@@ -77,7 +114,7 @@ const AppRouter: React.FC = () => {
         }, 1000);
       }, 2000);
     }
-  }, [profile?.onboarding_complete]); // Still watch this to trigger effect when profile loads
+  }, [profile?.onboarding_complete, goals]); // Watch profile and goals to trigger when data loads
 
   console.log('AppRouter render:', {
     profileLoaded,
@@ -197,9 +234,9 @@ const AppRouter: React.FC = () => {
     );
   }
 
-  console.log('AppRouter: Showing main navigation');
+  console.log('AppRouter: Showing main navigation', { entryVariant });
   // Show main app with bottom tabs navigation
-  return <BottomTabs />;
+  return <BottomTabs initialTab="home" entryVariant={entryVariant} />;
 };
 
 export { AppRouter };

@@ -9,11 +9,20 @@ import { TabSupporterHome } from './tab-supporter-home';
 import { TabSupporterGoals } from './tab-supporter-goals';
 import { AIChat } from '../lunebeam/ai-chat';
 import { useStore } from '@/store/useStore';
+import type { EntryVariant } from '@/utils/entryExperience';
 
 type TabType = 'home' | 'goals' | 'team' | 'you' | 'chat';
 
-export const BottomTabs: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('home');
+interface BottomTabsProps {
+  initialTab?: TabType;
+  entryVariant?: EntryVariant;
+}
+
+export const BottomTabs: React.FC<BottomTabsProps> = ({ 
+  initialTab = 'home',
+  entryVariant = 'returning'
+}) => {
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [showChat, setShowChat] = useState(false);
   const [isWizardActive, setIsWizardActive] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
@@ -88,6 +97,7 @@ export const BottomTabs: React.FC = () => {
           return <TabYou initialView={youTabInitialView} />;
         default:
           return <TabHome 
+            entryVariant={entryVariant}
             onOpenChat={() => setShowChat(true)} 
             onNavigateToGoals={() => setActiveTab('goals')}
             onNavigateToNotifications={() => {
@@ -102,6 +112,7 @@ export const BottomTabs: React.FC = () => {
     switch (activeTab) {
       case 'home':
         return <TabHome 
+          entryVariant={entryVariant}
           onOpenChat={() => setShowChat(true)} 
           onNavigateToGoals={(goalId?: string) => {
             setActiveTab('goals');
@@ -120,6 +131,7 @@ export const BottomTabs: React.FC = () => {
         return <TabYou initialView={youTabInitialView} />;
       default:
         return <TabHome 
+          entryVariant={entryVariant}
           onOpenChat={() => setShowChat(true)} 
           onNavigateToGoals={() => setActiveTab('goals')}
           onNavigateToNotifications={() => {
