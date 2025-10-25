@@ -152,6 +152,7 @@ export default function AuthCallback() {
     if (status === 'success') {
       // Show confirmation message for 2 seconds before redirecting
       setTimeout(() => {
+        try { sessionStorage.setItem('sign-in-just-completed', 'true'); } catch {}
         nav('/', { replace: true });
       }, 2000);
     }
