@@ -50,15 +50,19 @@ const AppRouter: React.FC = () => {
     loadUserProfile();
   }, []); // Empty array - run only once on mount
 
-  // Detect when onboarding completes and trigger post-onboarding animation
+  // Detect when onboarding or sign-in completes and trigger animation
   React.useEffect(() => {
     // Check if onboarding just completed (flag set by OnboardingFlow)
     const justCompletedOnboarding = sessionStorage.getItem('onboarding-just-completed') === 'true';
+    // Check if sign-in just completed (flag set by Auth)
+    const justSignedIn = sessionStorage.getItem('sign-in-just-completed') === 'true';
     
-    if (justCompletedOnboarding) {
-      console.log('AppRouter: Onboarding just completed, showing transition animation');
-      // Clear the flag immediately
+    if (justCompletedOnboarding || justSignedIn) {
+      console.log('AppRouter: Showing transition animation');
+      
+      // Clear the flags immediately
       sessionStorage.removeItem('onboarding-just-completed');
+      sessionStorage.removeItem('sign-in-just-completed');
       
       setShowPostOnboardingAnimation(true);
       

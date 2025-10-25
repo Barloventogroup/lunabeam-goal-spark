@@ -135,6 +135,7 @@ useEffect(() => {
         setShowPasswordSetup(true);
       } else {
         if (pendingSignInRef.current) {
+          sessionStorage.setItem('sign-in-just-completed', 'true');
           setShowLoginAnimation(true);
           setTimeout(() => {
             setShowLoginAnimation(false);
