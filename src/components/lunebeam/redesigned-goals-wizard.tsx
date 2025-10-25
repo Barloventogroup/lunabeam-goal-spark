@@ -4192,7 +4192,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
         
         {/* Current Step - fills remaining space */}
-        <div className="flex-1 overflow-auto px-4 pb-24" style={{ paddingTop: '88px' }}>
+        <div className="flex-1 overflow-auto px-4 pb-24" style={{ paddingTop: '72px' }}>
           {renderCurrentStep()}
         </div>
         
