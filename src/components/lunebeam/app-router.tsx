@@ -52,12 +52,14 @@ const AppRouter: React.FC = () => {
 
   // Detect when onboarding completes and trigger post-onboarding animation
   React.useEffect(() => {
-    const currentOnboardingStatus = profile?.onboarding_complete ?? false;
-    const wasOnboarding = !onboardingCompleteRef.current;
-    const isNowComplete = currentOnboardingStatus;
+    // Check if onboarding just completed (flag set by OnboardingFlow)
+    const justCompletedOnboarding = sessionStorage.getItem('onboarding-just-completed') === 'true';
     
-    if (wasOnboarding && isNowComplete) {
+    if (justCompletedOnboarding) {
       console.log('AppRouter: Onboarding just completed, showing transition animation');
+      // Clear the flag immediately
+      sessionStorage.removeItem('onboarding-just-completed');
+      
       setShowPostOnboardingAnimation(true);
       
       // Show animation for 2 seconds
@@ -71,9 +73,7 @@ const AppRouter: React.FC = () => {
         }, 1000);
       }, 2000);
     }
-    
-    onboardingCompleteRef.current = isNowComplete;
-  }, [profile?.onboarding_complete]); // Only depend on the actual value
+  }, [profile?.onboarding_complete]); // Still watch this to trigger effect when profile loads
 
   console.log('AppRouter render:', {
     profileLoaded,

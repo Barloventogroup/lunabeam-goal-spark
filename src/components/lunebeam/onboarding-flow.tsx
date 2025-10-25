@@ -61,6 +61,8 @@ export function OnboardingFlow() {
     setShowInterstitial(false);
   };
   const handleOnboardingComplete = () => {
+    // Set flag to trigger post-onboarding animation
+    sessionStorage.setItem('onboarding-just-completed', 'true');
     navigate('/');
   };
   const handleExit = async () => {
