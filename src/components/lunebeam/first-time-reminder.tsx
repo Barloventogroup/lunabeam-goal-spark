@@ -33,7 +33,7 @@ export const FirstTimeReminder: React.FC<FirstTimeReminderProps> = ({ onNavigate
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <p className="text-sm font-medium text-primary">
-                  Your next step is to set your first goal
+                  💡 Your next step is to set your first goal
                 </p>
               </div>
               <div className="flex items-center gap-2">
