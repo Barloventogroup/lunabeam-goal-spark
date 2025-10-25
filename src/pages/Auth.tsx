@@ -136,12 +136,8 @@ useEffect(() => {
       } else {
         if (pendingSignInRef.current) {
           sessionStorage.setItem('sign-in-just-completed', 'true');
-          setShowLoginAnimation(true);
-          setTimeout(() => {
-            setShowLoginAnimation(false);
-            pendingSignInRef.current = false;
-            navigate('/', { replace: true });
-          }, 2000);
+          pendingSignInRef.current = false;
+          navigate('/', { replace: true });
         } else {
           navigate('/', { replace: true });
         }
