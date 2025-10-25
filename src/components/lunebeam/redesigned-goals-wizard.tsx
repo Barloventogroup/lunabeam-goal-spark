@@ -4166,8 +4166,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   }
   return <div className="min-h-[100dvh] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col">
       <div className="flex-1 flex flex-col">
-        {/* Header - sticky with safe area */}
-        <div className="sticky top-safe z-50 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-b px-4 pb-4 pt-4">
+        {/* Header - fixed with safe area */}
+        <div className="fixed left-0 right-0 z-50 bg-card/80 backdrop-blur border-b border-border px-4 pb-4 pt-4" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" onClick={currentStep === (isSupporter ? 0 : 1) ? onCancel : prevStep} className="p-2">
               <ArrowLeft className="h-4 w-4" />
@@ -4192,7 +4192,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         </div>
         
         {/* Current Step - fills remaining space */}
-        <div className="flex-1 overflow-auto px-4 pt-0 pb-24">
+        <div className="flex-1 overflow-auto px-4 pb-24" style={{ paddingTop: 'calc(76px + env(safe-area-inset-top, 0px))' }}>
           {renderCurrentStep()}
         </div>
         
