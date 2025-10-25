@@ -84,13 +84,9 @@ const AppRouter: React.FC = () => {
       
       // Determine variant based on the transition type
       if (justCompletedOnboarding) {
-        // User just finished onboarding → first_time experience
+        // User just finished onboarding → first_time experience for this transition
         setEntryVariant('first_time');
         console.log('AppRouter: Set variant to first_time (onboarding completed)');
-      } else if (justSignedIn) {
-        // User signed in → ALWAYS returning experience, regardless of goal count
-        setEntryVariant('returning');
-        console.log('AppRouter: Set variant to returning (sign-in)');
       }
       
       // Clear the flags immediately
@@ -119,6 +115,66 @@ const AppRouter: React.FC = () => {
     showPostOnboardingAnimation,
     showPostOnboardingSkeleton
   });
+
+  // Prioritize transition overlay: animation first, then skeleton
+  if (showPostOnboardingAnimation) {
+    console.log('AppRouter: Showing post-onboarding animation');
+    return (
+      <div className="fixed inset-0 bg-white flex items-center justify-center overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <Lottie
+            animationData={loadingLunaAnimation}
+            loop={true}
+            style={{ width: '150vmax', height: '150vmax' }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Show post-onboarding skeleton overlay
+  if (showPostOnboardingSkeleton) {
+    console.log('AppRouter: Showing post-onboarding skeleton');
+    return (
+      <div className="min-h-[100dvh] bg-background flex flex-col animate-fade-in max-w-full overflow-x-hidden" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
+        {/* Header with Logo */}
+        <div className="fixed left-0 right-0 top-safe z-40 flex items-center border-b bg-card/80 backdrop-blur px-4 pb-4 pt-4">
+          <img
+            src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
+            alt="Lunabeam logo" 
+            className="h-7 w-auto object-contain"
+          />
+        </div>
+
+        {/* Grey Empty Body */}
+        <div className="flex-1 bg-muted/30 pb-20">
+          {/* Empty grey area */}
+        </div>
+
+        {/* Bottom Navigation Tabs Skeleton */}
+        <div className="fixed left-0 right-0 bottom-safe bg-card backdrop-blur border-t shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
+          <div className="flex items-center justify-around px-2 py-2">
+            {[
+              { label: 'Home', Icon: Home },
+              { label: 'Goals', Icon: Target },
+              { label: 'Community', Icon: Users },
+              { label: 'You', Icon: User }
+            ].map(({ label, Icon }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 rounded-lg text-muted-foreground"
+              >
+                <Icon className="h-5 w-5 mb-1" />
+                <span className="text-xs font-medium truncate">
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading skeleton until profile is checked
   if (!profileLoaded) {
@@ -168,66 +224,6 @@ const AppRouter: React.FC = () => {
   if (!isOnboardingComplete()) {
     console.log('AppRouter: Showing onboarding flow');
     return <OnboardingFlow />;
-  }
-
-  // Show post-onboarding animation
-  if (showPostOnboardingAnimation) {
-    console.log('AppRouter: Showing post-onboarding animation');
-    return (
-      <div className="fixed inset-0 bg-white flex items-center justify-center overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <Lottie
-            animationData={loadingLunaAnimation}
-            loop={true}
-            style={{ width: '150vmax', height: '150vmax' }}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Show post-onboarding skeleton
-  if (showPostOnboardingSkeleton) {
-    console.log('AppRouter: Showing post-onboarding skeleton');
-    return (
-      <div className="min-h-[100dvh] bg-background flex flex-col animate-fade-in max-w-full overflow-x-hidden" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
-        {/* Header with Logo */}
-        <div className="fixed left-0 right-0 top-safe z-40 flex items-center border-b bg-card/80 backdrop-blur px-4 pb-4 pt-4">
-          <img
-            src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
-            alt="Lunabeam logo" 
-            className="h-7 w-auto object-contain"
-          />
-        </div>
-
-        {/* Grey Empty Body */}
-        <div className="flex-1 bg-muted/30 pb-20">
-          {/* Empty grey area */}
-        </div>
-
-        {/* Bottom Navigation Tabs Skeleton */}
-        <div className="fixed left-0 right-0 bottom-safe bg-card backdrop-blur border-t shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
-          <div className="flex items-center justify-around px-2 py-2">
-            {[
-              { label: 'Home', Icon: Home },
-              { label: 'Goals', Icon: Target },
-              { label: 'Community', Icon: Users },
-              { label: 'You', Icon: User }
-            ].map(({ label, Icon }) => (
-              <div
-                key={label}
-                className="flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 rounded-lg text-muted-foreground"
-              >
-                <Icon className="h-5 w-5 mb-1" />
-                <span className="text-xs font-medium truncate">
-                  {label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
   }
 
   console.log('AppRouter: Showing main navigation', { entryVariant });
