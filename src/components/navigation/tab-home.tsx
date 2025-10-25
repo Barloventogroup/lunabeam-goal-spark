@@ -387,7 +387,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {/* Welcome Message */}
           <div>
             {(() => {
-              const isFirstTime = activeGoals.length === 0;
               const isAdmin = userContext?.userType === 'admin';
               
               let title, subtitle;
