@@ -84,17 +84,13 @@ const AppRouter: React.FC = () => {
       
       // Determine variant based on the transition type
       if (justCompletedOnboarding) {
+        // User just finished onboarding → first_time experience
         setEntryVariant('first_time');
+        console.log('AppRouter: Set variant to first_time (onboarding completed)');
       } else if (justSignedIn) {
-        // Compute variant from current state for returning users
-        const currentGoals = useStore.getState().goals;
-        const activeGoalsCount = currentGoals.filter(g => g.status === 'active' || g.status === 'planned').length;
-        const variant = resolveEntryVariant({
-          onboardingComplete: true, // They signed in, so onboarding is complete
-          goalsLoaded: true,
-          activeGoalsCount
-        });
-        setEntryVariant(variant);
+        // User signed in → ALWAYS returning experience, regardless of goal count
+        setEntryVariant('returning');
+        console.log('AppRouter: Set variant to returning (sign-in)');
       }
       
       // Clear the flags immediately

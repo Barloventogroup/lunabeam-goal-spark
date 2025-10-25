@@ -133,8 +133,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
   // Active goals from store
   const activeGoals = goals.filter(goal => goal.status === 'active' || goal.status === 'planned');
-  // Use entryVariant prop to override local calculation - ensures consistent experience
-  const isFirstTime = entryVariant === 'first_time' || (goalsLoaded && activeGoals.length === 0);
+  // Trust the entryVariant prop - it knows the correct experience
+  const isFirstTime = entryVariant === 'first_time';
   
   // Determine the correct name to display in greeting (synchronously to avoid flash)
   const getDisplayName = () => {
