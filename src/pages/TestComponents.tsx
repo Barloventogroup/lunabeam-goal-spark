@@ -9,8 +9,12 @@ import { IndependenceSlider } from '@/components/lunebeam/independence-slider';
 import { ConfidenceRating } from '@/components/lunebeam/confidence-rating';
 import { SkillAssessmentWizard } from '@/components/lunebeam/skill-assessment-wizard';
 import { ProgressiveMasteryCheckIn } from '@/components/lunebeam/progressive-mastery-checkin';
+import { EveningCatchUpCard } from '@/components/lunebeam/evening-catch-up-card';
+import { ExpressCheckInCard } from '@/components/lunebeam/express-check-in-card';
 import { Smartphone, Tablet, Monitor, Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Step, Goal } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 export default function TestComponents() {
   // StarRating states
@@ -42,6 +46,17 @@ export default function TestComponents() {
   const [habitError, setHabitError] = useState<string | null>(null);
   const [habitTestType, setHabitTestType] = useState<'safe' | 'dangerous-title' | 'dangerous-barriers' | 'dangerous-motivation' | 'dangerous-emoji' | 'dangerous-emoji-code' | null>(null);
 
+  // Check-in component test state
+  const [showEveningCatchUp, setShowEveningCatchUp] = useState(false);
+  const [showExpressCheckIn, setShowExpressCheckIn] = useState(false);
+  const [testStep, setTestStep] = useState<Step | null>(null);
+  const [testGoal, setTestGoal] = useState<Goal | null>(null);
+  const [checkInLogs, setCheckInLogs] = useState<any[]>([]);
+  const [isLoadingCheckIns, setIsLoadingCheckIns] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+
+  const { toast } = useToast();
+
   const handleAssessmentComplete = (assessment: any) => {
     console.log('Assessment complete:', assessment);
     alert(`Assessment complete! Level: ${assessment.level_label}, Score: ${assessment.calculated_level}`);
@@ -58,6 +73,122 @@ export default function TestComponents() {
     console.log('Check-in skipped');
     await new Promise(resolve => setTimeout(resolve, 500));
     alert('Step completed without check-in');
+  };
+
+  // Check-in testing functions
+  const createMockTestData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id || 'test-user';
+
+    const mockGoal: Goal = {
+      id: 'test-goal-' + Date.now(),
+      title: 'Learn to make breakfast',
+      domain: 'independent_living',
+      status: 'active',
+      priority: 'medium',
+      progress_pct: 0,
+      streak_count: 0,
+      tags: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      owner_id: userId,
+      created_by: userId,
+      goal_type: 'habit',
+    };
+
+    const mockStep: Step = {
+      id: 'test-step-' + Date.now(),
+      title: 'Make scrambled eggs',
+      goal_id: mockGoal.id,
+      status: 'todo',
+      order_index: 1,
+      type: 'action',
+      is_required: true,
+      dependency_step_ids: [],
+      due_date: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      step_type: 'habit',
+    };
+
+    return { mockGoal, mockStep };
+  };
+
+  const handleTestEveningCatchUp = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: 'Error', description: 'Must be logged in' });
+      return;
+    }
+    setCurrentUserId(user.id);
+    setShowEveningCatchUp(true);
+  };
+
+  const handleTestExpressCheckIn = async () => {
+    const { mockGoal, mockStep } = await createMockTestData();
+    setTestGoal(mockGoal);
+    setTestStep(mockStep);
+    setShowExpressCheckIn(true);
+  };
+
+  const handleLoadRecentCheckIns = async () => {
+    setIsLoadingCheckIns(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: 'Error', description: 'Must be logged in' });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('step_check_ins')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('checked_in_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setCheckInLogs(data || []);
+      
+      toast({
+        title: 'Check-ins loaded',
+        description: `Found ${data?.length || 0} recent check-ins`
+      });
+    } catch (error: any) {
+      console.error('Failed to load check-ins:', error);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoadingCheckIns(false);
+    }
+  };
+
+  const handleClearTestData = async () => {
+    if (!confirm('Delete all test check-ins from the database?')) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('step_check_ins')
+        .delete()
+        .like('step_id', 'test-step-%');
+
+      if (error) throw error;
+      
+      setCheckInLogs([]);
+      toast({ title: 'Success', description: 'Test data cleared' });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
   };
 
   const handlePMScaffoldTestSafe = async () => {
@@ -2203,6 +2334,134 @@ export default function TestComponents() {
           </CardContent>
         </Card>
 
+        {/* Check-In Components Testing */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Check-In Components (iOS Touch Testing)</CardTitle>
+            <CardDescription>
+              Test the new Evening Catch-Up and Express Check-In flows with iOS touch fixes
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            
+            {/* Test Controls */}
+            <div className="space-y-4">
+              <div className="flex gap-4 flex-wrap">
+                <Button 
+                  onClick={handleTestEveningCatchUp}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  Test Evening Catch-Up Card
+                </Button>
+                
+                <Button 
+                  onClick={handleTestExpressCheckIn}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Test Express Check-In
+                </Button>
+                
+                <Button 
+                  onClick={handleLoadRecentCheckIns}
+                  variant="outline"
+                  disabled={isLoadingCheckIns}
+                >
+                  {isLoadingCheckIns ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    'Load Recent Check-Ins'
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={handleClearTestData}
+                  variant="destructive"
+                  size="sm"
+                >
+                  Clear Test Data
+                </Button>
+              </div>
+
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>iOS Testing Instructions</AlertTitle>
+                <AlertDescription>
+                  <ul className="list-disc list-inside mt-2 space-y-1">
+                    <li><strong>Evening Catch-Up:</strong> Tests the "Done", "Split", and "Tomorrow" buttons with proper spacing and touch targets</li>
+                    <li><strong>Express Check-In:</strong> Tests the quick completion flow with difficulty rating</li>
+                    <li><strong>Check for:</strong> Button overlap, proper event handling, friction_score updates</li>
+                    <li><strong>iOS Specific:</strong> Test on physical iOS device to verify touch targets (min 44x44pt)</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            </div>
+
+            {/* Recent Check-Ins Display */}
+            {checkInLogs.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">Recent Check-Ins</h3>
+                <div className="border rounded-lg divide-y max-h-96 overflow-y-auto">
+                  {checkInLogs.map((log, idx) => (
+                    <div key={idx} className="p-3 space-y-1 text-sm">
+                      <div className="flex justify-between items-start">
+                        <span className="font-medium">
+                          {log.completed ? (
+                            <Badge variant="default" className="bg-green-600">Completed</Badge>
+                          ) : (
+                            <Badge variant="secondary">Deferred</Badge>
+                          )}
+                        </span>
+                        <span className="text-muted-foreground text-xs">
+                          {new Date(log.checked_in_at).toLocaleString()}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                        <div>Source: <code className="bg-muted px-1 rounded">{log.source}</code></div>
+                        <div>Type: <code className="bg-muted px-1 rounded">{log.check_in_type}</code></div>
+                        
+                        {log.difficulty_rating && (
+                          <div>Difficulty: <Badge variant="outline">{log.difficulty_rating}</Badge></div>
+                        )}
+                        
+                        {log.deferred_reason && (
+                          <div>Reason: <code className="bg-muted px-1 rounded">{log.deferred_reason}</code></div>
+                        )}
+                        
+                        {log.points_awarded && (
+                          <div>Points: <span className="text-green-600 font-semibold">+{log.points_awarded}</span></div>
+                        )}
+                      </div>
+                      
+                      <div className="text-xs">
+                        Step ID: <code className="text-xs bg-muted px-1 rounded">{log.step_id.substring(0, 20)}...</code>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Testing Notes */}
+            <div className="bg-muted p-4 rounded-lg space-y-2">
+              <h4 className="font-semibold">Testing Checklist:</h4>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>✓ Done button completes step and logs to step_check_ins</li>
+                <li>✓ Tomorrow button reschedules and increments friction_score</li>
+                <li>✓ Split button triggers AI substep generation</li>
+                <li>✓ Touch targets don't overlap on iOS (44x44pt minimum)</li>
+                <li>✓ e.stopPropagation() prevents wrong button firing</li>
+                <li>✓ Check console logs show correct button clicks</li>
+                <li>✓ Verify resilience_bonus awarded for hard steps</li>
+                <li>✓ Verify streak calculation after completion</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Test Instructions */}
         <Card className="border-primary/50 bg-primary/5">
           <CardHeader>
@@ -2279,6 +2538,44 @@ export default function TestComponents() {
           }}
           onComplete={handleCheckInComplete}
           onSkip={handleCheckInSkip}
+        />
+      )}
+
+      {/* Check-In Component Testing Modals */}
+      {showEveningCatchUp && currentUserId && (
+        <EveningCatchUpCard
+          userId={currentUserId}
+          forceShow={true}
+          onAllComplete={() => {
+            setShowEveningCatchUp(false);
+            toast({ title: 'All caught up!', description: 'All steps completed' });
+          }}
+          onDismiss={() => {
+            setShowEveningCatchUp(false);
+          }}
+        />
+      )}
+
+      {showExpressCheckIn && testStep && testGoal && (
+        <ExpressCheckInCard
+          step={testStep}
+          goal={testGoal}
+          isOpen={showExpressCheckIn}
+          onClose={() => {
+            setShowExpressCheckIn(false);
+            setTestStep(null);
+            setTestGoal(null);
+          }}
+          onComplete={() => {
+            setShowExpressCheckIn(false);
+            toast({ title: 'Step completed!', description: 'Check-in logged successfully' });
+            handleLoadRecentCheckIns();
+          }}
+          mode="express"
+          streakData={{
+            currentStreak: 5,
+            isStreakAtRisk: false
+          }}
         />
       )}
     </div>
