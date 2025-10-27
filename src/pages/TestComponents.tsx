@@ -117,11 +117,21 @@ export default function TestComponents() {
   const handleTestEveningCatchUp = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast({ title: 'Error', description: 'Must be logged in' });
+      toast({ title: 'Error', description: 'Must be logged in', variant: 'destructive' });
       return;
     }
+    
+    // Create mock data for testing
+    const { mockGoal, mockStep } = await createMockTestData();
+    setTestGoal(mockGoal);
+    setTestStep(mockStep);
     setCurrentUserId(user.id);
     setShowEveningCatchUp(true);
+    
+    toast({
+      title: 'Test Mode',
+      description: 'Showing evening catch-up with mock data'
+    });
   };
 
   const handleTestExpressCheckIn = async () => {
@@ -2542,10 +2552,15 @@ export default function TestComponents() {
       )}
 
       {/* Check-In Component Testing Modals */}
-      {showEveningCatchUp && currentUserId && (
+      {showEveningCatchUp && currentUserId && testStep && testGoal && (
         <EveningCatchUpCard
           userId={currentUserId}
           forceShow={true}
+          mockData={[{
+            step: testStep,
+            goal: testGoal,
+            dueDate: new Date(testStep.due_date || new Date())
+          }]}
           onAllComplete={() => {
             setShowEveningCatchUp(false);
             toast({ title: 'All caught up!', description: 'All steps completed' });

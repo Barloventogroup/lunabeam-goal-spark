@@ -23,6 +23,7 @@ interface EveningCatchUpCardProps {
   onAllComplete?: () => void;
   onDismiss?: () => void;
   forceShow?: boolean;
+  mockData?: MissedStepItem[]; // For testing purposes
 }
 
 type RowState = 'idle' | 'completing' | 'completed' | 'expanded';
@@ -31,7 +32,8 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
   userId,
   onAllComplete,
   onDismiss,
-  forceShow = false
+  forceShow = false,
+  mockData
 }) => {
   const [missedSteps, setMissedSteps] = useState<MissedStepItem[]>([]);
   const [rowStates, setRowStates] = useState<Record<string, RowState>>({});
@@ -70,6 +72,17 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
       try {
         setFetchError(null);
         
+        // Use mock data if provided (for testing)
+        if (mockData) {
+          setMissedSteps(mockData);
+          const initialStates: Record<string, RowState> = {};
+          mockData.forEach(item => {
+            initialStates[item.step.id] = 'idle';
+          });
+          setRowStates(initialStates);
+          return;
+        }
+        
         // If forceShow is true, skip dismissal check
         if (!forceShow) {
           const dismissedDate = localStorage.getItem('dismissed_catch_up_date');
@@ -96,7 +109,7 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
     };
 
     loadMissedSteps();
-  }, [userId, forceShow, onDismiss]);
+  }, [userId, forceShow, onDismiss, mockData]);
 
   const handleDismiss = () => {
     // Store dismissal for tonight
