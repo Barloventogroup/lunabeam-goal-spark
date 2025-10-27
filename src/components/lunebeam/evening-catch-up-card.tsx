@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Fireworks } from '@/components/ui/fireworks';
 import { ExpressCheckInCard } from '@/components/lunebeam/express-check-in-card';
@@ -24,6 +25,8 @@ interface EveningCatchUpCardProps {
   onDismiss?: () => void;
   forceShow?: boolean;
   mockData?: MissedStepItem[]; // For testing purposes
+  presentation?: 'inline' | 'modal';
+  debug?: boolean;
 }
 
 type RowState = 'idle' | 'completing' | 'completed' | 'expanded';
@@ -33,7 +36,9 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
   onAllComplete,
   onDismiss,
   forceShow = false,
-  mockData
+  mockData,
+  presentation = 'inline',
+  debug = false
 }) => {
   const [missedSteps, setMissedSteps] = useState<MissedStepItem[]>([]);
   const [rowStates, setRowStates] = useState<Record<string, RowState>>({});
@@ -80,6 +85,15 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
             initialStates[item.step.id] = 'idle';
           });
           setRowStates(initialStates);
+          
+          // Debug logging and toast
+          if (debug) {
+            console.log('[EveningCatchUp] Mounted with mockData count:', mockData.length);
+            toast({ 
+              title: 'Evening Catch-Up (Test)', 
+              description: `Loaded ${mockData.length} step(s)` 
+            });
+          }
           return;
         }
         
@@ -332,7 +346,7 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
 
   // Show error state
   if (fetchError) {
-    return (
+    const errorContent = (
       <Card className="bg-purple-50 border-purple-200">
         <CardContent className="pt-6 text-center space-y-4">
           <p className="text-muted-foreground">{fetchError}</p>
@@ -342,22 +356,50 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
         </CardContent>
       </Card>
     );
+    
+    if (presentation === 'modal') {
+      return (
+        <Dialog open={true} onOpenChange={() => onDismiss?.()}>
+          <DialogContent className="max-w-md">
+            {errorContent}
+          </DialogContent>
+        </Dialog>
+      );
+    }
+    
+    return errorContent;
   }
 
-  // Don't render if no missed steps
+  // If mockData is provided but list is empty, show a fallback
   if (missedSteps.length === 0) {
+    if (mockData && debug) {
+      const fallbackContent = (
+        <Card className="bg-muted/50 border-muted">
+          <CardContent className="pt-6 text-center">
+            <p className="text-muted-foreground">No steps to catch up (test mode)</p>
+          </CardContent>
+        </Card>
+      );
+      
+      if (presentation === 'modal') {
+        return (
+          <Dialog open={true} onOpenChange={() => onDismiss?.()}>
+            <DialogContent className="max-w-md">
+              {fallbackContent}
+            </DialogContent>
+          </Dialog>
+        );
+      }
+      
+      return fallbackContent;
+    }
     return null;
   }
 
-  return (
+  // Main card content
+  const cardContent = (
     <>
-      <motion.div
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-        className="sticky top-[60px] z-30 mb-6"
-      >
-        <Card className="bg-purple-50 border-purple-200 rounded-xl shadow-lg">
+      <Card className="bg-purple-50 border-purple-200 rounded-xl shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <div className="flex items-center gap-2">
               <span className="text-2xl">🌙</span>
@@ -540,8 +582,7 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
             </Button>
           </CardFooter>
         </Card>
-      </motion.div>
-
+      
       {/* Confetti celebration */}
       {showConfetti && (
         <Fireworks
@@ -591,5 +632,28 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
         </AlertDialog>
       )}
     </>
+  );
+
+  // Wrap in modal or inline based on presentation mode
+  if (presentation === 'modal') {
+    return (
+      <Dialog open={true} onOpenChange={() => onDismiss?.()}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {cardContent}
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Inline presentation (default)
+  return (
+    <motion.div
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+      className="sticky top-[60px] z-30 mb-6"
+    >
+      {cardContent}
+    </motion.div>
   );
 };

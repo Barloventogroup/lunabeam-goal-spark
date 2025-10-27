@@ -121,6 +121,9 @@ export default function TestComponents() {
       return;
     }
     
+    // Clear dismissal flag to prevent interference
+    localStorage.removeItem('dismissed_catch_up_date');
+    
     // Create mock data for testing
     const { mockGoal, mockStep } = await createMockTestData();
     setTestGoal(mockGoal);
@@ -129,8 +132,8 @@ export default function TestComponents() {
     setShowEveningCatchUp(true);
     
     toast({
-      title: 'Test Mode',
-      description: 'Showing evening catch-up with mock data'
+      title: 'Opening Evening Catch-Up Test',
+      description: 'Modal overlay with mock data'
     });
   };
 
@@ -2556,6 +2559,8 @@ export default function TestComponents() {
         <EveningCatchUpCard
           userId={currentUserId}
           forceShow={true}
+          presentation="modal"
+          debug
           mockData={[{
             step: testStep,
             goal: testGoal,
