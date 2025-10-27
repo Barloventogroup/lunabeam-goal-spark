@@ -19,6 +19,7 @@ import { pointsService } from '@/services/pointsService';
 import { BlockedStepGuidance } from './blocked-step-guidance';
 import { StepChatModal } from './step-chat-modal';
 import { StepEditModal } from './step-edit-modal';
+import { OneCardCheckIn } from './one-card-check-in';
 import { useToast } from '@/hooks/use-toast';
 import { notificationsService } from '@/services/notificationsService';
 import { supabase } from '@/integrations/supabase/client';
@@ -97,6 +98,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   // const [showGoalCelebration, setShowGoalCelebration] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
+  const [checkInStep, setCheckInStep] = useState<Step | null>(null);
   // const [showFireworks, setShowFireworks] = useState(false);
   // const [showSuccessCheck, setShowSuccessCheck] = useState(false);
   const { toast } = useToast();
@@ -316,10 +318,18 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     return false;
   };
 
-  const handleMarkComplete = async (
-    stepId: string, 
-    context?: { substepsCompletedToday?: number; pointsFromSubsteps?: number }
-  ) => {
+  const handleMarkComplete = async (stepId: string) => {
+    // Open check-in modal instead of directly completing
+    const step = steps.find(s => s.id === stepId);
+    if (step) {
+      setCheckInStep(step);
+    }
+  };
+
+  const handleCheckInComplete = async (difficulty?: 'easy' | 'medium' | 'hard') => {
+    if (!checkInStep) return;
+    
+    const stepId = checkInStep.id;
     if (awaitingStepUpdate === stepId) return;
     
     setAwaitingStepUpdate(stepId);
@@ -337,12 +347,12 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       }
       
       // Refresh substeps
-      const substepsPromises = steps.map(async (step) => {
+      const substepsPromises = steps.map(async (s) => {
         try {
-          const substeps = await pointsService.getSubsteps(step.id);
-          return { stepId: step.id, substeps };
+          const substeps = await pointsService.getSubsteps(s.id);
+          return { stepId: s.id, substeps };
         } catch (error) {
-          return { stepId: step.id, substeps: [] };
+          return { stepId: s.id, substeps: [] };
         }
       });
       const results = await Promise.all(substepsPromises);
@@ -409,8 +419,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
             
             // Calculate points earned today
             const stepPoints = result.step.points_awarded || 5;
-            const substepPoints = context?.pointsFromSubsteps || 0;
-            const pointsEarnedToday = stepPoints + substepPoints;
+            const pointsEarnedToday = stepPoints;
             
             // Get tomorrow's scheduled time from existing steps
             const tomorrow = new Date();
@@ -503,6 +512,32 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       });
     } finally {
       setAwaitingStepUpdate(null);
+    }
+  };
+
+  const handleCheckInDefer = async (action: 'split' | 'tomorrow') => {
+    if (!checkInStep) return;
+    
+    if (action === 'split') {
+      // Open step chat for splitting
+      setCurrentHelpStep(checkInStep);
+      setHelpModalOpen(true);
+      setCheckInStep(null);
+    } else if (action === 'tomorrow') {
+      // Reschedule step to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      await stepsService.updateStep(checkInStep.id, {
+        due_date: tomorrow.toISOString().split('T')[0]
+      });
+      
+      toast({
+        title: "Step rescheduled",
+        description: "We'll remind you tomorrow"
+      });
+      
+      setCheckInStep(null);
+      onStepsChange?.();
     }
   };
 
@@ -677,11 +712,8 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       if (allCompleted) {
         const step = steps.find(s => s.id === stepId);
         if (step && step.status !== 'done') {
-          // Pass context about substeps
-          await handleMarkComplete(stepId, {
-            substepsCompletedToday: totalCount,
-            pointsFromSubsteps: totalCount * 2 // 2 points each
-          });
+          // Auto-complete main step when all substeps are done
+          await handleMarkComplete(stepId);
           // Don't show additional toast here - handleMarkComplete handles it
         }
       } else {
@@ -1187,6 +1219,15 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
             onStepUpdate={handleStepUpdate}
           />
         )}
+
+        <OneCardCheckIn
+          step={checkInStep!}
+          goal={goal}
+          isOpen={!!checkInStep}
+          onClose={() => setCheckInStep(null)}
+          onComplete={handleCheckInComplete}
+          onDefer={handleCheckInDefer}
+        />
 
         {/* Fireworks Animation - Temporarily disabled */}
         {/* <Fireworks 

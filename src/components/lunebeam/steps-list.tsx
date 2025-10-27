@@ -20,6 +20,7 @@ import { pointsService } from '@/services/pointsService';
 import { BlockedStepGuidance } from './blocked-step-guidance';
 import { StepChatModal } from './step-chat-modal';
 import { StepEditModal } from './step-edit-modal';
+import { OneCardCheckIn } from './one-card-check-in';
 import { useToast } from '@/hooks/use-toast';
 import { notificationsService } from '@/services/notificationsService';
 import { supabase } from '@/integrations/supabase/client';
@@ -111,6 +112,7 @@ export const StepsList: React.FC<StepsListProps> = ({
   // const [showGoalCelebration, setShowGoalCelebration] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
+  const [checkInStep, setCheckInStep] = useState<Step | null>(null);
   // const [showFireworks, setShowFireworks] = useState(false);
   // const [showSuccessCheck, setShowSuccessCheck] = useState(false);
   const [showSetupSteps, setShowSetupSteps] = useState(true);
@@ -445,10 +447,22 @@ export const StepsList: React.FC<StepsListProps> = ({
   });
 
   const handleMarkComplete = async (stepId: string) => {
+    // Open check-in modal instead of directly completing
+    const step = steps.find(s => s.id === stepId);
+    if (step) {
+      setCheckInStep(step);
+    }
+  };
+
+  const handleCheckInComplete = async (difficulty?: 'easy' | 'medium' | 'hard') => {
+    if (!checkInStep) return;
+    
+    const stepId = checkInStep.id;
     if (awaitingStepUpdate === stepId) return;
 
-    console.log('[StepsList] handleMarkComplete START', {
+    console.log('[StepsList] handleCheckInComplete START', {
       stepId,
+      difficulty,
       beforeStatus: steps.find(s => s.id === stepId)?.status
     });
     
@@ -640,6 +654,32 @@ export const StepsList: React.FC<StepsListProps> = ({
     } finally {
       setAwaitingStepUpdate(null);
       console.log('[StepsList] handleMarkComplete END', { stepId });
+    }
+  };
+
+  const handleCheckInDefer = async (action: 'split' | 'tomorrow') => {
+    if (!checkInStep) return;
+    
+    if (action === 'split') {
+      // Open step chat for splitting
+      setCurrentHelpStep(checkInStep);
+      setHelpModalOpen(true);
+      setCheckInStep(null);
+    } else if (action === 'tomorrow') {
+      // Reschedule step to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      await stepsService.updateStep(checkInStep.id, {
+        due_date: tomorrow.toISOString().split('T')[0]
+      });
+      
+      toast({
+        title: "Step rescheduled",
+        description: "We'll remind you tomorrow"
+      });
+      
+      setCheckInStep(null);
+      onStepsChange?.();
     }
   };
 
@@ -1581,6 +1621,15 @@ export const StepsList: React.FC<StepsListProps> = ({
           onStepUpdate={handleStepUpdate}
         />
       )}
+
+      <OneCardCheckIn
+        step={checkInStep!}
+        goal={goal}
+        isOpen={!!checkInStep}
+        onClose={() => setCheckInStep(null)}
+        onComplete={handleCheckInComplete}
+        onDefer={handleCheckInDefer}
+      />
 
       {/* Fireworks Animation - Temporarily disabled */}
       {/* <Fireworks 
