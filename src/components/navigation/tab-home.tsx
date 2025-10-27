@@ -188,12 +188,12 @@ export const TabHome: React.FC<TabHomeProps> = ({
   // After goals load, fetch steps for active/planned goals to avoid UI flash and ensure freshness
   useEffect(() => {
     if (!goalsLoaded) return;
-    goals.forEach(goal => {
+    goalsFromQuery.forEach(goal => {
       if (goal.status === 'active' || goal.status === 'planned') {
         loadSteps(goal.id);
       }
     });
-  }, [goalsLoaded, goals, loadSteps]);
+  }, [goalsLoaded, goalsFromQuery, loadSteps]);
 
   if (currentView === 'rewards') {
     return <RewardsScreen onBack={() => setCurrentView('dashboard')} />;
@@ -209,8 +209,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
     />;
   }
 
-  // Active goals from store
-  const activeGoals = goals.filter(goal => goal.status === 'active' || goal.status === 'planned');
+  // Active goals from React Query
+  const activeGoals = goalsFromQuery.filter(goal => goal.status === 'active' || goal.status === 'planned');
   // Trust the entryVariant prop - it knows the correct experience
   const isFirstTime = entryVariant === 'first_time';
   
@@ -255,7 +255,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
     // Batch fetch all substeps in a single query (fixes N+1 query problem)
     const allStepIds: string[] = [];
-    for (const goal of goals) {
+    for (const goal of goalsFromQuery) {
       if (goal.status === 'active' || goal.status === 'planned' || goal.status === 'paused') {
         const goalSteps = steps[goal.id] || [];
         goalSteps.forEach(step => {
@@ -291,7 +291,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
       }
     }
 
-    for (const goal of goals) {
+    for (const goal of goalsFromQuery) {
       // Include active/planned/paused goals
       if (goal.status === 'active' || goal.status === 'planned' || goal.status === 'paused') {
         const goalSteps = steps[goal.id] || [];
@@ -390,7 +390,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const todaysDueItem = todaysSteps[0] || null;
   
   console.log('TabHome debug:', { 
-    goalsCount: goals.length, 
+    goalsCount: goalsFromQuery.length,
     stepsCount: Object.keys(steps).length,
     todaysStepsCount: todaysSteps.length,
     overdueStepsCount: overdueSteps.length,
