@@ -329,7 +329,7 @@ export const checkInService = {
   },
 
   // Create express check-in for step completion
-  async createExpressCheckIn(stepId: string, source: 'express' | 'modal' = 'express'): Promise<{ id: string; points: number }> {
+  async createExpressCheckIn(stepId: string, source: 'express' | 'modal' | 'catch_up' = 'express'): Promise<{ id: string; points: number }> {
     const user = await supabase.auth.getUser();
     if (!user.data.user) throw new Error('User not authenticated');
 
@@ -388,5 +388,54 @@ export const checkInService = {
       .eq('id', checkInId);
 
     if (error) throw error;
+  },
+
+  // Get missed steps for evening catch-up
+  async getMissedSteps(userId: string, limit = 5): Promise<Array<{ step: Step; goal: Goal; dueDate: Date }>> {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    const todayStr = today.toISOString();
+
+    // Break type inference by using any client
+    const anySupabase: any = supabase;
+    
+    // Query steps
+    const stepsResult = await anySupabase
+      .from('steps')
+      .select('*')
+      .eq('owner_id', userId)
+      .in('status', ['not_started', 'todo', 'in_progress', 'doing'])
+      .lt('due_date', todayStr)
+      .order('due_date', { ascending: true })
+      .limit(limit);
+    
+    const stepsData: any[] = stepsResult.data || [];
+    if (stepsResult.error) throw stepsResult.error;
+    if (stepsData.length === 0) return [];
+
+    // Get unique goal IDs
+    const goalIds = Array.from(new Set(stepsData.map(s => s.goal_id as string)));
+
+    // Fetch goals
+    const goalsResult = await anySupabase.from('goals').select('*').in('id', goalIds);
+    const goalsData: any[] = goalsResult.data || [];
+    if (goalsResult.error) throw goalsResult.error;
+
+    // Map goals by ID
+    const goalsMap = new Map(goalsData.map(g => [g.id as string, g]));
+
+    // Combine steps with goals
+    return stepsData
+      .filter(step => goalsMap.has(step.goal_id))
+      .map(step => {
+        const goalData = goalsMap.get(step.goal_id);
+        if (!goalData) throw new Error('Goal not found');
+        
+        return {
+          step: convertToStep(step),
+          goal: convertToGoal(goalData),
+          dueDate: new Date(step.due_date)
+        };
+      });
   }
 };

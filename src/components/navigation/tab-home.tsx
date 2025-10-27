@@ -15,7 +15,9 @@ import { NotificationBadge } from '../lunebeam/notification-badge';
 import { PointsDisplay } from '../lunebeam/points-display';
 import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
+import { EveningCatchUpCard } from '../lunebeam/evening-catch-up-card';
 import { useStore } from '../../store/useStore';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '../../integrations/supabase/client';
 import { useAuth } from '../auth/auth-provider';
 import { goalsService, stepsService } from '../../services/goalsService';
@@ -51,8 +53,10 @@ export const TabHome: React.FC<TabHomeProps> = ({
     overdueSteps: any[];
     upcomingSteps: any[];
   }>({ todaysSteps: [], overdueSteps: [], upcomingSteps: [] });
+  const [showCatchUpCard, setShowCatchUpCard] = useState(false);
 
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
   const {
     profile,
     userContext,
@@ -68,6 +72,67 @@ export const TabHome: React.FC<TabHomeProps> = ({
   // Use React Query for goals
   const { data: goalsData, isLoading: goalsLoading, refetch: refetchGoals } = useGoals();
   const goalsFromQuery = goalsData?.goals || [];
+
+  // Track user activity for catch-up card
+  useEffect(() => {
+    const updateActivity = () => {
+      localStorage.setItem('last_activity_timestamp', Date.now().toString());
+    };
+
+    window.addEventListener('click', updateActivity);
+    window.addEventListener('scroll', updateActivity);
+    window.addEventListener('keydown', updateActivity);
+
+    return () => {
+      window.removeEventListener('click', updateActivity);
+      window.removeEventListener('scroll', updateActivity);
+      window.removeEventListener('keydown', updateActivity);
+    };
+  }, []);
+
+  // Check catch-up card visibility
+  useEffect(() => {
+    const checkCatchUpVisibility = async () => {
+      if (!user) return;
+
+      const now = new Date();
+      const currentHour = now.getHours();
+      const catchUpHour = 20; // 8 PM default
+
+      // Only show during catch-up window (8-11 PM)
+      if (currentHour < catchUpHour || currentHour >= 23) {
+        setShowCatchUpCard(false);
+        return;
+      }
+
+      // Check if dismissed today
+      const dismissedDate = localStorage.getItem('dismissed_catch_up_date');
+      const today = now.toISOString().split('T')[0];
+      if (dismissedDate === today) {
+        setShowCatchUpCard(false);
+        return;
+      }
+
+      // Check last activity (2+ hours inactive)
+      const lastActivity = localStorage.getItem('last_activity_timestamp');
+      if (lastActivity) {
+        const hoursSinceActivity = (now.getTime() - parseInt(lastActivity)) / (1000 * 60 * 60);
+        if (hoursSinceActivity < 2) {
+          setShowCatchUpCard(false);
+          return;
+        }
+      }
+
+      // Fetch missed steps
+      const { checkInService } = await import('@/services/checkInService');
+      const steps = await checkInService.getMissedSteps(user.id);
+      setShowCatchUpCard(steps.length >= 2);
+    };
+
+    if (profileLoaded) {
+      checkCatchUpVisibility();
+    }
+  }, [profileLoaded, profile, user]);
 
   // Add effect to listen for tab visibility changes and refresh data
   useEffect(() => {
@@ -431,6 +496,19 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {/* First Time User Reminder */}
           {isFirstTime && (
             <FirstTimeReminder onNavigateToGoals={() => setCurrentView('add-goal')} />
+          )}
+
+          {/* Evening Catch-Up Card */}
+          {showCatchUpCard && user && (
+            <EveningCatchUpCard
+              userId={user.id}
+              onAllComplete={() => {
+                toast({ title: 'Great job catching up!' });
+                loadPoints();
+                refetchGoals();
+              }}
+              onDismiss={() => setShowCatchUpCard(false)}
+            />
           )}
 
           {/* Today's Focus Card - Always show */}
