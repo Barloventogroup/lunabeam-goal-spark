@@ -652,6 +652,56 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_logs: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          id: string
+          interacted_at: string | null
+          interaction_type: string | null
+          notification_type: string
+          scheduled_for: string
+          step_id: string | null
+          suppression_reason: string | null
+          user_id: string
+          was_suppressed: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          interacted_at?: string | null
+          interaction_type?: string | null
+          notification_type: string
+          scheduled_for: string
+          step_id?: string | null
+          suppression_reason?: string | null
+          user_id: string
+          was_suppressed?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          interacted_at?: string | null
+          interaction_type?: string | null
+          notification_type?: string
+          scheduled_for?: string
+          step_id?: string | null
+          suppression_reason?: string | null
+          user_id?: string
+          was_suppressed?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_logs_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -739,10 +789,12 @@ export type Database = {
           id: string
           interests: string[] | null
           is_self_registered: boolean
+          notification_settings: Json | null
           onboarding_complete: boolean
           password_set: boolean | null
           profile_visibility: string | null
           progress_sharing: string | null
+          resilience_bonus_earned: number | null
           strengths: string[] | null
           updated_at: string
           user_id: string
@@ -765,10 +817,12 @@ export type Database = {
           id?: string
           interests?: string[] | null
           is_self_registered?: boolean
+          notification_settings?: Json | null
           onboarding_complete?: boolean
           password_set?: boolean | null
           profile_visibility?: string | null
           progress_sharing?: string | null
+          resilience_bonus_earned?: number | null
           strengths?: string[] | null
           updated_at?: string
           user_id: string
@@ -791,10 +845,12 @@ export type Database = {
           id?: string
           interests?: string[] | null
           is_self_registered?: boolean
+          notification_settings?: Json | null
           onboarding_complete?: boolean
           password_set?: boolean | null
           profile_visibility?: string | null
           progress_sharing?: string | null
+          resilience_bonus_earned?: number | null
           strengths?: string[] | null
           updated_at?: string
           user_id?: string
@@ -1012,6 +1068,7 @@ export type Database = {
       }
       steps: {
         Row: {
+          completion_method: string | null
           completion_notes: string | null
           completion_streak: number | null
           created_at: string
@@ -1019,6 +1076,7 @@ export type Database = {
           due_date: string | null
           estimated_effort_min: number | null
           explainer: string | null
+          friction_score: number | null
           goal_id: string
           id: string
           independence_rating: number | null
@@ -1026,6 +1084,7 @@ export type Database = {
           is_planned: boolean | null
           is_required: boolean
           is_supporter_step: boolean
+          last_deferred_at: string | null
           last_skipped_date: string | null
           notes: string | null
           order_index: number
@@ -1036,6 +1095,7 @@ export type Database = {
           quality_rating: number | null
           skip_count: number | null
           skip_reasons: Json | null
+          snooze_count: number | null
           status: string
           step_type: string | null
           title: string
@@ -1043,6 +1103,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          completion_method?: string | null
           completion_notes?: string | null
           completion_streak?: number | null
           created_at?: string
@@ -1050,6 +1111,7 @@ export type Database = {
           due_date?: string | null
           estimated_effort_min?: number | null
           explainer?: string | null
+          friction_score?: number | null
           goal_id: string
           id?: string
           independence_rating?: number | null
@@ -1057,6 +1119,7 @@ export type Database = {
           is_planned?: boolean | null
           is_required?: boolean
           is_supporter_step?: boolean
+          last_deferred_at?: string | null
           last_skipped_date?: string | null
           notes?: string | null
           order_index?: number
@@ -1067,6 +1130,7 @@ export type Database = {
           quality_rating?: number | null
           skip_count?: number | null
           skip_reasons?: Json | null
+          snooze_count?: number | null
           status?: string
           step_type?: string | null
           title: string
@@ -1074,6 +1138,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          completion_method?: string | null
           completion_notes?: string | null
           completion_streak?: number | null
           created_at?: string
@@ -1081,6 +1146,7 @@ export type Database = {
           due_date?: string | null
           estimated_effort_min?: number | null
           explainer?: string | null
+          friction_score?: number | null
           goal_id?: string
           id?: string
           independence_rating?: number | null
@@ -1088,6 +1154,7 @@ export type Database = {
           is_planned?: boolean | null
           is_required?: boolean
           is_supporter_step?: boolean
+          last_deferred_at?: string | null
           last_skipped_date?: string | null
           notes?: string | null
           order_index?: number
@@ -1098,6 +1165,7 @@ export type Database = {
           quality_rating?: number | null
           skip_count?: number | null
           skip_reasons?: Json | null
+          snooze_count?: number | null
           status?: string
           step_type?: string | null
           title?: string
@@ -1118,6 +1186,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
+          created_by: string | null
           description: string | null
           due_date: string | null
           id: string
@@ -1131,6 +1200,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -1144,6 +1214,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -1553,6 +1624,10 @@ export type Database = {
           success: boolean
         }[]
       }
+      award_resilience_bonus: {
+        Args: { p_base_points: number; p_step_id: string; p_user_id: string }
+        Returns: number
+      }
       calculate_step_points: {
         Args: { goal_domain?: string; step_notes?: string; step_title: string }
         Returns: number
@@ -1820,6 +1895,7 @@ export type Database = {
           circle_id: string
         }[]
       }
+      increment_friction_score: { Args: { p_step_id: string }; Returns: number }
       process_redemption_approval: {
         Args: { p_redemption_id: string }
         Returns: undefined
