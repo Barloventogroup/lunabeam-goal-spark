@@ -957,6 +957,59 @@ export type Database = {
         }
         Relationships: []
       }
+      step_check_ins: {
+        Row: {
+          check_in_type: string
+          checked_in_at: string
+          completed: boolean
+          created_at: string
+          deferred_reason: string | null
+          difficulty_rating: string | null
+          id: string
+          initiated_before_checkin: boolean | null
+          source: string
+          step_id: string
+          user_id: string
+          was_on_time: boolean | null
+        }
+        Insert: {
+          check_in_type: string
+          checked_in_at?: string
+          completed?: boolean
+          created_at?: string
+          deferred_reason?: string | null
+          difficulty_rating?: string | null
+          id?: string
+          initiated_before_checkin?: boolean | null
+          source?: string
+          step_id: string
+          user_id: string
+          was_on_time?: boolean | null
+        }
+        Update: {
+          check_in_type?: string
+          checked_in_at?: string
+          completed?: boolean
+          created_at?: string
+          deferred_reason?: string | null
+          difficulty_rating?: string | null
+          id?: string
+          initiated_before_checkin?: boolean | null
+          source?: string
+          step_id?: string
+          user_id?: string
+          was_on_time?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "step_check_ins_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       steps: {
         Row: {
           completion_notes: string | null
