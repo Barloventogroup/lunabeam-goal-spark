@@ -290,6 +290,7 @@ export interface Substep {
   points_awarded: number;
   created_at: string;
   updated_at: string;
+  due_date?: string;
 }
 
 export interface PointsLogEntry {

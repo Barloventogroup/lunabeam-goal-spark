@@ -1046,6 +1046,7 @@ export type Database = {
           completed_at: string | null
           created_at: string
           description: string | null
+          due_date: string | null
           id: string
           initiated_at: string | null
           is_planned: boolean | null
@@ -1058,6 +1059,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           description?: string | null
+          due_date?: string | null
           id?: string
           initiated_at?: string | null
           is_planned?: boolean | null
@@ -1070,6 +1072,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           description?: string | null
+          due_date?: string | null
           id?: string
           initiated_at?: string | null
           is_planned?: boolean | null
@@ -1404,10 +1407,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      accept_invite_by_token: {
-        Args: { _token: string }
-        Returns: Json
-      }
+      accept_invite_by_token: { Args: { _token: string }; Returns: Json }
       accept_supporter_invite_secure: {
         Args: { _invite_token: string }
         Returns: Json
@@ -1545,9 +1545,36 @@ export type Database = {
         }
         Returns: string
       }
-      create_supporter_invite_secure: {
-        Args:
-          | {
+      create_supporter_invite_secure:
+        | {
+            Args: {
+              p_expires_at?: string
+              p_individual_id: string
+              p_invitee_email: string
+              p_invitee_name?: string
+              p_message?: string
+              p_permission_level?: Database["public"]["Enums"]["permission_level"]
+              p_role?: Database["public"]["Enums"]["user_role"]
+              p_specific_goals?: string[]
+            }
+            Returns: {
+              created_at: string
+              expires_at: string
+              id: string
+              individual_id: string
+              invite_token: string
+              invitee_email: string
+              invitee_name: string
+              inviter_id: string
+              message: string
+              permission_level: Database["public"]["Enums"]["permission_level"]
+              role: Database["public"]["Enums"]["user_role"]
+              specific_goals: string[]
+              status: Database["public"]["Enums"]["invite_status"]
+            }[]
+          }
+        | {
+            Args: {
               p_expires_at?: string
               p_individual_id: string
               p_invitee_email: string
@@ -1558,32 +1585,23 @@ export type Database = {
               p_role?: Database["public"]["Enums"]["user_role"]
               p_specific_goals?: string[]
             }
-          | {
-              p_expires_at?: string
-              p_individual_id: string
-              p_invitee_email: string
-              p_invitee_name?: string
-              p_message?: string
-              p_permission_level?: Database["public"]["Enums"]["permission_level"]
-              p_role?: Database["public"]["Enums"]["user_role"]
-              p_specific_goals?: string[]
-            }
-        Returns: {
-          created_at: string
-          expires_at: string
-          id: string
-          individual_id: string
-          invite_token: string
-          invitee_email: string
-          invitee_name: string
-          inviter_id: string
-          message: string
-          permission_level: Database["public"]["Enums"]["permission_level"]
-          role: Database["public"]["Enums"]["user_role"]
-          specific_goals: string[]
-          status: Database["public"]["Enums"]["invite_status"]
-        }[]
-      }
+            Returns: {
+              created_at: string
+              expires_at: string
+              id: string
+              individual_id: string
+              invite_token: string
+              invitee_email: string
+              invitee_name: string
+              inviter_id: string
+              message: string
+              permission_level: Database["public"]["Enums"]["permission_level"]
+              role: Database["public"]["Enums"]["user_role"]
+              specific_goals: string[]
+              status: Database["public"]["Enums"]["invite_status"]
+              supporter_setup_token: string
+            }[]
+          }
       delete_user_safely: {
         Args: { user_id_to_delete: string }
         Returns: boolean
@@ -1596,10 +1614,7 @@ export type Database = {
         Args: { p_request_id: string }
         Returns: undefined
       }
-      get_goal_completion_bonus: {
-        Args: { category: string }
-        Returns: number
-      }
+      get_goal_completion_bonus: { Args: { category: string }; Returns: number }
       get_invite_by_token: {
         Args: { _token: string }
         Returns: {
@@ -1642,7 +1657,7 @@ export type Database = {
         }[]
       }
       get_my_provisioned_individuals: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           first_name: string
           status: Database["public"]["Enums"]["invite_status"]
@@ -1650,7 +1665,7 @@ export type Database = {
         }[]
       }
       get_my_received_invites: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           expires_at: string
@@ -1665,7 +1680,7 @@ export type Database = {
         }[]
       }
       get_my_sent_invites: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           expires_at: string
@@ -1697,7 +1712,7 @@ export type Database = {
         }[]
       }
       get_profiles_created_by_me: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           account_status: Database["public"]["Enums"]["account_status"]
           avatar_url: string
@@ -1721,13 +1736,13 @@ export type Database = {
         }[]
       }
       get_user_member_circles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           circle_id: string
         }[]
       }
       get_user_owned_circles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           circle_id: string
         }[]
@@ -1749,20 +1764,26 @@ export type Database = {
           individual_id: string
         }[]
       }
-      provision_individual_direct: {
-        Args:
-          | {
+      provision_individual_direct:
+        | {
+            Args: { p_first_name: string; p_user_type?: string }
+            Returns: {
+              individual_id: string
+              placeholder_email: string
+            }[]
+          }
+        | {
+            Args: {
               p_comm_pref?: string
               p_first_name: string
               p_interests?: string[]
               p_strengths?: string[]
             }
-          | { p_first_name: string; p_user_type?: string }
-        Returns: {
-          individual_id: string
-          placeholder_email: string
-        }[]
-      }
+            Returns: {
+              individual_id: string
+              placeholder_email: string
+            }[]
+          }
     }
     Enums: {
       account_status: "active" | "pending_user_consent" | "user_claimed"

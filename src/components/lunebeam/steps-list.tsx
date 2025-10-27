@@ -113,6 +113,7 @@ export const StepsList: React.FC<StepsListProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
   const [checkInStep, setCheckInStep] = useState<Step | null>(null);
+  const [checkInSubstep, setCheckInSubstep] = useState<{ substep: Substep; stepId: string } | null>(null);
   // const [showFireworks, setShowFireworks] = useState(false);
   // const [showSuccessCheck, setShowSuccessCheck] = useState(false);
   const [showSetupSteps, setShowSetupSteps] = useState(true);
@@ -856,8 +857,22 @@ export const StepsList: React.FC<StepsListProps> = ({
   };
 
   const handleCompleteSubstep = async (substepId: string, stepId: string) => {
+    // Don't complete immediately - open modal first to get user confirmation
+    const substeps = substepsMap[stepId] || [];
+    const substep = substeps.find(s => s.id === substepId);
+    if (substep) {
+      setCheckInSubstep({ substep, stepId });
+    }
+  };
+
+  const handleSubstepCheckInComplete = async (difficulty?: 'easy' | 'medium' | 'hard') => {
+    if (!checkInSubstep) return;
+    
+    const { substep, stepId } = checkInSubstep;
+    
     try {
-      await pointsService.completeSubstep(substepId);
+      // NOW complete the substep after user confirmation
+      await pointsService.completeSubstep(substep.id);
       
       // Refresh substeps for this step
       const substeps = dedupeSubsteps(await pointsService.getSubsteps(stepId));
@@ -866,22 +881,17 @@ export const StepsList: React.FC<StepsListProps> = ({
       // Check if all substeps are now completed
       const allCompleted = substeps.every(s => s.completed_at !== null);
       if (allCompleted) {
-        // Trigger fireworks animation for substep completion - disabled
-        // setShowFireworks(true);
-        
         // Auto-complete the main step
         const step = steps.find(s => s.id === stepId);
         if (step && step.status !== 'done') {
-          await handleMarkComplete(stepId);
+          await stepsService.completeStep(stepId);
+          onStepsChange?.();
           toast({
             title: "Step completed!",
             description: "All substeps finished - main step marked complete!",
           });
         }
       } else {
-        // Trigger fireworks animation for individual substep completion - disabled
-        // setShowFireworks(true);
-        
         toast({
           title: "Substep completed!",
           description: "Great progress on breaking down this step.",
@@ -891,7 +901,7 @@ export const StepsList: React.FC<StepsListProps> = ({
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           // Email
-          await notificationsService.notifyStepComplete(user.id, goal.id, stepId, substepId);
+          await notificationsService.notifyStepComplete(user.id, goal.id, stepId, substep.id);
 
           // In-app notifications to admin supporters
           console.log('Fetching admin supporters for substep completion notification...');
@@ -902,9 +912,7 @@ export const StepsList: React.FC<StepsListProps> = ({
             .eq('is_admin', true);
 
           if (adminSupporters && adminSupporters.length > 0) {
-            const stepTitle = steps.find(s => s.id === stepId)?.title || 'a step';
-            const sub = (substepsMap[stepId] || []).find(s => s.id === substepId);
-            const substepTitle = sub?.title || 'a substep';
+            const substepTitle = substep.title || 'a substep';
             const userName = await supabase
               .from('profiles')
               .select('first_name')
@@ -914,28 +922,24 @@ export const StepsList: React.FC<StepsListProps> = ({
 
             for (const admin of adminSupporters) {
               try {
-                await notificationsService.createStepCompletionNotification(admin.supporter_id, {
-                  individual_name: userName,
-                  step_title: `${stepTitle} - ${substepTitle}`,
-                  goal_title: goal.title
+                await notificationsService.createNotification({
+                  user_id: admin.supporter_id,
+                  type: 'substep_complete',
+                  title: `${userName} completed a substep`,
+                  message: `${substepTitle} in "${goal.title}"`,
+                  data: { 
+                    goal_id: goal.id, 
+                    step_id: stepId,
+                    substep_id: substep.id
+                  }
                 });
               } catch (err) {
                 console.error('Failed to create substep completion notification for admin:', admin.supporter_id, err);
               }
             }
-          } else {
-            console.log('No admin supporters found for substep completion notifications');
           }
         }
       }
-
-      // Trigger parent component refresh to update counters
-      if (onStepsChange) {
-        onStepsChange();
-      }
-
-      // Trigger points refresh after substep completion
-      window.dispatchEvent(new CustomEvent('pointsUpdated'));
     } catch (error) {
       console.error('Error completing substep:', error);
       toast({
@@ -943,6 +947,63 @@ export const StepsList: React.FC<StepsListProps> = ({
         description: "Failed to complete substep. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setCheckInSubstep(null);
+    }
+  };
+
+  const handleSubstepCheckInDefer = async (action: 'split' | 'tomorrow') => {
+    if (!checkInSubstep) return;
+    
+    const { substep, stepId } = checkInSubstep;
+    
+    if (action === 'split') {
+      // Open step chat for splitting the substep further
+      const substepAsStep: Step = {
+        id: substep.id,
+        title: substep.title,
+        goal_id: goal.id,
+        status: 'doing',
+        order_index: 0,
+        created_at: substep.created_at,
+        updated_at: substep.updated_at,
+        notes: substep.description,
+        type: 'action',
+        dependency_step_ids: [],
+        is_required: true
+      };
+      setCurrentHelpStep(substepAsStep);
+      setHelpModalOpen(true);
+      setCheckInSubstep(null);
+    } else if (action === 'tomorrow') {
+      // Reschedule substep to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      try {
+        await supabase
+          .from('substeps')
+          .update({ due_date: tomorrow.toISOString().split('T')[0] })
+          .eq('id', substep.id);
+        
+        // Refresh substeps
+        const updatedSubsteps = dedupeSubsteps(await pointsService.getSubsteps(stepId));
+        setSubstepsMap(prev => ({ ...prev, [stepId]: updatedSubsteps }));
+        
+        toast({
+          title: "Substep rescheduled",
+          description: "We'll remind you tomorrow"
+        });
+      } catch (error) {
+        console.error('Error rescheduling substep:', error);
+        toast({
+          title: "Error",
+          description: "Failed to reschedule substep. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setCheckInSubstep(null);
+      }
     }
   };
 
@@ -1630,6 +1691,31 @@ export const StepsList: React.FC<StepsListProps> = ({
           onClose={() => setCheckInStep(null)}
           onComplete={handleCheckInComplete}
           onDefer={handleCheckInDefer}
+        />
+      )}
+
+      {checkInSubstep && (
+        <OneCardCheckIn
+          step={{
+            id: checkInSubstep.substep.id,
+            title: checkInSubstep.substep.title,
+            goal_id: goal.id,
+            status: 'doing',
+            order_index: 0,
+            created_at: checkInSubstep.substep.created_at,
+            updated_at: checkInSubstep.substep.updated_at,
+            notes: checkInSubstep.substep.description,
+            type: 'action',
+            dependency_step_ids: [],
+            is_required: true,
+            due_date: checkInSubstep.substep.due_date,
+            points_awarded: checkInSubstep.substep.points_awarded
+          }}
+          goal={goal}
+          isOpen={true}
+          onClose={() => setCheckInSubstep(null)}
+          onComplete={handleSubstepCheckInComplete}
+          onDefer={handleSubstepCheckInDefer}
         />
       )}
 
