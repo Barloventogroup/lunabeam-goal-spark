@@ -349,6 +349,21 @@
   body.keyboard-open .app-shell {
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--kb-height));
   }
+
+  /* iOS-specific button touch improvements */
+  button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent iOS double-tap zoom on interactive elements */
+  .touch-manipulation {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
 }
 
 @layer utilities {

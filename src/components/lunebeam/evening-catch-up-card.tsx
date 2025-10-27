@@ -113,6 +113,8 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
   };
 
   const handleDone = async (stepId: string, index: number) => {
+    console.log('[EveningCatchUp] Done button clicked:', stepId);
+    
     if (!isOnline) {
       toast({
         title: "Offline",
@@ -214,24 +216,18 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
   };
 
   const handleTomorrow = async (stepId: string) => {
+    console.log('[EveningCatchUp] Tomorrow button clicked:', stepId);
     setIsProcessing(true);
 
     try {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const { supabase } = await import('@/integrations/supabase/client');
-      await supabase
-        .from('steps')
-        .update({ due_date: tomorrow.toISOString().split('T')[0] })
-        .eq('id', stepId);
-
+      const result = await checkInService.rescheduleToTomorrow(stepId);
+      
       // Remove from missed steps
       setMissedSteps(prev => prev.filter(item => item.step.id !== stepId));
 
       toast({
         title: "Step rescheduled",
-        description: "We'll remind you tomorrow"
+        description: result.confirmation_message
       });
     } catch (error) {
       console.error('Failed to reschedule:', error);
@@ -433,13 +429,18 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
                     </span>
 
                     {/* Action buttons */}
-                    <div className="flex gap-2 flex-shrink-0">
+                    <div className="flex gap-4 flex-shrink-0 py-2 px-2">
                       <Button
                         size="sm"
-                        className="h-8 px-3 text-sm bg-green-500 hover:bg-green-600 text-white"
-                        onClick={() => handleDone(item.step.id, index)}
+                        className="h-10 min-w-[100px] px-4 text-sm bg-green-500 hover:bg-green-600 active:scale-95 active:bg-green-700 text-white transition-transform touch-manipulation"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleDone(item.step.id, index);
+                        }}
                         disabled={rowStates[item.step.id] === 'completing' || !isOnline}
                         aria-label={`Complete ${item.step.title}`}
+                        style={{ touchAction: 'manipulation' }}
                       >
                         {rowStates[item.step.id] === 'completing' ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
@@ -451,10 +452,15 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
                       <Button
                         size="sm"
                         variant="outline"
-                        className="h-8 px-3 text-sm"
-                        onClick={() => toggleExpand(item.step.id)}
+                        className="h-10 min-w-[100px] px-4 text-sm active:scale-95 transition-transform touch-manipulation"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          toggleExpand(item.step.id);
+                        }}
                         aria-label={`Expand options for ${item.step.title}`}
                         aria-expanded={rowStates[item.step.id] === 'expanded'}
+                        style={{ touchAction: 'manipulation' }}
                       >
                         Not yet ▼
                       </Button>
@@ -464,12 +470,18 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
                   {/* Expanded accordion content */}
                   <Collapsible open={rowStates[item.step.id] === 'expanded'}>
                     <CollapsibleContent className="pt-3 pl-8">
-                      <div className="flex gap-2">
+                      <div className="flex gap-4">
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleSplit(item.step, item.goal)}
+                          className="h-10 min-w-[100px] active:scale-95 transition-transform touch-manipulation"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleSplit(item.step, item.goal);
+                          }}
                           disabled={isProcessing || !isOnline}
+                          style={{ touchAction: 'manipulation' }}
                         >
                           <Scissors className="h-3 w-3 mr-1" />
                           Split
@@ -477,8 +489,14 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleTomorrow(item.step.id)}
+                          className="h-10 min-w-[100px] active:scale-95 transition-transform touch-manipulation"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleTomorrow(item.step.id);
+                          }}
                           disabled={isProcessing || !isOnline}
+                          style={{ touchAction: 'manipulation' }}
                         >
                           <Calendar className="h-3 w-3 mr-1" />
                           Tomorrow

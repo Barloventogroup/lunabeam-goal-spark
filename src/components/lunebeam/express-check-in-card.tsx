@@ -96,6 +96,7 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
   }, [currentState]);
 
   const handleDone = async () => {
+    console.log('[ExpressCheckIn] Done button clicked:', step.id, mode);
     setCurrentState('completing');
     
     try {
@@ -239,22 +240,15 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
         setCurrentState('deferral_actions');
       }
     } else if (action === 'tomorrow') {
+      console.log('[ExpressCheckIn] Tomorrow action triggered:', step.id);
       setCurrentState('reschedule');
       
       try {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        const { error } = await supabase
-          .from('steps')
-          .update({ due_date: tomorrow.toISOString().split('T')[0] })
-          .eq('id', step.id);
-          
-        if (error) throw error;
+        const result = await checkInService.rescheduleToTomorrow(step.id);
         
         toast({
           title: "Step rescheduled",
-          description: "We'll remind you tomorrow"
+          description: result.confirmation_message
         });
         
         onComplete();
@@ -383,10 +377,15 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
         >
           <Button
             size="lg"
-            className="w-full h-14 text-base font-medium bg-green-500 hover:bg-green-600 text-white rounded-xl"
-            onClick={handleDone}
+            className="w-full h-14 text-base font-medium bg-green-500 hover:bg-green-600 active:scale-95 active:bg-green-700 text-white rounded-xl transition-transform touch-manipulation"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              handleDone();
+            }}
             disabled={isProcessing}
             aria-label={step.status === 'todo' ? "Mark step as complete" : "Mark step as finished"}
+            style={{ touchAction: 'manipulation' }}
           >
             {getPrimaryButtonLabel()}
           </Button>
@@ -400,10 +399,15 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
           <Button
             size="lg"
             variant="secondary"
-            className="w-full h-14 text-base font-medium bg-gray-400 hover:bg-gray-500 text-white rounded-xl"
-            onClick={handleNotYet}
+            className="w-full h-14 text-base font-medium bg-gray-400 hover:bg-gray-500 active:scale-95 text-white rounded-xl transition-transform touch-manipulation"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              handleNotYet();
+            }}
             disabled={isProcessing}
             aria-label="Pause or defer this step"
+            style={{ touchAction: 'manipulation' }}
           >
             {getSecondaryButtonLabel()}
           </Button>

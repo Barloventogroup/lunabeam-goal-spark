@@ -390,6 +390,62 @@ export const checkInService = {
     if (error) throw error;
   },
 
+  // Reschedule step to tomorrow
+  async rescheduleToTomorrow(stepId: string): Promise<{ success: boolean; confirmation_message: string; new_date: string }> {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) throw new Error('User not authenticated');
+
+    // Get current step and goal
+    const { data: step, error: stepError } = await supabase
+      .from('steps')
+      .select('*, goals(*)')
+      .eq('id', stepId)
+      .single();
+
+    if (stepError) throw stepError;
+    if (!step) throw new Error('Step not found');
+
+    // Calculate tomorrow's date
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const newDueDate = tomorrow.toISOString().split('T')[0];
+
+    // Update step
+    const { error: updateError } = await supabase
+      .from('steps')
+      .update({ 
+        due_date: newDueDate,
+        last_deferred_at: new Date().toISOString(),
+        snooze_count: (step.snooze_count || 0) + 1,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', stepId);
+
+    if (updateError) throw updateError;
+
+    // Check if we need to increment friction score (2+ snoozes)
+    if ((step.snooze_count || 0) >= 1) {
+      try {
+        await supabase.rpc('increment_friction_score', { p_step_id: stepId });
+      } catch (error) {
+        console.error('Failed to increment friction score:', error);
+        // Don't fail the whole operation if friction scoring fails
+      }
+    }
+
+    const formattedDate = tomorrow.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+
+    return {
+      success: true,
+      confirmation_message: `We'll remind you tomorrow (${formattedDate})`,
+      new_date: newDueDate
+    };
+  },
+
   // Get missed steps for evening catch-up
   async getMissedSteps(userId: string, limit = 5): Promise<Array<{ step: Step; goal: Goal; dueDate: Date }>> {
     const today = new Date();
