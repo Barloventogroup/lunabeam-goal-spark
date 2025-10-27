@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut } from 'lucide-react';
+import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut, Clock } from 'lucide-react';
 import { Button } from '../ui/button';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -54,6 +54,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
     upcomingSteps: any[];
   }>({ todaysSteps: [], overdueSteps: [], upcomingSteps: [] });
   const [showCatchUpCard, setShowCatchUpCard] = useState(false);
+  const [forceShowCatchUp, setForceShowCatchUp] = useState(false);
 
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -133,6 +134,18 @@ export const TabHome: React.FC<TabHomeProps> = ({
       checkCatchUpVisibility();
     }
   }, [profileLoaded, profile, user]);
+
+  const handleReopenCatchUp = () => {
+    // Clear dismissal flag
+    localStorage.removeItem('dismissed_catch_up_date');
+    setForceShowCatchUp(true);
+    setShowCatchUpCard(true);
+    
+    toast({
+      title: "Evening catch-up reopened",
+      description: "Review your missed steps below"
+    });
+  };
 
   // Add effect to listen for tab visibility changes and refresh data
   useEffect(() => {
@@ -440,6 +453,17 @@ export const TabHome: React.FC<TabHomeProps> = ({
               <span className="text-sm font-medium">{pointsSummary?.totalPoints || 0}</span>
             </div>
             
+            {/* Evening Catch-up Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReopenCatchUp}
+              className="h-8 text-xs"
+            >
+              <Clock className="h-3 w-3 mr-1" />
+              Catch-up
+            </Button>
+            
             {/* Sign Out Button */}
             <Button
               variant="ghost"
@@ -502,12 +526,17 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {showCatchUpCard && user && (
             <EveningCatchUpCard
               userId={user.id}
+              forceShow={forceShowCatchUp}
               onAllComplete={() => {
                 toast({ title: 'Great job catching up!' });
+                setForceShowCatchUp(false);
                 loadPoints();
-                refetchGoals();
+                loadGoals();
               }}
-              onDismiss={() => setShowCatchUpCard(false)}
+              onDismiss={() => {
+                setShowCatchUpCard(false);
+                setForceShowCatchUp(false);
+              }}
             />
           )}
 

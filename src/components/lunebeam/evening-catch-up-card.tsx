@@ -7,6 +7,7 @@ import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Fireworks } from '@/components/ui/fireworks';
+import { ExpressCheckInCard } from '@/components/lunebeam/express-check-in-card';
 import { checkInService } from '@/services/checkInService';
 import { cn } from '@/lib/utils';
 import type { Step, Goal } from '@/types';
@@ -21,6 +22,7 @@ interface EveningCatchUpCardProps {
   userId: string;
   onAllComplete?: () => void;
   onDismiss?: () => void;
+  forceShow?: boolean;
 }
 
 type RowState = 'idle' | 'completing' | 'completed' | 'expanded';
@@ -28,7 +30,8 @@ type RowState = 'idle' | 'completing' | 'completed' | 'expanded';
 export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
   userId,
   onAllComplete,
-  onDismiss
+  onDismiss,
+  forceShow = false
 }) => {
   const [missedSteps, setMissedSteps] = useState<MissedStepItem[]>([]);
   const [rowStates, setRowStates] = useState<Record<string, RowState>>({});
@@ -36,6 +39,7 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [splitModalStep, setSplitModalStep] = useState<{ step: Step; goal: Goal } | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     title: string;
@@ -65,6 +69,17 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
     const loadMissedSteps = async () => {
       try {
         setFetchError(null);
+        
+        // If forceShow is true, skip dismissal check
+        if (!forceShow) {
+          const dismissedDate = localStorage.getItem('dismissed_catch_up_date');
+          const today = new Date().toISOString().split('T')[0];
+          if (dismissedDate === today) {
+            onDismiss?.();
+            return;
+          }
+        }
+        
         const steps = await checkInService.getMissedSteps(userId);
         setMissedSteps(steps);
         
@@ -81,7 +96,7 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
     };
 
     loadMissedSteps();
-  }, [userId]);
+  }, [userId, forceShow, onDismiss]);
 
   const handleDismiss = () => {
     // Store dismissal for tonight
@@ -230,6 +245,12 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
     }
   };
 
+  const handleSplit = (step: Step, goal: Goal) => {
+    setSplitModalStep({ step, goal });
+    // Collapse accordion after opening split
+    setRowStates(prev => ({ ...prev, [step.id]: 'idle' }));
+  };
+
   const handleSkipAll = () => {
     setConfirmDialog({
       open: true,
@@ -250,6 +271,55 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
       onCancel: () => setConfirmDialog(null)
     });
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent, stepId: string, index: number) => {
+    const currentIndex = missedSteps.findIndex(item => item.step.id === stepId);
+    
+    switch (e.key) {
+      case 'Enter':
+        e.preventDefault();
+        handleDone(stepId, index);
+        break;
+        
+      case 'Escape':
+        e.preventDefault();
+        handleDismiss();
+        break;
+        
+      case 'ArrowDown':
+        e.preventDefault();
+        if (currentIndex < missedSteps.length - 1) {
+          const nextStepId = missedSteps[currentIndex + 1].step.id;
+          const nextElement = document.getElementById(`step-row-${nextStepId}`);
+          nextElement?.focus();
+        }
+        break;
+        
+      case 'ArrowUp':
+        e.preventDefault();
+        if (currentIndex > 0) {
+          const prevStepId = missedSteps[currentIndex - 1].step.id;
+          const prevElement = document.getElementById(`step-row-${prevStepId}`);
+          prevElement?.focus();
+        }
+        break;
+        
+      case ' ':
+        e.preventDefault();
+        toggleExpand(stepId);
+        break;
+    }
+  };
+
+  // Auto-focus first row when card appears
+  useEffect(() => {
+    if (missedSteps.length > 0) {
+      const firstRowId = `step-row-${missedSteps[0].step.id}`;
+      setTimeout(() => {
+        document.getElementById(firstRowId)?.focus();
+      }, 500);
+    }
+  }, [missedSteps.length]);
 
   // Show error state
   if (fetchError) {
@@ -286,6 +356,9 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
                 <CardTitle className="text-lg">Quick check-in</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   {missedSteps.length} steps from today
+                </p>
+                <p className="text-xs text-purple-600 mt-1">
+                  Use ↑↓ arrows to navigate, Enter to complete, Space to expand
                 </p>
               </div>
             </div>
@@ -334,7 +407,11 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
                 >
                   <div
                     id={`step-row-${item.step.id}`}
-                    className="flex items-center gap-3 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded py-2"
+                    tabIndex={0}
+                    onKeyDown={(e) => handleKeyDown(e, item.step.id, index)}
+                    className="flex items-center gap-3 py-2 px-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-purple-100 transition-colors cursor-pointer"
+                    role="row"
+                    aria-label={`Step: ${item.step.title}`}
                   >
                     {/* Checkbox icon */}
                     <div
@@ -391,6 +468,15 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => handleSplit(item.step, item.goal)}
+                          disabled={isProcessing || !isOnline}
+                        >
+                          <Scissors className="h-3 w-3 mr-1" />
+                          Split
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => handleTomorrow(item.step.id)}
                           disabled={isProcessing || !isOnline}
                         >
@@ -430,6 +516,27 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
         <Fireworks
           isVisible={showConfetti}
           onComplete={() => setShowConfetti(false)}
+        />
+      )}
+
+      {/* Split modal */}
+      {splitModalStep && (
+        <ExpressCheckInCard
+          step={splitModalStep.step}
+          goal={splitModalStep.goal}
+          isOpen={!!splitModalStep}
+          onClose={() => setSplitModalStep(null)}
+          onComplete={() => {
+            // Remove from missed steps list after split completion
+            setMissedSteps(prev => prev.filter(item => item.step.id !== splitModalStep.step.id));
+            setSplitModalStep(null);
+            
+            toast({
+              title: "Step split successfully",
+              description: "Smaller steps have been added to your list"
+            });
+          }}
+          mode="modal"
         />
       )}
 
