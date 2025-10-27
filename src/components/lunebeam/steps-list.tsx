@@ -1622,14 +1622,16 @@ export const StepsList: React.FC<StepsListProps> = ({
         />
       )}
 
-      <OneCardCheckIn
-        step={checkInStep!}
-        goal={goal}
-        isOpen={!!checkInStep}
-        onClose={() => setCheckInStep(null)}
-        onComplete={handleCheckInComplete}
-        onDefer={handleCheckInDefer}
-      />
+      {checkInStep && (
+        <OneCardCheckIn
+          step={checkInStep}
+          goal={goal}
+          isOpen={true}
+          onClose={() => setCheckInStep(null)}
+          onComplete={handleCheckInComplete}
+          onDefer={handleCheckInDefer}
+        />
+      )}
 
       {/* Fireworks Animation - Temporarily disabled */}
       {/* <Fireworks 

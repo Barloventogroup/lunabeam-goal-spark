@@ -41,6 +41,11 @@ export const OneCardCheckIn: React.FC<OneCardCheckInProps> = ({
   const difficultyTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Guard: Don't render if step is null
+  if (!step || !goal) {
+    return null;
+  }
+
   // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen) {
