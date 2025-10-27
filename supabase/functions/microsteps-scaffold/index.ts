@@ -685,8 +685,9 @@ Deno.serve(async (req) => {
         }
       }
     }
+  }
     
-    // Check if we got valid steps from either AI layer
+  // Check if we got valid steps from either AI layer
     if (!microSteps) {
       console.error('❌ Both AI layers failed to generate valid micro-steps');
       return new Response(
