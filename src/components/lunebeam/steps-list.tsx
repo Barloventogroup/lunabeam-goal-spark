@@ -20,7 +20,7 @@ import { pointsService } from '@/services/pointsService';
 import { BlockedStepGuidance } from './blocked-step-guidance';
 import { StepChatModal } from './step-chat-modal';
 import { StepEditModal } from './step-edit-modal';
-import { OneCardCheckIn } from './one-card-check-in';
+import { ExpressCheckInCard } from './express-check-in-card';
 import { useToast } from '@/hooks/use-toast';
 import { notificationsService } from '@/services/notificationsService';
 import { supabase } from '@/integrations/supabase/client';
@@ -1684,18 +1684,18 @@ export const StepsList: React.FC<StepsListProps> = ({
       )}
 
       {checkInStep && (
-        <OneCardCheckIn
+        <ExpressCheckInCard
           step={checkInStep}
           goal={goal}
           isOpen={true}
           onClose={() => setCheckInStep(null)}
           onComplete={handleCheckInComplete}
-          onDefer={handleCheckInDefer}
+          mode="modal"
         />
       )}
 
       {checkInSubstep && (
-        <OneCardCheckIn
+        <ExpressCheckInCard
           step={{
             id: checkInSubstep.substep.id,
             title: checkInSubstep.substep.title,
@@ -1715,7 +1715,7 @@ export const StepsList: React.FC<StepsListProps> = ({
           isOpen={true}
           onClose={() => setCheckInSubstep(null)}
           onComplete={handleSubstepCheckInComplete}
-          onDefer={handleSubstepCheckInDefer}
+          mode="modal"
         />
       )}
 

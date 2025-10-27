@@ -326,5 +326,67 @@ export const checkInService = {
     if (error) throw error;
 
     return data || [];
+  },
+
+  // Create express check-in for step completion
+  async createExpressCheckIn(stepId: string, source: 'express' | 'modal' = 'express'): Promise<{ id: string; points: number }> {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) throw new Error('User not authenticated');
+
+    // Get the step and goal
+    const { data: step, error: stepError } = await supabase
+      .from('steps')
+      .select('*, goals(*)')
+      .eq('id', stepId)
+      .single();
+
+    if (stepError) throw stepError;
+    if (!step) throw new Error('Step not found');
+
+    // Create check-in record with source tracking
+    const { data: checkIn, error: checkInError } = await supabase
+      .from('check_ins')
+      .insert({
+        user_id: user.data.user.id,
+        goal_id: step.goal_id,
+        step_id: stepId,
+        date: new Date().toISOString().split('T')[0],
+        completed: true,
+        source: source,
+        confidence_1_5: 3, // Default medium confidence
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (checkInError) throw checkInError;
+
+    // Complete the step
+    const { error: updateError } = await supabase
+      .from('steps')
+      .update({ status: 'done', updated_at: new Date().toISOString() })
+      .eq('id', stepId);
+
+    if (updateError) throw updateError;
+
+    return { 
+      id: checkIn.id, 
+      points: step.points_awarded || 5
+    };
+  },
+
+  // Update check-in difficulty rating
+  async updateCheckInDifficulty(checkInId: string, difficulty: 'easy' | 'medium' | 'hard'): Promise<void> {
+    const confidenceMap = { easy: 5, medium: 3, hard: 1 };
+    
+    const { error } = await supabase
+      .from('check_ins')
+      .update({ 
+        confidence_1_5: confidenceMap[difficulty],
+        difficulty_rating: difficulty 
+      })
+      .eq('id', checkInId);
+
+    if (error) throw error;
   }
 };

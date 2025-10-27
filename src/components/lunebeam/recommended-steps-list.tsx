@@ -19,7 +19,7 @@ import { pointsService } from '@/services/pointsService';
 import { BlockedStepGuidance } from './blocked-step-guidance';
 import { StepChatModal } from './step-chat-modal';
 import { StepEditModal } from './step-edit-modal';
-import { OneCardCheckIn } from './one-card-check-in';
+import { ExpressCheckInCard } from './express-check-in-card';
 import { useToast } from '@/hooks/use-toast';
 import { notificationsService } from '@/services/notificationsService';
 import { supabase } from '@/integrations/supabase/client';
@@ -326,7 +326,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     }
   };
 
-  const handleCheckInComplete = async (difficulty?: 'easy' | 'medium' | 'hard') => {
+  const handleCheckInComplete = async () => {
     if (!checkInStep) return;
     
     const stepId = checkInStep.id;
@@ -335,17 +335,6 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     setAwaitingStepUpdate(stepId);
     
     try {
-      const result = await stepsService.completeStep(stepId);
-
-      const updatedSteps = steps.map(s =>
-        s.id === stepId ? { ...s, status: 'done' as StepStatus, updated_at: new Date().toISOString() } : s
-      );
-      if (onStepsUpdate) {
-        onStepsUpdate(updatedSteps, result.goal);
-      } else if (onStepsChange) {
-        onStepsChange();
-      }
-      
       // Refresh substeps
       const substepsPromises = steps.map(async (s) => {
         try {
@@ -368,148 +357,14 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
         return next;
       });
 
-      // setShowSuccessCheck(true);
-      // setTimeout(() => setShowSuccessCheck(false), 2000);
-
-      // Check if all planned steps are complete - count actual planned steps generated
-      const isHabitGoal = goal.frequency_per_week && goal.frequency_per_week > 0;
-      const expectedPlannedSteps = updatedSteps.filter(s => s.is_planned).length;
-      
-      const completedPlanned = updatedSteps.filter(s => s.is_planned && s.status === 'done').length;
-      const allPlannedComplete = completedPlanned >= expectedPlannedSteps;
-      
-      console.log(`Completion check: ${completedPlanned}/${expectedPlannedSteps} planned steps done, generation incomplete: ${generationIncomplete}`);
-      
-      // Check if goal is at or past its due date
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const goalDueDate = goal.due_date ? new Date(goal.due_date) : null;
-      const isAtOrPastEnd = goalDueDate ? today >= goalDueDate : false;
-      
-      if (allPlannedComplete && isAtOrPastEnd && !generationIncomplete) {
-        // Mark goal as completed
-        await supabase
-          .from('goals')
-          .update({ 
-            status: 'completed',
-            last_completed_date: new Date().toISOString().split('T')[0]
-          })
-          .eq('id', goal.id);
-        
-        toast({
-          title: "Goal completed! 🏆",
-          description: `Amazing work! You've completed "${goal.title}"!`,
-        });
-      } else if (allPlannedComplete && !isAtOrPastEnd) {
-        // Daily completion for habit goals - schedule next occurrence
-        const isHabitGoal = goal.frequency_per_week && goal.frequency_per_week > 0;
-        
-        if (isHabitGoal) {
-          // Fetch fresh goal data for accurate metrics
-          const { data: freshGoal } = await supabase
-            .from('goals')
-            .select('streak_count, progress_pct, frequency_per_week, duration_weeks')
-            .eq('id', goal.id)
-            .single();
-          
-          if (freshGoal) {
-            // Calculate metrics
-            const plannedDays = (freshGoal.frequency_per_week || 1) * (freshGoal.duration_weeks || 1);
-            const daysCompleted = Math.round((freshGoal.progress_pct / 100) * plannedDays);
-            
-            // Calculate points earned today
-            const stepPoints = result.step.points_awarded || 5;
-            const pointsEarnedToday = stepPoints;
-            
-            // Get tomorrow's scheduled time from existing steps
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(0, 0, 0, 0);
-            
-            const { data: tomorrowSteps } = await supabase
-              .from('steps')
-              .select('due_date')
-              .eq('goal_id', goal.id)
-              .gte('due_date', tomorrow.toISOString())
-              .order('due_date', { ascending: true })
-              .limit(1);
-            
-            const scheduledTime = tomorrowSteps && tomorrowSteps[0] 
-              ? new Date(tomorrowSteps[0].due_date).toLocaleTimeString('en-US', { 
-                  hour: 'numeric', 
-                  minute: '2-digit' 
-                })
-              : '';
-            
-            // Show enhanced toast
-            const { showDailyCompletionToast } = await import('./daily-completion-toast');
-            showDailyCompletionToast({
-              daysCompleted,
-              totalDays: plannedDays,
-              streak: freshGoal.streak_count || 0,
-              pointsEarnedToday,
-              scheduledTime,
-              goalTitle: goal.title
-            });
-          } else {
-            toast({
-              title: "Step completed!",
-              description: `Great job! You've completed this step.`,
-            });
-          }
-        } else {
-          toast({
-            title: "Step completed!",
-            description: `Great job! You've completed this step.`,
-          });
-        }
-      } else {
-        toast({
-          title: "Step completed!",
-          description: `Great job! You've completed this step.`,
-        });
+      // Trigger parent refresh
+      if (onStepsChange) {
+        onStepsChange();
       }
-
-      // Send notifications
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await notificationsService.notifyStepComplete(user.id, goal.id, stepId);
-
-        const { data: adminSupporters } = await supabase
-          .from('supporters')
-          .select('supporter_id')
-          .eq('individual_id', user.id)
-          .eq('is_admin', true);
-
-        if (adminSupporters && adminSupporters.length > 0) {
-          const stepTitle = steps.find(s => s.id === stepId)?.title || 'a step';
-          const userName = await supabase
-            .from('profiles')
-            .select('first_name')
-            .eq('user_id', user.id)
-            .maybeSingle()
-            .then(({ data }) => data?.first_name || 'User');
-
-          for (const admin of adminSupporters) {
-            try {
-              await notificationsService.createStepCompletionNotification(admin.supporter_id, {
-                individual_name: userName,
-                step_title: stepTitle,
-                goal_title: goal.title
-              });
-            } catch (err) {
-              console.error('Failed to create step completion notification for admin:', admin.supporter_id, err);
-            }
-          }
-        }
-      }
+      
+      setCheckInStep(null);
     } catch (error) {
-      console.error('Error completing step:', error);
-      toast({
-        title: "Error",
-        description: "Failed to complete step. Please try again.",
-        variant: "destructive",
-      });
+      console.error('Error refreshing after check-in:', error);
     } finally {
       setAwaitingStepUpdate(null);
     }
@@ -519,12 +374,10 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     if (!checkInStep) return;
     
     if (action === 'split') {
-      // Open step chat for splitting
       setCurrentHelpStep(checkInStep);
       setHelpModalOpen(true);
       setCheckInStep(null);
     } else if (action === 'tomorrow') {
-      // Reschedule step to tomorrow
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       await stepsService.updateStep(checkInStep.id, {
@@ -538,6 +391,24 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       
       setCheckInStep(null);
       onStepsChange?.();
+    }
+  };
+
+  const handleSkipStep = async (stepId: string) => {
+    if (awaitingStepUpdate === stepId) return;
+    setAwaitingStepUpdate(stepId);
+    try {
+      await stepsService.skipStep(stepId);
+      const updatedSteps = steps.map(s =>
+        s.id === stepId ? { ...s, status: 'skipped' as StepStatus } : s
+      );
+      onStepsUpdate?.(updatedSteps, goal);
+      toast({ title: "Step skipped" });
+    } catch (error) {
+      console.error('Error skipping step:', error);
+      toast({ title: "Error", description: "Failed to skip step", variant: "destructive" });
+    } finally {
+      setAwaitingStepUpdate(null);
     }
   };
 
@@ -1221,13 +1092,13 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
         )}
 
         {checkInStep && (
-          <OneCardCheckIn
+          <ExpressCheckInCard
             step={checkInStep}
             goal={goal}
             isOpen={true}
             onClose={() => setCheckInStep(null)}
             onComplete={handleCheckInComplete}
-            onDefer={handleCheckInDefer}
+            mode="modal"
           />
         )}
 

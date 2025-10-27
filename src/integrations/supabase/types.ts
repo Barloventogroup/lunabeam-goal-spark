@@ -190,48 +190,68 @@ export type Database = {
       }
       check_ins: {
         Row: {
+          completed: boolean | null
           confidence_1_5: number | null
           count_of_attempts: number | null
           created_at: string
           date: string
+          difficulty_rating: string | null
           evidence_attachments: string[] | null
           goal_id: string
           id: string
           minutes_spent: number | null
           reflection: string | null
           reflection_is_voice: boolean | null
+          source: string | null
+          step_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          completed?: boolean | null
           confidence_1_5?: number | null
           count_of_attempts?: number | null
           created_at?: string
           date?: string
+          difficulty_rating?: string | null
           evidence_attachments?: string[] | null
           goal_id: string
           id?: string
           minutes_spent?: number | null
           reflection?: string | null
           reflection_is_voice?: boolean | null
+          source?: string | null
+          step_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          completed?: boolean | null
           confidence_1_5?: number | null
           count_of_attempts?: number | null
           created_at?: string
           date?: string
+          difficulty_rating?: string | null
           evidence_attachments?: string[] | null
           goal_id?: string
           id?: string
           minutes_spent?: number | null
           reflection?: string | null
           reflection_is_voice?: boolean | null
+          source?: string | null
+          step_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "check_ins_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "steps"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       circle_invites: {
         Row: {
