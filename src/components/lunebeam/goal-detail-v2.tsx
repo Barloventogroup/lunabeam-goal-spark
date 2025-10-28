@@ -1501,6 +1501,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         <TabsContent value="steps" className="mt-4 px-4">
           {activeTab === 'steps' && (
             <div className="max-w-4xl mx-auto px-2 sm:px-4">
+              <div className="mb-6">
+                <h3 className="text-base font-semibold flex items-center gap-2">
+                  <span>✨</span>
+                  <span>Recommended Steps</span>
+                </h3>
+              </div>
               {generatingSteps ? (
               <Card>
                 <CardContent className="pt-6">
