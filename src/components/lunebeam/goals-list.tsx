@@ -165,9 +165,13 @@ export const GoalsList: React.FC<GoalsListProps> = ({
 
         <div className="space-y-3">
           <Tabs value={activeTab} onValueChange={value => setActiveTab(value as GoalsTab)} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsList className="w-full p-0 px-4 items-stretch overflow-hidden grid grid-cols-2">
+              <TabsTrigger value="active" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none">
+                Active
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none">
+                Completed
+              </TabsTrigger>
             </TabsList>
           </Tabs>
 
