@@ -1,15 +1,9 @@
 import React from 'react';
-import { Calendar, ChevronDown, MoreVertical, CheckCircle2, Circle, Clock, Pause } from 'lucide-react';
+import { Calendar, ChevronDown, CheckCircle2, Circle, Clock, Pause } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { ScaffoldingStepCard } from './scaffolding-step-card';
 import type { Step, Substep } from '@/types';
 import { format } from 'date-fns';
@@ -97,59 +91,19 @@ export const StepCard: React.FC<StepCardProps> = ({
       )}
 
       <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
-        <CardHeader className="pb-3 bg-accent/5">
-          <div className="flex items-start justify-between gap-2">
-            <h4 className="font-medium text-base leading-tight flex-1 pr-2">{step.title}</h4>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onCheckIn(step.id)}>
-                  Check in
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onComplete(step.id)}>
-                  Mark as done
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onSkip(step.id)}>
-                  Skip for now
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onBreakDown(step.id)}>
-                  Break it down
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit(step.id)}>
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDelete(step.id)} className="text-destructive">
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+        <CardHeader className="pb-3">
+          <h4 className="font-medium text-base leading-tight">{step.title}</h4>
         </CardHeader>
 
         <CardContent className="pt-0 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex flex-wrap gap-2">
-              {step.due_date && (
-                <Badge variant="outline" className="gap-1.5">
-                  <Calendar className="h-3 w-3" />
-                  {formatDate(step.due_date)}
-                </Badge>
-              )}
-              <Badge variant={getStatusBadgeVariant(step.status)} className="gap-1.5">
-                {getStatusIcon(step.status)}
-                {step.status.replace('_', ' ')}
-              </Badge>
-              {hasScaffolding && (
-                <Badge variant="outline" className="gap-1.5">
-                  {completedScaffolding}/{totalScaffolding} broken down
-                </Badge>
-              )}
-            </div>
-
+            {step.due_date && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                Due {formatDate(step.due_date)}
+              </div>
+            )}
+            
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
@@ -159,7 +113,7 @@ export const StepCard: React.FC<StepCardProps> = ({
 
           <CollapsibleContent className="space-y-3">
             {(step.explainer || step.notes) && (
-              <div className="text-sm text-muted-foreground leading-relaxed break-words">
+              <div className="text-xs text-muted-foreground leading-relaxed break-words">
                 {step.explainer || step.notes}
               </div>
             )}

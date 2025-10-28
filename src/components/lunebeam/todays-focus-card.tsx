@@ -33,9 +33,9 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
       <div className="flex-1 space-y-1">
         <div className="flex items-center gap-2">
           <div className="flex-1">
-            <h4 className="font-medium text-foreground text-sm">
-              {cleanStepTitle(step.title)}
-            </h4>
+                    <h4 className="font-medium text-foreground text-base">
+                      {cleanStepTitle(step.title)}
+                    </h4>
           </div>
         </div>
         
@@ -49,11 +49,11 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
           </p>
         )}
         
-        {step.explainer && (
-          <p className="text-sm text-muted-foreground">
-            {step.explainer}
-          </p>
-        )}
+                {step.explainer && (
+                  <p className="text-xs text-muted-foreground">
+                    {step.explainer}
+                  </p>
+                )}
       </div>
       
       <Button 
@@ -86,7 +86,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
-                    <h4 className="font-medium text-foreground text-sm">
+                    <h4 className="font-medium text-foreground text-base">
                       {cleanStepTitle(step.title)}
                     </h4>
                   </div>
@@ -97,7 +97,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                 </p>
                 
                 {step.explainer && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {step.explainer}
                   </p>
                 )}
@@ -148,7 +148,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <div className="flex-1">
-                        <h4 className="font-medium text-foreground text-sm">
+                        <h4 className="font-medium text-foreground text-base">
                           {cleanStepTitle(step.title)}
                         </h4>
                       </div>
