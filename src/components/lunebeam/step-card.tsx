@@ -1,9 +1,16 @@
 import React from 'react';
-import { Calendar, ChevronDown, CheckCircle2, Circle, Clock, Pause } from 'lucide-react';
+import { Calendar, ChevronDown, CheckCircle2, Circle, Clock, Pause, MoreVertical, MessageSquare, Check, Edit, PauseCircle, Split } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ScaffoldingStepCard } from './scaffolding-step-card';
 import type { Step, Substep } from '@/types';
 import { format } from 'date-fns';
@@ -92,7 +99,47 @@ export const StepCard: React.FC<StepCardProps> = ({
 
       <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
         <CardHeader className="pb-3">
-          <h4 className="font-medium text-base leading-tight">{step.title}</h4>
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="font-medium text-base leading-tight flex-1">
+              {step.title}
+            </h4>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => onCheckIn(step.id)}>
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Check-in
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onComplete(step.id)}>
+                  <Check className="h-4 w-4 mr-2" />
+                  Set as complete
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onEdit(step.id)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSkip(step.id)}>
+                  <PauseCircle className="h-4 w-4 mr-2" />
+                  Pause
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onBreakDown(step.id)}>
+                  <Split className="h-4 w-4 mr-2" />
+                  Break it down
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </CardHeader>
 
         <CardContent className="pt-0 space-y-3">
