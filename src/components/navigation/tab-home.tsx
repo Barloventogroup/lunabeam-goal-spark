@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut, AlertCircle, Clock } from 'lucide-react';
+import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut, AlertCircle, Clock, X } from 'lucide-react';
 import { Button } from '../ui/button';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -47,6 +47,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [goalsLoaded, setGoalsLoaded] = useState(false);
+  const [showMissedStepsCard, setShowMissedStepsCard] = useState(true);
   const [stepsData, setStepsData] = useState<{
     todaysSteps: any[];
     overdueSteps: any[];
@@ -447,9 +448,17 @@ export const TabHome: React.FC<TabHomeProps> = ({
           </div>
 
           {/* Missed Steps Alert Card */}
-          {overdueSteps.length > 0 && (
+          {overdueSteps.length > 0 && showMissedStepsCard && (
             <Card className="relative bg-gradient-to-r from-red-50 to-red-100 dark:from-red-950/20 dark:to-red-950/30 border-2 border-red-400 dark:border-red-700 animate-pulse">
-              <CardContent className="py-4">
+              <CardContent className="py-4 pr-12">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-2 h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-200 dark:hover:bg-red-900/50"
+                  onClick={() => setShowMissedStepsCard(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
                 <div className="flex items-center gap-3">
                   <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
                   <div>
