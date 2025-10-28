@@ -168,14 +168,6 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
               
               <Calendar mode="single" month={currentMonth} modifiers={modifiers} modifiersClassNames={modifiersClassNames} className="rounded-md border-0" />
             </div>
-            
-            {/* Next Month */}
-            <div className="flex flex-col items-center">
-              <div className="text-sm text-muted-foreground mb-2">
-                {format(addMonths(currentMonth, 1), 'MMMM')}
-              </div>
-              <Calendar mode="single" month={addMonths(currentMonth, 1)} modifiers={modifiers} modifiersClassNames={modifiersClassNames} className="rounded-md border-0" />
-            </div>
           </div>
         </div>
           
