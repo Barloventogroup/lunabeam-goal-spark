@@ -51,7 +51,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
 }) => {
   return (
     <Card className="cursor-pointer hover:shadow-md transition-shadow relative">
-      <CardHeader className="px-4 pt-1 pb-1">
+      <CardHeader className="px-4 py-4">
         <div className="flex justify-between items-center">
           <div className="flex-1 cursor-pointer pr-8" onClick={onCardClick}>
             <div className="flex flex-col gap-3">
