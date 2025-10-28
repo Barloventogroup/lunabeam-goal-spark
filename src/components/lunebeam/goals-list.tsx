@@ -242,7 +242,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
             const ownerName = allProfiles[goal.owner_id]?.first_name || 'Unknown';
             const creatorName = allProfiles[goal.created_by]?.first_name || 'Unknown';
             return <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow relative">
-                    <CardHeader className="pb-3">
+            <CardHeader className="px-4 pt-1 pb-1">
                       <div className="flex justify-between items-center">
                         <div className="flex-1 cursor-pointer pr-8" onClick={() => {
                           setSelectedGoalId(goal.id);
