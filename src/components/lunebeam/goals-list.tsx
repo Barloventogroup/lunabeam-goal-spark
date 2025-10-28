@@ -245,7 +245,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                                 Created by {creatorName}
                               </Badge>}
                           </div>
-                          {goal.due_date && <div className="flex items-center gap-1 text-body-sm text-muted-foreground">
+                          {goal.due_date && <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Calendar className="h-4 w-4" />
                               Due {formatDate(goal.due_date)}
                             </div>}
