@@ -193,7 +193,7 @@ export const StepCard: React.FC<StepCardProps> = ({
         <CardContent className="p-0">
           <CollapsibleContent className="space-y-0 px-4 pb-3 data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up duration-100">
             {/* Separator */}
-            <Separator className="mb-3" />
+            <Separator className="mb-3 opacity-30" />
             
             {/* Description */}
             {(step.explainer || step.notes) && (
