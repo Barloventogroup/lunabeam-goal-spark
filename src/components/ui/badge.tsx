@@ -19,6 +19,8 @@ const badgeVariants = cva(
           "border-transparent bg-badge-planned text-foreground hover:bg-badge-planned/80",
         active:
           "border-transparent bg-badge-active text-white hover:bg-badge-active/80",
+        activeGreen:
+          "border-transparent bg-badge-active-green text-white hover:bg-badge-active-green/80",
         category:
           "bg-badge-category text-foreground",
       },

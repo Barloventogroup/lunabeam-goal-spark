@@ -370,9 +370,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'default';
+        return 'activeGreen';
       case 'completed':
-        return 'secondary';
+        return 'default';
       case 'paused':
         return 'outline';
       default:
@@ -1310,7 +1310,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
             <h1 className="text-xl font-semibold text-foreground capitalize">{goal.title}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <Badge variant={getStatusColor(goal.status)}>
-                {goal.status === 'active' ? 'In Progress' : goal.status}
+                {goal.status === 'active' ? 'Active' : goal.status}
               </Badge>
               {goal.domain && getDomainDisplayName(goal.domain) && getDomainDisplayName(goal.domain) !== 'General' && (
                 <Badge variant="outline" className="capitalize">

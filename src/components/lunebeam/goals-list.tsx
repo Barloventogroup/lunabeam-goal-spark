@@ -65,7 +65,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'active';
+        return 'activeGreen';
       case 'completed':
         return 'default';
       case 'paused':
@@ -232,7 +232,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                           <h4 className="mb-2 capitalize">{goal.title}</h4>
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <Badge variant={getStatusColor(goal.status)}>
-                              {goal.status === 'active' ? 'In Progress' : goal.status}
+                              {goal.status === 'active' ? 'Active' : goal.status}
                             </Badge>
                             {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>}
                             

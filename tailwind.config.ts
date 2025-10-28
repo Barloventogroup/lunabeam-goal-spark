@@ -95,6 +95,7 @@ export default {
 				},
 				'badge-planned': 'hsl(var(--badge-planned))',
 				'badge-active': 'hsl(var(--badge-active))',
+				'badge-active-green': 'hsl(var(--badge-active-green))',
 				'badge-category': 'hsl(var(--badge-category))'
 			},
 			backgroundImage: {

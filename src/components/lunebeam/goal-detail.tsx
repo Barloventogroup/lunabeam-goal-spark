@@ -168,7 +168,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'default';
+      case 'active': return 'activeGreen';
       case 'completed': return 'default';
       case 'paused': return 'secondary';
       case 'planned': return 'outline';
@@ -222,7 +222,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
           <h1 className="text-2xl font-bold capitalize">{goal.title}</h1>
           <div className="flex items-center gap-2 mt-1">
             <Badge variant={getStatusColor(goal.status)}>
-              {goal.status === 'active' ? 'In Progress' : goal.status}
+              {goal.status === 'active' ? 'Active' : goal.status}
             </Badge>
             {goal.domain && getDomainDisplayName(goal.domain) !== 'General' && (
               <Badge variant="outline">{getDomainDisplayName(goal.domain)}</Badge>

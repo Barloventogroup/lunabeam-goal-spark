@@ -34,12 +34,12 @@ interface StepCardProps {
   isBlocked: boolean;
 }
 
-const getStatusBadgeVariant = (status: string): "active" | "default" | "planned" | "secondary" | "outline" => {
+const getStatusBadgeVariant = (status: string): "activeGreen" | "default" | "planned" | "secondary" | "outline" => {
   switch (status) {
     case 'done':
       return 'default';
     case 'in_progress':
-      return 'active';
+      return 'activeGreen';
     case 'skipped':
       return 'secondary';
     case 'not_started':
@@ -51,9 +51,9 @@ const getStatusBadgeVariant = (status: string): "active" | "default" | "planned"
 const getStatusLabel = (status: string): string => {
   switch (status) {
     case 'done':
-      return 'Done';
+      return 'Completed';
     case 'in_progress':
-      return 'In Progress';
+      return 'Active';
     case 'skipped':
       return 'Paused';
     case 'todo':

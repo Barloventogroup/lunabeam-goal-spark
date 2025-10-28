@@ -98,6 +98,7 @@
 
     /* Badge colors */
     --badge-planned: 0 0% 62%; /* #9E9E9E */
+    --badge-active-green: 142 70% 45%; /* Green for active status */
     --badge-active: 207 90% 54%; /* #2196F3 */
     --badge-category: 231 234 239; /* #E7EAEF */
 

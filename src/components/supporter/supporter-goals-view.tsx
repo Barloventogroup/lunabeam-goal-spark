@@ -145,16 +145,18 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): "activeGreen" | "default" | "secondary" | "planned" => {
     switch (status) {
       case 'completed':
-        return 'bg-green-500/10 text-green-700 border-green-200';
+        return 'default';
       case 'active':
-        return 'bg-blue-500/10 text-blue-700 border-blue-200';
+        return 'activeGreen';
+      case 'paused':
+        return 'secondary';
       case 'planned':
-        return 'bg-yellow-500/10 text-yellow-700 border-yellow-200';
+        return 'planned';
       default:
-        return 'bg-gray-500/10 text-gray-700 border-gray-200';
+        return 'default';
     }
   };
 
@@ -261,7 +263,7 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
                         <h3 className="font-semibold text-lg line-clamp-2">
                           {goal.title}
                         </h3>
-                        <Badge className={getStatusColor(goal.status)}>
+                        <Badge variant={getStatusColor(goal.status)}>
                           {goal.status}
                         </Badge>
                       </div>
