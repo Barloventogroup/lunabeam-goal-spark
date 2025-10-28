@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
-import { Plus, Calendar, ChevronLeft, ChevronRight, Users, UserCheck } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { goalsService } from '@/services/goalsService';
-import { getDomainDisplayName } from '@/utils/domainUtils';
-import type { Goal, GoalStatus } from '@/types';
+import type { GoalStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useGoals } from '@/hooks/useGoals';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { GoalDetailV2 } from './goal-detail-v2';
+import { GoalCard } from './goal-card';
 interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
   refreshTrigger?: number;
@@ -67,20 +65,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   useEffect(() => {
     if (refreshTrigger) refetch();
   }, [refreshTrigger, refetch]);
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'activeGreen';
-      case 'completed':
-        return 'default';
-      case 'paused':
-        return 'secondary';
-      case 'planned':
-        return 'planned';
-      default:
-        return 'default';
-    }
-  };
   const handleDeleteGoal = async (goalId: string, goalTitle: string) => {
     try {
       await goalsService.deleteGoal(goalId);
@@ -97,15 +81,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({
         variant: 'destructive'
       });
     }
-  };
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return null;
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
   };
 
   // Apply filters
@@ -237,55 +212,30 @@ export const GoalsList: React.FC<GoalsListProps> = ({
               </CardContent>
             </Card> : <div className="space-y-4">
               {currentGoals.map(goal => {
-            const isOwnGoal = goal.owner_id === currentUser?.id;
-            const isCreatedByMe = goal.created_by === currentUser?.id;
-            const ownerName = allProfiles[goal.owner_id]?.first_name || 'Unknown';
-            const creatorName = allProfiles[goal.created_by]?.first_name || 'Unknown';
-            return <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow relative">
-            <CardHeader className="px-4 pt-1 pb-1">
-                      <div className="flex justify-between items-center">
-                        <div className="flex-1 cursor-pointer pr-8" onClick={() => {
-                          setSelectedGoalId(goal.id);
-                          setIsSheetOpen(true);
-                        }}>
-                          <div className="flex flex-col gap-1.5">
-                            <h4 className="text-sm capitalize">{goal.title}</h4>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Badge variant={getStatusColor(goal.status)}>
-                                {goal.status === 'active' ? 'Active' : goal.status}
-                              </Badge>
-                              {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>}
-                              
-                              {!isOwnGoal && <Badge variant="outline" className="text-xs">
-                                  <Users className="h-3 w-3 mr-1" />
-                                  For {ownerName}
-                                </Badge>}
-                              {!isCreatedByMe && isOwnGoal && <Badge variant="outline" className="text-xs">
-                                  <UserCheck className="h-3 w-3 mr-1" />
-                                  Created by {creatorName}
-                                </Badge>}
-                            </div>
-                            {goal.due_date && <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <Calendar className="h-4 w-4" />
-                                Due {formatDate(goal.due_date)}
-                              </div>}
-                          </div>
-                        </div>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedGoalId(goal.id);
-                            setIsSheetOpen(true);
-                          }}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-accent rounded-full transition-colors"
-                          aria-label="View goal details"
-                        >
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </button>
-                      </div>
-                    </CardHeader>
-                  </Card>;
-          })}
+                const isOwnGoal = goal.owner_id === currentUser?.id;
+                const isCreatedByMe = goal.created_by === currentUser?.id;
+                const ownerName = allProfiles[goal.owner_id]?.first_name || 'Unknown';
+                const creatorName = allProfiles[goal.created_by]?.first_name || 'Unknown';
+                
+                return (
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    isOwnGoal={isOwnGoal}
+                    isCreatedByMe={isCreatedByMe}
+                    ownerName={ownerName}
+                    creatorName={creatorName}
+                    onCardClick={() => {
+                      setSelectedGoalId(goal.id);
+                      setIsSheetOpen(true);
+                    }}
+                    onChevronClick={() => {
+                      setSelectedGoalId(goal.id);
+                      setIsSheetOpen(true);
+                    }}
+                  />
+                );
+              })}
             </div>}
         </div>
       </div>
