@@ -1375,7 +1375,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
                     No recommended steps yet
                   </p>
                 </CardContent>
-              </Card> : <RecommendedStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} onOpenStepChat={handleOpenStepChat} />}
+              </Card> : <div className="space-y-2">
+                <h3 className="text-xl font-semibold flex items-center gap-2">
+                  <span>Recommended Steps</span>
+                </h3>
+                <RecommendedStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} onOpenStepChat={handleOpenStepChat} />
+              </div>}
             </div>}
         </TabsContent>
 
