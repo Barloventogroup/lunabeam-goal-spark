@@ -1433,11 +1433,11 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="w-full overflow-x-auto scrollbar-hide">
-          <TabsList className="flex w-full justify-start">
-            <TabsTrigger value="summary" className="shrink-0">
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="summary" className="flex-1 justify-center">
               Summary
             </TabsTrigger>
-            <TabsTrigger value="steps" className="shrink-0">
+            <TabsTrigger value="steps" className="flex-1 justify-center">
               Recommended Steps
               {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
                 <Badge className="ml-2" variant="secondary">
@@ -1445,18 +1445,20 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="shrink-0">
+            <TabsTrigger value="calendar" className="flex-1 justify-center">
               Results
             </TabsTrigger>
-            {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
-              <TabsTrigger value="supporter" className="min-w-[140px] shrink-0">
+          </TabsList>
+          {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
+            <TabsList className="mt-2 w-full">
+              <TabsTrigger value="supporter" className="w-full justify-center">
                 Supporter Setup
                 <Badge className="ml-2" variant="secondary">
                   {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
                 </Badge>
               </TabsTrigger>
-            )}
-          </TabsList>
+            </TabsList>
+          )}
         </div>
 
         <TabsContent value="summary" className="mt-4">
