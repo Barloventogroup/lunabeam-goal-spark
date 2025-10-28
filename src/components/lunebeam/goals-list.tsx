@@ -230,7 +230,10 @@ export const GoalsList: React.FC<GoalsListProps> = ({
             return <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow relative">
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-center">
-                        <div className="flex-1 cursor-pointer pr-8" onClick={() => onNavigate('goal-detail', goal.id)}>
+                        <div className="flex-1 cursor-pointer pr-8" onClick={() => {
+                          setSelectedGoalId(goal.id);
+                          setIsSheetOpen(true);
+                        }}>
                           <h4 className="text-sm mb-2 capitalize">{goal.title}</h4>
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <Badge variant={getStatusColor(goal.status)}>
