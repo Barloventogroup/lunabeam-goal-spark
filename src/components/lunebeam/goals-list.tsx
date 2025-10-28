@@ -248,26 +248,28 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                           setSelectedGoalId(goal.id);
                           setIsSheetOpen(true);
                         }}>
-                          <h4 className="text-sm mb-2 capitalize">{goal.title}</h4>
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <Badge variant={getStatusColor(goal.status)}>
-                              {goal.status === 'active' ? 'Active' : goal.status}
-                            </Badge>
-                            {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>}
-                            
-                            {!isOwnGoal && <Badge variant="outline" className="text-xs">
-                                <Users className="h-3 w-3 mr-1" />
-                                For {ownerName}
-                              </Badge>}
-                            {!isCreatedByMe && isOwnGoal && <Badge variant="outline" className="text-xs">
-                                <UserCheck className="h-3 w-3 mr-1" />
-                                Created by {creatorName}
-                              </Badge>}
+                          <div className="flex flex-col gap-1.5">
+                            <h4 className="text-sm capitalize">{goal.title}</h4>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge variant={getStatusColor(goal.status)}>
+                                {goal.status === 'active' ? 'Active' : goal.status}
+                              </Badge>
+                              {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>}
+                              
+                              {!isOwnGoal && <Badge variant="outline" className="text-xs">
+                                  <Users className="h-3 w-3 mr-1" />
+                                  For {ownerName}
+                                </Badge>}
+                              {!isCreatedByMe && isOwnGoal && <Badge variant="outline" className="text-xs">
+                                  <UserCheck className="h-3 w-3 mr-1" />
+                                  Created by {creatorName}
+                                </Badge>}
+                            </div>
+                            {goal.due_date && <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <Calendar className="h-4 w-4" />
+                                Due {formatDate(goal.due_date)}
+                              </div>}
                           </div>
-                          {goal.due_date && <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Calendar className="h-4 w-4" />
-                              Due {formatDate(goal.due_date)}
-                            </div>}
                         </div>
                         <button 
                           onClick={(e) => {
