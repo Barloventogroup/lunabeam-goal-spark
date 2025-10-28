@@ -1433,11 +1433,11 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="w-full overflow-x-auto scrollbar-hide">
-          <TabsList className="grid grid-cols-3 w-full">
-            <TabsTrigger value="summary" className="flex-1 justify-center">
+          <TabsList className="grid grid-cols-3 w-full p-0 bg-transparent gap-1">
+            <TabsTrigger value="summary" className="flex-1 justify-center bg-muted/50 data-[state=active]:bg-background">
               Summary
             </TabsTrigger>
-            <TabsTrigger value="steps" className="flex-1 justify-center">
+            <TabsTrigger value="steps" className="flex-1 justify-center bg-muted/50 data-[state=active]:bg-background">
               Recommended Steps
               {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
                 <Badge className="ml-2" variant="secondary">
@@ -1445,13 +1445,13 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="flex-1 justify-center">
+            <TabsTrigger value="calendar" className="flex-1 justify-center bg-muted/50 data-[state=active]:bg-background">
               Results
             </TabsTrigger>
           </TabsList>
           {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
-            <TabsList className="mt-2 w-full">
-              <TabsTrigger value="supporter" className="w-full justify-center">
+            <TabsList className="mt-2 w-full p-0 bg-transparent">
+              <TabsTrigger value="supporter" className="w-full justify-center bg-muted/50 data-[state=active]:bg-background">
                 Supporter Setup
                 <Badge className="ml-2" variant="secondary">
                   {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
