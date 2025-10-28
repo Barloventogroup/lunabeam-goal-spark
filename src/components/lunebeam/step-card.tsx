@@ -99,58 +99,74 @@ export const StepCard: React.FC<StepCardProps> = ({
 
       <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex-1">
-              <h4 className="font-medium text-base leading-tight">
-                {step.title}
-              </h4>
+          <CollapsibleTrigger asChild className="w-full">
+            <div className="flex flex-col gap-2 cursor-pointer hover:bg-muted/50 -m-6 p-6 rounded-t-lg transition-colors">
+              <div className="flex items-center justify-between gap-2">
+                <h4 className="font-medium text-base leading-tight flex-1">
+                  {step.title}
+                </h4>
+              </div>
+              
               {step.due_date && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                   Due {formatDate(step.due_date)}
                 </div>
               )}
-            </div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 shrink-0"
-                  onClick={(e) => {
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="w-fit self-start"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreHorizontal className="h-4 w-4 mr-2" />
+                    Actions
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation();
-                    onToggleExpand();
-                  }}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => onCheckIn(step.id)}>
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Check-in
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onComplete(step.id)}>
-                  <Check className="h-4 w-4 mr-2" />
-                  Set as complete
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onEdit(step.id)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onSkip(step.id)}>
-                  <PauseCircle className="h-4 w-4 mr-2" />
-                  Pause
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onBreakDown(step.id)}>
-                  <Split className="h-4 w-4 mr-2" />
-                  Break it down
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                    onCheckIn(step.id);
+                  }}>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Check-in
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    onComplete(step.id);
+                  }}>
+                    <Check className="h-4 w-4 mr-2" />
+                    Set as complete
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(step.id);
+                  }}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    onSkip(step.id);
+                  }}>
+                    <PauseCircle className="h-4 w-4 mr-2" />
+                    Pause
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    onBreakDown(step.id);
+                  }}>
+                    <Split className="h-4 w-4 mr-2" />
+                    Break it down
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </CollapsibleTrigger>
         </CardHeader>
 
         <CardContent className="pt-0">
