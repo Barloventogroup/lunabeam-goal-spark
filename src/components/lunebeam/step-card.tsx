@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Calendar, MoreHorizontal, Info } from 'lucide-react';
+import { Calendar, MoreHorizontal, Info, ClipboardCheck, CheckCircle2, Pencil, PauseCircle, Split } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -131,6 +131,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                       e.stopPropagation();
                       onCheckIn(step.id);
                     }}>
+                      <ClipboardCheck className="mr-2 h-4 w-4" />
                       Check-in
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="opacity-30" />
@@ -138,6 +139,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                       e.stopPropagation();
                       onComplete(step.id);
                     }}>
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
                       Complete
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="opacity-30" />
@@ -145,6 +147,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                       e.stopPropagation();
                       onEdit(step.id);
                     }}>
+                      <Pencil className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="opacity-30" />
@@ -152,6 +155,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                       e.stopPropagation();
                       onSkip(step.id);
                     }}>
+                      <PauseCircle className="mr-2 h-4 w-4" />
                       Pause
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="opacity-30" />
@@ -159,6 +163,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                       e.stopPropagation();
                       onBreakDown(step.id);
                     }}>
+                      <Split className="mr-2 h-4 w-4" />
                       {hasSubsteps ? `View ${substepCount} substep${substepCount !== 1 ? 's' : ''}` : 'Break it down'}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
