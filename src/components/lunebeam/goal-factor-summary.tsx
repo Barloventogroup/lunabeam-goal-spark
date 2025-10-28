@@ -202,8 +202,8 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
   // If no wizard context, show simplified summary
   if (!wizardContext) {
     return (
-      <Card>
-        <CardContent className="py-8">
+      <div className="space-y-4">
+        <div className="py-8 space-y-4">
           <h1 className="text-2xl md:text-3xl font-bold text-center">{goal.title}</h1>
           {goal.description && (
             <p className="text-center text-muted-foreground mt-4">
@@ -219,8 +219,8 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
           <p className="text-center text-sm text-muted-foreground">
             View your practice steps in the <strong>Recommended Steps</strong> tab
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
@@ -268,10 +268,9 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
       : undefined;
     
     return (
-      <Card>
-        <CardContent className="py-6 space-y-4">
-          {/* Goal Title */}
-          <h1 className="text-2xl md:text-3xl font-bold text-center leading-tight">{goal.title}</h1>
+      <div className="space-y-6">
+        {/* Goal Title */}
+        <h1 className="text-2xl md:text-3xl font-bold text-center leading-tight">{goal.title}</h1>
 
           {/* Goal Summary - 2x2 Grid matching Commitment & Activation */}
           <div className="space-y-2">
@@ -282,7 +281,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Skill Assessment - Always first */}
-              <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[160px]">
+              <div className="rounded-2xl bg-pink-50/50 p-4 border-0 shadow-sm hover:shadow-md transition-shadow min-h-[160px]">
                 <h4 className="text-sm font-semibold text-red-700 mb-2 flex items-center gap-2">
                   Skill Assessment
                 </h4>
@@ -312,7 +311,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               </div>
 
               {/* The Goal */}
-              <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[160px]">
+              <div className="rounded-2xl bg-blue-50/50 p-4 border-0 shadow-sm hover:shadow-md transition-shadow min-h-[160px]">
                 <h4 className="text-sm font-semibold text-blue-700 mb-2">The Goal</h4>
                 <div className="space-y-1.5">
                   <p className="text-sm">
@@ -341,7 +340,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               </div>
 
               {/* Challenges */}
-              <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[160px]">
+              <div className="rounded-2xl bg-orange-50/50 p-4 border-0 shadow-sm hover:shadow-md transition-shadow min-h-[160px]">
                 <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
                 <div className="space-y-1.5">
                   {wizardContext.barriers?.priority1 && (
@@ -380,7 +379,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               </div>
 
               {/* Practice Schedule */}
-              <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[160px]">
+              <div className="rounded-2xl bg-emerald-50/50 p-4 border-0 shadow-sm hover:shadow-md transition-shadow min-h-[160px]">
                 <h4 className="text-sm font-semibold text-emerald-700 mb-2">Practice Schedule</h4>
                 <div className="space-y-1.5">
                   {(wizardContext.startDate || goal.start_date) && (
@@ -445,7 +444,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               </div>
 
               {/* Learning Support */}
-              <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 min-h-[160px]">
+              <div className="rounded-2xl bg-purple-50/50 p-4 border-0 shadow-sm hover:shadow-md transition-shadow min-h-[160px]">
                 <h4 className="text-sm font-semibold text-purple-700 mb-2">Learning Support</h4>
                 <div className="space-y-1.5">
                   {pmHelper && (
@@ -479,15 +478,14 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
             </div>
           </div>
 
-          {/* Invite Supporter Button */}
-          {onInviteSupporter && (
-            <Button onClick={onInviteSupporter} variant="outline" className="w-full">
-              <Users className="h-4 w-4 mr-2" />
-              Invite Teaching Helper
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+        {/* Invite Supporter Button */}
+        {onInviteSupporter && (
+          <Button onClick={onInviteSupporter} variant="outline" className="w-full">
+            <Users className="h-4 w-4 mr-2" />
+            Invite Teaching Helper
+          </Button>
+        )}
+      </div>
     );
   }
 
@@ -554,16 +552,15 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
 
   // Consolidated single-card summary with 2x2 grid
   return (
-    <Card>
-      <CardContent className="py-6 space-y-4">
-        {/* Goal Title */}
-        <h1 className="text-2xl md:text-3xl font-bold text-center leading-tight">{goal.title}</h1>
+    <div className="space-y-6">
+      {/* Goal Title */}
+      <h1 className="text-2xl md:text-3xl font-bold text-center leading-tight">{goal.title}</h1>
 
-        {/* 2x2 Grid Summary (Matching Creation Flow) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {/* Skill Assessment - Always first if exists */}
-          {wizardContext?.pmAssessment && (
-            <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[160px]">
+      {/* 2x2 Grid Summary (Matching Creation Flow) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Skill Assessment - Always first if exists */}
+        {wizardContext?.pmAssessment && (
+          <div className="rounded-2xl bg-pink-50/50 p-4 border-0 shadow-sm hover:shadow-md transition-shadow min-h-[160px]">
               <h4 className="text-sm font-semibold text-red-700 mb-2 flex items-center gap-2">
                 Skill Assessment
               </h4>
@@ -593,8 +590,8 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
             </div>
           )}
 
-          {/* The Goal / Learning Goal */}
-          <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[160px]">
+        {/* The Goal / Learning Goal */}
+        <div className="rounded-2xl bg-blue-50/50 p-4 border-0 shadow-sm hover:shadow-md transition-shadow min-h-[160px]">
             <h4 className="text-sm font-semibold text-blue-700 mb-2">
               {isPMGoal ? 'Learning Goal' : 'The Goal'}
             </h4>
@@ -622,8 +619,8 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
             </div>
           </div>
 
-          {/* Challenges */}
-          <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[160px]">
+        {/* Challenges */}
+        <div className="rounded-2xl bg-orange-50/50 p-4 border-0 shadow-sm hover:shadow-md transition-shadow min-h-[160px]">
             <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
             <div className="space-y-1.5">
               {wizardContext?.barriers ? (
@@ -665,8 +662,8 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
             </div>
           </div>
 
-          {/* When & How Often / Practice Schedule */}
-          <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[160px]">
+        {/* When & How Often / Practice Schedule */}
+        <div className="rounded-2xl bg-emerald-50/50 p-4 border-0 shadow-sm hover:shadow-md transition-shadow min-h-[160px]">
             <h4 className="text-sm font-semibold text-emerald-700 mb-2">
               {isPMGoal ? 'Practice Schedule' : 'When & How Often'}
             </h4>
@@ -717,8 +714,8 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
             </div>
           </div>
 
-          {/* The Team / Learning Support */}
-          <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 min-h-[160px]">
+        {/* The Team / Learning Support */}
+        <div className="rounded-2xl bg-purple-50/50 p-4 border-0 shadow-sm hover:shadow-md transition-shadow min-h-[160px]">
             <h4 className="text-sm font-semibold text-purple-700 mb-2">
               {isPMGoal ? 'Learning Support' : 'The Team'}
             </h4>
@@ -766,9 +763,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               )}
             </div>
           </div>
-        </div>
-
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
