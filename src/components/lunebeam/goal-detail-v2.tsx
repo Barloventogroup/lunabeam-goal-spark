@@ -1440,10 +1440,10 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
             ? "grid grid-cols-4"
             : "grid grid-cols-3"
         )}>
-          <TabsTrigger value="summary" className="h-10 py-0 leading-none flex items-center justify-center gap-2">
+          <TabsTrigger value="summary" className="h-full py-0 leading-none flex items-center justify-center gap-2">
             Summary
           </TabsTrigger>
-          <TabsTrigger value="steps" className="h-10 py-0 leading-none flex items-center justify-center gap-2">
+          <TabsTrigger value="steps" className="h-full py-0 leading-none flex items-center justify-center gap-2">
             Steps
             {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
               <Badge className="ml-2 flex items-center" variant="secondary">
@@ -1451,11 +1451,11 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="calendar" className="h-10 py-0 leading-none flex items-center justify-center gap-2">
+          <TabsTrigger value="calendar" className="h-full py-0 leading-none flex items-center justify-center gap-2">
             Results
           </TabsTrigger>
           {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
-            <TabsTrigger value="supporter" className="h-10 py-0 leading-none flex items-center justify-center gap-2">
+            <TabsTrigger value="supporter" className="h-full py-0 leading-none flex items-center justify-center gap-2">
               Supporter Setup
               <Badge className="ml-2 flex items-center" variant="secondary">
                 {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
