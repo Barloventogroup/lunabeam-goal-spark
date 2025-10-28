@@ -162,13 +162,13 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
                 <div className="text-sm text-muted-foreground mb-2">
                   {format(subMonths(currentMonth, 1), 'MMMM')}
                 </div>
-                <Calendar mode="single" month={subMonths(currentMonth, 1)} modifiers={modifiers} modifiersClassNames={modifiersClassNames} className="rounded-md border-0" />
+                <Calendar mode="single" month={subMonths(currentMonth, 1)} modifiers={modifiers} modifiersClassNames={modifiersClassNames} className="rounded-md border-0" disableNavigation={true} />
               </div>}
             
             {/* Current Month - Centered */}
             <div className="flex flex-col items-center">
               
-              <Calendar mode="single" month={currentMonth} modifiers={modifiers} modifiersClassNames={modifiersClassNames} className="rounded-md border-0" />
+              <Calendar mode="single" month={currentMonth} modifiers={modifiers} modifiersClassNames={modifiersClassNames} className="rounded-md border-0" disableNavigation={true} />
             </div>
           </div>
         </div>

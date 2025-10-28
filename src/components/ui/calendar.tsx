@@ -6,6 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   showYearPicker?: boolean;
+  disableNavigation?: boolean;
 };
 function CustomCaption({
   displayMonth,
@@ -71,6 +72,7 @@ function Calendar({
   classNames,
   showOutsideDays = true,
   showYearPicker = false,
+  disableNavigation = false,
   ...props
 }: CalendarProps) {
   const [month, setMonth] = React.useState<Date>(props.month || new Date());
@@ -87,7 +89,7 @@ function Calendar({
     month: "space-y-2",
     caption: "flex justify-center pt-1 relative items-center",
     caption_label: "text-base font-medium",
-    nav: "space-x-1 flex items-center",
+    nav: cn("space-x-1 flex items-center", disableNavigation && "hidden"),
     nav_button: cn(buttonVariants({
       variant: "outline"
     }), "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 pointer-events-auto"),
