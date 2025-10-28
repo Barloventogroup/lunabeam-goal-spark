@@ -173,7 +173,7 @@ export const StepCard: React.FC<StepCardProps> = ({
             
             {/* Due date */}
             {step.due_date && (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 Due {formatDate(step.due_date)}
               </div>
@@ -196,7 +196,7 @@ export const StepCard: React.FC<StepCardProps> = ({
         </CardHeader>
 
         <CardContent className="p-0">
-          <CollapsibleContent className="space-y-2 px-4 pb-3 data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up duration-100">
+          <CollapsibleContent className="space-y-0 px-4 pb-3 data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up duration-100">
             {/* Separator */}
             <Separator className="mb-3 opacity-30" />
             
