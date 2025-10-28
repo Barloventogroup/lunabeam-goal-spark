@@ -184,7 +184,7 @@ export const StepCard: React.FC<StepCardProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="justify-start gap-1 h-auto p-0 hover:bg-transparent"
+                className="justify-start gap-2 h-auto p-0 hover:bg-transparent"
               >
                 <div className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <Info className="h-4 w-4" />
