@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut, Clock } from 'lucide-react';
+import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -440,10 +440,10 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
           {/* Missed Steps Alert Card */}
           {overdueSteps.length > 0 && (
-            <Card className="relative bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-2 border-orange-300 dark:border-orange-700 animate-pulse">
+            <Card className="relative bg-gradient-to-r from-red-50 to-red-100 dark:from-red-950/20 dark:to-red-950/30 border-2 border-red-400 dark:border-red-700 animate-pulse">
               <CardContent className="py-4">
                 <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-orange-600 flex-shrink-0" />
+                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
                   <div>
                     <h3 className="font-medium text-base text-foreground">Review your missed steps</h3>
                     <p className="text-sm text-muted-foreground">
