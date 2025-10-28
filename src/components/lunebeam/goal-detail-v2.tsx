@@ -1296,7 +1296,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 {goal.status === 'active' ? 'Active' : goal.status}
               </Badge>
               {goal.domain && getDomainDisplayName(goal.domain) && getDomainDisplayName(goal.domain) !== 'General' && (
-                <Badge variant="outline" className="capitalize">
+                <Badge variant="secondary" className="capitalize">
                   {getDomainDisplayName(goal.domain)}
                 </Badge>
               )}
