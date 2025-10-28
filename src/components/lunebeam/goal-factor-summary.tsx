@@ -278,7 +278,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                 </h4>
                 <div className="space-y-1.5">
                   <p className="text-sm">
-                    <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
+                    <span className="text-muted-foreground text-sm">Starting Level:</span>{' '}
                     <span className="font-semibold">
                       {(() => {
                     const {
@@ -290,15 +290,15 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                     </span>
                   </p>
                   <p className="text-sm">
-                    <span className="text-muted-foreground text-xs">Experience:</span>{' '}
+                    <span className="text-muted-foreground text-sm">Experience:</span>{' '}
                     <span className="font-medium">{getExperienceLabel(assessment.q1_experience)}</span>
                   </p>
                   <p className="text-sm">
-                    <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
+                    <span className="text-muted-foreground text-sm">Confidence:</span>{' '}
                     <span className="font-medium">{getConfidenceLabel(assessment.q2_confidence)}</span>
                   </p>
                   <p className="text-sm">
-                    <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
+                    <span className="text-muted-foreground text-sm">Help Needed:</span>{' '}
                     <span className="font-medium">{getHelpNeededLabel(assessment.q3_help_needed)}</span>
                   </p>
                 </div>
@@ -309,19 +309,19 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                 <h4 className="text-sm font-semibold text-blue-700 mb-2">The Goal</h4>
                 <div className="space-y-1.5">
                   <p className="text-sm">
-                    <span className="text-muted-foreground text-xs">Goal:</span>{' '}
+                    <span className="text-muted-foreground text-sm">Goal:</span>{' '}
                     <span className="font-semibold">{goal.title}</span>
                   </p>
                   {categoryLabel && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Category:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Category:</span>{' '}
                       <span className="font-medium">{categoryLabel}</span>
                     </p>}
                   {motivationLabel && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Why:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Why:</span>{' '}
                       <span className="font-medium">{truncate(motivationLabel, 40)}</span>
                     </p>}
                   {goalTypeLabel && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Type:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Type:</span>{' '}
                       <span className="font-medium">{goalTypeLabel}</span>
                     </p>}
                 </div>
@@ -332,23 +332,23 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                 <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
                 <div className="space-y-1.5">
                   {wizardContext.barriers?.priority1 && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">1st Priority:</span>{' '}
+                      <span className="text-muted-foreground text-sm">1st Priority:</span>{' '}
                       <span className="font-medium">
                         {challengeAreas.find(c => c.id === wizardContext.barriers.priority1)?.label || wizardContext.barriers.priority1}
                       </span>
                     </p>}
                   {wizardContext.barriers?.priority2 && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">2nd Priority:</span>{' '}
+                      <span className="text-muted-foreground text-sm">2nd Priority:</span>{' '}
                       <span className="font-medium">
                         {challengeAreas.find(c => c.id === wizardContext.barriers.priority2)?.label || wizardContext.barriers.priority2}
                       </span>
                     </p>}
                   {wizardContext.barriers?.details && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Details:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Details:</span>{' '}
                       <span className="font-medium">{truncate(wizardContext.barriers.details, 50)}</span>
                     </p>}
                   {wizardContext.prerequisites && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Prerequisites:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Prerequisites:</span>{' '}
                       <span className="font-medium">
                         {wizardContext.prerequisites.ready ? 'Ready to start' : 'Need some things'}
                         {!wizardContext.prerequisites.ready && wizardContext.prerequisites.needs && ` - ${truncate(wizardContext.prerequisites.needs, 30)}`}
@@ -362,31 +362,31 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                 <h4 className="text-sm font-semibold text-emerald-700 mb-2">Practice Schedule</h4>
                 <div className="space-y-1.5">
                   {(wizardContext.startDate || goal.start_date) && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Starts:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Starts:</span>{' '}
                       <span className="font-medium">
                         {wizardContext.startDate ? new Date(wizardContext.startDate).toLocaleDateString('en-US') : new Date(goal.start_date).toLocaleDateString('en-US')}
                       </span>
                     </p>}
                   {wizardContext.endDate && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Ends:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Ends:</span>{' '}
                       <span className="font-medium">{new Date(wizardContext.endDate).toLocaleDateString()}</span>
                     </p>}
                   {pmPracticePlan && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Frequency:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Frequency:</span>{' '}
                       <span className="font-medium">
                         {pmPracticePlan.smartStartAccepted && pmPracticePlan.startingFrequency !== pmPracticePlan.targetFrequency ? `Starting ${pmPracticePlan.startingFrequency}x/week` : `${pmPracticePlan.targetFrequency}x/week`}
                       </span>
                     </p>}
                   {abbreviatedDays && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Days:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Days:</span>{' '}
                       <span className="font-medium">{abbreviatedDays}</span>
                     </p>}
                   {pmPracticePlan?.startTime && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Practice Time:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Practice Time:</span>{' '}
                       <span className="font-medium">{formatDisplayTime(pmPracticePlan.startTime)}</span>
                     </p>}
                   {pmPracticePlan?.sendAdvanceReminder && pmPracticePlan?.startTime && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Reminder:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Reminder:</span>{' '}
                       <span className="font-medium">10 min before ({(() => {
                     const [hours, minutes] = pmPracticePlan.startTime.split(':');
                     const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
@@ -509,7 +509,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
               </h4>
               <div className="space-y-1.5">
                 <p className="text-sm">
-                  <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
+                  <span className="text-muted-foreground text-sm">Starting Level:</span>{' '}
                   <span className="font-semibold">
                     {(() => {
                 const {
@@ -521,15 +521,15 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                   </span>
                 </p>
                 <p className="text-sm">
-                  <span className="text-muted-foreground text-xs">Experience:</span>{' '}
+                  <span className="text-muted-foreground text-sm">Experience:</span>{' '}
                   <span className="font-medium">{getExperienceLabel(wizardContext.pmAssessment.q1_experience)}</span>
                 </p>
                 <p className="text-sm">
-                  <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
+                  <span className="text-muted-foreground text-sm">Confidence:</span>{' '}
                   <span className="font-medium">{getConfidenceLabel(wizardContext.pmAssessment.q2_confidence)}</span>
                 </p>
                 <p className="text-sm">
-                  <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
+                  <span className="text-muted-foreground text-sm">Help Needed:</span>{' '}
                   <span className="font-medium">{getHelpNeededLabel(wizardContext.pmAssessment.q3_help_needed)}</span>
                 </p>
               </div>
@@ -542,17 +542,17 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
             </h4>
             <div className="space-y-1.5">
               {isPMGoal && wizardContext?.pmAssessment && <p className="text-sm">
-                  <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
+                  <span className="text-muted-foreground text-sm">Starting Level:</span>{' '}
                   <span className="font-semibold">
                     {wizardContext.pmAssessment.levelLabel} {['🌱', '📚', '🚀', '⭐', '🏆'][wizardContext.pmAssessment.calculatedLevel - 1]}
                   </span>
                 </p>}
               {goal.domain && <p className="text-sm">
-                  <span className="text-muted-foreground text-xs">Category:</span>{' '}
+                  <span className="text-muted-foreground text-sm">Category:</span>{' '}
                   <span className="font-medium">{getDomainDisplayName(goal.domain)}</span>
                 </p>}
               {motivation && <p className="text-sm">
-                  <span className="text-muted-foreground text-xs">Why:</span>{' '}
+                  <span className="text-muted-foreground text-sm">Why:</span>{' '}
                   <span className="font-medium">{motivation.length > 60 ? motivation.substring(0, 60) + '...' : motivation}</span>
                 </p>}
             </div>
@@ -579,7 +579,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                     <span className="capitalize">{challenge.replace(/_/g, ' ')}</span>
                   </p>) : <p className="text-sm text-muted-foreground italic">No challenges noted</p>}
               {wizardContext?.prerequisite && <p className="text-sm mt-2">
-                  <span className="text-muted-foreground text-xs">Prerequisites:</span>{' '}
+                  <span className="text-muted-foreground text-sm">Prerequisites:</span>{' '}
                   <span className="font-medium">{wizardContext.prerequisite}</span>
                 </p>}
             </div>
@@ -592,33 +592,33 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
             </h4>
             <div className="space-y-1.5">
               {wizardContext?.startDate && <p className="text-sm">
-                  <span className="text-muted-foreground text-xs">Starts:</span>{' '}
+                  <span className="text-muted-foreground text-sm">Starts:</span>{' '}
                   <span className="font-medium">{formatStartDate()}</span>
                 </p>}
               {isPMGoal && wizardContext?.pmPracticePlan ? <>
                   <p className="text-sm">
-                    <span className="text-muted-foreground text-xs">Practice:</span>{' '}
+                    <span className="text-muted-foreground text-sm">Practice:</span>{' '}
                     <span className="font-medium">
                       {wizardContext.pmPracticePlan.startingFrequency}×/week
                     </span>
                   </p>
                   <p className="text-sm">
-                    <span className="text-muted-foreground text-xs">Duration:</span>{' '}
+                    <span className="text-muted-foreground text-sm">Duration:</span>{' '}
                     <span className="font-medium">
                       {wizardContext.pmPracticePlan.durationWeeks ? `${wizardContext.pmPracticePlan.durationWeeks} weeks` : 'Ongoing'}
                     </span>
                   </p>
                 </> : <>
                   {wizardContext?.frequency && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Frequency:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Frequency:</span>{' '}
                       <span className="font-medium">{wizardContext.frequency}</span>
                     </p>}
                   {wizardContext?.selectedDays && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Days:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Days:</span>{' '}
                       <span className="font-medium">{wizardContext.selectedDays.join(', ')}</span>
                     </p>}
                   {wizardContext?.customTime && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Time:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Time:</span>{' '}
                       <span className="font-medium">{wizardContext.customTime}</span>
                     </p>}
                 </>}
@@ -633,22 +633,22 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
             <div className="space-y-1.5">
               {wizardContext?.pmHelper ? <>
                   <p className="text-sm">
-                    <span className="text-muted-foreground text-xs">Mode:</span>{' '}
+                    <span className="text-muted-foreground text-sm">Mode:</span>{' '}
                     <span className="font-medium">
                       {wizardContext.pmHelper.helperId === 'none' ? 'Independent' : 'With helper'}
                     </span>
                   </p>
                   {wizardContext.pmHelper.helperName && wizardContext.pmHelper.helperId !== 'none' && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Helper:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Helper:</span>{' '}
                       <span className="font-medium">{wizardContext.pmHelper.helperName}</span>
                     </p>}
                 </> : <>
                   {wizardContext?.supportContext && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Working:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Working:</span>{' '}
                       <span className="font-medium capitalize">{wizardContext.supportContext.replace(/_/g, ' ')}</span>
                     </p>}
                   {wizardContext?.primarySupporterName && <p className="text-sm">
-                      <span className="text-muted-foreground text-xs">Supporter:</span>{' '}
+                      <span className="text-muted-foreground text-sm">Supporter:</span>{' '}
                       <span className="font-medium">{wizardContext.primarySupporterName}</span>
                     </p>}
                   {!wizardContext?.primarySupporterName && onInviteSupporter && <Button variant="outline" size="sm" className="w-full mt-2" onClick={onInviteSupporter}>
