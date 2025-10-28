@@ -1162,7 +1162,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
         <div className="flex items-start gap-2 flex-1">
           <BackButton onClick={onBack} />
           <div className="flex-1">
-            <h1 className="text-xl font-semibold text-foreground capitalize">{goal.title}</h1>
+            <h1 className="text-sm font-semibold text-foreground capitalize">{goal.title}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <Badge variant={getStatusColor(goal.status)}>
                 {goal.status === 'active' ? 'Active' : goal.status}
