@@ -144,7 +144,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               
-              <span className="font-semibold text-lg min-w-[200px] text-center text-foreground">
+              <span className="font-semibold text-base min-w-[200px] text-center text-foreground">
                 {format(currentMonth, 'MMMM yyyy')}
               </span>
               
