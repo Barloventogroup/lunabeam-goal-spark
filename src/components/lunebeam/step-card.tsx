@@ -102,7 +102,7 @@ export const StepCard: React.FC<StepCardProps> = ({
       )}
 
       <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
-        <CardHeader className="p-6 pb-3">
+        <CardHeader className="pb-3">
           <div className="flex flex-col gap-4">
             {/* Title + Status + 3-dot menu */}
             <div className="flex items-center justify-between gap-2">
@@ -189,7 +189,7 @@ export const StepCard: React.FC<StepCardProps> = ({
           </div>
         </CardHeader>
 
-        <CardContent className="pt-0 pb-6 px-6">
+        <CardContent className="pt-0">
           <CollapsibleContent className="space-y-4">
             {/* Description */}
             {(step.explainer || step.notes) && (
