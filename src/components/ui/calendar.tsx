@@ -86,7 +86,7 @@ function Calendar({
     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
     month: "space-y-4",
     caption: "flex justify-center pt-1 relative items-center",
-    caption_label: "text-sm font-medium",
+    caption_label: "text-base font-medium",
     nav: "space-x-1 flex items-center",
     nav_button: cn(buttonVariants({
       variant: "outline"
@@ -95,9 +95,9 @@ function Calendar({
     nav_button_next: "absolute right-1",
     table: "w-full border-collapse space-y-1",
     head_row: "flex mb-4",
-    head_cell: "text-muted-foreground rounded-md w-11 font-normal text-xs",
+    head_cell: "text-muted-foreground rounded-md w-11 font-normal text-sm",
     row: "flex w-full mt-3",
-    cell: "h-11 w-11 text-center text-xs p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+    cell: "h-11 w-11 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
     day: cn(buttonVariants({
       variant: "ghost"
     }), "h-10 w-10 p-0 font-normal aria-selected:opacity-100"),
