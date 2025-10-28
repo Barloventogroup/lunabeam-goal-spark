@@ -1432,8 +1432,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="w-full max-w-4xl mx-auto overflow-x-auto scrollbar-hide -mx-2 px-2 pb-2">
-          <TabsList className="inline-flex w-auto justify-start">
+        <div className="w-full overflow-x-auto scrollbar-hide">
+          <TabsList className="flex w-full justify-start">
             <TabsTrigger value="summary" className="shrink-0">
               Summary
             </TabsTrigger>
