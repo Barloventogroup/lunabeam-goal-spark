@@ -227,7 +227,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div className="flex-1 cursor-pointer" onClick={() => onNavigate('goal-detail', goal.id)}>
-                          <h4 className="mb-2 capitalize">{goal.title}</h4>
+                          <h4 className="text-sm mb-2 capitalize">{goal.title}</h4>
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <Badge variant={getStatusColor(goal.status)}>
                               {goal.status === 'active' ? 'Active' : goal.status}
