@@ -107,7 +107,7 @@ export const StepCard: React.FC<StepCardProps> = ({
           <div className="flex flex-col gap-1.15">
             {/* Title + Status + 3-dot menu */}
             <div className="flex items-center justify-between gap-2">
-              <h4 className="font-medium text-sm leading-tight flex-1">
+              <h4 className="font-medium text-base leading-tight flex-1">
                 {step.title}
               </h4>
               <div className="flex items-center gap-1 shrink-0">
