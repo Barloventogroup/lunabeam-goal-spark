@@ -256,6 +256,11 @@ export interface Step {
   initiated_at?: string;
   is_supporter_step?: boolean;
   
+  // Scaffolding fields (replace substeps)
+  parent_step_id?: string;
+  is_scaffolding?: boolean;
+  scaffolding_level?: number;
+  
   // Habit tracking fields
   completion_streak?: number;
   skip_count?: number;
@@ -279,6 +284,11 @@ export interface Step {
   showOptions?: boolean;
 }
 
+/**
+ * @deprecated Substeps have been migrated to scaffolding steps.
+ * Use Step with is_scaffolding=true and parent_step_id instead.
+ * This interface is kept for backwards compatibility only.
+ */
 export interface Substep {
   id: string;
   step_id: string;
@@ -292,6 +302,12 @@ export interface Substep {
   updated_at: string;
   due_date?: string;
 }
+
+// Helper type for scaffolding steps
+export type ScaffoldingStep = Step & { 
+  is_scaffolding: true; 
+  parent_step_id: string;
+};
 
 export interface PointsLogEntry {
   id: string;

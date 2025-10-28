@@ -640,5 +640,93 @@ export const stepsService = {
     } catch (err) {
       console.error('Error updating step attempt:', err);
     }
+  },
+
+  // Scaffolding Steps Functions (replaces substeps)
+  
+  // Get scaffolding steps (children of a parent step)
+  async getScaffoldingSteps(parentStepId: string): Promise<Step[]> {
+    const { data, error } = await supabase
+      .from('steps')
+      .select('*')
+      .eq('parent_step_id', parentStepId)
+      .eq('is_scaffolding', true)
+      .order('order_index');
+    
+    if (error) throw error;
+    return (data || []) as Step[];
+  },
+
+  // Create scaffolding step (result of "Break it down")
+  async createScaffoldingStep(
+    goalId: string,
+    parentStepId: string,
+    stepData: Partial<Step>
+  ): Promise<Step> {
+    // Get parent step to determine scaffolding level
+    const { data: parentStep } = await supabase
+      .from('steps')
+      .select('scaffolding_level, order_index')
+      .eq('id', parentStepId)
+      .single();
+    
+    const scaffoldingLevel = (parentStep?.scaffolding_level || 0) + 1;
+    
+    // Get count of existing scaffolding steps for this parent
+    const { count } = await supabase
+      .from('steps')
+      .select('*', { count: 'exact', head: true })
+      .eq('parent_step_id', parentStepId);
+    
+    // Calculate order_index (insert after parent + existing scaffolding steps)
+    const orderIndex = (parentStep?.order_index || 0) + (count || 0) + 1;
+    
+    const { data, error } = await supabase
+      .from('steps')
+      .insert({
+        ...stepData,
+        goal_id: goalId,
+        parent_step_id: parentStepId,
+        is_scaffolding: true,
+        scaffolding_level,
+        order_index: orderIndex,
+        points: 2, // Scaffolding steps worth 2 points
+        type: 'action',
+        is_required: true,
+        status: 'not_started'
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // Reorder subsequent steps
+    await this.reorderStepsAfterInsert(goalId, orderIndex);
+    
+    return data as Step;
+  },
+
+  // Helper to reorder steps after inserting scaffolding
+  async reorderStepsAfterInsert(goalId: string, insertedAtIndex: number): Promise<void> {
+    const { data: stepsToShift } = await supabase
+      .from('steps')
+      .select('id, order_index')
+      .eq('goal_id', goalId)
+      .gt('order_index', insertedAtIndex)
+      .order('order_index');
+    
+    if (stepsToShift && stepsToShift.length > 0) {
+      const updates = stepsToShift.map((step, idx) => ({
+        id: step.id,
+        order_index: insertedAtIndex + idx + 1
+      }));
+      
+      for (const update of updates) {
+        await supabase
+          .from('steps')
+          .update({ order_index: update.order_index })
+          .eq('id', update.id);
+      }
+    }
   }
 };

@@ -161,77 +161,45 @@ export const pointsService = {
     return data || [];
   },
 
-  // Substeps management
-  async getSubsteps(stepId: string): Promise<Substep[]> {
-    // Helper to validate UUID format
-    const isValidUUID = (v?: string): boolean =>
-      typeof v === 'string' &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
-
-    if (!isValidUUID(stepId)) {
-      console.warn('[pointsService] Skipping substeps fetch for invalid stepId:', stepId);
-      return [];
-    }
-
-    const { data, error } = await supabase
-      .from('substeps')
-      .select('*')
-      .eq('step_id', stepId)
-      .order('created_at');
-
-    if (error) throw error;
-    return data || [];
+  /**
+   * @deprecated Substeps have been migrated to scaffolding steps.
+   * Use stepsService.getScaffoldingSteps() instead.
+   * Kept for backwards compatibility.
+   */
+  async getSubsteps(stepId: string): Promise<any[]> {
+    console.warn('[pointsService.getSubsteps] DEPRECATED: Use stepsService.getScaffoldingSteps() instead');
+    return [];
   },
 
-  async createSubstep(stepId: string, title: string, description?: string, isPlanned: boolean = false): Promise<Substep> {
-    const { data, error } = await supabase
-      .from('substeps')
-      .insert({
-        step_id: stepId,
-        title,
-        description,
-        is_planned: isPlanned
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+  /**
+   * @deprecated Substeps have been migrated to scaffolding steps.
+   * Use stepsService.createScaffoldingStep() instead.
+   */
+  async createSubstep(): Promise<any> {
+    console.warn('[pointsService.createSubstep] DEPRECATED: Use stepsService.createScaffoldingStep() instead');
+    throw new Error('Substeps are deprecated. Use scaffolding steps instead.');
   },
 
-  async checkInSubstep(substepId: string): Promise<void> {
-    const { error } = await supabase
-      .from('substeps')
-      .update({ initiated_at: new Date().toISOString() })
-      .eq('id', substepId);
-
-    if (error) throw error;
+  /**
+   * @deprecated Substeps have been migrated to scaffolding steps.
+   */
+  async checkInSubstep(): Promise<void> {
+    console.warn('[pointsService.checkInSubstep] DEPRECATED: Substeps are no longer supported');
   },
 
-  async completeSubstep(substepId: string): Promise<Substep> {
-    const { data, error } = await supabase
-      .from('substeps')
-      .update({ 
-        completed_at: new Date().toISOString(),
-        points_awarded: 2 // Scaffolding substeps always worth 2 points
-      })
-      .eq('id', substepId)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    // Award points and log (done via trigger)
-    return data;
+  /**
+   * @deprecated Substeps have been migrated to scaffolding steps.
+   */
+  async completeSubstep(): Promise<any> {
+    console.warn('[pointsService.completeSubstep] DEPRECATED: Use stepsService.completeStep() for scaffolding steps');
+    throw new Error('Substeps are deprecated. Use scaffolding steps instead.');
   },
 
-  async deleteSubstep(substepId: string): Promise<void> {
-    const { error } = await supabase
-      .from('substeps')
-      .delete()
-      .eq('id', substepId);
-
-    if (error) throw error;
+  /**
+   * @deprecated Substeps have been migrated to scaffolding steps.
+   */
+  async deleteSubstep(): Promise<void> {
+    console.warn('[pointsService.deleteSubstep] DEPRECATED: Use stepsService.deleteStep() for scaffolding steps');
   },
 
   // Calculate what points a step would earn (for preview)

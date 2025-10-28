@@ -1083,16 +1083,19 @@ export type Database = {
           initiated_at: string | null
           is_planned: boolean | null
           is_required: boolean
+          is_scaffolding: boolean | null
           is_supporter_step: boolean
           last_deferred_at: string | null
           last_skipped_date: string | null
           notes: string | null
           order_index: number
+          parent_step_id: string | null
           planned_week_index: number | null
           pm_metadata: Json | null
           points: number | null
           points_awarded: number | null
           quality_rating: number | null
+          scaffolding_level: number | null
           skip_count: number | null
           skip_reasons: Json | null
           snooze_count: number | null
@@ -1118,16 +1121,19 @@ export type Database = {
           initiated_at?: string | null
           is_planned?: boolean | null
           is_required?: boolean
+          is_scaffolding?: boolean | null
           is_supporter_step?: boolean
           last_deferred_at?: string | null
           last_skipped_date?: string | null
           notes?: string | null
           order_index?: number
+          parent_step_id?: string | null
           planned_week_index?: number | null
           pm_metadata?: Json | null
           points?: number | null
           points_awarded?: number | null
           quality_rating?: number | null
+          scaffolding_level?: number | null
           skip_count?: number | null
           skip_reasons?: Json | null
           snooze_count?: number | null
@@ -1153,16 +1159,19 @@ export type Database = {
           initiated_at?: string | null
           is_planned?: boolean | null
           is_required?: boolean
+          is_scaffolding?: boolean | null
           is_supporter_step?: boolean
           last_deferred_at?: string | null
           last_skipped_date?: string | null
           notes?: string | null
           order_index?: number
+          parent_step_id?: string | null
           planned_week_index?: number | null
           pm_metadata?: Json | null
           points?: number | null
           points_awarded?: number | null
           quality_rating?: number | null
+          scaffolding_level?: number | null
           skip_count?: number | null
           skip_reasons?: Json | null
           snooze_count?: number | null
@@ -1180,9 +1189,16 @@ export type Database = {
             referencedRelation: "goals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "steps_parent_step_id_fkey"
+            columns: ["parent_step_id"]
+            isOneToOne: false
+            referencedRelation: "steps"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      substeps: {
+      substeps_archived: {
         Row: {
           completed_at: string | null
           created_at: string
