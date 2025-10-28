@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, ChevronDown, CheckCircle2, Circle, Clock, Pause, MoreVertical, MessageSquare, Check, Edit, PauseCircle, Split } from 'lucide-react';
+import { Calendar, CheckCircle2, Circle, Clock, Pause, MoreHorizontal, MessageSquare, Check, Edit, PauseCircle, Split } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -100,9 +100,17 @@ export const StepCard: React.FC<StepCardProps> = ({
       <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-2">
-            <h4 className="font-medium text-base leading-tight flex-1">
-              {step.title}
-            </h4>
+            <div className="flex-1">
+              <h4 className="font-medium text-base leading-tight">
+                {step.title}
+              </h4>
+              {step.due_date && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                  <Calendar className="h-4 w-4" />
+                  Due {formatDate(step.due_date)}
+                </div>
+              )}
+            </div>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -110,9 +118,12 @@ export const StepCard: React.FC<StepCardProps> = ({
                   variant="ghost" 
                   size="icon" 
                   className="h-8 w-8 shrink-0"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleExpand();
+                  }}
                 >
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
@@ -142,37 +153,13 @@ export const StepCard: React.FC<StepCardProps> = ({
           </div>
         </CardHeader>
 
-        <CardContent className="pt-0 space-y-3">
-          <div className="flex items-center justify-between">
-            {step.due_date && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                Due {formatDate(step.due_date)}
-              </div>
-            )}
-            
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-              </Button>
-            </CollapsibleTrigger>
-          </div>
-
+        <CardContent className="pt-0">
           <CollapsibleContent className="space-y-3">
             {(step.explainer || step.notes) && (
               <div className="text-xs text-muted-foreground leading-relaxed break-words">
                 {step.explainer || step.notes}
               </div>
             )}
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onBreakDown(step.id)}
-              className="w-full"
-            >
-              Need help?
-            </Button>
 
             {hasScaffolding && (
               <div className="space-y-2">
