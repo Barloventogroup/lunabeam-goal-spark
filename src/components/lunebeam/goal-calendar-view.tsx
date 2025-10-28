@@ -99,35 +99,40 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
     missed: 'bg-red-500 text-white hover:bg-red-600 font-bold shadow-sm'
   };
   return <div className="space-y-4">
-      {/* Hero Metrics Card - Triangle Formation */}
+      {/* Hero Metrics Card - Horizontal Layout */}
       <Card>
-        <CardContent className="pt-6 pb-8">
-          {/* Triangle Metrics Layout */}
-          <div className="flex flex-col items-center space-y-6">
-            {/* Streak - Top of Triangle (Most Prominent) */}
-            <div className="text-center">
-              <div className="text-6xl font-bold text-primary mb-2">
-                {goal.streak_count && goal.streak_count > 0 ? `🔥 ${goal.streak_count}` : "🔥 0"}
+        <CardContent className="pt-6 pb-6">
+          <div className="flex items-center justify-around divide-x divide-border">
+            {/* Streak */}
+            <div className="flex-1 text-center">
+              <div className="text-muted-foreground text-sm mb-2">Streak</div>
+              <div className="text-2xl font-bold text-primary">
+                🔥 {goal.streak_count && goal.streak_count > 0 ? goal.streak_count : 0}
+                <span className="text-sm font-normal text-muted-foreground ml-1">
+                  {goal.streak_count === 1 ? 'day' : 'days'}
+                </span>
               </div>
-              <div className="text-base font-semibold text-muted-foreground">Day Streak</div>
             </div>
             
-            {/* Days Completed & Missed - Bottom of Triangle (Secondary) */}
-            <div className="flex items-start justify-center gap-12">
-              {/* Days Completed */}
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-1">
-                  ✅ {completedDates.length}
-                </div>
-                <div className="text-xs text-muted-foreground">Days Completed</div>
+            {/* Completed */}
+            <div className="flex-1 text-center">
+              <div className="text-muted-foreground text-sm mb-2">Completed</div>
+              <div className="text-2xl font-bold text-green-600">
+                {completedDates.length}
+                <span className="text-sm font-normal text-muted-foreground ml-1">
+                  {completedDates.length === 1 ? 'day' : 'days'}
+                </span>
               </div>
-              
-              {/* Days Missed */}
-              <div className="text-center">
-                <div className="text-3xl font-bold text-red-400 mb-1">
-                  ⚠️ {missedDates.length}
-                </div>
-                <div className="text-xs text-muted-foreground">Days Missed</div>
+            </div>
+            
+            {/* Missed */}
+            <div className="flex-1 text-center">
+              <div className="text-muted-foreground text-sm mb-2">Missed</div>
+              <div className="text-2xl font-bold text-red-500">
+                {missedDates.length}
+                <span className="text-sm font-normal text-muted-foreground ml-1">
+                  {missedDates.length === 1 ? 'day' : 'days'}
+                </span>
               </div>
             </div>
           </div>
