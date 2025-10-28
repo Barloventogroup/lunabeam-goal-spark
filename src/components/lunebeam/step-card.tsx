@@ -133,28 +133,28 @@ export const StepCard: React.FC<StepCardProps> = ({
                     }}>
                       Check-in
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="opacity-30" />
                     <DropdownMenuItem onClick={(e) => {
                       e.stopPropagation();
                       onComplete(step.id);
                     }}>
                       Complete
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="opacity-30" />
                     <DropdownMenuItem onClick={(e) => {
                       e.stopPropagation();
                       onEdit(step.id);
                     }}>
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="opacity-30" />
                     <DropdownMenuItem onClick={(e) => {
                       e.stopPropagation();
                       onSkip(step.id);
                     }}>
                       Pause
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="opacity-30" />
                     <DropdownMenuItem onClick={(e) => {
                       e.stopPropagation();
                       onBreakDown(step.id);
