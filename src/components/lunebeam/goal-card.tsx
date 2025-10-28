@@ -3,6 +3,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Users, UserCheck, ChevronRight } from "lucide-react";
 import { getDomainDisplayName } from "@/utils/domainUtils";
+import { format } from "date-fns";
 import type { Goal } from "@/types";
 
 interface GoalCardProps {
@@ -32,12 +33,11 @@ const getStatusColor = (status: string) => {
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return null;
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  try {
+    return format(new Date(dateStr), "MMM d");
+  } catch {
+    return null;
+  }
 };
 
 export const GoalCard: React.FC<GoalCardProps> = ({
