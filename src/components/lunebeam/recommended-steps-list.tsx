@@ -6,6 +6,7 @@ import type { Step, Goal, Substep, StepStatus, StepType } from '@/types';
 import { stepsService } from '@/services/goalsService';
 import { pointsService } from '@/services/pointsService';
 import { StepCard } from './step-card';
+import { SubstepDrawer } from './substep-drawer';
 import { StepChatModal } from './step-chat-modal';
 import { StepEditModal } from './step-edit-modal';
 import { ExpressCheckInCard } from './express-check-in-card';
@@ -81,12 +82,12 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   const [showingQueuedSteps, setShowingQueuedSteps] = useState(false);
   const [awaitingStepUpdate, setAwaitingStepUpdate] = useState<string | null>(null);
   const [substepsMap, setSubstepsMap] = useState<Record<string, Substep[]>>({});
-  // const [showGoalCelebration, setShowGoalCelebration] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
   const [checkInStep, setCheckInStep] = useState<Step | null>(null);
-  // const [showFireworks, setShowFireworks] = useState(false);
-  // const [showSuccessCheck, setShowSuccessCheck] = useState(false);
+  const [substepDrawerOpen, setSubstepDrawerOpen] = useState(false);
+  const [selectedStepForSubsteps, setSelectedStepForSubsteps] = useState<Step | null>(null);
+  const [currentSubsteps, setCurrentSubsteps] = useState<Substep[]>([]);
   const { toast } = useToast();
   
   // Check for incomplete generation
@@ -759,6 +760,74 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     });
   };
 
+  const handleBreakDown = async (stepId: string) => {
+    const step = steps.find(s => s.id === stepId);
+    if (!step) return;
+    
+    setSelectedStepForSubsteps(step);
+    
+    // Load substeps for this step
+    const substeps = substepsMap[stepId] || [];
+    setCurrentSubsteps(substeps);
+    setSubstepDrawerOpen(true);
+  };
+
+  const refreshSubsteps = async () => {
+    // Reload all substeps
+    try {
+      const stepIds = steps.map(s => s.id);
+      
+      const { data: allScaffoldingSteps, error } = await supabase
+        .from('steps')
+        .select('*')
+        .in('parent_step_id', stepIds)
+        .eq('is_scaffolding', true)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching scaffolding steps:', error);
+        return;
+      }
+
+      const newSubstepsMap: Record<string, Substep[]> = {};
+      (allScaffoldingSteps || []).forEach(scaffoldingStep => {
+        const parentId = scaffoldingStep.parent_step_id;
+        if (!parentId) return;
+        if (!newSubstepsMap[parentId]) {
+          newSubstepsMap[parentId] = [];
+        }
+        newSubstepsMap[parentId].push({
+          id: scaffoldingStep.id,
+          step_id: parentId,
+          title: scaffoldingStep.title,
+          description: scaffoldingStep.notes,
+          is_planned: scaffoldingStep.is_planned || false,
+          completed_at: scaffoldingStep.status === 'done' ? scaffoldingStep.updated_at : undefined,
+          initiated_at: scaffoldingStep.initiated_at,
+          points_awarded: scaffoldingStep.points_awarded || 0,
+          created_at: scaffoldingStep.created_at,
+          updated_at: scaffoldingStep.updated_at,
+          due_date: scaffoldingStep.due_date
+        } as Substep);
+      });
+
+      Object.keys(newSubstepsMap).forEach(stepId => {
+        newSubstepsMap[stepId] = dedupeSubsteps(newSubstepsMap[stepId]);
+      });
+      
+      setSubstepsMap(newSubstepsMap);
+      
+      // Update current substeps if drawer is open
+      if (selectedStepForSubsteps) {
+        setCurrentSubsteps(newSubstepsMap[selectedStepForSubsteps.id] || []);
+      }
+    } catch (error) {
+      console.error('Error refreshing substeps:', error);
+    }
+    
+    onStepsChange?.();
+  };
+
   const handleDeleteStep = async (stepId: string) => {
     if (!window.confirm('Are you sure you want to delete this step?')) return;
     
@@ -819,10 +888,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
               scaffoldingSteps={group.subSteps}
               onComplete={handleMarkComplete}
               onSkip={handleSkipStep}
-              onBreakDown={(stepId) => {
-                const step = steps.find(s => s.id === stepId);
-                if (step) handleNeedHelp(step);
-              }}
+              onBreakDown={handleBreakDown}
               onEdit={(stepId) => {
                 const step = steps.find(s => s.id === stepId);
                 if (step) handleEditStep(step);
@@ -863,12 +929,9 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
                     step={group.mainStep}
                     goalId={goal.id}
                     scaffoldingSteps={group.subSteps}
-                    onComplete={handleMarkComplete}
-                    onSkip={handleSkipStep}
-                    onBreakDown={(stepId) => {
-                      const step = steps.find(s => s.id === stepId);
-                      if (step) handleNeedHelp(step);
-                    }}
+                onComplete={handleMarkComplete}
+                onSkip={handleSkipStep}
+                onBreakDown={handleBreakDown}
                     onEdit={(stepId) => {
                       const step = steps.find(s => s.id === stepId);
                       if (step) handleEditStep(step);
@@ -924,6 +987,46 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
             onClose={() => setCheckInStep(null)}
             onComplete={handleCheckInComplete}
             mode="modal"
+          />
+        )}
+
+        {selectedStepForSubsteps && (
+          <SubstepDrawer
+            isOpen={substepDrawerOpen}
+            onClose={() => setSubstepDrawerOpen(false)}
+            parentStep={selectedStepForSubsteps}
+            goalId={goal.id}
+            substeps={currentSubsteps}
+            onSubstepComplete={(substepId) => handleCompleteSubstep(substepId, selectedStepForSubsteps.id)}
+            onSubstepSkip={handleSkipStep}
+            onSubstepEdit={(substepId) => {
+              const substep = currentSubsteps.find(s => s.id === substepId);
+              if (substep) {
+                const stepForEdit: Step = {
+                  ...substep,
+                  goal_id: goal.id,
+                  order_index: 0,
+                  status: substep.completed_at ? 'done' : 'todo',
+                  type: 'action',
+                  is_required: true,
+                  dependency_step_ids: [],
+                };
+                handleEditStep(stepForEdit);
+              }
+            }}
+            onSubstepDelete={handleDeleteStep}
+            onSubstepCheckIn={handleCheckInStep}
+            onGenerateSubsteps={(parentStepId) => {
+              const step = steps.find(s => s.id === parentStepId);
+              if (step) handleNeedHelp(step);
+              setSubstepDrawerOpen(false);
+            }}
+            onAddManually={(parentStepId) => {
+              const step = steps.find(s => s.id === parentStepId);
+              if (step) handleNeedHelp(step);
+              setSubstepDrawerOpen(false);
+            }}
+            onRefresh={refreshSubsteps}
           />
         )}
       </div>
