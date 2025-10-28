@@ -683,18 +683,21 @@ export const stepsService = {
     
     const { data, error } = await supabase
       .from('steps')
-      .insert({
-        ...stepData,
+      .insert([{
+        title: stepData.title || 'New Step',
+        notes: stepData.notes,
+        explainer: stepData.explainer,
         goal_id: goalId,
         parent_step_id: parentStepId,
         is_scaffolding: true,
-        scaffolding_level,
+        scaffolding_level: scaffoldingLevel,
         order_index: orderIndex,
-        points: 2, // Scaffolding steps worth 2 points
+        status: 'todo',
         type: 'action',
         is_required: true,
-        status: 'not_started'
-      })
+        points: 2,
+        dependency_step_ids: stepData.dependency_step_ids || []
+      }])
       .select()
       .single();
     

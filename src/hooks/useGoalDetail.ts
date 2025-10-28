@@ -42,18 +42,32 @@ export function useGoalDetail(goalId: string) {
           : Promise.resolve({ data: null })
       ]);
 
-      // Fetch all substeps for all steps in a single query (solves N+1 problem)
+      // Fetch all scaffolding steps for all steps in a single query
       const stepIds = stepsData?.map(s => s.id) || [];
       let substeps: Substep[] = [];
       
       if (stepIds.length > 0) {
-        const { data: substepsData } = await supabase
-          .from('substeps')
+        const { data: scaffoldingStepsData } = await supabase
+          .from('steps')
           .select('*')
-          .in('step_id', stepIds)
+          .in('parent_step_id', stepIds)
+          .eq('is_scaffolding', true)
           .order('created_at', { ascending: true });
         
-        substeps = (substepsData || []) as Substep[];
+        // Map scaffolding steps to legacy Substep format
+        substeps = (scaffoldingStepsData || []).map(s => ({
+          id: s.id,
+          step_id: s.parent_step_id!,
+          title: s.title,
+          description: s.notes,
+          is_planned: s.is_planned || false,
+          completed_at: s.status === 'done' ? s.updated_at : undefined,
+          initiated_at: s.initiated_at,
+          points_awarded: s.points_awarded || 0,
+          created_at: s.created_at,
+          updated_at: s.updated_at,
+          due_date: s.due_date
+        } as Substep));
       }
 
       return {

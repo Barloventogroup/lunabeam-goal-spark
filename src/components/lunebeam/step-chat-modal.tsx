@@ -231,12 +231,27 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
     
     setIsLoading(true);
     try {
+      // Create scaffolding step instead of substep
+      const { data: parentStep } = await supabase
+        .from('steps')
+        .select('order_index, scaffolding_level')
+        .eq('id', substep.step_id)
+        .single();
+
       const { data, error } = await supabase
-        .from('substeps')
+        .from('steps')
         .insert({
-          step_id: substep.step_id,
+          goal_id: goal?.id,
+          parent_step_id: substep.step_id,
           title: substep.title,
-          description: substep.description,
+          notes: substep.description,
+          is_scaffolding: true,
+          scaffolding_level: (parentStep?.scaffolding_level || 0) + 1,
+          order_index: (parentStep?.order_index || 0) + 1,
+          status: 'todo',
+          type: 'action',
+          is_required: true,
+          points: 2,
           is_planned: false
         })
         .select()

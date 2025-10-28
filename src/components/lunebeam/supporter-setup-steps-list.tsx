@@ -80,31 +80,47 @@ export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = (
   const [currentEditStep, setCurrentEditStep] = useState<Step | null>(null);
   const { toast } = useToast();
 
-  // Fetch substeps for all steps
+  // Fetch scaffolding steps for all steps
   useEffect(() => {
-    const fetchAllSubsteps = async () => {
+    const fetchAllScaffoldingSteps = async () => {
       try {
-        // Batch fetch all substeps in a single query (fixes N+1 query problem)
+        // Batch fetch all scaffolding steps in a single query
         const stepIds = steps.map(s => s.id);
         
-        const { data: allSubsteps, error } = await supabase
-          .from('substeps')
+        const { data: allScaffoldingSteps, error } = await supabase
+          .from('steps')
           .select('*')
-          .in('step_id', stepIds)
+          .in('parent_step_id', stepIds)
+          .eq('is_scaffolding', true)
           .order('created_at', { ascending: true });
 
         if (error) {
-          console.error('Error fetching substeps:', error);
+          console.error('Error fetching scaffolding steps:', error);
           return;
         }
 
-        // Group substeps by step_id for O(1) lookup
+        // Group scaffolding steps by parent_step_id for O(1) lookup
         const newSubstepsMap: Record<string, Substep[]> = {};
-        (allSubsteps || []).forEach(substep => {
-          if (!newSubstepsMap[substep.step_id]) {
-            newSubstepsMap[substep.step_id] = [];
+        (allScaffoldingSteps || []).forEach(scaffoldingStep => {
+          const parentId = scaffoldingStep.parent_step_id;
+          if (!parentId) return;
+          if (!newSubstepsMap[parentId]) {
+            newSubstepsMap[parentId] = [];
           }
-          newSubstepsMap[substep.step_id].push(substep as Substep);
+          // Map scaffolding step to legacy Substep format for compatibility
+          newSubstepsMap[parentId].push({
+            id: scaffoldingStep.id,
+            step_id: parentId,
+            title: scaffoldingStep.title,
+            description: scaffoldingStep.notes,
+            is_planned: scaffoldingStep.is_planned || false,
+            completed_at: scaffoldingStep.status === 'done' ? scaffoldingStep.updated_at : undefined,
+            initiated_at: scaffoldingStep.initiated_at,
+            points_awarded: scaffoldingStep.points_awarded || 0,
+            created_at: scaffoldingStep.created_at,
+            updated_at: scaffoldingStep.updated_at,
+            due_date: scaffoldingStep.due_date
+          } as Substep);
         });
 
         // Apply deduplication to each step's substeps
@@ -119,7 +135,7 @@ export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = (
     };
 
     if (steps.length > 0) {
-      fetchAllSubsteps();
+      fetchAllScaffoldingSteps();
     }
   }, [steps]);
 
@@ -195,9 +211,32 @@ export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = (
 
   const handleCheckInSubstep = async (substepId: string, stepId: string) => {
     try {
-      await pointsService.checkInSubstep(substepId);
+      // Update the scaffolding step to mark as initiated
+      await supabase
+        .from('steps')
+        .update({ initiated_at: new Date().toISOString(), status: 'doing' })
+        .eq('id', substepId);
       
-      const substeps = dedupeSubsteps(await pointsService.getSubsteps(stepId));
+      // Refresh scaffolding steps for this parent
+      const { data: scaffoldingSteps } = await supabase
+        .from('steps')
+        .select('*')
+        .eq('parent_step_id', stepId)
+        .eq('is_scaffolding', true);
+      
+      const substeps = dedupeSubsteps((scaffoldingSteps || []).map(s => ({
+        id: s.id,
+        step_id: stepId,
+        title: s.title,
+        description: s.notes,
+        is_planned: s.is_planned || false,
+        completed_at: s.status === 'done' ? s.updated_at : undefined,
+        initiated_at: s.initiated_at,
+        points_awarded: s.points_awarded || 0,
+        created_at: s.created_at,
+        updated_at: s.updated_at,
+        due_date: s.due_date
+      } as Substep)));
       setSubstepsMap(prev => ({ ...prev, [stepId]: substeps }));
       
       toast({
@@ -216,9 +255,32 @@ export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = (
 
   const handleCompleteSubstep = async (substepId: string, stepId: string) => {
     try {
-      await pointsService.completeSubstep(substepId);
+      // Complete the scaffolding step
+      await supabase
+        .from('steps')
+        .update({ status: 'done', points_awarded: 2, updated_at: new Date().toISOString() })
+        .eq('id', substepId);
       
-      const substeps = dedupeSubsteps(await pointsService.getSubsteps(stepId));
+      // Refresh scaffolding steps for this parent
+      const { data: scaffoldingSteps } = await supabase
+        .from('steps')
+        .select('*')
+        .eq('parent_step_id', stepId)
+        .eq('is_scaffolding', true);
+      
+      const substeps = dedupeSubsteps((scaffoldingSteps || []).map(s => ({
+        id: s.id,
+        step_id: stepId,
+        title: s.title,
+        description: s.notes,
+        is_planned: s.is_planned || false,
+        completed_at: s.status === 'done' ? s.updated_at : undefined,
+        initiated_at: s.initiated_at,
+        points_awarded: s.points_awarded || 0,
+        created_at: s.created_at,
+        updated_at: s.updated_at,
+        due_date: s.due_date
+      } as Substep)));
       setSubstepsMap(prev => ({ ...prev, [stepId]: substeps }));
       
       toast({

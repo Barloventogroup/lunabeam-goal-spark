@@ -270,24 +270,32 @@ export const TabHome: React.FC<TabHomeProps> = ({
     let substepsByStepId: Record<string, any[]> = {};
     if (allStepIds.length > 0) {
       try {
-        const { data: allSubsteps, error } = await supabase
-          .from('substeps')
+        const { data: allScaffoldingSteps, error } = await supabase
+          .from('steps')
           .select('*')
-          .in('step_id', allStepIds);
+          .in('parent_step_id', allStepIds)
+          .eq('is_scaffolding', true);
         
         if (error) {
-          console.warn('[TabHome] Error fetching substeps:', error);
+          console.warn('[TabHome] Error fetching scaffolding steps:', error);
         } else {
-          // Group substeps by step_id
-          (allSubsteps || []).forEach(substep => {
-            if (!substepsByStepId[substep.step_id]) {
-              substepsByStepId[substep.step_id] = [];
+          // Group scaffolding steps by parent_step_id
+          (allScaffoldingSteps || []).forEach(scaffoldingStep => {
+            const parentId = scaffoldingStep.parent_step_id;
+            if (!parentId) return;
+            if (!substepsByStepId[parentId]) {
+              substepsByStepId[parentId] = [];
             }
-            substepsByStepId[substep.step_id].push(substep);
+            // Map to legacy format
+            substepsByStepId[parentId].push({
+              id: scaffoldingStep.id,
+              step_id: parentId,
+              completed_at: scaffoldingStep.status === 'done' ? scaffoldingStep.updated_at : undefined
+            });
           });
         }
       } catch (e) {
-        console.warn('[TabHome] Failed to batch fetch substeps:', e);
+        console.warn('[TabHome] Failed to batch fetch scaffolding steps:', e);
       }
     }
 
