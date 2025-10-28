@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '@/components/ui/drawer';
 import { Plus, Calendar, ChevronLeft, ChevronRight, Users, UserCheck } from 'lucide-react';
 import { goalsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
@@ -11,6 +12,7 @@ import type { Goal, GoalStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useGoals } from '@/hooks/useGoals';
+import { GoalDetailV2 } from './goal-detail-v2';
 interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
   refreshTrigger?: number;
@@ -24,6 +26,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [filterCreator, setFilterCreator] = useState<string>("all");
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const {
     toast
   } = useToast();
@@ -223,10 +227,10 @@ export const GoalsList: React.FC<GoalsListProps> = ({
             const isCreatedByMe = goal.created_by === currentUser?.id;
             const ownerName = allProfiles[goal.owner_id]?.first_name || 'Unknown';
             const creatorName = allProfiles[goal.created_by]?.first_name || 'Unknown';
-            return <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow">
+            return <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow relative">
                     <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1 cursor-pointer" onClick={() => onNavigate('goal-detail', goal.id)}>
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1 cursor-pointer pr-8" onClick={() => onNavigate('goal-detail', goal.id)}>
                           <h4 className="text-sm mb-2 capitalize">{goal.title}</h4>
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <Badge variant={getStatusColor(goal.status)}>
@@ -248,6 +252,17 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                               Due {formatDate(goal.due_date)}
                             </div>}
                         </div>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedGoalId(goal.id);
+                            setIsDrawerOpen(true);
+                          }}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-accent rounded-full transition-colors"
+                          aria-label="View goal details"
+                        >
+                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </button>
                       </div>
                     </CardHeader>
                   </Card>;
@@ -255,5 +270,26 @@ export const GoalsList: React.FC<GoalsListProps> = ({
             </div>}
         </div>
       </div>
+
+      {/* Drawer for Goal Details */}
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <DrawerContent side="right" className="w-full sm:max-w-2xl">
+          <DrawerHeader className="sticky top-0 bg-background z-10 border-b">
+            <div className="flex items-center justify-between">
+              <DrawerTitle>Goal Details</DrawerTitle>
+              <DrawerClose />
+            </div>
+          </DrawerHeader>
+          {selectedGoalId && (
+            <GoalDetailV2 
+              goalId={selectedGoalId} 
+              onBack={() => {
+                setIsDrawerOpen(false);
+                setSelectedGoalId(null);
+              }} 
+            />
+          )}
+        </DrawerContent>
+      </Drawer>
     </div>;
 };
