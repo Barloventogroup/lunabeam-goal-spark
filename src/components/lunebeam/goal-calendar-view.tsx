@@ -136,24 +136,26 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
 
       {/* Multi-Month Calendar with Navigation */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 px-0">
           {/* Navigation Controls */}
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <Button variant="outline" size="icon" onClick={() => setCurrentMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            
-            <span className="font-semibold text-lg min-w-[200px] text-center text-foreground">
-              {format(currentMonth, 'MMMM yyyy')}
-            </span>
-            
-            <Button variant="outline" size="icon" onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} aria-label="Next month">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+          <div className="px-6">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              
+              <span className="font-semibold text-lg min-w-[200px] text-center text-foreground">
+                {format(currentMonth, 'MMMM yyyy')}
+              </span>
+              
+              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} aria-label="Next month">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           
     {/* Three-Month Calendar Grid - Horizontal Scroll */}
-    <div className="overflow-x-auto -mx-4 px-4">
+    <div className="overflow-x-auto overflow-y-hidden">
       <div className="flex gap-4 min-w-max">
             {/* Previous Month - Only show if goal was active */}
             {showPreviousMonth && <div className="flex flex-col items-center">
@@ -172,18 +174,20 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
         </div>
           
           {/* Compact Legend */}
-          <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full border-2 border-blue-400" />
-              <span>Scheduled</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-green-500" />
-              <span>Completed</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
-              <span>Missed</span>
+          <div className="px-6">
+            <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full border-2 border-blue-400" />
+                <span>Scheduled</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <span>Completed</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <span>Missed</span>
+              </div>
             </div>
           </div>
         </CardContent>
