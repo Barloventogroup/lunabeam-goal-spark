@@ -1491,6 +1491,12 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         <TabsContent value="calendar" className="mt-4 px-4">
           {activeTab === 'calendar' && (
             <div className="max-w-4xl mx-auto px-2 sm:px-4">
+              <div className="mb-2">
+                <h3 className="text-base font-semibold flex items-center gap-2">
+                  <span>📊</span>
+                  <span>Results</span>
+                </h3>
+              </div>
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>
                 <GoalCalendarView goal={goal} steps={steps} />
               </Suspense>
