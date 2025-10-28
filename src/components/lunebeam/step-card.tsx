@@ -191,7 +191,7 @@ export const StepCard: React.FC<StepCardProps> = ({
         </CardHeader>
 
         <CardContent className="p-0">
-          <CollapsibleContent className="space-y-0 px-4 pb-3">
+          <CollapsibleContent className="space-y-0 px-4 pb-3 data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
             {/* Separator */}
             <Separator className="mb-3" />
             
