@@ -183,7 +183,7 @@ export const StepCard: React.FC<StepCardProps> = ({
             {/* Info icon */}
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="justify-start gap-2 h-auto p-0 hover:bg-transparent">
-                <div className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
                   <Info className="h-4 w-4" />
                   <span className="text-sm">Info</span>
                 </div>
