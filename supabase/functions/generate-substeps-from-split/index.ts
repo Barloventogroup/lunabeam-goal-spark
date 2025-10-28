@@ -48,15 +48,15 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that breaks down tasks into smaller, manageable substeps for neurodiverse individuals. Return only valid JSON.'
+            content: 'You are a helpful assistant that breaks down tasks into smaller, manageable substeps for neurodiverse individuals. You MUST return ONLY valid JSON in the format: {"substeps": [{"title": "...", "description": "..."}]}. Do not include any other text or markdown formatting.'
           },
           {
             role: 'user',
-            content: `Break down this step into 2-4 smaller, concrete substeps:\n\nStep: ${step.title}\nDescription: ${step.explainer || step.notes || ''}\n\nGoal context: ${goalContext}\nUser feedback: ${userMessage}\n\nProvide substeps as a JSON array with title and description fields. Each substep should be:\n1. Specific and actionable\n2. Small enough to complete in 5-15 minutes\n3. Concrete with clear completion criteria\n4. In logical order\n\nExample format:\n[\n  {"title": "Gather materials needed", "description": "Collect pen, paper, and laptop"},\n  {"title": "Draft outline", "description": "Write 3-5 main points to cover"}\n]`
+            content: `Break down this step into 2-4 smaller, concrete substeps:\n\nStep: ${step.title}\nDescription: ${step.explainer || step.notes || ''}\n\nGoal context: ${goalContext}\nUser feedback: ${userMessage}\n\nProvide substeps as a JSON object with this exact structure:\n{\n  "substeps": [\n    {"title": "First substep", "description": "What to do"},\n    {"title": "Second substep", "description": "Next action"}\n  ]\n}\n\nEach substep should be:\n1. Specific and actionable\n2. Small enough to complete in 5-15 minutes\n3. Concrete with clear completion criteria\n4. In logical order`
           }
         ],
         temperature: 0.7,
@@ -71,7 +71,10 @@ serve(async (req) => {
     }
 
     const aiResult = await response.json();
-    const content = aiResult.choices[0].message.content;
+    let content = aiResult.choices[0].message.content;
+    
+    // Strip any markdown code fences
+    content = content.replace(/^```(?:json)?\s*\n?/m, '').replace(/\n?```\s*$/m, '').trim();
     
     // Parse the JSON response
     let substepsData;
