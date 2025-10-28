@@ -88,6 +88,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   const [substepDrawerOpen, setSubstepDrawerOpen] = useState(false);
   const [selectedStepForSubsteps, setSelectedStepForSubsteps] = useState<Step | null>(null);
   const [currentSubsteps, setCurrentSubsteps] = useState<Substep[]>([]);
+  const [goalName, setGoalName] = useState<string>('');
   const { toast } = useToast();
   
   // Check for incomplete generation
@@ -154,6 +155,13 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       fetchAllScaffoldingSteps();
     }
   }, [steps]);
+
+  // Fetch goal name
+  useEffect(() => {
+    if (goal?.title) {
+      setGoalName(goal.title);
+    }
+  }, [goal?.title]);
 
   useEffect(() => {
     if (awaitingStepUpdate) {
@@ -885,6 +893,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
               key={group.mainStep.id}
               step={group.mainStep}
               goalId={goal.id}
+              goalName={goalName}
               scaffoldingSteps={group.subSteps}
               onComplete={handleMarkComplete}
               onSkip={handleSkipStep}
@@ -928,6 +937,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
                     key={group.mainStep.id}
                     step={group.mainStep}
                     goalId={goal.id}
+                    goalName={goalName}
                     scaffoldingSteps={group.subSteps}
                 onComplete={handleMarkComplete}
                 onSkip={handleSkipStep}
@@ -996,6 +1006,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
             onClose={() => setSubstepDrawerOpen(false)}
             parentStep={selectedStepForSubsteps}
             goalId={goal.id}
+            goalName={goalName}
             substeps={currentSubsteps}
             onSubstepComplete={(substepId) => handleCompleteSubstep(substepId, selectedStepForSubsteps.id)}
             onSubstepSkip={handleSkipStep}

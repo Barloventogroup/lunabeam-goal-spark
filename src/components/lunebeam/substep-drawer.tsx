@@ -17,6 +17,7 @@ interface SubstepDrawerProps {
   onClose: () => void;
   parentStep: Step;
   goalId: string;
+  goalName?: string;
   substeps: Substep[];
   onSubstepComplete: (substepId: string) => void;
   onSubstepSkip: (substepId: string) => void;
@@ -33,6 +34,7 @@ export const SubstepDrawer: React.FC<SubstepDrawerProps> = ({
   onClose,
   parentStep,
   goalId,
+  goalName,
   substeps,
   onSubstepComplete,
   onSubstepSkip,
@@ -193,6 +195,7 @@ export const SubstepDrawer: React.FC<SubstepDrawerProps> = ({
                     key={substep.id}
                     step={stepForCard}
                     goalId={goalId}
+                    goalName={goalName}
                     scaffoldingSteps={[]}
                     onComplete={onSubstepComplete}
                     onSkip={onSubstepSkip}
@@ -222,6 +225,7 @@ export const SubstepDrawer: React.FC<SubstepDrawerProps> = ({
           onClose={() => setNestedDrawerOpen(false)}
           parentStep={selectedSubstepForNesting}
           goalId={goalId}
+          goalName={goalName}
           substeps={nestedSubsteps}
           onSubstepComplete={onSubstepComplete}
           onSubstepSkip={onSubstepSkip}
