@@ -188,8 +188,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({
           </TabsList>
         </Tabs>
 
-          {!isMobile && totalPages > 1 && <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
+          {!isMobile && totalPages > 1 && <div className="flex items-center justify-between min-h-[36px]">
+              <div className="text-sm text-muted-foreground flex items-center">
                 Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
               </div>
               <div className="flex items-center gap-2">
