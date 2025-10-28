@@ -105,7 +105,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
           <div className="flex items-center justify-around divide-x divide-border">
             {/* Streak */}
             <div className="flex-1 text-center">
-              <div className="text-muted-foreground text-sm mb-2">Streak</div>
+              <div className="text-muted-foreground text-sm font-bold mb-2">Streak</div>
               <div className="text-2xl font-bold text-primary">
                 🔥 {goal.streak_count && goal.streak_count > 0 ? goal.streak_count : 0}
                 <span className="text-sm font-normal text-muted-foreground ml-1">
@@ -116,7 +116,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
             
             {/* Completed */}
             <div className="flex-1 text-center">
-              <div className="text-muted-foreground text-sm mb-2">Completed</div>
+              <div className="text-muted-foreground text-sm font-bold mb-2">Completed</div>
               <div className="text-2xl font-bold text-green-600">
                 {completedDates.length}
                 <span className="text-sm font-normal text-muted-foreground ml-1">
@@ -127,7 +127,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
             
             {/* Missed */}
             <div className="flex-1 text-center">
-              <div className="text-muted-foreground text-sm mb-2">Missed</div>
+              <div className="text-muted-foreground text-sm font-bold mb-2">Missed</div>
               <div className="text-2xl font-bold text-red-500">
                 {missedDates.length}
                 <span className="text-sm font-normal text-muted-foreground ml-1">
