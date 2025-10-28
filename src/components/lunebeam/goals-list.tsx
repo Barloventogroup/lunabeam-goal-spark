@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '@/components/ui/drawer';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { Plus, Calendar, ChevronLeft, ChevronRight, Users, UserCheck } from 'lucide-react';
 import { goalsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
@@ -27,7 +27,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   const [filterCreator, setFilterCreator] = useState<string>("all");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const {
     toast
   } = useToast();
@@ -256,7 +256,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedGoalId(goal.id);
-                            setIsDrawerOpen(true);
+                            setIsSheetOpen(true);
                           }}
                           className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-accent rounded-full transition-colors"
                           aria-label="View goal details"
@@ -271,25 +271,24 @@ export const GoalsList: React.FC<GoalsListProps> = ({
         </div>
       </div>
 
-      {/* Drawer for Goal Details */}
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="right">
-        <DrawerContent side="right" className="w-full sm:max-w-2xl">
-          <DrawerHeader className="sticky top-0 bg-background z-10 border-b">
-            <div className="flex items-center justify-between">
-              <DrawerTitle>Goal Details</DrawerTitle>
-              <DrawerClose />
-            </div>
-          </DrawerHeader>
+      {/* Sheet for Goal Details */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto p-0">
+          <div className="sticky top-0 bg-background z-10 border-b p-4">
+            <SheetHeader>
+              <SheetTitle>Goal Details</SheetTitle>
+            </SheetHeader>
+          </div>
           {selectedGoalId && (
             <GoalDetailV2 
               goalId={selectedGoalId} 
               onBack={() => {
-                setIsDrawerOpen(false);
+                setIsSheetOpen(false);
                 setSelectedGoalId(null);
               }} 
             />
           )}
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
     </div>;
 };
