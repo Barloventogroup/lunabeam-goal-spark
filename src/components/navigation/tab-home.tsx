@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut, AlertCircle } from 'lucide-react';
+import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut, AlertCircle, Clock } from 'lucide-react';
 import { Button } from '../ui/button';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -52,6 +52,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
     overdueSteps: any[];
     upcomingSteps: any[];
   }>({ todaysSteps: [], overdueSteps: [], upcomingSteps: [] });
+  const [isLoadingSteps, setIsLoadingSteps] = useState(true);
 
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -304,19 +305,26 @@ export const TabHome: React.FC<TabHomeProps> = ({
   // Load steps data when goals change
   useEffect(() => {
     const loadStepsData = async () => {
+      setIsLoadingSteps(true);
       try {
         const data = await getTodaysStepsAndNext();
         setStepsData(data);
       } catch (err) {
         console.error('[TabHome] Failed to compute steps data:', err);
         setStepsData({ todaysSteps: [], overdueSteps: [], upcomingSteps: [] });
+      } finally {
+        setIsLoadingSteps(false);
       }
     };
     
-    if (goalsLoaded) {
+    // Only compute when we have goals loaded and at least attempted to load steps
+    if (!goalsLoading && goalsFromQuery.length > 0) {
       loadStepsData();
+    } else if (!goalsLoading) {
+      // No goals at all - set loading to false
+      setIsLoadingSteps(false);
     }
-  }, [goalsLoaded, goals, steps]);
+  }, [goalsLoading, goalsFromQuery, steps]);
 
   const { todaysSteps, overdueSteps, upcomingSteps } = stepsData;
   const todaysDueItem = todaysSteps[0] || null;
@@ -461,15 +469,31 @@ export const TabHome: React.FC<TabHomeProps> = ({
           )}
 
           {/* Today's Focus Card - Always show */}
-          <TodaysFocusCard
-            step={todaysDueItem?.step}
-            goal={todaysDueItem?.goal}
-            overdueSteps={overdueSteps}
-            upcomingSteps={upcomingSteps}
-            onViewStep={handleViewStep}
-            onNeedHelp={onOpenChat}
-            onViewUpcomingStep={handleViewUpcomingStep}
-          />
+          {isLoadingSteps ? (
+            <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-foreground">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                  Today's Focus
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <TodaysFocusCard
+              step={todaysDueItem?.step}
+              goal={todaysDueItem?.goal}
+              overdueSteps={overdueSteps}
+              upcomingSteps={upcomingSteps}
+              onViewStep={handleViewStep}
+              onNeedHelp={onOpenChat}
+              onViewUpcomingStep={handleViewUpcomingStep}
+            />
+          )}
 
 
 
