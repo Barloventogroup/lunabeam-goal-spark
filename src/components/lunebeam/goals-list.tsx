@@ -12,6 +12,7 @@ import type { Goal, GoalStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useGoals } from '@/hooks/useGoals';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { GoalDetailV2 } from './goal-detail-v2';
 interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
@@ -28,6 +29,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
   const {
     toast
   } = useToast();
@@ -116,7 +118,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   const totalPages = Math.ceil(filteredGoals.length / GOALS_PER_PAGE);
   const startIndex = (currentPage - 1) * GOALS_PER_PAGE;
   const endIndex = startIndex + GOALS_PER_PAGE;
-  const currentGoals = filteredGoals.slice(startIndex, endIndex);
+  const currentGoals = isMobile ? filteredGoals : filteredGoals.slice(startIndex, endIndex);
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     const scrollContainer = document.querySelector('[data-scroll-container]');
@@ -182,7 +184,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
             </Select>
           </div>
 
-          {totalPages > 1 && <div className="flex items-center justify-between">
+          {!isMobile && totalPages > 1 && <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
                 Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
               </div>
