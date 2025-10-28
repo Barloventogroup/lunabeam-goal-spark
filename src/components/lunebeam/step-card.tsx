@@ -3,6 +3,7 @@ import { Calendar, MoreHorizontal, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -191,6 +192,9 @@ export const StepCard: React.FC<StepCardProps> = ({
 
         <CardContent className="p-0">
           <CollapsibleContent className="space-y-0 px-4 pb-3">
+            {/* Separator */}
+            <Separator className="mb-3" />
+            
             {/* Description */}
             {(step.explainer || step.notes) && (
               <div className="space-y-1">
