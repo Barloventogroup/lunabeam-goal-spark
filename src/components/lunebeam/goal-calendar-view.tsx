@@ -156,7 +156,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
           
     {/* Three-Month Calendar Grid - Horizontal Scroll */}
     <div className="overflow-x-auto overflow-y-hidden">
-      <div className="flex gap-4 min-w-max">
+      <div className="flex gap-4 justify-center">
             {/* Previous Month - Only show if goal was active */}
             {showPreviousMonth && <div className="flex flex-col items-center">
                 <div className="text-sm text-muted-foreground mb-2">
