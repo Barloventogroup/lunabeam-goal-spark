@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Calendar, MoreVertical, Info } from 'lucide-react';
+import { Calendar, MoreHorizontal, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -121,7 +121,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                       className="h-6 w-6"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48 z-[60]">
