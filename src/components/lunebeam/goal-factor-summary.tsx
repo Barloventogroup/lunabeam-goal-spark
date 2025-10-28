@@ -266,7 +266,6 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
           {/* Goal Summary - 2x2 Grid matching Commitment & Activation */}
           <div className="space-y-2">
             <h3 className="text-xl font-semibold flex items-center gap-2">
-              <span>✨</span>
               <span>Goal Summary</span>
             </h3>
             
