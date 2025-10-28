@@ -99,7 +99,6 @@ serve(async (req) => {
           step_id: stepId,
           title: sub.title || `Substep ${index + 1}`,
           description: sub.description || '',
-          order_index: index,
           is_planned: false,
           created_at: new Date().toISOString()
         }))
