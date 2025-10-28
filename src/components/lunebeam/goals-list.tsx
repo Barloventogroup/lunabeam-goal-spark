@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { Plus, Calendar, ChevronLeft, ChevronRight, Users, UserCheck } from 'lucide-react';
 import { goalsService } from '@/services/goalsService';
@@ -18,14 +18,13 @@ interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
   refreshTrigger?: number;
 }
-type GoalsTab = 'active' | 'completed';
+type GoalsTab = 'all' | 'active' | 'completed' | 'created-by-me' | 'created-by-others';
 export const GoalsList: React.FC<GoalsListProps> = ({
   onNavigate,
   refreshTrigger
 }) => {
-  const [activeTab, setActiveTab] = useState<GoalsTab>('active');
+  const [activeTab, setActiveTab] = useState<GoalsTab>('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [filterCreator, setFilterCreator] = useState<string>("all");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -38,7 +37,9 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   // Use React Query for goals fetching
   const filters = activeTab === 'completed' ? {
     status: 'completed' as GoalStatus
-  } : undefined;
+  } : activeTab === 'active' ? {
+    status: 'active' as GoalStatus
+  } : undefined; // 'all', 'created-by-me', 'created-by-others' fetch all statuses
   const {
     data,
     isLoading,
@@ -109,8 +110,11 @@ export const GoalsList: React.FC<GoalsListProps> = ({
 
   // Apply filters
   const filteredGoals = goals.filter(goal => {
-    if (filterCreator === "me" && goal.created_by !== currentUser?.id) return false;
-    if (filterCreator === "others" && goal.created_by === currentUser?.id) return false;
+    // Handle creator-based tabs
+    if (activeTab === "created-by-me" && goal.created_by !== currentUser?.id) return false;
+    if (activeTab === "created-by-others" && goal.created_by === currentUser?.id) return false;
+    // Active and Completed are handled by the useGoals filter
+    // 'all' tab shows everything
     return true;
   });
 
@@ -165,28 +169,24 @@ export const GoalsList: React.FC<GoalsListProps> = ({
 
         <div className="space-y-3">
           <Tabs value={activeTab} onValueChange={value => setActiveTab(value as GoalsTab)} className="w-full">
-            <TabsList className="w-full p-0 px-4 items-stretch overflow-hidden grid grid-cols-2">
-              <TabsTrigger value="active" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none">
+            <TabsList className="w-full p-0 px-4 items-stretch overflow-hidden grid grid-cols-5">
+              <TabsTrigger value="all" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs">
+                All
+              </TabsTrigger>
+              <TabsTrigger value="active" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs">
                 Active
               </TabsTrigger>
-              <TabsTrigger value="completed" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none">
+              <TabsTrigger value="completed" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs">
                 Completed
+              </TabsTrigger>
+              <TabsTrigger value="created-by-me" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs">
+                By Me
+              </TabsTrigger>
+              <TabsTrigger value="created-by-others" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs">
+                By Others
               </TabsTrigger>
             </TabsList>
           </Tabs>
-
-          <div className="flex gap-2">
-            <Select value={filterCreator} onValueChange={setFilterCreator}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by creator" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Goals</SelectItem>
-                <SelectItem value="me">Created by me</SelectItem>
-                <SelectItem value="others">Created by others</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
           {!isMobile && totalPages > 1 && <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
@@ -212,12 +212,20 @@ export const GoalsList: React.FC<GoalsListProps> = ({
           {filteredGoals.length === 0 ? <Card>
               <CardContent className="text-center py-8">
                 <h3>
-                  {activeTab === 'completed' ? 'No completed goals yet' : 'No active goals yet'}
+                  {activeTab === 'completed' ? 'No completed goals yet' : 
+                   activeTab === 'active' ? 'No active goals yet' :
+                   activeTab === 'created-by-me' ? 'No goals created by you yet' :
+                   activeTab === 'created-by-others' ? 'No goals created by others yet' :
+                   'No goals yet'}
                 </h3>
                 <p className="text-body-sm text-muted-foreground mb-4">
-                  {filteredGoals.length === 0 && goals.length > 0 ? 'No goals match your current filter.' : activeTab === 'completed' ? 'Complete some goals to see them here!' : 'Create your first goal to get started on your journey!'}
+                  {filteredGoals.length === 0 && goals.length > 0 ? 'No goals match your current filter.' : 
+                   activeTab === 'completed' ? 'Complete some goals to see them here!' :
+                   activeTab === 'created-by-me' ? 'Create your first goal to get started!' :
+                   activeTab === 'created-by-others' ? 'Goals created by your supporters will appear here.' :
+                   'Create your first goal to get started on your journey!'}
                 </p>
-                {activeTab === 'active' && <div className="space-y-2">
+                {(activeTab === 'active' || activeTab === 'all' || activeTab === 'created-by-me') && <div className="space-y-2">
                     <Button onClick={() => onNavigate('create-goal')} variant="outline">
                       <Plus className="h-4 w-4 mr-2" />
                       Create Your First Goal
