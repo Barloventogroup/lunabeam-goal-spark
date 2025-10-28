@@ -23,7 +23,7 @@ export const ScaffoldingStepCard: React.FC<ScaffoldingStepCardProps> = ({
         transition-all duration-200
         ${isCompleted 
           ? 'bg-success/10 border-success' 
-          : 'bg-accent/30 border-accent hover:bg-accent/50'
+          : 'bg-accent/40 border-accent hover:bg-accent/60'
         }
       `}
     >

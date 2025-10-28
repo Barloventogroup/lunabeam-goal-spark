@@ -817,7 +817,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-3 pb-6">
+        <CardContent className="space-y-4 pb-6">
           {/* Visible steps */}
           {groupedSteps.map((group) => (
             <StepCard
@@ -864,7 +864,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
           {/* Queued steps (collapsible) */}
           {showingQueuedSteps && (
             <>
-              <div className="space-y-3 opacity-60">
+              <div className="space-y-4 opacity-60">
                 {queuedGroupedSteps.map((group) => (
                   <StepCard
                     key={group.mainStep.id}

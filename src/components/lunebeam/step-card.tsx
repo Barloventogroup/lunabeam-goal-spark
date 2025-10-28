@@ -87,7 +87,7 @@ export const StepCard: React.FC<StepCardProps> = ({
   const hasScaffolding = totalScaffolding > 0;
 
   return (
-    <Card className={`relative transition-all duration-200 ${isBlocked ? 'opacity-50' : ''}`}>
+    <Card className={`relative transition-all duration-200 shadow-sm hover:shadow-md border border-border/60 ${isBlocked ? 'opacity-50' : ''}`}>
       {isBlocked && (
         <div className="absolute inset-0 bg-muted/80 backdrop-blur-[2px] rounded-lg z-10 flex items-center justify-center">
           <Badge variant="secondary" className="text-sm">
@@ -97,7 +97,7 @@ export const StepCard: React.FC<StepCardProps> = ({
       )}
 
       <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 bg-accent/5">
           <div className="flex items-start justify-between gap-2">
             <h4 className="font-medium text-base leading-tight flex-1 pr-2">{step.title}</h4>
             <DropdownMenu>
@@ -158,6 +158,11 @@ export const StepCard: React.FC<StepCardProps> = ({
           </div>
 
           <CollapsibleContent className="space-y-3">
+            {(step.explainer || step.notes) && (
+              <div className="text-sm text-muted-foreground leading-relaxed break-words">
+                {step.explainer || step.notes}
+              </div>
+            )}
 
             <Button
               variant="outline"
