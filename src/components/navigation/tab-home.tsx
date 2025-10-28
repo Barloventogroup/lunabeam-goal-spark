@@ -399,7 +399,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
         <div className="p-4 space-y-6">
           {/* Welcome Message */}
-          <div>
+          <div className="pt-4">
             {(() => {
               const isAdmin = userContext?.userType === 'admin';
               
