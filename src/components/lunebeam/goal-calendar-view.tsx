@@ -6,17 +6,22 @@ import { Goal, Step } from '@/types';
 import { format, parseISO, startOfDay, isAfter, isBefore, isSameDay, addDays, addMonths, subMonths, startOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
 interface GoalCalendarViewProps {
   goal: Goal;
   steps: Step[];
 }
-
-export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps }) => {
+export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
+  goal,
+  steps
+}) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // Calculate dates for calendar display
-  const { plannedDates, completedDates, missedDates } = useMemo(() => {
+  const {
+    plannedDates,
+    completedDates,
+    missedDates
+  } = useMemo(() => {
     const planned: Date[] = [];
     const completed: Date[] = [];
     const missed: Date[] = [];
@@ -42,18 +47,16 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
 
     // Get completed dates from steps
     const completedSet = new Set<string>();
-    steps
-      .filter(step => step.status === 'done' && step.updated_at)
-      .forEach(step => {
-        try {
-          const completedDate = startOfDay(parseISO(step.updated_at));
-          const dateKey = format(completedDate, 'yyyy-MM-dd');
-          completedSet.add(dateKey);
-          completed.push(completedDate);
-        } catch (e) {
-          console.error('Failed to parse completion date:', step.updated_at);
-        }
-      });
+    steps.filter(step => step.status === 'done' && step.updated_at).forEach(step => {
+      try {
+        const completedDate = startOfDay(parseISO(step.updated_at));
+        const dateKey = format(completedDate, 'yyyy-MM-dd');
+        completedSet.add(dateKey);
+        completed.push(completedDate);
+      } catch (e) {
+        console.error('Failed to parse completion date:', step.updated_at);
+      }
+    });
 
     // Calculate missed dates (planned dates in the past without completion)
     const today = startOfDay(new Date());
@@ -69,8 +72,11 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
         }
       }
     });
-
-    return { plannedDates: planned, completedDates: completed, missedDates: missed };
+    return {
+      plannedDates: planned,
+      completedDates: completed,
+      missedDates: missed
+    };
   }, [goal, steps]);
 
   // Determine if previous month should be shown (only if goal existed then)
@@ -85,18 +91,14 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
   const modifiers = {
     planned: plannedDates,
     completed: completedDates,
-    missed: missedDates,
+    missed: missedDates
   };
-
   const modifiersClassNames = {
     planned: 'ring-2 ring-blue-400 ring-inset',
     completed: 'bg-green-500 text-white hover:bg-green-600 font-bold shadow-sm',
-    missed: 'bg-red-500 text-white hover:bg-red-600 font-bold shadow-sm',
+    missed: 'bg-red-500 text-white hover:bg-red-600 font-bold shadow-sm'
   };
-
-
-  return (
-    <div className="space-y-4">
+  return <div className="space-y-4">
       {/* Hero Metrics Card - Triangle Formation */}
       <Card>
         <CardContent className="pt-6 pb-8">
@@ -105,9 +107,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
             {/* Streak - Top of Triangle (Most Prominent) */}
             <div className="text-center">
               <div className="text-6xl font-bold text-primary mb-2">
-                {goal.streak_count && goal.streak_count > 0 
-                  ? `🔥 ${goal.streak_count}` 
-                  : "🔥 0"}
+                {goal.streak_count && goal.streak_count > 0 ? `🔥 ${goal.streak_count}` : "🔥 0"}
               </div>
               <div className="text-base font-semibold text-muted-foreground">Day Streak</div>
             </div>
@@ -139,12 +139,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
         <CardContent className="pt-6">
           {/* Navigation Controls */}
           <div className="flex items-center justify-center gap-4 mb-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
-              aria-label="Previous month"
-            >
+            <Button variant="outline" size="icon" onClick={() => setCurrentMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
               <ChevronLeft className="h-4 w-4" />
             </Button>
             
@@ -152,12 +147,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
               {format(currentMonth, 'MMMM yyyy')}
             </span>
             
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
-              aria-label="Next month"
-            >
+            <Button variant="outline" size="icon" onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} aria-label="Next month">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -166,33 +156,17 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
     <div className="overflow-x-auto -mx-4 px-4">
       <div className="flex gap-4 min-w-max">
             {/* Previous Month - Only show if goal was active */}
-            {showPreviousMonth && (
-              <div className="flex flex-col items-center">
+            {showPreviousMonth && <div className="flex flex-col items-center">
                 <div className="text-sm text-muted-foreground mb-2">
                   {format(subMonths(currentMonth, 1), 'MMMM')}
                 </div>
-                <Calendar
-                  mode="single"
-                  month={subMonths(currentMonth, 1)}
-                  modifiers={modifiers}
-                  modifiersClassNames={modifiersClassNames}
-                  className="rounded-md border-0"
-                />
-              </div>
-            )}
+                <Calendar mode="single" month={subMonths(currentMonth, 1)} modifiers={modifiers} modifiersClassNames={modifiersClassNames} className="rounded-md border-0" />
+              </div>}
             
             {/* Current Month - Centered */}
             <div className="flex flex-col items-center">
-              <div className="text-sm font-semibold mb-2">
-                {format(currentMonth, 'MMMM')}
-              </div>
-              <Calendar
-                mode="single"
-                month={currentMonth}
-                modifiers={modifiers}
-                modifiersClassNames={modifiersClassNames}
-                className="rounded-md border-0"
-              />
+              
+              <Calendar mode="single" month={currentMonth} modifiers={modifiers} modifiersClassNames={modifiersClassNames} className="rounded-md border-0" />
             </div>
             
             {/* Next Month */}
@@ -200,13 +174,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
               <div className="text-sm text-muted-foreground mb-2">
                 {format(addMonths(currentMonth, 1), 'MMMM')}
               </div>
-              <Calendar
-                mode="single"
-                month={addMonths(currentMonth, 1)}
-                modifiers={modifiers}
-                modifiersClassNames={modifiersClassNames}
-                className="rounded-md border-0"
-              />
+              <Calendar mode="single" month={addMonths(currentMonth, 1)} modifiers={modifiers} modifiersClassNames={modifiersClassNames} className="rounded-md border-0" />
             </div>
           </div>
         </div>
@@ -229,6 +197,5 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
         </CardContent>
       </Card>
 
-    </div>
-  );
+    </div>;
 };
