@@ -173,7 +173,7 @@ export const StepCard: React.FC<StepCardProps> = ({
             
             {/* Due date */}
             {step.due_date && (
-              <div className="flex items-center gap-0 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 Due {formatDate(step.due_date)}
               </div>
