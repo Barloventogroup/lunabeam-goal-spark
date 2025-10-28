@@ -1435,15 +1435,15 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-6">
         <TabsList className={cn(
-          "w-full px-4",
+          "w-full px-4 py-0 items-center",
           isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0
             ? "grid grid-cols-4"
             : "grid grid-cols-3"
         )}>
-          <TabsTrigger value="summary" className="h-10 flex items-center justify-center">
+          <TabsTrigger value="summary" className="h-10 py-0 leading-none flex items-center justify-center gap-2">
             Summary
           </TabsTrigger>
-          <TabsTrigger value="steps" className="h-10 flex items-center justify-center">
+          <TabsTrigger value="steps" className="h-10 py-0 leading-none flex items-center justify-center gap-2">
             Steps
             {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
               <Badge className="ml-2 flex items-center" variant="secondary">
@@ -1451,11 +1451,11 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="calendar" className="h-10 flex items-center justify-center">
+          <TabsTrigger value="calendar" className="h-10 py-0 leading-none flex items-center justify-center gap-2">
             Results
           </TabsTrigger>
           {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
-            <TabsTrigger value="supporter" className="h-10 flex items-center justify-center">
+            <TabsTrigger value="supporter" className="h-10 py-0 leading-none flex items-center justify-center gap-2">
               Supporter Setup
               <Badge className="ml-2 flex items-center" variant="secondary">
                 {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
