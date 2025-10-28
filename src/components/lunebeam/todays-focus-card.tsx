@@ -120,7 +120,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
         {/* Overdue Steps */}
         {overdueSteps.length > 0 && (
           <div className="space-y-3">
-            <h5 className="text-lg font-bold text-foreground">Overdue</h5>
+            <h5 className="text-lg font-bold text-foreground">Missed Steps</h5>
             <div className="space-y-2">
               {overdueSteps.map(({step, goal, dueDate}) => (
                 <div key={step.id}>

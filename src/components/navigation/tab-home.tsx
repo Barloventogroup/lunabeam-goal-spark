@@ -15,7 +15,6 @@ import { NotificationBadge } from '../lunebeam/notification-badge';
 import { PointsDisplay } from '../lunebeam/points-display';
 import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
-import { EveningCatchUpCard } from '../lunebeam/evening-catch-up-card';
 import { useStore } from '../../store/useStore';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '../../integrations/supabase/client';
@@ -53,8 +52,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
     overdueSteps: any[];
     upcomingSteps: any[];
   }>({ todaysSteps: [], overdueSteps: [], upcomingSteps: [] });
-  const [showCatchUpCard, setShowCatchUpCard] = useState(false);
-  const [forceShowCatchUp, setForceShowCatchUp] = useState(false);
 
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -73,79 +70,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
   // Use React Query for goals
   const { data: goalsData, isLoading: goalsLoading, refetch: refetchGoals } = useGoals();
   const goalsFromQuery = goalsData?.goals || [];
-
-  // Track user activity for catch-up card
-  useEffect(() => {
-    const updateActivity = () => {
-      localStorage.setItem('last_activity_timestamp', Date.now().toString());
-    };
-
-    window.addEventListener('click', updateActivity);
-    window.addEventListener('scroll', updateActivity);
-    window.addEventListener('keydown', updateActivity);
-
-    return () => {
-      window.removeEventListener('click', updateActivity);
-      window.removeEventListener('scroll', updateActivity);
-      window.removeEventListener('keydown', updateActivity);
-    };
-  }, []);
-
-  // Check catch-up card visibility
-  useEffect(() => {
-    const checkCatchUpVisibility = async () => {
-      if (!user) return;
-
-      const now = new Date();
-      const currentHour = now.getHours();
-      const catchUpHour = 20; // 8 PM default
-
-      // Only show during catch-up window (8-11 PM)
-      if (currentHour < catchUpHour || currentHour >= 23) {
-        setShowCatchUpCard(false);
-        return;
-      }
-
-      // Check if dismissed today
-      const dismissedDate = localStorage.getItem('dismissed_catch_up_date');
-      const today = now.toISOString().split('T')[0];
-      if (dismissedDate === today) {
-        setShowCatchUpCard(false);
-        return;
-      }
-
-      // Check last activity (2+ hours inactive)
-      const lastActivity = localStorage.getItem('last_activity_timestamp');
-      if (lastActivity) {
-        const hoursSinceActivity = (now.getTime() - parseInt(lastActivity)) / (1000 * 60 * 60);
-        if (hoursSinceActivity < 2) {
-          setShowCatchUpCard(false);
-          return;
-        }
-      }
-
-      // Fetch missed steps
-      const { checkInService } = await import('@/services/checkInService');
-      const steps = await checkInService.getMissedSteps(user.id);
-      setShowCatchUpCard(steps.length >= 2);
-    };
-
-    if (profileLoaded) {
-      checkCatchUpVisibility();
-    }
-  }, [profileLoaded, profile, user]);
-
-  const handleReopenCatchUp = () => {
-    // Clear dismissal flag
-    localStorage.removeItem('dismissed_catch_up_date');
-    setForceShowCatchUp(true);
-    setShowCatchUpCard(true);
-    
-    toast({
-      title: "Evening catch-up reopened",
-      description: "Review your missed steps below"
-    });
-  };
 
   // Add effect to listen for tab visibility changes and refresh data
   useEffect(() => {
@@ -461,17 +385,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
               <span className="text-sm font-medium">{pointsSummary?.totalPoints || 0}</span>
             </div>
             
-            {/* Evening Catch-up Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReopenCatchUp}
-              className="h-8 text-xs"
-            >
-              <Clock className="h-3 w-3 mr-1" />
-              Catch-up
-            </Button>
-            
             {/* Sign Out Button */}
             <Button
               variant="ghost"
@@ -525,27 +438,26 @@ export const TabHome: React.FC<TabHomeProps> = ({
             })()}
           </div>
 
+          {/* Missed Steps Alert Card */}
+          {overdueSteps.length > 0 && (
+            <Card className="relative bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-2 border-orange-300 dark:border-orange-700 animate-pulse">
+              <CardContent className="py-4">
+                <div className="flex items-center gap-3">
+                  <Clock className="h-5 w-5 text-orange-600 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-semibold text-foreground">Review your missed steps</h3>
+                    <p className="text-sm text-muted-foreground">
+                      You have {overdueSteps.length} step{overdueSteps.length !== 1 ? 's' : ''} that need attention
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* First Time User Reminder */}
           {isFirstTime && (
             <FirstTimeReminder onNavigateToGoals={() => setCurrentView('add-goal')} />
-          )}
-
-          {/* Evening Catch-Up Card */}
-          {showCatchUpCard && user && (
-            <EveningCatchUpCard
-              userId={user.id}
-              forceShow={forceShowCatchUp}
-              onAllComplete={() => {
-                toast({ title: 'Great job catching up!' });
-                setForceShowCatchUp(false);
-                loadPoints();
-                loadGoals();
-              }}
-              onDismiss={() => {
-                setShowCatchUpCard(false);
-                setForceShowCatchUp(false);
-              }}
-            />
           )}
 
           {/* Today's Focus Card - Always show */}
