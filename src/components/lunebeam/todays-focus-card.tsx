@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, CheckCircle2, ArrowRight, Calendar } from 'lucide-react';
+import { Clock, Calendar } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 import type { Step, Goal } from '@/types';
 import { cleanStepTitle } from '@/utils/stepUtils';
@@ -29,44 +29,37 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
   onViewUpcomingStep
 }) => {
   const renderStepCard = (step: Step, goal: Goal, dueDate?: Date, isOverdue = false) => (
-    <div className={`flex items-center justify-between p-3 bg-background rounded-lg ${isOverdue ? 'border-2 border-red-500' : 'border border-border'}`}>
-      <div className="flex-1 space-y-1">
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-                    <h4 className="font-medium text-foreground text-base">
-                      {cleanStepTitle(step.title)}
-                    </h4>
-          </div>
-        </div>
-        
+    <Card 
+      className={`cursor-pointer hover:shadow-md transition-shadow ${isOverdue ? 'border-2 border-red-500' : ''}`}
+      onClick={() => onViewUpcomingStep?.(step.id, goal.id)}
+    >
+      <CardHeader className="pb-3">
+        <h4 className="font-medium text-foreground text-base">
+          {cleanStepTitle(step.title)}
+        </h4>
+      </CardHeader>
+      
+      <CardContent className="pt-0 space-y-1">
         <p className="text-xs text-muted-foreground">
           Goal: {goal.title}
         </p>
         
         {dueDate && (
-          <p className={`text-xs ${isOverdue ? 'text-red-500 font-medium' : 'text-muted-foreground'}`}>
-            Due {format(dueDate, 'MMM d, yyyy')}
-          </p>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Calendar className="h-4 w-4" />
+            <span className={isOverdue ? 'text-red-500 font-medium' : ''}>
+              Due {format(dueDate, 'MMM d, yyyy')}
+            </span>
+          </div>
         )}
         
-                {step.explainer && (
-                  <p className="text-xs text-muted-foreground">
-                    {step.explainer}
-                  </p>
-                )}
-      </div>
-      
-      <Button 
-        size="sm" 
-        onClick={() => onViewUpcomingStep?.(step.id, goal.id)}
-        className="ml-2"
-        style={{ backgroundColor: '#2393CC', color: 'white' }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1e7bb8'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2393CC'}
-      >
-        View
-      </Button>
-    </div>
+        {step.explainer && (
+          <p className="text-xs text-muted-foreground">
+            {step.explainer}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 
   return (
@@ -82,16 +75,14 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
         {step && goal && (
           <div className="space-y-3">
             <h5 className="text-sm font-semibold text-foreground">Due Today:</h5>
-            <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-foreground text-base">
-                      {cleanStepTitle(step.title)}
-                    </h4>
-                  </div>
-                </div>
-                
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onViewStep}>
+              <CardHeader className="pb-3">
+                <h4 className="font-medium text-foreground text-base">
+                  {cleanStepTitle(step.title)}
+                </h4>
+              </CardHeader>
+              
+              <CardContent className="pt-0 space-y-1">
                 <p className="text-xs text-muted-foreground">
                   Goal: {goal.title}
                 </p>
@@ -101,19 +92,8 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                     {step.explainer}
                   </p>
                 )}
-              </div>
-              
-              <Button 
-                size="sm" 
-                onClick={onViewStep}
-                className="ml-2"
-                style={{ backgroundColor: '#2393CC', color: 'white' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1e7bb8'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2393CC'}
-              >
-                View
-              </Button>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
@@ -144,20 +124,19 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
             <h5 className="text-lg font-bold text-foreground">Coming Up</h5>
             <div className="space-y-2">
               {upcomingSteps.map(({step, goal, dueDate}) => (
-                <div key={step.id} className="p-3 rounded-md bg-white/80 shadow-sm">
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-foreground text-base">
-                          {cleanStepTitle(step.title)}
-                        </h4>
-                      </div>
-                    </div>
+                <Card key={step.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <h4 className="font-medium text-foreground text-base">
+                      {cleanStepTitle(step.title)}
+                    </h4>
+                  </CardHeader>
+                  
+                  <CardContent className="pt-0 space-y-1">
                     <p className="text-xs text-muted-foreground">
                       Goal: {goal.title} • Due {format(dueDate, 'MMM d')}
                     </p>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>
