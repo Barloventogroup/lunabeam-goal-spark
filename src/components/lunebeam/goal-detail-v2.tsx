@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, lazy, Suspense } from 'react';
-import { Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, Edit, Users, UserCheck, AlertCircle, Loader2, Brain } from 'lucide-react';
+import { Calendar, Users, UserCheck, AlertCircle, Loader2, Brain } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQueryClient } from '@tanstack/react-query';
 import { BackButton } from '@/components/ui/back-button';
@@ -9,23 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { useGoalDetail, goalDetailKeys, useDeleteGoalMutation } from '@/hooks/useGoalDetail';
 import { goalsService, stepsService } from '@/services/goalsService';
@@ -1359,76 +1342,24 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {progress && (
-            <div className="flex items-center gap-3">
-              <CircularProgress 
-                value={progress.percent || 0} 
-                size={36}
-                strokeWidth={3}
-                color="#2393CC"
-              />
-              <div className="text-right">
-                <div className="text-2xl font-bold text-primary">
-                  {progress.percent}%
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {progress.done}/{progress.actionable} done
-                </div>
+        {progress && (
+          <div className="flex items-center gap-3">
+            <CircularProgress 
+              value={progress.percent || 0} 
+              size={36}
+              strokeWidth={3}
+              color="#2393CC"
+            />
+            <div className="text-right">
+              <div className="text-2xl font-bold text-primary">
+                {progress.percent}%
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {progress.done}/{progress.actionable} done
               </div>
             </div>
-          )}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="bg-transparent hover:bg-gray-100 border-transparent">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-background border border-input shadow-lg z-50">
-              <DropdownMenuItem onClick={() => setShowEditModal(true)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {/* TODO: Open check-in modal */}}>
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                Check In
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {/* TODO: Add buddy functionality */}}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add Buddy
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {/* TODO: Share functionality */}}>
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </DropdownMenuItem>
-              {goal.status === 'completed' && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Archive
-                    </DropdownMenuItem>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Archive this goal?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will move the goal to your archived goals. You can restore it later if needed.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteGoal}>
-                        Archive Goal
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+          </div>
+        )}
       </div>
       </div>
 
