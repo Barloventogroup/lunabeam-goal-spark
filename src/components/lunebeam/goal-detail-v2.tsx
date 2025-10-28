@@ -1435,29 +1435,29 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-6">
         <TabsList className={cn(
-          "w-full",
+          "w-full px-4",
           isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0
             ? "grid grid-cols-4"
             : "grid grid-cols-3"
         )}>
-          <TabsTrigger value="summary" className="text-center">
+          <TabsTrigger value="summary" className="h-10 flex items-center justify-center">
             Summary
           </TabsTrigger>
-          <TabsTrigger value="steps" className="text-center">
+          <TabsTrigger value="steps" className="h-10 flex items-center justify-center">
             Steps
             {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
-              <Badge className="ml-2" variant="secondary">
+              <Badge className="ml-2 flex items-center" variant="secondary">
                 {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="calendar" className="text-center">
+          <TabsTrigger value="calendar" className="h-10 flex items-center justify-center">
             Results
           </TabsTrigger>
           {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
-            <TabsTrigger value="supporter" className="text-center">
+            <TabsTrigger value="supporter" className="h-10 flex items-center justify-center">
               Supporter Setup
-              <Badge className="ml-2" variant="secondary">
+              <Badge className="ml-2 flex items-center" variant="secondary">
                 {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
               </Badge>
             </TabsTrigger>
