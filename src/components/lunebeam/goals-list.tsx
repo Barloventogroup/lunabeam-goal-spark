@@ -4,9 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight, Users, UserCheck } from 'lucide-react';
+import { Plus, Calendar, ChevronLeft, ChevronRight, Users, UserCheck } from 'lucide-react';
 import { goalsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal, GoalStatus } from '@/types';
@@ -250,50 +248,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                               Due {formatDate(goal.due_date)}
                             </div>}
                         </div>
-                        
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-transparent hover:bg-gray-100" onClick={e => e.stopPropagation()}>
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-40 bg-background border shadow-lg z-50">
-                            <DropdownMenuItem onClick={() => {/* TODO: Open check-in modal */}}>
-                              <CheckCircle2 className="h-4 w-4 mr-2" />
-                              Check In
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {/* TODO: Add buddy functionality */}}>
-                              <UserPlus className="h-4 w-4 mr-2" />
-                              Add Buddy
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {/* TODO: Share functionality */}}>
-                              <Share2 className="h-4 w-4 mr-2" />
-                              Share
-                            </DropdownMenuItem>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onSelect={e => e.preventDefault()}>
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Archive Goal
-                                </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Archive this goal?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    "{goal.title}" will be moved to your archive. You can always restore it later if needed.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Keep Goal</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleDeleteGoal(goal.id, goal.title)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                    Archive Goal
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </div>
                     </CardHeader>
                   </Card>;
