@@ -31,17 +31,17 @@ interface StepCardProps {
   isBlocked: boolean;
 }
 
-const getStatusBadgeVariant = (status: string): string => {
+const getStatusBadgeVariant = (status: string): "active" | "default" | "planned" | "secondary" | "outline" => {
   switch (status) {
     case 'done':
-      return 'bg-success/20 text-success border-success/30';
+      return 'default';
     case 'in_progress':
-      return 'bg-badge-active/20 text-[hsl(var(--badge-active))] border-badge-active/30';
+      return 'active';
     case 'skipped':
-      return 'bg-warning/20 text-warning-foreground border-warning/30';
+      return 'secondary';
     case 'not_started':
     default:
-      return 'bg-muted text-muted-foreground border-border';
+      return 'planned';
   }
 };
 
@@ -87,7 +87,7 @@ export const StepCard: React.FC<StepCardProps> = ({
   const hasScaffolding = totalScaffolding > 0;
 
   return (
-    <Card className={`relative transition-all duration-200 shadow-sm hover:shadow-md border border-border/60 ${isBlocked ? 'opacity-50' : ''}`}>
+    <Card className={`relative transition-shadow hover:shadow-md ${isBlocked ? 'opacity-50' : ''}`}>
       {isBlocked && (
         <div className="absolute inset-0 bg-muted/80 backdrop-blur-[2px] rounded-lg z-10 flex items-center justify-center">
           <Badge variant="secondary" className="text-sm">
@@ -139,7 +139,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                   {formatDate(step.due_date)}
                 </Badge>
               )}
-              <Badge variant="outline" className={`gap-1.5 ${getStatusBadgeVariant(step.status)}`}>
+              <Badge variant={getStatusBadgeVariant(step.status)} className="gap-1.5">
                 {getStatusIcon(step.status)}
                 {step.status.replace('_', ' ')}
               </Badge>

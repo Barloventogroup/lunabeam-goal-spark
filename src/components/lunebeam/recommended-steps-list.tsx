@@ -809,15 +809,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
         </div>
       )}
       
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="space-y-2">
-            <CardTitle className="text-lg font-semibold text-foreground">Recommended steps</CardTitle>
-            <p className="text-sm text-muted-foreground">Here's a short list of steps for you to work on as you progress toward your goal.</p>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-4 pb-6">
+      <div className="space-y-4">
           {/* Visible steps */}
           {groupedSteps.map((group) => (
             <StepCard
@@ -905,8 +897,6 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
               </div>
             </>
           )}
-        </CardContent>
-
         {/* Modals */}
         <StepChatModal
           isOpen={helpModalOpen}
@@ -936,7 +926,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
             mode="modal"
           />
         )}
-      </Card>
+      </div>
     </>
   );
 };
