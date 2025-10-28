@@ -56,6 +56,12 @@ export const GoalCard: React.FC<GoalCardProps> = ({
           <div className="flex-1 cursor-pointer pr-8" onClick={onCardClick}>
             <div className="flex flex-col gap-2.5">
               <h4 className="text-sm capitalize">{goal.title}</h4>
+              {goal.due_date && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  Due {formatDate(goal.due_date)}
+                </div>
+              )}
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant={getStatusColor(goal.status)}>{goal.status === "active" ? "Active" : goal.status}</Badge>
                 {goal.domain && ["school", "work", "health", "life"].includes(goal.domain) && (
@@ -75,12 +81,6 @@ export const GoalCard: React.FC<GoalCardProps> = ({
                   </Badge>
                 )}
               </div>
-              {goal.due_date && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  Due {formatDate(goal.due_date)}
-                </div>
-              )}
             </div>
           </div>
           <button
