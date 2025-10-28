@@ -1214,7 +1214,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-3">
-        <TabsList className={cn("w-full p-0 px-4 items-stretch overflow-hidden", isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 ? "grid grid-cols-4" : "grid grid-cols-3")}>
+        <TabsList className={cn("w-full p-0 px-4 items-stretch overflow-hidden bg-white", isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 ? "grid grid-cols-4" : "grid grid-cols-3")}>
           <TabsTrigger value="summary" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none">
             Summary
           </TabsTrigger>
