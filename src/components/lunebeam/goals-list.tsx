@@ -168,25 +168,25 @@ export const GoalsList: React.FC<GoalsListProps> = ({
         </div>
 
         <div className="space-y-3">
-          <Tabs value={activeTab} onValueChange={value => setActiveTab(value as GoalsTab)} className="w-full">
-            <TabsList className="w-full p-0 px-4 items-stretch overflow-hidden grid grid-cols-5">
-              <TabsTrigger value="all" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs">
-                All
-              </TabsTrigger>
-              <TabsTrigger value="active" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs">
-                Active
-              </TabsTrigger>
-              <TabsTrigger value="completed" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs">
-                Completed
-              </TabsTrigger>
-              <TabsTrigger value="created-by-me" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs">
-                By Me
-              </TabsTrigger>
-              <TabsTrigger value="created-by-others" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs">
-                By Others
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+        <Tabs value={activeTab} onValueChange={value => setActiveTab(value as GoalsTab)} className="w-full">
+          <TabsList className="w-full p-0 px-4 items-stretch overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide">
+            <TabsTrigger value="all" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs flex-shrink-0 min-w-[80px]">
+              All
+            </TabsTrigger>
+            <TabsTrigger value="active" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs flex-shrink-0 min-w-[80px]">
+              Active
+            </TabsTrigger>
+            <TabsTrigger value="completed" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs flex-shrink-0 min-w-[100px]">
+              Completed
+            </TabsTrigger>
+            <TabsTrigger value="created-by-me" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs flex-shrink-0 min-w-[80px]">
+              By Me
+            </TabsTrigger>
+            <TabsTrigger value="created-by-others" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs flex-shrink-0 min-w-[90px]">
+              By Others
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
           {!isMobile && totalPages > 1 && <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
