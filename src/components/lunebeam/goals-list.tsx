@@ -272,7 +272,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
       </div>
 
       {/* Drawer for Goal Details */}
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="right">
         <DrawerContent side="right" className="w-full sm:max-w-2xl">
           <DrawerHeader className="sticky top-0 bg-background z-10 border-b">
             <div className="flex items-center justify-between">
