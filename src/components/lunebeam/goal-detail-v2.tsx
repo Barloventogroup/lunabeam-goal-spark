@@ -1159,7 +1159,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 flex-1">
+        <div className="flex items-start gap-2 flex-1">
           <BackButton onClick={onBack} />
           <div className="flex-1">
             <h1 className="text-xl font-semibold text-foreground capitalize">{goal.title}</h1>
