@@ -1251,10 +1251,11 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background px-4 py-6 space-y-6">
-      {/* Removed full-screen loading overlay - now using inline message in Recommended Steps tab */}
+    <div className="min-h-[100dvh] bg-background">
+      <div className="px-4 py-6 space-y-6">
+        {/* Removed full-screen loading overlay - now using inline message in Recommended Steps tab */}
 
-      {/* Error state with retry button */}
+        {/* Error state with retry button */}
       {generationError && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <div className="flex items-start gap-3">
@@ -1429,37 +1430,41 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
           </DropdownMenu>
         </div>
       </div>
+      </div>
 
       {/* Tabbed Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="w-full overflow-x-auto scrollbar-hide">
-          <TabsList className="flex w-full justify-start">
-            <TabsTrigger value="summary" className="shrink-0">
-              Summary
-            </TabsTrigger>
-            <TabsTrigger value="steps" className="shrink-0">
-              Recommended Steps
-              {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
-                <Badge className="ml-2" variant="secondary">
-                  {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="calendar" className="shrink-0">
-              Results
-            </TabsTrigger>
-            {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
-              <TabsTrigger value="supporter" className="min-w-[140px] shrink-0">
-                Supporter Setup
-                <Badge className="ml-2" variant="secondary">
-                  {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
-                </Badge>
-              </TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-6">
+        <TabsList className={cn(
+          "w-full",
+          isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0
+            ? "grid grid-cols-4"
+            : "grid grid-cols-3"
+        )}>
+          <TabsTrigger value="summary" className="text-center">
+            Summary
+          </TabsTrigger>
+          <TabsTrigger value="steps" className="text-center">
+            Steps
+            {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && (
+              <Badge className="ml-2" variant="secondary">
+                {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length}
+              </Badge>
             )}
-          </TabsList>
-        </div>
+          </TabsTrigger>
+          <TabsTrigger value="calendar" className="text-center">
+            Results
+          </TabsTrigger>
+          {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
+            <TabsTrigger value="supporter" className="text-center">
+              Supporter Setup
+              <Badge className="ml-2" variant="secondary">
+                {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
+              </Badge>
+            </TabsTrigger>
+          )}
+        </TabsList>
 
-        <TabsContent value="summary" className="mt-4">
+        <TabsContent value="summary" className="mt-4 px-4">
           {activeTab === 'summary' && (
             <div className="max-w-4xl mx-auto px-2 sm:px-4">
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>
@@ -1552,7 +1557,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
           )}
         </TabsContent>
 
-        <TabsContent value="calendar" className="mt-4">
+        <TabsContent value="calendar" className="mt-4 px-4">
           {activeTab === 'calendar' && (
             <div className="max-w-4xl mx-auto px-2 sm:px-4">
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>
@@ -1562,7 +1567,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
           )}
         </TabsContent>
 
-        <TabsContent value="steps" className="mt-4">
+        <TabsContent value="steps" className="mt-4 px-4">
           {activeTab === 'steps' && (
             <div className="max-w-4xl mx-auto px-2 sm:px-4">
               {generatingSteps ? (
@@ -1628,7 +1633,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </TabsContent>
 
         {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && (
-          <TabsContent value="supporter" className="mt-4">
+          <TabsContent value="supporter" className="mt-4 px-4">
             {activeTab === 'supporter' && (
               <div className="max-w-4xl mx-auto px-2 sm:px-4">
                 <SupporterSetupStepsList
