@@ -194,8 +194,8 @@ export const StepCard: React.FC<StepCardProps> = ({
             {/* Description */}
             {(step.explainer || step.notes) && (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-foreground">Description</p>
-                <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                <p className="text-sm font-medium text-foreground">Description</p>
+                <p className="text-sm text-muted-foreground leading-relaxed break-words">
                   {step.explainer || step.notes}
                 </p>
               </div>
@@ -204,24 +204,24 @@ export const StepCard: React.FC<StepCardProps> = ({
             {/* Goal name */}
             {goalName && (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-foreground">Goal</p>
-                <p className="text-xs text-muted-foreground">{goalName}</p>
+                <p className="text-sm font-medium text-foreground">Goal</p>
+                <p className="text-sm text-muted-foreground">{goalName}</p>
               </div>
             )}
             
             {/* Created by */}
             {createdBy && (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-foreground">Created by</p>
-                <p className="text-xs text-muted-foreground">{createdBy}</p>
+                <p className="text-sm font-medium text-foreground">Created by</p>
+                <p className="text-sm text-muted-foreground">{createdBy}</p>
               </div>
             )}
             
             {/* Created date */}
             {step.created_at && (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-foreground">Created</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm font-medium text-foreground">Created</p>
+                <p className="text-sm text-muted-foreground">
                   {format(new Date(step.created_at), 'MMM d, yyyy')}
                 </p>
               </div>
