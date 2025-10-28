@@ -217,7 +217,7 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
           body: {
             stepId: step.id,
             goalContext: goal.title,
-            userMessage: 'User requested to split this step into smaller pieces'
+            userMessage: 'User requested to break this step down into smaller pieces'
           }
         });
 
@@ -234,7 +234,7 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
         console.error('Failed to split step:', error);
         toast({
           title: "Error",
-          description: "Failed to split step. Please try again.",
+          description: "Failed to break down step. Please try again.",
           variant: "destructive"
         });
         setCurrentState('deferral_actions');
@@ -542,12 +542,12 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
           onClick={() => handleDeferAction('split')}
           role="button"
           tabIndex={0}
-          aria-label="Split into smaller steps"
+          aria-label="Break into smaller steps"
         >
           <div className="flex items-start gap-3">
             <Scissors className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
             <div>
-              <h3 className="font-medium text-foreground">Split next step</h3>
+              <h3 className="font-medium text-foreground">Break it down</h3>
               <p className="text-sm text-muted-foreground mt-1">Break this down into smaller pieces</p>
             </div>
           </div>

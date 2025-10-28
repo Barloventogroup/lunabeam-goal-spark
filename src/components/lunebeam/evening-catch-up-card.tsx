@@ -46,7 +46,7 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [splitModalStep, setSplitModalStep] = useState<{ step: Step; goal: Goal } | null>(null);
+  const [breakDownModalStep, setBreakDownModalStep] = useState<{ step: Step; goal: Goal } | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     title: string;
@@ -268,9 +268,9 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
     }
   };
 
-  const handleSplit = (step: Step, goal: Goal) => {
-    setSplitModalStep({ step, goal });
-    // Collapse accordion after opening split
+  const handleBreakDown = (step: Step, goal: Goal) => {
+    setBreakDownModalStep({ step, goal });
+    // Collapse accordion after opening break down
     setRowStates(prev => ({ ...prev, [step.id]: 'idle' }));
   };
 
@@ -533,13 +533,13 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
                           onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            handleSplit(item.step, item.goal);
+                            handleBreakDown(item.step, item.goal);
                           }}
                           disabled={isProcessing || !isOnline}
                           style={{ touchAction: 'manipulation' }}
                         >
                           <Scissors className="h-3 w-3 mr-1" />
-                          Split
+                          Break it down
                         </Button>
                         <Button
                           size="sm"
@@ -591,20 +591,20 @@ export const EveningCatchUpCard: React.FC<EveningCatchUpCardProps> = ({
         />
       )}
 
-      {/* Split modal */}
-      {splitModalStep && (
+      {/* Break down modal */}
+      {breakDownModalStep && (
         <ExpressCheckInCard
-          step={splitModalStep.step}
-          goal={splitModalStep.goal}
-          isOpen={!!splitModalStep}
-          onClose={() => setSplitModalStep(null)}
+          step={breakDownModalStep.step}
+          goal={breakDownModalStep.goal}
+          isOpen={!!breakDownModalStep}
+          onClose={() => setBreakDownModalStep(null)}
           onComplete={() => {
-            // Remove from missed steps list after split completion
-            setMissedSteps(prev => prev.filter(item => item.step.id !== splitModalStep.step.id));
-            setSplitModalStep(null);
+            // Remove from missed steps list after break down completion
+            setMissedSteps(prev => prev.filter(item => item.step.id !== breakDownModalStep.step.id));
+            setBreakDownModalStep(null);
             
             toast({
-              title: "Step split successfully",
+              title: "Step broken down successfully",
               description: "Smaller steps have been added to your list"
             });
           }}

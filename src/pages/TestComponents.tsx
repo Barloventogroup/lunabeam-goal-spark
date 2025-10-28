@@ -2464,7 +2464,7 @@ export default function TestComponents() {
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>✓ Done button completes step and logs to step_check_ins</li>
                 <li>✓ Tomorrow button reschedules and increments friction_score</li>
-                <li>✓ Split button triggers AI substep generation</li>
+                <li>✓ Break it down button triggers AI substep generation</li>
                 <li>✓ Touch targets don't overlap on iOS (44x44pt minimum)</li>
                 <li>✓ e.stopPropagation() prevents wrong button firing</li>
                 <li>✓ Check console logs show correct button clicks</li>

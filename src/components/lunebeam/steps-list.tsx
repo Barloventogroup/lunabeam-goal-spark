@@ -958,7 +958,7 @@ export const StepsList: React.FC<StepsListProps> = ({
     const { substep, stepId } = checkInSubstep;
     
     if (action === 'split') {
-      // Open step chat for splitting the substep further
+      // Open step chat for breaking down the substep further
       const substepAsStep: Step = {
         id: substep.id,
         title: substep.title,
