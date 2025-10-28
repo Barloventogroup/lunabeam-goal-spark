@@ -1371,7 +1371,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
             ? "grid grid-cols-4"
             : "grid grid-cols-3"
         )}>
-          <TabsTrigger value="summary" className="h-full min-h-0 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none">
+          <TabsTrigger value="summary" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none">
             Summary
           </TabsTrigger>
           <TabsTrigger value="steps" className="h-full min-h-0 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none">
