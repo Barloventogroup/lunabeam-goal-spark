@@ -1,22 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, Plus, MoreHorizontal, Edit, Hourglass, Play, AlertCircle, MessageSquare } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Fireworks } from '@/components/ui/fireworks';
-import { GoalCompletionCelebration } from './goal-completion-celebration';
+import { AlertCircle } from 'lucide-react';
 import type { Step, Goal, Substep, StepStatus, StepType } from '@/types';
 import { stepsService } from '@/services/goalsService';
-import { stepValidationService } from '@/services/stepValidationService';
 import { pointsService } from '@/services/pointsService';
-import { BlockedStepGuidance } from './blocked-step-guidance';
+import { StepCard } from './step-card';
 import { StepChatModal } from './step-chat-modal';
 import { StepEditModal } from './step-edit-modal';
 import { ExpressCheckInCard } from './express-check-in-card';
@@ -24,9 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { notificationsService } from '@/services/notificationsService';
 import { supabase } from '@/integrations/supabase/client';
 import { cleanStepTitle } from '@/utils/stepUtils';
-import { parseISO, isBefore } from 'date-fns';
-import Lottie from 'lottie-react';
-import successAnimation from '@/assets/success-animation.json';
 
 // Utility function to format dates
 const formatDate = (dateStr: string): string => {
@@ -773,68 +759,17 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     });
   };
 
-  const areAllSubStepsCompleted = (subSteps: Substep[]): boolean => {
-    return subSteps.length === 0 || subSteps.every(subStep => subStep.completed_at !== null);
-  };
-
-  const isStepDone = (step: Step): boolean => {
-    return step.status === 'done';
-  };
-
-  const getStepIcon = (step: Step) => {
-    if (isStepBlocked(step)) {
-      return null;
-    }
-
-    const stepSubsteps = substepsMap[step.id] || [];
-    const allSubstepsCompleted = areAllSubStepsCompleted(stepSubsteps);
-
-    const isOverdue = step.due_date && 
-                     step.status !== 'done' && 
-                     step.status !== 'skipped' && 
-                     isBefore(parseISO(step.due_date), new Date().setHours(0, 0, 0, 0));
-
-    if (isOverdue) {
-      return <Hourglass className="h-5 w-5 text-red-600" />;
-    }
-
-    const status = isStepDone(step) ? 'done' : step.status;
-    const hasBeenInitiated = !!(step as any).initiated_at;
+  const handleDeleteStep = async (stepId: string) => {
+    if (!window.confirm('Are you sure you want to delete this step?')) return;
     
-    switch (status) {
-      case 'done':
-        return <CheckCircle2 className="h-5 w-5 text-green-600" />;
-      case 'doing':
-        return <Clock className="h-5 w-5 text-blue-600" />;
-      default:
-        if (hasBeenInitiated && !isStepDone(step)) {
-          return <Clock className="h-5 w-5 text-blue-600" />;
-        }
-        
-        if (stepSubsteps.length > 0) {
-          if (allSubstepsCompleted) {
-            return <CheckCircle2 className="h-5 w-5 text-amber-600" />;
-          } else {
-            const hasInitiatedSubsteps = stepSubsteps.some(sub => (sub as any).initiated_at);
-            if (hasInitiatedSubsteps) {
-              return <Clock className="h-5 w-5 text-blue-600" />;
-            }
-          }
-        }
-        return null;
+    try {
+      await supabase.from('steps').delete().eq('id', stepId);
+      toast({ title: "Step deleted" });
+      onStepsChange?.();
+    } catch (error) {
+      console.error('Error deleting step:', error);
+      toast({ title: "Error", description: "Failed to delete step", variant: "destructive" });
     }
-  };
-
-  const hasDependencies = (step: Step): boolean => {
-    return step.dependency_step_ids && step.dependency_step_ids.length > 0;
-  };
-
-  const getPrecursorText = (step: Step): string | null => {
-    if (hasDependencies(step)) {
-      const dependencyCount = step.dependency_step_ids?.length || 0;
-      return `Requires ${dependencyCount} other step${dependencyCount > 1 ? 's' : ''}`;
-    }
-    return null;
   };
 
   if (steps.filter(s => !s.is_supporter_step).length === 0) {
@@ -859,12 +794,12 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     <>
       {/* Incomplete generation warning banner */}
       {generationIncomplete && (
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="mb-4 p-4 bg-warning/10 border border-warning/30 rounded-lg">
           <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
             <div className="flex-1">
-              <h4 className="font-semibold text-yellow-800">Incomplete Step Generation</h4>
-              <p className="text-sm text-yellow-700 mt-1">
+              <h4 className="font-semibold text-warning">Incomplete Step Generation</h4>
+              <p className="text-sm text-warning-foreground mt-1">
                 Only {successfulDays} of {totalExpectedDays} days were generated successfully.
                 {failedDays.length > 0 && ` ${failedDays.length} days failed.`}
                 {' '}Please try recreating this goal or contact support.
@@ -882,272 +817,93 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4 pb-6">
-          <div className="rounded-lg border border-gray-200 overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-b border-gray-200 bg-muted/20">
-                  <TableHead className="w-8"></TableHead>
-                  <TableHead>Task</TableHead>
-                  <TableHead className="w-20">Due</TableHead>
-                  <TableHead className="w-24 text-center">Status</TableHead>
-                  <TableHead className="w-32 text-center">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(showingQueuedSteps ? [...groupedSteps, ...queuedGroupedSteps] : groupedSteps).map((group) => {
-                  const { mainStep, subSteps } = group;
-                  const isBlocked = isStepBlocked(mainStep);
-                  const precursorText = getPrecursorText(mainStep);
-                  const isExpanded = expandedSteps.has(mainStep.id);
-                  const allSubStepsCompleted = areAllSubStepsCompleted(subSteps);
+        <CardContent className="space-y-3 pb-6">
+          {/* Visible steps */}
+          {groupedSteps.map((group) => (
+            <StepCard
+              key={group.mainStep.id}
+              step={group.mainStep}
+              goalId={goal.id}
+              scaffoldingSteps={group.subSteps}
+              onComplete={handleMarkComplete}
+              onSkip={handleSkipStep}
+              onBreakDown={(stepId) => {
+                const step = steps.find(s => s.id === stepId);
+                if (step) handleNeedHelp(step);
+              }}
+              onEdit={(stepId) => {
+                const step = steps.find(s => s.id === stepId);
+                if (step) handleEditStep(step);
+              }}
+              onDelete={handleDeleteStep}
+              onCheckIn={handleCheckInStep}
+              onScaffoldingComplete={(substepId) => handleCompleteSubstep(substepId, group.mainStep.id)}
+              onScaffoldingBreakDown={(substepId) => {
+                const substep = group.subSteps.find(s => s.id === substepId);
+                if (substep) handleSubstepHelp(substep, group.mainStep);
+              }}
+              isExpanded={expandedSteps.has(group.mainStep.id)}
+              onToggleExpand={() => toggleStepExpanded(group.mainStep.id)}
+              isBlocked={isStepBlocked(group.mainStep)}
+            />
+          ))}
 
-                  return (
-                    <React.Fragment key={mainStep.id}>
-                      {/* Main step row */}
-                      <TableRow className={`border-b border-gray-200 ${isBlocked ? 'opacity-40 bg-muted/20' : 'hover:bg-muted/50'}`}>
-                        <TableCell className="p-2 w-8">
-                          {(subSteps.length > 0 || mainStep.explainer || mainStep.notes) && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => toggleStepExpanded(mainStep.id)}
-                              className={`p-1 h-auto ${isBlocked ? 'text-muted-foreground/50 hover:text-muted-foreground/70' : 'text-muted-foreground hover:text-foreground'}`}
-                            >
-                              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                            </Button>
-                          )}
-                        </TableCell>
-                        
-                         <TableCell className="p-2">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className={`text-sm font-medium ${
-                                isStepDone(mainStep)
-                                  ? 'line-through text-muted-foreground' 
-                                  : isBlocked 
-                                    ? 'text-muted-foreground/70' 
-                                    : 'text-foreground'
-                              }`}>
-                                {cleanStepTitle(mainStep.title)}
-                              </span>
-                              {subSteps.length > 0 && (
-                                <Badge variant="secondary" className={`text-xs ${isBlocked ? 'opacity-50' : ''}`}>
-                                  {subSteps.filter(s => s.completed_at).length}/{subSteps.length} substeps
-                                </Badge>
-                              )}
-                            </div>
-
-                            {/* Show description inline without requiring expansion */}
-                            {mainStep.notes && (
-                              <p className="text-xs text-muted-foreground leading-relaxed">
-                                {mainStep.notes}
-                              </p>
-                            )}
-
-                            {isBlocked && (
-                              <BlockedStepGuidance step={mainStep} />
-                            )}
-
-                            {precursorText && !isBlocked && (
-                              <div className="flex items-center gap-1 text-xs text-amber-600">
-                                <ArrowDown className="h-3 w-3" />
-                                {precursorText}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="p-2">
-                          {mainStep.due_date ? (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Calendar className="h-3 w-3" />
-                              <span>{formatDate(mainStep.due_date)}</span>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-
-                        <TableCell className="p-2 text-center">
-                          <div className="flex justify-center">
-                            {getStepIcon(mainStep)}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="p-2">
-                          <div className="flex items-center justify-center gap-2">
-                            {!isStepDone(mainStep) && !isBlocked && (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="h-7 w-7 p-0 hover:bg-muted"
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-background border border-border shadow-lg z-50">
-                                  {!(mainStep as any).initiated_at && (
-                                    <DropdownMenuItem onClick={() => handleCheckInStep(mainStep.id)}>
-                                      <Play className="h-4 w-4 mr-2" />
-                                      Check In / Start Working
-                                    </DropdownMenuItem>
-                                  )}
-                                  <DropdownMenuItem onClick={() => {
-                                    if (subSteps.length > 0 && !allSubStepsCompleted) {
-                                      const proceed = window.confirm('Some substeps are not complete. Mark this step complete anyway?');
-                                      if (!proceed) return;
-                                    }
-                                    handleMarkComplete(mainStep.id);
-                                  }}>
-                                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                                    Mark Complete
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleEditStep(mainStep)}>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleNeedHelp(mainStep)}>
-                                    <MessageSquare className="h-4 w-4 mr-2" />
-                                    Break it down
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            )}
-                            {isBlocked && (
-                              <span className="text-xs text-muted-foreground/70 px-2">Not available yet</span>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-
-                      {/* Expanded content row - substeps cards or description */}
-                      {isExpanded && (
-                        <TableRow className="border-b border-gray-200">
-                          <TableCell></TableCell>
-                          <TableCell colSpan={4} className="p-0 bg-muted/20">
-                            {subSteps.length > 0 ? (
-                              <div className="p-4">
-                                {/* Substeps cards */}
-                                <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
-                                  {subSteps.map((substep) => (
-                                    <div
-                                      key={substep.id}
-                                      className={`flex-shrink-0 w-80 border border-gray-200 rounded-lg p-4 transition-all duration-200 ${
-                                        substep.completed_at 
-                                          ? 'border-green-200 bg-green-50/50' 
-                                          : 'bg-background hover:border-gray-300'
-                                      }`}
-                                    >
-                                      {/* Substep title */}
-                                      <div className="flex items-center gap-2 mb-3">
-                                        <h4 className={`text-sm font-medium ${
-                                          substep.completed_at 
-                                            ? 'line-through text-muted-foreground' 
-                                            : 'text-foreground'
-                                        }`}>
-                                          {cleanStepTitle(substep.title)}
-                                        </h4>
-                                        {substep.completed_at && (
-                                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-                                        )}
-                                        {!substep.completed_at && substep.initiated_at && (
-                                          <Clock className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                                        )}
-                                      </div>
-
-                                      {/* Substep description */}
-                                      <div className="mb-4 min-h-[60px]">
-                                        <p className="text-xs text-muted-foreground leading-relaxed">
-                                          {substep.description || "Complete this sub-step to move forward."}
-                                        </p>
-                                      </div>
-
-                                      {/* Actions */}
-                                      <div className="flex flex-col gap-2">
-                                        {!substep.completed_at ? (
-                                          <>
-                                            {!(substep as any).initiated_at && (
-                                              <Button
-                                                onClick={() => handleCheckInSubstep(substep.id, mainStep.id)}
-                                                className="w-full h-8 text-xs bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                                                size="sm"
-                                                variant="outline"
-                                              >
-                                                <Play className="h-3 w-3 mr-1" />
-                                                Check In / Start Working
-                                              </Button>
-                                            )}
-                                            <Button
-                                              onClick={() => handleCompleteSubstep(substep.id, mainStep.id)}
-                                              className="w-full h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
-                                              size="sm"
-                                            >
-                                              Mark Complete
-                                            </Button>
-                                            <button
-                                              onClick={() => handleSubstepHelp(substep, mainStep)}
-                                              className="text-primary hover:text-primary/80 underline text-xs cursor-pointer bg-transparent border-none p-0 text-center"
-                                            >
-                                              Need help?
-                                            </button>
-                                          </>
-                                        ) : (
-                                          <Button
-                                            variant="outline"
-                                            className="w-full h-8 text-xs border-green-200 text-green-700 cursor-default"
-                                            size="sm"
-                                            disabled
-                                          >
-                                            Completed
-                                          </Button>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="p-4">
-                                <p className="text-sm text-muted-foreground italic">
-                                  No substeps yet. Use "Break it down" from the menu to create substeps for this task.
-                                </p>
-                              </div>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-
+          {/* Show queued steps button */}
           {queuedSteps.length > 0 && !showingQueuedSteps && (
-            <div className="flex justify-center">
+            <div className="flex justify-center pt-2">
               <Button
                 variant="outline"
                 onClick={() => setShowingQueuedSteps(true)}
-                className="text-sm text-muted-foreground border-muted hover:bg-muted/20"
+                className="text-sm"
               >
                 Show {queuedSteps.length} more upcoming steps
               </Button>
             </div>
           )}
 
+          {/* Queued steps (collapsible) */}
           {showingQueuedSteps && (
-            <div className="flex justify-center">
-              <Button
-                variant="outline"
-                onClick={() => setShowingQueuedSteps(false)}
-                className="text-sm text-muted-foreground border-muted hover:bg-muted/20"
-              >
-                Show fewer steps
-              </Button>
-          </div>
+            <>
+              <div className="space-y-3 opacity-60">
+                {queuedGroupedSteps.map((group) => (
+                  <StepCard
+                    key={group.mainStep.id}
+                    step={group.mainStep}
+                    goalId={goal.id}
+                    scaffoldingSteps={group.subSteps}
+                    onComplete={handleMarkComplete}
+                    onSkip={handleSkipStep}
+                    onBreakDown={(stepId) => {
+                      const step = steps.find(s => s.id === stepId);
+                      if (step) handleNeedHelp(step);
+                    }}
+                    onEdit={(stepId) => {
+                      const step = steps.find(s => s.id === stepId);
+                      if (step) handleEditStep(step);
+                    }}
+                    onDelete={handleDeleteStep}
+                    onCheckIn={handleCheckInStep}
+                    onScaffoldingComplete={(substepId) => handleCompleteSubstep(substepId, group.mainStep.id)}
+                    onScaffoldingBreakDown={(substepId) => {
+                      const substep = group.subSteps.find(s => s.id === substepId);
+                      if (substep) handleSubstepHelp(substep, group.mainStep);
+                    }}
+                    isExpanded={expandedSteps.has(group.mainStep.id)}
+                    onToggleExpand={() => toggleStepExpanded(group.mainStep.id)}
+                    isBlocked={isStepBlocked(group.mainStep)}
+                  />
+                ))}
+              </div>
+              <div className="flex justify-center pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowingQueuedSteps(false)}
+                  className="text-sm"
+                >
+                  Show fewer steps
+                </Button>
+              </div>
+            </>
           )}
         </CardContent>
 
@@ -1180,29 +936,6 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
             mode="modal"
           />
         )}
-
-        {/* Fireworks Animation - Temporarily disabled */}
-        {/* <Fireworks 
-          isVisible={showFireworks} 
-          onComplete={() => setShowFireworks(false)} 
-        />
-        
-        <GoalCompletionCelebration
-          isOpen={showGoalCelebration}
-          onClose={() => setShowGoalCelebration(false)}
-          goalTitle={goal.title}
-        />
-        
-        {/* Success Animation */}
-        {/* {showSuccessCheck && (
-          <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
-            <Lottie 
-              animationData={successAnimation} 
-              loop={false}
-              style={{ width: 300, height: 300 }}
-            />
-          </div>
-        )} */}
       </Card>
     </>
   );
