@@ -77,6 +77,15 @@ function Calendar({
 }: CalendarProps) {
   const [month, setMonth] = React.useState<Date>(props.month || new Date());
   React.useEffect(() => {
+    // Sync with controlled month from parent when provided
+    if (props.month) {
+      const m = props.month;
+      if (month.getFullYear() !== m.getFullYear() || month.getMonth() !== m.getMonth()) {
+        setMonth(m);
+      }
+    }
+  }, [props.month]);
+  React.useEffect(() => {
     const handleMonthYearChange = (e: Event) => {
       const customEvent = e as CustomEvent<Date>;
       setMonth(customEvent.detail);

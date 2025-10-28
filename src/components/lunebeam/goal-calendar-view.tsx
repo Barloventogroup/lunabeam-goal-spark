@@ -14,7 +14,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
   goal,
   steps
 }) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
 
   // Calculate dates for calendar display
   const {
@@ -140,7 +140,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
           {/* Navigation Controls */}
           <div className="px-6">
             <div className="flex items-center justify-center gap-4 mb-4">
-              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
+              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(prev => startOfMonth(subMonths(prev, 1)))} aria-label="Previous month">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               
@@ -148,7 +148,7 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({
                 {format(currentMonth, 'MMMM yyyy')}
               </span>
               
-              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} aria-label="Next month">
+              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(prev => startOfMonth(addMonths(prev, 1)))} aria-label="Next month">
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
