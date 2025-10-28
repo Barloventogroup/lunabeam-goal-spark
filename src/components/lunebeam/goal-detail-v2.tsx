@@ -1343,7 +1343,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
         </div>
 
         {progress && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 pr-4">
             <CircularProgress 
               value={progress.percent || 0} 
               size={36}
