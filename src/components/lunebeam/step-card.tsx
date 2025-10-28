@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { Step, Substep } from '@/types';
@@ -101,8 +102,8 @@ export const StepCard: React.FC<StepCardProps> = ({
       )}
 
       <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col gap-2 -m-6 p-6 rounded-t-lg">
+        <CardHeader className="p-6 pb-3">
+          <div className="flex flex-col gap-4">
             {/* Title + Status + 3-dot menu */}
             <div className="flex items-center justify-between gap-2">
               <h4 className="font-medium text-sm leading-tight flex-1">
@@ -131,24 +132,28 @@ export const StepCard: React.FC<StepCardProps> = ({
                     }}>
                       Check-in
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={(e) => {
                       e.stopPropagation();
                       onComplete(step.id);
                     }}>
                       Complete
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={(e) => {
                       e.stopPropagation();
                       onEdit(step.id);
                     }}>
                       Edit
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={(e) => {
                       e.stopPropagation();
                       onSkip(step.id);
                     }}>
                       Pause
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={(e) => {
                       e.stopPropagation();
                       onBreakDown(step.id);
@@ -162,7 +167,7 @@ export const StepCard: React.FC<StepCardProps> = ({
             
             {/* Due date */}
             {step.due_date && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 Due {formatDate(step.due_date)}
               </div>
@@ -177,15 +182,15 @@ export const StepCard: React.FC<StepCardProps> = ({
               >
                 <div className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <Info className="h-4 w-4" />
-                  <span className="text-xs">Info</span>
+                  <span className="text-sm">Info</span>
                 </div>
               </Button>
             </CollapsibleTrigger>
           </div>
         </CardHeader>
 
-        <CardContent className="pt-0">
-          <CollapsibleContent className="space-y-3">
+        <CardContent className="pt-0 pb-6 px-6">
+          <CollapsibleContent className="space-y-4">
             {/* Description */}
             {(step.explainer || step.notes) && (
               <div className="space-y-1">
