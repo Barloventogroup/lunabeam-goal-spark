@@ -1301,7 +1301,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({ goalId, onBack }) =>
                 </Badge>
               )}
               {goal.due_date && (
-                <Badge variant="outline" className="flex items-center gap-1">
+                <Badge variant="secondary" className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   <span className="truncate">Due {formatDate(goal.due_date)}</span>
                 </Badge>
