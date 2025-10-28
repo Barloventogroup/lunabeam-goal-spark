@@ -162,16 +162,54 @@ export const GoalCalendarView: React.FC<GoalCalendarViewProps> = ({ goal, steps 
             </Button>
           </div>
           
-          {/* Single Month Calendar - Full Width */}
-          <div className="flex justify-center">
-            <Calendar
-              mode="single"
-              month={currentMonth}
-              modifiers={modifiers}
-              modifiersClassNames={modifiersClassNames}
-              className="rounded-md border-0 w-full"
-            />
+    {/* Three-Month Calendar Grid - Horizontal Scroll */}
+    <div className="overflow-x-auto -mx-4 px-4">
+      <div className="flex gap-4 min-w-max">
+            {/* Previous Month - Only show if goal was active */}
+            {showPreviousMonth && (
+              <div className="flex flex-col items-center">
+                <div className="text-sm text-muted-foreground mb-2">
+                  {format(subMonths(currentMonth, 1), 'MMMM')}
+                </div>
+                <Calendar
+                  mode="single"
+                  month={subMonths(currentMonth, 1)}
+                  modifiers={modifiers}
+                  modifiersClassNames={modifiersClassNames}
+                  className="rounded-md border-0"
+                />
+              </div>
+            )}
+            
+            {/* Current Month - Centered */}
+            <div className="flex flex-col items-center">
+              <div className="text-sm font-semibold mb-2">
+                {format(currentMonth, 'MMMM')}
+              </div>
+              <Calendar
+                mode="single"
+                month={currentMonth}
+                modifiers={modifiers}
+                modifiersClassNames={modifiersClassNames}
+                className="rounded-md border-0"
+              />
+            </div>
+            
+            {/* Next Month */}
+            <div className="flex flex-col items-center">
+              <div className="text-sm text-muted-foreground mb-2">
+                {format(addMonths(currentMonth, 1), 'MMMM')}
+              </div>
+              <Calendar
+                mode="single"
+                month={addMonths(currentMonth, 1)}
+                modifiers={modifiers}
+                modifiersClassNames={modifiersClassNames}
+                className="rounded-md border-0"
+              />
+            </div>
           </div>
+        </div>
           
           {/* Compact Legend */}
           <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
