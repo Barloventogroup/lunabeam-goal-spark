@@ -169,20 +169,20 @@ export const GoalsList: React.FC<GoalsListProps> = ({
 
         <div className="space-y-3">
         <Tabs value={activeTab} onValueChange={value => setActiveTab(value as GoalsTab)} className="w-full">
-          <TabsList className="w-full p-0 px-4 items-stretch overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide">
-            <TabsTrigger value="all" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs flex-shrink-0 min-w-[80px]">
+          <TabsList className="w-full p-0 px-4 items-center justify-start overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide h-10">
+            <TabsTrigger value="all" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]">
               All
             </TabsTrigger>
-            <TabsTrigger value="active" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs flex-shrink-0 min-w-[80px]">
+            <TabsTrigger value="active" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]">
               Active
             </TabsTrigger>
-            <TabsTrigger value="completed" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs flex-shrink-0 min-w-[100px]">
+            <TabsTrigger value="completed" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
               Completed
             </TabsTrigger>
-            <TabsTrigger value="created-by-me" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs flex-shrink-0 min-w-[80px]">
+            <TabsTrigger value="created-by-me" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]">
               By Me
             </TabsTrigger>
-            <TabsTrigger value="created-by-others" className="h-full min-h-0 py-2 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none text-xs flex-shrink-0 min-w-[90px]">
+            <TabsTrigger value="created-by-others" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[90px]">
               By Others
             </TabsTrigger>
           </TabsList>
