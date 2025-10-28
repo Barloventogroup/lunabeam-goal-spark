@@ -3,32 +3,29 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
-import { Plus, Calendar, ChevronLeft, ChevronRight, Users, UserCheck } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Plus, Calendar, MoreVertical, Trash2, CheckCircle2, UserPlus, Share2, ChevronLeft, ChevronRight, Users, UserCheck } from 'lucide-react';
 import { goalsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import type { Goal, GoalStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useGoals } from '@/hooks/useGoals';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { GoalDetailV2 } from './goal-detail-v2';
 interface GoalsListProps {
   onNavigate: (view: string, goalId?: string) => void;
   refreshTrigger?: number;
 }
-type GoalsTab = 'all' | 'active' | 'completed' | 'created-by-me' | 'created-by-others';
+type GoalsTab = 'active' | 'completed';
 export const GoalsList: React.FC<GoalsListProps> = ({
   onNavigate,
   refreshTrigger
 }) => {
-  const [activeTab, setActiveTab] = useState<GoalsTab>('all');
+  const [activeTab, setActiveTab] = useState<GoalsTab>('active');
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterCreator, setFilterCreator] = useState<string>("all");
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const isMobile = useIsMobile();
   const {
     toast
   } = useToast();
@@ -37,9 +34,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   // Use React Query for goals fetching
   const filters = activeTab === 'completed' ? {
     status: 'completed' as GoalStatus
-  } : activeTab === 'active' ? {
-    status: 'active' as GoalStatus
-  } : undefined; // 'all', 'created-by-me', 'created-by-others' fetch all statuses
+  } : undefined;
   const {
     data,
     isLoading,
@@ -110,11 +105,8 @@ export const GoalsList: React.FC<GoalsListProps> = ({
 
   // Apply filters
   const filteredGoals = goals.filter(goal => {
-    // Handle creator-based tabs
-    if (activeTab === "created-by-me" && goal.created_by !== currentUser?.id) return false;
-    if (activeTab === "created-by-others" && goal.created_by === currentUser?.id) return false;
-    // Active and Completed are handled by the useGoals filter
-    // 'all' tab shows everything
+    if (filterCreator === "me" && goal.created_by !== currentUser?.id) return false;
+    if (filterCreator === "others" && goal.created_by === currentUser?.id) return false;
     return true;
   });
 
@@ -122,7 +114,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   const totalPages = Math.ceil(filteredGoals.length / GOALS_PER_PAGE);
   const startIndex = (currentPage - 1) * GOALS_PER_PAGE;
   const endIndex = startIndex + GOALS_PER_PAGE;
-  const currentGoals = isMobile ? filteredGoals : filteredGoals.slice(startIndex, endIndex);
+  const currentGoals = filteredGoals.slice(startIndex, endIndex);
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     const scrollContainer = document.querySelector('[data-scroll-container]');
@@ -168,28 +160,28 @@ export const GoalsList: React.FC<GoalsListProps> = ({
         </div>
 
         <div className="space-y-3">
-        <Tabs value={activeTab} onValueChange={value => setActiveTab(value as GoalsTab)} className="w-full">
-          <TabsList className="w-full p-0 px-4 items-center justify-start overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide h-10">
-            <TabsTrigger value="all" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]">
-              All
-            </TabsTrigger>
-            <TabsTrigger value="active" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]">
-              Active
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
-              Completed
-            </TabsTrigger>
-            <TabsTrigger value="created-by-me" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]">
-              By Me
-            </TabsTrigger>
-            <TabsTrigger value="created-by-others" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[90px]">
-              By Others
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+          <Tabs value={activeTab} onValueChange={value => setActiveTab(value as GoalsTab)} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="completed">Completed</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-          {!isMobile && totalPages > 1 && <div className="flex items-center justify-between min-h-[36px]">
-              <div className="text-sm text-muted-foreground flex items-center">
+          <div className="flex gap-2">
+            <Select value={filterCreator} onValueChange={setFilterCreator}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filter by creator" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Goals</SelectItem>
+                <SelectItem value="me">Created by me</SelectItem>
+                <SelectItem value="others">Created by others</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {totalPages > 1 && <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
                 Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
               </div>
               <div className="flex items-center gap-2">
@@ -212,20 +204,12 @@ export const GoalsList: React.FC<GoalsListProps> = ({
           {filteredGoals.length === 0 ? <Card>
               <CardContent className="text-center py-8">
                 <h3>
-                  {activeTab === 'completed' ? 'No completed goals yet' : 
-                   activeTab === 'active' ? 'No active goals yet' :
-                   activeTab === 'created-by-me' ? 'No goals created by you yet' :
-                   activeTab === 'created-by-others' ? 'No goals created by others yet' :
-                   'No goals yet'}
+                  {activeTab === 'completed' ? 'No completed goals yet' : 'No active goals yet'}
                 </h3>
                 <p className="text-body-sm text-muted-foreground mb-4">
-                  {filteredGoals.length === 0 && goals.length > 0 ? 'No goals match your current filter.' : 
-                   activeTab === 'completed' ? 'Complete some goals to see them here!' :
-                   activeTab === 'created-by-me' ? 'Create your first goal to get started!' :
-                   activeTab === 'created-by-others' ? 'Goals created by your supporters will appear here.' :
-                   'Create your first goal to get started on your journey!'}
+                  {filteredGoals.length === 0 && goals.length > 0 ? 'No goals match your current filter.' : activeTab === 'completed' ? 'Complete some goals to see them here!' : 'Create your first goal to get started on your journey!'}
                 </p>
-                {(activeTab === 'active' || activeTab === 'all' || activeTab === 'created-by-me') && <div className="space-y-2">
+                {activeTab === 'active' && <div className="space-y-2">
                     <Button onClick={() => onNavigate('create-goal')} variant="outline">
                       <Plus className="h-4 w-4 mr-2" />
                       Create Your First Goal
@@ -241,47 +225,75 @@ export const GoalsList: React.FC<GoalsListProps> = ({
             const isCreatedByMe = goal.created_by === currentUser?.id;
             const ownerName = allProfiles[goal.owner_id]?.first_name || 'Unknown';
             const creatorName = allProfiles[goal.created_by]?.first_name || 'Unknown';
-            return <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow relative">
-            <CardHeader className="px-4 pt-1 pb-1">
-                      <div className="flex justify-between items-center">
-                        <div className="flex-1 cursor-pointer pr-8" onClick={() => {
-                          setSelectedGoalId(goal.id);
-                          setIsSheetOpen(true);
-                        }}>
-                          <div className="flex flex-col gap-1.5">
-                            <h4 className="text-sm capitalize">{goal.title}</h4>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Badge variant={getStatusColor(goal.status)}>
-                                {goal.status === 'active' ? 'Active' : goal.status}
-                              </Badge>
-                              {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>}
-                              
-                              {!isOwnGoal && <Badge variant="outline" className="text-xs">
-                                  <Users className="h-3 w-3 mr-1" />
-                                  For {ownerName}
-                                </Badge>}
-                              {!isCreatedByMe && isOwnGoal && <Badge variant="outline" className="text-xs">
-                                  <UserCheck className="h-3 w-3 mr-1" />
-                                  Created by {creatorName}
-                                </Badge>}
-                            </div>
-                            {goal.due_date && <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <Calendar className="h-4 w-4" />
-                                Due {formatDate(goal.due_date)}
-                              </div>}
+            return <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 cursor-pointer" onClick={() => onNavigate('goal-detail', goal.id)}>
+                          <h4 className="mb-2 capitalize">{goal.title}</h4>
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <Badge variant={getStatusColor(goal.status)}>
+                              {goal.status === 'active' ? 'Active' : goal.status}
+                            </Badge>
+                            {goal.domain && ['school', 'work', 'health', 'life'].includes(goal.domain) && <Badge variant="category">{getDomainDisplayName(goal.domain)}</Badge>}
+                            
+                            {!isOwnGoal && <Badge variant="outline" className="text-xs">
+                                <Users className="h-3 w-3 mr-1" />
+                                For {ownerName}
+                              </Badge>}
+                            {!isCreatedByMe && isOwnGoal && <Badge variant="outline" className="text-xs">
+                                <UserCheck className="h-3 w-3 mr-1" />
+                                Created by {creatorName}
+                              </Badge>}
                           </div>
+                          {goal.due_date && <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Calendar className="h-4 w-4" />
+                              Due {formatDate(goal.due_date)}
+                            </div>}
                         </div>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedGoalId(goal.id);
-                            setIsSheetOpen(true);
-                          }}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-accent rounded-full transition-colors"
-                          aria-label="View goal details"
-                        >
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </button>
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-transparent hover:bg-gray-100" onClick={e => e.stopPropagation()}>
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-40 bg-background border shadow-lg z-50">
+                            <DropdownMenuItem onClick={() => {/* TODO: Open check-in modal */}}>
+                              <CheckCircle2 className="h-4 w-4 mr-2" />
+                              Check In
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {/* TODO: Add buddy functionality */}}>
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              Add Buddy
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {/* TODO: Share functionality */}}>
+                              <Share2 className="h-4 w-4 mr-2" />
+                              Share
+                            </DropdownMenuItem>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onSelect={e => e.preventDefault()}>
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Archive Goal
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Archive this goal?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    "{goal.title}" will be moved to your archive. You can always restore it later if needed.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Keep Goal</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteGoal(goal.id, goal.title)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                    Archive Goal
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </CardHeader>
                   </Card>;
@@ -289,25 +301,5 @@ export const GoalsList: React.FC<GoalsListProps> = ({
             </div>}
         </div>
       </div>
-
-      {/* Sheet for Goal Details */}
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto p-0">
-          <div className="sticky top-0 bg-background z-10 border-b p-4">
-            <SheetHeader>
-              <SheetTitle>Goal Details</SheetTitle>
-            </SheetHeader>
-          </div>
-          {selectedGoalId && (
-            <GoalDetailV2 
-              goalId={selectedGoalId} 
-              onBack={() => {
-                setIsSheetOpen(false);
-                setSelectedGoalId(null);
-              }} 
-            />
-          )}
-        </SheetContent>
-      </Sheet>
     </div>;
 };
