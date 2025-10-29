@@ -137,12 +137,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   }
   return <div className="flex flex-col h-screen bg-background">
       {/* Fixed Header */}
-      <div className="flex-shrink-0 space-y-2 px-4 pt-4 pb-3 bg-background border-b border-border">
-        <div className="flex justify-between items-center">
-          
-        </div>
-
-        <div className="space-y-3">
+      <div className="flex-shrink-0 space-y-1 px-4 pt-4 pb-4 bg-background border-b border-border">
         <Tabs value={activeTab} onValueChange={value => setActiveTab(value as GoalsTab)} className="w-full">
           <TabsList className="w-full p-0 px-4 items-center justify-start overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide h-10">
             <TabsTrigger value="all" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]">
@@ -163,22 +158,21 @@ export const GoalsList: React.FC<GoalsListProps> = ({
           </TabsList>
         </Tabs>
 
-          {!isMobile && totalPages > 1 && <div className="flex items-center justify-between min-h-[36px]">
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="flex items-center gap-1">
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="flex items-center gap-1">
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="text-sm text-muted-foreground flex items-center">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
-              </div>
-            </div>}
-        </div>
+        {!isMobile && totalPages > 1 && <div className="flex items-center justify-between min-h-[36px]">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="flex items-center gap-1">
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="flex items-center gap-1">
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="text-sm text-muted-foreground flex items-center">
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
+            </div>
+          </div>}
       </div>
 
       {/* Scrollable Content Area */}
