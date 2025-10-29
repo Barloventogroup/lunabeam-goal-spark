@@ -83,7 +83,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
               </CardHeader>
               
               <CardContent className="pt-0 space-y-1">
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Goal: {goal.title}
                 </p>
                 
