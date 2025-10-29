@@ -3,23 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users, Eye, User, Heart, ShieldCheck, Home, Trash2 } from "lucide-react";
+import { Users, Eye, User, Heart, ShieldCheck, Home } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { PermissionsService, type Supporter } from "@/services/permissionsService";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { InviteSupportersCard } from "@/components/lunebeam/invite-supporters-card";
 import { NotificationBadge } from "@/components/lunebeam/notification-badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 interface SupporterWithProfile extends Supporter {
   profile?: {
@@ -37,25 +27,12 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
   const { toast } = useToast();
   const [supporters, setSupporters] = useState<SupporterWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [supporterToRemove, setSupporterToRemove] = useState<SupporterWithProfile | null>(null);
 
   useEffect(() => {
     if (user) {
       loadSupporters();
-      checkAdminStatus();
     }
   }, [user]);
-
-  const checkAdminStatus = async () => {
-    if (!user) return;
-    try {
-      const adminStatus = await PermissionsService.isAdmin(user.id);
-      setIsAdmin(adminStatus);
-    } catch (error) {
-      console.error("Error checking admin status:", error);
-    }
-  };
 
   const loadSupporters = async () => {
     if (!user) return;
@@ -138,27 +115,6 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
     }
   };
 
-  const handleRemoveSupporter = async () => {
-    if (!supporterToRemove) return;
-
-    try {
-      await PermissionsService.removeSupporter(supporterToRemove.id);
-      toast({
-        title: "Supporter Removed",
-        description: `${supporterToRemove.profile?.first_name || "Supporter"} has been removed from your community.`,
-      });
-      setSupporterToRemove(null);
-      loadSupporters();
-    } catch (error) {
-      console.error("Error removing supporter:", error);
-      toast({
-        title: "Error",
-        description: "Failed to remove supporter. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-[100dvh] bg-background p-4">
@@ -226,17 +182,6 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
                         )}
                       </div>
                     </div>
-
-                    {isAdmin && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => setSupporterToRemove(supporter)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -255,29 +200,6 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
         )}
 
       </div>
-
-      {/* Remove Supporter Confirmation Dialog */}
-      <AlertDialog open={!!supporterToRemove} onOpenChange={(open) => !open && setSupporterToRemove(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove Supporter?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove{" "}
-              <span className="font-semibold">{supporterToRemove?.profile?.first_name || "this supporter"}</span>{" "}
-              from your community? They will no longer have access to your goals and progress.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleRemoveSupporter}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Remove
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
