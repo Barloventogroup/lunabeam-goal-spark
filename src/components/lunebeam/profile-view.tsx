@@ -372,7 +372,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
             )}
           </div>
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="py-4">
             {editingSection === "basic" ? (
               <div className="space-y-3">
                 <div>
