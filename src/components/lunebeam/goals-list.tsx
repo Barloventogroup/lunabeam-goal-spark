@@ -164,9 +164,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({
         </Tabs>
 
           {!isMobile && totalPages > 1 && <div className="flex items-center justify-between min-h-[36px]">
-              <div className="text-sm text-muted-foreground flex items-center">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
-              </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="flex items-center gap-1">
                   <ChevronLeft className="h-4 w-4" />
@@ -176,6 +173,9 @@ export const GoalsList: React.FC<GoalsListProps> = ({
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </Button>
+              </div>
+              <div className="text-sm text-muted-foreground flex items-center">
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
               </div>
             </div>}
         </div>
