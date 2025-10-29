@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { BackButton } from '@/components/ui/back-button';
+import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -103,26 +103,25 @@ export const RedemptionInbox: React.FC<RedemptionInboxProps> = ({ onBack }) => {
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-gradient-primary flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <BackButton variant="minimal" onClick={onBack} />
-            <h1 className="text-2xl font-bold text-foreground">Redemption Inbox</h1>
+    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+      <PageHeader 
+        title="Redemption Inbox" 
+        onBack={onBack}
+        right={
+          <div className="bg-muted rounded-lg px-3 py-1 text-sm font-medium">
+            {pendingRedemptions.length} pending
           </div>
-          <div className="bg-muted/50 backdrop-blur rounded-lg px-4 py-2">
-            <span className="text-foreground font-medium">{pendingRedemptions.length} pending</span>
-          </div>
-        </div>
+        }
+      />
 
+      <div className="px-4 pt-6 pb-6">
         <div className="space-y-8">
           {/* Pending Requests */}
           {pendingRedemptions.length > 0 && (

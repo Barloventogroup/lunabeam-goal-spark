@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BackButton } from '@/components/ui/back-button';
+import { PageHeader } from '@/components/ui/page-header';
 import { Coins } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { getDomainDisplayName } from '@/utils/domainUtils';
@@ -23,18 +23,10 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
 
   return (
     <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
-      {/* Header */}
-      <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
-        <div className="flex items-center gap-4">
-          <BackButton onClick={onBack} />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">LunaPoints</h1>
-            <p className="text-sm text-muted-foreground">Track your earned points and progress</p>
-          </div>
-        </div>
-      </div>
+      <PageHeader title="LunaPoints" onBack={onBack} />
 
-      <div className="p-4 space-y-6">
+      <div className="px-4 pt-6 pb-6 space-y-6">
+        <p className="text-sm text-muted-foreground">Track your earned points and progress</p>
         {/* Overview Stats */}
         <Card className="text-center">
           <CardContent className="p-6">

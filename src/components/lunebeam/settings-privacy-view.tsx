@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { BackButton } from '@/components/ui/back-button';
+import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Eye, EyeOff, Lock, Users, MessageSquare, Globe } from 'lucide-react';
 import { useStore } from '@/store/useStore';
@@ -60,16 +60,7 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({
     }
   };
   return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
-      {/* Header */}
-      <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
-        <div className="flex items-center gap-4">
-          <BackButton onClick={onBack} />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">Settings & Privacy</h1>
-            
-          </div>
-        </div>
-      </div>
+      <PageHeader title="Settings & Privacy" onBack={onBack} />
 
       <div className="px-4 pt-6 pb-24 space-y-6">
         {/* Profile Visibility */}

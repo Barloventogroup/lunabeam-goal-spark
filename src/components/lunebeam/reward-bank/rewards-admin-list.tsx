@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { BackButton } from '@/components/ui/back-button';
+import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Archive, ArchiveRestore } from "lucide-react";
@@ -66,30 +66,29 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) =>
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-background flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background p-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <BackButton variant="minimal" onClick={onBack} />
-            <h1 className="text-2xl font-bold text-foreground">Reward Bank</h1>
-          </div>
+    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+      <PageHeader 
+        title="Reward Bank" 
+        onBack={onBack}
+        right={
           <Button 
             onClick={() => setShowForm(true)}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Reward
           </Button>
-        </div>
+        }
+      />
 
+      <div className="px-4 pt-6 pb-6">
         {/* Rewards Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {rewards.map((reward) => (
@@ -153,7 +152,7 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) =>
             <div className="text-foreground mb-4">No rewards created yet</div>
             <Button 
               onClick={() => setShowForm(true)}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90"
             >
               <Plus className="w-4 h-4 mr-2" />
               Create Your First Reward

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { BackButton } from '@/components/ui/back-button';
+import { PageHeader } from '@/components/ui/page-header';
 import { Award, Gift, Settings, Inbox, ChevronRight } from 'lucide-react';
 interface RewardsHubProps {
   onBack: () => void;
@@ -19,15 +19,9 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
   showAdminFeatures = true
 }) => {
   return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
-      {/* Header */}
-      <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
-        <div className="flex items-center gap-4">
-          <BackButton onClick={onBack} />
-          <h1 className="text-2xl font-bold">Rewards</h1>
-        </div>
-      </div>
+      <PageHeader title="Rewards" onBack={onBack} />
 
-      <div className="p-4 space-y-3">
+      <div className="px-4 pt-6 pb-6 space-y-3">
         {/* Rewards */}
         <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToRewards}>
           <CardContent className="p-4">

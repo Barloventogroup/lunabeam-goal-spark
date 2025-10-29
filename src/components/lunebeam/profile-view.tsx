@@ -202,7 +202,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="flex items-center gap-3">
           <BackButton onClick={onBack} />
           <div>
-            <h1 className="text-xl font-bold">Profile</h1>
+            <h1 className="text-2xl font-bold">Profile</h1>
             
           </div>
         </div>
