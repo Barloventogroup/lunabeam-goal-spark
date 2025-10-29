@@ -151,28 +151,26 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(fileName);
 
-      // Cache-busting query param
-      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+      // Store clean URL in database (cache-busting applied in UI)
+      const cleanUrl = publicUrl;
 
-      // Update profile with avatar URL
+      // Update profile with clean avatar URL
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({ avatar_url: cacheBustedUrl })
+        .update({ avatar_url: cleanUrl })
         .eq("user_id", profile.user_id);
       if (updateError) throw updateError;
 
+      // Update local state
       setProfile({
         ...profile,
-        avatar_url: cacheBustedUrl,
+        avatar_url: cleanUrl,
       });
 
       toast({
         title: "Profile picture updated",
         description: "Your new profile picture has been saved.",
       });
-      
-      // Refresh profile to ensure cross-device sync
-      await useStore.getState().refreshProfile();
     } catch (error) {
       console.error("Error uploading avatar:", error);
       toast({
@@ -288,7 +286,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
             <div className="flex items-center gap-4">
               <div className="relative">
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Profile picture" className="w-20 h-20 rounded-full object-cover" />
+                  <img src={`${profile.avatar_url}?t=${Date.now()}`} alt="Profile picture" className="w-20 h-20 rounded-full object-cover" />
                 ) : (
                   <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center text-white text-2xl font-normal">
                     {profile?.first_name?.charAt(0) || "U"}
