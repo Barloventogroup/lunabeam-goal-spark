@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, Calendar } from 'lucide-react';
-import { format, isToday } from 'date-fns';
+import { format, isToday, parseISO } from 'date-fns';
 import type { Step, Goal } from '@/types';
 import { cleanStepTitle } from '@/utils/stepUtils';
 
@@ -86,6 +86,15 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                 <p className="text-sm text-muted-foreground">
                   Goal: {goal.title}
                 </p>
+                
+                {step.due_date && (
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    <span>
+                      Due {format(parseISO(step.due_date), 'MMM d, yyyy')}
+                    </span>
+                  </div>
+                )}
                 
                 {step.explainer && (
                   <p className="text-xs text-muted-foreground">
