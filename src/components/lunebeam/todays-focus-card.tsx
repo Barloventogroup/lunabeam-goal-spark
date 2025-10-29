@@ -132,7 +132,11 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
             <h5 className="text-lg font-bold text-foreground">Coming Up</h5>
             <div className="space-y-2">
               {upcomingSteps.map(({step, goal, dueDate}) => (
-                <Card key={step.id} className="cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md">
+                <Card 
+                  key={step.id} 
+                  className="cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md"
+                  onClick={() => onViewUpcomingStep?.(step.id, goal.id)}
+                >
                   <CardHeader className="pb-3">
                     <h4 className="font-medium text-foreground text-base">
                       {cleanStepTitle(step.title)}
@@ -140,9 +144,22 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                   </CardHeader>
                   
                   <CardContent className="pt-0 space-y-1">
-                    <p className="text-xs text-muted-foreground">
-                      Goal: {goal.title} • Due {format(dueDate, 'MMM d')}
+                    <p className="text-sm text-muted-foreground">
+                      Goal: {goal.title}
                     </p>
+                    
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        Due {format(dueDate, 'MMM d, yyyy')}
+                      </span>
+                    </div>
+                    
+                    {step.explainer && (
+                      <p className="text-xs text-muted-foreground">
+                        {step.explainer}
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               ))}
