@@ -515,25 +515,27 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         </Drawer>
 
         {/* Security Section */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">Security</h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleStartEdit("password")}
-            className="text-base text-blue-500 hover:text-blue-600"
-          >
-            Edit
-          </Button>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-semibold">Security</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleStartEdit("password")}
+              className="text-base text-blue-500 hover:text-blue-600"
+            >
+              Edit
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="py-2">
+              <div className="flex items-center justify-between py-3">
+                <span className="text-muted-foreground text-base">Password</span>
+                <span className="text-foreground text-base">••••••••</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        <Card>
-          <CardContent className="py-2">
-            <div className="flex items-center justify-between py-3">
-              <span className="text-muted-foreground text-base">Password</span>
-              <span className="text-foreground text-base">••••••••</span>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Password Edit Drawer */}
         <Drawer open={editingSection === "password"} onOpenChange={(open) => !open && handleCancel()}>
@@ -588,18 +590,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         </Drawer>
 
         {/* Tags Section */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">Tags & Interests</h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleStartEdit("tags")}
-            className="text-base text-blue-500 hover:text-blue-600"
-          >
-            Edit
-          </Button>
-        </div>
-        <Card>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-semibold">Tags & Interests</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleStartEdit("tags")}
+              className="text-base text-blue-500 hover:text-blue-600"
+            >
+              Edit
+            </Button>
+          </div>
+          <Card>
           <CardContent className="py-2">
             <div className="space-y-0">
               {/* Strengths Row */}
@@ -652,6 +655,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
             </div>
           </CardContent>
         </Card>
+        </div>
 
         {/* Tags Edit Drawer */}
         <Drawer open={editingSection === "tags"} onOpenChange={(open) => !open && handleCancel()}>
