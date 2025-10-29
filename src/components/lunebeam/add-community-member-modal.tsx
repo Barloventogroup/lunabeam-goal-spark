@@ -166,6 +166,7 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
                 <SelectItem value="supporter">Supporter</SelectItem>
                 <SelectItem value="friend">Friend</SelectItem>
                 <SelectItem value="provider">Provider</SelectItem>
+                <SelectItem value="family">Family</SelectItem>
               </SelectContent>
             </Select>
           </div>
