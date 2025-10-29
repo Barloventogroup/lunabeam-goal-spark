@@ -216,7 +216,7 @@ export const TabYou: React.FC<TabYouProps> = ({
                   <Shield className="h-5 w-5 text-blue-500" />
                   <div>
                     <div className="font-medium">Settings & Privacy</div>
-                    <div className="text-sm text-muted-foreground">Notifications, privacy, and preferences</div>
+                    
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
