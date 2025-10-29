@@ -356,9 +356,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         </Card>
 
         {/* Profile Information Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle>Profile Information</CardTitle>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Profile Information</h3>
             {editingSection !== "basic" && (
               <Button
                 variant="ghost"
@@ -370,8 +370,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                 Edit
               </Button>
             )}
-          </CardHeader>
-          <CardContent>
+          </div>
+          <Card>
+            <CardContent className="pt-6">
             {editingSection === "basic" ? (
               <div className="space-y-3">
                 <div>
@@ -430,15 +431,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Security Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Security</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold">Security</h3>
+          <Card>
+            <CardContent className="space-y-4 pt-6">
             {editingSection === "password" ? (
               <div className="space-y-3">
                 <div>
@@ -495,23 +496,23 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Tags Section */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Tags & Interests</CardTitle>
-              {editingSection !== "tags" && (
-                <Button variant="outline" size="sm" onClick={() => handleStartEdit("tags")}>
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Tags & Interests</h3>
+            {editingSection !== "tags" && (
+              <Button variant="outline" size="sm" onClick={() => handleStartEdit("tags")}>
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+            )}
+          </div>
+          <Card>
+            <CardContent className="space-y-4 pt-6">
             {editingSection === "tags" ? (
               <div className="space-y-4">
                 {/* Strengths */}
@@ -672,8 +673,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
       </div>
     </div>
