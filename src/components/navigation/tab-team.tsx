@@ -457,14 +457,14 @@ export const TabTeam: React.FC = () => {
       case 'Connected':
       case 'Active':
       case 'Accepted':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300">Connected</Badge>;
+        return <Badge className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300">Connected</Badge>;
       case 'Invited':
       case 'Pending':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300">Invited</Badge>;
+        return <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300">Invited</Badge>;
       case 'Not invited yet':
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300">Not invited yet</Badge>;
+        return <Badge className="bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300">Not invited yet</Badge>;
       default:
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300">Unknown</Badge>;
+        return <Badge className="bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300">Unknown</Badge>;
     }
   };
   const [collectEmailModal, setCollectEmailModal] = useState<{
@@ -765,13 +765,13 @@ export const TabTeam: React.FC = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={getRoleColor(request.role)}>
+                          <Badge className={getRoleColor(request.role)}>
                             {getRoleIcon(request.role)}
                             <span className="ml-1 capitalize">{request.role}</span>
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="capitalize">
+                          <Badge className="capitalize">
                             {request.permission_level}
                           </Badge>
                         </TableCell>
@@ -884,13 +884,13 @@ export const TabTeam: React.FC = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={getRoleColor(member.role)}>
+                          <Badge className={getRoleColor(member.role)}>
                             {getRoleIcon(member.role)}
                             <span className="ml-1 capitalize">{member.role}</span>
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="capitalize">
+                          <Badge className="capitalize">
                             {member.permission_level}
                           </Badge>
                         </TableCell>
@@ -971,9 +971,9 @@ export const TabTeam: React.FC = () => {
                       <TableCell>
                         {member.displayStatus === 'Connected' ? <Badge className="bg-green-100 text-green-800 border-green-200">
                             ✓ Connected
-                          </Badge> : member.displayStatus === 'Invited' ? <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                          </Badge> : member.displayStatus === 'Invited' ? <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">
                             ⏳ Invited
-                          </Badge> : <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
+                          </Badge> : <Badge className="bg-gray-50 text-gray-600 border-gray-200">
                             📧 Not Invited
                           </Badge>}
                       </TableCell>
@@ -1081,7 +1081,7 @@ export const TabTeam: React.FC = () => {
                               </Avatar>
                               <div className="flex items-center gap-2">
                         <span className="font-medium">{name}</span>
-                        {member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' && <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300">
+                        {member.type === 'supporter' && 'memberType' in member && member.memberType === 'individual' && <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300">
                             Individual
                           </Badge>}
                         {member.type === 'supporter' && member.is_admin && <Crown className="h-4 w-4 text-yellow-500" />}
@@ -1285,7 +1285,7 @@ export const TabTeam: React.FC = () => {
                 <Label>Status</Label>
                 <div className="flex items-center gap-2">
                   {getStatusBadge(selectedMember.type)}
-                  {selectedMember.is_admin && <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300">
+                  {selectedMember.is_admin && <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300">
                       <Crown className="h-3 w-3 mr-1" />
                       Admin
                     </Badge>}
