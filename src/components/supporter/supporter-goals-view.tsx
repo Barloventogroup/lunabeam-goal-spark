@@ -260,7 +260,7 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-lg line-clamp-2">
+                        <h3 className="font-medium text-sm line-clamp-2">
                           {goal.title}
                         </h3>
                         <Badge variant={getStatusColor(goal.status)}>

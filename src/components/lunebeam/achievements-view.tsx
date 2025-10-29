@@ -121,7 +121,7 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({
                       <CheckCircle className="h-5 w-5 text-green-500" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium">{goal.title}</h4>
+                      <h4 className="font-medium text-sm">{goal.title}</h4>
                       <p className="text-sm text-muted-foreground line-clamp-1">
                         {goal.description || 'No description'}
                       </p>
@@ -180,7 +180,7 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({
                       <Archive className="h-5 w-5 text-orange-500" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium">{goal.title}</h4>
+                      <h4 className="font-medium text-sm">{goal.title}</h4>
                       <p className="text-sm text-muted-foreground line-clamp-1">
                         {goal.description || 'No description'}
                       </p>
