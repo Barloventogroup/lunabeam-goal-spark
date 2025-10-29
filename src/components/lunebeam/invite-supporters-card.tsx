@@ -11,10 +11,9 @@ interface InviteSupportersCardProps {
 
 export const InviteSupportersCard: React.FC<InviteSupportersCardProps> = ({ onSuccess }) => {
   return (
-    <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+    <Card className="w-full shadow-lg bg-gradient-to-r from-primary/5 to-primary/10">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <UserPlus className="h-6 w-6 text-primary" />
+        <CardTitle className="text-xl">
           Add Supporters
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-1">
@@ -42,7 +41,7 @@ export const InviteSupportersCard: React.FC<InviteSupportersCardProps> = ({ onSu
               }
             />
           </div>
-          <div className="text-xs text-muted-foreground text-center bg-muted/50 p-3 rounded-lg">
+          <div className="text-sm text-muted-foreground text-center bg-muted/50 p-3 rounded-lg">
             💡 <strong>Tip:</strong> Supporters can view your progress, cheer you on, and help keep you accountable on your journey
           </div>
         </div>
