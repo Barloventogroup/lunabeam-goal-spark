@@ -195,7 +195,7 @@ export const TabYou: React.FC<TabYouProps> = ({
                           {unreadCount}
                         </Badge>}
                     </div>
-                    <div className="text-sm text-muted-foreground">View your activity and updates</div>
+                    
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
