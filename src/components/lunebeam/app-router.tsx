@@ -136,7 +136,7 @@ const AppRouter: React.FC = () => {
   if (showPostOnboardingSkeleton) {
     console.log('AppRouter: Showing post-onboarding skeleton');
     return (
-      <div className="min-h-[100dvh] bg-background flex flex-col animate-fade-in max-w-full overflow-x-hidden" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
+      <div className="min-h-[100dvh] bg-background flex flex-col animate-fade-in max-w-full overflow-x-hidden pt-safe-content">
         {/* Header with Logo */}
           <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 pb-4 pt-4 bg-card">
             <div className="flex items-center">
@@ -185,7 +185,7 @@ const AppRouter: React.FC = () => {
   if (!profileLoaded) {
     console.log('AppRouter: Showing loading skeleton...');
     return (
-      <div className="min-h-[100dvh] bg-background flex flex-col max-w-full overflow-x-hidden" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
+      <div className="min-h-[100dvh] bg-background flex flex-col max-w-full overflow-x-hidden pt-safe-content">
         {/* Header with Logo */}
           <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 pb-4 pt-4 bg-card">
             <div className="flex items-center">
