@@ -174,7 +174,7 @@ export const TabYou: React.FC<TabYouProps> = ({
                   <Trophy className="h-5 w-5 text-yellow-500" />
                   <div>
                     <div className="font-medium">Achievements</div>
-                    <div className="text-sm text-muted-foreground">View your completed goals and milestones</div>
+                    
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
