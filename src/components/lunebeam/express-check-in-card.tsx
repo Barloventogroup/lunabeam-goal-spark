@@ -355,13 +355,13 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
         
         <div className="flex items-center gap-2 flex-wrap">
           {step.due_date && (
-            <Badge variant="outline" className="gap-1 text-base text-indigo-600 bg-indigo-50 border-indigo-200">
+            <Badge variant="outline" className="gap-1 text-base text-indigo-600 bg-indigo-50">
               <Clock className="h-3 w-3" />
               {formatDueTime(step.due_date)}
             </Badge>
           )}
           {streakData && streakData.currentStreak > 0 && (
-            <Badge variant="outline" className="gap-1 bg-orange-50 border-orange-200 text-orange-700">
+            <Badge variant="outline" className="gap-1 bg-orange-50 text-orange-700">
               <Flame className="h-3 w-3" />
               {streakData.currentStreak} day streak
             </Badge>

@@ -207,7 +207,7 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
   };
 
   const getAdminBadge = () => {
-    return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    return 'bg-yellow-100 text-yellow-800';
   };
 
   if (loading) {
@@ -332,7 +332,7 @@ export function SupporterManagement({ individualId }: SupporterManagementProps) 
                       </Badge>
                     )}
                     {supporter.is_provisioner && (
-                      <Badge variant="outline" className="border-yellow-200 text-yellow-800">
+                      <Badge variant="outline" className="text-yellow-800">
                         Provisioner
                       </Badge>
                     )}

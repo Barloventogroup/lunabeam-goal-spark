@@ -359,7 +359,7 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
               )} 
               onClick={() => updateFlowData('goal_type', 'progressive_mastery')}
             >
-              <Badge className="absolute top-2 right-2 text-xs bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800">
+              <Badge className="absolute top-2 right-2 text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
                 Recommended for learning
               </Badge>
               <CardContent className="p-4">

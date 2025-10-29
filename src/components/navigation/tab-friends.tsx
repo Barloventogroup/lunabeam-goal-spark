@@ -223,7 +223,7 @@ export const TabFriends: React.FC = () => {
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium">{member.name}</span>
                                   {member.isOwner && (
-                                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
                                       You
                                     </Badge>
                                   )}
@@ -238,7 +238,7 @@ export const TabFriends: React.FC = () => {
                             </TableCell>
                             <TableCell>
                               {member.isAdmin && (
-                                <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                                <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700">
                                   <Crown className="h-3 w-3 mr-1" />
                                   Admin
                                 </Badge>
