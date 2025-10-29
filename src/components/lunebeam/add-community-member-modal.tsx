@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -122,26 +122,26 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
   };
 
   return (
-    <Dialog open={open} onOpenChange={(newOpen) => {
+    <Drawer open={open} onOpenChange={(newOpen) => {
       setOpen(newOpen);
       if (!newOpen) resetForm();
     }}>
-      <DialogTrigger asChild>
+      <DrawerTrigger asChild>
         {trigger || (
           <Button variant="outline" size="sm">
             <UserPlus className="h-4 w-4" />
           </Button>
         )}
-      </DialogTrigger>
-      <DialogContent className="max-w-md" aria-describedby="add-member-description">
-        <DialogHeader className="pr-10">
-          <DialogTitle className="text-xl">Add Community Member</DialogTitle>
-          <DialogDescription id="add-member-description">
+      </DrawerTrigger>
+      <DrawerContent className="max-h-[90vh]">
+        <DrawerHeader className="text-left">
+          <DrawerTitle className="text-xl">Add Community Member</DrawerTitle>
+          <DrawerDescription>
             Invite someone to join your support network and help with your goals.
-          </DialogDescription>
-        </DialogHeader>
+          </DrawerDescription>
+        </DrawerHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 px-4 pb-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
@@ -228,7 +228,7 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </DrawerContent>
+    </Drawer>
   );
 };
