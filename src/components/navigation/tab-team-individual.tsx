@@ -90,13 +90,13 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
   const getRoleColor = (role: string) => {
     switch (role) {
       case "supporter":
-        return "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300";
+        return "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300";
       case "friend":
-        return "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300";
+        return "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300";
       case "provider":
-        return "bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300";
+        return "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300";
+        return "bg-gray-50 text-gray-700 dark:bg-gray-950 dark:text-gray-300";
     }
   };
 
