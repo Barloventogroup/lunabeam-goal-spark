@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { notificationsService } from './notificationsService';
 
 export type PermissionLevel = 'viewer' | 'collaborator';
-export type UserRole = 'individual' | 'supporter' | 'friend' | 'provider';
+export type UserRole = 'individual' | 'supporter' | 'friend' | 'provider' | 'family';
 export type AccountStatus = 'active' | 'pending_user_consent' | 'user_claimed';
 
 export interface UserConsent {

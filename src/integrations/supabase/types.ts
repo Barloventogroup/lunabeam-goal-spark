@@ -1967,6 +1967,7 @@ export type Database = {
         | "provider"
         | "admin"
         | "parent"
+        | "family"
       user_role_fixed: "individual" | "supporter" | "friend" | "provider"
     }
     CompositeTypes: {
@@ -2112,6 +2113,7 @@ export const Constants = {
         "provider",
         "admin",
         "parent",
+        "family",
       ],
       user_role_fixed: ["individual", "supporter", "friend", "provider"],
     },

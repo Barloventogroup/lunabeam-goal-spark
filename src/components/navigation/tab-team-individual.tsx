@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users, Eye, User, Heart, ShieldCheck } from "lucide-react";
+import { Users, Eye, User, Heart, ShieldCheck, Home } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { PermissionsService, type Supporter } from "@/services/permissionsService";
 import { useToast } from "@/hooks/use-toast";
@@ -82,8 +82,10 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
         return <Heart className="h-3 w-3" />;
       case "provider":
         return <ShieldCheck className="h-3 w-3" />;
+      case "family":
+        return <Home className="h-3 w-3" />;
       default:
-        return <Users className="h-3 w-3" />;
+        return <User className="h-3 w-3" />;
     }
   };
 
@@ -95,6 +97,8 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
         return "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300";
       case "provider":
         return "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300";
+      case "family":
+        return "bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300";
       default:
         return "bg-gray-50 text-gray-700 dark:bg-gray-950 dark:text-gray-300";
     }

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, UserPlus, Crown, Eye, MessageSquare, Edit3, MoreHorizontal, Mail, Phone, UserMinus, Bell, Save, X, User } from 'lucide-react';
+import { Users, UserPlus, Crown, Eye, MessageSquare, Edit3, MoreHorizontal, Mail, Phone, UserMinus, Bell, Save, X, User, Home } from 'lucide-react';
 import { useAuth } from '@/components/auth/auth-provider';
 import { PermissionsService, type Supporter, type SupporterInvite } from '@/services/permissionsService';
 import { goalsService } from '@/services/goalsService';
@@ -430,6 +430,8 @@ export const TabTeam: React.FC = () => {
         return <MessageSquare className="h-3 w-3" />;
       case 'provider':
         return <Edit3 className="h-3 w-3" />;
+      case 'family':
+        return <Home className="h-3 w-3" />;
       case 'individual':
         return <User className="h-3 w-3" />;
       default:
@@ -444,8 +446,10 @@ export const TabTeam: React.FC = () => {
         return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300';
       case 'provider':
         return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300';
-      case 'individual':
+      case 'family':
         return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300';
+      case 'individual':
+        return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300';
     }

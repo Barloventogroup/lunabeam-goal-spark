@@ -19,7 +19,8 @@ import {
   Search,
   MoreHorizontal,
   Check,
-  X
+  X,
+  Home
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { SimpleInviteModal } from '../lunebeam/simple-invite-modal';
@@ -96,6 +97,7 @@ export const TabFriends: React.FC = () => {
       case 'supporter': return <Users className="h-3 w-3" />;
       case 'friend': return <MessageSquare className="h-3 w-3" />;
       case 'provider': return <Edit3 className="h-3 w-3" />;
+      case 'family': return <Home className="h-3 w-3" />;
       default: return <Users className="h-3 w-3" />;
     }
   };
@@ -105,6 +107,7 @@ export const TabFriends: React.FC = () => {
       case 'supporter': return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'friend': return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'provider': return 'bg-green-50 text-green-700 border-green-200';
+      case 'family': return 'bg-orange-50 text-orange-700 border-orange-200';
       default: return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
