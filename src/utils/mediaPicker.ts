@@ -16,25 +16,24 @@ export async function pickAvatarBlob(): Promise<{ blob: Blob; ext: string } | nu
       }
     }
 
+    // Use Base64 to ensure we get JPEG format that works in browsers
     const photo = await Camera.getPhoto({
       source: CameraSource.Photos,
-      resultType: CameraResultType.Uri,
+      resultType: CameraResultType.Base64,
       quality: 85,
       correctOrientation: true,
       allowEditing: false,
     });
 
-    const url = photo.webPath || photo.path;
-    if (!url) {
-      throw new Error('no_photo_url');
+    if (!photo.base64String) {
+      throw new Error('no_photo_data');
     }
 
-    const res = await fetch(url);
-    const blob = await res.blob();
+    // Convert base64 to blob - this will be JPEG format
+    const base64Response = await fetch(`data:image/jpeg;base64,${photo.base64String}`);
+    const blob = await base64Response.blob();
 
-    // Prefer JPEG for broad browser support
-    const ext = 'jpg';
-    return { blob, ext };
+    return { blob, ext: 'jpg' };
   } catch (error) {
     throw error;
   }
