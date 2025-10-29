@@ -34,7 +34,7 @@ const getStatusColor = (status: string) => {
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return null;
   try {
-    return format(new Date(dateStr), "MMM d");
+    return format(new Date(dateStr), "MMM d, yyyy");
   } catch {
     return null;
   }
