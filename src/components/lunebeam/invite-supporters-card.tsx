@@ -20,7 +20,7 @@ export const InviteSupportersCard: React.FC<InviteSupportersCardProps> = ({
           <AddCommunityMemberModal trigger={<Button size="lg" className="w-full h-12 text-base font-medium">
                 Invite Someone
               </Button>} onSuccess={onSuccess} />
-          <div className="text-sm text-muted-foreground text-center bg-muted/50 p-3 rounded-lg">
+          <div className="text-sm text-muted-foreground text-justify bg-muted/50 p-3 rounded-lg">
             💡 <strong>Tip:</strong> Supporters can view your progress, cheer you on, and help keep you accountable on your journey
           </div>
         </div>
