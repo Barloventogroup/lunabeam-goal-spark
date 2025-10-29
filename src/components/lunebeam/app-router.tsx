@@ -138,7 +138,7 @@ const AppRouter: React.FC = () => {
     return (
       <div className="min-h-[100dvh] bg-background flex flex-col animate-fade-in max-w-full overflow-x-hidden pt-safe-content">
         {/* Header with Logo */}
-          <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 pb-4 pt-4 bg-card">
+          <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 h-16 bg-card">
             <div className="flex items-center">
               <img
                 src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
@@ -187,7 +187,7 @@ const AppRouter: React.FC = () => {
     return (
       <div className="min-h-[100dvh] bg-background flex flex-col max-w-full overflow-x-hidden pt-safe-content">
         {/* Header with Logo */}
-          <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 pb-4 pt-4 bg-card">
+          <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 h-16 bg-card">
             <div className="flex items-center">
               <img
                 src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
