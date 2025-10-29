@@ -46,8 +46,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         first_name: profile?.first_name || "",
         email: profile?.email || "",
         birthday: profile?.birthday ? new Date(profile.birthday) : null,
-        newPassword: "",
-        confirmPassword: "",
       });
     } else if (section === "password") {
       setEditedData({
@@ -75,32 +73,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         
         if (editedData.birthday) {
           updateData.birthday = editedData.birthday.toISOString().split('T')[0];
-        }
-
-        // Handle password update if provided
-        if (editedData.newPassword || editedData.confirmPassword) {
-          if (editedData.newPassword !== editedData.confirmPassword) {
-            toast({
-              title: "Error",
-              description: "Passwords do not match.",
-              variant: "destructive",
-            });
-            return;
-          }
-          if (editedData.newPassword.length < 6) {
-            toast({
-              title: "Error",
-              description: "Password must be at least 6 characters long.",
-              variant: "destructive",
-            });
-            return;
-          }
-
-          const { error: passwordError } = await supabase.auth.updateUser({
-            password: editedData.newPassword,
-          });
-
-          if (passwordError) throw passwordError;
         }
 
         // Update profile
@@ -459,10 +431,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                     {profile?.birthday ? format(new Date(profile.birthday), "PPP") : "Not set"}
                   </span>
                 </div>
-                <div className="grid grid-cols-[120px,1fr] items-center py-3 border-t">
-                  <span className="text-base font-medium text-muted-foreground">Password:</span>
-                  <span className="text-base text-right">••••••••</span>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -471,23 +439,24 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         {/* Edit Profile Drawer */}
         <Drawer open={isEditDrawerOpen} onOpenChange={setIsEditDrawerOpen}>
           <DrawerContent side="right">
-            <DrawerHeader>
-              <DrawerTitle>Edit Profile Information</DrawerTitle>
-            </DrawerHeader>
+          <DrawerHeader>
+            <DrawerTitle className="text-left text-xl">Edit Profile Information</DrawerTitle>
+          </DrawerHeader>
             <div className="px-4 py-6 space-y-4 overflow-y-auto flex-1">
               <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">Name</label>
+                <label className="text-base font-medium text-foreground mb-1 block">Name</label>
                 <Input
                   value={editedData.first_name || ""}
                   onChange={(e) =>
                     setEditedData({ ...editedData, first_name: e.target.value })
                   }
                   placeholder="First name"
+                  className="text-base"
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">Email</label>
+                <label className="text-base font-medium text-foreground mb-1 block">Email</label>
                 <Input
                   type="email"
                   value={editedData.email || ""}
@@ -495,17 +464,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                     setEditedData({ ...editedData, email: e.target.value })
                   }
                   placeholder="Email address"
+                  className="text-base"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">Date of Birth</label>
+                <label className="text-base font-medium text-foreground mb-1 block">Date of Birth</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal text-base",
                         !editedData.birthday && "text-muted-foreground"
                       )}
                     >
@@ -529,31 +499,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                     />
                   </PopoverContent>
                 </Popover>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">New Password (Optional)</label>
-                <Input
-                  type="password"
-                  value={editedData.newPassword || ""}
-                  onChange={(e) =>
-                    setEditedData({ ...editedData, newPassword: e.target.value })
-                  }
-                  placeholder="Leave blank to keep current"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Must be at least 6 characters</p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1 block">Confirm New Password</label>
-                <Input
-                  type="password"
-                  value={editedData.confirmPassword || ""}
-                  onChange={(e) =>
-                    setEditedData({ ...editedData, confirmPassword: e.target.value })
-                  }
-                  placeholder="Confirm new password"
-                />
               </div>
             </div>
             <DrawerFooter>
