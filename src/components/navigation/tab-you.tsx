@@ -232,7 +232,7 @@ export const TabYou: React.FC<TabYouProps> = ({
                   <HelpCircle className="h-5 w-5 text-green-500" />
                   <div>
                     <div className="font-medium">Help & Support</div>
-                    <div className="text-sm text-muted-foreground">FAQ, support, and app information</div>
+                    
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
