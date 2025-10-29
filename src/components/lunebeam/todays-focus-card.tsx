@@ -30,7 +30,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
 }) => {
   const renderStepCard = (step: Step, goal: Goal, dueDate?: Date, isOverdue = false) => (
     <Card 
-      className={`cursor-pointer hover:shadow-md transition-shadow ${isOverdue ? 'border-2 border-red-500' : ''}`}
+      className={`cursor-pointer hover:shadow-lg transition-shadow ${isOverdue ? 'border-2 border-red-500' : 'border-0 shadow-md'}`}
       onClick={() => onViewUpcomingStep?.(step.id, goal.id)}
     >
       <CardHeader className="pb-3">
@@ -74,7 +74,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
         {/* Today's Due Step */}
         {step && goal && (
           <div className="space-y-3">
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onViewStep}>
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md" onClick={onViewStep}>
               <CardHeader className="pb-3">
                 <h4 className="font-medium text-foreground text-base">
                   {cleanStepTitle(step.title)}
@@ -132,7 +132,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
             <h5 className="text-lg font-bold text-foreground">Coming Up</h5>
             <div className="space-y-2">
               {upcomingSteps.map(({step, goal, dueDate}) => (
-                <Card key={step.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                <Card key={step.id} className="cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md">
                   <CardHeader className="pb-3">
                     <h4 className="font-medium text-foreground text-base">
                       {cleanStepTitle(step.title)}
