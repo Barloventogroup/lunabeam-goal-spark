@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { UserPlus } from 'lucide-react';
+
 import { AddCommunityMemberModal } from '@/components/lunebeam/add-community-member-modal';
 
 interface InviteSupportersCardProps {
@@ -24,8 +24,7 @@ export const InviteSupportersCard: React.FC<InviteSupportersCardProps> = ({ onSu
           <AddCommunityMemberModal 
             trigger={
               <Button size="lg" className="w-full h-12 text-base font-medium">
-                <UserPlus className="h-5 w-5 mr-2" />
-                Invite Supporter
+                Invite Someone
               </Button>
             }
             onSuccess={onSuccess}
