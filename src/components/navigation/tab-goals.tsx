@@ -21,20 +21,17 @@ type GoalsView = 'list' | 'detail' | 'categories' | 'create' | 'summary' | 'wiza
 interface TabGoalsProps {
   onWizardStateChange?: (isWizardActive: boolean) => void;
   initialGoalId?: string | null;
-  initialStepId?: string | null;
   triggerCreate?: boolean;
   onNavigateToNotifications?: () => void;
 }
 export const TabGoals: React.FC<TabGoalsProps> = ({
   onWizardStateChange,
   initialGoalId,
-  initialStepId,
   triggerCreate,
   onNavigateToNotifications
 }) => {
   const [currentView, setCurrentView] = useState<GoalsView>('list');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
-  const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [aiGoal, setAiGoal] = useState<any>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -86,15 +83,14 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
     loadActiveGoalsCount();
   }, [refreshTrigger]);
 
-  // Handle initial goal ID and step ID navigation
+  // Handle initial goal ID navigation
   useEffect(() => {
     if (initialGoalId) {
       setSelectedGoalId(initialGoalId);
-      setSelectedStepId(initialStepId || null);
       setCurrentView('detail');
       onWizardStateChange?.(false);
     }
-  }, [initialGoalId, initialStepId, onWizardStateChange]);
+  }, [initialGoalId, onWizardStateChange]);
 
   // Handle trigger create from FAB
   useEffect(() => {
@@ -150,7 +146,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
   const renderCurrentView = () => {
     switch (currentView) {
       case 'detail':
-        return selectedGoalId ? <GoalDetailV2 goalId={selectedGoalId} initialStepId={selectedStepId} onBack={() => handleNavigate('goals-list')} /> : <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />;
+        return selectedGoalId ? <GoalDetailV2 goalId={selectedGoalId} onBack={() => handleNavigate('goals-list')} /> : <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />;
       case 'categories':
         return <GoalCategories onSelectCategory={handleCategorySelected} onBack={() => setCurrentView('list')} />;
       case 'create':

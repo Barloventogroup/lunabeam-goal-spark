@@ -26,7 +26,6 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
   const [showChat, setShowChat] = useState(false);
   const [isWizardActive, setIsWizardActive] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
-  const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [youTabInitialView, setYouTabInitialView] = useState<'profile' | 'notifications'>('profile');
   const [triggerCreateGoal, setTriggerCreateGoal] = useState(false);
   const { loadGoals, userContext } = useStore();
@@ -58,7 +57,6 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
   useEffect(() => {
     if (activeTab !== 'goals') {
       setSelectedGoalId(null);
-      setSelectedStepId(null);
     }
     // React Query handles data freshness automatically - no need to call loadGoals
   }, [activeTab]);
@@ -78,11 +76,10 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
       switch (activeTab) {
         case 'home':
           return <TabSupporterHome 
-            onNavigateToGoals={(goalId?: string, stepId?: string) => {
-              setActiveTab('goals');
-              setSelectedGoalId(goalId || null);
-              setSelectedStepId(stepId || null);
-            }}
+        onNavigateToGoals={(goalId?: string) => {
+          setActiveTab('goals');
+          setSelectedGoalId(goalId || null);
+        }}
             onNavigateToIndividual={(individualId: string) => {
               // For now, navigate to team tab to see individual details
               setActiveTab('team');
@@ -93,7 +90,7 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
             }}
           />;
         case 'goals':
-          return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} initialStepId={selectedStepId} triggerCreate={triggerCreateGoal} />;
+          return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} triggerCreate={triggerCreateGoal} />;
         case 'team':
           return <TabTeam />; // Show supporter's community view
         case 'you':
@@ -117,10 +114,9 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
         return <TabHome 
           entryVariant={entryVariant}
           onOpenChat={() => setShowChat(true)} 
-          onNavigateToGoals={(goalId?: string, stepId?: string) => {
+          onNavigateToGoals={(goalId?: string) => {
             setActiveTab('goals');
             setSelectedGoalId(goalId || null);
-            setSelectedStepId(stepId || null);
           }}
           onNavigateToNotifications={() => {
             setYouTabInitialView('notifications');
@@ -128,7 +124,7 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
           }}
         />;
       case 'goals':
-        return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} initialStepId={selectedStepId} triggerCreate={triggerCreateGoal} />;
+        return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} triggerCreate={triggerCreateGoal} />;
       case 'team':
         return userContext?.userType === 'individual' ? <TabTeamIndividual /> : <TabTeam />;
       case 'you':

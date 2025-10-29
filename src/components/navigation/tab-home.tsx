@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut, AlertCircle, Clock, X } from 'lucide-react';
 import { Button } from '../ui/button';
-
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '../ui/drawer';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { CircularProgress } from '../ui/circular-progress';
 
@@ -15,6 +15,7 @@ import { NotificationBadge } from '../lunebeam/notification-badge';
 import { PointsDisplay } from '../lunebeam/points-display';
 import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
 import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
+import { RecommendedStepsList } from '../lunebeam/recommended-steps-list';
 import { useStore } from '../../store/useStore';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '../../integrations/supabase/client';
@@ -54,6 +55,9 @@ export const TabHome: React.FC<TabHomeProps> = ({
     upcomingSteps: any[];
   }>({ todaysSteps: [], overdueSteps: [], upcomingSteps: [] });
   const [isLoadingSteps, setIsLoadingSteps] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerGoalId, setDrawerGoalId] = useState<string | null>(null);
+  const [drawerStepId, setDrawerStepId] = useState<string | null>(null);
 
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -353,11 +357,15 @@ export const TabHome: React.FC<TabHomeProps> = ({
   });
 
   const handleViewStep = (stepId: string, goalId: string) => {
-    onNavigateToGoals(goalId, stepId);
+    setDrawerGoalId(goalId);
+    setDrawerStepId(stepId);
+    setDrawerOpen(true);
   };
 
   const handleViewUpcomingStep = (stepId: string, goalId: string) => {
-    onNavigateToGoals(goalId, stepId);
+    setDrawerGoalId(goalId);
+    setDrawerStepId(stepId);
+    setDrawerOpen(true);
   };
 
   const handleSignOut = async () => {
@@ -515,5 +523,39 @@ export const TabHome: React.FC<TabHomeProps> = ({
           weekOf={new Date().toISOString().split('T')[0]} 
         />
       )}
+
+      {/* Step Detail Drawer */}
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <DrawerContent side="right">
+          <DrawerHeader className="border-b">
+            <div className="flex items-center justify-between">
+              <DrawerTitle>Recommended Steps</DrawerTitle>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DrawerClose>
+            </div>
+          </DrawerHeader>
+          <div className="flex-1 overflow-y-auto p-4">
+            {drawerGoalId && (() => {
+              const goal = goalsFromQuery.find(g => g.id === drawerGoalId);
+              const goalSteps = steps[drawerGoalId] || [];
+              
+              if (!goal) return <p className="text-muted-foreground">Goal not found</p>;
+              
+              return (
+                <RecommendedStepsList
+                  steps={goalSteps}
+                  goal={goal}
+                  onStepsChange={() => {
+                    loadSteps(drawerGoalId);
+                  }}
+                />
+              );
+            })()}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </>;
 };
