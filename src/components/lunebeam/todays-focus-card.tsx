@@ -30,7 +30,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
 }) => {
   const renderStepCard = (step: Step, goal: Goal, dueDate?: Date, isOverdue = false) => (
     <Card 
-      className={`cursor-pointer hover:shadow-lg transition-shadow ${isOverdue ? 'border-2 border-red-500' : 'border-0 shadow-md'}`}
+      className="cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md"
       onClick={() => onViewUpcomingStep?.(step.id, goal.id)}
     >
       <CardHeader className="pb-3">
