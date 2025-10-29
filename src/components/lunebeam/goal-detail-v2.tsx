@@ -1196,17 +1196,16 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
               {goal.frequency_per_week && goal.frequency_per_week > 0 && (goal as any)?.metadata?.totalPlannedOccurrences && <Badge variant="secondary" className="text-xs">
                   Day {Math.floor(steps.length / 4)} of {(goal as any).metadata.totalPlannedOccurrences} generated
                 </Badge>}
+              
+              {/* Progress metrics - aligned with badges */}
+              {progress && <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+                  <CircularProgress value={progress.percent || 0} size={32} strokeWidth={3} color="#2393CC" />
+                  <div className="text-lg font-bold text-primary">
+                    {progress.percent}%
+                  </div>
+                </div>}
             </div>
           </div>
-          
-          {progress && <div className="flex items-center gap-3 flex-shrink-0">
-              <CircularProgress value={progress.percent || 0} size={36} strokeWidth={3} color="#2393CC" />
-              <div className="text-right">
-                <div className="text-2xl font-bold text-primary">
-                  {progress.percent}%
-                </div>
-              </div>
-            </div>}
         </div>
       </div>
 
