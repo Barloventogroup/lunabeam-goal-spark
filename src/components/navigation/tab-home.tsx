@@ -526,7 +526,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
       {/* Step Detail Drawer */}
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <DrawerContent side="right" className="max-w-md w-full">
+        <DrawerContent side="right">
           <DrawerHeader className="border-b">
             <div className="flex items-center justify-between">
               <DrawerTitle>Recommended Steps</DrawerTitle>
