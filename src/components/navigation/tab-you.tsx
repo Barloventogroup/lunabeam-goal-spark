@@ -248,7 +248,7 @@ export const TabYou: React.FC<TabYouProps> = ({
                   <LogOut className="h-5 w-5 text-red-500" />
                   <div>
                     <div className="font-medium text-red-600">Sign Out</div>
-                    <div className="text-sm text-muted-foreground">Sign out of your account</div>
+                    
                   </div>
                 </div>
               </div>
