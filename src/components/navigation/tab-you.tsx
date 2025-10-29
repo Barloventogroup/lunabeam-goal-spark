@@ -17,12 +17,12 @@ import { notificationsService } from '@/services/notificationsService';
 import { supabase } from '@/integrations/supabase/client';
 import { NotificationBadge } from '../lunebeam/notification-badge';
 type YouView = 'profile' | 'rewards' | 'achievements' | 'rewardsHub' | 'profileDetail' | 'rewardBank' | 'rewardAdmin' | 'redemptionInbox' | 'notifications' | 'settingsPrivacy';
-
 interface TabYouProps {
   initialView?: YouView;
 }
-
-export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
+export const TabYou: React.FC<TabYouProps> = ({
+  initialView = 'profile'
+}) => {
   const {
     profile,
     resetOnboarding,
@@ -34,57 +34,49 @@ export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
   const [currentView, setCurrentView] = useState<YouView>(initialView);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
-
   useEffect(() => {
     console.log('TabYou: Rendering with profile:', profile);
     loadUnreadCount();
     checkAdminStatus();
 
     // Subscribe to real-time notification updates
-    const channel = supabase
-      .channel('notification-count-updates')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications'
-      }, () => {
-        loadUnreadCount();
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'notifications'
-      }, () => {
-        loadUnreadCount();
-      })
-      .subscribe();
-
+    const channel = supabase.channel('notification-count-updates').on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'notifications'
+    }, () => {
+      loadUnreadCount();
+    }).on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'notifications'
+    }, () => {
+      loadUnreadCount();
+    }).subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
   }, [profile, userContext]);
-
   const checkAdminStatus = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) return;
-
       const supporterContext = await getSupporterContext(user.id);
-      
-      // Check if user is admin by looking at supporters table
-      const { data: supporterData } = await supabase
-        .from('supporters')
-        .select('is_admin')
-        .eq('supporter_id', user.id)
-        .single();
 
+      // Check if user is admin by looking at supporters table
+      const {
+        data: supporterData
+      } = await supabase.from('supporters').select('is_admin').eq('supporter_id', user.id).single();
       setIsAdmin(supporterData?.is_admin || false);
     } catch (error) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);
     }
   };
-
   const loadUnreadCount = async () => {
     try {
       const count = await notificationsService.getUnreadCount();
@@ -110,14 +102,7 @@ export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
     return <AchievementsView onBack={() => setCurrentView('profile')} />;
   }
   if (currentView === 'rewardsHub') {
-    return <RewardsHub 
-      onBack={() => setCurrentView('profile')} 
-      onNavigateToRewards={() => setCurrentView('rewards')} 
-      onNavigateToRewardBank={() => setCurrentView('rewardBank')} 
-      onNavigateToManageRewards={() => setCurrentView('rewardAdmin')} 
-      onNavigateToRedemptionInbox={() => setCurrentView('redemptionInbox')}
-      showAdminFeatures={isAdmin}
-    />;
+    return <RewardsHub onBack={() => setCurrentView('profile')} onNavigateToRewards={() => setCurrentView('rewards')} onNavigateToRewardBank={() => setCurrentView('rewardBank')} onNavigateToManageRewards={() => setCurrentView('rewardAdmin')} onNavigateToRedemptionInbox={() => setCurrentView('redemptionInbox')} showAdminFeatures={isAdmin} />;
   }
   if (currentView === 'rewardBank') {
     return <RewardsGallery onBack={() => setCurrentView('rewardsHub')} />;
@@ -173,7 +158,7 @@ export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
                   <Award className="h-5 w-5 text-purple-500" />
                   <div>
                     <div className="font-medium">Rewards</div>
-                    <div className="text-sm text-muted-foreground">Manage your rewards and redemptions</div>
+                    
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -206,11 +191,9 @@ export const TabYou: React.FC<TabYouProps> = ({ initialView = 'profile' }) => {
                   <div>
                     <div className="font-medium flex items-center gap-2">
                       Notifications
-                      {unreadCount > 0 && (
-                        <Badge variant="secondary" className="text-xs px-2 py-0">
+                      {unreadCount > 0 && <Badge variant="secondary" className="text-xs px-2 py-0">
                           {unreadCount}
-                        </Badge>
-                      )}
+                        </Badge>}
                     </div>
                     <div className="text-sm text-muted-foreground">View your activity and updates</div>
                   </div>
