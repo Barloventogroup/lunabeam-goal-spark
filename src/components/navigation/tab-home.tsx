@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut, AlertCircle, Clock, X } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '../ui/drawer';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '../ui/sheet';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { CircularProgress } from '../ui/circular-progress';
 
@@ -525,18 +525,11 @@ export const TabHome: React.FC<TabHomeProps> = ({
       )}
 
       {/* Step Detail Drawer */}
-      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <DrawerContent side="right">
-          <DrawerHeader className="border-b">
-            <div className="flex items-center justify-between">
-              <DrawerTitle>Recommended Steps</DrawerTitle>
-              <DrawerClose asChild>
-                <Button variant="ghost" size="icon">
-                  <X className="h-4 w-4" />
-                </Button>
-              </DrawerClose>
-            </div>
-          </DrawerHeader>
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent side="right">
+          <SheetHeader className="border-b pb-4">
+            <SheetTitle>Recommended Steps</SheetTitle>
+          </SheetHeader>
           <div className="flex-1 overflow-y-auto p-4">
             {drawerGoalId && (() => {
               const goal = goalsFromQuery.find(g => g.id === drawerGoalId);
@@ -555,7 +548,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
               );
             })()}
           </div>
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
     </>;
 };
