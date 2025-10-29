@@ -80,22 +80,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const { data: goalsData, isLoading: goalsLoading, refetch: refetchGoals } = useGoals();
   const goalsFromQuery = goalsData?.goals || [];
 
-  // Add effect to listen for tab visibility changes and refresh data
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log("TabHome: Tab visible, React Query will refetch based on config");
-        // React Query handles refetch automatically via refetchOnWindowFocus
-        refetchGoals(); // Manual trigger is fine - React Query manages it
-        loadPoints(); // Keep this - not managed by React Query
-        // Remove aggressive steps loading - they load when needed
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [refetchGoals, loadPoints]);
-
   useEffect(() => {
     let isMounted = true;
     (async () => {

@@ -27,10 +27,10 @@ import SafeAreaProbe from "./components/dev/SafeAreaProbe";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 2 * 60 * 1000, // 2 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-      refetchOnWindowFocus: true,
-      refetchOnMount: 'always',
+      staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh longer
+      gcTime: 30 * 60 * 1000, // 30 minutes in cache
+      refetchOnWindowFocus: false, // Don't refetch on every tab switch
+      refetchOnMount: false, // Don't always refetch on component mount
       retry: 1,
     },
   },

@@ -43,10 +43,10 @@ export function useGoals(filters?: { status?: GoalStatus; owner_id?: string; cre
 
       return { goals, profiles };
     },
-    staleTime: 3 * 60 * 1000, // Consider data fresh for 3 minutes
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
-    refetchOnWindowFocus: false, // Disable - too aggressive for this app
-    refetchOnMount: true, // Keep true for explicit refreshes
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    refetchOnWindowFocus: false, // Disable - cache handles freshness
+    refetchOnMount: false, // Only refetch if data is stale
   });
 }
 
