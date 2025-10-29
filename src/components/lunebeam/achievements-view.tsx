@@ -3,102 +3,89 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  CheckCircle, 
-  Calendar, 
-  Archive, 
-  Trophy, 
-  MoreHorizontal,
-  Eye,
-  ArchiveX 
-} from 'lucide-react';
+import { CheckCircle, Calendar, Archive, Trophy, MoreHorizontal, Eye, ArchiveX } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { goalsService } from '@/services/goalsService';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import { toast } from '@/hooks/use-toast';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 interface AchievementsViewProps {
   onBack: () => void;
 }
-
-export const AchievementsView: React.FC<AchievementsViewProps> = ({ onBack }) => {
-  const { goals, loadGoals } = useStore();
+export const AchievementsView: React.FC<AchievementsViewProps> = ({
+  onBack
+}) => {
+  const {
+    goals,
+    loadGoals
+  } = useStore();
   const [isArchiving, setIsArchiving] = useState<string | null>(null);
-
   useEffect(() => {
     loadGoals();
   }, [loadGoals]);
-
   const completedGoals = goals.filter(goal => goal.status === 'completed');
   const archivedGoals = goals.filter(goal => goal.status === 'archived');
-
   const handleArchiveGoal = async (goalId: string) => {
     setIsArchiving(goalId);
     try {
-      await goalsService.updateGoal(goalId, { status: 'archived' });
+      await goalsService.updateGoal(goalId, {
+        status: 'archived'
+      });
       await loadGoals();
       toast({
         title: "Goal Archived",
-        description: "The goal has been successfully archived.",
+        description: "The goal has been successfully archived."
       });
     } catch (error) {
       console.error('Error archiving goal:', error);
       toast({
         title: "Error",
         description: "Failed to archive the goal. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsArchiving(null);
     }
   };
-
   const handleUnarchiveGoal = async (goalId: string) => {
     setIsArchiving(goalId);
     try {
-      await goalsService.updateGoal(goalId, { status: 'completed' });
+      await goalsService.updateGoal(goalId, {
+        status: 'completed'
+      });
       await loadGoals();
       toast({
         title: "Goal Unarchived",
-        description: "The goal has been moved back to completed goals.",
+        description: "The goal has been moved back to completed goals."
       });
     } catch (error) {
       console.error('Error unarchiving goal:', error);
       toast({
         title: "Error",
         description: "Failed to unarchive the goal. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsArchiving(null);
     }
   };
-
   const formatCompletionDate = (goal: any) => {
     // Use updated_at as completion date for completed goals
     const date = new Date(goal.updated_at);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   };
-
-  return (
-    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+  return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
       {/* Header */}
       <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
         <div className="flex items-center gap-4">
           <BackButton onClick={onBack} />
           <div className="flex-1">
             <h1 className="text-2xl font-bold">Achievements</h1>
-            <p className="text-sm text-muted-foreground">Your completed goals and milestones</p>
+            
           </div>
         </div>
       </div>
@@ -131,21 +118,14 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ onBack }) =>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {completedGoals.length === 0 ? (
-              <div className="text-center py-8">
+            {completedGoals.length === 0 ? <div className="text-center py-8">
                 <CheckCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="font-medium mb-2">No completed goals yet</h3>
                 <p className="text-sm text-muted-foreground">
                   Complete your first goal to start building your achievements!
                 </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {completedGoals.map((goal) => (
-                  <div 
-                    key={goal.id} 
-                    className="flex items-center gap-4 p-4 border rounded-lg bg-green-500/5 hover:bg-green-500/10 transition-colors"
-                  >
+              </div> : <div className="space-y-3">
+                {completedGoals.map(goal => <div key={goal.id} className="flex items-center gap-4 p-4 border rounded-lg bg-green-500/5 hover:bg-green-500/10 transition-colors">
                     <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
                       <CheckCircle className="h-5 w-5 text-green-500" />
                     </div>
@@ -171,12 +151,7 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ onBack }) =>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0"
-                            disabled={isArchiving === goal.id}
-                          >
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" disabled={isArchiving === goal.id}>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -188,10 +163,8 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ onBack }) =>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  </div>)}
+              </div>}
           </CardContent>
         </Card>
 
@@ -204,21 +177,14 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ onBack }) =>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {archivedGoals.length === 0 ? (
-              <div className="text-center py-8">
+            {archivedGoals.length === 0 ? <div className="text-center py-8">
                 <Archive className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="font-medium mb-2">No archived goals</h3>
                 <p className="text-sm text-muted-foreground">
                   Goals you archive will appear here for future reference.
                 </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {archivedGoals.map((goal) => (
-                  <div 
-                    key={goal.id} 
-                    className="flex items-center gap-4 p-4 border rounded-lg bg-orange-500/5 hover:bg-orange-500/10 transition-colors"
-                  >
+              </div> : <div className="space-y-3">
+                {archivedGoals.map(goal => <div key={goal.id} className="flex items-center gap-4 p-4 border rounded-lg bg-orange-500/5 hover:bg-orange-500/10 transition-colors">
                     <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
                       <Archive className="h-5 w-5 text-orange-500" />
                     </div>
@@ -246,12 +212,7 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ onBack }) =>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0"
-                            disabled={isArchiving === goal.id}
-                          >
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" disabled={isArchiving === goal.id}>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -263,13 +224,10 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ onBack }) =>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  </div>)}
+              </div>}
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
