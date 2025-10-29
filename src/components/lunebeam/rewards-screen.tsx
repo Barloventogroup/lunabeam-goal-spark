@@ -24,10 +24,12 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
   return (
     <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
       {/* Header */}
-      <div className="fixed left-0 right-0 top-safe z-40 flex items-center gap-4 bg-card/80 backdrop-blur border-b border-gray-200 px-4 pb-4 pt-4">
-        <BackButton onClick={onBack} />
-        <div className="flex-1">
-          <h1 className="text-xl font-bold">LunaPoints</h1>
+      <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <BackButton onClick={onBack} />
+            <h1 className="text-2xl font-bold">LunaPoints</h1>
+          </div>
         </div>
       </div>
 
