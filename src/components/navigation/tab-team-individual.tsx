@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users, Eye, Crown, User, Heart, ShieldCheck } from "lucide-react";
+import { Users, Eye, User, Heart, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { PermissionsService, type Supporter } from "@/services/permissionsService";
 import { useToast } from "@/hooks/use-toast";
@@ -160,7 +160,11 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
                         <h4 className="text-sm font-semibold text-foreground truncate">
                           {supporter.profile?.first_name || "Support Team Member"}
                         </h4>
-                        {supporter.is_admin && <Crown className="h-4 w-4 text-yellow-500" />}
+                        {supporter.is_admin && (
+                          <Badge variant="default" className="text-xs bg-yellow-500 text-white">
+                            Admin
+                          </Badge>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2 mb-2">
