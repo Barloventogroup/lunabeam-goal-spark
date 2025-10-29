@@ -317,23 +317,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
 
       <div className="px-6 pt-6 pb-4 space-y-6">
         {/* Profile Picture & Name */}
+        {/* Avatar Card */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle>Profile Information</CardTitle>
-            {editingSection !== "basic" && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleStartEdit("basic")}
-                className="text-primary hover:text-primary/90"
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Avatar Section */}
+          <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="relative">
                 {profile?.avatar_url ? (
@@ -361,22 +347,35 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                 />
               </div>
 
-              {/* Name Section */}
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <div>
-                    <h2 className="text-xl font-bold">{profile?.first_name || "User"}</h2>
-                    <p className="text-muted-foreground">Lunabeam Member</p>
-                  </div>
-                </div>
+                <h2 className="text-xl font-bold">{profile?.first_name || "User"}</h2>
+                <p className="text-muted-foreground">Lunabeam Member</p>
               </div>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Basic Information */}
+        {/* Profile Information Card */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle>Profile Information</CardTitle>
+            {editingSection !== "basic" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleStartEdit("basic")}
+                className="text-primary hover:text-primary/90"
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
             {editingSection === "basic" ? (
-              <div className="space-y-3 pt-4 border-t">
+              <div className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Name</label>
+                  <label className="text-base font-medium text-foreground mb-1 block">Name</label>
                   <Input
                     value={editedData.first_name || ""}
                     onChange={(e) =>
@@ -389,7 +388,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Email</label>
+                  <label className="text-base font-medium text-foreground mb-1 block">Email</label>
                   <Input
                     type="email"
                     value={editedData.email || ""}
@@ -414,18 +413,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                 </div>
               </div>
             ) : (
-              <div className="space-y-3 pt-4 border-t">
-                <div className="flex justify-between items-baseline py-2">
-                  <span className="text-sm font-medium text-muted-foreground">Name:</span>
-                  <span className="text-sm">{profile?.first_name || "Not set"}</span>
+              <div className="space-y-0">
+                <div className="grid grid-cols-[120px,1fr] items-center py-3">
+                  <span className="text-base font-medium text-muted-foreground">Name:</span>
+                  <span className="text-base text-right">{profile?.first_name || "Not set"}</span>
                 </div>
-                <div className="flex justify-between items-baseline py-2 border-t">
-                  <span className="text-sm font-medium text-muted-foreground">Email:</span>
-                  <span className="text-sm">{profile?.email || "Not set"}</span>
+                <div className="grid grid-cols-[120px,1fr] items-center py-3 border-t">
+                  <span className="text-base font-medium text-muted-foreground">Email:</span>
+                  <span className="text-base text-right">{profile?.email || "Not set"}</span>
                 </div>
-                <div className="flex justify-between items-baseline py-2 border-t">
-                  <span className="text-sm font-medium text-muted-foreground">Date of Birth:</span>
-                  <span className="text-sm">
+                <div className="grid grid-cols-[120px,1fr] items-center py-3 border-t">
+                  <span className="text-base font-medium text-muted-foreground">Date of Birth:</span>
+                  <span className="text-base text-right">
                     {profile?.birthday ? format(new Date(profile.birthday), "PPP") : "Not set"}
                   </span>
                 </div>
