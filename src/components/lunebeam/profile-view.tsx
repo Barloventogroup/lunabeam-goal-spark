@@ -415,15 +415,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
               </div>
             ) : (
               <div className="space-y-3 pt-4 border-t">
-                <div className="flex justify-between items-center min-h-[44px] py-2">
+                <div className="flex justify-between items-center min-h-[32px] py-1.5">
                   <span className="text-sm font-medium text-muted-foreground leading-normal">Name:</span>
                   <span className="text-sm leading-normal">{profile?.first_name || "Not set"}</span>
                 </div>
-                <div className="flex justify-between items-center min-h-[44px] py-2 border-t">
+                <div className="flex justify-between items-center min-h-[32px] py-1.5 border-t">
                   <span className="text-sm font-medium text-muted-foreground leading-normal">Email:</span>
                   <span className="text-sm leading-normal">{profile?.email || "Not set"}</span>
                 </div>
-                <div className="flex justify-between items-center min-h-[44px] py-2 border-t">
+                <div className="flex justify-between items-center min-h-[32px] py-1.5 border-t">
                   <span className="text-sm font-medium text-muted-foreground leading-normal">Date of Birth:</span>
                   <span className="text-sm leading-normal">
                     {profile?.birthday ? format(new Date(profile.birthday), "PPP") : "Not set"}
