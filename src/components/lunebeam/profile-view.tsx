@@ -318,8 +318,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
       <div className="px-6 pt-6 pb-4 space-y-6">
         {/* Profile Picture & Name */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle>Profile Information</CardTitle>
+            {editingSection !== "basic" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleStartEdit("basic")}
+                className="text-primary hover:text-primary/90"
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Avatar Section */}
@@ -403,31 +414,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                 </div>
               </div>
             ) : (
-              <div className="space-y-2 pt-4 border-t">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Name</p>
-                    <p className="text-sm text-muted-foreground">{profile?.first_name || "Not set"}</p>
-                  </div>
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm font-medium text-muted-foreground">Name:</span>
+                  <span className="text-sm">{profile?.first_name || "Not set"}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Email</p>
-                    <p className="text-sm text-muted-foreground">{profile?.email || "Not set"}</p>
-                  </div>
+                <div className="flex justify-between items-center py-2 border-t">
+                  <span className="text-sm font-medium text-muted-foreground">Email:</span>
+                  <span className="text-sm">{profile?.email || "Not set"}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Birthday</p>
-                    <p className="text-sm text-muted-foreground">
-                      {profile?.birthday ? format(new Date(profile.birthday), "PPP") : "Not set"}
-                    </p>
-                  </div>
+                <div className="flex justify-between items-center py-2 border-t">
+                  <span className="text-sm font-medium text-muted-foreground">Date of Birth:</span>
+                  <span className="text-sm">
+                    {profile?.birthday ? format(new Date(profile.birthday), "PPP") : "Not set"}
+                  </span>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => handleStartEdit("basic")} className="mt-2">
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
               </div>
             )}
           </CardContent>
