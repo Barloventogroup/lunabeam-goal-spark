@@ -21,6 +21,8 @@ import {
 import { useStore } from "@/store/useStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Capacitor } from '@capacitor/core';
+import { pickAvatarBlob } from '@/utils/mediaPicker';
 import type { Profile } from "@/types";
 interface ProfileViewProps {
   onBack: () => void;
@@ -119,6 +121,67 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
     setEditedData({});
     setNewTag("");
   };
+  const handleAvatarBlobUpload = async (blob: Blob, ext: string) => {
+    if (!profile) return;
+
+    try {
+      setUploading(true);
+
+      // Size limit (10MB)
+      const MAX_SIZE = 10 * 1024 * 1024;
+      if (blob.size > MAX_SIZE) {
+        toast({
+          title: "File too large",
+          description: "Please select an image under 10MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Upload file to Supabase Storage
+      const fileName = `${profile.user_id}/avatar.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, blob, {
+        upsert: true,
+        contentType: "image/jpeg",
+      });
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(fileName);
+
+      // Cache-busting query param
+      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+
+      // Update profile with avatar URL
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: cacheBustedUrl })
+        .eq("user_id", profile.user_id);
+      if (updateError) throw updateError;
+
+      setProfile({
+        ...profile,
+        avatar_url: cacheBustedUrl,
+      });
+
+      toast({
+        title: "Profile picture updated",
+        description: "Your new profile picture has been saved.",
+      });
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload profile picture. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const resetInput = () => {
       if (fileInputRef.current) {
@@ -132,8 +195,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         resetInput();
         return;
       }
-
-      setUploading(true);
 
       // Validate type and extension
       const allowedExts = new Set(["jpg", "jpeg", "png", "gif", "webp", "heic", "heif"]);
@@ -151,62 +212,43 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         return;
       }
 
-      // Size limit (10MB)
-      const MAX_SIZE = 10 * 1024 * 1024;
-      if (file.size > MAX_SIZE) {
-        toast({
-          title: "File too large",
-          description: "Please select an image under 10MB.",
-          variant: "destructive",
-        });
-        resetInput();
-        return;
-      }
-
-      // Upload file to Supabase Storage
-      const fileExt = ext || "jpg";
-      const fileName = `${profile.user_id}/avatar.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, file, {
-        upsert: true,
-        contentType: file.type || "image/*",
-      });
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(fileName);
-
-      // Add cache-busting timestamp to force browser to reload new image
-      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
-
-      // Update profile with avatar URL
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({
-          avatar_url: cacheBustedUrl,
-        })
-        .eq("user_id", profile.user_id);
-      if (updateError) throw updateError;
-      setProfile({
-        ...profile,
-        avatar_url: cacheBustedUrl,
-      });
-      toast({
-        title: "Profile picture updated",
-        description: "Your new profile picture has been saved.",
-      });
+      await handleAvatarBlobUpload(file, ext || "jpg");
     } catch (error) {
-      console.error("Error uploading avatar:", error);
-      toast({
-        title: "Error",
-        description: "Failed to upload profile picture. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Error handling avatar upload:", error);
     } finally {
-      setUploading(false);
       resetInput();
     }
+  };
+
+  const handlePickAvatar = async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const picked = await pickAvatarBlob();
+        if (picked) {
+          await handleAvatarBlobUpload(picked.blob, picked.ext);
+          return;
+        }
+      } catch (e: any) {
+        if (e?.message === 'photos_denied') {
+          toast({
+            title: "Photos permission needed",
+            description: "Please allow photo access in Settings.",
+            variant: "destructive",
+          });
+          return;
+        } else {
+          console.error(e);
+          toast({
+            title: "Error",
+            description: "Could not open photo library. Try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+    }
+    // Web fallback
+    fileInputRef.current?.click();
   };
   const handleAddTag = (type: "strengths" | "interests" | "challenges") => {
     if (newTag.trim()) {
@@ -253,7 +295,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                   variant="outline"
                   size="sm"
                   className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={handlePickAvatar}
                   disabled={uploading}
                 >
                   <Camera className="h-4 w-4" />
@@ -262,6 +304,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                   type="file"
                   ref={fileInputRef}
                   onChange={handleAvatarUpload}
+                  accept="image/*,image/heic,image/heif"
                   className="hidden"
                 />
               </div>
