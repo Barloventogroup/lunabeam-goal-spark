@@ -21,7 +21,7 @@ export const InviteSupportersCard: React.FC<InviteSupportersCardProps> = ({
           <AddCommunityMemberModal trigger={<Button size="lg" className="w-full h-12 text-base font-medium">
                 Invite Someone
               </Button>} onSuccess={onSuccess} />
-          <div className="flex gap-3 bg-muted/50 p-4 rounded-lg">
+          <div className="flex gap-3 bg-white dark:bg-card p-4 rounded-lg shadow-md">
             <div className="flex-shrink-0">
               <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
                 <Lightbulb className="w-5 h-5 text-yellow-600 dark:text-yellow-500" />
