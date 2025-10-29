@@ -210,8 +210,8 @@ export const StepCard: React.FC<StepCardProps> = ({
             {/* Goal name */}
             {goalName && (
               <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Goal</p>
-                <p className="text-sm text-muted-foreground">{goalName}</p>
+                <p className="text-xs font-medium text-foreground">Goal</p>
+                <p className="text-xs text-muted-foreground">{goalName}</p>
               </div>
             )}
 
