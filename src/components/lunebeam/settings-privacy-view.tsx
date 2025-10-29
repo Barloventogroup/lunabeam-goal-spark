@@ -6,34 +6,30 @@ import { ArrowLeft, Eye, EyeOff, Lock, Users, MessageSquare, Globe } from 'lucid
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
 interface SettingsPrivacyViewProps {
   onBack: () => void;
 }
-
-export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack }) => {
-  const { profile } = useStore();
+export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({
+  onBack
+}) => {
+  const {
+    profile
+  } = useStore();
   const [profileVisibility, setProfileVisibility] = useState<'public' | 'supporters' | 'private'>('supporters');
   const [goalSharing, setGoalSharing] = useState<'all' | 'supporters' | 'private'>('supporters');
   const [progressSharing, setProgressSharing] = useState<'realtime' | 'weekly' | 'manual'>('weekly');
   const [isSaving, setIsSaving] = useState(false);
-
   useEffect(() => {
     loadPrivacySettings();
   }, [profile]);
-
   const loadPrivacySettings = async () => {
     if (!profile) return;
-
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('profile_visibility, goal_sharing, progress_sharing')
-        .eq('user_id', profile.user_id)
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from('profiles').select('profile_visibility, goal_sharing, progress_sharing').eq('user_id', profile.user_id).single();
       if (error) throw error;
-
       if (data) {
         setProfileVisibility((data.profile_visibility || 'supporters') as 'public' | 'supporters' | 'private');
         setGoalSharing((data.goal_sharing || 'supporters') as 'all' | 'supporters' | 'private');
@@ -43,23 +39,18 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
       console.error('Error loading privacy settings:', error);
     }
   };
-
   const handleSave = async () => {
     if (!profile) return;
-
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          profile_visibility: profileVisibility,
-          goal_sharing: goalSharing,
-          progress_sharing: progressSharing
-        })
-        .eq('user_id', profile.user_id);
-
+      const {
+        error
+      } = await supabase.from('profiles').update({
+        profile_visibility: profileVisibility,
+        goal_sharing: goalSharing,
+        progress_sharing: progressSharing
+      }).eq('user_id', profile.user_id);
       if (error) throw error;
-
       toast.success('Privacy settings updated');
     } catch (error) {
       console.error('Error saving privacy settings:', error);
@@ -68,18 +59,14 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
       setIsSaving(false);
     }
   };
-
-  return (
-    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+  return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
       {/* Header */}
       <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
         <div className="flex items-center gap-4">
           <BackButton onClick={onBack} />
           <div className="flex-1">
             <h1 className="text-2xl font-bold">Settings & Privacy</h1>
-            <p className="text-sm text-muted-foreground">
-              Control who can see your profile and progress
-            </p>
+            
           </div>
         </div>
       </div>
@@ -92,14 +79,7 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
             <h3 className="font-medium">Profile Visibility</h3>
           </div>
           <div className="space-y-2">
-            <Card 
-              className={`cursor-pointer transition-all ${
-                profileVisibility === 'public' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-gray-200'
-              }`}
-              onClick={() => setProfileVisibility('public')}
-            >
+            <Card className={`cursor-pointer transition-all ${profileVisibility === 'public' ? 'border-primary bg-primary/5' : 'border-gray-200'}`} onClick={() => setProfileVisibility('public')}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Globe className="h-5 w-5 text-blue-500 mt-0.5" />
@@ -113,14 +93,7 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
               </CardContent>
             </Card>
 
-            <Card 
-              className={`cursor-pointer transition-all ${
-                profileVisibility === 'supporters' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-gray-200'
-              }`}
-              onClick={() => setProfileVisibility('supporters')}
-            >
+            <Card className={`cursor-pointer transition-all ${profileVisibility === 'supporters' ? 'border-primary bg-primary/5' : 'border-gray-200'}`} onClick={() => setProfileVisibility('supporters')}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Users className="h-5 w-5 text-green-500 mt-0.5" />
@@ -134,14 +107,7 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
               </CardContent>
             </Card>
 
-            <Card 
-              className={`cursor-pointer transition-all ${
-                profileVisibility === 'private' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-gray-200'
-              }`}
-              onClick={() => setProfileVisibility('private')}
-            >
+            <Card className={`cursor-pointer transition-all ${profileVisibility === 'private' ? 'border-primary bg-primary/5' : 'border-gray-200'}`} onClick={() => setProfileVisibility('private')}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Lock className="h-5 w-5 text-red-500 mt-0.5" />
@@ -164,14 +130,7 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
             <h3 className="font-medium">Goal Sharing</h3>
           </div>
           <div className="space-y-2">
-            <Card 
-              className={`cursor-pointer transition-all ${
-                goalSharing === 'all' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-gray-200'
-              }`}
-              onClick={() => setGoalSharing('all')}
-            >
+            <Card className={`cursor-pointer transition-all ${goalSharing === 'all' ? 'border-primary bg-primary/5' : 'border-gray-200'}`} onClick={() => setGoalSharing('all')}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Globe className="h-5 w-5 text-blue-500 mt-0.5" />
@@ -185,14 +144,7 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
               </CardContent>
             </Card>
 
-            <Card 
-              className={`cursor-pointer transition-all ${
-                goalSharing === 'supporters' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-gray-200'
-              }`}
-              onClick={() => setGoalSharing('supporters')}
-            >
+            <Card className={`cursor-pointer transition-all ${goalSharing === 'supporters' ? 'border-primary bg-primary/5' : 'border-gray-200'}`} onClick={() => setGoalSharing('supporters')}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Users className="h-5 w-5 text-green-500 mt-0.5" />
@@ -206,14 +158,7 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
               </CardContent>
             </Card>
 
-            <Card 
-              className={`cursor-pointer transition-all ${
-                goalSharing === 'private' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-gray-200'
-              }`}
-              onClick={() => setGoalSharing('private')}
-            >
+            <Card className={`cursor-pointer transition-all ${goalSharing === 'private' ? 'border-primary bg-primary/5' : 'border-gray-200'}`} onClick={() => setGoalSharing('private')}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <EyeOff className="h-5 w-5 text-red-500 mt-0.5" />
@@ -236,14 +181,7 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
             <h3 className="font-medium">Progress Updates</h3>
           </div>
           <div className="space-y-2">
-            <Card 
-              className={`cursor-pointer transition-all ${
-                progressSharing === 'realtime' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-gray-200'
-              }`}
-              onClick={() => setProgressSharing('realtime')}
-            >
+            <Card className={`cursor-pointer transition-all ${progressSharing === 'realtime' ? 'border-primary bg-primary/5' : 'border-gray-200'}`} onClick={() => setProgressSharing('realtime')}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Globe className="h-5 w-5 text-blue-500 mt-0.5" />
@@ -257,14 +195,7 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
               </CardContent>
             </Card>
 
-            <Card 
-              className={`cursor-pointer transition-all ${
-                progressSharing === 'weekly' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-gray-200'
-              }`}
-              onClick={() => setProgressSharing('weekly')}
-            >
+            <Card className={`cursor-pointer transition-all ${progressSharing === 'weekly' ? 'border-primary bg-primary/5' : 'border-gray-200'}`} onClick={() => setProgressSharing('weekly')}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Users className="h-5 w-5 text-green-500 mt-0.5" />
@@ -278,14 +209,7 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
               </CardContent>
             </Card>
 
-            <Card 
-              className={`cursor-pointer transition-all ${
-                progressSharing === 'manual' 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-gray-200'
-              }`}
-              onClick={() => setProgressSharing('manual')}
-            >
+            <Card className={`cursor-pointer transition-all ${progressSharing === 'manual' ? 'border-primary bg-primary/5' : 'border-gray-200'}`} onClick={() => setProgressSharing('manual')}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <Lock className="h-5 w-5 text-red-500 mt-0.5" />
@@ -302,14 +226,9 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
         </div>
 
         {/* Save Button */}
-        <Button 
-          onClick={handleSave}
-          disabled={isSaving}
-          className="w-full"
-        >
+        <Button onClick={handleSave} disabled={isSaving} className="w-full">
           {isSaving ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 };
