@@ -121,7 +121,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
     setEditedData({});
     setNewTag("");
   };
-  const handleAvatarBlobUpload = async (blob: Blob, ext: string) => {
+  const handleAvatarBlobUpload = async (blob: Blob, ext: string, contentType?: string) => {
     if (!profile) return;
 
     try {
@@ -140,11 +140,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
 
       // Upload file to Supabase Storage
       const fileName = `${profile.user_id}/avatar.${ext}`;
+      const inferredMime = contentType ?? (ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : ext === 'gif' ? 'image/gif' : ext === 'heic' || ext === 'heif' ? 'image/heic' : 'image/jpeg');
+      console.log('Avatar upload starting', { fileName, size: blob.size, ext, inferredMime });
       const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, blob, {
         upsert: true,
-        contentType: "image/jpeg",
+        contentType: inferredMime,
       });
       if (uploadError) throw uploadError;
+      console.log('Avatar upload success', { fileName });
 
       // Get public URL
       const {
@@ -213,7 +216,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         return;
       }
 
-      await handleAvatarBlobUpload(file, ext || "jpg");
+      await handleAvatarBlobUpload(file, ext || "jpg", file.type || undefined);
     } catch (error) {
       console.error("Error handling avatar upload:", error);
     } finally {
@@ -226,7 +229,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
       try {
         const picked = await pickAvatarBlob();
         if (picked) {
-          await handleAvatarBlobUpload(picked.blob, picked.ext);
+          await handleAvatarBlobUpload(picked.blob, picked.ext, 'image/jpeg');
           return;
         }
       } catch (e: any) {
@@ -286,7 +289,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
             <div className="flex items-center gap-4">
               <div className="relative">
                 {profile?.avatar_url ? (
-                  <img src={`${profile.avatar_url}?t=${Date.now()}`} alt="Profile picture" className="w-20 h-20 rounded-full object-cover" />
+                  <img src={`${profile.avatar_url}${profile?.updated_at ? `?v=${new Date(profile.updated_at).getTime()}` : ''}`} alt="Profile picture" className="w-20 h-20 rounded-full object-cover" />
                 ) : (
                   <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center text-white text-2xl font-normal">
                     {profile?.first_name?.charAt(0) || "U"}

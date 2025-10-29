@@ -150,7 +150,7 @@ export const TabYou: React.FC<TabYouProps> = ({
         <Card className="cursor-pointer hover:shadow-md transition-shadow mb-6" onClick={() => setCurrentView('profileDetail')}>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              {profile?.avatar_url ? <img src={`${profile.avatar_url}?t=${Date.now()}`} alt="Profile picture" className="w-16 h-16 rounded-full object-cover" /> : <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xl font-normal">
+              {profile?.avatar_url ? <img src={`${profile.avatar_url}${profile?.updated_at ? `?v=${new Date(profile.updated_at).getTime()}` : ''}`} alt="Profile picture" className="w-16 h-16 rounded-full object-cover" /> : <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xl font-normal">
                   {profile?.first_name?.charAt(0) || 'U'}
                 </div>}
               <div className="flex-1">
