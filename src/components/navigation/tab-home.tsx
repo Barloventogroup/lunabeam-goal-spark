@@ -465,7 +465,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                 <div className="flex items-center gap-3">
                   <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
                   <div>
-                    <h3 className="font-medium text-base text-foreground">Review your missed steps</h3>
+                    <h3 className="font-medium text-sm text-foreground">Review your missed steps</h3>
                     <p className="text-sm text-muted-foreground">
                       You have {overdueSteps.length} step{overdueSteps.length !== 1 ? "s" : ""} that need attention
                     </p>

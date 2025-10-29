@@ -35,7 +35,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
     >
       <CardHeader className="pb-3 pr-8">
         <div className="flex items-center">
-          <h4 className="font-medium text-foreground text-base flex-1">
+          <h4 className="font-medium text-sm flex-1">
             {cleanStepTitle(step.title)}
           </h4>
         </div>
@@ -82,7 +82,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
             <Card className="relative cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md" onClick={() => onViewStep?.(step.id, goal.id)}>
               <CardHeader className="pb-3 pr-8">
                 <div className="flex items-center">
-                  <h4 className="font-medium text-foreground text-base flex-1">
+                  <h4 className="font-medium text-sm flex-1">
                     {cleanStepTitle(step.title)}
                   </h4>
                 </div>
@@ -149,7 +149,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                 >
                   <CardHeader className="pb-3 pr-8">
                     <div className="flex items-center">
-                      <h4 className="font-medium text-foreground text-base flex-1">
+                      <h4 className="font-medium text-sm flex-1">
                         {cleanStepTitle(step.title)}
                       </h4>
                     </div>
