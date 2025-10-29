@@ -122,7 +122,7 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
     <div className="min-h-[100dvh] bg-background">
       <div className="max-w-md mx-auto space-y-6 pt-safe-content">
         {/* Header */}
-        <div className="fixed left-0 right-0 top-safe z-40 px-6 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+        <div className="fixed left-0 right-0 top-safe z-40 px-6 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold">Community</h1>
             {onNavigateToNotifications && (
