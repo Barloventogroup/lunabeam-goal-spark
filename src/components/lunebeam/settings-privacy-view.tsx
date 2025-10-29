@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Eye, EyeOff, Lock, Users, MessageSquare, Globe } from 'lucide-react';
 import { useStore } from '@/store/useStore';
@@ -71,24 +72,19 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({ onBack
   return (
     <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
       {/* Header */}
-      <div className="fixed left-0 right-0 top-safe z-40 px-6 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200">
-        <div className="flex items-center gap-3 mb-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="h-8 w-8 p-0"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-xl font-bold">Settings & Privacy</h1>
+      <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
+        <div className="flex items-center gap-4">
+          <BackButton onClick={onBack} />
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold">Settings & Privacy</h1>
+            <p className="text-sm text-muted-foreground">
+              Control who can see your profile and progress
+            </p>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground ml-11">
-          Control who can see your profile and progress
-        </p>
       </div>
 
-      <div className="px-6 pt-6 pb-24 space-y-6">
+      <div className="px-4 pt-6 pb-24 space-y-6">
         {/* Profile Visibility */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">

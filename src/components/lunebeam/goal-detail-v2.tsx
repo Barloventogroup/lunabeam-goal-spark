@@ -1121,8 +1121,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
     onBack();
     return null;
   }
-  return <div className="min-h-[100dvh] bg-background">
-      <div className="px-4 py-6 space-y-6">
+  return <div className="min-h-[100dvh] bg-background pt-safe-content">
+      <div className="px-4 pt-6 pb-6 space-y-6">
         {/* Removed full-screen loading overlay - now using inline message in Recommended Steps tab */}
 
         {/* Error state with retry button */}
@@ -1158,11 +1158,11 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
         </div>}
 
       {/* Header */}
-      <div className="flex items-center">
-        <div className="flex items-start gap-2 flex-1">
+      <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
+        <div className="flex items-center gap-4">
           <BackButton onClick={onBack} />
           <div className="flex-1">
-            <h1 className="text-xl font-semibold text-foreground capitalize">{goal.title}</h1>
+            <h1 className="text-2xl font-bold text-foreground capitalize">{goal.title}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <Badge variant={getStatusColor(goal.status)}>
                 {goal.status === 'active' ? 'Active' : goal.status}
@@ -1209,7 +1209,6 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
               
             </div>
           </div>}
-      </div>
       </div>
 
       {/* Tabbed Content */}
@@ -1404,5 +1403,6 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
 
       {/* Goal Edit Modal */}
       <GoalEditModal isOpen={showEditModal} onOpenChange={setShowEditModal} goal={goal} onGoalUpdate={handleGoalUpdate} />
+      </div>
     </div>;
 };

@@ -223,17 +223,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
   return (
     <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
       {/* Header */}
-      <div className="fixed left-0 right-0 top-safe z-40 px-6 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200">
-        <div className="flex items-center gap-3">
+      <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
+        <div className="flex items-center gap-4">
           <BackButton onClick={onBack} />
-          <div>
-            <h1 className="text-xl font-bold">Profile</h1>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold">Profile</h1>
             <p className="text-sm text-muted-foreground">Personal information and settings</p>
           </div>
         </div>
       </div>
 
-      <div className="px-6 pt-6 pb-4 space-y-6">
+      <div className="px-4 pt-6 pb-4 space-y-6">
         {/* Profile Picture & Name */}
         <Card>
           <CardHeader>
