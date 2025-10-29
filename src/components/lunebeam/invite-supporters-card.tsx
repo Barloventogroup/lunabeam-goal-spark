@@ -1,9 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { UserPlus, Mail } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { AddCommunityMemberModal } from '@/components/lunebeam/add-community-member-modal';
-import { SimpleInviteModal } from '@/components/lunebeam/simple-invite-modal';
 
 interface InviteSupportersCardProps {
   onSuccess?: () => void;
@@ -22,25 +21,15 @@ export const InviteSupportersCard: React.FC<InviteSupportersCardProps> = ({ onSu
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <AddCommunityMemberModal 
-              trigger={
-                <Button size="lg" className="w-full h-12 text-base font-medium">
-                  <UserPlus className="h-5 w-5 mr-2" />
-                  Invite Supporter
-                </Button>
-              }
-              onSuccess={onSuccess}
-            />
-            <SimpleInviteModal 
-              trigger={
-                <Button variant="outline" size="lg" className="w-full h-12 text-base font-medium">
-                  <Mail className="h-5 w-5 mr-2" />
-                  Quick Invite
-                </Button>
-              }
-            />
-          </div>
+          <AddCommunityMemberModal 
+            trigger={
+              <Button size="lg" className="w-full h-12 text-base font-medium">
+                <UserPlus className="h-5 w-5 mr-2" />
+                Invite Supporter
+              </Button>
+            }
+            onSuccess={onSuccess}
+          />
           <div className="text-sm text-muted-foreground text-center bg-muted/50 p-3 rounded-lg">
             💡 <strong>Tip:</strong> Supporters can view your progress, cheer you on, and help keep you accountable on your journey
           </div>
