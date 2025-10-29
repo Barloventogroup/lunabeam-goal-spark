@@ -12,9 +12,6 @@ import {
   Plus,
   X,
   Save,
-  User,
-  Tag,
-  Shield,
   Camera,
   Check,
 } from "lucide-react";
@@ -322,10 +319,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         {/* Profile Picture & Name */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
-              <CardTitle>Profile Information</CardTitle>
-            </div>
+            <CardTitle>Profile Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Avatar Section */}
@@ -442,10 +436,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         {/* Security Section */}
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              <CardTitle>Security</CardTitle>
-            </div>
+            <CardTitle>Security</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {editingSection === "password" ? (
@@ -511,10 +502,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Tag className="h-5 w-5 text-primary" />
-                <CardTitle>Tags & Interests</CardTitle>
-              </div>
+              <CardTitle>Tags & Interests</CardTitle>
               {editingSection !== "tags" && (
                 <Button variant="outline" size="sm" onClick={() => handleStartEdit("tags")}>
                   <Edit className="h-4 w-4 mr-1" />
