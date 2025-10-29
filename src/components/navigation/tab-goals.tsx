@@ -253,7 +253,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
       <div className="min-h-[100dvh] bg-background pt-safe-content">
         {/* Header - hidden during wizard */}
         {!isWizardView && (
-          <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card/80 backdrop-blur">
+          <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold">Goals</h1>
@@ -288,7 +288,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
       {/* Header - hidden during wizard */}
       {!isWizardView && (
         <div
-          className="fixed left-0 right-0 z-40 px-4 pb-4 pt-4 bg-card/80 backdrop-blur"
+          className="fixed left-0 right-0 z-40 px-4 pb-4 pt-4 bg-card"
           style={{ top: "env(safe-area-inset-top, 0px)" }}
         >
           <div className="flex items-center justify-between">
