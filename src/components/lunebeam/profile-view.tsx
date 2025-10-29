@@ -10,9 +10,6 @@ import {
   ArrowLeft,
   Edit,
   Plus,
-  FileText,
-  Download,
-  Upload,
   X,
   Save,
   User,
@@ -36,25 +33,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Mock documents data - this would come from the database
-  const [documents] = useState([
-    {
-      id: "1",
-      name: "Medical Report.pdf",
-      uploadedBy: "Dr. Smith",
-      uploadedAt: "2024-01-15",
-      type: "medical",
-      size: "2.3 MB",
-    },
-    {
-      id: "2",
-      name: "Assessment Results.pdf",
-      uploadedBy: "School Counselor",
-      uploadedAt: "2024-01-10",
-      type: "assessment",
-      size: "1.8 MB",
-    },
-  ]);
   const handleStartEdit = (section: string) => {
     setEditingSection(section);
     if (section === "basic") {
@@ -578,45 +556,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
           </CardContent>
         </Card>
 
-        {/* Documents Section - Only visible to admin viewers */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary" />
-                <div>
-                  <CardTitle>Supporting Documents</CardTitle>
-                  <p className="text-xs text-muted-foreground">Admin access only</p>
-                </div>
-              </div>
-              <Button variant="outline" size="sm">
-                <Upload className="h-4 w-4 mr-1" />
-                Upload
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {documents.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">{doc.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Uploaded by {doc.uploadedBy} on {doc.uploadedAt} • {doc.size}
-                    </p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm">
-                  <Download className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-            {documents.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">No documents uploaded yet</p>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
