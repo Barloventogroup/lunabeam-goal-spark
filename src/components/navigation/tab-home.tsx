@@ -288,8 +288,9 @@ export const TabHome: React.FC<TabHomeProps> = ({
                   }
                 }
               });
-            } else {
-              // No substeps or all complete - count the main step
+            } else if (substeps.length === 0) {
+              // Only show main step if it has no substeps
+              // If all substeps are complete, don't show the parent step
               const dueDate = normalizeDueDate(step.due_date);
               if (dueDate && !isNaN(dueDate.getTime())) {
                 const dueDateStart = new Date(dueDate);
