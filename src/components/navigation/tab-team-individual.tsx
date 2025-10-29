@@ -157,9 +157,9 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-foreground truncate">
+                        <h4 className="font-semibold text-foreground truncate">
                           {supporter.profile?.first_name || "Support Team Member"}
-                        </h3>
+                        </h4>
                         {supporter.is_admin && <Crown className="h-4 w-4 text-yellow-500" />}
                       </div>
 
