@@ -526,7 +526,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
       {/* Step Detail Drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <SheetContent side="right">
+        <SheetContent side="right" className="w-full sm:w-full max-w-none">
           <SheetHeader className="border-b pb-4">
             <SheetTitle>Recommended Steps</SheetTitle>
           </SheetHeader>
