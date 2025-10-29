@@ -420,16 +420,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
             )}
             </CardContent>
           </Card>
-          {editingSection !== "basic" && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleStartEdit("basic")}
-              className="rounded-full"
-            >
-              Edit
-            </Button>
-          )}
         </div>
 
         {/* Security Section */}
