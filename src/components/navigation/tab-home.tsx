@@ -30,7 +30,7 @@ import type { EntryVariant } from '@/utils/entryExperience';
 interface TabHomeProps {
   entryVariant?: EntryVariant;
   onOpenChat: () => void;
-  onNavigateToGoals: (goalId?: string) => void;
+  onNavigateToGoals: (goalId?: string, stepId?: string) => void;
   onNavigateToNotifications: () => void;
 }
 
@@ -352,14 +352,12 @@ export const TabHome: React.FC<TabHomeProps> = ({
     }))
   });
 
-  const handleViewStep = () => {
-    if (todaysDueItem) {
-      onNavigateToGoals(todaysDueItem.goal.id);
-    }
+  const handleViewStep = (stepId: string, goalId: string) => {
+    onNavigateToGoals(goalId, stepId);
   };
 
   const handleViewUpcomingStep = (stepId: string, goalId: string) => {
-    onNavigateToGoals(goalId);
+    onNavigateToGoals(goalId, stepId);
   };
 
   const handleSignOut = async () => {

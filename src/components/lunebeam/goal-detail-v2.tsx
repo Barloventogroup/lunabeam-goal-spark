@@ -34,10 +34,12 @@ const GoalCalendarView = lazy(() => import('./goal-calendar-view').then(m => ({
 })));
 interface GoalDetailV2Props {
   goalId: string;
+  initialStepId?: string | null;
   onBack: () => void;
 }
 export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
   goalId,
+  initialStepId,
   onBack
 }) => {
   // Use React Query hook for data fetching (Phase 1)
@@ -211,6 +213,20 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       checkStaleGeneration();
     }
   }, [goal?.id, steps.length]);
+
+  // Handle initial step navigation - open step chat when initialStepId is provided
+  useEffect(() => {
+    if (initialStepId && steps.length > 0 && !showStepChat) {
+      const targetStep = steps.find(s => s.id === initialStepId);
+      if (targetStep) {
+        console.log('[GoalDetail] Opening step chat for initialStepId:', initialStepId);
+        setSelectedStep(targetStep);
+        setShowStepChat(true);
+        // Switch to steps tab if not already there
+        setActiveTab('steps');
+      }
+    }
+  }, [initialStepId, steps, showStepChat]);
 
   // Optimized progress calculation with useMemo (Phase 2)
   const progress = useMemo(() => {

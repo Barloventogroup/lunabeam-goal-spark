@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Calendar } from 'lucide-react';
+import { Clock, Calendar, ChevronRight } from 'lucide-react';
 import { format, isToday, parseISO } from 'date-fns';
 import type { Step, Goal } from '@/types';
 import { cleanStepTitle } from '@/utils/stepUtils';
@@ -13,7 +13,7 @@ interface TodaysFocusCardProps {
   overdueSteps?: Array<{step: Step, goal: Goal, dueDate: Date}>;
   upcomingSteps?: Array<{step: Step, goal: Goal, dueDate: Date}>;
   onCompleteStep?: () => void;
-  onViewStep?: () => void;
+  onViewStep?: (stepId: string, goalId: string) => void;
   onNeedHelp?: () => void;
   onViewUpcomingStep?: (stepId: string, goalId: string) => void;
 }
@@ -34,9 +34,12 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
       onClick={() => onViewUpcomingStep?.(step.id, goal.id)}
     >
       <CardHeader className="pb-3">
-        <h4 className="font-medium text-foreground text-base">
-          {cleanStepTitle(step.title)}
-        </h4>
+        <div className="flex items-center justify-between">
+          <h4 className="font-medium text-foreground text-base flex-1">
+            {cleanStepTitle(step.title)}
+          </h4>
+          <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2" />
+        </div>
       </CardHeader>
       
       <CardContent className="pt-0 space-y-1">
@@ -74,11 +77,14 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
         {/* Today's Due Step */}
         {step && goal && (
           <div className="space-y-3">
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md" onClick={onViewStep}>
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md" onClick={() => onViewStep?.(step.id, goal.id)}>
               <CardHeader className="pb-3">
-                <h4 className="font-medium text-foreground text-base">
-                  {cleanStepTitle(step.title)}
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-foreground text-base flex-1">
+                    {cleanStepTitle(step.title)}
+                  </h4>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2" />
+                </div>
               </CardHeader>
               
               <CardContent className="pt-0 space-y-1">
@@ -138,9 +144,12 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                   onClick={() => onViewUpcomingStep?.(step.id, goal.id)}
                 >
                   <CardHeader className="pb-3">
-                    <h4 className="font-medium text-foreground text-base">
-                      {cleanStepTitle(step.title)}
-                    </h4>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-foreground text-base flex-1">
+                        {cleanStepTitle(step.title)}
+                      </h4>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2" />
+                    </div>
                   </CardHeader>
                   
                   <CardContent className="pt-0 space-y-1">
