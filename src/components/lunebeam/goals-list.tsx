@@ -137,7 +137,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({
   }
   return <div className="flex flex-col h-screen bg-background">
       {/* Fixed Header */}
-      <div className="flex-shrink-0 space-y-4 px-4 pt-6 pb-4 bg-background border-b border-border">
+      <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 pb-2 pt-4 bg-card/80 backdrop-blur border-b border-gray-200">
         <div className="flex justify-between items-center">
           
         </div>
