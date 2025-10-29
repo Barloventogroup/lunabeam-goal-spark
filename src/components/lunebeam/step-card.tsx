@@ -105,12 +105,10 @@ export const StepCard: React.FC<StepCardProps> = ({
       <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
         <CardHeader className="pl-5 pr-4 py-3">
           <div className="flex flex-col gap-0.1">
-            {/* Title + Status + 3-dot menu */}
+            {/* Title + 3-dot menu */}
             <div className="flex items-center justify-between gap-2">
               <h4 className="font-medium text-sm leading-tight flex-1">{step.title}</h4>
               <div className="flex items-center gap-1 shrink-0">
-                <Badge variant={getStatusBadgeVariant(step.status)}>{getStatusLabel(step.status)}</Badge>
-
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}>
@@ -179,6 +177,11 @@ export const StepCard: React.FC<StepCardProps> = ({
                 Due {formatDate(step.due_date)}
               </div>
             )}
+
+            {/* Status badge */}
+            <div className="mt-1">
+              <Badge variant={getStatusBadgeVariant(step.status)}>{getStatusLabel(step.status)}</Badge>
+            </div>
 
             {/* Info icon */}
             <CollapsibleTrigger asChild>
