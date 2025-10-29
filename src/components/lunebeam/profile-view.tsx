@@ -415,7 +415,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
             </Button>
           </div>
           <Card>
-            <CardContent className="py-4">
+            <CardContent className="py-3">
               <div className="space-y-0">
                 <div className="grid grid-cols-[120px,1fr] items-center py-3">
                   <span className="text-base font-medium text-muted-foreground">Name:</span>
