@@ -10,7 +10,7 @@ interface InviteSupportersCardProps {
 
 export const InviteSupportersCard: React.FC<InviteSupportersCardProps> = ({ onSuccess }) => {
   return (
-    <Card className="w-full shadow-lg bg-gradient-to-r from-primary/5 to-primary/10">
+    <Card className="w-full bg-gradient-to-r from-primary/5 to-primary/10">
       <CardHeader>
         <CardTitle className="text-xl">
           Add Supporters
