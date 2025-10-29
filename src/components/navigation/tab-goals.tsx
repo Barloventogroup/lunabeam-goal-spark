@@ -288,7 +288,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
       {/* Header - hidden during wizard */}
       {!isWizardView && (
         <div
-          className="fixed left-0 right-0 z-40 px-4 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200"
+          className="fixed left-0 right-0 z-40 px-4 pb-5 pt-4 bg-card/80 backdrop-blur border-b border-gray-200"
           style={{ top: "env(safe-area-inset-top, 0px)" }}
         >
           <div className="flex items-center justify-between">
