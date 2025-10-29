@@ -1159,9 +1159,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
 
       {/* Header */}
       <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
-        <div className="flex items-center gap-4">
+        <div className="flex items-start gap-4">
           <BackButton onClick={onBack} />
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-bold text-foreground capitalize">{goal.title}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <Badge variant={getStatusColor(goal.status)}>
@@ -1198,17 +1198,16 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
                 </Badge>}
             </div>
           </div>
-        </div>
-
-        {progress && <div className="flex items-center gap-3">
-            <CircularProgress value={progress.percent || 0} size={36} strokeWidth={3} color="#2393CC" />
-            <div className="text-right">
-              <div className="text-2xl font-bold text-primary">
-                {progress.percent}%
+          
+          {progress && <div className="flex items-center gap-3 flex-shrink-0">
+              <CircularProgress value={progress.percent || 0} size={36} strokeWidth={3} color="#2393CC" />
+              <div className="text-right">
+                <div className="text-2xl font-bold text-primary">
+                  {progress.percent}%
+                </div>
               </div>
-              
-            </div>
-          </div>}
+            </div>}
+        </div>
       </div>
 
       {/* Tabbed Content */}
