@@ -164,7 +164,7 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
                       </div>
 
                       <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className={`text-xs ${getRoleColor(supporter.role)}`}>
+                        <Badge className={`text-xs ${getRoleColor(supporter.role)}`}>
                           <span className="capitalize">{supporter.role}</span>
                         </Badge>
                       </div>
