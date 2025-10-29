@@ -369,20 +369,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
             <div className="flex items-center gap-4">
               <div className="relative">
                 {profile?.avatar_url ? (
-                  <img src={`${profile.avatar_url}${profile?.updated_at ? `?v=${new Date(profile.updated_at).getTime()}` : ''}`} alt="Profile picture" className="w-20 h-20 rounded-full object-cover" />
+                  <img src={`${profile.avatar_url}${profile?.updated_at ? `?v=${new Date(profile.updated_at).getTime()}` : ''}`} alt="Profile picture" className="w-16 h-16 rounded-full object-cover" />
                 ) : (
-                  <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center text-white text-2xl font-normal">
+                  <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xl font-normal">
                     {profile?.first_name?.charAt(0) || "U"}
                   </div>
                 )}
                 <Button
                   variant="outline"
                   size="sm"
-                  className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
+                  className="absolute -bottom-1 -right-1 rounded-full w-7 h-7 p-0"
                   onClick={handlePickAvatar}
                   disabled={uploading}
                 >
-                  <Camera className="h-4 w-4" />
+                  <Camera className="h-3.5 w-3.5" />
                 </Button>
                 <input
                   type="file"
@@ -409,7 +409,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
               variant="ghost"
               size="sm"
               onClick={() => handleStartEdit("basic")}
-              className="text-base"
+              className="text-base text-blue-500 hover:text-blue-600"
             >
               Edit
             </Button>
