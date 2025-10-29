@@ -38,7 +38,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
           <h4 className="font-medium text-foreground text-base flex-1">
             {cleanStepTitle(step.title)}
           </h4>
-          <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2" />
+          <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2 self-center" />
         </div>
       </CardHeader>
       
@@ -83,7 +83,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                   <h4 className="font-medium text-foreground text-base flex-1">
                     {cleanStepTitle(step.title)}
                   </h4>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2" />
+                  <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2 self-center" />
                 </div>
               </CardHeader>
               
@@ -148,7 +148,7 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                       <h4 className="font-medium text-foreground text-base flex-1">
                         {cleanStepTitle(step.title)}
                       </h4>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2" />
+                      <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2 self-center" />
                     </div>
                   </CardHeader>
                   
