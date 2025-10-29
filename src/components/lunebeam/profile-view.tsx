@@ -120,17 +120,55 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
     setNewTag("");
   };
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const resetInput = () => {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    };
+
     try {
       const file = event.target.files?.[0];
-      if (!file || !profile) return;
+      if (!file || !profile) {
+        resetInput();
+        return;
+      }
+
       setUploading(true);
 
+      // Validate type and extension
+      const allowedExts = new Set(["jpg", "jpeg", "png", "gif", "webp", "heic", "heif"]);
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      const isImageMime = file.type.startsWith("image/");
+      const isAllowedExt = ext ? allowedExts.has(ext) : false;
+
+      if (!isImageMime && !isAllowedExt) {
+        toast({
+          title: "Unsupported file",
+          description: "Please select an image (JPEG, PNG, GIF, WEBP, HEIC/HEIF).",
+          variant: "destructive",
+        });
+        resetInput();
+        return;
+      }
+
+      // Size limit (10MB)
+      const MAX_SIZE = 10 * 1024 * 1024;
+      if (file.size > MAX_SIZE) {
+        toast({
+          title: "File too large",
+          description: "Please select an image under 10MB.",
+          variant: "destructive",
+        });
+        resetInput();
+        return;
+      }
+
       // Upload file to Supabase Storage
-      const fileExt = file.name.split(".").pop();
+      const fileExt = ext || "jpg";
       const fileName = `${profile.user_id}/avatar.${fileExt}`;
       const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, file, {
         upsert: true,
-        contentType: file.type,
+        contentType: file.type || "image/*",
       });
       if (uploadError) throw uploadError;
 
@@ -167,6 +205,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
       });
     } finally {
       setUploading(false);
+      resetInput();
     }
   };
   const handleAddTag = (type: "strengths" | "interests" | "challenges") => {
@@ -223,7 +262,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                   type="file"
                   ref={fileInputRef}
                   onChange={handleAvatarUpload}
-                  accept=".jpg,.jpeg,.png,.gif,.webp,.heic,.heif"
                   className="hidden"
                 />
               </div>
