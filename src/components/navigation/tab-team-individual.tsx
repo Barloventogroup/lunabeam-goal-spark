@@ -123,7 +123,7 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
 
   return (
     <div className="min-h-[100dvh] bg-background">
-      <div className="max-w-md sm:max-w-lg lg:max-w-2xl mx-auto space-y-6 pt-safe-content px-4">
+      <div className="space-y-6 pt-safe-content px-4">
         {/* Header */}
         <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card/80 backdrop-blur">
           <div className="flex items-center justify-between">
