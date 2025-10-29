@@ -1,14 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { BackButton } from '@/components/ui/back-button';
-import { 
-  Award, 
-  Gift,
-  Settings,
-  Inbox,
-  ChevronRight
-} from 'lucide-react';
-
+import { Award, Gift, Settings, Inbox, ChevronRight } from 'lucide-react';
 interface RewardsHubProps {
   onBack: () => void;
   onNavigateToRewards: () => void;
@@ -17,7 +10,6 @@ interface RewardsHubProps {
   onNavigateToRedemptionInbox: () => void;
   showAdminFeatures?: boolean;
 }
-
 export const RewardsHub: React.FC<RewardsHubProps> = ({
   onBack,
   onNavigateToRewards,
@@ -26,14 +18,13 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
   onNavigateToRedemptionInbox,
   showAdminFeatures = true
 }) => {
-  return (
-    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+  return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
       {/* Header */}
       <div className="fixed left-0 right-0 top-safe z-40 flex items-center gap-4 bg-card/80 backdrop-blur border-b border-gray-200 px-4 pb-4 pt-4">
         <BackButton onClick={onBack} />
         <div className="flex-1">
           <h1 className="text-xl font-bold">Rewards</h1>
-          <p className="text-sm text-muted-foreground">Manage your rewards and redemptions</p>
+          
         </div>
       </div>
 
@@ -71,8 +62,7 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
         </Card>
 
         {/* Manage Rewards - Admin Only */}
-        {showAdminFeatures && (
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToManageRewards}>
+        {showAdminFeatures && <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToManageRewards}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -85,12 +75,10 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
         {/* Redemption Inbox - Admin Only */}
-        {showAdminFeatures && (
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToRedemptionInbox}>
+        {showAdminFeatures && <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToRedemptionInbox}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -103,9 +91,7 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
       </div>
-    </div>
-  );
+    </div>;
 };
