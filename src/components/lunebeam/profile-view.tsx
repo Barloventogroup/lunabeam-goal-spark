@@ -223,7 +223,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                   type="file"
                   ref={fileInputRef}
                   onChange={handleAvatarUpload}
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.gif,.webp,.heic,.heif"
                   className="hidden"
                 />
               </div>
