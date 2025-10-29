@@ -1,32 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { CheckCircle, Plus, Award, ChevronRight, Star, Coins, Target, LogOut, AlertCircle, Clock, X } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '../ui/sheet';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { CircularProgress } from '../ui/circular-progress';
+import React, { useState, useEffect } from "react";
+import {
+  CheckCircle,
+  Plus,
+  Award,
+  ChevronRight,
+  Star,
+  Coins,
+  Target,
+  LogOut,
+  AlertCircle,
+  Clock,
+  X,
+} from "lucide-react";
+import { Button } from "../ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "../ui/sheet";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { CircularProgress } from "../ui/circular-progress";
 
-import { parseISO, isToday } from 'date-fns';
+import { parseISO, isToday } from "date-fns";
 
-import { RewardsScreen } from '../lunebeam/rewards-screen';
-import { RewardsGallery } from '../lunebeam/reward-bank';
-import { WeeklyCheckinModal } from '../lunebeam/weekly-checkin-modal';
-import { RedesignedGoalsWizard } from '../lunebeam/redesigned-goals-wizard';
-import { NotificationBadge } from '../lunebeam/notification-badge';
-import { PointsDisplay } from '../lunebeam/points-display';
-import { FirstTimeReminder } from '../lunebeam/first-time-reminder';
-import { TodaysFocusCard } from '../lunebeam/todays-focus-card';
-import { RecommendedStepsList } from '../lunebeam/recommended-steps-list';
-import { useStore } from '../../store/useStore';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '../../integrations/supabase/client';
-import { useAuth } from '../auth/auth-provider';
-import { goalsService, stepsService } from '../../services/goalsService';
-import { useGoals } from '@/hooks/useGoals';
-import { pointsService } from '../../services/pointsService';
-import { normalizeDomainForDisplay } from '../../utils/domainUtils';
-import { getWelcomeMessage } from '../../utils/userTypeUtils';
-import type { Goal } from '../../types';
-import type { EntryVariant } from '@/utils/entryExperience';
+import { RewardsScreen } from "../lunebeam/rewards-screen";
+import { RewardsGallery } from "../lunebeam/reward-bank";
+import { WeeklyCheckinModal } from "../lunebeam/weekly-checkin-modal";
+import { RedesignedGoalsWizard } from "../lunebeam/redesigned-goals-wizard";
+import { NotificationBadge } from "../lunebeam/notification-badge";
+import { PointsDisplay } from "../lunebeam/points-display";
+import { FirstTimeReminder } from "../lunebeam/first-time-reminder";
+import { TodaysFocusCard } from "../lunebeam/todays-focus-card";
+import { RecommendedStepsList } from "../lunebeam/recommended-steps-list";
+import { useStore } from "../../store/useStore";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "../../integrations/supabase/client";
+import { useAuth } from "../auth/auth-provider";
+import { goalsService, stepsService } from "../../services/goalsService";
+import { useGoals } from "@/hooks/useGoals";
+import { pointsService } from "../../services/pointsService";
+import { normalizeDomainForDisplay } from "../../utils/domainUtils";
+import { getWelcomeMessage } from "../../utils/userTypeUtils";
+import type { Goal } from "../../types";
+import type { EntryVariant } from "@/utils/entryExperience";
 
 interface TabHomeProps {
   entryVariant?: EntryVariant;
@@ -35,15 +47,15 @@ interface TabHomeProps {
   onNavigateToNotifications: () => void;
 }
 
-type HomeView = 'dashboard' | 'rewards' | 'checkin' | 'add-goal' | 'reward-bank';
+type HomeView = "dashboard" | "rewards" | "checkin" | "add-goal" | "reward-bank";
 
 export const TabHome: React.FC<TabHomeProps> = ({
-  entryVariant = 'returning',
+  entryVariant = "returning",
   onOpenChat,
   onNavigateToGoals,
-  onNavigateToNotifications
+  onNavigateToNotifications,
 }) => {
-  const [currentView, setCurrentView] = useState<HomeView>('dashboard');
+  const [currentView, setCurrentView] = useState<HomeView>("dashboard");
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -61,17 +73,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  const {
-    profile,
-    userContext,
-    loadProfile,
-    goals,
-    steps,
-    pointsSummary,
-    loadGoals,
-    loadPoints,
-    loadSteps
-  } = useStore();
+  const { profile, userContext, loadProfile, goals, steps, pointsSummary, loadGoals, loadPoints, loadSteps } =
+    useStore();
 
   // Use React Query for goals
   const { data: goalsData, isLoading: goalsLoading, refetch: refetchGoals } = useGoals();
@@ -81,7 +84,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        console.log('TabHome: Tab visible, React Query will refetch based on config');
+        console.log("TabHome: Tab visible, React Query will refetch based on config");
         // React Query handles refetch automatically via refetchOnWindowFocus
         refetchGoals(); // Manual trigger is fine - React Query manages it
         loadPoints(); // Keep this - not managed by React Query
@@ -89,23 +92,25 @@ export const TabHome: React.FC<TabHomeProps> = ({
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [refetchGoals, loadPoints]);
 
   useEffect(() => {
     let isMounted = true;
     (async () => {
-      console.log('TabHome mounted - loading essential data only');
+      console.log("TabHome mounted - loading essential data only");
       // Remove loadGoals() - React Query already handles this via useGoals hook
       await Promise.allSettled([loadProfile(), loadPoints()]);
       if (!isMounted) return;
       setProfileLoaded(true);
       setGoalsLoaded(!goalsLoading);
-      
+
       // Steps will be loaded once goals are available in a separate effect
     })();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [loadProfile, loadPoints, goalsLoading]);
 
   // Sync React Query goals with Zustand store
@@ -118,32 +123,34 @@ export const TabHome: React.FC<TabHomeProps> = ({
   // After goals load, fetch steps for active/planned goals to avoid UI flash and ensure freshness
   useEffect(() => {
     if (!goalsLoaded) return;
-    goalsFromQuery.forEach(goal => {
-      if (goal.status === 'active' || goal.status === 'planned') {
+    goalsFromQuery.forEach((goal) => {
+      if (goal.status === "active" || goal.status === "planned") {
         loadSteps(goal.id);
       }
     });
   }, [goalsLoaded, goalsFromQuery, loadSteps]);
 
-  if (currentView === 'rewards') {
-    return <RewardsScreen onBack={() => setCurrentView('dashboard')} />;
+  if (currentView === "rewards") {
+    return <RewardsScreen onBack={() => setCurrentView("dashboard")} />;
   }
-  if (currentView === 'reward-bank') {
-    return <RewardsGallery onBack={() => setCurrentView('dashboard')} />;
+  if (currentView === "reward-bank") {
+    return <RewardsGallery onBack={() => setCurrentView("dashboard")} />;
   }
-  if (currentView === 'add-goal') {
-    return <RedesignedGoalsWizard 
-      onComplete={() => setCurrentView('dashboard')} 
-      onCancel={() => setCurrentView('dashboard')} 
-      isSupporter={userContext?.userType === 'supporter' || userContext?.userType === 'hybrid'}
-    />;
+  if (currentView === "add-goal") {
+    return (
+      <RedesignedGoalsWizard
+        onComplete={() => setCurrentView("dashboard")}
+        onCancel={() => setCurrentView("dashboard")}
+        isSupporter={userContext?.userType === "supporter" || userContext?.userType === "hybrid"}
+      />
+    );
   }
 
   // Active goals from React Query
-  const activeGoals = goalsFromQuery.filter(goal => goal.status === 'active' || goal.status === 'planned');
+  const activeGoals = goalsFromQuery.filter((goal) => goal.status === "active" || goal.status === "planned");
   // Trust the entryVariant prop - it knows the correct experience
-  const isFirstTime = entryVariant === 'first_time';
-  
+  const isFirstTime = entryVariant === "first_time";
+
   // Determine the correct name to display in greeting (synchronously to avoid flash)
   const getDisplayName = () => {
     // If user has first_name in metadata, use it (admin's name)
@@ -155,9 +162,9 @@ export const TabHome: React.FC<TabHomeProps> = ({
     if (profile?.first_name) {
       return profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1);
     }
-    return 'there';
+    return "there";
   };
-  
+
   const displayName = getDisplayName();
   const mockPoints = 247; // Placeholder points to match Rewards screen
 
@@ -166,13 +173,19 @@ export const TabHome: React.FC<TabHomeProps> = ({
     const todaysSteps: Array<{ step: any; goal: Goal }> = [];
     const overdueSteps: Array<{ step: any; goal: Goal; dueDate: Date }> = [];
     const upcomingSteps: Array<{ step: any; goal: Goal; dueDate: Date }> = [];
-    const allStepsDebug: Array<{ goalTitle: string; goalStatus: string; stepTitle: string; stepStatus: string; dueDate: any }> = [];
+    const allStepsDebug: Array<{
+      goalTitle: string;
+      goalStatus: string;
+      stepTitle: string;
+      stepStatus: string;
+      dueDate: any;
+    }> = [];
 
     const normalizeDueDate = (raw: any): Date | null => {
       if (!raw) return null;
       try {
         if (raw instanceof Date) return raw as Date;
-        if (typeof raw === 'string') return parseISO(raw as string);
+        if (typeof raw === "string") return parseISO(raw as string);
         const d = new Date(raw);
         return d;
       } catch {
@@ -186,10 +199,10 @@ export const TabHome: React.FC<TabHomeProps> = ({
     // Batch fetch all substeps in a single query (fixes N+1 query problem)
     const allStepIds: string[] = [];
     for (const goal of goalsFromQuery) {
-      if (goal.status === 'active' || goal.status === 'planned' || goal.status === 'paused') {
+      if (goal.status === "active" || goal.status === "planned" || goal.status === "paused") {
         const goalSteps = steps[goal.id] || [];
-        goalSteps.forEach(step => {
-          if (step?.id && typeof step.id === 'string' && step.status !== 'done' && step.status !== 'skipped') {
+        goalSteps.forEach((step) => {
+          if (step?.id && typeof step.id === "string" && step.status !== "done" && step.status !== "skipped") {
             allStepIds.push(step.id);
           }
         });
@@ -201,16 +214,16 @@ export const TabHome: React.FC<TabHomeProps> = ({
     if (allStepIds.length > 0) {
       try {
         const { data: allScaffoldingSteps, error } = await supabase
-          .from('steps')
-          .select('*')
-          .in('parent_step_id', allStepIds)
-          .eq('is_scaffolding', true);
-        
+          .from("steps")
+          .select("*")
+          .in("parent_step_id", allStepIds)
+          .eq("is_scaffolding", true);
+
         if (error) {
-          console.warn('[TabHome] Error fetching scaffolding steps:', error);
+          console.warn("[TabHome] Error fetching scaffolding steps:", error);
         } else {
           // Group scaffolding steps by parent_step_id
-          (allScaffoldingSteps || []).forEach(scaffoldingStep => {
+          (allScaffoldingSteps || []).forEach((scaffoldingStep) => {
             const parentId = scaffoldingStep.parent_step_id;
             if (!parentId) return;
             if (!substepsByStepId[parentId]) {
@@ -220,52 +233,52 @@ export const TabHome: React.FC<TabHomeProps> = ({
             substepsByStepId[parentId].push({
               id: scaffoldingStep.id,
               step_id: parentId,
-              completed_at: scaffoldingStep.status === 'done' ? scaffoldingStep.updated_at : undefined
+              completed_at: scaffoldingStep.status === "done" ? scaffoldingStep.updated_at : undefined,
             });
           });
         }
       } catch (e) {
-        console.warn('[TabHome] Failed to batch fetch scaffolding steps:', e);
+        console.warn("[TabHome] Failed to batch fetch scaffolding steps:", e);
       }
     }
 
     for (const goal of goalsFromQuery) {
       // Include active/planned/paused goals
-      if (goal.status === 'active' || goal.status === 'planned' || goal.status === 'paused') {
+      if (goal.status === "active" || goal.status === "planned" || goal.status === "paused") {
         const goalSteps = steps[goal.id] || [];
-        
+
         for (const step of goalSteps) {
           allStepsDebug.push({
             goalTitle: goal.title,
             goalStatus: goal.status,
             stepTitle: step.title,
             stepStatus: step.status,
-            dueDate: step.due_date
+            dueDate: step.due_date,
           });
 
           // Exclude completed or skipped steps; include others with a due date
-          if (step.status !== 'done' && step.status !== 'skipped') {
+          if (step.status !== "done" && step.status !== "skipped") {
             // Get pre-fetched substeps (already batched)
             const substeps = substepsByStepId[step.id] || [];
-            const incompleteSubsteps = substeps.filter(sub => !sub.completed_at);
-            
+            const incompleteSubsteps = substeps.filter((sub) => !sub.completed_at);
+
             if (incompleteSubsteps.length > 0) {
               // Count each incomplete substep separately
-              incompleteSubsteps.forEach(substep => {
+              incompleteSubsteps.forEach((substep) => {
                 const dueDate = normalizeDueDate(step.due_date); // Use parent step's due date
                 if (dueDate && !isNaN(dueDate.getTime())) {
                   const dueDateStart = new Date(dueDate);
                   dueDateStart.setHours(0, 0, 0, 0);
-                  
+
                   // Create a virtual "step" for the substep to maintain compatibility
                   const substepAsStep = {
                     ...step,
                     id: substep.id,
                     title: `→ ${substep.title}`,
                     isSubstep: true,
-                    parentStepId: step.id
+                    parentStepId: step.id,
                   };
-                  
+
                   if (isToday(dueDate)) {
                     todaysSteps.push({ step: substepAsStep, goal });
                   } else if (dueDateStart < today) {
@@ -281,7 +294,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
               if (dueDate && !isNaN(dueDate.getTime())) {
                 const dueDateStart = new Date(dueDate);
                 dueDateStart.setHours(0, 0, 0, 0);
-                
+
                 if (isToday(dueDate)) {
                   todaysSteps.push({ step, goal });
                 } else if (dueDateStart < today) {
@@ -300,10 +313,10 @@ export const TabHome: React.FC<TabHomeProps> = ({
     console.log(`All steps debug (sample size=${sample.length} of ${allStepsDebug.length}):`, sample);
     overdueSteps.sort((a, b) => b.dueDate.getTime() - a.dueDate.getTime());
     upcomingSteps.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
-    return { 
-      todaysSteps, 
+    return {
+      todaysSteps,
       overdueSteps: overdueSteps.slice(0, 3),
-      upcomingSteps: upcomingSteps.slice(0, 3) 
+      upcomingSteps: upcomingSteps.slice(0, 3),
     };
   };
 
@@ -315,13 +328,13 @@ export const TabHome: React.FC<TabHomeProps> = ({
         const data = await getTodaysStepsAndNext();
         setStepsData(data);
       } catch (err) {
-        console.error('[TabHome] Failed to compute steps data:', err);
+        console.error("[TabHome] Failed to compute steps data:", err);
         setStepsData({ todaysSteps: [], overdueSteps: [], upcomingSteps: [] });
       } finally {
         setIsLoadingSteps(false);
       }
     };
-    
+
     // Only compute when we have goals loaded and at least attempted to load steps
     if (!goalsLoading && goalsFromQuery.length > 0) {
       loadStepsData();
@@ -333,27 +346,27 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
   const { todaysSteps, overdueSteps, upcomingSteps } = stepsData;
   const todaysDueItem = todaysSteps[0] || null;
-  
-  console.log('TabHome debug:', { 
+
+  console.log("TabHome debug:", {
     goalsCount: goalsFromQuery.length,
     stepsCount: Object.keys(steps).length,
     todaysStepsCount: todaysSteps.length,
     overdueStepsCount: overdueSteps.length,
     upcomingStepsCount: upcomingSteps.length,
-    overdueSteps: overdueSteps.map(item => ({
+    overdueSteps: overdueSteps.map((item) => ({
       stepTitle: item.step.title,
       stepStatus: item.step.status,
       dueDate: item.step.due_date,
       goalTitle: item.goal.title,
-      goalStatus: item.goal.status
+      goalStatus: item.goal.status,
     })),
-    upcomingSteps: upcomingSteps.map(item => ({
+    upcomingSteps: upcomingSteps.map((item) => ({
       stepTitle: item.step.title,
       stepStatus: item.step.status,
       dueDate: item.step.due_date,
       goalTitle: item.goal.title,
-      goalStatus: item.goal.status
-    }))
+      goalStatus: item.goal.status,
+    })),
   });
 
   const handleViewStep = (stepId: string, goalId: string) => {
@@ -371,35 +384,38 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const handleSignOut = async () => {
     try {
       await signOut();
-      window.location.href = '/auth';
+      window.location.href = "/auth";
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
-  return <>
+  return (
+    <>
       <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
         {/* Header */}
-      <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200">
+        <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 pb-3 pt-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center">
-            <img src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" alt="Lunabeam logo" className="h-9 w-auto object-contain" />
+            <img
+              src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png"
+              alt="Lunabeam logo"
+              className="h-7 w-auto object-contain"
+            />
           </div>
-          
+
           <div className="flex items-center gap-3">
             {/* Notification Badge */}
-            <NotificationBadge 
-              onNavigateToNotifications={onNavigateToNotifications}
-            />
-            
+            <NotificationBadge onNavigateToNotifications={onNavigateToNotifications} />
+
             {/* LunaPoints Display */}
-            <div 
+            <div
               className="flex items-center gap-1 bg-muted px-3 py-1.5 rounded-full cursor-pointer hover:bg-muted/80 transition-colors"
-              onClick={() => setCurrentView('rewards')}
+              onClick={() => setCurrentView("rewards")}
             >
               <Coins className="h-4 w-4 text-yellow-600" />
               <span className="text-sm font-medium">{pointsSummary?.totalPoints || 0}</span>
             </div>
-            
+
             {/* Sign Out Button */}
             <Button
               variant="ghost"
@@ -416,20 +432,20 @@ export const TabHome: React.FC<TabHomeProps> = ({
           {/* Welcome Message */}
           <div className="pt-4">
             {(() => {
-              const isAdmin = userContext?.userType === 'admin';
-              
+              const isAdmin = userContext?.userType === "admin";
+
               let title, subtitle;
-              
+
               if (isAdmin) {
                 // Admin experience
                 title = "Welcome!";
                 subtitle = isFirstTime
                   ? "You've created this account to support someone important in your life. As the Admin, you can help set goals, follow progress, and invite others such as friends, providers, or coaches to be part of the team.\n\nThis space is here to make collaboration easy and encouraging. Together we'll turn small steps into big milestones.\n\n✨ Let's get started by setting up the first goal."
                   : `Welcome back, ${displayName}! Ready to continue supporting your team and tracking progress together.`;
-              } else if (userContext?.userType === 'individual') {
+              } else if (userContext?.userType === "individual") {
                 // Individual experience
                 title = `Welcome, ${displayName}!`;
-                subtitle = isFirstTime 
+                subtitle = isFirstTime
                   ? "Your support team has set up your goals. Let's continue your journey together!"
                   : "Ready to continue working on your goals? Your support team is here to help.";
               } else {
@@ -439,15 +455,11 @@ export const TabHome: React.FC<TabHomeProps> = ({
                   ? "👋 Hey there! Welcome aboard. Let's kick things off by setting your very first goal. Ready to get started?"
                   : "Let's keep moving forward, one step at a time.";
               }
-              
+
               return (
                 <>
-                  <h2 className="text-2xl font-bold mb-1">
-                    {title}
-                  </h2>
-                  <p className="text-muted-foreground whitespace-pre-line">
-                    {subtitle}
-                  </p>
+                  <h2 className="text-2xl font-bold mb-1">{title}</h2>
+                  <p className="text-muted-foreground whitespace-pre-line">{subtitle}</p>
                 </>
               );
             })()}
@@ -470,7 +482,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
                   <div>
                     <h3 className="font-medium text-base text-foreground">Review your missed steps</h3>
                     <p className="text-sm text-muted-foreground">
-                      You have {overdueSteps.length} step{overdueSteps.length !== 1 ? 's' : ''} that need attention
+                      You have {overdueSteps.length} step{overdueSteps.length !== 1 ? "s" : ""} that need attention
                     </p>
                   </div>
                 </div>
@@ -479,9 +491,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
           )}
 
           {/* First Time User Reminder */}
-          {isFirstTime && (
-            <FirstTimeReminder onNavigateToGoals={() => setCurrentView('add-goal')} />
-          )}
+          {isFirstTime && <FirstTimeReminder onNavigateToGoals={() => setCurrentView("add-goal")} />}
 
           {/* Today's Focus Card - Always show */}
           {isLoadingSteps ? (
@@ -509,18 +519,16 @@ export const TabHome: React.FC<TabHomeProps> = ({
               onViewUpcomingStep={handleViewUpcomingStep}
             />
           )}
-
-
         </div>
       </div>
 
       {/* Check-in Modal */}
       {selectedGoal && (
-        <WeeklyCheckinModal 
-          isOpen={showCheckinModal} 
-          onOpenChange={setShowCheckinModal} 
+        <WeeklyCheckinModal
+          isOpen={showCheckinModal}
+          onOpenChange={setShowCheckinModal}
           goal={selectedGoal}
-          weekOf={new Date().toISOString().split('T')[0]} 
+          weekOf={new Date().toISOString().split("T")[0]}
         />
       )}
 
@@ -531,24 +539,26 @@ export const TabHome: React.FC<TabHomeProps> = ({
             <SheetTitle>Recommended Steps</SheetTitle>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto p-4">
-            {drawerGoalId && (() => {
-              const goal = goalsFromQuery.find(g => g.id === drawerGoalId);
-              const goalSteps = steps[drawerGoalId] || [];
-              
-              if (!goal) return <p className="text-muted-foreground">Goal not found</p>;
-              
-              return (
-                <RecommendedStepsList
-                  steps={goalSteps}
-                  goal={goal}
-                  onStepsChange={() => {
-                    loadSteps(drawerGoalId);
-                  }}
-                />
-              );
-            })()}
+            {drawerGoalId &&
+              (() => {
+                const goal = goalsFromQuery.find((g) => g.id === drawerGoalId);
+                const goalSteps = steps[drawerGoalId] || [];
+
+                if (!goal) return <p className="text-muted-foreground">Goal not found</p>;
+
+                return (
+                  <RecommendedStepsList
+                    steps={goalSteps}
+                    goal={goal}
+                    onStepsChange={() => {
+                      loadSteps(drawerGoalId);
+                    }}
+                  />
+                );
+              })()}
           </div>
         </SheetContent>
       </Sheet>
-    </>;
+    </>
+  );
 };
