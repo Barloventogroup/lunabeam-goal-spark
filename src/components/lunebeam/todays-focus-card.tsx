@@ -30,19 +30,18 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
 }) => {
   const renderStepCard = (step: Step, goal: Goal, dueDate?: Date, isOverdue = false) => (
     <Card 
-      className="cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md"
+      className="relative cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md"
       onClick={() => onViewUpcomingStep?.(step.id, goal.id)}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+      <CardHeader className="pb-3 pr-8">
+        <div className="flex items-center">
           <h4 className="font-medium text-foreground text-base flex-1">
             {cleanStepTitle(step.title)}
           </h4>
-          <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2 self-center" />
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0 space-y-1">
+      <CardContent className="pt-0 space-y-1 pr-8">
         <p className="text-sm text-muted-foreground">
           Goal: {goal.title}
         </p>
@@ -62,6 +61,9 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
           </p>
         )}
       </CardContent>
+      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+      </div>
     </Card>
   );
 
@@ -77,17 +79,16 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
         {/* Today's Due Step */}
         {step && goal && (
           <div className="space-y-3">
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md" onClick={() => onViewStep?.(step.id, goal.id)}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+            <Card className="relative cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md" onClick={() => onViewStep?.(step.id, goal.id)}>
+              <CardHeader className="pb-3 pr-8">
+                <div className="flex items-center">
                   <h4 className="font-medium text-foreground text-base flex-1">
                     {cleanStepTitle(step.title)}
                   </h4>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2 self-center" />
                 </div>
               </CardHeader>
               
-              <CardContent className="pt-0 space-y-1">
+              <CardContent className="pt-0 space-y-1 pr-8">
                 <p className="text-sm text-muted-foreground">
                   Goal: {goal.title}
                 </p>
@@ -107,6 +108,9 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                   </p>
                 )}
               </CardContent>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </div>
             </Card>
           </div>
         )}
@@ -140,19 +144,18 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
               {upcomingSteps.map(({step, goal, dueDate}) => (
                 <Card 
                   key={step.id} 
-                  className="cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md"
+                  className="relative cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md"
                   onClick={() => onViewUpcomingStep?.(step.id, goal.id)}
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
+                  <CardHeader className="pb-3 pr-8">
+                    <div className="flex items-center">
                       <h4 className="font-medium text-foreground text-base flex-1">
                         {cleanStepTitle(step.title)}
                       </h4>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 ml-2 self-center" />
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="pt-0 space-y-1">
+                  <CardContent className="pt-0 space-y-1 pr-8">
                     <p className="text-sm text-muted-foreground">
                       Goal: {goal.title}
                     </p>
@@ -170,6 +173,9 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                       </p>
                     )}
                   </CardContent>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
                 </Card>
               ))}
             </div>
