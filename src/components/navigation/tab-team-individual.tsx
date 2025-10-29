@@ -138,6 +138,7 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
         {/* Support Team List */}
         {supporters.length > 0 ? (
           <div className="space-y-3">
+            <h2 className="text-lg font-semibold">All Supporters</h2>
             {supporters.map((supporter) => (
               <Card key={supporter.id}>
                 <CardContent className="p-4">
