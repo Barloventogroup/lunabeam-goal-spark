@@ -168,10 +168,6 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
                           <span className="ml-1 capitalize">{supporter.role}</span>
                         </Badge>
                       </div>
-
-                      <p className="text-sm text-muted-foreground">
-                        {getPermissionDescription(supporter.permission_level)}
-                      </p>
                     </div>
                   </div>
                 </CardContent>
