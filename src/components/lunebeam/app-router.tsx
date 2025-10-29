@@ -182,7 +182,7 @@ const AppRouter: React.FC = () => {
     return (
       <div className="min-h-[100dvh] bg-background flex flex-col max-w-full overflow-x-hidden" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
         {/* Header with Logo */}
-        <div className="fixed left-0 right-0 top-safe z-40 flex items-center border-b bg-card/80 backdrop-blur px-4 pb-4 pt-4">
+            <div className="fixed left-0 right-0 top-safe z-40 flex items-center bg-card/80 backdrop-blur px-4 pb-4 pt-4">
           <img
             src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
             alt="Lunabeam logo" 
