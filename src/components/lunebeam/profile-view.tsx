@@ -170,6 +170,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         title: "Profile picture updated",
         description: "Your new profile picture has been saved.",
       });
+      
+      // Refresh profile to ensure cross-device sync
+      await useStore.getState().refreshProfile();
     } catch (error) {
       console.error("Error uploading avatar:", error);
       toast({

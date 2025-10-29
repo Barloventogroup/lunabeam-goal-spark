@@ -36,6 +36,16 @@ export const TabYou: React.FC<TabYouProps> = ({
   const [isAdmin, setIsAdmin] = useState(false);
   useEffect(() => {
     console.log('TabYou: Rendering with profile:', profile);
+    
+    // Refresh profile on mount and when window regains focus
+    const refreshProfile = useStore.getState().refreshProfile;
+    refreshProfile();
+    
+    const handleFocus = () => {
+      console.log('TabYou: Window focused, refreshing profile');
+      refreshProfile();
+    };
+    
     loadUnreadCount();
     checkAdminStatus();
 
@@ -53,8 +63,12 @@ export const TabYou: React.FC<TabYouProps> = ({
     }, () => {
       loadUnreadCount();
     }).subscribe();
+    
+    window.addEventListener('focus', handleFocus);
+    
     return () => {
       supabase.removeChannel(channel);
+      window.removeEventListener('focus', handleFocus);
     };
   }, [profile, userContext]);
   const checkAdminStatus = async () => {

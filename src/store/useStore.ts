@@ -40,6 +40,7 @@ interface AppState {
   
   // Actions
   setProfile: (profile: Profile) => Promise<void>;
+  refreshProfile: () => Promise<void>;
   updateUserContext: () => Promise<void>;
   updateConsent: (consent: Consent) => void;
   completeOnboarding: () => Promise<void>;
@@ -154,6 +155,21 @@ export const useStore = create<AppState>()(
         // Update user context when profile changes
         const userContext = await getUserContext(profile);
         set({ userContext });
+      },
+
+      refreshProfile: async () => {
+        try {
+          console.log('Store: refreshProfile - forcing fresh fetch from database');
+          const freshProfile = await database.getProfile();
+          if (freshProfile) {
+            console.log('Store: refreshProfile - got fresh profile:', freshProfile);
+            set({ profile: freshProfile });
+            const userContext = await getUserContext(freshProfile);
+            set({ userContext });
+          }
+        } catch (error) {
+          console.error('Store: refreshProfile failed:', error);
+        }
       },
 
       updateUserContext: async () => {
