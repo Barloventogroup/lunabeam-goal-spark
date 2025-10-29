@@ -7,7 +7,7 @@ interface BackButtonProps {
   onClick: () => void
   className?: string
   variant?: "icon" | "text" | "minimal"
-  size?: "sm" | "default" | "lg"
+  size?: "sm" | "default" | "lg" | "icon"
   disabled?: boolean
 }
 
@@ -37,10 +37,11 @@ export const BackButton = React.forwardRef<HTMLButtonElement, BackButtonProps>(
           <Button
             ref={ref}
             variant="ghost"
-            size={size}
+            size="icon"
             onClick={onClick}
             disabled={disabled}
-            className={cn(baseClasses, "px-2 hover:bg-muted", className)}
+            className={cn(baseClasses, "h-8 w-8 p-1 hover:bg-muted", className)}
+            aria-label="Back"
             {...props}
           >
             <ArrowLeft className="h-4 w-4" />
@@ -53,10 +54,11 @@ export const BackButton = React.forwardRef<HTMLButtonElement, BackButtonProps>(
           <Button
             ref={ref}
             variant="ghost"
-            size={size}
+            size="icon"
             onClick={onClick}
             disabled={disabled}
-            className={cn(baseClasses, "p-2", className)}
+            className={cn(baseClasses, "h-8 w-8 p-1", className)}
+            aria-label="Back"
             {...props}
           >
             <ArrowLeft className="h-4 w-4" />

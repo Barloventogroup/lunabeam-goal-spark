@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BackButton } from '@/components/ui/back-button';
+import { PageHeader } from '@/components/ui/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -197,16 +197,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     });
   };
   return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
-      {/* Header */}
-      <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
-        <div className="flex items-center gap-3">
-          <BackButton onClick={onBack} />
-          <div>
-            <h1 className="text-2xl font-bold">Profile</h1>
-            
-          </div>
-        </div>
-      </div>
+      <PageHeader title="Profile" onBack={onBack} />
 
       <div className="px-6 pt-6 pb-4 space-y-6">
         {/* Profile Picture & Name */}

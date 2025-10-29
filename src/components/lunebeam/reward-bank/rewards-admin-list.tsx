@@ -80,7 +80,8 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) =>
         right={
           <Button 
             onClick={() => setShowForm(true)}
-            className="bg-primary hover:bg-primary/90"
+            size="sm"
+            className="h-8 px-3 text-sm bg-primary hover:bg-primary/90"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Reward

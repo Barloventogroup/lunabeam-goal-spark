@@ -18,7 +18,7 @@ export const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
       >
         <div className="flex items-center gap-4">
           {onBack && <BackButton onClick={onBack} />}
-          <h1 className="text-2xl font-bold flex-1">{title}</h1>
+          <h1 className="text-2xl leading-8 font-bold flex-1">{title}</h1>
           {right && <div className="ml-auto">{right}</div>}
         </div>
       </div>
