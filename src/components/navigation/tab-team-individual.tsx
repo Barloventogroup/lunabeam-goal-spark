@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users, MessageSquare, Eye, Crown, User, Heart, ShieldCheck } from "lucide-react";
+import { Users, Eye, Crown, User, Heart, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { PermissionsService, type Supporter } from "@/services/permissionsService";
 import { useToast } from "@/hooks/use-toast";
@@ -190,21 +190,6 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
           </Card>
         )}
 
-        {/* Info Card */}
-        <Card className="bg-muted/50">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <MessageSquare className="h-5 w-5 text-primary mt-0.5" />
-              <div className="space-y-1">
-                <h4 className="font-medium text-foreground">Need Help?</h4>
-                <p className="text-sm text-muted-foreground">
-                  If you need to update your support team or have questions about your goals, reach out to your main
-                  support person or use the chat feature.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
