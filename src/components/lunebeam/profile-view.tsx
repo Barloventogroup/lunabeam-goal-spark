@@ -14,7 +14,12 @@ import {
   Save,
   Camera,
   Check,
+  CalendarIcon,
 } from "lucide-react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { useStore } from "@/store/useStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -30,14 +35,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
   const [editedData, setEditedData] = useState<any>({});
   const [newTag, setNewTag] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleStartEdit = (section: string) => {
     setEditingSection(section);
     if (section === "basic") {
+      setIsEditDrawerOpen(true);
       setEditedData({
         first_name: profile?.first_name || "",
         email: profile?.email || "",
+        birthday: profile?.birthday ? new Date(profile.birthday) : null,
+        newPassword: "",
+        confirmPassword: "",
       });
     } else if (section === "password") {
       setEditedData({
@@ -55,6 +65,68 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
   const handleSave = async (section: string) => {
     try {
       if (!profile) return;
+      
+      if (section === "basic") {
+        // Prepare update data
+        const updateData: any = {
+          first_name: editedData.first_name,
+          email: editedData.email,
+        };
+        
+        if (editedData.birthday) {
+          updateData.birthday = editedData.birthday.toISOString().split('T')[0];
+        }
+
+        // Handle password update if provided
+        if (editedData.newPassword || editedData.confirmPassword) {
+          if (editedData.newPassword !== editedData.confirmPassword) {
+            toast({
+              title: "Error",
+              description: "Passwords do not match.",
+              variant: "destructive",
+            });
+            return;
+          }
+          if (editedData.newPassword.length < 6) {
+            toast({
+              title: "Error",
+              description: "Password must be at least 6 characters long.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          const { error: passwordError } = await supabase.auth.updateUser({
+            password: editedData.newPassword,
+          });
+
+          if (passwordError) throw passwordError;
+        }
+
+        // Update profile
+        const { data, error } = await supabase
+          .from("profiles")
+          .update(updateData)
+          .eq("user_id", profile.user_id)
+          .select()
+          .single();
+          
+        if (error) throw error;
+        
+        setProfile({
+          ...profile,
+          ...updateData,
+        });
+        setEditingSection(null);
+        setIsEditDrawerOpen(false);
+        setEditedData({});
+        toast({
+          title: "Profile updated",
+          description: "Your changes have been saved.",
+        });
+        return;
+      }
+      
       if (section === "password") {
         // Validate passwords
         if (!editedData.newPassword || editedData.newPassword.length < 6) {
@@ -87,6 +159,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         });
         return;
       }
+      
+      // Handle other sections (tags, etc.)
       const { data, error } = await supabase
         .from("profiles")
         .update(editedData)
@@ -356,64 +430,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         </Card>
 
         {/* Profile Information Card */}
-        <div className="space-y-2">
+        <div className="space-y-1">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold">Profile Information</h3>
-            {editingSection !== "basic" && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleStartEdit("basic")}
-                className="text-primary hover:text-primary/90"
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleStartEdit("basic")}
+              className="text-base"
+            >
+              Edit
+            </Button>
           </div>
           <Card>
             <CardContent className="py-4">
-            {editingSection === "basic" ? (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-base font-medium text-foreground mb-1 block">Name</label>
-                  <Input
-                    value={editedData.first_name || ""}
-                    onChange={(e) =>
-                      setEditedData({
-                        ...editedData,
-                        first_name: e.target.value,
-                      })
-                    }
-                    placeholder="First name"
-                  />
-                </div>
-                <div>
-                  <label className="text-base font-medium text-foreground mb-1 block">Email</label>
-                  <Input
-                    type="email"
-                    value={editedData.email || ""}
-                    onChange={(e) =>
-                      setEditedData({
-                        ...editedData,
-                        email: e.target.value,
-                      })
-                    }
-                    placeholder="Email address"
-                  />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <Button size="sm" onClick={() => handleSave("basic")}>
-                    <Check className="h-4 w-4 mr-1" />
-                    Save
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={handleCancel}>
-                    <X className="h-4 w-4 mr-1" />
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
               <div className="space-y-0">
                 <div className="grid grid-cols-[120px,1fr] items-center py-3">
                   <span className="text-base font-medium text-muted-foreground">Name:</span>
@@ -429,11 +459,115 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
                     {profile?.birthday ? format(new Date(profile.birthday), "PPP") : "Not set"}
                   </span>
                 </div>
+                <div className="grid grid-cols-[120px,1fr] items-center py-3 border-t">
+                  <span className="text-base font-medium text-muted-foreground">Password:</span>
+                  <span className="text-base text-right">••••••••</span>
+                </div>
               </div>
-            )}
             </CardContent>
           </Card>
         </div>
+
+        {/* Edit Profile Drawer */}
+        <Drawer open={isEditDrawerOpen} onOpenChange={setIsEditDrawerOpen}>
+          <DrawerContent side="right">
+            <DrawerHeader>
+              <DrawerTitle>Edit Profile Information</DrawerTitle>
+            </DrawerHeader>
+            <div className="px-4 py-6 space-y-4 overflow-y-auto flex-1">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Name</label>
+                <Input
+                  value={editedData.first_name || ""}
+                  onChange={(e) =>
+                    setEditedData({ ...editedData, first_name: e.target.value })
+                  }
+                  placeholder="First name"
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Email</label>
+                <Input
+                  type="email"
+                  value={editedData.email || ""}
+                  onChange={(e) =>
+                    setEditedData({ ...editedData, email: e.target.value })
+                  }
+                  placeholder="Email address"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Date of Birth</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !editedData.birthday && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {editedData.birthday ? (
+                        format(editedData.birthday, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={editedData.birthday}
+                      onSelect={(date) =>
+                        setEditedData({ ...editedData, birthday: date })
+                      }
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">New Password (Optional)</label>
+                <Input
+                  type="password"
+                  value={editedData.newPassword || ""}
+                  onChange={(e) =>
+                    setEditedData({ ...editedData, newPassword: e.target.value })
+                  }
+                  placeholder="Leave blank to keep current"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Must be at least 6 characters</p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Confirm New Password</label>
+                <Input
+                  type="password"
+                  value={editedData.confirmPassword || ""}
+                  onChange={(e) =>
+                    setEditedData({ ...editedData, confirmPassword: e.target.value })
+                  }
+                  placeholder="Confirm new password"
+                />
+              </div>
+            </div>
+            <DrawerFooter>
+              <Button onClick={() => handleSave("basic")} className="w-full">
+                Save Changes
+              </Button>
+              <DrawerClose asChild>
+                <Button variant="outline" className="w-full">
+                  Cancel
+                </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
 
         {/* Security Section */}
         <div className="space-y-2">
