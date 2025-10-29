@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -134,11 +134,11 @@ export const AddCommunityMemberModal: React.FC<AddCommunityMemberModalProps> = (
         )}
       </DialogTrigger>
       <DialogContent className="max-w-md" aria-describedby="add-member-description">
-        <DialogHeader>
-          <DialogTitle>Add Community Member</DialogTitle>
-          <p id="add-member-description" className="text-sm text-muted-foreground">
+        <DialogHeader className="pr-10">
+          <DialogTitle className="text-xl">Add Community Member</DialogTitle>
+          <DialogDescription id="add-member-description">
             Invite someone to join your support network and help with your goals.
-          </p>
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
