@@ -356,21 +356,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         </Card>
 
         {/* Profile Information Card */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold">Profile Information</h3>
-            {editingSection !== "basic" && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleStartEdit("basic")}
-                className="text-primary hover:text-primary/90"
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
-            )}
-          </div>
+        <div className="space-y-1">
+          <h3 className="text-xl font-semibold">Profile Information</h3>
           <Card>
             <CardContent className="py-4">
             {editingSection === "basic" ? (
