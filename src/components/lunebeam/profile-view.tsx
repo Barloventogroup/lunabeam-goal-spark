@@ -515,246 +515,214 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         </Drawer>
 
         {/* Security Section */}
-        <div className="space-y-2">
+        <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold">Security</h3>
-          <Card>
-            <CardContent className="space-y-4 pt-6">
-            {editingSection === "password" ? (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">New Password</label>
-                  <Input
-                    type="password"
-                    value={editedData.newPassword || ""}
-                    onChange={(e) =>
-                      setEditedData({
-                        ...editedData,
-                        newPassword: e.target.value,
-                      })
-                    }
-                    placeholder="Enter new password"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">Must be at least 6 characters</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Confirm Password</label>
-                  <Input
-                    type="password"
-                    value={editedData.confirmPassword || ""}
-                    onChange={(e) =>
-                      setEditedData({
-                        ...editedData,
-                        confirmPassword: e.target.value,
-                      })
-                    }
-                    placeholder="Confirm new password"
-                  />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <Button size="sm" onClick={() => handleSave("password")}>
-                    <Check className="h-4 w-4 mr-1" />
-                    Update Password
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={handleCancel}>
-                    <X className="h-4 w-4 mr-1" />
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Password</p>
-                    <p className="text-sm text-muted-foreground">••••••••</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => handleStartEdit("password")}>
-                  <Edit className="h-4 w-4 mr-1" />
-                  Change Password
-                </Button>
-              </div>
-            )}
-            </CardContent>
-          </Card>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleStartEdit("password")}
+            className="text-base text-blue-500 hover:text-blue-600"
+          >
+            Edit
+          </Button>
         </div>
+        <Card>
+          <CardContent className="py-2">
+            <div className="flex items-center justify-between py-3">
+              <span className="text-muted-foreground text-base">Password</span>
+              <span className="text-foreground text-base">••••••••</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Password Edit Drawer */}
+        <Drawer open={editingSection === "password"} onOpenChange={(open) => !open && handleCancel()}>
+          <DrawerContent side="right">
+            <DrawerHeader className="text-left text-xl">
+              <DrawerTitle>Change Password</DrawerTitle>
+            </DrawerHeader>
+            <div className="px-4 space-y-4">
+              <div>
+                <label className="text-base font-medium text-foreground mb-1 block">New Password</label>
+                <Input
+                  type="password"
+                  value={editedData.newPassword || ""}
+                  onChange={(e) =>
+                    setEditedData({
+                      ...editedData,
+                      newPassword: e.target.value,
+                    })
+                  }
+                  placeholder="Enter new password"
+                  className="text-base"
+                />
+                <p className="text-sm text-muted-foreground mt-1">Must be at least 6 characters</p>
+              </div>
+              <div>
+                <label className="text-base font-medium text-foreground mb-1 block">Confirm Password</label>
+                <Input
+                  type="password"
+                  value={editedData.confirmPassword || ""}
+                  onChange={(e) =>
+                    setEditedData({
+                      ...editedData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  placeholder="Confirm new password"
+                  className="text-base"
+                />
+              </div>
+            </div>
+            <DrawerFooter>
+              <Button onClick={() => handleSave("password")} className="w-full">
+                Save Changes
+              </Button>
+              <DrawerClose asChild>
+                <Button variant="outline" className="w-full">
+                  Cancel
+                </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
 
         {/* Tags Section */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold">Tags & Interests</h3>
-            {editingSection !== "tags" && (
-              <Button variant="outline" size="sm" onClick={() => handleStartEdit("tags")}>
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
-            )}
-          </div>
-          <Card>
-            <CardContent className="space-y-4 pt-6">
-            {editingSection === "tags" ? (
-              <div className="space-y-4">
-                {/* Strengths */}
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Strengths</h4>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {(editedData.strengths || []).map((strength: string) => (
-                      <div key={strength} className="flex items-center gap-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {strength}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 w-4 p-0"
-                          onClick={() => handleRemoveTag(strength, "strengths")}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      placeholder="Add strength"
-                      onKeyPress={(e) => e.key === "Enter" && handleAddTag("strengths")}
-                    />
-                    <Button size="sm" onClick={() => handleAddTag("strengths")}>
-                      Add
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Interests */}
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Interests</h4>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {(editedData.interests || []).map((interest: string) => (
-                      <div key={interest} className="flex items-center gap-1">
-                        <Badge variant="outline" className="text-xs">
-                          {interest}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 w-4 p-0"
-                          onClick={() => handleRemoveTag(interest, "interests")}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      placeholder="Add interest"
-                      onKeyPress={(e) => e.key === "Enter" && handleAddTag("interests")}
-                    />
-                    <Button size="sm" onClick={() => handleAddTag("interests")}>
-                      Add
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Challenges */}
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Challenges</h4>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {(editedData.challenges || []).map((challenge: string) => (
-                      <div key={challenge} className="flex items-center gap-1">
-                        <Badge variant="destructive" className="text-xs">
-                          {challenge}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 w-4 p-0"
-                          onClick={() => handleRemoveTag(challenge, "challenges")}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      placeholder="Add challenge"
-                      onKeyPress={(e) => e.key === "Enter" && handleAddTag("challenges")}
-                    />
-                    <Button size="sm" onClick={() => handleAddTag("challenges")}>
-                      Add
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-4">
-                  <Button onClick={() => handleSave("tags")}>
-                    <Check className="h-4 w-4 mr-1" />
-                    Save Changes
-                  </Button>
-                  <Button variant="outline" onClick={handleCancel}>
-                    <X className="h-4 w-4 mr-1" />
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Strengths */}
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Strengths</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {profile?.strengths?.map((strength) => (
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-semibold">Tags & Interests</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleStartEdit("tags")}
+            className="text-base text-blue-500 hover:text-blue-600"
+          >
+            Edit
+          </Button>
+        </div>
+        <Card>
+          <CardContent className="py-2">
+            <div className="space-y-0">
+              {/* Strengths Row */}
+              <div className="flex items-center justify-between py-3 border-b border-border last:border-b-0">
+                <span className="text-muted-foreground text-base">Strengths</span>
+                <div className="flex flex-wrap gap-1.5 justify-end max-w-[60%]">
+                  {profile?.strengths && profile.strengths.length > 0 ? (
+                    profile.strengths.map((strength) => (
                       <Badge key={strength} variant="secondary" className="text-xs">
                         {strength}
                       </Badge>
-                    ))}
-                    {(!profile?.strengths || profile.strengths.length === 0) && (
-                      <p className="text-sm text-muted-foreground">No strengths added yet</p>
-                    )}
-                  </div>
+                    ))
+                  ) : (
+                    <span className="text-muted-foreground text-base">Not set</span>
+                  )}
                 </div>
+              </div>
 
-                {/* Interests */}
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Interests</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {profile?.interests?.map((interest) => (
+              {/* Interests Row */}
+              <div className="flex items-center justify-between py-3 border-b border-border last:border-b-0">
+                <span className="text-muted-foreground text-base">Interests</span>
+                <div className="flex flex-wrap gap-1.5 justify-end max-w-[60%]">
+                  {profile?.interests && profile.interests.length > 0 ? (
+                    profile.interests.map((interest) => (
                       <Badge key={interest} variant="outline" className="text-xs">
                         {interest}
                       </Badge>
-                    ))}
-                    {(!profile?.interests || profile.interests.length === 0) && (
-                      <p className="text-sm text-muted-foreground">No interests added yet</p>
-                    )}
-                  </div>
+                    ))
+                  ) : (
+                    <span className="text-muted-foreground text-base">Not set</span>
+                  )}
                 </div>
+              </div>
 
-                {/* Challenges */}
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Challenges</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {profile?.challenges?.map((challenge) => (
+              {/* Challenges Row */}
+              <div className="flex items-center justify-between py-3">
+                <span className="text-muted-foreground text-base">Challenges</span>
+                <div className="flex flex-wrap gap-1.5 justify-end max-w-[60%]">
+                  {profile?.challenges && profile.challenges.length > 0 ? (
+                    profile.challenges.map((challenge) => (
                       <Badge key={challenge} variant="destructive" className="text-xs">
                         {challenge}
                       </Badge>
-                    ))}
-                    {(!profile?.challenges || profile.challenges.length === 0) && (
-                      <p className="text-sm text-muted-foreground">No challenges added yet</p>
-                    )}
-                  </div>
+                    ))
+                  ) : (
+                    <span className="text-muted-foreground text-base">Not set</span>
+                  )}
                 </div>
               </div>
-            )}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tags Edit Drawer */}
+        <Drawer open={editingSection === "tags"} onOpenChange={(open) => !open && handleCancel()}>
+          <DrawerContent side="right">
+            <DrawerHeader className="text-left text-xl">
+              <DrawerTitle>Edit Tags & Interests</DrawerTitle>
+            </DrawerHeader>
+            <div className="px-4 space-y-4">
+              {/* Strengths Input */}
+              <div>
+                <label className="text-base font-medium text-foreground mb-1 block">Strengths</label>
+                <Input
+                  value={(editedData.strengths || []).join(", ")}
+                  onChange={(e) =>
+                    setEditedData({
+                      ...editedData,
+                      strengths: e.target.value.split(",").map(s => s.trim()).filter(s => s),
+                    })
+                  }
+                  placeholder="e.g., Organized, Creative, Problem-solving"
+                  className="text-base"
+                />
+                <p className="text-sm text-muted-foreground mt-1">Separate multiple items with commas</p>
+              </div>
+
+              {/* Interests Input */}
+              <div>
+                <label className="text-base font-medium text-foreground mb-1 block">Interests</label>
+                <Input
+                  value={(editedData.interests || []).join(", ")}
+                  onChange={(e) =>
+                    setEditedData({
+                      ...editedData,
+                      interests: e.target.value.split(",").map(s => s.trim()).filter(s => s),
+                    })
+                  }
+                  placeholder="e.g., Reading, Sports, Music"
+                  className="text-base"
+                />
+                <p className="text-sm text-muted-foreground mt-1">Separate multiple items with commas</p>
+              </div>
+
+              {/* Challenges Input */}
+              <div>
+                <label className="text-base font-medium text-foreground mb-1 block">Challenges</label>
+                <Input
+                  value={(editedData.challenges || []).join(", ")}
+                  onChange={(e) =>
+                    setEditedData({
+                      ...editedData,
+                      challenges: e.target.value.split(",").map(s => s.trim()).filter(s => s),
+                    })
+                  }
+                  placeholder="e.g., Time management, Focus"
+                  className="text-base"
+                />
+                <p className="text-sm text-muted-foreground mt-1">Separate multiple items with commas</p>
+              </div>
+            </div>
+            <DrawerFooter>
+              <Button onClick={() => handleSave("tags")} className="w-full">
+                Save Changes
+              </Button>
+              <DrawerClose asChild>
+                <Button variant="outline" className="w-full">
+                  Cancel
+                </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
 
       </div>
     </div>
