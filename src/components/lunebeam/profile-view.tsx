@@ -139,17 +139,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(fileName);
 
+      // Add cache-busting timestamp to force browser to reload new image
+      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+
       // Update profile with avatar URL
       const { error: updateError } = await supabase
         .from("profiles")
         .update({
-          avatar_url: publicUrl,
+          avatar_url: cacheBustedUrl,
         })
         .eq("user_id", profile.user_id);
       if (updateError) throw updateError;
       setProfile({
         ...profile,
-        avatar_url: publicUrl,
+        avatar_url: cacheBustedUrl,
       });
       toast({
         title: "Profile picture updated",
