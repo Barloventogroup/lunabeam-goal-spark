@@ -28,7 +28,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
   isListening
 }) => {
   return (
-    <Card className="bg-muted/30 border-dashed">
+    <Card className="bg-muted/30">
       <CardContent className="p-4 space-y-3">
         <div className="text-sm font-medium text-foreground mb-2">Accessibility Options</div>
         
@@ -95,7 +95,7 @@ export const ReEngagementPanel: React.FC<ReEngagementPanelProps> = ({
   onReminderToggle
 }) => {
   return (
-    <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+    <Card className="bg-gradient-to-r from-primary/5 to-secondary/5">
       <CardContent className="p-4 space-y-3">
         <div className="text-sm font-medium text-foreground mb-2">Your Progress</div>
         

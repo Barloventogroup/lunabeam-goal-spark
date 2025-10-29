@@ -27,7 +27,7 @@ export const FirstTimeReminder: React.FC<FirstTimeReminderProps> = ({ onNavigate
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20 shadow-soft">
+      <Card className="bg-gradient-to-r from-primary/5 to-accent/5 shadow-soft">
         <CollapsibleTrigger asChild>
           <CardContent className="p-4 cursor-pointer hover:bg-primary/5 transition-colors">
             <div className="flex items-center justify-between">

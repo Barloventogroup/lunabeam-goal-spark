@@ -50,7 +50,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
   onChevronClick,
 }) => {
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow relative">
+    <Card className="cursor-pointer hover:shadow-lg transition-shadow relative">
       <CardHeader className="pl-5 pr-4 py-4">
         <div className="flex justify-between items-center">
           <div className="flex-1 cursor-pointer pr-8" onClick={onCardClick}>

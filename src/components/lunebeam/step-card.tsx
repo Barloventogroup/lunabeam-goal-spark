@@ -93,7 +93,7 @@ export const StepCard: React.FC<StepCardProps> = ({
   const hasSubsteps = substepCount > 0;
 
   return (
-    <Card className={`relative transition-shadow hover:shadow-md ${isBlocked ? "opacity-50" : ""}`}>
+    <Card className={`relative transition-shadow hover:shadow-lg ${isBlocked ? "opacity-50" : ""}`}>
       {isBlocked && (
         <div className="absolute inset-0 bg-muted/80 backdrop-blur-[2px] rounded-lg z-10 flex items-center justify-center">
           <Badge variant="secondary" className="text-sm">

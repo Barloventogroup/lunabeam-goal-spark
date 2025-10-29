@@ -61,7 +61,7 @@ export const HabitTrackerCard: React.FC<HabitTrackerCardProps> = ({
   
   return (
     <>
-      <Card className="relative overflow-hidden border-2">
+      <Card className="relative overflow-hidden">
         {/* Streak Banner */}
         {currentStreak > 0 && (
           <StreakBanner 
