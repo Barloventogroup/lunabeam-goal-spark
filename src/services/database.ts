@@ -50,13 +50,19 @@ export const database = {
     return {
       user_id: data.user_id,
       first_name: data.first_name,
+      email: data.email,
       strengths: data.strengths || [],
       interests: data.interests || [],
       challenges: data.challenges || [],
       comm_pref: data.comm_pref as 'voice' | 'text',
       onboarding_complete: data.onboarding_complete ?? false,
       user_type: (data.user_type as 'admin' | 'individual' | 'supporter' | 'hybrid' | undefined),
-      created_by_supporter: data.created_by_supporter
+      created_by_supporter: data.created_by_supporter,
+      account_status: data.account_status,
+      claimed_at: data.claimed_at,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+      avatar_url: data.avatar_url
     };
   },
 

@@ -127,58 +127,88 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
     try {
       setUploading(true);
 
-      // Size limit (10MB)
-      const MAX_SIZE = 10 * 1024 * 1024;
-      if (blob.size > MAX_SIZE) {
+      // Get authenticated user ID
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error('Not authenticated');
+      }
+      const userId = user.id;
+
+      // Validate file size (max 5MB)
+      if (blob.size > 5 * 1024 * 1024) {
         toast({
           title: "File too large",
-          description: "Please select an image under 10MB.",
+          description: "Image must be smaller than 5MB.",
           variant: "destructive",
         });
         return;
       }
 
-      // Upload file to Supabase Storage
-      const fileName = `${profile.user_id}/avatar.${ext}`;
-      const inferredMime = contentType ?? (ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : ext === 'gif' ? 'image/gif' : ext === 'heic' || ext === 'heif' ? 'image/heic' : 'image/jpeg');
-      console.log('Avatar upload starting', { fileName, size: blob.size, ext, inferredMime });
-      const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, blob, {
-        upsert: true,
-        contentType: inferredMime,
-      });
+      // Validate file type
+      const lowerExt = ext.toLowerCase();
+      if (!["jpg", "jpeg", "png", "webp", "gif"].includes(lowerExt)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please use JPG, PNG, WEBP, or GIF",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const inferredMime = contentType ?? (
+        lowerExt === 'png' ? 'image/png' : 
+        lowerExt === 'webp' ? 'image/webp' : 
+        lowerExt === 'gif' ? 'image/gif' : 
+        'image/jpeg'
+      );
+
+      // Upload file to Supabase Storage using authenticated user ID
+      const fileName = `${userId}/avatar.${ext}`;
+      console.log('Avatar upload starting', { userId, fileName, size: blob.size, ext, inferredMime });
+      
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, blob, {
+          upsert: true,
+          contentType: inferredMime,
+        });
+      
       if (uploadError) throw uploadError;
       console.log('Avatar upload success', { fileName });
 
       // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(fileName);
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
 
-      // Store clean URL in database (cache-busting applied in UI)
-      const cleanUrl = publicUrl;
+      const cleanUrl = publicUrl.split('?')[0];
 
-      // Update profile with clean avatar URL
-      const { error: updateError } = await supabase
+      // Update profile with new avatar URL and get updated fields
+      const { data: updatedProfile, error: updateError } = await supabase
         .from("profiles")
         .update({ avatar_url: cleanUrl })
-        .eq("user_id", profile.user_id);
+        .eq("user_id", userId)
+        .select('avatar_url, updated_at')
+        .single();
+
       if (updateError) throw updateError;
 
-      // Update local state
-      setProfile({
-        ...profile,
-        avatar_url: cleanUrl,
+      // Update local state with fresh data
+      setProfile({ 
+        ...profile, 
+        avatar_url: updatedProfile.avatar_url,
+        updated_at: updatedProfile.updated_at
       });
 
       toast({
         title: "Profile picture updated",
         description: "Your new profile picture has been saved.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading avatar:", error);
       toast({
         title: "Error",
-        description: "Failed to upload profile picture. Please try again.",
+        description: error.message || "Failed to upload profile picture. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -200,16 +230,29 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         return;
       }
 
-      // Validate type and extension
-      const allowedExts = new Set(["jpg", "jpeg", "png", "gif", "webp", "heic", "heif"]);
+      // Get file extension
       const ext = file.name.split(".").pop()?.toLowerCase();
+
+      // Reject HEIC/HEIF on web
+      if (ext === 'heic' || ext === 'heif') {
+        toast({
+          title: "Format not supported",
+          description: "HEIC/HEIF format is not supported on web. Please convert to JPG or PNG first.",
+          variant: "destructive",
+        });
+        resetInput();
+        return;
+      }
+
+      // Validate type and extension
+      const allowedExts = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
       const isImageMime = file.type.startsWith("image/");
       const isAllowedExt = ext ? allowedExts.has(ext) : false;
 
       if (!isImageMime && !isAllowedExt) {
         toast({
           title: "Unsupported file",
-          description: "Please select an image (JPEG, PNG, GIF, WEBP, HEIC/HEIF).",
+          description: "Please select an image (JPEG, PNG, GIF, WEBP).",
           variant: "destructive",
         });
         resetInput();
