@@ -133,7 +133,7 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Fixed Header */}
-      <div className="flex-shrink-0 space-y-1 px-4 pt-5 pb-4 bg-background border-b border-border">
+      <div className="flex-shrink-0 space-y-4 px-4 pt-5 pb-4 bg-background border-b border-border">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as GoalsTab)} className="w-full">
           <TabsList className="w-full p-0 px-4 items-center justify-start overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide h-10">
             <TabsTrigger
