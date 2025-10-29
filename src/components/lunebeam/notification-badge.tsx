@@ -4,12 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { notificationsService } from '@/services/notificationsService';
 import { supabase } from '@/integrations/supabase/client';
-
 interface NotificationBadgeProps {
   onNavigateToNotifications: () => void;
   className?: string;
 }
-
 export const NotificationBadge: React.FC<NotificationBadgeProps> = ({
   onNavigateToNotifications,
   className = ""
@@ -25,50 +23,23 @@ export const NotificationBadge: React.FC<NotificationBadgeProps> = ({
       console.error('Error loading unread notifications count:', error);
     }
   };
-
   useEffect(() => {
     loadUnreadCount();
 
     // Set up real-time subscription for notifications
-    const channel = supabase
-      .channel('notification-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications'
-        },
-        () => {
-          // Reload unread count when notifications change
-          loadUnreadCount();
-        }
-      )
-      .subscribe();
-
+    const channel = supabase.channel('notification-updates').on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'notifications'
+    }, () => {
+      // Reload unread count when notifications change
+      loadUnreadCount();
+    }).subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
   }, []);
-
-  return (
-    <div className={`relative ${className}`}>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onNavigateToNotifications}
-        className="relative p-2 hover:bg-muted/80 transition-colors"
-      >
-        <Bell className="h-5 w-5 text-muted-foreground" />
-        {unreadCount > 0 && (
-          <Badge
-            variant="destructive"
-            className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs font-medium"
-          >
-            {unreadCount > 99 ? '99+' : unreadCount}
-          </Badge>
-        )}
-      </Button>
-    </div>
-  );
+  return <div className={`relative ${className}`}>
+      
+    </div>;
 };
