@@ -380,7 +380,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   return <>
       <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
         {/* Header */}
-      <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 pb-4 pt-4 bg-card/80 backdrop-blur border-b border-gray-200">
+      <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 pb-6 pt-4 bg-card/80 backdrop-blur border-b border-gray-200">
           <div className="flex items-center">
             <img src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" alt="Lunabeam logo" className="h-7 w-auto object-contain" />
           </div>
