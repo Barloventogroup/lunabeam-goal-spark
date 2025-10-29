@@ -146,7 +146,7 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
   if (showChat) {
     return (
       <div className="min-h-[100dvh] bg-background">
-        <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between border-b bg-card/80 backdrop-blur px-4 pb-4 pt-4">
+        <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between bg-card/80 backdrop-blur px-4 pb-4 pt-4">
           <button 
             onClick={() => setShowChat(false)}
             className="text-primary hover:text-primary/80 p-2 rounded-md hover:bg-muted transition-colors"
@@ -187,7 +187,7 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
 
       {/* Bottom tab bar - hidden during wizard */}
       {!isWizardActive && (
-      <div className="fixed left-0 right-0 bottom-safe bg-card backdrop-blur border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
+      <div className="fixed left-0 right-0 bottom-safe bg-card backdrop-blur shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
           <div className="flex items-center justify-around px-2 py-2">
             {tabs.map((tab) => {
               const Icon = tab.icon;
