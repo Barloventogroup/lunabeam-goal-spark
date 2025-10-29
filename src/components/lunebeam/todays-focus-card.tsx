@@ -74,7 +74,6 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
         {/* Today's Due Step */}
         {step && goal && (
           <div className="space-y-3">
-            <h5 className="text-sm font-semibold text-foreground">Due Today:</h5>
             <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onViewStep}>
               <CardHeader className="pb-3">
                 <h4 className="font-medium text-foreground text-base">
