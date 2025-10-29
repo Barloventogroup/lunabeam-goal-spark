@@ -358,7 +358,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         {/* Profile Information Card */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Profile Information</h3>
+            <h3 className="text-xl font-semibold">Profile Information</h3>
             {editingSection !== "basic" && (
               <Button
                 variant="ghost"
@@ -437,7 +437,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
 
         {/* Security Section */}
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold">Security</h3>
+          <h3 className="text-xl font-semibold">Security</h3>
           <Card>
             <CardContent className="space-y-4 pt-6">
             {editingSection === "password" ? (
@@ -503,7 +503,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
         {/* Tags Section */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Tags & Interests</h3>
+            <h3 className="text-xl font-semibold">Tags & Interests</h3>
             {editingSection !== "tags" && (
               <Button variant="outline" size="sm" onClick={() => handleStartEdit("tags")}>
                 <Edit className="h-4 w-4 mr-1" />
