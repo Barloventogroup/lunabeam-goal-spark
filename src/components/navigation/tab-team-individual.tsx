@@ -164,21 +164,22 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
                         <h4 className="text-sm font-semibold text-foreground truncate">
                           {supporter.profile?.first_name || "Support Team Member"}
                         </h4>
-                        {supporter.is_admin && (
-                          <Badge variant="default" className="text-xs bg-yellow-500 text-white">
-                            Admin
-                          </Badge>
-                        )}
                       </div>
 
                       <div className="flex items-center gap-2 mb-2">
                         <Badge className={`text-xs ${getRoleColor(supporter.role)}`}>
                           <span className="capitalize">{supporter.role}</span>
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          <Eye className="h-3 w-3 mr-1" />
-                          <span className="capitalize">{supporter.permission_level}</span>
-                        </Badge>
+                        {supporter.is_admin ? (
+                          <Badge variant="default" className="text-xs bg-yellow-500 text-white">
+                            Admin
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">
+                            <Eye className="h-3 w-3 mr-1" />
+                            <span className="capitalize">{supporter.permission_level}</span>
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>
