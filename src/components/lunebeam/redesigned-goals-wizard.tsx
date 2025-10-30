@@ -2067,7 +2067,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           <div className="space-y-2">
             <Textarea id="goal-title" placeholder="Name your new Goal" value={data.goalTitle} onChange={e => updateData({
             goalTitle: e.target.value
-          })} className="text-lg py-3 min-h-[48px] resize-none" rows={1} />
+          })} className="text-base py-3 min-h-[48px] resize-none" rows={1} />
           </div>
           
           {/* Browse Goals Card */}
@@ -2775,7 +2775,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <Label htmlFor="pmSkillName">Skill Name</Label>
             <Input id="pmSkillName" value={data.pmSkillName || ''} onChange={e => updateData({
             pmSkillName: e.target.value
-          })} placeholder="e.g., Making breakfast independently" className="text-lg" />
+          })} placeholder="e.g., Making breakfast independently" className="text-base" />
           </div>
 
           <div className="space-y-2 pt-2">

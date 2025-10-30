@@ -117,7 +117,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
     }
     switch (inputType) {
       case 'textarea':
-        return <Textarea ref={firstInputRef} value={value || ''} onChange={e => onChange(e.target.value)} rows={4} className="text-lg resize-none" placeholder="Start typing..." />;
+        return <Textarea ref={firstInputRef} value={value || ''} onChange={e => onChange(e.target.value)} rows={4} className="text-base resize-none" placeholder="Start typing..." />;
       case 'radio':
         return <RadioGroup value={String(value || '')} onValueChange={onChange}>
             <div className="space-y-3">

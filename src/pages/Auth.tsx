@@ -410,11 +410,11 @@ useEffect(() => {
           <form onSubmit={handleSubmit} className="space-y-4">
             
             <div className="space-y-2">
-              <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required placeholder="Enter your email" className="border-gray-500 focus:border-primary text-sm bg-[#E0E0E0]" />
+              <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required placeholder="Enter your email" className="border-gray-500 focus:border-primary text-base bg-white" />
             </div>
             
             <div className="space-y-2">
-              <Input id="password" name="password" type="password" value={formData.password} onChange={handleInputChange} required placeholder="Enter your password" minLength={6} className="border-gray-500 focus:border-primary text-sm bg-[#E0E0E0]" />
+              <Input id="password" name="password" type="password" value={formData.password} onChange={handleInputChange} required placeholder="Enter your password" minLength={6} className="border-gray-500 focus:border-primary text-base bg-white" />
             </div>
             
             {!isSignUp && <div className="mb-6 -mt-2 text-center">
