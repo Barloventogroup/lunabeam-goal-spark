@@ -113,7 +113,7 @@ export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData
             rows={3}
             autoFocus
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             Focus on the single most important thing needed to begin
           </p>
         </div>

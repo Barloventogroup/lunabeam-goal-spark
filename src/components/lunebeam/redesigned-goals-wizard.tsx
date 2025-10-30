@@ -2174,7 +2174,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <Input id="prerequisite-item" placeholder={text.step3.conditionalInput.placeholder} value={data.customPrerequisites || ''} onChange={e => updateData({
         customPrerequisites: e.target.value
       })} autoFocus />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-base text-muted-foreground">
               Focus on the single most important thing needed to begin
             </p>
           </div>} onBack={() => prevStep()} onContinue={() => nextStep()} required continueDisabled={data.hasPrerequisites && !data.customPrerequisites} hideHeader hideFooter />;
