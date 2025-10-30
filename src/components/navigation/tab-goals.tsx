@@ -264,7 +264,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
           </div>
         )}
 
-        <div className="p-4 flex justify-center">
+        <div className="p-4">
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "own" | "individual")}>
             <TabsList className="inline-flex w-auto mx-auto">
               <TabsTrigger value="own">Your Goals</TabsTrigger>
