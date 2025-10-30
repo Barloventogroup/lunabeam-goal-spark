@@ -678,7 +678,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                 <p className="text-base font-semibold text-foreground mb-1">
                   Recommended: {smartStartFreq}× per week
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-base text-muted-foreground">
                   {smartStartPlan.rationale}
                 </p>
                 {data.pmPracticePlan?.targetFrequency !== smartStartFreq && (
