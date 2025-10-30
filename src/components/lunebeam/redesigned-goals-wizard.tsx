@@ -2170,7 +2170,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }]} value={data.hasPrerequisites ? 'yes' : 'no'} onChange={value => updateData({
       hasPrerequisites: value === 'yes'
     })} expandOnValue="yes" expandedContent={<div className="space-y-2">
-            <Label htmlFor="prerequisite-item">{text.step3.conditionalInput.label}</Label>
+            <Label htmlFor="prerequisite-item" className="text-base">{text.step3.conditionalInput.label}</Label>
             <Input id="prerequisite-item" placeholder={text.step3.conditionalInput.placeholder} value={data.customPrerequisites || ''} onChange={e => updateData({
         customPrerequisites: e.target.value
       })} autoFocus />

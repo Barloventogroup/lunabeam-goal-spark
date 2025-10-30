@@ -100,7 +100,7 @@ export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData
       expandOnValue="no"
       expandedContent={
         <div className="space-y-2 pt-4 animate-in slide-in-from-top-2 duration-300">
-          <Label>What does {name} need?</Label>
+          <Label className="text-base">{name === 'you' ? 'What do you need?' : `What does ${name} need?`}</Label>
           <Textarea
             value={data.prerequisites?.needs || ''}
             onChange={(e) => updateData({
