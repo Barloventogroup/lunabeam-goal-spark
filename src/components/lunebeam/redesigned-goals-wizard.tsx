@@ -1997,7 +1997,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   };
   const renderStep0 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
-    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
+    return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col bg-muted/30">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">{text.step0.subtitle}</p>
