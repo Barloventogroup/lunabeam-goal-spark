@@ -2978,7 +2978,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} goalTitle={data.goalTitle} goalContext={levelContext} questionIcon="👥" questionText="Who can help you learn this skill?" helpText={helpText} inputType="custom" onBack={prevStep} onContinue={nextStep} continueDisabled={!pmSelectedHelperId && pmSelectedHelperId !== 'none'} hideHeader hideFooter>
         <div className="space-y-3">
           {/* Recommendation card for beginners */}
-          {skillLevel <= 2 && <Card className="shadow-sm">
+          {skillLevel <= 2 && <Card className="border-0 shadow-sm">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
