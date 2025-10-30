@@ -1894,7 +1894,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-base mb-1">{category.title}</h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-base text-muted-foreground line-clamp-2">
                           {category.description}
                         </p>
                       </div>
@@ -1973,7 +1973,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   <CardContent className="p-4">
                     <div className="space-y-2">
                       <h3 className="font-semibold text-base">{goal.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
+                      <p className="text-base text-muted-foreground leading-relaxed">
                         {goal.description}
                       </p>
                     </div>
