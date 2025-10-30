@@ -2999,7 +2999,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           {/* Conditionally render order based on skill level */}
           {skillLevel <= 2 ? <>
               {/* Helpers first for beginners */}
-              {userSupporters.length > 0 ? userSupporters.map(supporter => <Card key={supporter.id} className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === supporter.id ? "ring-2 ring-primary bg-primary/5" : "", shouldEmphasizeHelper && "ring-2 ring-primary/20")} onClick={() => setPMSelectedHelperId(supporter.id)}>
+              {userSupporters.length > 0 ? userSupporters.map(supporter => <Card key={supporter.id} className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === supporter.id ? "bg-primary/5 shadow-md" : "", shouldEmphasizeHelper && "shadow-md")} onClick={() => setPMSelectedHelperId(supporter.id)}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
@@ -3030,7 +3030,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </div>}
               
               {/* "On my own" last for beginners */}
-              <Card className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === 'none' ? "ring-2 ring-primary bg-primary/5" : "", shouldEmphasizeSolo && "ring-2 ring-primary/20", skillLevel <= 2 && "opacity-60 hover:opacity-100")} onClick={() => setPMSelectedHelperId('none')}>
+              <Card className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === 'none' ? "bg-primary/5 shadow-md" : "", shouldEmphasizeSolo && "shadow-md", skillLevel <= 2 && "opacity-60 hover:opacity-100")} onClick={() => setPMSelectedHelperId('none')}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
@@ -3048,7 +3048,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               </Card>
             </> : <>
               {/* "On my own" first for intermediate/advanced */}
-              <Card className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === 'none' ? "ring-2 ring-primary bg-primary/5" : "", shouldEmphasizeSolo && "ring-2 ring-primary/20")} onClick={() => setPMSelectedHelperId('none')}>
+              <Card className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === 'none' ? "bg-primary/5 shadow-md" : "", shouldEmphasizeSolo && "shadow-md")} onClick={() => setPMSelectedHelperId('none')}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
@@ -3066,7 +3066,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               </Card>
 
               {/* Helpers second */}
-              {userSupporters.length > 0 && userSupporters.map(supporter => <Card key={supporter.id} className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === supporter.id ? "ring-2 ring-primary bg-primary/5" : "", shouldEmphasizeHelper && "ring-2 ring-primary/20")} onClick={() => setPMSelectedHelperId(supporter.id)}>
+              {userSupporters.length > 0 && userSupporters.map(supporter => <Card key={supporter.id} className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === supporter.id ? "bg-primary/5 shadow-md" : "", shouldEmphasizeHelper && "shadow-md")} onClick={() => setPMSelectedHelperId(supporter.id)}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
