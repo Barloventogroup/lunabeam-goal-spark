@@ -266,26 +266,26 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
                 )}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 flex-1">
+                  <div className="flex-1">
+                    <div className="font-semibold text-foreground mb-0.5">
+                      {option.label}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {option.description}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
                     {isSelected && (
-                      <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-5 h-5 text-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     )}
-                    <div className="flex-1">
-                      <div className="font-semibold text-foreground mb-0.5">
-                        {option.label}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {option.description}
-                      </div>
-                    </div>
+                    {priority && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground flex-shrink-0">
+                        {priority}
+                      </span>
+                    )}
                   </div>
-                  {priority && (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground flex-shrink-0">
-                      {priority}
-                    </span>
-                  )}
                 </div>
               </button>
             );
