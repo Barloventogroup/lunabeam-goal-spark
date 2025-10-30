@@ -3242,8 +3242,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         Skill Assessment
                       </h4>
                       <div className="space-y-1.5">
-                        <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Starting Level:</span>{' '}
+                        <p className="text-base">
+                          <span className="text-muted-foreground text-base">Starting Level:</span>{' '}
                           <span className="font-semibold">
                             {(() => {
                         const {
@@ -3254,16 +3254,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       })()}
                           </span>
                         </p>
-                        <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Experience:</span>{' '}
+                        <p className="text-base">
+                          <span className="text-muted-foreground text-base">Experience:</span>{' '}
                           <span className="font-medium">{getExperienceLabel(data.pmAssessment.q1_experience)}</span>
                         </p>
-                        <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Confidence:</span>{' '}
+                        <p className="text-base">
+                          <span className="text-muted-foreground text-base">Confidence:</span>{' '}
                           <span className="font-medium">{getConfidenceLabel(data.pmAssessment.q2_confidence)}</span>
                         </p>
-                        <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Help Needed:</span>{' '}
+                        <p className="text-base">
+                          <span className="text-muted-foreground text-base">Help Needed:</span>{' '}
                           <span className="font-medium">{getHelpNeededLabel(data.pmAssessment.q3_help_needed)}</span>
                         </p>
                       </div>
@@ -3273,20 +3273,20 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[160px]">
                     <h4 className="text-sm font-semibold text-blue-700 mb-2">The Goal</h4>
                     <div className="space-y-1.5">
-                      <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Goal:</span>{' '}
+                      <p className="text-base">
+                        <span className="text-muted-foreground text-base">Goal:</span>{' '}
                         <span className="font-semibold">{data.goalTitle}</span>
                       </p>
-                      {categoryLabel && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Category:</span>{' '}
+                      {categoryLabel && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Category:</span>{' '}
                           <span className="font-medium">{categoryLabel}</span>
                         </p>}
-                      {motivationLabel && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Why:</span>{' '}
+                      {motivationLabel && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Why:</span>{' '}
                           <span className="font-medium">{truncate(motivationLabel, 40)}</span>
                         </p>}
-                      {goalTypeLabel && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Type:</span>{' '}
+                      {goalTypeLabel && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Type:</span>{' '}
                           <span className="font-medium">{goalTypeLabel}</span>
                         </p>}
                     </div>
@@ -3297,26 +3297,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     <h4 className="text-sm font-semibold text-orange-700 mb-2">Challenges</h4>
                     <div className="space-y-1.5">
                       {/* Show barriers priorities */}
-                      {data.barriers?.priority1 && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">1st Priority:</span>{' '}
+                      {data.barriers?.priority1 && <p className="text-base">
+                          <span className="text-muted-foreground text-base">1st Priority:</span>{' '}
                           <span className="font-medium">
                             {challengeAreas.find(c => c.id === data.barriers.priority1)?.label}
                           </span>
                         </p>}
-                      {data.barriers?.priority2 && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">2nd Priority:</span>{' '}
+                      {data.barriers?.priority2 && <p className="text-base">
+                          <span className="text-muted-foreground text-base">2nd Priority:</span>{' '}
                           <span className="font-medium">
                             {challengeAreas.find(c => c.id === data.barriers.priority2)?.label}
                           </span>
                         </p>}
                       {/* Show barriers details text */}
-                      {data.barriers?.details && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Details:</span>{' '}
+                      {data.barriers?.details && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Details:</span>{' '}
                           <span className="font-medium">{truncate(data.barriers.details, 50)}</span>
                         </p>}
                       {/* Show prerequisites status */}
-                      {data.prerequisites && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Prerequisites:</span>{' '}
+                      {data.prerequisites && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Prerequisites:</span>{' '}
                           <span className="font-medium">
                             {data.prerequisites.ready ? 'Ready to start' : 'Need some things'}
                             {!data.prerequisites.ready && data.prerequisites.needs && ` - ${truncate(data.prerequisites.needs, 30)}`}
@@ -3329,32 +3329,32 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[160px]">
                     <h4 className="text-sm font-semibold text-emerald-700 mb-2">When & How Often</h4>
                     <div className="space-y-1.5">
-                      {data.startDate && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Starts:</span>{' '}
+                      {data.startDate && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Starts:</span>{' '}
                           <span className="font-medium">{new Date(data.startDate).toLocaleDateString()}</span>
                         </p>}
-                      {data.endDate && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Ends:</span>{' '}
+                      {data.endDate && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Ends:</span>{' '}
                           <span className="font-medium">{new Date(data.endDate).toLocaleDateString()}</span>
                         </p>}
-                      {frequencyLabel && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Frequency:</span>{' '}
+                      {frequencyLabel && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Frequency:</span>{' '}
                           <span className="font-medium">{frequencyLabel}</span>
                         </p>}
-                      {abbreviatedDays && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Days:</span>{' '}
+                      {abbreviatedDays && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Days:</span>{' '}
                           <span className="font-medium">{abbreviatedDays}</span>
                         </p>}
-                      {(data.timeOfDay || data.customTime) && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Time:</span>{' '}
+                      {(data.timeOfDay || data.customTime) && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Time:</span>{' '}
                           <span className="font-medium">{data.customTime ? formatDisplayTime(data.customTime) : data.timeOfDay}</span>
                         </p>}
-                      {data.pmPracticePlan?.startTime && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Practice Time:</span>{' '}
+                      {data.pmPracticePlan?.startTime && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Practice Time:</span>{' '}
                           <span className="font-medium">{formatDisplayTime(data.pmPracticePlan.startTime)}</span>
                         </p>}
-                      {data.pmPracticePlan?.sendAdvanceReminder && data.pmPracticePlan?.startTime && <p className="text-sm">
-                          <span className="text-muted-foreground text-xs">Reminder:</span>{' '}
+                      {data.pmPracticePlan?.sendAdvanceReminder && data.pmPracticePlan?.startTime && <p className="text-base">
+                          <span className="text-muted-foreground text-base">Reminder:</span>{' '}
                           <span className="font-medium">10 min before ({(() => {
                         const [hours, minutes] = data.pmPracticePlan.startTime.split(':');
                         const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
@@ -3375,34 +3375,34 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     <div className="space-y-1.5">
                       {/* PM flow: show helper */}
                       {data.pmHelper && <>
-                          <p className="text-sm">
-                            <span className="text-muted-foreground text-xs">Learning:</span>{' '}
+                          <p className="text-base">
+                            <span className="text-muted-foreground text-base">Learning:</span>{' '}
                             <span className="font-medium">
                               {data.pmHelper.helperId === 'none' ? 'Independently' : 'With support'}
                             </span>
                           </p>
-                          {data.pmHelper.helperId !== 'none' && <p className="text-sm">
-                              <span className="text-muted-foreground text-xs">Helper:</span>{' '}
+                          {data.pmHelper.helperId !== 'none' && <p className="text-base">
+                              <span className="text-muted-foreground text-base">Helper:</span>{' '}
                               <span className="font-medium">{data.pmHelper.helperName || 'Helper'}</span>
                             </p>}
                         </>}
                       
                       {/* Habit flow: show support context and supporters */}
                       {!data.pmHelper && <>
-                          <p className="text-sm">
-                            <span className="text-muted-foreground text-xs">Working:</span>{' '}
+                          <p className="text-base">
+                            <span className="text-muted-foreground text-base">Working:</span>{' '}
                             <span className="font-medium">
                               {data.supportContext === 'alone' ? 'Independently' : supportContextLabel || 'With support'}
                             </span>
                           </p>
-                          {data.supportContext !== 'alone' && data.primarySupporterName && <p className="text-sm">
-                              <span className="text-muted-foreground text-xs">Supporter:</span>{' '}
+                          {data.supportContext !== 'alone' && data.primarySupporterName && <p className="text-base">
+                              <span className="text-muted-foreground text-base">Supporter:</span>{' '}
                               <span className="font-medium">
                                 {data.primarySupporterName}
                               </span>
                             </p>}
-                          {data.selectedSupporters && data.selectedSupporters.length > 1 && <p className="text-sm">
-                              <span className="text-muted-foreground text-xs">Additional:</span>{' '}
+                          {data.selectedSupporters && data.selectedSupporters.length > 1 && <p className="text-base">
+                              <span className="text-muted-foreground text-base">Additional:</span>{' '}
                               <span className="font-medium">
                                 {data.selectedSupporters.length - 1} 
                                 {data.selectedSupporters.length - 1 === 1 ? ' supporter' : ' supporters'}
