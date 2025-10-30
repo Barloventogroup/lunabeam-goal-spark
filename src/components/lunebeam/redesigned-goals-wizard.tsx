@@ -1758,14 +1758,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderCategoriesModal = () => {
     return (
       <div className="flex flex-col h-full">
-        <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-6 pt-6">
-          <SheetClose asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <X className="h-5 w-5" />
-              <span className="sr-only">Close</span>
-            </Button>
-          </SheetClose>
-          <div className="flex-1 text-left">
+        <SheetHeader className="border-b pb-4 px-6 pt-6">
+          <div className="text-left">
             <SheetTitle>Browse Goal Ideas</SheetTitle>
             <SheetDescription>
               Pick a category to explore example goals
