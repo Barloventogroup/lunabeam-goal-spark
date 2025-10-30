@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { HeaderTabsContainer } from '@/components/ui/header-tabs-container';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useGoalDetail, goalDetailKeys, useDeleteGoalMutation } from '@/hooks/useGoalDetail';
@@ -1094,20 +1095,24 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
 
   // Loading skeleton (Phase 6)
   if (isLoading || !data) {
-    return <div className="min-h-[100dvh] bg-background px-4 py-6 space-y-6">
-        <div className="flex items-center gap-2">
-          <BackButton onClick={onBack} />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-8 w-64" />
-            <div className="flex gap-2">
-              <Skeleton className="h-5 w-20" />
-              <Skeleton className="h-5 w-24" />
-              <Skeleton className="h-5 w-32" />
+    return <div className="flex flex-col h-screen bg-background">
+        <div className="flex-shrink-0 space-y-4 px-4 pt-5 pb-4 bg-background border-b border-border">
+          <div className="flex items-center gap-2">
+            <BackButton onClick={onBack} />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-8 w-64" />
+              <div className="flex gap-2">
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-5 w-32" />
+              </div>
             </div>
           </div>
+          <Skeleton className="h-10 w-full" />
         </div>
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-96 w-full" />
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <Skeleton className="h-96 w-full" />
+        </div>
       </div>;
   }
 
@@ -1121,12 +1126,11 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
     onBack();
     return null;
   }
-  return <div className="min-h-[100dvh] bg-background pt-safe-content">
-      <div className="px-4 pt-6 pb-6 space-y-6">
-        {/* Removed full-screen loading overlay - now using inline message in Recommended Steps tab */}
+  return <div className="flex flex-col h-screen bg-background">
+      {/* Removed full-screen loading overlay - now using inline message in Recommended Steps tab */}
 
-        {/* Error state with retry button */}
-      {generationError && <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+      {/* Error state with retry button */}
+      {generationError && <div className="absolute top-0 left-0 right-0 z-50 mx-4 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg shadow-lg">
           <div className="flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
@@ -1157,85 +1161,90 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
           </div>
         </div>}
 
-      {/* Header */}
-      <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-2 pt-4 bg-card">
-        <div className="flex items-start gap-4">
-          <BackButton onClick={onBack} />
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-foreground capitalize">{goal.title}</h1>
-            <div className="flex flex-wrap items-center gap-2 mt-1">
-              <Badge variant={getStatusColor(goal.status)}>
-                {goal.status === 'active' ? 'Active' : goal.status}
-              </Badge>
-              {goal.domain && getDomainDisplayName(goal.domain) && getDomainDisplayName(goal.domain) !== 'General' && <Badge variant="outline" className="capitalize">
-                  {getDomainDisplayName(goal.domain)}
-                </Badge>}
-              {goal.due_date && <Badge variant="outline" className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  <span className="truncate">Due {formatDate(goal.due_date)}</span>
-                </Badge>}
-              
-              {/* Ownership badges */}
-              {currentUser && goal.owner_id !== currentUser.id && ownerProfile && <Badge variant="outline" className="text-xs">
-                  <Users className="h-3 w-3 mr-1" />
-                  For {ownerProfile.first_name}
-                </Badge>}
-              {currentUser && goal.created_by !== currentUser.id && creatorProfile && goal.owner_id === currentUser.id && <Badge variant="outline" className="text-xs">
-                  <UserCheck className="h-3 w-3 mr-1" />
-                  Created by {creatorProfile.first_name}
-                </Badge>}
-              
-              {/* Progressive Mastery skill level badge */}
-              {(goal as any)?.metadata?.skill_assessment && <Badge variant="secondary" className="text-xs">
-                  <Brain className="h-3 w-3 mr-1" />
-                  {(goal as any).metadata.skill_assessment.level_label?.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Unknown'}
-                  {(goal as any).metadata.skill_assessment.skipped && <span className="ml-1 text-muted-foreground">(Self-assessed)</span>}
-                </Badge>}
-              
-              {/* Habit goal generation status */}
-              {goal.frequency_per_week && goal.frequency_per_week > 0 && (goal as any)?.metadata?.totalPlannedOccurrences && <Badge variant="secondary" className="text-xs">
-                  Day {Math.floor(steps.length / 4)} of {(goal as any).metadata.totalPlannedOccurrences} generated
-                </Badge>}
-              
-              {/* Progress metrics - next to badges */}
-              {progress && <div className="flex items-center gap-2 flex-shrink-0">
-                  <CircularProgress value={progress.percent || 0} size={32} strokeWidth={3} color="#2393CC" />
-                  <div className="text-lg font-bold text-primary">
-                    {progress.percent}%
-                  </div>
-                </div>}
+      {/* Unified Header and Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col h-full">
+        <HeaderTabsContainer
+          tabs={
+            <TabsList className="w-full p-0 px-4 items-center justify-start overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide h-10">
+              <TabsTrigger value="summary" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
+                Summary
+              </TabsTrigger>
+              <TabsTrigger value="steps" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
+                Steps
+                {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && <Badge className="ml-2 flex items-center h-5 py-0 px-2 text-[11px] leading-none" variant="secondary">
+                    {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length}
+                  </Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
+                Results
+              </TabsTrigger>
+              {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && <TabsTrigger value="supporter" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[140px]">
+                  Supporter Setup
+                  <Badge className="ml-2 flex items-center h-5 py-0 px-2 text-[11px] leading-none" variant="secondary">
+                    {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
+                  </Badge>
+                </TabsTrigger>}
+            </TabsList>
+          }
+        >
+          {/* Header Content */}
+          <div className="flex items-start gap-4">
+            <BackButton onClick={onBack} />
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-bold text-foreground capitalize">{goal.title}</h1>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                <Badge variant={getStatusColor(goal.status)}>
+                  {goal.status === 'active' ? 'Active' : goal.status}
+                </Badge>
+                {goal.domain && getDomainDisplayName(goal.domain) && getDomainDisplayName(goal.domain) !== 'General' && <Badge variant="outline" className="capitalize">
+                    {getDomainDisplayName(goal.domain)}
+                  </Badge>}
+                {goal.due_date && <Badge variant="outline" className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    <span className="truncate">Due {formatDate(goal.due_date)}</span>
+                  </Badge>}
+                
+                {/* Ownership badges */}
+                {currentUser && goal.owner_id !== currentUser.id && ownerProfile && <Badge variant="outline" className="text-xs">
+                    <Users className="h-3 w-3 mr-1" />
+                    For {ownerProfile.first_name}
+                  </Badge>}
+                {currentUser && goal.created_by !== currentUser.id && creatorProfile && goal.owner_id === currentUser.id && <Badge variant="outline" className="text-xs">
+                    <UserCheck className="h-3 w-3 mr-1" />
+                    Created by {creatorProfile.first_name}
+                  </Badge>}
+                
+                {/* Progressive Mastery skill level badge */}
+                {(goal as any)?.metadata?.skill_assessment && <Badge variant="secondary" className="text-xs">
+                    <Brain className="h-3 w-3 mr-1" />
+                    {(goal as any).metadata.skill_assessment.level_label?.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Unknown'}
+                    {(goal as any).metadata.skill_assessment.skipped && <span className="ml-1 text-muted-foreground">(Self-assessed)</span>}
+                  </Badge>}
+                
+                {/* Habit goal generation status */}
+                {goal.frequency_per_week && goal.frequency_per_week > 0 && (goal as any)?.metadata?.totalPlannedOccurrences && <Badge variant="secondary" className="text-xs">
+                    Day {Math.floor(steps.length / 4)} of {(goal as any).metadata.totalPlannedOccurrences} generated
+                  </Badge>}
+                
+                {/* Progress metrics - next to badges */}
+                {progress && <div className="flex items-center gap-2 flex-shrink-0">
+                    <CircularProgress value={progress.percent || 0} size={32} strokeWidth={3} color="#2393CC" />
+                    <div className="text-lg font-bold text-primary">
+                      {progress.percent}%
+                    </div>
+                  </div>}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </HeaderTabsContainer>
 
-      {/* Tabbed Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full -mt-4">
-        <TabsList className="w-full p-0 px-4 items-center justify-start overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide h-10">
-          <TabsTrigger value="summary" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
-            Summary
-          </TabsTrigger>
-          <TabsTrigger value="steps" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
-            Steps
-            {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && <Badge className="ml-2 flex items-center h-5 py-0 px-2 text-[11px] leading-none" variant="secondary">
-                {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length}
-              </Badge>}
-          </TabsTrigger>
-          <TabsTrigger value="calendar" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
-            Results
-          </TabsTrigger>
-          {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && <TabsTrigger value="supporter" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[140px]">
-              Supporter Setup
-              <Badge className="ml-2 flex items-center h-5 py-0 px-2 text-[11px] leading-none" variant="secondary">
-                {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
-              </Badge>
-            </TabsTrigger>}
-        </TabsList>
-
-        <TabsContent value="summary" className="mt-4 px-4">
-          {activeTab === 'summary' && <div className="max-w-4xl mx-auto px-2 sm:px-4">
-              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                <GoalFactorSummary goal={goal} wizardContext={(() => {
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto" data-scroll-container>
+          <div className="px-4 py-4">
+            <TabsContent value="summary" className="mt-0">
+              {activeTab === 'summary' && <div className="max-w-4xl mx-auto">
+                  <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                    <GoalFactorSummary goal={goal} wizardContext={(() => {
               const existingContext = (goal as any).metadata?.wizardContext;
               if (existingContext && existingContext.goalType === 'progressive_mastery' && existingContext.pmAssessment) {
                 return existingContext;
@@ -1319,26 +1328,26 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
               }
               return existingContext;
             })()} />
-              </Suspense>
-            </div>}
-        </TabsContent>
+                  </Suspense>
+                </div>}
+            </TabsContent>
 
-        <TabsContent value="calendar" className="mt-4 px-4">
-          {activeTab === 'calendar' && <div className="max-w-4xl mx-auto px-2 sm:px-4">
-              <div className="space-y-2">
-                <h3 className="text-xl font-semibold flex items-center gap-2">
-                  <span>Results</span>
-                </h3>
-                <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                  <GoalCalendarView goal={goal} steps={steps} />
-                </Suspense>
-              </div>
-            </div>}
-        </TabsContent>
+            <TabsContent value="calendar" className="mt-0">
+              {activeTab === 'calendar' && <div className="max-w-4xl mx-auto">
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-semibold flex items-center gap-2">
+                      <span>Results</span>
+                    </h3>
+                    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                      <GoalCalendarView goal={goal} steps={steps} />
+                    </Suspense>
+                  </div>
+                </div>}
+            </TabsContent>
 
-        <TabsContent value="steps" className="mt-4 px-4">
-          {activeTab === 'steps' && <div className="max-w-4xl mx-auto px-2 sm:px-4">
-              {generatingSteps ? <Card>
+            <TabsContent value="steps" className="mt-0">
+              {activeTab === 'steps' && <div className="max-w-4xl mx-auto">
+                  {generatingSteps ? <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-center py-12 text-center">
                     <div className="space-y-3">
@@ -1382,15 +1391,17 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
                   <span>Recommended Steps</span>
                 </h3>
                 <RecommendedStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} onOpenStepChat={handleOpenStepChat} />
-              </div>}
-            </div>}
-        </TabsContent>
+                  </div>}
+                </div>}
+            </TabsContent>
 
-        {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && <TabsContent value="supporter" className="mt-4 px-4">
-            {activeTab === 'supporter' && <div className="max-w-4xl mx-auto px-2 sm:px-4">
-                <SupporterSetupStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} />
-              </div>}
-          </TabsContent>}
+            {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && <TabsContent value="supporter" className="mt-0">
+                {activeTab === 'supporter' && <div className="max-w-4xl mx-auto">
+                    <SupporterSetupStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} />
+                  </div>}
+              </TabsContent>}
+          </div>
+        </div>
       </Tabs>
 
       {/* Step Chat Modal */}
@@ -1401,6 +1412,5 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
 
       {/* Goal Edit Modal */}
       <GoalEditModal isOpen={showEditModal} onOpenChange={setShowEditModal} goal={goal} onGoalUpdate={handleGoalUpdate} />
-      </div>
     </div>;
 };

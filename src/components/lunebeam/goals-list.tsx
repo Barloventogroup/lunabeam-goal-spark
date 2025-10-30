@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { HeaderTabsContainer } from "@/components/ui/header-tabs-container";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { goalsService } from "@/services/goalsService";
@@ -133,143 +134,145 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Fixed Header */}
-      <div className="flex-shrink-0 space-y-4 px-4 pt-5 pb-4 bg-background border-b border-border">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as GoalsTab)} className="w-full">
-          <TabsList className="w-full p-0 px-4 items-center justify-start overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide h-10">
-            <TabsTrigger
-              value="all"
-              className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]"
-            >
-              All
-            </TabsTrigger>
-            <TabsTrigger
-              value="active"
-              className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]"
-            >
-              Active
-            </TabsTrigger>
-            <TabsTrigger
-              value="completed"
-              className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]"
-            >
-              Completed
-            </TabsTrigger>
-            <TabsTrigger
-              value="created-by-me"
-              className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]"
-            >
-              By Me
-            </TabsTrigger>
-            <TabsTrigger
-              value="created-by-others"
-              className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[90px]"
-            >
-              By Others
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {!isMobile && totalPages > 1 && (
-          <div className="flex items-center justify-between min-h-[36px]">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="flex items-center gap-1"
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as GoalsTab)} className="w-full flex flex-col h-full">
+        <HeaderTabsContainer
+          tabs={
+            <TabsList className="w-full p-0 px-4 items-center justify-start overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide h-10">
+              <TabsTrigger
+                value="all"
+                className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]"
               >
-                <ChevronLeft className="h-4 w-4" />
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="flex items-center gap-1"
+                All
+              </TabsTrigger>
+              <TabsTrigger
+                value="active"
+                className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]"
               >
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="text-sm text-muted-foreground flex items-center">
-              Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto" data-scroll-container>
-        <div className="px-4 py-4">
-          {filteredGoals.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-8">
-                <h3>
-                  {activeTab === "completed"
-                    ? "No completed goals yet"
-                    : activeTab === "active"
-                      ? "No active goals yet"
-                      : activeTab === "created-by-me"
-                        ? "No goals created by you yet"
-                        : activeTab === "created-by-others"
-                          ? "No goals created by others yet"
-                          : "No goals yet"}
-                </h3>
-                <p className="text-body-sm text-muted-foreground mb-4">
-                  {filteredGoals.length === 0 && goals.length > 0
-                    ? "No goals match your current filter."
-                    : activeTab === "completed"
-                      ? "Complete some goals to see them here!"
-                      : activeTab === "created-by-me"
-                        ? "Create your first goal to get started!"
-                        : activeTab === "created-by-others"
-                          ? "Goals created by your supporters will appear here."
-                          : "Create your first goal to get started on your journey!"}
-                </p>
-                {(activeTab === "active" || activeTab === "all" || activeTab === "created-by-me") && (
-                  <div className="space-y-2">
-                    <Button onClick={() => onNavigate("create-goal")} variant="outline">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Goal
-                    </Button>
-                    <p className="text-xs text-muted-foreground">Or suggest a goal for someone you support</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {currentGoals.map((goal) => {
-                const isOwnGoal = goal.owner_id === currentUser?.id;
-                const isCreatedByMe = goal.created_by === currentUser?.id;
-                const ownerName = allProfiles[goal.owner_id]?.first_name || "Unknown";
-                const creatorName = allProfiles[goal.created_by]?.first_name || "Unknown";
-
-                return (
-                  <GoalCard
-                    key={goal.id}
-                    goal={goal}
-                    isOwnGoal={isOwnGoal}
-                    isCreatedByMe={isCreatedByMe}
-                    ownerName={ownerName}
-                    creatorName={creatorName}
-                    onCardClick={() => {
-                      setSelectedGoalId(goal.id);
-                      setIsSheetOpen(true);
-                    }}
-                    onChevronClick={() => {
-                      setSelectedGoalId(goal.id);
-                      setIsSheetOpen(true);
-                    }}
-                  />
-                );
-              })}
+                Active
+              </TabsTrigger>
+              <TabsTrigger
+                value="completed"
+                className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]"
+              >
+                Completed
+              </TabsTrigger>
+              <TabsTrigger
+                value="created-by-me"
+                className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[80px]"
+              >
+                By Me
+              </TabsTrigger>
+              <TabsTrigger
+                value="created-by-others"
+                className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[90px]"
+              >
+                By Others
+              </TabsTrigger>
+            </TabsList>
+          }
+        >
+          {!isMobile && totalPages > 1 && (
+            <div className="flex items-center justify-between min-h-[36px]">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-1"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="text-sm text-muted-foreground flex items-center">
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredGoals.length)} of {filteredGoals.length} goals
+              </div>
             </div>
           )}
+        </HeaderTabsContainer>
+
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto" data-scroll-container>
+          <div className="px-4 py-4">
+            {filteredGoals.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <h3>
+                    {activeTab === "completed"
+                      ? "No completed goals yet"
+                      : activeTab === "active"
+                        ? "No active goals yet"
+                        : activeTab === "created-by-me"
+                          ? "No goals created by you yet"
+                          : activeTab === "created-by-others"
+                            ? "No goals created by others yet"
+                            : "No goals yet"}
+                  </h3>
+                  <p className="text-body-sm text-muted-foreground mb-4">
+                    {filteredGoals.length === 0 && goals.length > 0
+                      ? "No goals match your current filter."
+                      : activeTab === "completed"
+                        ? "Complete some goals to see them here!"
+                        : activeTab === "created-by-me"
+                          ? "Create your first goal to get started!"
+                          : activeTab === "created-by-others"
+                            ? "Goals created by your supporters will appear here."
+                            : "Create your first goal to get started on your journey!"}
+                  </p>
+                  {(activeTab === "active" || activeTab === "all" || activeTab === "created-by-me") && (
+                    <div className="space-y-2">
+                      <Button onClick={() => onNavigate("create-goal")} variant="outline">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Your First Goal
+                      </Button>
+                      <p className="text-xs text-muted-foreground">Or suggest a goal for someone you support</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {currentGoals.map((goal) => {
+                  const isOwnGoal = goal.owner_id === currentUser?.id;
+                  const isCreatedByMe = goal.created_by === currentUser?.id;
+                  const ownerName = allProfiles[goal.owner_id]?.first_name || "Unknown";
+                  const creatorName = allProfiles[goal.created_by]?.first_name || "Unknown";
+
+                  return (
+                    <GoalCard
+                      key={goal.id}
+                      goal={goal}
+                      isOwnGoal={isOwnGoal}
+                      isCreatedByMe={isCreatedByMe}
+                      ownerName={ownerName}
+                      creatorName={creatorName}
+                      onCardClick={() => {
+                        setSelectedGoalId(goal.id);
+                        setIsSheetOpen(true);
+                      }}
+                      onChevronClick={() => {
+                        setSelectedGoalId(goal.id);
+                        setIsSheetOpen(true);
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </Tabs>
 
       {/* Sheet for Goal Details */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
