@@ -202,8 +202,8 @@ export const StepCard: React.FC<StepCardProps> = ({
 
             {/* Description */}
             {(step.explainer || step.notes) && (
-              <div className="space-y-1">
-                <p className="text-base font-medium text-foreground">Description</p>
+              <div className="mb-4">
+                <p className="text-base font-medium text-foreground mb-3">Description</p>
                 <p className="text-base text-muted-foreground leading-relaxed break-words">
                   {step.explainer || step.notes}
                 </p>
@@ -212,24 +212,24 @@ export const StepCard: React.FC<StepCardProps> = ({
 
             {/* Goal name */}
             {goalName && (
-              <div className="space-y-1 mt-4">
-                <p className="text-base font-medium text-foreground">Goal</p>
+              <div className="mt-4 mb-4">
+                <p className="text-base font-medium text-foreground mb-3">Goal</p>
                 <p className="text-base text-muted-foreground">{goalName}</p>
               </div>
             )}
 
             {/* Created by */}
             {createdBy && (
-              <div className="space-y-1 mt-4">
-                <p className="text-base font-medium text-foreground">Created by</p>
+              <div className="mt-4">
+                <p className="text-base font-medium text-foreground mb-3">Created by</p>
                 <p className="text-base text-muted-foreground">{createdBy}</p>
               </div>
             )}
 
             {/* Created date */}
             {step.created_at && (
-              <div className="space-y-1 mt-4">
-                <p className="text-base font-medium text-foreground">Created</p>
+              <div className="mt-4">
+                <p className="text-base font-medium text-foreground mb-3">Created</p>
                 <p className="text-base text-muted-foreground">{format(new Date(step.created_at), "MMM d, yyyy")}</p>
               </div>
             )}
