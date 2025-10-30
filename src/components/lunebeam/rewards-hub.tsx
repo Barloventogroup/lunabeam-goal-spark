@@ -38,8 +38,8 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
           </CardContent>
         </Card>
 
-        {/* Reward Bank */}
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToRewardBank}>
+        {/* Reward Bank - Supporter Only */}
+        {showAdminFeatures && <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToRewardBank}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -52,7 +52,7 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </div>
           </CardContent>
-        </Card>
+        </Card>}
 
         {/* Manage Rewards - Admin Only */}
         {showAdminFeatures && <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToManageRewards}>
