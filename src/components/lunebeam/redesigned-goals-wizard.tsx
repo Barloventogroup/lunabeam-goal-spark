@@ -2103,7 +2103,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </h1>
             
             {/* Habit Card */}
-            <Card className={cn("cursor-pointer hover:shadow-lg transition-all", data.trackingMode === 'habit' && "bg-primary/5")} onClick={() => {
+            <Card className={cn("cursor-pointer shadow-sm hover:shadow-md transition-all", data.trackingMode === 'habit' && "bg-primary/5")} onClick={() => {
             updateData({
               trackingMode: 'habit',
               goalType: 'reminder'
@@ -2121,14 +2121,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     </p>
                   </div>
                   {data.trackingMode === 'habit' && (
-                    <Check className="h-5 w-5 text-primary flex-shrink-0 animate-fade-in" />
+                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
                   )}
                 </div>
               </CardContent>
             </Card>
             
             {/* Skill Card */}
-            <Card className={cn("cursor-pointer hover:shadow-lg transition-all", data.trackingMode === 'skill' && "bg-primary/5")} onClick={() => {
+            <Card className={cn("cursor-pointer shadow-sm hover:shadow-md transition-all", data.trackingMode === 'skill' && "bg-primary/5")} onClick={() => {
             updateData({
               trackingMode: 'skill',
               goalType: 'progressive_mastery'
@@ -2146,7 +2146,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     </p>
                   </div>
                   {data.trackingMode === 'skill' && (
-                    <Check className="h-5 w-5 text-primary flex-shrink-0 animate-fade-in" />
+                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
                   )}
                 </div>
               </CardContent>
