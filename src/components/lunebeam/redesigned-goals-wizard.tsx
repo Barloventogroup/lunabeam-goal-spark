@@ -2820,7 +2820,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <div onClick={() => handleSimplifiedChoice('confident')} className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50">
                 <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <div className="flex-1 space-y-1">
-                  <span className="font-semibold text-left block">I'm already confident doing this</span>
+                  <span className="font-semibold text-left block">{isOther ? "They're already confident doing this" : "I'm already confident doing this"}</span>
                   <p className="text-sm text-muted-foreground text-left">
                     {isOther ? 'They can' : 'I can'} do this independently without help
                   </p>
@@ -2830,7 +2830,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <div onClick={() => handleSimplifiedChoice('learning')} className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50">
                 <GraduationCap className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <div className="flex-1 space-y-1">
-                  <span className="font-semibold text-left block">I'm still learning this skill</span>
+                  <span className="font-semibold text-left block">{isOther ? "They're still learning this skill" : "I'm still learning this skill"}</span>
                   <p className="text-sm text-muted-foreground text-left">
                     {isOther ? 'They need' : 'I need'} practice and support to improve
                   </p>
