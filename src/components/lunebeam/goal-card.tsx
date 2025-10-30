@@ -55,7 +55,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
         <div className="flex justify-between items-center">
           <div className="flex-1 cursor-pointer pr-8" onClick={onCardClick}>
             <div className="flex flex-col gap-3">
-              <h4 className="font-medium text-sm capitalize">{goal.title}</h4>
+              <h4 className="font-medium text-base capitalize">{goal.title}</h4>
               {goal.due_date && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar className="h-4 w-4" />
