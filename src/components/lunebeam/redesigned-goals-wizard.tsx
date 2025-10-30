@@ -2974,15 +2974,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const shouldEmphasizeHelper = recommendation === 'helper';
     const shouldEmphasizeSolo = recommendation === 'solo';
     const levelContext = assessment ? `Starting level: ${getSkillLevelDisplay(assessment).emoji} ${getSkillLevelDisplay(assessment).label}` : undefined;
-    const helpText = skillLevel <= 2 ? "We strongly recommend selecting a helper to guide you" : skillLevel >= 4 ? "You're ready to practice independently! Helpers are optional for feedback." : "Choose how you'd like to approach this goal";
+    const helpText = skillLevel >= 4 ? "You're ready to practice independently! Helpers are optional for feedback." : "Choose how you'd like to approach this goal";
     return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} goalTitle={data.goalTitle} goalContext={levelContext} questionIcon="👥" questionText="Who can help you learn this skill?" helpText={helpText} inputType="custom" onBack={prevStep} onContinue={nextStep} continueDisabled={!pmSelectedHelperId && pmSelectedHelperId !== 'none'} hideHeader hideFooter>
         <div className="space-y-3">
           {/* Recommendation card for beginners */}
-          {skillLevel <= 2 && <Card className="border-0 shadow-sm">
+          {skillLevel <= 2 && <Card className="border-2 border-accent bg-accent/5 shadow-md">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <UserPlus className="h-5 w-5 text-primary" />
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
+                    <UserPlus className="h-5 w-5 text-accent-foreground" />
                   </div>
                   <div className="flex-1">
                     <p className="text-base font-semibold text-foreground mb-1">
