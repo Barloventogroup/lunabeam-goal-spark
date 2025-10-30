@@ -2021,11 +2021,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             {/* Habit Card */}
             <Card 
               className={cn(
-                "cursor-pointer hover:shadow-md transition-all border-2",
-                data.trackingMode === 'habit' 
-                  ? "border-primary bg-primary/5" 
-                  : "border-border hover:border-primary/50"
-              )} 
+                "cursor-pointer hover:shadow-lg transition-all",
+                data.trackingMode === 'habit' && "bg-primary/5"
+              )}
               onClick={() => {
                 updateData({ trackingMode: 'habit', goalType: 'reminder' });
               }}
@@ -2048,11 +2046,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             {/* Skill Card */}
             <Card 
               className={cn(
-                "cursor-pointer hover:shadow-md transition-all border-2",
-                data.trackingMode === 'skill' 
-                  ? "border-primary bg-primary/5" 
-                  : "border-border hover:border-primary/50"
-              )} 
+                "cursor-pointer hover:shadow-lg transition-all",
+                data.trackingMode === 'skill' && "bg-primary/5"
+              )}
               onClick={() => {
                 updateData({ trackingMode: 'skill', goalType: 'progressive_mastery' });
               }}
@@ -2075,11 +2071,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             {/* State Card */}
             <Card 
               className={cn(
-                "cursor-pointer hover:shadow-md transition-all border-2",
-                data.trackingMode === 'state' 
-                  ? "border-primary bg-primary/5" 
-                  : "border-border hover:border-primary/50"
-              )} 
+                "cursor-pointer hover:shadow-lg transition-all",
+                data.trackingMode === 'state' && "bg-primary/5"
+              )}
               onClick={() => {
                 updateData({ trackingMode: 'state', goalType: 'reminder' });
               }}
