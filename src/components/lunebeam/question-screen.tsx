@@ -131,7 +131,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                     {option.icon && !option.avatar && <span className="text-2xl flex-shrink-0 mt-0.5">{option.icon}</span>}
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-base">{option.label}</div>
-                      {option.description && <p className="text-sm text-muted-foreground mt-1">
+                      {option.description && <p className="text-base text-muted-foreground mt-1">
                           {option.description}
                         </p>}
                     </div>
@@ -156,7 +156,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                       {option.icon && !option.avatar && <span className="text-2xl flex-shrink-0 mt-0.5">{option.icon}</span>}
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-base">{option.label}</div>
-                        {option.description && <p className="text-sm text-muted-foreground mt-1">
+                        {option.description && <p className="text-base text-muted-foreground mt-1">
                             {option.description}
                           </p>}
                       </div>
@@ -183,7 +183,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                   {option.icon && <span className="text-xl flex-shrink-0">{option.icon}</span>}
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-base">{option.label}</div>
-                    {option.description && <p className="text-sm text-muted-foreground mt-1">
+                    {option.description && <p className="text-base text-muted-foreground mt-1">
                         {option.description}
                       </p>}
                   </div>
