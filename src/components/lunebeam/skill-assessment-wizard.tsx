@@ -299,25 +299,28 @@ export const SkillAssessmentWizard: React.FC<SkillAssessmentWizardProps> = ({
           className="space-y-2"
         >
           {question.options.map((option, index) => (
-            <Label
-              key={index}
-              htmlFor={`${question.key}-${index}`}
-              className={cn(
-                'flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all',
-                'hover:border-primary/50 hover:bg-primary/5',
-                currentValue === index + 1 && 'border-primary bg-primary/10'
-              )}
-            >
+            <div key={index} className="relative">
               <RadioGroupItem 
                 value={(index + 1).toString()} 
                 id={`${question.key}-${index}`}
+                className="peer sr-only"
               />
-              <span className="text-xl">{option.emoji}</span>
-              <div className="flex-1">
-                <div className="font-medium text-sm">{option.label}</div>
-                <div className="text-xs text-muted-foreground">{option.description}</div>
-              </div>
-            </Label>
+              <Label
+                htmlFor={`${question.key}-${index}`}
+                className={cn(
+                  'flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-all shadow-md',
+                  'hover:shadow-lg hover:bg-accent/50',
+                  'peer-data-[state=checked]:bg-primary/5',
+                  'peer-focus-visible:ring-2 peer-focus-visible:ring-primary'
+                )}
+              >
+                <span className="text-2xl flex-shrink-0 mt-0.5">{option.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-base">{option.label}</div>
+                  <div className="text-sm text-muted-foreground mt-1">{option.description}</div>
+                </div>
+              </Label>
+            </div>
           ))}
         </RadioGroup>
       </div>
