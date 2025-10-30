@@ -690,6 +690,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     toast
   } = useToast();
 
+  // Show frequency suggestion as toast
+  useEffect(() => {
+    if (showFrequencySuggestion && data.frequencySuggestion && !data.frequencySuggestionAccepted) {
+      toast({
+        title: "💡 Tip",
+        description: `Based on your challenges, we suggest starting with ${data.frequencySuggestion.frequency} ${data.frequencySuggestion.frequency === 1 ? 'day' : 'days'} per week. ${data.frequencySuggestion.rationale}`,
+        duration: 8000,
+      });
+      setShowFrequencySuggestion(false);
+    }
+  }, [showFrequencySuggestion, data.frequencySuggestion, data.frequencySuggestionAccepted, toast]);
+
   // Check if current user actually supports anyone
   useEffect(() => {
     const checkSupportsAnyone = async () => {
@@ -2255,8 +2267,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <Card 
                 key={challenge.id} 
                 className={cn(
-                  "cursor-pointer transition-all border-2 relative", 
-                  isSelected ? "border-primary bg-accent" : "border-border hover:border-primary/50 hover:bg-accent/50"
+                  "cursor-pointer transition-all relative shadow-md", 
+                  isSelected ? "bg-primary/5 ring-2 ring-primary" : "hover:shadow-lg hover:bg-accent/50"
                 )} 
                 onClick={() => handleChallengeToggle(challenge.id)}
               >
@@ -2344,58 +2356,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               How often will {actuallySupportsAnyone ? (data.supportedPersonName || 'they') : 'you'} practice or perform this habit?
             </p>
 
-            {/* Smart frequency suggestion */}
-            {showFrequencySuggestion && data.frequencySuggestion && !data.frequencySuggestionAccepted && (
-              <Card className="bg-blue-50 border-blue-200 animate-in fade-in slide-in-from-top-2 duration-300">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Sparkles className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="font-semibold text-blue-900">Recommended Start</p>
-                      <p className="text-sm text-blue-700 mt-1">
-                        Based on your challenges, we suggest starting with {data.frequencySuggestion.frequency} {data.frequencySuggestion.frequency === 1 ? 'day' : 'days'} per week. {data.frequencySuggestion.rationale}
-                      </p>
-                      <div className="flex gap-2 mt-3">
-                        <Button 
-                          size="sm" 
-                          onClick={() => {
-                            const dayOptions = [
-                              ['mon'],
-                              ['mon', 'thu'],
-                              ['mon', 'wed', 'fri'],
-                              ['mon', 'wed', 'fri', 'sat'],
-                              ['mon', 'tue', 'wed', 'thu', 'fri'],
-                              ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
-                              ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-                            ];
-                            const suggestedDays = dayOptions[data.frequencySuggestion!.frequency - 1] || [];
-                            updateData({ 
-                              selectedDays: suggestedDays,
-                              frequency: data.frequencySuggestion!.frequency,
-                              frequencySuggestionAccepted: true
-                            });
-                            setShowFrequencySuggestion(false);
-                          }}
-                        >
-                          Use This
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => {
-                            setShowFrequencySuggestion(false);
-                            updateData({ frequencySuggestionAccepted: false });
-                          }}
-                        >
-                          I'll Choose
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            
             {/* Quick select options */}
             <div className="grid grid-cols-3 gap-2">
               <Button
