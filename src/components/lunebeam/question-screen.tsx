@@ -223,7 +223,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
 
           {/* Help Text */}
           {helpText && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-base text-muted-foreground">
               {helpText}
             </p>
           )}
