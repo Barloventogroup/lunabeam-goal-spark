@@ -123,7 +123,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
             <div className="space-y-3">
               {options.map(option => <div key={String(option.value)} className="relative">
                   <RadioGroupItem value={String(option.value)} id={String(option.value)} className="peer sr-only" />
-                  <Label htmlFor={String(option.value)} className={cn('flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all', 'hover:border-primary/50 hover:bg-accent/50', 'peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-accent', 'peer-focus-visible:ring-2 peer-focus-visible:ring-primary')}>
+                  <Label htmlFor={String(option.value)} className={cn('flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-all shadow-md', 'hover:shadow-lg hover:bg-accent/50', 'peer-data-[state=checked]:bg-primary/5', 'peer-focus-visible:ring-2 peer-focus-visible:ring-primary')}>
                     {option.avatar && <Avatar className="h-8 w-8 flex-shrink-0">
                         <AvatarImage src={option.avatar} />
                         <AvatarFallback>{option.label[0]}</AvatarFallback>
@@ -145,7 +145,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
               <div className="space-y-3">
                 {options.map(option => <div key={String(option.value)} className="relative">
                     <RadioGroupItem value={String(option.value)} id={String(option.value)} className="peer sr-only" />
-                    <Label htmlFor={String(option.value)} className={cn('flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all', 'hover:border-primary/50 hover:bg-accent/50', 'peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-accent', 'peer-focus-visible:ring-2 peer-focus-visible:ring-primary')}>
+                    <Label htmlFor={String(option.value)} className={cn('flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-all shadow-md', 'hover:shadow-lg hover:bg-accent/50', 'peer-data-[state=checked]:bg-primary/5', 'peer-focus-visible:ring-2 peer-focus-visible:ring-primary')}>
                       {option.avatar && <Avatar className="h-8 w-8 flex-shrink-0">
                           <AvatarImage src={option.avatar} />
                           <AvatarFallback>{option.label[0]}</AvatarFallback>
@@ -168,7 +168,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
       case 'checkbox':
         return <div className="space-y-3">
             {options.map(option => <div key={String(option.value)} className="relative">
-                <div className={cn('flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all', 'hover:border-primary/50 hover:bg-accent/50', Array.isArray(value) && value.includes(option.value) ? 'border-primary bg-accent' : 'border-border')} onClick={() => {
+                <div className={cn('flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-all shadow-md', 'hover:shadow-lg hover:bg-accent/50', Array.isArray(value) && value.includes(option.value) ? 'bg-primary/5' : '')} onClick={() => {
               const currentValues = Array.isArray(value) ? value : [];
               const newValues = currentValues.includes(option.value) ? currentValues.filter(v => v !== option.value) : [...currentValues, option.value];
               onChange(newValues);
