@@ -740,12 +740,6 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
               </Button>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground text-center">
-            per week
-          </p>
-          <p className="text-sm text-muted-foreground text-center mt-4">
-            We'll help you build up gradually to this frequency
-          </p>
         </div>
 
         {/* Scroll Indicator - shows when frequency selected but no start date */}
@@ -999,9 +993,6 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
               </ScrollArea>
             </SheetContent>
           </Sheet>
-            <p className="text-xs text-muted-foreground">
-              💡 Leave open-ended if you want to practice indefinitely
-            </p>
           </div>
 
           {/* Calculate duration in weeks if both dates selected */}
