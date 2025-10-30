@@ -3054,41 +3054,41 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             <div className="space-y-3">
               <div
                 onClick={() => handleSimplifiedChoice('confident')}
-                className="w-full p-4 flex flex-col items-start gap-2 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50"
+                className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50"
               >
-                <div className="flex items-center gap-2 w-full">
-                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold text-left">I'm already confident doing this</span>
+                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-1">
+                  <span className="font-semibold text-left block">I'm already confident doing this</span>
+                  <p className="text-sm text-muted-foreground text-left">
+                    {isOther ? 'They can' : 'I can'} do this independently without help
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground text-left">
-                  {isOther ? 'They can' : 'I can'} do this independently without help
-                </p>
               </div>
 
               <div
                 onClick={() => handleSimplifiedChoice('learning')}
-                className="w-full p-4 flex flex-col items-start gap-2 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50"
+                className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50"
               >
-                <div className="flex items-center gap-2 w-full">
-                  <GraduationCap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold text-left">I'm still learning this skill</span>
+                <GraduationCap className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-1">
+                  <span className="font-semibold text-left block">I'm still learning this skill</span>
+                  <p className="text-sm text-muted-foreground text-left">
+                    {isOther ? 'They need' : 'I need'} practice and support to improve
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground text-left">
-                  {isOther ? 'They need' : 'I need'} practice and support to improve
-                </p>
               </div>
 
               <div
                 onClick={() => setCurrentStep(5)}
-                className="w-full p-4 flex flex-col items-start gap-2 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50"
+                className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50"
               >
-                <div className="flex items-center gap-2 w-full">
-                  <ClipboardList className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold text-left">Let me answer detailed questions</span>
+                <ClipboardList className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-1">
+                  <span className="font-semibold text-left block">Let me answer detailed questions</span>
+                  <p className="text-sm text-muted-foreground text-left">
+                    I want to provide more specific information (3 questions)
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground text-left">
-                  I want to provide more specific information (3 questions)
-                </p>
               </div>
             </div>
           </div>
