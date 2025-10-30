@@ -2931,6 +2931,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     // Get skill level from the correct source based on goalType
     const assessment = data.goalType === 'progressive_mastery' ? data.pmAssessment : data.pmSkillAssessment;
     const skillLevel = assessment?.calculatedLevel || 1;
+    const isForOther = data.recipient === 'other';
+    const recipientName = data.supportedPersonName || 'they';
 
     // Determine recommended option based on skill level
     const getRecommendation = () => {
@@ -2952,8 +2954,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const shouldEmphasizeHelper = recommendation === 'helper';
     const shouldEmphasizeSolo = recommendation === 'solo';
     const levelContext = assessment ? `Starting level: ${getSkillLevelDisplay(assessment).emoji} ${getSkillLevelDisplay(assessment).label}` : undefined;
-    const helpText = skillLevel >= 4 ? "You're ready to practice independently! Helpers are optional for feedback." : "Choose how you'd like to approach this goal";
-    return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} goalTitle={data.goalTitle} goalContext={levelContext} questionIcon="👥" questionText="Who can help you learn this skill?" helpText={helpText} inputType="custom" onBack={prevStep} onContinue={nextStep} continueDisabled={!pmSelectedHelperId && pmSelectedHelperId !== 'none'} hideHeader hideFooter>
+    const helpText = skillLevel >= 4 
+      ? isForOther 
+        ? `${recipientName} is ready to practice independently! Helpers are optional for feedback.`
+        : "You're ready to practice independently! Helpers are optional for feedback."
+      : isForOther
+        ? `Choose how you'd like ${recipientName} to approach this goal`
+        : "Choose how you'd like to approach this goal";
+    const questionText = isForOther 
+      ? `Who can help ${recipientName} learn this skill?`
+      : "Who can help you learn this skill?";
+    return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} goalTitle={data.goalTitle} goalContext={levelContext} questionIcon="👥" questionText={questionText} helpText={helpText} inputType="custom" onBack={prevStep} onContinue={nextStep} continueDisabled={!pmSelectedHelperId && pmSelectedHelperId !== 'none'} hideHeader hideFooter>
         <div className="space-y-3">
           {/* Recommendation card for beginners */}
           {skillLevel <= 2 && <Card className="border-2 border-accent bg-accent/5 shadow-sm">
@@ -2967,7 +2978,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       Recommended: Work with a helper
                     </p>
                     <p className="text-base text-muted-foreground">
-                      Since you're just starting out, having guidance will help you learn faster and more safely.
+                      {isForOther 
+                        ? `Since ${recipientName} is just starting out, having guidance will help ${recipientName} learn faster and more safely.`
+                        : "Since you're just starting out, having guidance will help you learn faster and more safely."
+                      }
                     </p>
                   </div>
                 </div>
@@ -3003,7 +3017,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                               {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs flex-shrink-0">Recommended</Badge>}
                             </div>
                             <div className="text-base text-muted-foreground">
-                              {skillLevel <= 2 ? "Will guide you step-by-step" : skillLevel === 3 ? "Can help accelerate your progress" : "Optional: Get Feedback From Me"}
+                              {skillLevel <= 2 
+                                ? isForOther 
+                                  ? `Will guide ${recipientName} step-by-step` 
+                                  : "Will guide you step-by-step"
+                                : skillLevel === 3 
+                                  ? isForOther
+                                    ? `Can help accelerate ${recipientName}'s progress`
+                                    : "Can help accelerate your progress"
+                                  : "Optional: Get Feedback From Me"
+                              }
                             </div>
                           </div>
                         </div>
@@ -3022,18 +3045,28 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </div>
               )}
               
-              {/* "On my own" last for beginners */}
               <Card className={cn("cursor-pointer transition-all shadow-sm", pmSelectedHelperId === 'none' ? "bg-primary/5" : "", skillLevel <= 2 && "opacity-60 hover:opacity-100")} onClick={() => setPMSelectedHelperId('none')}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
                     <div className="text-left flex-1">
                       <div className="font-medium flex items-center gap-2">
-                        On my own
+                        {isForOther ? `${recipientName} will work on this alone` : "On my own"}
                         {shouldEmphasizeSolo && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
                       </div>
                       <div className="text-base text-muted-foreground">
-                        {skillLevel >= 4 ? "Perfect for your skill level - practice independently" : skillLevel === 3 ? "You can manage this on your own" : "⚠️ Consider starting with a helper first"}
+                        {skillLevel >= 4 
+                          ? isForOther
+                            ? `Perfect for ${recipientName}'s skill level - practice independently`
+                            : "Perfect for your skill level - practice independently"
+                          : skillLevel === 3 
+                            ? isForOther
+                              ? `${recipientName} can manage this on their own`
+                              : "You can manage this on your own"
+                            : isForOther
+                              ? `⚠️ Consider starting ${recipientName} with a helper first`
+                              : "⚠️ Consider starting with a helper first"
+                        }
                       </div>
                     </div>
                   </div>
@@ -3047,11 +3080,22 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
                     <div className="text-left flex-1">
                       <div className="font-medium flex items-center gap-2">
-                        On my own
+                        {isForOther ? `${recipientName} will work on this alone` : "On my own"}
                         {shouldEmphasizeSolo && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
                       </div>
                       <div className="text-base text-muted-foreground">
-                        {skillLevel >= 4 ? "Perfect for your skill level - practice independently" : skillLevel === 3 ? "You can manage this on your own" : "I'll practice independently (may take longer)"}
+                        {skillLevel >= 4 
+                          ? isForOther
+                            ? `Perfect for ${recipientName}'s skill level - practice independently`
+                            : "Perfect for your skill level - practice independently"
+                          : skillLevel === 3 
+                            ? isForOther
+                              ? `${recipientName} can manage this on their own`
+                              : "You can manage this on your own"
+                            : isForOther
+                              ? `${recipientName} will practice independently (may take longer)`
+                              : "I'll practice independently (may take longer)"
+                        }
                       </div>
                     </div>
                   </div>
@@ -3086,7 +3130,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                               {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs flex-shrink-0">Recommended</Badge>}
                             </div>
                             <div className="text-base text-muted-foreground">
-                              {skillLevel <= 2 ? "Will guide you step-by-step" : skillLevel === 3 ? "Can help accelerate your progress" : "Optional: Get feedback from me"}
+                              {skillLevel <= 2 
+                                ? isForOther 
+                                  ? `Will guide ${recipientName} step-by-step` 
+                                  : "Will guide you step-by-step"
+                                : skillLevel === 3 
+                                  ? isForOther
+                                    ? `Can help accelerate ${recipientName}'s progress`
+                                    : "Can help accelerate your progress"
+                                  : "Optional: Get feedback from me"
+                              }
                             </div>
                           </div>
                         </div>
