@@ -1902,7 +1902,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderBrowseModal = () => {
     return (
       <Sheet open={showBrowseModal} onOpenChange={setShowBrowseModal}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl p-0 overflow-hidden">
+        <SheetContent side="right" className="w-full sm:max-w-full p-0 overflow-hidden">
           {modalView === 'categories' ? renderCategoriesModal() : renderExampleGoalsModal()}
         </SheetContent>
       </Sheet>
