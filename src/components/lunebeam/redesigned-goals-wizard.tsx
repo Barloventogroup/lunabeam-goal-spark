@@ -1758,16 +1758,13 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderCategoriesModal = () => {
     return (
       <div className="flex flex-col h-full">
-        <SheetHeader className="border-b pb-4 px-6 pt-6">
-          <div className="text-left">
-            <SheetTitle>Browse Goal Ideas</SheetTitle>
-            <SheetDescription>
-              Pick a category to explore example goals
-            </SheetDescription>
+        <div className="fixed left-0 right-0 top-0 z-40 bg-card h-16 border-b">
+          <div className="flex h-16 items-center px-4">
+            <h1 className="text-2xl font-bold flex-1">Browse Goal Ideas</h1>
           </div>
-        </SheetHeader>
+        </div>
 
-        <ScrollArea className="flex-1 px-6 py-4">
+        <ScrollArea className="flex-1 px-6 pt-20 pb-4">
           <div className="grid grid-cols-1 gap-3">
             {categories.map((category) => {
               return (
@@ -1809,31 +1806,28 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
     return (
       <div className="flex flex-col h-full">
-        <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-6 pt-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => {
-              setModalView('categories');
-              setSelectedCategoryForModal(null);
-            }}
-          >
-            <ArrowLeft className="h-5 w-5" />
-            <span className="sr-only">Back to categories</span>
-          </Button>
-          <div className="flex-1 text-left">
-            <SheetTitle className="flex items-center gap-2">
+        <div className="fixed left-0 right-0 top-0 z-40 bg-card h-16 border-b">
+          <div className="flex h-16 items-center gap-3 px-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0"
+              onClick={() => {
+                setModalView('categories');
+                setSelectedCategoryForModal(null);
+              }}
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Back to categories</span>
+            </Button>
+            <h1 className="text-2xl font-bold flex-1 flex items-center gap-2">
               <span>{selectedCategoryForModal.emoji}</span>
               {selectedCategoryForModal.title}
-            </SheetTitle>
-            <SheetDescription>
-              {selectedCategoryForModal.description}
-            </SheetDescription>
+            </h1>
           </div>
-        </SheetHeader>
+        </div>
 
-        <ScrollArea className="flex-1 px-6 py-4">
+        <ScrollArea className="flex-1 px-6 pt-20 pb-4">
           <div className="space-y-3">
             {exampleGoals.map((goal) => {
               const getBadge = () => {
