@@ -775,7 +775,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </SheetTrigger>
-          <SheetContent side="right" className="w-full sm:max-w-md p-0">
+          <SheetContent side="bottom" className="w-full sm:max-w-md p-0 mx-auto rounded-t-2xl max-h-[90vh]">
             <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-4 pt-6">
               <SheetClose asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -937,7 +937,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </SheetTrigger>
-          <SheetContent side="right" className="w-full sm:max-w-md p-0">
+          <SheetContent side="bottom" className="w-full sm:max-w-md p-0 mx-auto rounded-t-2xl max-h-[90vh]">
             <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-4 pt-6">
               <SheetClose asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
