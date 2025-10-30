@@ -2988,7 +2988,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     <p className="text-base font-semibold text-foreground mb-1">
                       Recommended: Work with a helper
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-base text-muted-foreground">
                       Since you're just starting out, having guidance will help you learn faster and more safely.
                     </p>
                   </div>
