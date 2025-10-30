@@ -277,11 +277,6 @@ export const GoalsList: React.FC<GoalsListProps> = ({ onNavigate, refreshTrigger
       {/* Sheet for Goal Details */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent side="right" className="w-screen sm:max-w-none overflow-y-auto p-0">
-          <div className="sticky top-0 bg-background z-10 border-b p-4">
-            <SheetHeader>
-              <SheetTitle>Goal Details</SheetTitle>
-            </SheetHeader>
-          </div>
           {selectedGoalId && (
             <GoalDetailV2
               goalId={selectedGoalId}
