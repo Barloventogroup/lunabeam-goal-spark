@@ -133,6 +133,7 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
   const level = data.pmAssessment?.calculatedLevel || 3;
   const levelLabel = data.pmAssessment?.levelLabel || 'Developing';
   const levelEmojis = ['🌱', '📚', '🚀', '⭐', '🏆'];
+  const { toast } = useToast();
   
   const levelContext = `Starting Level: ${levelLabel} ${levelEmojis[level - 1]}`;
   
@@ -217,6 +218,17 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
     return null;
   };
 
+  // Show suggestion toast when level is 5
+  React.useEffect(() => {
+    if (level === 5) {
+      toast({
+        title: "💡 Suggestion",
+        description: "You're already independent with this! Consider using a Habit goal instead to track consistency.",
+        duration: 8000,
+      });
+    }
+  }, [level, toast]);
+
   return (
     <QuestionScreen
       currentStep={currentStep}
@@ -235,32 +247,6 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
         <p className="text-sm text-muted-foreground text-center mb-6">
           Identifying barriers helps create a personalized practice plan that works around your challenges
         </p>
-
-        {level === 5 && (
-          <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 mb-6">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <p className="font-semibold text-blue-900 dark:text-blue-100">💡 Suggestion</p>
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    You're already independent with this! Consider using a Habit goal instead to track consistency.
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      onSwitchToHabit?.();
-                    }}
-                    className="mt-2"
-                  >
-                    Switch to Habit Goal
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
         
         {/* Challenge Options */}
         <div className="space-y-3 mb-6">
@@ -272,11 +258,12 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
               <button
                 key={option.id}
                 onClick={() => handlePriorityToggle(option.id)}
-                className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                className={cn(
+                  "w-full text-left p-4 rounded-lg transition-all shadow-sm hover:shadow-md",
                   isSelected 
-                    ? 'border-primary bg-primary/5' 
-                    : 'border-border bg-card hover:border-primary/50'
-                }`}
+                    ? 'bg-primary/5' 
+                    : 'bg-card'
+                )}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 flex-1">
@@ -307,7 +294,7 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
 
         {/* Tell us more */}
         <div className="space-y-2 pt-2">
-          <Label>Tell us more</Label>
+          <Label className="text-base">Tell us more</Label>
           <Textarea
             value={(barriers as any).details || ''}
             onChange={(e) => updateData({ 
