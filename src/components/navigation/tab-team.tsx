@@ -23,6 +23,7 @@ import { AssignEmailModal } from '../lunebeam/assign-email-modal';
 import { InviteSupportersCard } from '../lunebeam/invite-supporters-card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useStore } from '@/store/useStore';
 interface SupporterWithProfile extends Supporter {
   profile?: {
     first_name: string;
@@ -59,6 +60,7 @@ export const TabTeam: React.FC = () => {
   const {
     toast
   } = useToast();
+  const { userContext } = useStore();
   const [supporters, setSupporters] = useState<SupporterWithProfile[]>([]);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [pendingRequests, setPendingRequests] = useState<SupporterInvite[]>([]);
@@ -1026,7 +1028,8 @@ export const TabTeam: React.FC = () => {
           </Card>
           )}
 
-          {/* Community Members Table */}
+          {/* Community Members Table - Hidden for supporters */}
+          {userContext?.userType === 'individual' && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
@@ -1128,9 +1131,10 @@ export const TabTeam: React.FC = () => {
                 </Table>}
             </CardContent>
           </Card>
+          )}
 
-          {/* Goal Maintenance Section - Only for admins with potentially misassigned goals */}
-          {misassignedGoals.length > 0 && (
+          {/* Goal Maintenance Section - Only for individuals with potentially misassigned goals */}
+          {userContext?.userType === 'individual' && misassignedGoals.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
