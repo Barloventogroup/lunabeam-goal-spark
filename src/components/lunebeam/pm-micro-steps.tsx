@@ -505,7 +505,7 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
       questionText={`How much help ${name === 'you' ? 'do you need' : `does ${name} need`} right now?`}
       inputType="radio"
       options={[
-        { value: 1, label: "Full help - do it for me", icon: '👥👥', description: 'Someone else does it' },
+        { value: 1, label: "Full help - do it for me", icon: '🆘', description: 'Someone else does it' },
         { value: 2, label: "A lot - step-by-step guidance", icon: '👥', description: 'Guide through each step' },
         { value: 3, label: "Some help - available if stuck", icon: '🤝', description: 'Be nearby for questions' },
         { value: 4, label: "A little - just check my work", icon: '👋', description: 'Review when done' },
