@@ -1158,7 +1158,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
         </div>}
 
       {/* Header */}
-      <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
+      <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-2 pt-4 bg-card">
         <div className="flex items-start gap-4">
           <BackButton onClick={onBack} />
           <div className="flex-1 min-w-0">
@@ -1210,7 +1210,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       </div>
 
       {/* Tabbed Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-3">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-1">
         <TabsList className="w-full p-0 px-4 items-center justify-start overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide h-10">
           <TabsTrigger value="summary" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
             Summary
@@ -1232,7 +1232,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
             </TabsTrigger>}
         </TabsList>
 
-        <TabsContent value="summary" className="mt-4 px-4">
+        <TabsContent value="summary" className="mt-3 px-4">
           {activeTab === 'summary' && <div className="max-w-4xl mx-auto px-2 sm:px-4">
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>
                 <GoalFactorSummary goal={goal} wizardContext={(() => {
