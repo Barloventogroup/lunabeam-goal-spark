@@ -58,7 +58,7 @@ export const ComprehensiveGoalEngine: React.FC<ComprehensiveGoalEngineProps> = (
             {goals.map((goal, index) => (
               <Card 
                 key={index}
-                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-2 hover:border-primary/30"
+                className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
                 onClick={() => handleGoalSelect(goal)}
               >
                 <CardContent className="p-4">
