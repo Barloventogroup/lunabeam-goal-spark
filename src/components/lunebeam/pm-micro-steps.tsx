@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon, ChevronRight, ChevronLeft, Clock } from 'lucide-react';
+import { Sparkles, Target, ArrowLeft, ArrowRight, CalendarIcon, ChevronRight, ChevronLeft, Clock, Calendar as CalendarLucide } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { TimeWheelPicker } from '@/components/ui/time-wheel-picker';
 import { Switch } from '@/components/ui/switch';
@@ -672,7 +672,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-accent-foreground" />
+                <CalendarLucide className="h-5 w-5 text-accent-foreground" />
               </div>
               <div className="flex-1">
                 <p className="text-base font-semibold text-foreground mb-1">
