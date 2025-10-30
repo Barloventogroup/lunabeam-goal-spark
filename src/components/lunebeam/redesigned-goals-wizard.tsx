@@ -2999,35 +2999,51 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           {/* Conditionally render order based on skill level */}
           {skillLevel <= 2 ? <>
               {/* Helpers first for beginners */}
-              {userSupporters.length > 0 ? userSupporters.map(supporter => <Card key={supporter.id} className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === supporter.id ? "bg-primary/5 shadow-md" : "", shouldEmphasizeHelper && "shadow-md")} onClick={() => setPMSelectedHelperId(supporter.id)}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
-                        <Avatar className="w-8 h-8">
-                          <AvatarImage src={supporter.profile?.avatar_url || undefined} />
-                          <AvatarFallback className="text-xs">
-                            {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="text-left flex-1">
-                          <div className="font-medium flex items-center gap-2">
-                            {supporter.name}
-                            {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
-                          </div>
-                          <div className="text-base text-muted-foreground capitalize">
-                            {skillLevel <= 2 ? "Will guide you step-by-step" : skillLevel === 3 ? "Can help accelerate your progress" : "Optional: Get Feedback From Me"}
+              {userSupporters.length > 0 ? (
+                <div className="space-y-3">
+                  {userSupporters.map(supporter => (
+                    <Card 
+                      key={supporter.id} 
+                      className={cn(
+                        "cursor-pointer transition-all shadow-sm hover:shadow-md", 
+                        pmSelectedHelperId === supporter.id ? "bg-primary/5 shadow-md" : "", 
+                        shouldEmphasizeHelper && "shadow-md"
+                      )} 
+                      onClick={() => setPMSelectedHelperId(supporter.id)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                          <Avatar className="w-8 h-8 flex-shrink-0">
+                            <AvatarImage src={supporter.profile?.avatar_url || undefined} />
+                            <AvatarFallback className="text-xs">
+                              {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-left flex-1 min-w-0">
+                            <div className="font-medium flex items-center gap-2 flex-wrap">
+                              <span className="truncate">{supporter.name}</span>
+                              {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs flex-shrink-0">Recommended</Badge>}
+                            </div>
+                            <div className="text-base text-muted-foreground">
+                              {skillLevel <= 2 ? "Will guide you step-by-step" : skillLevel === 3 ? "Can help accelerate your progress" : "Optional: Get Feedback From Me"}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>) : <div className="text-center py-4 space-y-2">
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4 space-y-2">
                   <p className="text-sm text-muted-foreground">
                     No helpers available yet
                   </p>
                   {skillLevel <= 2 && <p className="text-xs text-amber-600">
                       💡 Consider inviting a supporter from Settings to help you get started
                     </p>}
-                </div>}
+                </div>
+              )}
               
               {/* "On my own" last for beginners */}
               <Card className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === 'none' ? "bg-primary/5 shadow-md" : "", shouldEmphasizeSolo && "shadow-md", skillLevel <= 2 && "opacity-60 hover:opacity-100")} onClick={() => setPMSelectedHelperId('none')}>
@@ -3065,29 +3081,44 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </CardContent>
               </Card>
 
+
               {/* Helpers second */}
-              {userSupporters.length > 0 && userSupporters.map(supporter => <Card key={supporter.id} className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === supporter.id ? "bg-primary/5 shadow-md" : "", shouldEmphasizeHelper && "shadow-md")} onClick={() => setPMSelectedHelperId(supporter.id)}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
-                        <Avatar className="w-8 h-8">
-                          <AvatarImage src={supporter.profile?.avatar_url || undefined} />
-                          <AvatarFallback className="text-xs">
-                            {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="text-left flex-1">
-                          <div className="font-medium flex items-center gap-2">
-                            {supporter.name}
-                            {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
-                          </div>
-                          <div className="text-base text-muted-foreground capitalize">
-                            {skillLevel <= 2 ? "Will guide you step-by-step" : skillLevel === 3 ? "Can help accelerate your progress" : "Optional: Get feedback from me"}
+              {userSupporters.length > 0 && (
+                <div className="space-y-3">
+                  {userSupporters.map(supporter => (
+                    <Card 
+                      key={supporter.id} 
+                      className={cn(
+                        "cursor-pointer transition-all shadow-sm hover:shadow-md", 
+                        pmSelectedHelperId === supporter.id ? "bg-primary/5 shadow-md" : "", 
+                        shouldEmphasizeHelper && "shadow-md"
+                      )} 
+                      onClick={() => setPMSelectedHelperId(supporter.id)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                          <Avatar className="w-8 h-8 flex-shrink-0">
+                            <AvatarImage src={supporter.profile?.avatar_url || undefined} />
+                            <AvatarFallback className="text-xs">
+                              {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-left flex-1 min-w-0">
+                            <div className="font-medium flex items-center gap-2 flex-wrap">
+                              <span className="truncate">{supporter.name}</span>
+                              {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs flex-shrink-0">Recommended</Badge>}
+                            </div>
+                            <div className="text-base text-muted-foreground">
+                              {skillLevel <= 2 ? "Will guide you step-by-step" : skillLevel === 3 ? "Can help accelerate your progress" : "Optional: Get feedback from me"}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>)}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </>}
         </div>
       </QuestionScreen>;
