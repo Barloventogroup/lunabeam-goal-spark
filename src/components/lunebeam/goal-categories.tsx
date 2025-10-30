@@ -99,7 +99,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
             return (
               <Card 
                 key={category.id}
-                className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-2 hover:border-primary/30"
+                className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
                 onClick={() => onSelectCategory(category.id)}
               >
                 <CardContent className="p-6">

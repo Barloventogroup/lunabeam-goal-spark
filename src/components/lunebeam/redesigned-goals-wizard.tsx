@@ -1767,7 +1767,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               return (
                 <Card
                   key={category.id}
-                  className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-2 hover:border-primary/50"
+                  className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
                   onClick={() => {
                     setSelectedCategoryForModal(category);
                     setModalView('examples');
