@@ -72,7 +72,7 @@ export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData
       totalSteps={totalSteps}
       goalTitle={goalTitle}
       questionIcon="✅"
-      questionText={`Does ${name} have what's needed to start?`}
+      questionText={name === 'you' ? "Do you have what's needed to start?" : `Does ${name} have what's needed to start?`}
       inputType="yesno"
       options={[
         {
