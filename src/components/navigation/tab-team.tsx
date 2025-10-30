@@ -820,8 +820,7 @@ export const TabTeam: React.FC = () => {
           {supporters.some(s => s.memberType === 'individual') && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <UserPlus className="h-5 w-5" />
+                <CardTitle className="text-xl">
                   Quick Add Individual
                 </CardTitle>
               </CardHeader>
@@ -934,11 +933,8 @@ export const TabTeam: React.FC = () => {
           {supporters.filter(s => s.memberType === 'individual').length > 0 && (
             <Card>
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Users I Support ({supporters.filter(s => s.memberType === 'individual').length})
-                </div>
+              <CardTitle className="text-xl">
+                Users I Support ({supporters.filter(s => s.memberType === 'individual').length})
               </CardTitle>
             </CardHeader>
             <CardContent>
