@@ -2977,18 +2977,24 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const helpText = skillLevel <= 2 ? "We strongly recommend selecting a helper to guide you" : skillLevel >= 4 ? "You're ready to practice independently! Helpers are optional for feedback." : "Choose how you'd like to approach this goal";
     return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} goalTitle={data.goalTitle} goalContext={levelContext} questionIcon="👥" questionText="Who can help you learn this skill?" helpText={helpText} inputType="custom" onBack={prevStep} onContinue={nextStep} continueDisabled={!pmSelectedHelperId && pmSelectedHelperId !== 'none'} hideHeader hideFooter>
         <div className="space-y-3">
-          {/* Recommendation banner for beginners */}
-          {skillLevel <= 2 && <div className="p-4 rounded-lg border-2 bg-amber-50/50 border-amber-200">
-              <div className="flex items-start gap-3">
-                <div className="text-2xl">{getSkillLevelDisplay(assessment).emoji}</div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">🎯 Recommended: Work with a helper</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Since you're just starting out, having guidance will help you learn faster and more safely.
-                  </p>
+          {/* Recommendation card for beginners */}
+          {skillLevel <= 2 && <Card className="shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <UserPlus className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-base font-semibold text-foreground mb-1">
+                      Recommended: Work with a helper
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Since you're just starting out, having guidance will help you learn faster and more safely.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </div>}
+              </CardContent>
+            </Card>}
           
           {/* Conditionally render order based on skill level */}
           {skillLevel <= 2 ? <>
