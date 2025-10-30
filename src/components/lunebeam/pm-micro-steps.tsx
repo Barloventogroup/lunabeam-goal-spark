@@ -473,7 +473,7 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
 
               {/* Encouraging description */}
               <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
-                <p className="text-lg text-foreground leading-relaxed">
+                <p className="text-base text-foreground leading-relaxed">
                   {getLevelDescription(calculatedLevel)}
                 </p>
               </div>
