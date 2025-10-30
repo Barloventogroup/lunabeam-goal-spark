@@ -419,6 +419,13 @@ export type Database = {
             referencedRelation: "goals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cooldown_event_log_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "supporter_accessible_goals"
+            referencedColumns: ["id"]
+          },
         ]
       }
       evidence: {
@@ -1190,6 +1197,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "steps_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "supporter_accessible_goals"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "steps_parent_step_id_fkey"
             columns: ["parent_step_id"]
             isOneToOne: false
@@ -1396,6 +1410,13 @@ export type Database = {
             referencedRelation: "goals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "supporter_setup_steps_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "supporter_accessible_goals"
+            referencedColumns: ["id"]
+          },
         ]
       }
       supporters: {
@@ -1564,7 +1585,61 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      supporter_accessible_goals: {
+        Row: {
+          ai_generation_metadata: Json | null
+          base_points_per_milestone: number | null
+          base_points_per_planned_step: number | null
+          completed_steps_count: number | null
+          created_at: string | null
+          created_by: string | null
+          current_step_position: number | null
+          description: string | null
+          domain: string | null
+          due_date: string | null
+          duration_weeks: number | null
+          earned_points: number | null
+          frequency_per_week: number | null
+          goal_completion_bonus: number | null
+          goal_type: string | null
+          id: string | null
+          is_admin: boolean | null
+          last_completed_date: string | null
+          longest_streak: number | null
+          metadata: Json | null
+          owner_id: string | null
+          permission_level:
+            | Database["public"]["Enums"]["permission_level"]
+            | null
+          planned_milestones_count: number | null
+          planned_scaffold_count: number | null
+          planned_steps_count: number | null
+          pm_metadata: Json | null
+          priority: string | null
+          progress_pct: number | null
+          selected_days: string[] | null
+          start_date: string | null
+          status: string | null
+          streak_count: number | null
+          substep_points: number | null
+          supporter_id: string | null
+          supporter_role: Database["public"]["Enums"]["user_role"] | null
+          tags: string[] | null
+          title: string | null
+          total_possible_points: number | null
+          total_steps_count: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_supporter_profile"
+            columns: ["supporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_invite_by_token: { Args: { _token: string }; Returns: Json }

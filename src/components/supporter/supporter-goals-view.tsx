@@ -1,27 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Target, User, Calendar, CheckCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Target, User, Calendar, Loader2 } from 'lucide-react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { toast } from 'sonner';
+import { useSupporterGoals } from '@/hooks/useSupporterGoals';
+import type { GoalStatus } from '@/types';
 
-interface Goal {
-  id: string;
-  title: string;
-  description?: string;
-  status: string;
-  progress_pct: number;
-  domain?: string;
-  start_date?: string;
-  due_date?: string;
-  owner_name: string;
-  owner_id: string;
-  earned_points: number;
-  total_possible_points: number;
-}
 
 interface SupporterGoalsViewProps {
   selectedIndividualId?: string;
@@ -31,119 +17,19 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
   selectedIndividualId
 }) => {
   const { user } = useAuth();
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [totalGoalsCount, setTotalGoalsCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [filter, setFilter] = useState<GoalStatus | 'all'>('all');
+  const [page] = useState(0);
 
-  useEffect(() => {
-    if (user) {
-      loadGoals();
-    }
-  }, [user, selectedIndividualId, filter]);
+  // Use optimized hook with React Query caching
+  const { data, isLoading: loading } = useSupporterGoals(
+    user?.id,
+    selectedIndividualId,
+    filter,
+    page
+  );
 
-  const loadGoals = async () => {
-    if (!user) return;
-
-    try {
-      // Fetch supporters once and reuse
-      let individualIds: string[] = [];
-
-      if (!selectedIndividualId) {
-        const { data: supporters } = await supabase
-          .from('supporters')
-          .select('individual_id')
-          .eq('supporter_id', user.id);
-
-        individualIds = supporters?.map(s => s.individual_id) || [];
-
-        if (individualIds.length === 0) {
-          setGoals([]);
-          setLoading(false);
-          return;
-        }
-      }
-
-      // Build goals query
-      let query = supabase
-        .from('goals')
-        .select(`
-          id,
-          title,
-          description,
-          status,
-          progress_pct,
-          domain,
-          start_date,
-          due_date,
-          earned_points,
-          total_possible_points,
-          owner_id
-        `);
-
-      if (selectedIndividualId) {
-        // Show goals for specific individual
-        query = query.eq('owner_id', selectedIndividualId);
-      } else {
-        // Use the individualIds we already fetched
-        query = query.in('owner_id', individualIds);
-      }
-
-      // Get total count before filtering
-      let countQuery = supabase
-        .from('goals')
-        .select('id', { count: 'exact', head: true });
-
-      if (selectedIndividualId) {
-        countQuery = countQuery.eq('owner_id', selectedIndividualId);
-      } else {
-        // Reuse the same individualIds array
-        countQuery = countQuery.in('owner_id', individualIds);
-      }
-
-      const { count: totalCount } = await countQuery;
-
-      if (totalCount !== null) {
-        setTotalGoalsCount(totalCount);
-      }
-
-      if (filter !== 'all') {
-        query = query.eq('status', filter === 'active' ? 'active' : 'completed');
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Batch profile fetching - collect unique owner IDs
-      const ownerIds = [...new Set((data || []).map(g => g.owner_id).filter(Boolean))];
-
-      // Fetch all profiles in one query
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, first_name')
-        .in('user_id', ownerIds);
-
-      // Build lookup map for O(1) access
-      const profileMap = new Map(
-        (profiles || []).map(p => [p.user_id, p])
-      );
-
-      // Attach owner names using the map
-      const goalsWithOwner = (data || []).map(goal => ({
-        ...goal,
-        owner_name: profileMap.get(goal.owner_id)?.first_name || 'User'
-      }));
-
-      setGoals(goalsWithOwner);
-
-    } catch (error) {
-      console.error('Error loading goals:', error);
-      toast.error('Failed to load goals');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const goals = data?.goals || [];
+  const totalGoalsCount = data?.totalCount || 0;
 
   const getStatusColor = (status: string): "activeGreen" | "default" | "secondary" | "planned" => {
     switch (status) {
@@ -180,7 +66,7 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -309,7 +195,7 @@ export const SupporterGoalsView: React.FC<SupporterGoalsViewProps> = ({
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Points Earned</span>
                     <span className="font-medium">
-                      {goal.earned_points} / {goal.total_possible_points}
+                      {goal.earned_points} pts
                     </span>
                   </div>
                 </div>

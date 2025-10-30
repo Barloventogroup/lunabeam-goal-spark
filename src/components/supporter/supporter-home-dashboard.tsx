@@ -1,24 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Target, Users, Calendar, TrendingUp, ChevronRight } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Target, Users, Calendar, TrendingUp, ChevronRight, Loader2 } from 'lucide-react';
 import { useAuth } from '@/components/auth/auth-provider';
-import { toast } from 'sonner';
+import { useSupporterDashboard } from '@/hooks/useSupporterDashboard';
 
-interface SupportedIndividual {
-  id: string;
-  first_name: string;
-  avatar_url?: string;
-  role: string;
-  permission_level: string;
-  active_goals: number;
-  completed_goals: number;
-  total_points: number;
-  recent_activity: string;
-}
 
 interface SupporterHomeDashboardProps {
   onNavigateToGoals: (individualId?: string) => void;
@@ -32,109 +19,22 @@ export const SupporterHomeDashboard: React.FC<SupporterHomeDashboardProps> = ({
   onNavigateToNotifications
 }) => {
   const { user } = useAuth();
-  const [supportedIndividuals, setSupportedIndividuals] = useState<SupportedIndividual[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalIndividuals: 0,
-    totalActiveGoals: 0,
-    totalCompletedGoals: 0,
-    weeklyProgress: 0
-  });
-
-  useEffect(() => {
-    if (user) {
-      loadSupporterData();
-    }
-  }, [user]);
-
-  const loadSupporterData = async () => {
-    if (!user) return;
-
-    try {
-      // Get all individuals I support
-      const { data: supporters, error: supportersError } = await supabase
-        .from('supporters')
-        .select(`
-          individual_id,
-          role,
-          permission_level
-        `)
-        .eq('supporter_id', user.id);
-
-      if (supportersError) throw supportersError;
-
-      const individualsData: SupportedIndividual[] = [];
-      let totalActiveGoals = 0;
-      let totalCompletedGoals = 0;
-
-      for (const supporter of supporters || []) {
-        const individualId = supporter.individual_id;
-        
-        // Get profile data separately
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name, avatar_url')
-          .eq('user_id', individualId)
-          .single();
-
-        // Get goals count for this individual
-        const { data: goals, error: goalsError } = await supabase
-          .from('goals')
-          .select('status')
-          .eq('owner_id', individualId);
-
-        if (goalsError) {
-          console.error('Error loading goals for individual:', goalsError);
-          continue;
-        }
-
-        const activeGoals = goals?.filter(g => g.status === 'active').length || 0;
-        const completedGoals = goals?.filter(g => g.status === 'completed').length || 0;
-
-        totalActiveGoals += activeGoals;
-        totalCompletedGoals += completedGoals;
-
-        // Get total points for this individual
-        const { data: points } = await supabase
-          .from('user_points')
-          .select('total_points')
-          .eq('user_id', individualId);
-
-        const totalPoints = points?.reduce((sum, p) => sum + p.total_points, 0) || 0;
-
-        individualsData.push({
-          id: individualId,
-          first_name: profile?.first_name || 'User',
-          avatar_url: profile?.avatar_url,
-          role: supporter.role,
-          permission_level: supporter.permission_level,
-          active_goals: activeGoals,
-          completed_goals: completedGoals,
-          total_points: totalPoints,
-          recent_activity: activeGoals > 0 ? 'Working on goals' : 'No active goals'
-        });
-      }
-
-      setSupportedIndividuals(individualsData);
-      setStats({
-        totalIndividuals: individualsData.length,
-        totalActiveGoals,
-        totalCompletedGoals,
-        weeklyProgress: Math.round((totalCompletedGoals / Math.max(totalActiveGoals + totalCompletedGoals, 1)) * 100)
-      });
-
-    } catch (error) {
-      console.error('Error loading supporter data:', error);
-      toast.error('Failed to load supporter dashboard');
-    } finally {
-      setLoading(false);
-    }
+  
+  // Use optimized hook with React Query caching
+  const { data, isLoading: loading } = useSupporterDashboard(user?.id);
+  
+  const supportedIndividuals = data?.supportedIndividuals || [];
+  const stats = {
+    totalIndividuals: data?.stats.totalSupported || 0,
+    totalActiveGoals: data?.stats.totalActiveGoals || 0,
+    totalCompletedGoals: data?.stats.totalCompletedGoals || 0,
+    weeklyProgress: Math.round(data?.stats.averageProgress || 0)
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -221,7 +121,7 @@ export const SupporterHomeDashboard: React.FC<SupporterHomeDashboardProps> = ({
           ) : (
             supportedIndividuals.map((individual) => (
               <div
-                key={individual.id}
+                key={individual.user_id}
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center space-x-3">
@@ -239,26 +139,28 @@ export const SupporterHomeDashboard: React.FC<SupporterHomeDashboardProps> = ({
                     )}
                   </div>
                   <div>
-                    <p className="font-medium">{individual.first_name}</p>
+                     <p className="font-medium">{individual.first_name}</p>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-xs">
                         {individual.role}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        {individual.active_goals} active goals
+                        {individual.activeGoalsCount} active goals
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="text-right">
-                    <p className="text-sm font-medium">{individual.total_points} pts</p>
-                    <p className="text-xs text-muted-foreground">{individual.recent_activity}</p>
+                    <p className="text-sm font-medium">{individual.totalPoints} pts</p>
+                    <p className="text-xs text-muted-foreground">
+                      {individual.activeGoalsCount > 0 ? 'Working on goals' : 'No active goals'}
+                    </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onNavigateToIndividual(individual.id)}
+                    onClick={() => onNavigateToIndividual(individual.user_id)}
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
