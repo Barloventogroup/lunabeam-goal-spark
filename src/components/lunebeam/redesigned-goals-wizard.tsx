@@ -2121,7 +2121,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     </p>
                   </div>
                   {data.trackingMode === 'habit' && (
-                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                    <Check className="h-5 w-5 text-primary flex-shrink-0 animate-fade-in" />
                   )}
                 </div>
               </CardContent>
@@ -2146,7 +2146,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     </p>
                   </div>
                   {data.trackingMode === 'skill' && (
-                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                    <Check className="h-5 w-5 text-primary flex-shrink-0 animate-fade-in" />
                   )}
                 </div>
               </CardContent>
