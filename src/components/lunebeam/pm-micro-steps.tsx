@@ -668,37 +668,43 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
     >
       <div className="space-y-6">
         {/* Smart Start Suggestion */}
-        <Card className="bg-primary/5 border-primary/20 animate-in fade-in duration-300">
+        <Card className="border-2 border-accent bg-accent/5 shadow-sm animate-in fade-in duration-300">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <Sparkles className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-              <div className="flex-1 space-y-3">
-                <div className="font-semibold">💡 Recommended: {smartStartFreq}× per week</div>
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-accent-foreground" />
+              </div>
+              <div className="flex-1">
+                <p className="text-base font-semibold text-foreground mb-1">
+                  Recommended: {smartStartFreq}× per week
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {smartStartPlan.rationale}
                 </p>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    const durationWeeks = data.startDate && data.endDate 
-                      ? Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
-                      : null;
-                    
-                    updateData({
-                      pmPracticePlan: {
-                        ...data.pmPracticePlan,
-                        targetFrequency: smartStartFreq,
-                        startingFrequency: smartStartFreq,
-                        smartStartAccepted: true,
-                        durationWeeks: durationWeeks
-                      },
-                      pmTargetFrequency: smartStartFreq
-                    });
-                  }}
-                  variant={data.pmPracticePlan?.targetFrequency === smartStartFreq ? 'default' : 'secondary'}
-                >
-                  ✓ Use {smartStartFreq}×/week
-                </Button>
+                {data.pmPracticePlan?.targetFrequency !== smartStartFreq && (
+                  <Button
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => {
+                      const durationWeeks = data.startDate && data.endDate 
+                        ? Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                        : null;
+                      
+                      updateData({
+                        pmPracticePlan: {
+                          ...data.pmPracticePlan,
+                          targetFrequency: smartStartFreq,
+                          startingFrequency: smartStartFreq,
+                          smartStartAccepted: true,
+                          durationWeeks: durationWeeks
+                        },
+                        pmTargetFrequency: smartStartFreq
+                      });
+                    }}
+                  >
+                    ✓ Use {smartStartFreq}×/week
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
