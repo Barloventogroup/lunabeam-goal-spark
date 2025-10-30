@@ -2978,7 +2978,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} goalTitle={data.goalTitle} goalContext={levelContext} questionIcon="👥" questionText="Who can help you learn this skill?" helpText={helpText} inputType="custom" onBack={prevStep} onContinue={nextStep} continueDisabled={!pmSelectedHelperId && pmSelectedHelperId !== 'none'} hideHeader hideFooter>
         <div className="space-y-3">
           {/* Recommendation card for beginners */}
-          {skillLevel <= 2 && <Card className="border-2 border-accent bg-accent/5 shadow-md">
+          {skillLevel <= 2 && <Card className="border-2 border-accent bg-accent/5 shadow-sm">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
@@ -3005,10 +3005,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     <Card 
                       key={supporter.id} 
                       className={cn(
-                        "cursor-pointer transition-all shadow-sm hover:shadow-md", 
-                        pmSelectedHelperId === supporter.id ? "bg-primary/5 shadow-md" : "", 
-                        shouldEmphasizeHelper && "shadow-md"
-                      )} 
+                        "cursor-pointer transition-all shadow-sm",
+                        pmSelectedHelperId === supporter.id ? "bg-primary/5" : ""
+                      )}
                       onClick={() => setPMSelectedHelperId(supporter.id)}
                     >
                       <CardContent className="p-4">
@@ -3046,7 +3045,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               )}
               
               {/* "On my own" last for beginners */}
-              <Card className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === 'none' ? "bg-primary/5 shadow-md" : "", shouldEmphasizeSolo && "shadow-md", skillLevel <= 2 && "opacity-60 hover:opacity-100")} onClick={() => setPMSelectedHelperId('none')}>
+              <Card className={cn("cursor-pointer transition-all shadow-sm", pmSelectedHelperId === 'none' ? "bg-primary/5" : "", skillLevel <= 2 && "opacity-60 hover:opacity-100")} onClick={() => setPMSelectedHelperId('none')}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
@@ -3064,7 +3063,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               </Card>
             </> : <>
               {/* "On my own" first for intermediate/advanced */}
-              <Card className={cn("cursor-pointer transition-all shadow-sm hover:shadow-md", pmSelectedHelperId === 'none' ? "bg-primary/5 shadow-md" : "", shouldEmphasizeSolo && "shadow-md")} onClick={() => setPMSelectedHelperId('none')}>
+              <Card className={cn("cursor-pointer transition-all shadow-sm", pmSelectedHelperId === 'none' ? "bg-primary/5" : "")} onClick={() => setPMSelectedHelperId('none')}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
@@ -3089,9 +3088,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     <Card 
                       key={supporter.id} 
                       className={cn(
-                        "cursor-pointer transition-all shadow-sm hover:shadow-md", 
-                        pmSelectedHelperId === supporter.id ? "bg-primary/5 shadow-md" : "", 
-                        shouldEmphasizeHelper && "shadow-md"
+                        "cursor-pointer transition-all shadow-sm", 
+                        pmSelectedHelperId === supporter.id ? "bg-primary/5" : ""
                       )} 
                       onClick={() => setPMSelectedHelperId(supporter.id)}
                     >
