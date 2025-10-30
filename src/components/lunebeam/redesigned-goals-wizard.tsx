@@ -598,7 +598,7 @@ const INDIVIDUAL_FLOW_TEXT = {
     subtitle: "Add an additional motivation for you to complete this goal"
   },
   confirm: {
-    subtitle: "Ready to start your goal? First review what we have so far. If everything looks good click Confirm Goal."
+    subtitle: "Ready to start your goal? First review what we have so far. If everything looks good click Activate Plan."
   }
 };
 const getSupporterFlowText = (name?: string) => ({
