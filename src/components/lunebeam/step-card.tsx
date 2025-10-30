@@ -117,6 +117,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48 z-[60] border-0">
                     <DropdownMenuItem
+                      className="text-base"
                       onClick={(e) => {
                         e.stopPropagation();
                         onCheckIn(step.id);
@@ -127,6 +128,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="opacity-30" />
                     <DropdownMenuItem
+                      className="text-base"
                       onClick={(e) => {
                         e.stopPropagation();
                         onComplete(step.id);
@@ -137,6 +139,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="opacity-30" />
                     <DropdownMenuItem
+                      className="text-base"
                       onClick={(e) => {
                         e.stopPropagation();
                         onEdit(step.id);
@@ -147,6 +150,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="opacity-30" />
                     <DropdownMenuItem
+                      className="text-base"
                       onClick={(e) => {
                         e.stopPropagation();
                         onSkip(step.id);
@@ -157,6 +161,7 @@ export const StepCard: React.FC<StepCardProps> = ({
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="opacity-30" />
                     <DropdownMenuItem
+                      className="text-base"
                       onClick={(e) => {
                         e.stopPropagation();
                         onBreakDown(step.id);
