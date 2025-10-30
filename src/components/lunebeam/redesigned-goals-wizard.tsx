@@ -1816,7 +1816,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return (
       <div className="flex flex-col h-full">
         <div className="fixed left-0 right-0 top-0 z-40 bg-card h-16">
-          <div className="flex h-16 items-center px-4">
+          <div className="flex h-16 items-center gap-3 px-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0"
+              onClick={() => {
+                setModalView('categories');
+                setSelectedCategoryForModal(null);
+              }}
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Back to categories</span>
+            </Button>
             <h1 className="text-2xl font-bold flex-1 flex items-center gap-2">
               <span>{selectedCategoryForModal.emoji}</span>
               {selectedCategoryForModal.title}
@@ -1847,7 +1859,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               return (
                 <Card
                   key={goal.id}
-                  className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.01]"
+                  className="cursor-pointer hover:shadow-md transition-all duration-200 shadow-sm"
                   onClick={() => {
                     updateData({
                       goalTitle: goal.title,
