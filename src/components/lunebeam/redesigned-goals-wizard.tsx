@@ -865,10 +865,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       // Reset to Habit step 2 (after type selection)
       setCurrentStep(2);
     }
-    toast({
-      title: `Switched to ${newType === 'progressive_mastery' ? 'Progressive Mastery' : 'Habit'} goal`,
-      description: "Previous answers have been cleared. Let's start fresh!"
-    });
   };
   const [dateValidationError, setDateValidationError] = useState<string | null>(null);
   const [dateValidationWarning, setDateValidationWarning] = useState<string | null>(null);
@@ -1005,10 +1001,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           isMyIdea: true
         });
       }
-      toast({
-        title: `Switched to ${data.goalType === 'progressive_mastery' ? 'Progressive Mastery' : 'Habit'} goal`,
-        description: "Previous answers have been cleared. Let's start fresh!"
-      });
     }
     setPrevGoalType(data.goalType);
   }, [data.goalType]);
@@ -2109,7 +2101,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               goalType: 'reminder'
             });
           }}>
-              <CardContent className="p-4">
+              <CardContent className="p-4 relative">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">🔁</span>
                   <div className="text-left flex-1">
@@ -2120,10 +2112,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       Showing up regularly to build a stable, repeatable pattern in your day
                     </p>
                   </div>
-                  {data.trackingMode === 'habit' && (
-                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                  )}
                 </div>
+                {data.trackingMode === 'habit' && (
+                  <Check className="h-5 w-5 text-primary absolute top-3 right-3" />
+                )}
               </CardContent>
             </Card>
             
@@ -2134,7 +2126,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               goalType: 'progressive_mastery'
             });
           }}>
-              <CardContent className="p-4">
+              <CardContent className="p-4 relative">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">🎯</span>
                   <div className="text-left flex-1">
@@ -2145,10 +2137,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       Focus on one skill until you're good, or achieve a concrete, visible win
                     </p>
                   </div>
-                  {data.trackingMode === 'skill' && (
-                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                  )}
                 </div>
+                {data.trackingMode === 'skill' && (
+                  <Check className="h-5 w-5 text-primary absolute top-3 right-3" />
+                )}
               </CardContent>
             </Card>
             
