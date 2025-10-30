@@ -212,7 +212,7 @@ export const StepCard: React.FC<StepCardProps> = ({
 
             {/* Goal name */}
             {goalName && (
-              <div className="mb-4">
+              <div className="mt-6 mb-4">
                 <p className="text-base font-medium text-foreground">Goal</p>
                 <p className="text-base text-muted-foreground">{goalName}</p>
               </div>
@@ -228,7 +228,7 @@ export const StepCard: React.FC<StepCardProps> = ({
 
             {/* Created date */}
             {step.created_at && (
-              <div>
+              <div className="mt-6">
                 <p className="text-base font-medium text-foreground">Created</p>
                 <p className="text-base text-muted-foreground">{format(new Date(step.created_at), "MMM d, yyyy")}</p>
               </div>
