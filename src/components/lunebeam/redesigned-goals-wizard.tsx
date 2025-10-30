@@ -1758,7 +1758,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderCategoriesModal = () => {
     return (
       <div className="flex flex-col h-full">
-        <div className="fixed left-0 right-0 top-0 z-40 bg-card h-16 border-b">
+        <div className="fixed left-0 right-0 top-0 z-40 bg-card h-16">
           <div className="flex h-16 items-center px-4">
             <h1 className="text-2xl font-bold flex-1">Browse Goal Ideas</h1>
           </div>
@@ -1806,7 +1806,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
     return (
       <div className="flex flex-col h-full">
-        <div className="fixed left-0 right-0 top-0 z-40 bg-card h-16 border-b">
+        <div className="fixed left-0 right-0 top-0 z-40 bg-card h-16">
           <div className="flex h-16 items-center gap-3 px-4">
             <Button
               variant="ghost"
