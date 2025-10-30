@@ -2068,30 +2068,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               </CardContent>
             </Card>
             
-            {/* State Card */}
-            <Card 
-              className={cn(
-                "cursor-pointer hover:shadow-lg transition-all",
-                data.trackingMode === 'state' && "bg-primary/5"
-              )}
-              onClick={() => {
-                updateData({ trackingMode: 'state', goalType: 'reminder' });
-              }}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🌈</span>
-                  <div className="text-left flex-1">
-                    <div className="font-semibold">
-                      State
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Create a better feeling or environment that makes daily life easier
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </QuestionScreen>
