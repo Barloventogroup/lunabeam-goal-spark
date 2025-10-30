@@ -2081,7 +2081,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           {/* Browse Goals Card */}
           <Card className="cursor-pointer hover:shadow-lg transition-all" onClick={() => setShowBrowseModal(true)}>
             <CardContent className="p-4">
-              <div className="flex items-start gap-3">
+              <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Lightbulb className="h-6 w-6 text-primary" />
                 </div>
@@ -2091,7 +2091,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     Explore 50+ example goals
                   </p>
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
+                <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
