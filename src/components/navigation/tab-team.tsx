@@ -961,11 +961,8 @@ export const TabTeam: React.FC = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="font-medium text-sm">
+                            <div className="font-medium text-base">
                               {member.profile?.first_name || 'Unknown User'}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              Individual Account
                             </div>
                           </div>
                         </div>
@@ -987,11 +984,11 @@ export const TabTeam: React.FC = () => {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="text-base">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" className="text-base">
                             <DropdownMenuItem onClick={() => handleEditIndividual(member)}>
                               <Edit3 className="h-4 w-4 mr-2" />
                               Edit Profile
