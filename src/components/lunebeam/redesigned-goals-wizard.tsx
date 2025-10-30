@@ -2004,27 +2004,21 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Card className={cn("cursor-pointer transition-all border-2 p-6", data.recipient === 'self' ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")} onClick={() => updateData({
+        <Card className={cn("cursor-pointer transition-all border-0 shadow-sm hover:shadow-md relative p-6", data.recipient === 'self' && "bg-primary/5")} onClick={() => updateData({
           recipient: 'self'
         })}>
-          <div className="flex items-center justify-between">
-            <div className="text-left">
-              <div className="font-semibold">For myself</div>
-              <div className="text-sm text-muted-foreground">Create a personal goal</div>
-            </div>
-            {data.recipient === 'self' && <Check className="h-5 w-5 text-primary" />}
+          {data.recipient === 'self' && <Check className="h-5 w-5 text-primary absolute top-4 right-4" />}
+          <div className="text-left">
+            <div className="font-semibold">For myself</div>
           </div>
         </Card>
         
-        <Card className={cn("cursor-pointer transition-all border-2 p-6", data.recipient === 'other' ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")} onClick={() => updateData({
+        <Card className={cn("cursor-pointer transition-all border-0 shadow-sm hover:shadow-md relative p-6", data.recipient === 'other' && "bg-primary/5")} onClick={() => updateData({
           recipient: 'other'
         })}>
-          <div className="flex items-center justify-between">
-            <div className="text-left">
-              <div className="font-semibold">For someone I support</div>
-              <div className="text-sm text-muted-foreground">Create or suggest a goal for them</div>
-            </div>
-            {data.recipient === 'other' && <Check className="h-5 w-5 text-primary" />}
+          {data.recipient === 'other' && <Check className="h-5 w-5 text-primary absolute top-4 right-4" />}
+          <div className="text-left">
+            <div className="font-semibold">For someone I support</div>
           </div>
         </Card>
         
