@@ -114,22 +114,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
     });
   }, [goalsLoaded, goalsFromQuery, loadSteps]);
 
-  if (currentView === "rewards") {
-    return <RewardsScreen onBack={() => setCurrentView("dashboard")} />;
-  }
-  if (currentView === "reward-bank") {
-    return <RewardsGallery onBack={() => setCurrentView("dashboard")} />;
-  }
-  if (currentView === "add-goal") {
-    return (
-      <RedesignedGoalsWizard
-        onComplete={() => setCurrentView("dashboard")}
-        onCancel={() => setCurrentView("dashboard")}
-        isSupporter={userContext?.userType === "supporter" || userContext?.userType === "hybrid"}
-      />
-    );
-  }
-
   // Active goals from React Query
   const activeGoals = goalsFromQuery.filter((goal) => goal.status === "active" || goal.status === "planned");
   // Trust the entryVariant prop - it knows the correct experience
@@ -377,6 +361,21 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
   return (
     <>
+      {currentView === "rewards" && (
+        <RewardsScreen onBack={() => setCurrentView("dashboard")} />
+      )}
+      {currentView === "reward-bank" && (
+        <RewardsGallery onBack={() => setCurrentView("dashboard")} />
+      )}
+      {currentView === "add-goal" && (
+        <RedesignedGoalsWizard
+          onComplete={() => setCurrentView("dashboard")}
+          onCancel={() => setCurrentView("dashboard")}
+          isSupporter={userContext?.userType === "supporter" || userContext?.userType === "hybrid"}
+        />
+      )}
+      {currentView === "dashboard" && (
+      <>
       <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
         {/* Header */}
         <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 h-16 bg-card">
@@ -544,6 +543,8 @@ export const TabHome: React.FC<TabHomeProps> = ({
           </div>
         </SheetContent>
       </Sheet>
+      </>
+      )}
     </>
   );
 };
