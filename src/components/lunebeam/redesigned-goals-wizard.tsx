@@ -2013,7 +2013,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           </div>
 
           {/* Tracking Mode Selection */}
-          <div className="space-y-4 pt-4 border-t">
+          <div className="space-y-4 pt-4 pb-8 border-t">
             <h1 className="text-2xl md:text-3xl font-bold text-left">
               What type of goal is this?
             </h1>
