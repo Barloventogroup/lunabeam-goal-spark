@@ -1991,26 +1991,26 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             />
           </div>
           
-          {/* Browse Goals Button */}
-          <div className="space-y-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-auto py-4 border-2 border-dashed hover:border-primary hover:bg-primary/5"
-              onClick={() => setShowBrowseModal(true)}
-            >
-              <div className="flex items-center gap-3 w-full">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <div className="text-left flex-1">
-                  <div className="font-semibold">Browse Goal Ideas</div>
-              <div className="text-xs text-muted-foreground font-normal">
-                Explore 50+ example goals
-              </div>
+          {/* Browse Goals Card */}
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-all"
+            onClick={() => setShowBrowseModal(true)}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="h-6 w-6 text-primary" />
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-base mb-1">Browse Goal Ideas</div>
+                  <p className="text-sm text-muted-foreground">
+                    Explore 50+ example goals
+                  </p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
               </div>
-            </Button>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Tracking Mode Selection */}
           <div className="space-y-4 pt-4 pb-8">
