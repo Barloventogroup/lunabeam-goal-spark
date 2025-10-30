@@ -2004,35 +2004,37 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <Card className={cn("cursor-pointer transition-all border-0 shadow-sm hover:shadow-md relative p-6", data.recipient === 'self' && "bg-primary/5")} onClick={() => updateData({
-          recipient: 'self'
-        })}>
-          {data.recipient === 'self' && <Check className="h-5 w-5 text-primary absolute top-4 right-4" />}
-          <div className="text-left">
-            <div className="font-semibold">For myself</div>
-          </div>
-        </Card>
-        
-        <Card className={cn("cursor-pointer transition-all border-0 shadow-sm hover:shadow-md relative p-6", data.recipient === 'other' && "bg-primary/5")} onClick={() => updateData({
-          recipient: 'other'
-        })}>
-          {data.recipient === 'other' && <Check className="h-5 w-5 text-primary absolute top-4 right-4" />}
-          <div className="text-left">
-            <div className="font-semibold">For someone I support</div>
-          </div>
-        </Card>
-        
-        {data.recipient === 'other' && <div className="space-y-3 pt-4">
-            <Label className="text-base">Select person:</Label>
-            <div className="grid gap-2">
-              {supportedPeople.map(person => <Button key={person.id} variant={data.supportedPersonId === person.id ? 'default' : 'outline'} className="justify-start" onClick={() => updateData({
-              supportedPersonId: person.id,
-              supportedPersonName: person.name
-            })}>
-                  {person.name}
-                </Button>)}
+        <div className="max-w-2xl mx-auto w-full space-y-4">
+          <Card className={cn("cursor-pointer transition-all border-0 shadow-sm hover:shadow-md relative p-6", data.recipient === 'self' && "bg-primary/5")} onClick={() => updateData({
+            recipient: 'self'
+          })}>
+            {data.recipient === 'self' && <Check className="h-5 w-5 text-primary absolute top-4 right-4" />}
+            <div className="text-left">
+              <div className="font-semibold">For myself</div>
             </div>
-          </div>}
+          </Card>
+          
+          <Card className={cn("cursor-pointer transition-all border-0 shadow-sm hover:shadow-md relative p-6", data.recipient === 'other' && "bg-primary/5")} onClick={() => updateData({
+            recipient: 'other'
+          })}>
+            {data.recipient === 'other' && <Check className="h-5 w-5 text-primary absolute top-4 right-4" />}
+            <div className="text-left">
+              <div className="font-semibold">For someone I support</div>
+            </div>
+          </Card>
+          
+          {data.recipient === 'other' && <div className="space-y-3 pt-4">
+              <Label className="text-base">Select person:</Label>
+              <div className="grid gap-2">
+                {supportedPeople.map(person => <Button key={person.id} variant={data.supportedPersonId === person.id ? 'default' : 'outline'} className="justify-start" onClick={() => updateData({
+                supportedPersonId: person.id,
+                supportedPersonName: person.name
+              })}>
+                    {person.name}
+                  </Button>)}
+              </div>
+            </div>}
+        </div>
       </CardContent>
     </Card>;
   };
