@@ -409,18 +409,18 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
                 <div className="space-y-1.5">
                   {pmHelper && <>
                       <p className="text-sm">
-                        <span className="text-muted-foreground text-xs">Learning:</span>{' '}
+                        <span className="text-muted-foreground text-sm">Learning:</span>{' '}
                         <span className="font-medium">
                           {pmHelper.helperId === 'none' ? 'Independently' : 'With support'}
                         </span>
                       </p>
                       {pmHelper.helperId !== 'none' && <>
                           {pmHelper.helperName && <p className="text-sm">
-                              <span className="text-muted-foreground text-xs">Helper:</span>{' '}
+                              <span className="text-muted-foreground text-sm">Helper:</span>{' '}
                               <span className="font-medium">{pmHelper.helperName}</span>
                             </p>}
                           {pmHelper.supportTypes && <p className="text-sm">
-                              <span className="text-muted-foreground text-xs">Relationship:</span>{' '}
+                              <span className="text-muted-foreground text-sm">Relationship:</span>{' '}
                               <span className="font-medium capitalize">{pmHelper.supportTypes.replace(/_/g, ' ')}</span>
                             </p>}
                         </>}
