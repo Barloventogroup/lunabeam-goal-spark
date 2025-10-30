@@ -6,27 +6,28 @@ import { Coins } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { getDomainDisplayName } from '@/utils/domainUtils';
 import { PointsDisplay } from './points-display';
-
 interface RewardsScreenProps {
   onBack: () => void;
 }
-
-export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
-  const { goals, pointsSummary, loadGoals, loadPoints } = useStore();
-
+export const RewardsScreen: React.FC<RewardsScreenProps> = ({
+  onBack
+}) => {
+  const {
+    goals,
+    pointsSummary,
+    loadGoals,
+    loadPoints
+  } = useStore();
   useEffect(() => {
     loadGoals();
     loadPoints();
   }, [loadGoals, loadPoints]);
-
   const totalPoints = pointsSummary?.totalPoints || 0;
-
-  return (
-    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+  return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
       <PageHeader title="LunaPoints" onBack={onBack} />
 
       <div className="px-4 pt-6 pb-6 space-y-6">
-        <p className="text-sm text-muted-foreground">Track your earned points and progress</p>
+        
         {/* Overview Stats */}
         <Card className="text-center">
           <CardContent className="p-6">
@@ -39,6 +40,5 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({ onBack }) => {
         {/* Points Details */}
         <PointsDisplay />
       </div>
-    </div>
-  );
+    </div>;
 };
