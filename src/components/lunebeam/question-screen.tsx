@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -123,7 +123,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
             <div className="space-y-3">
               {options.map(option => <div key={String(option.value)} className="relative">
                   <RadioGroupItem value={String(option.value)} id={String(option.value)} className="peer sr-only" />
-                  <Label htmlFor={String(option.value)} className={cn('flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-all shadow-md', 'hover:shadow-lg hover:bg-accent/50', 'peer-data-[state=checked]:bg-primary/5', 'peer-focus-visible:ring-2 peer-focus-visible:ring-primary')}>
+                  <Label htmlFor={String(option.value)} className={cn('flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-all shadow-sm hover:shadow-md relative', 'peer-data-[state=checked]:bg-primary/5', 'peer-focus-visible:ring-2 peer-focus-visible:ring-primary')}>
                     {option.avatar && <Avatar className="h-8 w-8 flex-shrink-0">
                         <AvatarImage src={option.avatar} />
                         <AvatarFallback>{option.label[0]}</AvatarFallback>
@@ -135,6 +135,9 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                           {option.description}
                         </p>}
                     </div>
+                    {String(value) === String(option.value) && (
+                      <Check className="h-5 w-5 text-primary absolute top-3 right-3" />
+                    )}
                   </Label>
                 </div>)}
             </div>
@@ -145,7 +148,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
               <div className="space-y-3">
                 {options.map(option => <div key={String(option.value)} className="relative">
                     <RadioGroupItem value={String(option.value)} id={String(option.value)} className="peer sr-only" />
-                    <Label htmlFor={String(option.value)} className={cn('flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-all shadow-md', 'hover:shadow-lg hover:bg-accent/50', 'peer-data-[state=checked]:bg-primary/5', 'peer-focus-visible:ring-2 peer-focus-visible:ring-primary')}>
+                    <Label htmlFor={String(option.value)} className={cn('flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-all shadow-sm hover:shadow-md relative', 'peer-data-[state=checked]:bg-primary/5', 'peer-focus-visible:ring-2 peer-focus-visible:ring-primary')}>
                       {option.avatar && <Avatar className="h-8 w-8 flex-shrink-0">
                           <AvatarImage src={option.avatar} />
                           <AvatarFallback>{option.label[0]}</AvatarFallback>
@@ -157,6 +160,9 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                             {option.description}
                           </p>}
                       </div>
+                      {String(value) === String(option.value) && (
+                        <Check className="h-5 w-5 text-primary absolute top-3 right-3" />
+                      )}
                     </Label>
                   </div>)}
               </div>
