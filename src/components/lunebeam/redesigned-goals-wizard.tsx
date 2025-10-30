@@ -757,6 +757,7 @@ interface SupportedPerson {
   name: string;
   profile?: {
     avatar_url?: string;
+    updated_at?: string;
   };
 }
 export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
@@ -1113,7 +1114,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       const {
         data: profiles,
         error: profilesError
-      } = await supabase.from('profiles').select('user_id, first_name, avatar_url').in('user_id', supporterIds);
+      } = await supabase.from('profiles').select('user_id, first_name, avatar_url, updated_at').in('user_id', supporterIds);
       if (profilesError) throw profilesError;
       const allies = supporters.map(s => {
         const profile = profiles?.find(p => p.user_id === s.supporter_id);
@@ -1122,7 +1123,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           name: profile?.first_name || 'Supporter',
           role: s.role,
           profile: profile ? {
-            avatar_url: profile.avatar_url
+            avatar_url: profile.avatar_url,
+            updated_at: profile.updated_at
           } : undefined
         };
       });
@@ -3008,7 +3010,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         <div className="flex items-start gap-3">
                           {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
                           <Avatar className="w-8 h-8 flex-shrink-0">
-                            <AvatarImage src={supporter.profile?.avatar_url || undefined} />
+                            <AvatarImage src={supporter.profile?.avatar_url ? `${supporter.profile.avatar_url}${supporter.profile?.updated_at ? `?v=${new Date(supporter.profile.updated_at).getTime()}` : ''}` : undefined} />
                             <AvatarFallback className="text-xs">
                               {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                             </AvatarFallback>
@@ -3121,7 +3123,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         <div className="flex items-start gap-3">
                           {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
                           <Avatar className="w-8 h-8 flex-shrink-0">
-                            <AvatarImage src={supporter.profile?.avatar_url || undefined} />
+                            <AvatarImage src={supporter.profile?.avatar_url ? `${supporter.profile.avatar_url}${supporter.profile?.updated_at ? `?v=${new Date(supporter.profile.updated_at).getTime()}` : ''}` : undefined} />
                             <AvatarFallback className="text-xs">
                               {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                             </AvatarFallback>
@@ -4027,7 +4029,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                           <div className="flex items-start gap-3">
                             {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
                             <Avatar className="w-8 h-8">
-                              <AvatarImage src={supporter.profile?.avatar_url || undefined} />
+                              <AvatarImage src={supporter.profile?.avatar_url ? `${supporter.profile.avatar_url}${supporter.profile?.updated_at ? `?v=${new Date(supporter.profile.updated_at).getTime()}` : ''}` : undefined} />
                               <AvatarFallback className="text-xs">
                                 {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                               </AvatarFallback>

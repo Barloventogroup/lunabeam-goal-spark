@@ -28,6 +28,7 @@ interface SupporterWithProfile extends Supporter {
   profile?: {
     first_name: string;
     avatar_url?: string;
+    updated_at?: string;
     email?: string;
     phone?: string;
   };
@@ -140,7 +141,7 @@ export const TabTeam: React.FC = () => {
       const supporterIds = supportersData.map(s => s.supporter_id);
       const { data: supporterProfiles } = await supabase
         .from('profiles')
-        .select('user_id, first_name, avatar_url')
+        .select('user_id, first_name, avatar_url, updated_at')
         .in('user_id', supporterIds);
       
       const supporterProfileMap = new Map((supporterProfiles || []).map(p => [p.user_id, p]));
@@ -1073,7 +1074,7 @@ export const TabTeam: React.FC = () => {
                             <div className="flex items-center gap-3 cursor-pointer hover:opacity-70" onClick={() => handleMemberClick(member, member.type)}>
                               <Avatar className="w-8 h-8">
                                 {member.type === 'supporter' && member.profile?.avatar_url && (
-                                  <AvatarImage src={member.profile.avatar_url} alt={name} />
+                                  <AvatarImage src={`${member.profile.avatar_url}${member.profile?.updated_at ? `?v=${new Date(member.profile.updated_at).getTime()}` : ''}`} alt={name} />
                                 )}
                                 <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
                                   {initials}

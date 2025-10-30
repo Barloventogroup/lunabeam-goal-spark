@@ -5,6 +5,7 @@ interface SupportedIndividual {
   user_id: string;
   first_name: string;
   avatar_url: string | null;
+  updated_at: string | null;
   role: string;
   activeGoalsCount: number;
   completedGoalsCount: number;
@@ -47,7 +48,7 @@ export function useSupporterDashboard(userId: string | undefined) {
         // Fetch all profiles
         supabase
           .from('profiles')
-          .select('user_id, first_name, avatar_url')
+          .select('user_id, first_name, avatar_url, updated_at')
           .in('user_id', individualIds),
         
         // Fetch all goals with status
@@ -102,6 +103,7 @@ export function useSupporterDashboard(userId: string | undefined) {
           user_id: profile.user_id,
           first_name: profile.first_name || 'User',
           avatar_url: profile.avatar_url,
+          updated_at: profile.updated_at,
           role: roleMap.get(profile.user_id) || 'supporter',
           activeGoalsCount: goalStats.active,
           completedGoalsCount: goalStats.completed,

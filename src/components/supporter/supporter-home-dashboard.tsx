@@ -128,7 +128,7 @@ export const SupporterHomeDashboard: React.FC<SupporterHomeDashboardProps> = ({
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                     {individual.avatar_url ? (
                       <img 
-                        src={individual.avatar_url} 
+                        src={`${individual.avatar_url}${individual.updated_at ? `?v=${new Date(individual.updated_at).getTime()}` : ''}`} 
                         alt={individual.first_name}
                         className="w-full h-full rounded-full object-cover"
                       />

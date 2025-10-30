@@ -15,6 +15,7 @@ interface SupporterWithProfile extends Supporter {
   profile?: {
     first_name: string;
     avatar_url?: string;
+    updated_at?: string;
   };
 }
 
@@ -50,7 +51,7 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
         supportersData.map(async (supporter) => {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("first_name, avatar_url")
+            .select("first_name, avatar_url, updated_at")
             .eq("user_id", supporter.supporter_id)
             .single();
 
@@ -150,7 +151,7 @@ export const TabTeamIndividual: React.FC<TabTeamIndividualProps> = ({ onNavigate
                     <Avatar className="h-10 w-10">
                       {supporter.profile?.avatar_url && (
                         <AvatarImage
-                          src={supporter.profile.avatar_url}
+                          src={`${supporter.profile.avatar_url}${supporter.profile?.updated_at ? `?v=${new Date(supporter.profile.updated_at).getTime()}` : ''}`}
                           alt={supporter.profile?.first_name || "Supporter"}
                         />
                       )}
