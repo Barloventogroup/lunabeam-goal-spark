@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, ArrowRight, Lightbulb } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -223,18 +223,8 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
 
           {/* Help Text */}
           {helpText && (
-            <div className="flex gap-3 bg-white dark:bg-card p-4 rounded-lg shadow-md">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                  <Lightbulb className="w-5 h-5 text-yellow-600 dark:text-yellow-500" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <h4 className="text-base font-semibold text-foreground mb-1">Tip</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {helpText}
-                </p>
-              </div>
+            <div className="text-base text-muted-foreground">
+              {helpText}
             </div>
           )}
 
