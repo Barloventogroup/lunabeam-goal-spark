@@ -203,7 +203,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                 <ArrowLeft className="h-4 w-4" />
                 Back
               </Button>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-base text-muted-foreground">
                 Step {currentStep} of {totalSteps}
               </div>
             </div>
