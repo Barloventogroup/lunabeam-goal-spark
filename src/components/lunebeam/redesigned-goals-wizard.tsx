@@ -2974,7 +2974,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const shouldEmphasizeHelper = recommendation === 'helper';
     const shouldEmphasizeSolo = recommendation === 'solo';
     const levelContext = assessment ? `Starting level: ${getSkillLevelDisplay(assessment).emoji} ${getSkillLevelDisplay(assessment).label}` : undefined;
-    const helpText = skillLevel <= 2 ? "🎯 We strongly recommend selecting a helper to guide you" : skillLevel >= 4 ? "You're ready to practice independently! Helpers are optional for feedback." : "Choose how you'd like to approach this goal";
+    const helpText = skillLevel <= 2 ? "We strongly recommend selecting a helper to guide you" : skillLevel >= 4 ? "You're ready to practice independently! Helpers are optional for feedback." : "Choose how you'd like to approach this goal";
     return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} goalTitle={data.goalTitle} goalContext={levelContext} questionIcon="👥" questionText="Who can help you learn this skill?" helpText={helpText} inputType="custom" onBack={prevStep} onContinue={nextStep} continueDisabled={!pmSelectedHelperId && pmSelectedHelperId !== 'none'} hideHeader hideFooter>
         <div className="space-y-3">
           {/* Recommendation banner for beginners */}
@@ -2993,7 +2993,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           {/* Conditionally render order based on skill level */}
           {skillLevel <= 2 ? <>
               {/* Helpers first for beginners */}
-              {userSupporters.length > 0 ? userSupporters.map(supporter => <Card key={supporter.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", pmSelectedHelperId === supporter.id ? "border-primary bg-primary/5" : "border-border", shouldEmphasizeHelper && "ring-2 ring-primary/20")} onClick={() => setPMSelectedHelperId(supporter.id)}>
+              {userSupporters.length > 0 ? userSupporters.map(supporter => <Card key={supporter.id} className={cn("cursor-pointer hover:shadow-lg transition-all shadow-md", pmSelectedHelperId === supporter.id ? "ring-2 ring-primary bg-primary/5" : "", shouldEmphasizeHelper && "ring-2 ring-primary/20")} onClick={() => setPMSelectedHelperId(supporter.id)}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
@@ -3005,10 +3005,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         </Avatar>
                         <div className="text-left flex-1">
                           <div className="font-medium flex items-center gap-2">
-                            👤 {supporter.name}
+                            {supporter.name}
                             {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
                           </div>
-                          <div className="text-sm text-muted-foreground capitalize">
+                          <div className="text-base text-muted-foreground capitalize">
                             {skillLevel <= 2 ? "Will guide you step-by-step" : skillLevel === 3 ? "Can help accelerate your progress" : "Optional: Get Feedback From Me"}
                           </div>
                         </div>
@@ -3024,16 +3024,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </div>}
               
               {/* "On my own" last for beginners */}
-              <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", pmSelectedHelperId === 'none' ? "border-primary bg-primary/5" : "border-border", shouldEmphasizeSolo && "ring-2 ring-primary/20", skillLevel <= 2 && "opacity-60 hover:opacity-100 border-amber-300")} onClick={() => setPMSelectedHelperId('none')}>
+              <Card className={cn("cursor-pointer hover:shadow-lg transition-all shadow-md", pmSelectedHelperId === 'none' ? "ring-2 ring-primary bg-primary/5" : "", shouldEmphasizeSolo && "ring-2 ring-primary/20", skillLevel <= 2 && "opacity-60 hover:opacity-100")} onClick={() => setPMSelectedHelperId('none')}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
                     <div className="text-left flex-1">
                       <div className="font-medium flex items-center gap-2">
-                        🦸 On my own
+                        On my own
                         {shouldEmphasizeSolo && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-base text-muted-foreground">
                         {skillLevel >= 4 ? "Perfect for your skill level - practice independently" : skillLevel === 3 ? "You can manage this on your own" : "⚠️ Consider starting with a helper first"}
                       </div>
                     </div>
@@ -3042,16 +3042,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               </Card>
             </> : <>
               {/* "On my own" first for intermediate/advanced */}
-              <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", pmSelectedHelperId === 'none' ? "border-primary bg-primary/5" : "border-border", shouldEmphasizeSolo && "ring-2 ring-primary/20")} onClick={() => setPMSelectedHelperId('none')}>
+              <Card className={cn("cursor-pointer hover:shadow-lg transition-all shadow-md", pmSelectedHelperId === 'none' ? "ring-2 ring-primary bg-primary/5" : "", shouldEmphasizeSolo && "ring-2 ring-primary/20")} onClick={() => setPMSelectedHelperId('none')}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
                     <div className="text-left flex-1">
                       <div className="font-medium flex items-center gap-2">
-                        🦸 On my own
+                        On my own
                         {shouldEmphasizeSolo && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-base text-muted-foreground">
                         {skillLevel >= 4 ? "Perfect for your skill level - practice independently" : skillLevel === 3 ? "You can manage this on your own" : "I'll practice independently (may take longer)"}
                       </div>
                     </div>
@@ -3060,7 +3060,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               </Card>
 
               {/* Helpers second */}
-              {userSupporters.length > 0 && userSupporters.map(supporter => <Card key={supporter.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", pmSelectedHelperId === supporter.id ? "border-primary bg-primary/5" : "border-border", shouldEmphasizeHelper && "ring-2 ring-primary/20")} onClick={() => setPMSelectedHelperId(supporter.id)}>
+              {userSupporters.length > 0 && userSupporters.map(supporter => <Card key={supporter.id} className={cn("cursor-pointer hover:shadow-lg transition-all shadow-md", pmSelectedHelperId === supporter.id ? "ring-2 ring-primary bg-primary/5" : "", shouldEmphasizeHelper && "ring-2 ring-primary/20")} onClick={() => setPMSelectedHelperId(supporter.id)}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
@@ -3072,10 +3072,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                         </Avatar>
                         <div className="text-left flex-1">
                           <div className="font-medium flex items-center gap-2">
-                            👤 {supporter.name}
+                            {supporter.name}
                             {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
                           </div>
-                          <div className="text-sm text-muted-foreground capitalize">
+                          <div className="text-base text-muted-foreground capitalize">
                             {skillLevel <= 2 ? "Will guide you step-by-step" : skillLevel === 3 ? "Can help accelerate your progress" : "Optional: Get feedback from me"}
                           </div>
                         </div>
