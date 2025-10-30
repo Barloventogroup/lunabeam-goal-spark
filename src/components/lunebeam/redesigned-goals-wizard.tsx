@@ -3052,10 +3052,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
             {/* Three choice options */}
             <div className="space-y-3">
-              <Button
+              <div
                 onClick={() => handleSimplifiedChoice('confident')}
-                variant="outline"
-                className="w-full h-auto p-4 flex flex-col items-start gap-2 hover:bg-primary/5 hover:border-primary"
+                className="w-full p-4 flex flex-col items-start gap-2 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50"
               >
                 <div className="flex items-center gap-2 w-full">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
@@ -3064,12 +3063,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <p className="text-sm text-muted-foreground text-left">
                   {isOther ? 'They can' : 'I can'} do this independently without help
                 </p>
-              </Button>
+              </div>
 
-              <Button
+              <div
                 onClick={() => handleSimplifiedChoice('learning')}
-                variant="outline"
-                className="w-full h-auto p-4 flex flex-col items-start gap-2 hover:bg-primary/5 hover:border-primary"
+                className="w-full p-4 flex flex-col items-start gap-2 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50"
               >
                 <div className="flex items-center gap-2 w-full">
                   <GraduationCap className="h-5 w-5 text-primary flex-shrink-0" />
@@ -3078,12 +3076,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <p className="text-sm text-muted-foreground text-left">
                   {isOther ? 'They need' : 'I need'} practice and support to improve
                 </p>
-              </Button>
+              </div>
 
-              <Button
+              <div
                 onClick={() => setCurrentStep(5)}
-                variant="outline"
-                className="w-full h-auto p-4 flex flex-col items-start gap-2 hover:bg-primary/5 hover:border-primary"
+                className="w-full p-4 flex flex-col items-start gap-2 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50"
               >
                 <div className="flex items-center gap-2 w-full">
                   <ClipboardList className="h-5 w-5 text-primary flex-shrink-0" />
@@ -3092,7 +3089,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 <p className="text-sm text-muted-foreground text-left">
                   I want to provide more specific information (3 questions)
                 </p>
-              </Button>
+              </div>
             </div>
           </div>
         </CardContent>
