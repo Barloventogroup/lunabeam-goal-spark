@@ -2120,6 +2120,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       Showing up regularly to build a stable, repeatable pattern in your day
                     </p>
                   </div>
+                  {data.trackingMode === 'habit' && (
+                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -2142,6 +2145,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                       Focus on one skill until you're good, or achieve a concrete, visible win
                     </p>
                   </div>
+                  {data.trackingMode === 'skill' && (
+                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  )}
                 </div>
               </CardContent>
             </Card>
