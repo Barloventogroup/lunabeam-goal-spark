@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Calendar, ChevronRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Clock, Calendar, ChevronRight, Users } from 'lucide-react';
 import { format, isToday, parseISO } from 'date-fns';
 import type { Step, Goal } from '@/types';
 import { cleanStepTitle } from '@/utils/stepUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 
 interface TodaysFocusCardProps {
@@ -28,7 +30,51 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
   onNeedHelp,
   onViewUpcomingStep
 }) => {
-  const renderStepCard = (step: Step, goal: Goal, dueDate?: Date, isOverdue = false) => (
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [ownerProfiles, setOwnerProfiles] = useState<Record<string, { first_name: string }>>({});
+
+  // Get current user
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUser(user));
+  }, []);
+
+  // Fetch owner profiles for all goals
+  useEffect(() => {
+    const fetchOwnerProfiles = async () => {
+      const ownerIds = new Set<string>();
+      
+      if (goal?.owner_id) ownerIds.add(goal.owner_id);
+      overdueSteps.forEach(item => {
+        if (item.goal?.owner_id) ownerIds.add(item.goal.owner_id);
+      });
+      upcomingSteps.forEach(item => {
+        if (item.goal?.owner_id) ownerIds.add(item.goal.owner_id);
+      });
+
+      if (ownerIds.size === 0) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, first_name')
+        .in('user_id', Array.from(ownerIds));
+
+      if (!error && data) {
+        const profilesMap: Record<string, { first_name: string }> = {};
+        data.forEach(profile => {
+          profilesMap[profile.user_id] = { first_name: profile.first_name };
+        });
+        setOwnerProfiles(profilesMap);
+      }
+    };
+
+    fetchOwnerProfiles();
+  }, [goal, overdueSteps, upcomingSteps]);
+
+  const renderStepCard = (step: Step, goal: Goal, dueDate?: Date, isOverdue = false) => {
+    const isOwnGoal = currentUser && goal.owner_id === currentUser.id;
+    const ownerName = goal.owner_id && ownerProfiles[goal.owner_id]?.first_name;
+
+    return (
     <Card 
       className="relative cursor-pointer hover:shadow-lg transition-shadow border-0 shadow-md"
       onClick={() => onViewUpcomingStep?.(step.id, goal.id)}
@@ -46,14 +92,23 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
           Goal: {goal.title}
         </p>
         
-        {dueDate && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span className={isOverdue ? 'text-red-500 font-medium' : ''}>
-              Due {format(dueDate, 'MMM d, yyyy')}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {dueDate && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span className={isOverdue ? 'text-red-500 font-medium' : ''}>
+                Due {format(dueDate, 'MMM d, yyyy')}
+              </span>
+            </div>
+          )}
+          
+          {!isOwnGoal && ownerName && (
+            <Badge variant="outline" className="text-xs">
+              <Users className="h-3 w-3 mr-1" />
+              For {ownerName}
+            </Badge>
+          )}
+        </div>
         
         {step.explainer && (
           <p className="text-xs text-muted-foreground">
@@ -65,7 +120,11 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
         <ChevronRight className="h-5 w-5 text-muted-foreground" />
       </div>
     </Card>
-  );
+    );
+  };
+
+  const isOwnGoal = currentUser && goal?.owner_id === currentUser.id;
+  const ownerName = goal?.owner_id && ownerProfiles[goal.owner_id]?.first_name;
 
   return (
     <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
@@ -93,14 +152,23 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                   Goal: {goal.title}
                 </p>
                 
-                {step.due_date && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>
-                      Due {format(parseISO(step.due_date), 'MMM d, yyyy')}
-                    </span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {step.due_date && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        Due {format(parseISO(step.due_date), 'MMM d, yyyy')}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {!isOwnGoal && ownerName && (
+                    <Badge variant="outline" className="text-xs">
+                      <Users className="h-3 w-3 mr-1" />
+                      For {ownerName}
+                    </Badge>
+                  )}
+                </div>
                 
                 {step.explainer && (
                   <p className="text-xs text-muted-foreground">
@@ -160,11 +228,20 @@ export const TodaysFocusCard: React.FC<TodaysFocusCardProps> = ({
                       Goal: {goal.title}
                     </p>
                     
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      <span>
-                        Due {format(dueDate, 'MMM d, yyyy')}
-                      </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                          Due {format(dueDate, 'MMM d, yyyy')}
+                        </span>
+                      </div>
+                      
+                      {currentUser && goal.owner_id !== currentUser.id && ownerProfiles[goal.owner_id] && (
+                        <Badge variant="outline" className="text-xs">
+                          <Users className="h-3 w-3 mr-1" />
+                          For {ownerProfiles[goal.owner_id].first_name}
+                        </Badge>
+                      )}
                     </div>
                     
                     {step.explainer && (
