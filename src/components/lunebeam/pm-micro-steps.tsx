@@ -465,7 +465,7 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
                     )}
                   />
                 </div>
-                <div className="flex justify-between text-xs text-muted-foreground">
+                <div className="flex justify-between text-base text-muted-foreground">
                   <span>Beginner</span>
                   <span>Independent</span>
                 </div>
