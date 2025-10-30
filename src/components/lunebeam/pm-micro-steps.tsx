@@ -244,7 +244,7 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
       hideFooter
     >
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground text-center mb-6">
+        <p className="text-base text-muted-foreground mb-6">
           Identifying barriers helps create a personalized practice plan that works around your challenges
         </p>
         
