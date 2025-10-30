@@ -2087,7 +2087,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </div>
                 <div className="text-left flex-1">
                   <div className="font-semibold text-base mb-1">Browse Goal Ideas</div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-base text-muted-foreground">
                     Explore 50+ example goals
                   </p>
                 </div>
@@ -2116,7 +2116,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     <div className="font-semibold">
                       Habit
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-base text-muted-foreground mt-1">
                       Showing up regularly to build a stable, repeatable pattern in your day
                     </p>
                   </div>
@@ -2138,7 +2138,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     <div className="font-semibold">
                       Skill
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-base text-muted-foreground mt-1">
                       Focus on one skill until you're good, or achieve a concrete, visible win
                     </p>
                   </div>
