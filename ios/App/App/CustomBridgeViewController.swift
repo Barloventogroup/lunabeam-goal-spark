@@ -10,10 +10,9 @@ class CustomBridgeViewController: CAPBridgeViewController {
         super.viewDidLoad()
         
         // CRITICAL FIX: Tell WKWebView to NOT adjust content insets automatically
-        // This allows CSS env(safe-area-inset-*) to work correctly
         webView?.scrollView.contentInsetAdjustmentBehavior = .never
         
-        // Optional: Ensure WebView extends to screen edges
+        // Ensure WebView extends to screen edges
         if let webView = webView {
             webView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
@@ -24,46 +23,28 @@ class CustomBridgeViewController: CAPBridgeViewController {
             ])
         }
         
-        print("✅ CustomBridgeViewController: contentInsetAdjustmentBehavior set to .never")
-        print("✅ CustomBridgeViewController: WebView should now respect env(safe-area-inset-*)")
+        print("✅ CustomBridgeViewController: Safe area inset behavior configured")
         
-        // Best effort: If the bridge is ready here, log its config and try forcing remote
-        if let bridge = self.bridge {
-            print("ℹ️ Capacitor serverURL =", bridge.config.serverURL.absoluteString)
-            print("ℹ️ Capacitor appLocation =", bridge.config.appLocation.absoluteString)
-            
-            if bridge.config.serverURL.scheme != "http" && bridge.config.serverURL.scheme != "https" {
-                if let remoteURL = URL(string: remotePreviewURLString) {
-                    print("🔧 Forcing remote server URL (viewDidLoad):", remoteURL.absoluteString)
-                    webView?.load(URLRequest(url: remoteURL))
-                } else {
-                    print("❌ Invalid remote URL string:", remotePreviewURLString)
-                }
-            }
-        } else {
-            print("⚠️ CustomBridgeViewController: bridge not ready yet to read config")
-        }
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-        // If we're still at capacitor:// or file:// after initial load, force the remote URL.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+        // Force load remote URL after a delay to ensure WebView is ready
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             guard let self = self else { return }
-            let current = self.webView?.url?.absoluteString ?? "nil"
-            let scheme = self.webView?.url?.scheme ?? "nil"
-            print("ℹ️ CustomBridgeViewController: current webView URL =", current)
             
-            if scheme == "capacitor" || scheme == "file" || current == "nil" {
+            let currentURL = self.webView?.url?.absoluteString ?? "nil"
+            let currentScheme = self.webView?.url?.scheme ?? "nil"
+            
+            print("🔍 Current WebView URL:", currentURL)
+            print("🔍 Current URL scheme:", currentScheme)
+            
+            // Force remote URL if we're on capacitor:// or file://
+            if currentScheme == "capacitor" || currentScheme == "file" || currentURL == "nil" {
                 if let remoteURL = URL(string: self.remotePreviewURLString) {
-                    print("🔧 Forcing remote server URL (viewDidAppear):", remoteURL.absoluteString)
+                    print("🔧 FORCING remote server URL:", remoteURL.absoluteString)
                     self.webView?.load(URLRequest(url: remoteURL))
                 } else {
-                    print("❌ Invalid remote URL string:", self.remotePreviewURLString)
+                    print("❌ Invalid remote URL string")
                 }
             } else {
-                print("✅ CustomBridgeViewController: Non-capacitor URL already loaded — no override needed")
+                print("✅ Remote URL already loaded, no override needed")
             }
         }
     }
