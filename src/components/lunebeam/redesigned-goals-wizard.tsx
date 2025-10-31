@@ -111,7 +111,7 @@ const categories = [{
   detailedExamples: ['Walk daily for 30 minutes', 'Stretch every morning', 'Sleep 8 hours per night', 'Drink more water', 'Practice meditation', 'Eat healthy meals']
 }, {
   id: 'education',
-  title: 'Education - High School / Academic Readiness',
+  title: 'Education - Academic Readiness',
   icon: GraduationCap,
   emoji: '📘',
   description: 'Academic skills and school success',

@@ -32,7 +32,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     },
     {
       id: 'education',
-      title: '🎓 Education - High School / Academic Readiness',
+      title: '🎓 Education - Academic Readiness',
       description: 'Learning new things and growing your brain power - no matter how small the step',
       icon: GraduationCap,
       color: 'bg-blue-500/10 text-blue-600 border-blue-200',

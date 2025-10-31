@@ -207,7 +207,7 @@ export const GoalFactorSummary: React.FC<GoalFactorSummaryProps> = ({
       label: 'Health & Well Being'
     }, {
       id: 'education',
-      label: 'Education - High School / Academic Readiness'
+      label: 'Education - Academic Readiness'
     }, {
       id: 'employment',
       label: 'Employment'

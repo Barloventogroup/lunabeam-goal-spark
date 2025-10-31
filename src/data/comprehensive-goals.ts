@@ -52,7 +52,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     }
   ],
 
-  "Education - High School / Academic Readiness": [
+  "Education - Academic Readiness": [
     {
       "goal": "Read Something",
       "options": ["Learn for school", "Relax/enjoy", "Practice focus"],
@@ -353,7 +353,7 @@ export const getGoalsForCategory = (category: string): GoalFlow[] => {
 export const normalizeCategoryName = (category: string): string => {
   const mapping: Record<string, string> = {
     'health': 'Health & Well Being',
-    'education': 'Education - High School / Academic Readiness', 
+    'education': 'Education - Academic Readiness',
     'employment': 'Employment',
     'independent_living': 'Independent Living',
     'social_skills': 'Social / Self-Advocacy',

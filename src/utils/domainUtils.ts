@@ -1,13 +1,13 @@
 export const getDomainDisplayName = (domain: string): string => {
   const domainMap: Record<string, string> = {
     // Legacy domain mappings (these are the current values in database)
-    'school': 'Education - High School / Academic Readiness',
+    'school': 'Education - Academic Readiness',
     'work': 'Employment', 
     'health': 'Health & Well Being',
     'life': 'Independent Living',
     
     // New category mappings from goal-categories.tsx
-    'education': 'Education - High School / Academic Readiness',
+    'education': 'Education - Academic Readiness',
     'employment': 'Employment',
     'independent_living': 'Independent Living', 
     'social_skills': 'Social / Self-Advocacy',

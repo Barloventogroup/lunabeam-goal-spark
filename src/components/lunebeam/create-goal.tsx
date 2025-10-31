@@ -108,7 +108,7 @@ export const CreateGoal: React.FC<CreateGoalProps> = ({ onNavigate }) => {
   };
 
   const domains: { value: GoalDomain; label: string }[] = [
-    { value: 'school', label: 'Education - High School / Academic Readiness' },
+    { value: 'school', label: 'Education - Academic Readiness' },
     { value: 'work', label: 'Employment' },
     { value: 'life', label: 'Life Skills' },
     { value: 'health', label: 'Health & Well-Being' },
