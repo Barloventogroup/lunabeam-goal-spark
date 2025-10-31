@@ -11,7 +11,7 @@ export const getDomainDisplayName = (domain: string): string => {
     'employment': 'Employment',
     'independent_living': 'Independent Living', 
     'social_skills': 'Social / Self-Advocacy',
-    'postsecondary': 'Postsecondary - Learning After High School',
+    'postsecondary': 'Postsecondary - Learning After School',
     'fun_recreation': 'Fun / Recreation',
     
     // Handle the default case

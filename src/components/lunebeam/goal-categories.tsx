@@ -64,7 +64,7 @@ export const GoalCategories: React.FC<GoalCategoriesProps> = ({
     },
     {
       id: 'postsecondary',
-      title: '🎓 Postsecondary - Learning After High School',
+      title: '🎓 Postsecondary - Learning After School',
       description: "Checking out what's next after high school - colleges, trades, certificates, whatever interests you",
       icon: BookOpen,
       color: 'bg-indigo-500/10 text-indigo-600 border-indigo-200',

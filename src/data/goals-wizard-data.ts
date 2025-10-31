@@ -1005,7 +1005,7 @@ export const GOALS_WIZARD_DATA: Category[] = [
   },
   {
     id: "postsecondary",
-    title: "Postsecondary - Learning After High School",
+    title: "Postsecondary - Learning After School",
     emoji: "🎓",
     description: "Checking out what's next after high school - colleges, trades, certificates, whatever interests you",
     goals: [

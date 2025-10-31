@@ -218,7 +218,7 @@ export const COMPREHENSIVE_GOAL_FLOWS: CategoryGoals = {
     }
   ],
 
-  "Postsecondary - Learning After High School": [
+  "Postsecondary - Learning After School": [
     {
       "goal": "Research Colleges/Programs",
       "options": ["4-yr college", "2-yr college", "Trade school", "Certificate"],
@@ -357,7 +357,7 @@ export const normalizeCategoryName = (category: string): string => {
     'employment': 'Employment',
     'independent_living': 'Independent Living',
     'social_skills': 'Social / Self-Advocacy',
-    'postsecondary': 'Postsecondary - Learning After High School',
+    'postsecondary': 'Postsecondary - Learning After School',
     'fun_recreation': 'Fun / Recreation'
   };
   return mapping[category] || category;

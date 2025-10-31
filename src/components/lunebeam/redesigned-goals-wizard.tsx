@@ -143,7 +143,7 @@ const categories = [{
   detailedExamples: ['Start conversations with peers', 'Practice speaking up in meetings', 'Join a social group', 'Express needs clearly', 'Work on team projects', 'Build friendships']
 }, {
   id: 'postsecondary',
-  title: 'Postsecondary - Learning After High School',
+  title: 'Postsecondary - Learning After School',
   icon: Building,
   emoji: '🎓',
   description: 'College, trade school, or training prep',

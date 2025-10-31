@@ -68,7 +68,7 @@ export const LuneAISession: React.FC<LuneAISessionProps> = ({
     independent_living: 'Independent Living',
     social_skills: 'Social Skills',
     housing: 'Housing',
-    postsecondary: 'Postsecondary - Learning After High School'
+    postsecondary: 'Postsecondary - Learning After School'
   };
 
   useEffect(() => {
