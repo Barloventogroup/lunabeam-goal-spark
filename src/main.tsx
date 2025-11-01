@@ -11,8 +11,15 @@ if (typeof window !== 'undefined') {
     useStore.getState().resetOnboarding();
     console.log('Onboarding reset! Refresh the page to see role selection.');
   };
-}
 
+  // Global error handlers to reveal JS exceptions inside Capacitor WKWebView
+  window.addEventListener('error', (e) => {
+    console.error('[GlobalError]', (e as any).message, (e as any).error?.stack || (e as any).error);
+  });
+  window.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) => {
+    console.error('[UnhandledRejection]', e.reason);
+  });
+}
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
