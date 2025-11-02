@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'lunabeam-goal-spark',
   webDir: 'dist',
   server: {
-    url: 'https://id-preview--bcbbec97-94c4-45c1-9f35-6ed8dcd5b3b6.lovable.app?forceHideBadge=true&debug=safearea',
+    url: 'https://lunabeam-goal-spark.lovable.app',
     cleartext: true
   }
 };

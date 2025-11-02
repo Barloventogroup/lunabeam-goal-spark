@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
@@ -37,8 +37,12 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
+  const [origin, setOrigin] = useState('');
+
   // Configure StatusBar and Keyboard on app mount
   useEffect(() => {
+    setOrigin(window.location.origin);
+    
     const configureStatusBar = async () => {
       try {
         // Allow webview to extend under status bar - safe areas handled by CSS pt-safe
@@ -96,6 +100,12 @@ const App = () => {
         <SafeAreaDebugger />
         <SafeAreaProbe />
         <BuildBadge />
+        {/* Debug banner to verify URL origin */}
+        {origin && (
+          <div className="fixed top-0 left-0 right-0 z-[9999] bg-yellow-500 text-black text-xs p-1 text-center font-mono">
+            Loading from: {origin}
+          </div>
+        )}
         <BrowserRouter>
           <div className="app-shell min-h-[100dvh] flex flex-col">
             <Routes>
