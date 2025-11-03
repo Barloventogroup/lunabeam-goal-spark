@@ -5,6 +5,14 @@
     <script>
       (function() {
         console.log('🧨 Inline SW killer executing...');
+
+        // If loaded from bundled assets (capacitor://localhost), hard-redirect to preview origin
+        const PREVIEW_URL = `https://bcbbec97-94c4-45c1-9f35-6ed8dcd5b3b6.lovableproject.com?forceHideBadge=true&_nocache=${Date.now()}`;
+        if (location.origin.startsWith('capacitor://')) {
+          console.log('➡️ Detected bundled load (capacitor://). Redirecting to preview origin...');
+          location.replace(PREVIEW_URL);
+          return; // Stop further execution; page will navigate
+        }
         
         // Unregister all service workers synchronously
         const unregisterAll = async () => {
