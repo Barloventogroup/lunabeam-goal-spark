@@ -73,8 +73,10 @@ async function nukeServiceWorkers() {
   }
 }
 
-// Run synchronously before React renders
-await nukeServiceWorkers();
+// Run before React renders (async IIFE to avoid top-level await)
+(async () => {
+  await nukeServiceWorkers();
+})();
 
 // For testing - expose reset function to console
 if (typeof window !== 'undefined') {
