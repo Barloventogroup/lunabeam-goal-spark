@@ -2,7 +2,7 @@ import { createRoot } from 'react-dom/client'
 import { StrictMode } from 'react'
 import App from './App.tsx'
 import './index.css'
-import { AuthProvider } from '@/components/auth/auth-provider'
+import { AuthProvider } from './components/auth/auth-provider'
 import { useStore } from '@/store/useStore'
 
 // For testing - expose reset function to console
