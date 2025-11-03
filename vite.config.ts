@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   resolve: {
     alias: [
-      { find: /^@\//, replacement: fileURLToPath(new URL('./src/', import.meta.url)) },
+      { find: '@/', replacement: fileURLToPath(new URL('./src/', import.meta.url)) },
     ],
   },
 }));
