@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   resolve: {
     alias: [
+      // Explicit fallback for troublesome build-time resolution
+      { find: '@/components/auth/auth-provider', replacement: fileURLToPath(new URL('./src/components/auth/auth-provider.tsx', import.meta.url)) },
       { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
       { find: /^@\//, replacement: fileURLToPath(new URL('./src/', import.meta.url)) },
     ],
