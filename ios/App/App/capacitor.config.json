@@ -3,7 +3,7 @@
   "appName": "lunabeam-goal-spark",
   "webDir": "dist",
   "server": {
-    "url": "https://lunabeam-goal-spark.lovable.app",
+    "url": "https://lunabeam-goal-spark.lovable.app?v=2025-11-03&_nocache=1730654400000",
     "cleartext": true
   }
 }

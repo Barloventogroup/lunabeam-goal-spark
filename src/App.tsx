@@ -23,6 +23,7 @@ const Style = { Dark: 'DARK', Light: 'LIGHT' } as const;
 import BuildBadge from "./components/dev/BuildBadge";
 import SafeAreaDebugger from "./components/dev/SafeAreaDebugger";
 import SafeAreaProbe from "./components/dev/SafeAreaProbe";
+import ServiceWorkerDebug from "./components/dev/ServiceWorkerDebug";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -100,6 +101,7 @@ const App = () => {
         <SafeAreaDebugger />
         <SafeAreaProbe />
         <BuildBadge />
+        <ServiceWorkerDebug />
         {/* Debug banner to verify URL origin */}
         {origin && (
           <div className="fixed top-0 left-0 right-0 z-[9999] bg-yellow-500 text-black text-xs p-1 text-center font-mono">
