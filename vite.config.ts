@@ -1,8 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import { fileURLToPath, URL } from "node:url";
+import path from "node:path";
 import { componentTagger } from "lovable-tagger";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -12,16 +11,13 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    tsconfigPaths(),
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: [
-      // Explicit fallback for troublesome build-time resolution
-      { find: '@/components/auth/auth-provider', replacement: fileURLToPath(new URL('./src/components/auth/auth-provider.tsx', import.meta.url)) },
-      { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
-      { find: /^@\//, replacement: fileURLToPath(new URL('./src/', import.meta.url)) },
+      // Single, safe alias: only matches "@/..."
+      { find: /^@\//, replacement: path.resolve(__dirname, "src") + "/" },
     ],
   },
 }));
