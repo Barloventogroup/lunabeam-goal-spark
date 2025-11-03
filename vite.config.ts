@@ -15,9 +15,8 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
   ].filter(Boolean),
   resolve: {
-    alias: [
-      // Single, safe alias: only matches "@/..."
-      { find: /^@\//, replacement: path.resolve(__dirname, "src") + "/" },
-    ],
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
   },
 }));
