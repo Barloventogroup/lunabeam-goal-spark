@@ -1,8 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import { fileURLToPath, URL } from "node:url";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { componentTagger } from "lovable-tagger";
-import tsconfigPaths from "vite-tsconfig-paths";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -12,14 +14,12 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    tsconfigPaths(),
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: [
-      { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
-      { find: /^@\//, replacement: fileURLToPath(new URL('./src/', import.meta.url)) },
+      { find: /^@\//, replacement: path.resolve(__dirname, "src") + "/" },
     ],
   },
 }));

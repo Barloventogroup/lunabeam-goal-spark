@@ -4,25 +4,25 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
-import AuthCallback from "./pages/AuthCallback";
-import ResetPassword from "./pages/ResetPassword";
-import RequestReset from "./pages/RequestReset";
-import Invitations from "./pages/Invitations";
-import Logout from "./pages/Logout";
-import TestComponents from "./pages/TestComponents";
-import { ProtectedRoute } from "./components/auth/protected-route";
+import Index from "@/pages/Index";
+import NotFound from "@/pages/NotFound";
+import Auth from "@/pages/Auth";
+import AuthCallback from "@/pages/AuthCallback";
+import ResetPassword from "@/pages/ResetPassword";
+import RequestReset from "@/pages/RequestReset";
+import Invitations from "@/pages/Invitations";
+import Logout from "@/pages/Logout";
+import TestComponents from "@/pages/TestComponents";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 
 // Use registerPlugin to avoid build-time dependency on plugin packages
 const StatusBar = registerPlugin<any>('StatusBar');
 const Keyboard = registerPlugin<any>('Keyboard');
 const Style = { Dark: 'DARK', Light: 'LIGHT' } as const;
-import BuildBadge from "./components/dev/BuildBadge";
-import SafeAreaDebugger from "./components/dev/SafeAreaDebugger";
-import SafeAreaProbe from "./components/dev/SafeAreaProbe";
+import BuildBadge from "@/components/dev/BuildBadge";
+import SafeAreaDebugger from "@/components/dev/SafeAreaDebugger";
+import SafeAreaProbe from "@/components/dev/SafeAreaProbe";
 
 const queryClient = new QueryClient({
   defaultOptions: {
