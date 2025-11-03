@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
   ].filter(Boolean),
   resolve: {
-    alias: [
-      { find: '@/', replacement: fileURLToPath(new URL('./src/', import.meta.url)) },
-    ],
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
   },
 }));
