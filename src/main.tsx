@@ -5,6 +5,11 @@ import './index.css'
 import { AuthProvider } from '@/components/auth/auth-provider'
 import { useStore } from '@/store/useStore'
 
+// PHASE 4: DIAGNOSTIC LOGGING
+console.log('🚀 main.tsx EXECUTING');
+console.log('🚀 main.tsx Origin:', window.location.origin);
+console.log('🚀 main.tsx Href:', window.location.href);
+
 // PHASE 1: NUCLEAR SERVICE WORKER ELIMINATION
 const CURRENT_BUILD = import.meta.env.VITE_BUILD_ID || 'dev';
 const LAST_BUILD_KEY = 'last_build_id';
@@ -13,10 +18,17 @@ const SW_CLEARED_KEY = 'sw_cleared_session';
 async function nukeServiceWorkers() {
   console.log('🧨 Starting Service Worker nuclear elimination...');
   
+  // PHASE 4: DIAGNOSTIC LOGGING
+  console.log('🧨 VITE_BUILD_ID:', CURRENT_BUILD);
+  
   // Check if we've already cleared this session
   const clearedThisSession = sessionStorage.getItem(SW_CLEARED_KEY);
   const lastBuild = localStorage.getItem(LAST_BUILD_KEY);
   const buildChanged = lastBuild !== CURRENT_BUILD;
+  
+  console.log('🧨 Last Build:', lastBuild);
+  console.log('🧨 Build Changed:', buildChanged);
+  console.log('🧨 Cleared This Session:', clearedThisSession);
   
   if (clearedThisSession && !buildChanged) {
     console.log('✅ SW already cleared this session');
