@@ -791,6 +791,7 @@ export type Database = {
           email: string | null
           first_name: string
           goal_sharing: string | null
+          grade: string | null
           guardian_locked_until: string | null
           has_seen_welcome: boolean | null
           id: string
@@ -819,6 +820,7 @@ export type Database = {
           email?: string | null
           first_name: string
           goal_sharing?: string | null
+          grade?: string | null
           guardian_locked_until?: string | null
           has_seen_welcome?: boolean | null
           id?: string
@@ -847,6 +849,7 @@ export type Database = {
           email?: string | null
           first_name?: string
           goal_sharing?: string | null
+          grade?: string | null
           guardian_locked_until?: string | null
           has_seen_welcome?: boolean | null
           id?: string
@@ -2043,6 +2046,8 @@ export type Database = {
         | "admin"
         | "parent"
         | "family"
+        | "coach"
+        | "teacher"
       user_role_fixed: "individual" | "supporter" | "friend" | "provider"
     }
     CompositeTypes: {
@@ -2189,6 +2194,8 @@ export const Constants = {
         "admin",
         "parent",
         "family",
+        "coach",
+        "teacher",
       ],
       user_role_fixed: ["individual", "supporter", "friend", "provider"],
     },
