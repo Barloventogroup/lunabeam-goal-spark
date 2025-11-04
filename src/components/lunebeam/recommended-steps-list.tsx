@@ -62,6 +62,7 @@ interface RecommendedStepsListProps {
   onStepsChange?: () => void;
   onStepsUpdate?: (updatedSteps: Step[], updatedGoal: Goal) => void;
   onOpenStepChat?: (step: Step) => void;
+  isViewerSupporter?: boolean;
 }
 
 interface StepGroup {
@@ -74,7 +75,8 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   goal,
   onStepsChange,
   onStepsUpdate,
-  onOpenStepChat
+  onOpenStepChat,
+  isViewerSupporter = false
 }) => {
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [currentHelpStep, setCurrentHelpStep] = useState<Step | null>(null);
@@ -912,6 +914,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
               isExpanded={expandedSteps.has(group.mainStep.id)}
               onToggleExpand={() => toggleStepExpanded(group.mainStep.id)}
               isBlocked={isStepBlocked(group.mainStep)}
+              isViewerSupporter={isViewerSupporter}
             />
           ))}
 

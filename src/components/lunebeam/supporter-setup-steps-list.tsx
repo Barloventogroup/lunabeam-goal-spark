@@ -65,13 +65,15 @@ interface SupporterSetupStepsListProps {
   goal: Goal;
   onStepsChange?: () => void;
   onStepsUpdate?: (updatedSteps: Step[], updatedGoal: Goal) => void;
+  isViewerSupporter?: boolean;
 }
 
 export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = ({
   steps,
   goal,
   onStepsChange,
-  onStepsUpdate
+  onStepsUpdate,
+  isViewerSupporter = true
 }) => {
   const [showSetupSteps, setShowSetupSteps] = useState(true);
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());

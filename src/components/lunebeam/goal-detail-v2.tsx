@@ -1397,14 +1397,14 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
                 <h3 className="text-xl font-semibold flex items-center gap-2">
                   <span>Recommended Steps</span>
                 </h3>
-                <RecommendedStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} onOpenStepChat={handleOpenStepChat} />
+                <RecommendedStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} onOpenStepChat={handleOpenStepChat} isViewerSupporter={isViewerSupporter} />
                   </div>}
                 </div>}
             </TabsContent>
 
             {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && <TabsContent value="supporter" className="mt-0">
                 {activeTab === 'supporter' && <div className="max-w-4xl mx-auto">
-                    <SupporterSetupStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} />
+                    <SupporterSetupStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} isViewerSupporter={isViewerSupporter} />
                   </div>}
               </TabsContent>}
           </div>
