@@ -45,14 +45,14 @@ export function StudentDrawer({ student, open, onOpenChange }: StudentDrawerProp
     setIsSubmitting(true);
     try {
       const { error } = await supabase
-        .from('support_actions')
+        .from('support_actions' as any)
         .insert({
           student_id: student.userId,
           coach_id: user.id,
           type,
           payload,
           visible_to_student: type !== 'note'
-        });
+        } as any);
 
       if (error) throw error;
 
