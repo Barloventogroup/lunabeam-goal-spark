@@ -23,14 +23,8 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
-    <!-- Canonical URL - dynamically generated to support native and web environments -->
-    <script type="module">
-      const href = import.meta.env?.VITE_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '/');
-      const link = document.createElement('link');
-      link.rel = 'canonical';
-      link.href = href;
-      document.head.appendChild(link);
-    </script>
+    <!-- Canonical URL for SEO and cache-busting hints -->
+    <link rel="canonical" href="%VITE_PUBLIC_SITE_URL%" />
   </head>
 
   <body>

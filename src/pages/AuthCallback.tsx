@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import Lottie from 'lottie-react';
-import loadingLunaAnimation from '../assets/loading-luna-animation.json';
+import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
 
 function getHashParams(hash: string) {
   const h = hash.startsWith('#') ? hash.slice(1) : hash;

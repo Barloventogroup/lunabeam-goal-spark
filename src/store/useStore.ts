@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { FamilyCircle, CircleMembership, CircleInvite, WeeklyCheckin, SelectedGoal, Profile, Consent, CheckInEntry, Evidence, Badge, Goal, Step } from '@/types';
-import { database } from '@/services/database';
-import { goalsService, stepsService } from '@/services/goalsService';
-import { pointsService, type PointsSummary } from '@/services/pointsService';
+import { database } from '../services/database';
+import { goalsService, stepsService } from '../services/goalsService';
+import { pointsService, type PointsSummary } from '../services/pointsService';
 import { supabase } from '@/integrations/supabase/client';
 import { getUserContext, type UserContext } from '@/utils/userTypeUtils';
 import { getSupporterContext } from '@/utils/supporterUtils';

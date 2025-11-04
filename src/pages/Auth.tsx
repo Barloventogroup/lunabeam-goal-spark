@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { useAuth } from '../components/auth/auth-provider';
-import { FirstTimePasswordSetup } from '../components/auth/first-time-password-setup';
-import { SupporterPasswordSetup } from '../components/auth/supporter-password-setup';
-import { getSupporterInviteByToken } from '../utils/supporterUtils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/components/auth/auth-provider';
+import { FirstTimePasswordSetup } from '@/components/auth/first-time-password-setup';
+import { SupporterPasswordSetup } from '@/components/auth/supporter-password-setup';
+import { getSupporterInviteByToken } from '@/utils/supporterUtils';
 import { toast } from 'sonner';
-import { supabase } from '../integrations/supabase/client';
-import { useStore } from '../store/useStore';
+import { supabase } from '@/integrations/supabase/client';
+import { useStore } from '@/store/useStore';
 import Lottie from 'lottie-react';
-import loadingLunaAnimation from '../assets/loading-luna-animation.json';
+import loadingLunaAnimation from '@/assets/loading-luna-animation.json';
 export default function Auth() {
   const {
     user,

@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { Alert, AlertTitle, AlertDescription } from '../components/ui/alert';
-import { Button } from '../components/ui/button';
-import { Separator } from '../components/ui/separator';
-import { Badge } from '../components/ui/badge';
-import { StarRating } from '../components/lunebeam/star-rating';
-import { IndependenceSlider } from '../components/lunebeam/independence-slider';
-import { ConfidenceRating } from '../components/lunebeam/confidence-rating';
-import { SkillAssessmentWizard } from '../components/lunebeam/skill-assessment-wizard';
-import { ProgressiveMasteryCheckIn } from '../components/lunebeam/progressive-mastery-checkin';
-import { EveningCatchUpCard } from '../components/lunebeam/evening-catch-up-card';
-import { ExpressCheckInCard } from '../components/lunebeam/express-check-in-card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { StarRating } from '@/components/lunebeam/star-rating';
+import { IndependenceSlider } from '@/components/lunebeam/independence-slider';
+import { ConfidenceRating } from '@/components/lunebeam/confidence-rating';
+import { SkillAssessmentWizard } from '@/components/lunebeam/skill-assessment-wizard';
+import { ProgressiveMasteryCheckIn } from '@/components/lunebeam/progressive-mastery-checkin';
+import { EveningCatchUpCard } from '@/components/lunebeam/evening-catch-up-card';
+import { ExpressCheckInCard } from '@/components/lunebeam/express-check-in-card';
 import { Smartphone, Tablet, Monitor, Loader2, AlertCircle } from 'lucide-react';
-import { supabase } from '../integrations/supabase/client';
-import type { Step, Goal } from '../types';
-import { useToast } from '../hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import type { Step, Goal } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 export default function TestComponents() {
   // StarRating states
