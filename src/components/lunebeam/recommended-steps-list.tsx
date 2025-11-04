@@ -176,15 +176,16 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   // Filter individual steps only (non-supporter steps)
   const individualSteps = steps
     .filter(s => {
-      // Filter out supporter steps
+      // Exclude supporter steps from individual list
       if (s.is_supporter_step) return false;
-      
-      // Filter out scaffolding substeps (these are shown nested)
+
+      // Exclude scaffolding substeps (these are shown nested under main steps)
       if (s.is_scaffolding && s.parent_step_id) return false;
-      
-      // Keep action steps or steps without a type
-      if (s.type && s.type !== 'action') return false;
-      
+
+      // Exclude hidden steps
+      if ((s as any).hidden) return false;
+
+      // Do not filter by type here to avoid excluding valid microsteps
       return true;
     })
     .sort((a, b) => (a.order_index ?? Number.POSITIVE_INFINITY) - (b.order_index ?? Number.POSITIVE_INFINITY));
