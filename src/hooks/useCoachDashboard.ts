@@ -64,7 +64,7 @@ export function useCoachDashboard(filters: CoachDashboardFilters = {}) {
         .from('supporters')
         .select('individual_id, role')
         .eq('supporter_id', user.id)
-        .in('role', ['coach', 'teacher'] as any);
+        .in('role', ['coach', 'teacher']);
 
       if (relError) throw relError;
       if (!relationships?.length) {
@@ -75,7 +75,7 @@ export function useCoachDashboard(filters: CoachDashboardFilters = {}) {
 
       // 2. Get cohorts and members
       const { data: cohortMembers } = await supabase
-        .from('cohort_members' as any)
+        .from('cohort_members')
         .select(`
           individual_id,
           cohort_id,
@@ -84,12 +84,12 @@ export function useCoachDashboard(filters: CoachDashboardFilters = {}) {
             name
           )
         `)
-        .in('individual_id', individualIds) as any;
+        .in('individual_id', individualIds);
 
       const cohortMap = new Map<string, { id: string; name: string }>();
       const individualCohortMap = new Map<string, { id: string; name: string }>();
       
-      cohortMembers?.forEach((cm: any) => {
+      cohortMembers?.forEach(cm => {
         if (cm.cohorts) {
           cohortMap.set(cm.cohorts.id, { id: cm.cohorts.id, name: cm.cohorts.name });
           individualCohortMap.set(cm.individual_id, { id: cm.cohorts.id, name: cm.cohorts.name });
@@ -108,16 +108,16 @@ export function useCoachDashboard(filters: CoachDashboardFilters = {}) {
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, first_name, avatar_url, grade')
-        .in('user_id', filteredIndividualIds) as any;
+        .in('user_id', filteredIndividualIds);
 
       // Apply grade filter
       if (filters.grade && profiles) {
         filteredIndividualIds = profiles
-          .filter((p: any) => p.grade === filters.grade)
-          .map((p: any) => p.user_id);
+          .filter(p => p.grade === filters.grade)
+          .map(p => p.user_id);
       }
 
-      const profileMap = new Map(profiles?.map((p: any) => [p.user_id, p]) || []);
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
       // 4. Get current active goals
       const { data: goals } = await supabase
@@ -148,29 +148,29 @@ export function useCoachDashboard(filters: CoachDashboardFilters = {}) {
         .from('check_ins')
         .select('user_id, goal_id, created_at, difficulty, blocker_tags')
         .in('user_id', filteredIndividualIds)
-        .gte('created_at', sevenDaysAgo.toISOString()) as any;
+        .gte('created_at', sevenDaysAgo.toISOString());
 
       // 7. Get support actions (last 7 days)
       const { data: supportActions } = await supabase
-        .from('support_actions' as any)
+        .from('support_actions')
         .select('student_id, coach_id, created_at')
         .in('student_id', filteredIndividualIds)
-        .gte('at_ts', sevenDaysAgo.toISOString()) as any;
+        .gte('at_ts', sevenDaysAgo.toISOString());
 
       // Apply supporter scope filter
       let filteredSupportActions = supportActions || [];
       if (filters.supporterScope === 'me') {
-        filteredSupportActions = filteredSupportActions.filter((sa: any) => sa.coach_id === user.id);
+        filteredSupportActions = filteredSupportActions.filter(sa => sa.coach_id === user.id);
       }
 
       // Calculate student data and statuses
       const students: StudentData[] = filteredIndividualIds.map(individualId => {
-        const profile: any = profileMap.get(individualId);
+        const profile = profileMap.get(individualId);
         const goal = goalMap.get(individualId);
         const cohort = individualCohortMap.get(individualId);
 
         const studentSteps = steps?.filter(s => s.goal_id === goal?.id) || [];
-        const studentCheckIns: any[] = checkIns?.filter((ci: any) => ci.user_id === individualId) || [];
+        const studentCheckIns = checkIns?.filter(ci => ci.user_id === individualId) || [];
 
         const completed = studentSteps.filter(s => s.status === 'done').length;
         const planned = studentSteps.length;
@@ -186,7 +186,7 @@ export function useCoachDashboard(filters: CoachDashboardFilters = {}) {
           ? (Date.now() - new Date(oldestOverdue.due_date!).getTime()) / (1000 * 60 * 60)
           : 0;
 
-        const lastCheckIn = studentCheckIns.sort((a: any, b: any) => 
+        const lastCheckIn = studentCheckIns.sort((a, b) => 
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )[0];
 
@@ -195,12 +195,12 @@ export function useCoachDashboard(filters: CoachDashboardFilters = {}) {
           : 999;
 
         const avgDifficulty = studentCheckIns.length > 0
-          ? studentCheckIns.reduce((sum: number, ci: any) => sum + (ci.difficulty || 0), 0) / studentCheckIns.length
+          ? studentCheckIns.reduce((sum, ci) => sum + (ci.difficulty || 0), 0) / studentCheckIns.length
           : 0;
 
         const recentBlockers = studentCheckIns
-          .flatMap((ci: any) => ci.blocker_tags || [])
-          .filter((tag: string) => tag !== 'none');
+          .flatMap(ci => ci.blocker_tags || [])
+          .filter(tag => tag !== 'none');
 
         // Calculate streak
         const completedSteps = studentSteps

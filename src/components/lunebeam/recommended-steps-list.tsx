@@ -175,29 +175,8 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
 
   // Filter individual steps only (non-supporter steps)
   const individualSteps = steps
-    .filter(s => {
-      // Exclude supporter steps from individual list
-      if (s.is_supporter_step) return false;
-
-      // Exclude scaffolding substeps (these are shown nested under main steps)
-      if (s.is_scaffolding && s.parent_step_id) return false;
-
-      // Exclude hidden steps
-      if ((s as any).hidden) return false;
-
-      // Do not filter by type here to avoid excluding valid microsteps
-      return true;
-    })
+    .filter(s => (!s.type || s.type === 'action') && !s.hidden && !s.is_supporter_step)
     .sort((a, b) => (a.order_index ?? Number.POSITIVE_INFINITY) - (b.order_index ?? Number.POSITIVE_INFINITY));
-
-  // Debug counts
-  try {
-    console.debug('[RecommendedStepsList] counts', {
-      total: steps.length,
-      individual: individualSteps.length,
-    });
-  } catch {}
-
 
   // Compute sorted actionable steps and split into visible + queued
   const sortedActionableSteps = individualSteps
@@ -244,13 +223,6 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   
   // Rest are queued
   const queuedSteps = sortedActionableSteps.slice(4);
-
-  // Auto-show queued if no visible steps
-  useEffect(() => {
-    if (visibleSteps.length === 0 && queuedSteps.length > 0 && !showingQueuedSteps) {
-      setShowingQueuedSteps(true);
-    }
-  }, [visibleSteps.length, queuedSteps.length, showingQueuedSteps]);
 
   // Group steps with their substeps from database
   const groupedSteps: StepGroup[] = visibleSteps.map((step) => ({
@@ -877,13 +849,13 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     }
   };
 
-  if (individualSteps.length === 0) {
+  if (steps.filter(s => !s.is_supporter_step).length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-foreground">No steps yet</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Steps are created when you set up your goal. Use "Need more help?" to break down existing steps.
+            Steps are created when you set up your goal. You can also add steps manually or use "Need more help?" to break down existing steps.
           </p>
         </CardHeader>
         <CardContent className="py-6">

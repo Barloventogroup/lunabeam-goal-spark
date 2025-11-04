@@ -1242,7 +1242,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
         <div className="flex-1 overflow-y-auto" data-scroll-container>
           <div className="px-4 py-4">
             <TabsContent value="summary" className="mt-0">
-              {activeTab === 'summary' && <div className="w-full">
+              {activeTab === 'summary' && <div className="max-w-4xl mx-auto">
                   <Suspense fallback={<Skeleton className="h-96 w-full" />}>
                     <GoalFactorSummary goal={goal} wizardContext={(() => {
               const existingContext = (goal as any).metadata?.wizardContext;
@@ -1333,7 +1333,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
             </TabsContent>
 
             <TabsContent value="calendar" className="mt-0">
-              {activeTab === 'calendar' && <div className="w-full">
+              {activeTab === 'calendar' && <div className="max-w-4xl mx-auto">
                   <div className="space-y-2">
                     <h3 className="text-xl font-semibold flex items-center gap-2">
                       <span>Results</span>
@@ -1346,7 +1346,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
             </TabsContent>
 
             <TabsContent value="steps" className="mt-0">
-              {activeTab === 'steps' && <div className="w-full">
+              {activeTab === 'steps' && <div className="max-w-4xl mx-auto">
                   {generatingSteps ? <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-center py-12 text-center">
@@ -1396,7 +1396,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
             </TabsContent>
 
             {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && <TabsContent value="supporter" className="mt-0">
-                {activeTab === 'supporter' && <div className="w-full">
+                {activeTab === 'supporter' && <div className="max-w-4xl mx-auto">
                     <SupporterSetupStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} />
                   </div>}
               </TabsContent>}
