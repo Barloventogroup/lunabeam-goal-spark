@@ -17,6 +17,8 @@ import { getDomainDisplayName } from '@/utils/domainUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { generateMicroStepsSmart } from '@/services/microStepsGenerator';
 import { cn } from '@/lib/utils';
+import { useGoalSteps } from '@/hooks/useGoalSteps';
+import { useStore } from '@/store/useStore';
 import { RecommendedStepsList } from './recommended-steps-list';
 import { SupporterSetupStepsList } from './supporter-setup-steps-list';
 import { StepsChat } from './steps-chat';
@@ -67,7 +69,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
 
   // Extract data from React Query result
   const goal = data?.goal || null;
-  const steps = data?.steps || [];
+  const { data: stepsFromQuery = [], refetch: refetchSteps } = useGoalSteps(goalId);
+  const { steps: stepsMap, loadSteps } = useStore();
+  const steps = stepsFromQuery.length > 0 ? stepsFromQuery : (stepsMap[goalId] || data?.steps || []);
   const substeps = data?.substeps || [];
   const currentUser = data?.user;
   const ownerProfile = data?.ownerProfile;
@@ -106,6 +110,15 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       supabase.removeChannel(channel);
     };
   }, [goalId, toast, queryClient]);
+  // Refresh steps when Steps tab is activated
+  useEffect(() => {
+    if (activeTab === 'steps') {
+      console.debug('[GoalDetailV2] steps counts', { fromQuery: stepsFromQuery.length, fromStore: (stepsMap[goalId] || []).length, final: steps.length, goalId });
+      loadSteps(goalId);
+      refetchSteps();
+    }
+  }, [activeTab, goalId]);
+
   useEffect(() => {
     // Trigger daily generation check for habit goals
     if (goal) {
@@ -1379,12 +1392,6 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
                       Retry Generation
                     </Button>
                   </div>
-                </CardContent>
-              </Card> : steps.length === 0 ? <Card>
-                <CardContent className="pt-6">
-                  <p className="text-center text-muted-foreground py-8">
-                    No recommended steps yet
-                  </p>
                 </CardContent>
               </Card> : <div className="space-y-2">
                 <h3 className="text-xl font-semibold flex items-center gap-2">
