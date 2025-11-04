@@ -17,7 +17,7 @@ import { getDomainDisplayName } from '@/utils/domainUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { generateMicroStepsSmart } from '@/services/microStepsGenerator';
 import { cn } from '@/lib/utils';
-import { RecommendedStepsList } from './recommended-steps-list';
+import { StepsList } from './steps-list';
 import { SupporterSetupStepsList } from './supporter-setup-steps-list';
 import { StepsChat } from './steps-chat';
 import { StepChatModal } from './step-chat-modal';
@@ -212,6 +212,14 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       checkStaleGeneration();
     }
   }, [goal?.id, steps.length]);
+
+  // Refetch when Steps tab is activated
+  useEffect(() => {
+    if (activeTab === 'steps') {
+      console.debug('[GoalDetailV2] Steps tab activated, refetching data');
+      queryClient.invalidateQueries({ queryKey: goalDetailKeys.detail(goalId) });
+    }
+  }, [activeTab, goalId, queryClient]);
 
   // Optimized progress calculation with useMemo (Phase 2)
   const progress = useMemo(() => {
@@ -1365,33 +1373,17 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
                     </div>
                   </div>
                 </CardContent>
-              </Card> : generationError ? <Card>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-                    <AlertCircle className="h-12 w-12 text-destructive" />
-                    <div className="space-y-2">
-                      <p className="text-lg font-semibold">Generation failed</p>
-                      <p className="text-sm text-muted-foreground max-w-md">
-                        We couldn't generate your personalized steps. This might be due to a temporary issue.
-                      </p>
-                    </div>
-                    <Button onClick={() => generateStepsForNewGoal()} variant="default" className="mt-4">
-                      Retry Generation
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card> : steps.length === 0 ? <Card>
-                <CardContent className="pt-6">
-                  <p className="text-center text-muted-foreground py-8">
-                    No recommended steps yet
-                  </p>
-                </CardContent>
-              </Card> : <div className="space-y-2">
-                <h3 className="text-xl font-semibold flex items-center gap-2">
-                  <span>Recommended Steps</span>
-                </h3>
-                <RecommendedStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} onOpenStepChat={handleOpenStepChat} />
-                  </div>}
+              </Card> : <>
+                {console.debug('[GoalDetailV2] Rendering StepsList with', steps?.length, 'steps')}
+                <StepsList 
+                  steps={steps} 
+                  goal={goal} 
+                  onStepsChange={loadGoalData} 
+                  onStepsUpdate={handleStepsUpdate} 
+                  onOpenStepChat={handleOpenStepChat}
+                  isViewerSupporter={isViewerSupporter}
+                />
+              </>}
                 </div>}
             </TabsContent>
 

@@ -380,7 +380,14 @@ export const stepsService = {
       .order('order_index', { ascending: true });
 
     if (error) throw error;
-    return (data || []) as Step[];
+    
+    // Normalize step statuses for consistent UI logic
+    return (data || []).map(step => ({
+      ...step,
+      status: step.status === 'not_started' ? 'todo' : 
+              step.status === 'in_progress' ? 'doing' : 
+              step.status
+    })) as Step[];
   },
   async createStep(goalId: string, stepData: {
     title: string;
