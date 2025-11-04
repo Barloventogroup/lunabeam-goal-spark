@@ -190,6 +190,15 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     })
     .sort((a, b) => (a.order_index ?? Number.POSITIVE_INFINITY) - (b.order_index ?? Number.POSITIVE_INFINITY));
 
+  // Debug counts
+  try {
+    console.debug('[RecommendedStepsList] counts', {
+      total: steps.length,
+      individual: individualSteps.length,
+    });
+  } catch {}
+
+
   // Compute sorted actionable steps and split into visible + queued
   const sortedActionableSteps = individualSteps
     .sort((a, b) => {
@@ -235,6 +244,13 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   
   // Rest are queued
   const queuedSteps = sortedActionableSteps.slice(4);
+
+  // Auto-show queued if no visible steps
+  useEffect(() => {
+    if (visibleSteps.length === 0 && queuedSteps.length > 0 && !showingQueuedSteps) {
+      setShowingQueuedSteps(true);
+    }
+  }, [visibleSteps.length, queuedSteps.length, showingQueuedSteps]);
 
   // Group steps with their substeps from database
   const groupedSteps: StepGroup[] = visibleSteps.map((step) => ({
@@ -861,7 +877,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     }
   };
 
-  if (steps.filter(s => !s.is_supporter_step).length === 0) {
+  if (individualSteps.length === 0) {
     return (
       <Card>
         <CardHeader>
