@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Calendar, MoreHorizontal, Info, ClipboardCheck, CheckCircle2, Pencil, PauseCircle, Split } from "lucide-react";
+import { Calendar, MoreHorizontal, Info, ClipboardCheck, CheckCircle2, Pencil, PauseCircle, Split, Paperclip, Bell } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,7 @@ interface StepCardProps {
   isExpanded: boolean;
   onToggleExpand: () => void;
   isBlocked: boolean;
+  isViewerSupporter?: boolean;
 }
 
 const getStatusBadgeVariant = (status: string): "activeGreen" | "default" | "planned" | "secondary" | "outline" => {
@@ -88,6 +89,7 @@ export const StepCard: React.FC<StepCardProps> = ({
   isExpanded,
   onToggleExpand,
   isBlocked,
+  isViewerSupporter = false,
 }) => {
   const substepCount = scaffoldingSteps.length;
   const hasSubsteps = substepCount > 0;
@@ -170,6 +172,32 @@ export const StepCard: React.FC<StepCardProps> = ({
                       <Split className="mr-2 h-4 w-4" />
                       {hasSubsteps ? `View ${substepCount} substep${substepCount !== 1 ? "s" : ""}` : "Break it down"}
                     </DropdownMenuItem>
+                    {isViewerSupporter && (
+                      <>
+                        <DropdownMenuSeparator className="opacity-30" />
+                        <DropdownMenuItem
+                          className="text-base"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // TODO: Implement attach resources functionality
+                          }}
+                        >
+                          <Paperclip className="mr-2 h-4 w-4" />
+                          Attach Resources
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="opacity-30" />
+                        <DropdownMenuItem
+                          className="text-base"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // TODO: Implement nudge functionality
+                          }}
+                        >
+                          <Bell className="mr-2 h-4 w-4" />
+                          Nudge
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

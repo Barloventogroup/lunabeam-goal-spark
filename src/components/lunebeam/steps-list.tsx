@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreHorizontal, Edit, Hourglass, Play, Users } from 'lucide-react';
+import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreHorizontal, Edit, Hourglass, Play, Users, Paperclip, Bell } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1349,6 +1349,22 @@ export const StepsList: React.FC<StepsListProps> = ({
                                         <Edit className="h-4 w-4 mr-2" />
                                         Edit
                                       </DropdownMenuItem>
+                                      {isViewerSupporter && (
+                                        <>
+                                          <DropdownMenuItem onClick={() => {
+                                            // TODO: Implement attach resources functionality
+                                          }}>
+                                            <Paperclip className="h-4 w-4 mr-2" />
+                                            Attach Resources
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => {
+                                            // TODO: Implement nudge functionality
+                                          }}>
+                                            <Bell className="h-4 w-4 mr-2" />
+                                            Nudge
+                                          </DropdownMenuItem>
+                                        </>
+                                      )}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 )}
@@ -1574,6 +1590,22 @@ export const StepsList: React.FC<StepsListProps> = ({
                                        <Edit className="h-4 w-4 mr-2" />
                                        Edit
                                      </DropdownMenuItem>
+                                     {isViewerSupporter && (
+                                       <>
+                                         <DropdownMenuItem onClick={() => {
+                                           // TODO: Implement attach resources functionality
+                                         }}>
+                                           <Paperclip className="h-4 w-4 mr-2" />
+                                           Attach Resources
+                                         </DropdownMenuItem>
+                                         <DropdownMenuItem onClick={() => {
+                                           // TODO: Implement nudge functionality
+                                         }}>
+                                           <Bell className="h-4 w-4 mr-2" />
+                                           Nudge
+                                         </DropdownMenuItem>
+                                       </>
+                                     )}
                                    </DropdownMenuContent>
                                 </DropdownMenu>
                               )}
