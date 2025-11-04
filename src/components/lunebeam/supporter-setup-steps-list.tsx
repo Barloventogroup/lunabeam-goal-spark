@@ -214,7 +214,7 @@ export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = (
       // Update the scaffolding step to mark as initiated
       await supabase
         .from('steps')
-        .update({ initiated_at: new Date().toISOString(), status: 'doing' })
+        .update({ initiated_at: new Date().toISOString(), status: 'in_progress' })
         .eq('id', substepId);
       
       // Refresh scaffolding steps for this parent
@@ -446,8 +446,8 @@ export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = (
                           </TableCell>
                           
                           <TableCell className="p-2 text-center">
-                            <Badge variant={step.status === 'done' ? 'default' : step.status === 'doing' ? 'secondary' : 'outline'} className="text-xs">
-                              {step.status === 'done' ? 'Done' : step.status === 'doing' ? 'In Progress' : 'To Do'}
+                            <Badge variant={step.status === 'done' ? 'default' : step.status === 'in_progress' ? 'secondary' : 'outline'} className="text-xs">
+                              {step.status === 'done' ? 'Done' : step.status === 'in_progress' ? 'In Progress' : 'To Do'}
                             </Badge>
                           </TableCell>
                           

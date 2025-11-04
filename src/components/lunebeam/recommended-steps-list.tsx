@@ -505,7 +505,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       // Update the scaffolding step to mark as initiated
       await supabase
         .from('steps')
-        .update({ initiated_at: new Date().toISOString(), status: 'doing' })
+        .update({ initiated_at: new Date().toISOString(), status: 'in_progress' })
         .eq('id', substepId);
       
       // Refresh scaffolding steps for this parent
@@ -598,7 +598,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
       estimated_effort_min: 15,
       goal_id: parentStep.goal_id,
       order_index: parentStep.order_index,
-      status: substep.completed_at ? 'done' : 'todo' as StepStatus,
+      status: substep.completed_at ? 'done' : 'not_started' as StepStatus,
       due_date: parentStep.due_date,
       is_required: true,
       points: 2,
@@ -1017,7 +1017,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
                   ...substep,
                   goal_id: goal.id,
                   order_index: 0,
-                  status: substep.completed_at ? 'done' : 'todo',
+                  status: substep.completed_at ? 'done' : 'not_started',
                   type: 'action',
                   is_required: true,
                   dependency_step_ids: [],

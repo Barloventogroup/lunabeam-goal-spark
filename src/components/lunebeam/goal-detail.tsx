@@ -96,7 +96,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
 
   const handleToggleStep = async (stepId: string, currentStatus: string) => {
     try {
-      const newStatus = currentStatus === 'done' ? 'todo' : 'done';
+      const newStatus = currentStatus === 'done' ? 'not_started' : 'done';
       const { step: updatedStep, goal: updatedGoal } = await stepsService.updateStep(stepId, {
         status: newStatus as any
       });
@@ -187,7 +187,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({ goalId, onNavigate }) =>
         return <CheckCircle2 className="h-5 w-5 text-green-600" />;
       case 'skipped':
         return <SkipForward className="h-5 w-5 text-yellow-600" />;
-      case 'doing':
+      case 'in_progress':
         return <Pause className="h-5 w-5 text-blue-600" />;
       default:
         return <Circle className="h-5 w-5 text-muted-foreground" />;

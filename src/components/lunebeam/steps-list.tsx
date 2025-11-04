@@ -776,7 +776,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       // Update the scaffolding step to mark as initiated
       await supabase
         .from('steps')
-        .update({ initiated_at: new Date().toISOString(), status: 'doing' })
+        .update({ initiated_at: new Date().toISOString(), status: 'in_progress' })
         .eq('id', substepId);
       
       // Refresh scaffolding steps for this parent
@@ -876,7 +876,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       estimated_effort_min: 15,
       goal_id: parentStep.goal_id,
       order_index: parentStep.order_index,
-      status: substep.completed_at ? 'done' : 'todo' as StepStatus,
+      status: substep.completed_at ? 'done' : 'not_started' as StepStatus,
       due_date: parentStep.due_date,
       is_required: true,
       points: 2,
@@ -1022,7 +1022,7 @@ export const StepsList: React.FC<StepsListProps> = ({
         id: substep.id,
         title: substep.title,
         goal_id: goal.id,
-        status: 'doing',
+        status: 'in_progress',
         order_index: 0,
         created_at: substep.created_at,
         updated_at: substep.updated_at,
@@ -1169,7 +1169,7 @@ export const StepsList: React.FC<StepsListProps> = ({
     switch (status) {
       case 'done':
         return <CheckCircle2 className="h-5 w-5 text-green-600" />;
-      case 'doing':
+      case 'in_progress':
         return <Clock className="h-5 w-5 text-blue-600" />;
       default:
         // Show initiated icon if step has been checked in
@@ -1307,8 +1307,8 @@ export const StepsList: React.FC<StepsListProps> = ({
                             </TableCell>
                             
                             <TableCell className="p-2 text-center">
-                              <Badge variant={step.status === 'done' ? 'default' : step.status === 'doing' ? 'secondary' : 'outline'} className="text-xs">
-                                {step.status === 'done' ? 'Done' : step.status === 'doing' ? 'In Progress' : 'To Do'}
+                              <Badge variant={step.status === 'done' ? 'default' : step.status === 'in_progress' ? 'secondary' : 'outline'} className="text-xs">
+                                {step.status === 'done' ? 'Done' : step.status === 'in_progress' ? 'In Progress' : 'To Do'}
                               </Badge>
                             </TableCell>
                             
@@ -1777,7 +1777,7 @@ export const StepsList: React.FC<StepsListProps> = ({
             id: checkInSubstep.substep.id,
             title: checkInSubstep.substep.title,
             goal_id: goal.id,
-            status: 'doing',
+            status: 'in_progress',
             order_index: 0,
             created_at: checkInSubstep.substep.created_at,
             updated_at: checkInSubstep.substep.updated_at,

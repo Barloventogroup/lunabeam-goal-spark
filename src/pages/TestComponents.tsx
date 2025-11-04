@@ -100,7 +100,7 @@ export default function TestComponents() {
       id: 'test-step-' + Date.now(),
       title: 'Make scrambled eggs',
       goal_id: mockGoal.id,
-      status: 'todo',
+      status: 'not_started',
       order_index: 1,
       type: 'action',
       is_required: true,

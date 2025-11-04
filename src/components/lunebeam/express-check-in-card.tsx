@@ -285,7 +285,7 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
 
   // Adaptive button labels based on step status
   const getPrimaryButtonLabel = () => {
-    if (step.status === 'todo') {
+    if (step.status === 'not_started') {
       return (
         <>
           <CheckCircle className="h-5 w-5 mr-2" />
@@ -293,7 +293,7 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
         </>
       );
     }
-    // status === 'doing' (in progress)
+    // status === 'in_progress' (in progress)
     return (
       <>
         <CheckCircle className="h-5 w-5 mr-2" />
@@ -303,10 +303,10 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
   };
 
   const getSecondaryButtonLabel = () => {
-    if (step.status === 'todo') {
+    if (step.status === 'not_started') {
       return "Not yet";
     }
-    // status === 'doing' (in progress)
+    // status === 'in_progress' (in progress)
     return (
       <>
         <Pause className="h-4 w-4 mr-2" />
@@ -384,7 +384,7 @@ export const ExpressCheckInCard: React.FC<ExpressCheckInCardProps> = ({
               handleDone();
             }}
             disabled={isProcessing}
-            aria-label={step.status === 'todo' ? "Mark step as complete" : "Mark step as finished"}
+            aria-label={step.status === 'not_started' ? "Mark step as complete" : "Mark step as finished"}
             style={{ touchAction: 'manipulation' }}
           >
             {getPrimaryButtonLabel()}
