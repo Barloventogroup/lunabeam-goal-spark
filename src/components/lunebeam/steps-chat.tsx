@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, Send, MessageCircle, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import type { Goal, Step } from '@/types';
 
 interface Message {
@@ -96,18 +97,47 @@ export const StepsChat: React.FC<StepsChatProps> = ({ goal, steps, step, isOpen,
       // Reset off-topic warning if back on topic
       setOffTopicWarningShown(false);
 
-      // TODO: Implement actual AI response
-      // For now, provide helpful responses based on keywords
-      const response = generateResponse(input.trim());
-      
-      const assistantMessage: Message = {
-        id: (Date.now() + 2).toString(),
-        content: response,
-        role: 'assistant',
-        timestamp: new Date()
-      };
+      // Call AI service for real response
+      try {
+        const { data, error } = await supabase.functions.invoke('step-assistance-chat', {
+          body: {
+            messages: messages.filter(m => m.role !== 'assistant' || m.id !== 'welcome').map(m => ({
+              role: m.role,
+              content: m.content
+            })),
+            goalTitle: goal.title,
+            stepTitle: step?.title,
+            stepContext: step?.notes || step?.explainer
+          }
+        });
 
-      setMessages(prev => [...prev, assistantMessage]);
+        if (error) {
+          console.error('AI service error:', error);
+          throw error;
+        }
+
+        const response = data?.message || data?.fallback || generateResponse(input.trim());
+        
+        const assistantMessage: Message = {
+          id: (Date.now() + 2).toString(),
+          content: response,
+          role: 'assistant',
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, assistantMessage]);
+      } catch (aiError) {
+        // Fallback to canned responses if AI fails
+        console.warn('AI unavailable, using fallback:', aiError);
+        const fallbackResponse = generateResponse(input.trim());
+        const assistantMessage: Message = {
+          id: (Date.now() + 2).toString(),
+          content: fallbackResponse,
+          role: 'assistant',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      }
     } catch (error) {
       console.error('Failed to get response:', error);
       const errorMessage: Message = {

@@ -855,7 +855,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-foreground">No steps yet</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Steps are created when you set up your goal. You can also add steps manually or use "Need more help?" to break down existing steps.
+            Steps are created when you set up your goal. Use "Need more help?" to break down existing steps.
           </p>
         </CardHeader>
         <CardContent className="py-6">
