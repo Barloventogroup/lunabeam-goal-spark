@@ -1380,7 +1380,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
                     </Button>
                   </div>
                 </CardContent>
-              </Card> : steps.length === 0 ? <Card>
+              </Card> : steps.filter(s => !s.is_supporter_step && !s.is_scaffolding).length === 0 ? <Card>
                 <CardContent className="pt-6">
                   <p className="text-center text-muted-foreground py-8">
                     No recommended steps yet
