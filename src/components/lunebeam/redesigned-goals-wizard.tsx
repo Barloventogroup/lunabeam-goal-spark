@@ -656,7 +656,6 @@ interface WizardData {
   // Step 1: Goal description
   goalTitle: string;
   category?: string;
-  trackingMode?: 'habit' | 'skill' | 'state';
 
   // Step 2: Motivation (SHARED - free text, not dropdown)
   motivation?: string;
@@ -725,7 +724,7 @@ interface WizardData {
     calculatedLevel?: number;
     levelLabel?: string;
     skipped?: boolean;
-    simplifiedChoice?: 'confident' | 'learning';
+    simplifiedChoice?: 'confident' | 'some_help' | 'learning';
   };
   pmHelper?: {
     helperId: string | 'none';
@@ -1342,8 +1341,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Who is this for (supporters only)
         return data.recipient === 'self' || data.recipient === 'other' && data.supportedPersonId;
       case 1:
-        // Goal description + type
-        return data.goalTitle.trim().length > 0 && !!data.goalType;
+        // Goal description only (goalType set later in assessment)
+        return data.goalTitle.trim().length > 0;
       case 2:
         // Motivation
         return !!data.motivation?.trim();
@@ -1361,7 +1360,32 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         return !!data.pmSkillAssessment?.q2_confidence;
       case 7:
         // Help Needed assessment
-        return !!data.pmSkillAssessment?.q3_help_needed;
+        if (!!data.pmSkillAssessment?.q3_help_needed) {
+          // Calculate level if not already set and set goal type
+          if (!data.pmSkillAssessment.calculatedLevel) {
+            const level = progressiveMasteryService.calculateSkillLevel({
+              q1: data.pmSkillAssessment.q1_experience,
+              q2: data.pmSkillAssessment.q2_confidence,
+              q3: data.pmSkillAssessment.q3_help_needed
+            });
+            
+            const levelLabel = progressiveMasteryService.getSkillLevelLabel(level);
+            
+            // Set goal type based on calculated level: 4-5 → Habit, 1-3 → PM
+            const goalType = level >= 4 ? 'reminder' : 'progressive_mastery';
+            
+            updateData({
+              pmSkillAssessment: {
+                ...data.pmSkillAssessment,
+                calculatedLevel: level,
+                levelLabel: levelLabel
+              },
+              goalType: goalType
+            });
+          }
+          return true;
+        }
+        return false;
       case 8:
         // Challenge areas (barriers)
         return (data.challengeAreas?.length || 0) > 0;
@@ -2043,7 +2067,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderStep1 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
-    return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} questionIcon="🎯" questionText={text.step1.question} helpText={text.step1.subtitle} inputType="custom" onBack={prevStep} onContinue={nextStep} continueDisabled={!data.goalTitle?.trim() || !data.trackingMode} hideHeader hideFooter>
+    return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} questionIcon="🎯" questionText={text.step1.question} helpText={text.step1.subtitle} inputType="custom" onBack={prevStep} onContinue={nextStep} continueDisabled={!data.goalTitle?.trim()} hideHeader hideFooter>
         <div className="space-y-8">
           {/* Goal Title Textarea */}
           <div className="space-y-2">
@@ -2069,64 +2093,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               </div>
             </CardContent>
           </Card>
-
-          {/* Tracking Mode Selection */}
-          <div className="space-y-4 pt-4 pb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-left">
-              What type of goal is this?
-            </h1>
-            
-            {/* Habit Card */}
-            <Card className={cn("cursor-pointer shadow-sm hover:shadow-md", data.trackingMode === 'habit' && "bg-primary/5")} onClick={() => {
-            updateData({
-              trackingMode: 'habit',
-              goalType: 'reminder'
-            });
-          }}>
-              <CardContent className="p-4 relative">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🔁</span>
-                  <div className="text-left flex-1">
-                    <div className="font-semibold">
-                      Habit
-                    </div>
-                    <p className="text-base text-muted-foreground mt-1">
-                      Showing up regularly to build a stable, repeatable pattern in your day
-                    </p>
-                  </div>
-                </div>
-                {data.trackingMode === 'habit' && (
-                  <Check className="h-5 w-5 text-primary absolute top-3 right-3" />
-                )}
-              </CardContent>
-            </Card>
-            
-            {/* Skill Card */}
-            <Card className={cn("cursor-pointer shadow-sm hover:shadow-md", data.trackingMode === 'skill' && "bg-primary/5")} onClick={() => {
-            updateData({
-              trackingMode: 'skill',
-              goalType: 'progressive_mastery'
-            });
-          }}>
-              <CardContent className="p-4 relative">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🎯</span>
-                  <div className="text-left flex-1">
-                    <div className="font-semibold">
-                      Skill
-                    </div>
-                    <p className="text-base text-muted-foreground mt-1">
-                      Focus on one skill until you're good, or achieve a concrete, visible win
-                    </p>
-                  </div>
-                </div>
-                {data.trackingMode === 'skill' && (
-                  <Check className="h-5 w-5 text-primary absolute top-3 right-3" />
-                )}
-              </CardContent>
-            </Card>
-            
-          </div>
         </div>
       </QuestionScreen>;
   };
@@ -2779,9 +2745,25 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderPMSkillAssessmentIntro = () => {
     const recipientName = data.recipient === 'other' && data.supportedPersonName ? data.supportedPersonName : 'you';
     const isOther = data.recipient === 'other';
-    const handleSimplifiedChoice = (choice: 'confident' | 'learning') => {
-      const level = choice === 'confident' ? 5 : 1;
-      const levelLabel = choice === 'confident' ? 'Independent' : 'Beginner';
+    const handleSimplifiedChoice = (choice: 'confident' | 'some_help' | 'learning') => {
+      let level: number;
+      let levelLabel: string;
+      let goalType: 'reminder' | 'progressive_mastery';
+      
+      if (choice === 'confident') {
+        level = 5;
+        levelLabel = 'Independent';
+        goalType = 'reminder'; // High skill → Habit goal
+      } else if (choice === 'some_help') {
+        level = 3;
+        levelLabel = 'Proficient';
+        goalType = 'progressive_mastery'; // Intermediate → PM goal
+      } else { // 'learning'
+        level = 1;
+        levelLabel = 'Beginner';
+        goalType = 'progressive_mastery'; // Low skill → PM goal
+      }
+      
       const assessmentData = {
         q1_experience: level,
         q2_confidence: level,
@@ -2791,9 +2773,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         skipped: true,
         simplifiedChoice: choice
       };
+      
       updateData({
         pmSkillAssessment: assessmentData,
-        pmAssessment: assessmentData // Set both for consistency
+        pmAssessment: assessmentData, // Set both for consistency
+        goalType: goalType // Set goal type based on skill level
       });
 
       // Skip to step 8 (barriers) - bypassing detailed Q1-Q3
@@ -2824,9 +2808,19 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <div onClick={() => handleSimplifiedChoice('confident')} className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50">
                 <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <div className="flex-1 space-y-1">
-                  <span className="font-semibold text-left block">{isOther ? `${recipientName} is already confident doing this` : "I'm already confident doing this"}</span>
+                  <span className="font-semibold text-left block">{isOther ? `${recipientName} can do this confidently` : "I can do this confidently"}</span>
                   <p className="text-sm text-muted-foreground text-left">
                     {isOther ? `${recipientName} can` : 'I can'} do this independently without help
+                  </p>
+                </div>
+              </div>
+
+              <div onClick={() => handleSimplifiedChoice('some_help')} className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50">
+                <HandHelping className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-1">
+                  <span className="font-semibold text-left block">{isOther ? `${recipientName} can do this with some help` : "I can do this with some help"}</span>
+                  <p className="text-sm text-muted-foreground text-left">
+                    {isOther ? `${recipientName} needs` : 'I need'} occasional support to improve
                   </p>
                 </div>
               </div>
@@ -2834,9 +2828,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <div onClick={() => handleSimplifiedChoice('learning')} className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50">
                 <GraduationCap className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <div className="flex-1 space-y-1">
-                  <span className="font-semibold text-left block">{isOther ? `${recipientName} is still learning this skill` : "I'm still learning this skill"}</span>
+                  <span className="font-semibold text-left block">{isOther ? `${recipientName} is just starting to learn this` : "I'm just starting to learn this"}</span>
                   <p className="text-sm text-muted-foreground text-left">
-                    {isOther ? `${recipientName} needs` : 'I need'} practice and support to improve
+                    {isOther ? `${recipientName} needs` : 'I need'} practice and support to build this skill
                   </p>
                 </div>
               </div>
