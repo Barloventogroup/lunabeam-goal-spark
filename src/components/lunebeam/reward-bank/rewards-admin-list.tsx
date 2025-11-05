@@ -1,49 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Archive, ArchiveRestore } from "lucide-react";
-import { rewardsService, Reward } from "@/services/rewardsService";
+import { Reward } from "@/services/rewardsService";
 import { RewardFormModal } from "./reward-form-modal";
-import { toast } from "sonner";
+import { useRewards, useToggleRewardActive } from '@/hooks/useRewards';
 
 interface RewardsAdminListProps {
   onBack: () => void;
 }
 
 export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) => {
-  const [rewards, setRewards] = useState<Reward[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingReward, setEditingReward] = useState<Reward | null>(null);
 
-  const loadRewards = async () => {
-    try {
-      setLoading(true);
-      const data = await rewardsService.getRewards();
-      setRewards(data);
-    } catch (error) {
-      console.error('Failed to load rewards:', error);
-      toast.error('Failed to load rewards');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: rewards = [], isLoading: loading } = useRewards(false);
+  const toggleActive = useToggleRewardActive();
 
-  useEffect(() => {
-    loadRewards();
-  }, []);
-
-  const handleToggleActive = async (reward: Reward) => {
-    try {
-      await rewardsService.toggleRewardActive(reward.id, !reward.is_active);
-      toast.success(reward.is_active ? 'Reward archived' : 'Reward restored');
-      loadRewards();
-    } catch (error) {
-      console.error('Failed to toggle reward:', error);
-      toast.error('Failed to update reward');
-    }
+  const handleToggleActive = (reward: Reward) => {
+    toggleActive.mutate({ id: reward.id, isActive: !reward.is_active });
   };
 
   const getCategoryBadgeVariant = (category: string) => {
@@ -171,7 +148,6 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) =>
         }}
         reward={editingReward}
         onSuccess={() => {
-          loadRewards();
           setShowForm(false);
           setEditingReward(null);
         }}

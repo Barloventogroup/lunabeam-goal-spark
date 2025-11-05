@@ -1643,6 +1643,33 @@ export type Database = {
           },
         ]
       }
+      supporter_redemptions_summary: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          fulfilled_at: string | null
+          id: string | null
+          notes: string | null
+          requested_at: string | null
+          reward_category: string | null
+          reward_id: string | null
+          reward_image: string | null
+          reward_name: string | null
+          reward_owner_id: string | null
+          reward_point_cost: number | null
+          status: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_redemptions_reward_id"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_invite_by_token: { Args: { _token: string }; Returns: Json }
@@ -1989,6 +2016,7 @@ export type Database = {
           circle_id: string
         }[]
       }
+      get_user_total_points: { Args: { p_user_id: string }; Returns: number }
       increment_friction_score: { Args: { p_step_id: string }; Returns: number }
       process_redemption_approval: {
         Args: { p_redemption_id: string }
