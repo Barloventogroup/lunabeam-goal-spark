@@ -37,7 +37,7 @@ const getSkillLevelDisplay = (assessment: any): {
   emoji: string;
 } => {
   // Handle both camelCase and snake_case
-  const level = assessment?.calculatedLevel || assessment?.calculated_level || 1;
+  const level = assessment?.calculatedLevel ?? assessment?.calculated_level ?? 1;
   let label = assessment?.levelLabel || assessment?.level_label || '';
 
   // Convert snake_case to Title Case (e.g., 'early_learner' → 'Early Learner')
@@ -1391,7 +1391,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         return (data.challengeAreas?.length || 0) > 0;
       case 9:
         {
-          const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) || 1;
+          const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) ?? 1;
           if (skillLevel >= 4) {
             // High skill: habit flow - validate scheduling
             if (showSchedulingIntro) return true; // Can proceed from intro
@@ -1419,7 +1419,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }
       case 10:
         {
-          const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) || 1;
+          const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) ?? 1;
           if (skillLevel >= 4) {
             // Habit flow: validate support context
             if (data.supportContext === 'alone') return true;
@@ -1433,7 +1433,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         }
       case 11:
         {
-          const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) || 1;
+          const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) ?? 1;
           if (skillLevel >= 4) {
             return true; // Habit flow: rewards optional
           } else {
@@ -2774,14 +2774,20 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         simplifiedChoice: choice
       };
       
-      updateData({
-        pmSkillAssessment: assessmentData,
-        pmAssessment: assessmentData, // Set both for consistency
-        goalType: goalType // Set goal type based on skill level
+      // Use setData with callback to ensure update completes before advancing step
+      setData(prev => {
+        const newData = {
+          ...prev,
+          pmSkillAssessment: assessmentData,
+          pmAssessment: assessmentData,
+          goalType: goalType
+        };
+        
+        // Schedule step change after state update completes
+        setTimeout(() => setCurrentStep(8), 0);
+        
+        return newData;
       });
-
-      // Skip to step 8 (barriers) - bypassing detailed Q1-Q3
-      setCurrentStep(8);
     };
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardContent className="pt-8 pb-6 px-6">
@@ -2928,7 +2934,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const renderPMTeachingHelper = () => {
     // Get skill level from the correct source based on goalType
     const assessment = data.goalType === 'progressive_mastery' ? data.pmAssessment : data.pmSkillAssessment;
-    const skillLevel = assessment?.calculatedLevel || 1;
+    const skillLevel = assessment?.calculatedLevel ?? 1;
     const isForOther = data.recipient === 'other';
     const recipientName = data.supportedPersonName || 'they';
 
@@ -3836,8 +3842,10 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
     // Special handling for skill level branching in habit flow (step 8 → 9 transition)
     if (data.goalType !== 'progressive_mastery' && currentStep === 8) {
-      const skillLevel = data.pmSkillAssessment?.calculatedLevel || 1;
-      if (skillLevel <= 3) {
+      const skillLevel = data.pmSkillAssessment?.calculatedLevel;
+      
+      // Only switch to PM if we have a valid low skill level
+      if (skillLevel !== undefined && skillLevel <= 3) {
         // Switch to Progressive Mastery - copy skill assessment data properly
         updateData({
           goalType: 'progressive_mastery',
@@ -3856,7 +3864,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
     // Special handling for scheduling intro in habit flow (step 9)
     if (data.goalType !== 'progressive_mastery' && currentStep === 9) {
-      const skillLevel = data.pmSkillAssessment?.calculatedLevel || 1;
+      const skillLevel = data.pmSkillAssessment?.calculatedLevel ?? 1;
       if (skillLevel >= 4 && showSchedulingIntro) {
         setShowSchedulingIntro(false);
         return; // Don't advance step, just hide intro
