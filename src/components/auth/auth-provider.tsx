@@ -152,8 +152,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
+    // Handle legacy implicit flow tokens in URL hash (fallback for non-PKCE flows)
+    const handleLegacyHashSession = async () => {
+      if (typeof window === 'undefined') return false;
+      
+      const hash = window.location.hash;
+      if (!hash || !hash.includes('access_token=')) return false;
+      
+      console.log('AuthProvider: Detected hash tokens, processing implicit flow session');
+      
+      try {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        
+        if (accessToken && refreshToken) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+          
+          if (error) {
+            console.error('AuthProvider: Failed to set session from hash:', error);
+            return false;
+          }
+          
+          console.log('AuthProvider: Session set from hash tokens');
+          setSession(data.session);
+          setUser(data.session?.user ?? null);
+          
+          // Clean URL without reload
+          window.history.replaceState({}, document.title, window.location.pathname);
+          return true;
+        }
+      } catch (err) {
+        console.error('AuthProvider: Error processing hash tokens:', err);
+      }
+      
+      return false;
+    };
+
     // Check for existing session with defensive error handling
     const initializeSession = async () => {
+      // First, check for legacy hash tokens
+      const hashHandled = await handleLegacyHashSession();
+      if (hashHandled) {
+        setLoading(false);
+        markReady();
+        return;
+      }
+      
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         console.log('AuthProvider: Initial session check:', session?.user?.email || 'no session');
