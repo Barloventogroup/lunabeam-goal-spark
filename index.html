@@ -28,6 +28,25 @@
   </head>
 
   <body>
+    <script>
+      (function() {
+        try {
+          var hash = window.location.hash;
+          if (hash && hash.indexOf('access_token=') !== -1) {
+            var params = new URLSearchParams(hash.substring(1));
+            var accessToken = params.get('access_token');
+            var refreshToken = params.get('refresh_token');
+            if (accessToken && refreshToken) {
+              localStorage.setItem('sb_hash_tokens', JSON.stringify({ access_token: accessToken, refresh_token: refreshToken }));
+              // Clean the URL to avoid leaking tokens and let the app boot normally
+              history.replaceState({}, document.title, window.location.pathname + window.location.search);
+            }
+          }
+        } catch (e) {
+          // no-op
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

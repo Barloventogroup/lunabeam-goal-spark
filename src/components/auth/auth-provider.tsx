@@ -55,12 +55,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const handleLegacyHashSession = async () => {
       if (typeof window === 'undefined') return false;
       
-      const hash = window.location.hash;
-      if (!hash || !hash.includes('access_token=')) return false;
-      
-      console.log('AuthProvider: Detected hash tokens, processing immediately');
-      
       try {
+        // 1) Pre-boot staged tokens (set by index.html script)
+        const staged = localStorage.getItem('sb_hash_tokens');
+        if (staged) {
+          console.log('AuthProvider: Found staged hash tokens in localStorage, setting session');
+          try {
+            const parsed = JSON.parse(staged);
+            const access_token = parsed?.access_token;
+            const refresh_token = parsed?.refresh_token;
+            if (access_token && refresh_token) {
+              const { data, error } = await supabase.auth.setSession({
+                access_token,
+                refresh_token
+              });
+              if (error) {
+                console.error('AuthProvider: Failed to set session from staged tokens:', error);
+                localStorage.removeItem('sb_hash_tokens');
+                return false;
+              }
+              setSession(data.session);
+              setUser(data.session?.user ?? null);
+              setLoading(false);
+              markReady();
+              localStorage.removeItem('sb_hash_tokens');
+              // Load profile async
+              setTimeout(() => {
+                loadProfile().catch((err) => {
+                  console.error('AuthProvider: Failed to load profile after staged hash auth:', err);
+                });
+              }, 0);
+              return true;
+            } else {
+              localStorage.removeItem('sb_hash_tokens');
+            }
+          } catch (e) {
+            console.warn('AuthProvider: Could not parse staged hash tokens');
+            localStorage.removeItem('sb_hash_tokens');
+          }
+        }
+
+        // 2) Direct hash tokens in the URL
+        const hash = window.location.hash;
+        if (!hash || !hash.includes('access_token=')) return false;
+        
+        console.log('AuthProvider: Detected hash tokens, processing immediately');
+        
         const params = new URLSearchParams(hash.substring(1));
         const accessToken = params.get('access_token');
         const refreshToken = params.get('refresh_token');
