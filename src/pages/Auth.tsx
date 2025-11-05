@@ -248,14 +248,12 @@ useEffect(() => {
         provider: provider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          // Force PKCE for Google to ensure code flow. Runtime-supported; typed as any for older SDK versions.
-          // @ts-expect-error - flowType exists in newer supabase-js; safe to include
-          ...(provider === 'google' ? { flowType: 'pkce' } : {}),
+          ...(provider === 'google' ? { flowType: 'pkce' as any } : {}),
           queryParams: provider === 'google' ? {
             access_type: 'offline',
             prompt: 'consent'
           } : undefined
-        }
+        } as any
       });
       if (error) {
         toast.error(error.message || `${provider} sign-in failed`);
