@@ -39,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let watchdogTimer: NodeJS.Timeout | null = null;
     let cleanupDone = false;
+    let sessionSetFromHash = false;
 
     const markReady = () => {
       if (!cleanupDone) {
@@ -50,17 +51,78 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // AGGRESSIVE OPTIMIZATION: Skip session check entirely on /auth pages
+    // CRITICAL: Handle hash tokens FIRST, before any optimizations
+    const handleLegacyHashSession = async () => {
+      if (typeof window === 'undefined') return false;
+      
+      const hash = window.location.hash;
+      if (!hash || !hash.includes('access_token=')) return false;
+      
+      console.log('AuthProvider: Detected hash tokens, processing immediately');
+      
+      try {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        
+        if (accessToken && refreshToken) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+          
+          if (error) {
+            console.error('AuthProvider: Failed to set session from hash:', error);
+            return false;
+          }
+          
+          console.log('AuthProvider: Session established from hash tokens');
+          setSession(data.session);
+          setUser(data.session?.user ?? null);
+          setLoading(false);
+          markReady();
+          
+          // Clean URL without reload
+          window.history.replaceState({}, document.title, window.location.pathname);
+          
+          // Load profile
+          setTimeout(() => {
+            loadProfile().catch((err) => {
+              console.error('AuthProvider: Failed to load profile after hash auth:', err);
+            });
+          }, 0);
+          
+          return true;
+        }
+      } catch (err) {
+        console.error('AuthProvider: Error processing hash tokens:', err);
+      }
+      
+      return false;
+    };
+
+    // AGGRESSIVE OPTIMIZATION: Skip session check entirely on /auth pages (unless we have hash tokens)
     const isAuthPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth');
     
-    if (isAuthPage) {
-      // Instantly mark as ready for auth pages - no session check needed
-      console.log('AuthProvider: On auth page, skipping session check for instant load');
-      setLoading(false);
-      setContextReady(true);
-      setSession(null);
-      setUser(null);
-    }
+    // Process hash tokens immediately if present (async IIFE)
+    (async () => {
+      sessionSetFromHash = await handleLegacyHashSession();
+      
+      if (sessionSetFromHash) {
+        console.log('AuthProvider: Session set from hash, skipping other initialization');
+        return;
+      }
+      
+      // Only run auth page optimization if we didn't just set session from hash
+      if (isAuthPage && !sessionSetFromHash) {
+        // Instantly mark as ready for auth pages - no session check needed
+        console.log('AuthProvider: On auth page, skipping session check for instant load');
+        setLoading(false);
+        setContextReady(true);
+        setSession(null);
+        setUser(null);
+      }
+    })();
 
     // Reduced watchdog timer: force ready after 1 second for non-auth pages
     watchdogTimer = setTimeout(() => {
@@ -152,55 +214,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Handle legacy implicit flow tokens in URL hash (fallback for non-PKCE flows)
-    const handleLegacyHashSession = async () => {
-      if (typeof window === 'undefined') return false;
-      
-      const hash = window.location.hash;
-      if (!hash || !hash.includes('access_token=')) return false;
-      
-      console.log('AuthProvider: Detected hash tokens, processing implicit flow session');
-      
-      try {
-        const params = new URLSearchParams(hash.substring(1));
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-        
-        if (accessToken && refreshToken) {
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          });
-          
-          if (error) {
-            console.error('AuthProvider: Failed to set session from hash:', error);
-            return false;
-          }
-          
-          console.log('AuthProvider: Session set from hash tokens');
-          setSession(data.session);
-          setUser(data.session?.user ?? null);
-          
-          // Clean URL without reload
-          window.history.replaceState({}, document.title, window.location.pathname);
-          return true;
-        }
-      } catch (err) {
-        console.error('AuthProvider: Error processing hash tokens:', err);
-      }
-      
-      return false;
-    };
-
     // Check for existing session with defensive error handling
     const initializeSession = async () => {
-      // First, check for legacy hash tokens
-      const hashHandled = await handleLegacyHashSession();
-      if (hashHandled) {
-        setLoading(false);
-        markReady();
-        return;
-      }
+      // Hash tokens are handled earlier in the flow
       
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -255,8 +271,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Only check session if NOT on auth page
-    if (!isAuthPage) {
+    // Only check session if NOT on auth page AND we didn't handle hash
+    if (!isAuthPage && !sessionSetFromHash) {
       initializeSession();
     }
 
