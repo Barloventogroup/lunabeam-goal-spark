@@ -359,7 +359,7 @@ useEffect(() => {
           <CardDescription className="text-black font-bold">
             {isSupporterInvite ? "Join as a supporter" : 
              searchParams.get('mode') === 'claim' ? "Complete your account setup" :
-             "Welcome to Lunabeam"}
+             "Guiding big dreams, one step at a time."}
           </CardDescription>
           {user && <div className="mt-2 text-sm text-muted-foreground">
               You're currently signed in. 
