@@ -162,7 +162,7 @@ export interface StepProgressionData {
 export type GoalDomain = 'school' | 'work' | 'life' | 'health' | 'education' | 'employment' | 'independent_living' | 'social_skills' | 'postsecondary' | 'fun_recreation' | 'other';
 export type GoalPriority = 'low' | 'medium' | 'high';
 export type GoalStatus = 'planned' | 'active' | 'paused' | 'completed' | 'archived';
-export type StepStatus = 'not_started' | 'in_progress' | 'done' | 'skipped';
+export type StepStatus = 'todo' | 'doing' | 'done' | 'skipped';
 export type StepType = 'action' | 'container';
 
 export interface GoalProgress {

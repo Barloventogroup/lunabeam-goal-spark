@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreHorizontal, Edit, Hourglass, Play, Users, Paperclip, Bell } from 'lucide-react';
+import { CheckCircle2, Clock, Calendar, ChevronDown, ChevronUp, ArrowDown, MessageSquare, Plus, MoreHorizontal, Edit, Hourglass, Play, Users } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -776,7 +776,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       // Update the scaffolding step to mark as initiated
       await supabase
         .from('steps')
-        .update({ initiated_at: new Date().toISOString(), status: 'in_progress' })
+        .update({ initiated_at: new Date().toISOString(), status: 'doing' })
         .eq('id', substepId);
       
       // Refresh scaffolding steps for this parent
@@ -876,7 +876,7 @@ export const StepsList: React.FC<StepsListProps> = ({
       estimated_effort_min: 15,
       goal_id: parentStep.goal_id,
       order_index: parentStep.order_index,
-      status: substep.completed_at ? 'done' : 'not_started' as StepStatus,
+      status: substep.completed_at ? 'done' : 'todo' as StepStatus,
       due_date: parentStep.due_date,
       is_required: true,
       points: 2,
@@ -1022,7 +1022,7 @@ export const StepsList: React.FC<StepsListProps> = ({
         id: substep.id,
         title: substep.title,
         goal_id: goal.id,
-        status: 'in_progress',
+        status: 'doing',
         order_index: 0,
         created_at: substep.created_at,
         updated_at: substep.updated_at,
@@ -1169,7 +1169,7 @@ export const StepsList: React.FC<StepsListProps> = ({
     switch (status) {
       case 'done':
         return <CheckCircle2 className="h-5 w-5 text-green-600" />;
-      case 'in_progress':
+      case 'doing':
         return <Clock className="h-5 w-5 text-blue-600" />;
       default:
         // Show initiated icon if step has been checked in
@@ -1307,8 +1307,8 @@ export const StepsList: React.FC<StepsListProps> = ({
                             </TableCell>
                             
                             <TableCell className="p-2 text-center">
-                              <Badge variant={step.status === 'done' ? 'default' : step.status === 'in_progress' ? 'secondary' : 'outline'} className="text-xs">
-                                {step.status === 'done' ? 'Done' : step.status === 'in_progress' ? 'In Progress' : 'To Do'}
+                              <Badge variant={step.status === 'done' ? 'default' : step.status === 'doing' ? 'secondary' : 'outline'} className="text-xs">
+                                {step.status === 'done' ? 'Done' : step.status === 'doing' ? 'In Progress' : 'To Do'}
                               </Badge>
                             </TableCell>
                             
@@ -1349,22 +1349,6 @@ export const StepsList: React.FC<StepsListProps> = ({
                                         <Edit className="h-4 w-4 mr-2" />
                                         Edit
                                       </DropdownMenuItem>
-                                      {isViewerSupporter && (
-                                        <>
-                                          <DropdownMenuItem onClick={() => {
-                                            // TODO: Implement attach resources functionality
-                                          }}>
-                                            <Paperclip className="h-4 w-4 mr-2" />
-                                            Attach Resources
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => {
-                                            // TODO: Implement nudge functionality
-                                          }}>
-                                            <Bell className="h-4 w-4 mr-2" />
-                                            Nudge
-                                          </DropdownMenuItem>
-                                        </>
-                                      )}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 )}
@@ -1590,22 +1574,6 @@ export const StepsList: React.FC<StepsListProps> = ({
                                        <Edit className="h-4 w-4 mr-2" />
                                        Edit
                                      </DropdownMenuItem>
-                                     {isViewerSupporter && (
-                                       <>
-                                         <DropdownMenuItem onClick={() => {
-                                           // TODO: Implement attach resources functionality
-                                         }}>
-                                           <Paperclip className="h-4 w-4 mr-2" />
-                                           Attach Resources
-                                         </DropdownMenuItem>
-                                         <DropdownMenuItem onClick={() => {
-                                           // TODO: Implement nudge functionality
-                                         }}>
-                                           <Bell className="h-4 w-4 mr-2" />
-                                           Nudge
-                                         </DropdownMenuItem>
-                                       </>
-                                     )}
                                    </DropdownMenuContent>
                                 </DropdownMenu>
                               )}
@@ -1809,7 +1777,7 @@ export const StepsList: React.FC<StepsListProps> = ({
             id: checkInSubstep.substep.id,
             title: checkInSubstep.substep.title,
             goal_id: goal.id,
-            status: 'in_progress',
+            status: 'doing',
             order_index: 0,
             created_at: checkInSubstep.substep.created_at,
             updated_at: checkInSubstep.substep.updated_at,

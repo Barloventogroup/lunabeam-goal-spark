@@ -37,142 +37,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { loadProfile } = useStore();
 
   useEffect(() => {
-    let watchdogTimer: NodeJS.Timeout | null = null;
-    let cleanupDone = false;
-    let sessionSetFromHash = false;
-
-    const markReady = () => {
-      if (!cleanupDone) {
-        setContextReady(true);
-        if (watchdogTimer) {
-          clearTimeout(watchdogTimer);
-          watchdogTimer = null;
-        }
-      }
-    };
-
-    // CRITICAL: Handle hash tokens FIRST, before any optimizations
-    const handleLegacyHashSession = async () => {
-      if (typeof window === 'undefined') return false;
-      
-      try {
-        // 1) Pre-boot staged tokens (set by index.html script)
-        const staged = localStorage.getItem('sb_hash_tokens');
-        if (staged) {
-          console.log('AuthProvider: Found staged hash tokens in localStorage, setting session');
-          try {
-            const parsed = JSON.parse(staged);
-            const access_token = parsed?.access_token;
-            const refresh_token = parsed?.refresh_token;
-            if (access_token && refresh_token) {
-              const { data, error } = await supabase.auth.setSession({
-                access_token,
-                refresh_token
-              });
-              if (error) {
-                console.error('AuthProvider: Failed to set session from staged tokens:', error);
-                localStorage.removeItem('sb_hash_tokens');
-                return false;
-              }
-              setSession(data.session);
-              setUser(data.session?.user ?? null);
-              setLoading(false);
-              markReady();
-              localStorage.removeItem('sb_hash_tokens');
-              // Load profile async
-              setTimeout(() => {
-                loadProfile().catch((err) => {
-                  console.error('AuthProvider: Failed to load profile after staged hash auth:', err);
-                });
-              }, 0);
-              return true;
-            } else {
-              localStorage.removeItem('sb_hash_tokens');
-            }
-          } catch (e) {
-            console.warn('AuthProvider: Could not parse staged hash tokens');
-            localStorage.removeItem('sb_hash_tokens');
-          }
-        }
-
-        // 2) Direct hash tokens in the URL
-        const hash = window.location.hash;
-        if (!hash || !hash.includes('access_token=')) return false;
-        
-        console.log('AuthProvider: Detected hash tokens, processing immediately');
-        
-        const params = new URLSearchParams(hash.substring(1));
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-        
-        if (accessToken && refreshToken) {
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          });
-          
-          if (error) {
-            console.error('AuthProvider: Failed to set session from hash:', error);
-            return false;
-          }
-          
-          console.log('AuthProvider: Session established from hash tokens');
-          setSession(data.session);
-          setUser(data.session?.user ?? null);
-          setLoading(false);
-          markReady();
-          
-          // Clean URL without reload
-          window.history.replaceState({}, document.title, window.location.pathname);
-          
-          // Load profile
-          setTimeout(() => {
-            loadProfile().catch((err) => {
-              console.error('AuthProvider: Failed to load profile after hash auth:', err);
-            });
-          }, 0);
-          
-          return true;
-        }
-      } catch (err) {
-        console.error('AuthProvider: Error processing hash tokens:', err);
-      }
-      
-      return false;
-    };
-
-    // AGGRESSIVE OPTIMIZATION: Skip session check entirely on /auth pages (unless we have hash tokens)
-    const isAuthPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth');
-    
-    // Process hash tokens immediately if present (async IIFE)
-    (async () => {
-      sessionSetFromHash = await handleLegacyHashSession();
-      
-      if (sessionSetFromHash) {
-        console.log('AuthProvider: Session set from hash, skipping other initialization');
-        return;
-      }
-      
-      // Only run auth page optimization if we didn't just set session from hash
-      if (isAuthPage && !sessionSetFromHash) {
-        // Instantly mark as ready for auth pages - no session check needed
-        console.log('AuthProvider: On auth page, skipping session check for instant load');
-        setLoading(false);
-        setContextReady(true);
-        setSession(null);
-        setUser(null);
-      }
-    })();
-
-    // Reduced watchdog timer: force ready after 1 second for non-auth pages
-    watchdogTimer = setTimeout(() => {
-      if (!cleanupDone && !isAuthPage) {
-        console.warn('AuthProvider: Watchdog timer fired - forcing context ready');
-        setLoading(false);
-        setContextReady(true);
-      }
-    }, 1000);
-
     // Force logout and redirect to auth if there are persistent auth issues
     const forceLogout = () => {
       console.log('AuthProvider: Forcing logout due to persistent auth issues');
@@ -180,13 +44,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(null);
         setUser(null);
         setLoading(false);
-        markReady();
         try {
           localStorage.removeItem('lunebeam-store');
-          localStorage.clear();
+          localStorage.clear(); // Clear all localStorage
+          console.log('AuthProvider: Cleared all local storage');
         } catch (e) {
           console.warn('AuthProvider: Failed to clear local storage');
         }
+        // Force redirect to auth page
         window.location.href = '/auth';
       });
     };
@@ -201,11 +66,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('AuthProvider: Auth state change:', event, session?.user?.email || 'no user');
-        
+        console.log('AuthProvider: Auth state change:', event, session?.user?.email);
+        console.log('AuthProvider: Current URL:', window.location.href);
+        console.log('AuthProvider: Session details:', session);
         if (event === 'SIGNED_OUT') {
           try {
             localStorage.removeItem('lunebeam-store');
+            console.log('AuthProvider: Cleared persisted store on sign out');
           } catch (e) {
             console.warn('AuthProvider: Failed to clear persisted store on sign out');
           }
@@ -214,115 +81,97 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        markReady();
+        setContextReady(true);
         
-        // Load user profile when signed in (skip on auth pages)
+        // Load user profile when signed in
         if (event === 'SIGNED_IN' && session?.user) {
-          const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-          const isOnAuthPage = currentPath.startsWith('/auth');
+          console.log('AuthProvider: User signed in, loading profile for user:', session.user.id, session.user.email, session.user.user_metadata);
           
-          if (!isOnAuthPage) {
-            console.log('AuthProvider: User signed in, loading profile');
-            
-            // Check for pending supporter invite
-            const pendingInvite = localStorage.getItem('pending_supporter_invite');
-            if (pendingInvite) {
-              console.log('AuthProvider: Processing pending supporter invite');
-              setTimeout(async () => {
-                try {
-                  const { PermissionsService } = await import('@/services/permissionsService');
-                  await PermissionsService.acceptSupporterInvite(pendingInvite);
-                  localStorage.removeItem('pending_supporter_invite');
-                  console.log('AuthProvider: Supporter invite accepted');
-                  window.location.href = '/';
-                } catch (error) {
-                  console.error('AuthProvider: Failed to accept supporter invite:', error);
-                  localStorage.removeItem('pending_supporter_invite');
-                }
-              }, 1000);
-            } else {
-              setTimeout(() => {
-                loadProfile().catch((error) => {
-                  console.error('AuthProvider: Failed to load profile after sign in:', error);
-                });
-              }, 0);
-            }
+          // Check for pending supporter invite
+          const pendingInvite = localStorage.getItem('pending_supporter_invite');
+          if (pendingInvite) {
+            console.log('AuthProvider: Processing pending supporter invite...');
+            setTimeout(async () => {
+              try {
+                // Import here to avoid circular dependency
+                const { PermissionsService } = await import('@/services/permissionsService');
+                await PermissionsService.acceptSupporterInvite(pendingInvite);
+                localStorage.removeItem('pending_supporter_invite');
+                console.log('AuthProvider: Supporter invite accepted successfully');
+                
+                // Redirect to dashboard
+                window.location.href = '/';
+              } catch (error) {
+                console.error('AuthProvider: Failed to accept supporter invite:', error);
+                localStorage.removeItem('pending_supporter_invite');
+              }
+            }, 1000);
           } else {
-            console.log('AuthProvider: On auth page, skipping profile load');
+            // Don't clear store immediately - let profile load first
+            setTimeout(() => {
+              loadProfile().then(() => {
+                console.log('AuthProvider: Profile loaded after sign in');
+              }).catch((error) => {
+                console.error('AuthProvider: Failed to load profile after sign in:', error);
+              });
+            }, 0);
           }
         }
       }
     );
 
-    // Check for existing session with defensive error handling
-    const initializeSession = async () => {
-      // Hash tokens are handled earlier in the flow
+    // Check for existing session with error handling for stale tokens
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('AuthProvider: Initial session check:', session?.user?.email, error);
       
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('AuthProvider: Initial session check:', session?.user?.email || 'no session');
-        
-        // Handle stale JWT token error
-        if (error?.message?.includes('User from sub claim in JWT does not exist')) {
-          console.log('AuthProvider: Detected stale JWT token, signing out');
-          await supabase.auth.signOut();
+      // Handle stale JWT token error
+      if (error?.message?.includes('User from sub claim in JWT does not exist')) {
+        console.log('AuthProvider: Detected stale JWT token, signing out...');
+        supabase.auth.signOut().then(() => {
           setSession(null);
           setUser(null);
           setLoading(false);
           try {
             localStorage.removeItem('lunebeam-store');
+            console.log('AuthProvider: Cleared persisted store due to stale token');
           } catch (e) {
             console.warn('AuthProvider: Failed to clear persisted store');
           }
-          markReady();
-          return;
-        }
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-        markReady();
-        
-        // Load profile if user is already signed in (skip on auth pages)
-        if (session?.user) {
-          const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-          const isOnAuthPage = currentPath.startsWith('/auth');
-          
-          if (!isOnAuthPage) {
-            setTimeout(() => {
-              loadProfile().catch((error) => {
-                console.error('AuthProvider: Failed to load profile for existing session:', error);
-                if (error?.message?.includes('User from sub claim in JWT does not exist')) {
-                  console.log('AuthProvider: Profile load failed with stale token, signing out');
-                  supabase.auth.signOut();
-                }
-              });
-            }, 0);
-          } else {
-            console.log('AuthProvider: On auth page, skipping profile load for existing session');
-          }
-        }
-      } catch (sessionError) {
-        console.error('AuthProvider: Session check failed:', sessionError);
-        setSession(null);
-        setUser(null);
-        setLoading(false);
-        markReady();
+        });
+        return;
       }
-    };
-
-    // Only check session if NOT on auth page AND we didn't handle hash
-    if (!isAuthPage && !sessionSetFromHash) {
-      initializeSession();
-    }
-
-    return () => {
-      cleanupDone = true;
-      if (watchdogTimer) {
-        clearTimeout(watchdogTimer);
+      
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+      setContextReady(true);
+      
+      // Load profile if user is already signed in
+      if (session?.user) {
+        console.log('AuthProvider: Existing session found, loading profile...');
+        setTimeout(() => {
+          loadProfile().then(() => {
+            console.log('AuthProvider: Profile loaded for existing session');
+          }).catch((error) => {
+            console.error('AuthProvider: Failed to load profile for existing session:', error);
+            // If profile loading fails due to auth issues, try to refresh session
+            if (error?.message?.includes('User from sub claim in JWT does not exist')) {
+              console.log('AuthProvider: Profile load failed with stale token, signing out...');
+              supabase.auth.signOut();
+            }
+          });
+        }, 0);
       }
-      subscription.unsubscribe();
-    };
+    }).catch((sessionError) => {
+      console.error('AuthProvider: Session check failed:', sessionError);
+      // Handle session errors by clearing everything
+      setSession(null);
+      setUser(null);
+      setLoading(false);
+      setContextReady(true);
+    });
+
+    return () => subscription.unsubscribe();
   }, [loadProfile]);
 
   const signUp = async (email: string, password: string, firstName: string) => {
@@ -364,13 +213,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut
   };
 
-  // Check if we're on /auth - if so, render children immediately to avoid blocking
-  const isAuthPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth');
-  const shouldRenderChildren = contextReady || isAuthPage;
-
   return (
     <AuthContext.Provider value={value}>
-      {shouldRenderChildren ? children : (
+      {contextReady ? children : (
         <div className="min-h-[100dvh] flex items-center justify-center bg-background">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>

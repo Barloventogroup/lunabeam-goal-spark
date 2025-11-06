@@ -1,26 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Gift } from "lucide-react";
-import { Reward } from "@/services/rewardsService";
+import { rewardsService, Reward } from "@/services/rewardsService";
+import { pointsService } from "@/services/pointsService";
 import { RedeemConfirmModal } from "./redeem-confirm-modal";
-import { useRewards } from '@/hooks/useRewards';
-import { useRewardPoints } from '@/hooks/useRewardPoints';
+import { toast } from "sonner";
 
 interface RewardsGalleryProps {
   onBack: () => void;
 }
 
 export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
+  const [rewards, setRewards] = useState<Reward[]>([]);
+  const [userPoints, setUserPoints] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
-  
-  const { data: rewards = [], isLoading: loadingRewards } = useRewards(true);
-  const { data: userPoints = 0, isLoading: loadingPoints } = useRewardPoints();
 
-  const loading = loadingRewards || loadingPoints;
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [rewardsData, pointsData] = await Promise.all([
+        rewardsService.getRewards(true), // Only active rewards
+        pointsService.getPointsSummary()
+      ]);
+      setRewards(rewardsData);
+      setUserPoints(pointsData.totalPoints);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      toast.error('Failed to load rewards');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const getProgress = (cost: number) => {
     return Math.min((userPoints / cost) * 100, 100);
@@ -178,7 +197,10 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
         reward={selectedReward}
         userPoints={userPoints}
         onClose={() => setSelectedReward(null)}
-        onSuccess={() => setSelectedReward(null)}
+        onSuccess={() => {
+          loadData();
+          setSelectedReward(null);
+        }}
       />
     </div>
   );

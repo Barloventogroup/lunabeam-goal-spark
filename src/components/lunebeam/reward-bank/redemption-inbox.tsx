@@ -1,51 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, X, Package, Clock } from "lucide-react";
-import { Redemption } from "@/services/rewardsService";
-import { useRedemptions, useApproveRedemption, useDenyRedemption, useFulfillRedemption } from '@/hooks/useRedemptions';
+import { rewardsService, Redemption } from "@/services/rewardsService";
+import { toast } from "sonner";
 
 interface RedemptionInboxProps {
   onBack: () => void;
 }
 
 export const RedemptionInbox: React.FC<RedemptionInboxProps> = ({ onBack }) => {
+  const [redemptions, setRedemptions] = useState<Redemption[]>([]);
+  const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [denyNotes, setDenyNotes] = useState<Record<string, string>>({});
 
-  const { data: redemptions = [], isLoading: loading } = useRedemptions();
-  const approveRedemption = useApproveRedemption();
-  const denyRedemption = useDenyRedemption();
-  const fulfillRedemption = useFulfillRedemption();
+  const loadRedemptions = async () => {
+    try {
+      setLoading(true);
+      const data = await rewardsService.getRedemptions();
+      setRedemptions(data);
+    } catch (error) {
+      console.error('Failed to load redemptions:', error);
+      toast.error('Failed to load redemptions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadRedemptions();
+  }, []);
 
   const handleApprove = async (redemption: Redemption) => {
-    setProcessingId(redemption.id);
     try {
-      await approveRedemption.mutateAsync(redemption.id);
+      setProcessingId(redemption.id);
+      await rewardsService.approveRedemption(redemption.id);
+      toast.success('Redemption approved! Points have been deducted.');
+      loadRedemptions();
+    } catch (error: any) {
+      console.error('Failed to approve redemption:', error);
+      toast.error(error.message || 'Failed to approve redemption');
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleDeny = async (redemption: Redemption) => {
-    setProcessingId(redemption.id);
     try {
-      await denyRedemption.mutateAsync({ 
-        redemptionId: redemption.id, 
-        notes: denyNotes[redemption.id] 
-      });
+      setProcessingId(redemption.id);
+      await rewardsService.denyRedemption(redemption.id, denyNotes[redemption.id]);
+      toast.success('Redemption denied');
+      loadRedemptions();
+    } catch (error) {
+      console.error('Failed to deny redemption:', error);
+      toast.error('Failed to deny redemption');
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleFulfill = async (redemption: Redemption) => {
-    setProcessingId(redemption.id);
     try {
-      await fulfillRedemption.mutateAsync(redemption.id);
+      setProcessingId(redemption.id);
+      await rewardsService.fulfillRedemption(redemption.id);
+      toast.success('Reward marked as fulfilled! 🎉');
+      loadRedemptions();
+    } catch (error) {
+      console.error('Failed to fulfill redemption:', error);
+      toast.error('Failed to mark as fulfilled');
     } finally {
       setProcessingId(null);
     }

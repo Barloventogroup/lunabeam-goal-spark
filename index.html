@@ -23,25 +23,17 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
-    <!-- Canonical URL for SEO and cache-busting hints -->
-    <link rel="canonical" href="%VITE_PUBLIC_SITE_URL%" />
+    <!-- Canonical URL - dynamically generated to support native and web environments -->
+    <script type="module">
+      const href = import.meta.env?.VITE_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '/');
+      const link = document.createElement('link');
+      link.rel = 'canonical';
+      link.href = href;
+      document.head.appendChild(link);
+    </script>
   </head>
 
   <body>
-    <script>
-      (function() {
-        try {
-          var hash = window.location.hash || '';
-          // Store OAuth tokens in sessionStorage and clean URL, let React handle redirect
-          if (hash && (hash.indexOf('access_token=') !== -1 || hash.indexOf('id_token=') !== -1 || hash.indexOf('error=') !== -1)) {
-            sessionStorage.setItem('oauth_hash', hash);
-            history.replaceState({}, document.title, window.location.pathname + window.location.search);
-          }
-        } catch (e) {
-          // no-op
-        }
-      })();
-    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

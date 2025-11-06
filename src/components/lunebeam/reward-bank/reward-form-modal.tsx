@@ -9,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { AlertTriangle } from "lucide-react";
 import { rewardsService, Reward, REWARD_CATEGORIES, ABSOLUTE_BOUNDS } from "@/services/rewardsService";
-import { useCreateReward, useUpdateReward } from '@/hooks/useRewards';
 import { toast } from "sonner";
 
 interface RewardFormModalProps {
@@ -33,10 +32,8 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
     image: '',
     is_active: true
   });
+  const [loading, setLoading] = useState(false);
   const [costWarning, setCostWarning] = useState<string | null>(null);
-
-  const createReward = useCreateReward();
-  const updateReward = useUpdateReward();
 
   useEffect(() => {
     if (reward) {
@@ -74,14 +71,20 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
     }
 
     try {
+      setLoading(true);
       if (reward) {
-        await updateReward.mutateAsync({ id: reward.id, updates: formData });
+        await rewardsService.updateReward(reward.id, formData);
+        toast.success('Reward updated successfully');
       } else {
-        await createReward.mutateAsync(formData);
+        await rewardsService.createReward(formData);
+        toast.success('Reward created successfully');
       }
       onSuccess();
     } catch (error) {
-      // Error handling is done in the mutations
+      console.error('Failed to save reward:', error);
+      toast.error('Failed to save reward');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -201,12 +204,8 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={createReward.isPending || updateReward.isPending} 
-              className="flex-1"
-            >
-              {(createReward.isPending || updateReward.isPending) ? 'Saving...' : reward ? 'Update' : 'Create'}
+            <Button type="submit" disabled={loading} className="flex-1">
+              {loading ? 'Saving...' : reward ? 'Update' : 'Create'}
             </Button>
           </div>
         </form>

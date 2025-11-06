@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Gift, AlertTriangle } from "lucide-react";
-import { Reward } from "@/services/rewardsService";
-import { useRequestRedemption } from '@/hooks/useRedemptions';
+import { rewardsService, Reward } from "@/services/rewardsService";
+import { toast } from "sonner";
 
 interface RedeemConfirmModalProps {
   reward: Reward | null;
@@ -18,13 +18,22 @@ export const RedeemConfirmModal: React.FC<RedeemConfirmModalProps> = ({
   onClose,
   onSuccess
 }) => {
-  const requestRedemption = useRequestRedemption();
+  const [loading, setLoading] = useState(false);
 
   if (!reward) return null;
 
   const handleRedeem = async () => {
-    await requestRedemption.mutateAsync(reward.id);
-    onSuccess();
+    try {
+      setLoading(true);
+      await rewardsService.requestRedemption(reward.id);
+      toast.success('Redemption requested! Your supporter will review it soon.');
+      onSuccess();
+    } catch (error: any) {
+      console.error('Failed to request redemption:', error);
+      toast.error(error.message || 'Failed to request redemption');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const canRedeem = userPoints >= reward.point_cost;
@@ -98,10 +107,10 @@ export const RedeemConfirmModal: React.FC<RedeemConfirmModalProps> = ({
             </Button>
             <Button 
               onClick={handleRedeem}
-              disabled={!canRedeem || requestRedemption.isPending}
+              disabled={!canRedeem || loading}
               className="flex-1"
             >
-              {requestRedemption.isPending ? 'Requesting...' : `Redeem for ${reward.point_cost} pts`}
+              {loading ? 'Requesting...' : `Redeem for ${reward.point_cost} pts`}
             </Button>
           </div>
         </div>

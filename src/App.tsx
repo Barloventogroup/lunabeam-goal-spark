@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -13,16 +13,16 @@ import RequestReset from "./pages/RequestReset";
 import Invitations from "./pages/Invitations";
 import Logout from "./pages/Logout";
 import TestComponents from "./pages/TestComponents";
-import { ProtectedRoute } from "./components/auth/protected-route";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 
 // Use registerPlugin to avoid build-time dependency on plugin packages
 const StatusBar = registerPlugin<any>('StatusBar');
 const Keyboard = registerPlugin<any>('Keyboard');
 const Style = { Dark: 'DARK', Light: 'LIGHT' } as const;
-import BuildBadge from "./components/dev/BuildBadge";
-import SafeAreaDebugger from "./components/dev/SafeAreaDebugger";
-import SafeAreaProbe from "./components/dev/SafeAreaProbe";
+import BuildBadge from "@/components/dev/BuildBadge";
+import SafeAreaDebugger from "@/components/dev/SafeAreaDebugger";
+import SafeAreaProbe from "@/components/dev/SafeAreaProbe";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,21 +35,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-// Component to handle OAuth hash redirect after React boots
-const OAuthHashRedirector = () => {
-  const navigate = useNavigate();
-  
-  useEffect(() => {
-    const hash = sessionStorage.getItem('oauth_hash');
-    if (hash) {
-      sessionStorage.removeItem('oauth_hash');
-      navigate('/auth/callback' + hash, { replace: true });
-    }
-  }, [navigate]);
-  
-  return null;
-};
 
 const App = () => {
   // Configure StatusBar and Keyboard on app mount
@@ -112,7 +97,6 @@ const App = () => {
         <SafeAreaProbe />
         <BuildBadge />
         <BrowserRouter>
-          <OAuthHashRedirector />
           <div className="app-shell min-h-[100dvh] flex flex-col">
             <Routes>
               <Route path="/auth" element={<Auth />} />

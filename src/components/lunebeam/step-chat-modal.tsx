@@ -248,7 +248,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
           is_scaffolding: true,
           scaffolding_level: (parentStep?.scaffolding_level || 0) + 1,
           order_index: (parentStep?.order_index || 0) + 1,
-          status: 'not_started',
+          status: 'todo',
           type: 'action',
           is_required: true,
           points: 2,

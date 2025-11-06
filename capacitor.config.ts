@@ -4,10 +4,8 @@ const config: CapacitorConfig = {
   appId: 'app.lovable.bcbbec9794c445c19f356ed8dcd5b3b6',
   appName: 'lunabeam-goal-spark',
   webDir: 'dist',
-  server: {
-    url: 'https://id-preview--bcbbec97-94c4-45c1-9f35-6ed8dcd5b3b6.lovable.app?forceHideBadge=true&debug=safearea',
-    cleartext: true
-  }
+  // No server.url here - loads from capacitor://localhost by default
+  // For live-reload during development, temporarily add server.url pointing to your dev server
 };
 
 export default config;

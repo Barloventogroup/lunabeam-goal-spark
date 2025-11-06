@@ -16,19 +16,6 @@ if (typeof window !== 'undefined') {
   window.fixGoalDomains = fixGoalDomains;
 }
 
-// Helper to normalize step status values to match database constraint
-const normalizeStepStatus = (status: string): StepStatus => {
-  const statusMap: Record<string, StepStatus> = {
-    'todo': 'not_started',
-    'doing': 'in_progress',
-    'not_started': 'not_started',
-    'in_progress': 'in_progress',
-    'done': 'done',
-    'skipped': 'skipped'
-  };
-  return (statusMap[status] || 'not_started') as StepStatus;
-};
-
 const sanitizeDescription = (text?: string): string => {
   if (!text) return '';
   let out = text.trim();
@@ -705,7 +692,7 @@ export const stepsService = {
         is_scaffolding: true,
         scaffolding_level: scaffoldingLevel,
         order_index: orderIndex,
-        status: 'not_started',
+        status: 'todo',
         type: 'action',
         is_required: true,
         points: 2,

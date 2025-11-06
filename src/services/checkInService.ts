@@ -460,7 +460,7 @@ export const checkInService = {
       .from('steps')
       .select('*')
       .eq('owner_id', userId)
-      .in('status', ['not_started', 'in_progress'])
+      .in('status', ['not_started', 'todo', 'in_progress', 'doing'])
       .lt('due_date', todayStr)
       .order('due_date', { ascending: true })
       .limit(limit);

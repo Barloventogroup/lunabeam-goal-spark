@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, ChevronDown, ChevronUp, MoreHorizontal, Edit, Play, Paperclip, Bell } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ChevronUp, MoreHorizontal, Edit, Play } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,15 +65,13 @@ interface SupporterSetupStepsListProps {
   goal: Goal;
   onStepsChange?: () => void;
   onStepsUpdate?: (updatedSteps: Step[], updatedGoal: Goal) => void;
-  isViewerSupporter?: boolean;
 }
 
 export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = ({
   steps,
   goal,
   onStepsChange,
-  onStepsUpdate,
-  isViewerSupporter = true
+  onStepsUpdate
 }) => {
   const [showSetupSteps, setShowSetupSteps] = useState(true);
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
@@ -216,7 +214,7 @@ export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = (
       // Update the scaffolding step to mark as initiated
       await supabase
         .from('steps')
-        .update({ initiated_at: new Date().toISOString(), status: 'in_progress' })
+        .update({ initiated_at: new Date().toISOString(), status: 'doing' })
         .eq('id', substepId);
       
       // Refresh scaffolding steps for this parent
@@ -448,8 +446,8 @@ export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = (
                           </TableCell>
                           
                           <TableCell className="p-2 text-center">
-                            <Badge variant={step.status === 'done' ? 'default' : step.status === 'in_progress' ? 'secondary' : 'outline'} className="text-xs">
-                              {step.status === 'done' ? 'Done' : step.status === 'in_progress' ? 'In Progress' : 'To Do'}
+                            <Badge variant={step.status === 'done' ? 'default' : step.status === 'doing' ? 'secondary' : 'outline'} className="text-xs">
+                              {step.status === 'done' ? 'Done' : step.status === 'doing' ? 'In Progress' : 'To Do'}
                             </Badge>
                           </TableCell>
                           
@@ -489,18 +487,6 @@ export const SupporterSetupStepsList: React.FC<SupporterSetupStepsListProps> = (
                                     }}>
                                       <Edit className="h-4 w-4 mr-2" />
                                       Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => {
-                                      // TODO: Implement attach resources functionality
-                                    }}>
-                                      <Paperclip className="h-4 w-4 mr-2" />
-                                      Attach Resources
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => {
-                                      // TODO: Implement nudge functionality
-                                    }}>
-                                      <Bell className="h-4 w-4 mr-2" />
-                                      Nudge
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>

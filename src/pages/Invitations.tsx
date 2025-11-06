@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { TabInvitations } from "@/components/navigation/tab-invitations";
+import { TabInvitations } from "../components/navigation/tab-invitations";
 
 export default function Invitations() {
   useEffect(() => {

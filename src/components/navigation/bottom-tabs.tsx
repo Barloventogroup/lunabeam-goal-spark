@@ -7,11 +7,14 @@ import { TabTeamIndividual } from './tab-team-individual';
 import { TabYou } from './tab-you';
 import { TabSupporterHome } from './tab-supporter-home';
 import { TabSupporterGoals } from './tab-supporter-goals';
+import { TabCoachHome } from './tab-coach-home';
 import { AIChat } from '../lunebeam/ai-chat';
 import { useStore } from '@/store/useStore';
 import type { EntryVariant } from '@/utils/entryExperience';
+import { useSupporterDashboard } from '@/hooks/useSupporterDashboard';
+import { GraduationCap } from 'lucide-react';
 
-type TabType = 'home' | 'goals' | 'team' | 'you' | 'chat';
+type TabType = 'home' | 'goals' | 'team' | 'you' | 'chat' | 'coach';
 
 interface BottomTabsProps {
   initialTab?: TabType;
@@ -29,8 +32,14 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
   const [youTabInitialView, setYouTabInitialView] = useState<'profile' | 'notifications'>('profile');
   const [triggerCreateGoal, setTriggerCreateGoal] = useState(false);
   const { loadGoals, userContext } = useStore();
+  const { data: supporterData } = useSupporterDashboard(userContext?.profile?.user_id || '');
 
-  const tabs = [
+  // Check if user is a coach/teacher
+  const isCoach = supporterData?.supportedIndividuals.some(ind => 
+    ind.role === 'coach' || ind.role === 'teacher'
+  );
+
+  const baseTabs = [
     {
       id: 'home' as const,
       label: 'Home',
@@ -53,6 +62,17 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
     },
   ];
 
+  // Add Coach tab if user has coach/teacher role
+  const tabs = isCoach ? [
+    ...baseTabs.slice(0, 1), // Home
+    {
+      id: 'coach' as const,
+      label: 'Coach',
+      icon: GraduationCap,
+    },
+    ...baseTabs.slice(1), // Rest of tabs
+  ] : baseTabs;
+
   // Clear goal selection when leaving goals tab
   useEffect(() => {
     if (activeTab !== 'goals') {
@@ -74,8 +94,10 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
     // Route supporters to supporter-specific home dashboard
     if (userContext?.userType === 'supporter') {
       switch (activeTab) {
+        case 'coach':
+          return <TabCoachHome />;
         case 'home':
-          return <TabSupporterHome 
+          return <TabSupporterHome
         onNavigateToGoals={(goalId?: string) => {
           setActiveTab('goals');
           setSelectedGoalId(goalId || null);

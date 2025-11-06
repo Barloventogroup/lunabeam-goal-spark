@@ -224,7 +224,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       if (goal.status === 'active' || goal.status === 'planned') {
         const goalSteps = steps[goal.id] || [];
         goalSteps.forEach(step => {
-          if (step.due_date && step.status === 'not_started') {
+          if (step.due_date && step.status === 'todo') {
             try {
               const dueDate = parseISO(step.due_date);
               if (isToday(dueDate)) {

@@ -17,8 +17,6 @@ import { getDomainDisplayName } from '@/utils/domainUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { generateMicroStepsSmart } from '@/services/microStepsGenerator';
 import { cn } from '@/lib/utils';
-import { useGoalSteps } from '@/hooks/useGoalSteps';
-import { useStore } from '@/store/useStore';
 import { RecommendedStepsList } from './recommended-steps-list';
 import { SupporterSetupStepsList } from './supporter-setup-steps-list';
 import { StepsChat } from './steps-chat';
@@ -69,9 +67,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
 
   // Extract data from React Query result
   const goal = data?.goal || null;
-  const { data: stepsFromQuery = [], refetch: refetchSteps } = useGoalSteps(goalId);
-  const { steps: stepsMap, loadSteps } = useStore();
-  const steps = stepsFromQuery.length > 0 ? stepsFromQuery : (stepsMap[goalId] || data?.steps || []);
+  const steps = data?.steps || [];
   const substeps = data?.substeps || [];
   const currentUser = data?.user;
   const ownerProfile = data?.ownerProfile;
@@ -110,15 +106,6 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       supabase.removeChannel(channel);
     };
   }, [goalId, toast, queryClient]);
-  // Refresh steps when Steps tab is activated
-  useEffect(() => {
-    if (activeTab === 'steps') {
-      console.debug('[GoalDetailV2] steps counts', { fromQuery: stepsFromQuery.length, fromStore: (stepsMap[goalId] || []).length, final: steps.length, goalId });
-      loadSteps(goalId);
-      refetchSteps();
-    }
-  }, [activeTab, goalId]);
-
   useEffect(() => {
     // Trigger daily generation check for habit goals
     if (goal) {
@@ -567,10 +554,8 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       currentStatus: goalMetadata?.generationStatus
     });
 
-    // Check if this is a PM goal (check both goal_type and metadata for backward compatibility)
-    const isPMGoal = goal?.goal_type === 'progressive_mastery' || 
-                     goal?.metadata?.wizardContext?.goalType === 'progressive_mastery' ||
-                     goal?.metadata?.pmContext?.goalType === 'progressive_mastery';
+    // Check if this is a PM goal
+    const isPMGoal = goal?.goal_type === 'progressive_mastery';
     if (isPMGoal) {
       console.log('[PM Generation] Detected PM goal, using PM generation path');
       return generatePMSteps();
@@ -1257,7 +1242,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
         <div className="flex-1 overflow-y-auto" data-scroll-container>
           <div className="px-4 py-4">
             <TabsContent value="summary" className="mt-0">
-              {activeTab === 'summary' && <div className="max-w-4xl mx-auto">
+              {activeTab === 'summary' && <div className="w-full">
                   <Suspense fallback={<Skeleton className="h-96 w-full" />}>
                     <GoalFactorSummary goal={goal} wizardContext={(() => {
               const existingContext = (goal as any).metadata?.wizardContext;
@@ -1348,7 +1333,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
             </TabsContent>
 
             <TabsContent value="calendar" className="mt-0">
-              {activeTab === 'calendar' && <div className="max-w-4xl mx-auto">
+              {activeTab === 'calendar' && <div className="w-full">
                   <div className="space-y-2">
                     <h3 className="text-xl font-semibold flex items-center gap-2">
                       <span>Results</span>
@@ -1361,7 +1346,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
             </TabsContent>
 
             <TabsContent value="steps" className="mt-0">
-              {activeTab === 'steps' && <div className="max-w-4xl mx-auto">
+              {activeTab === 'steps' && <div className="w-full">
                   {generatingSteps ? <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-center py-12 text-center">
@@ -1395,18 +1380,24 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
                     </Button>
                   </div>
                 </CardContent>
+              </Card> : steps.length === 0 ? <Card>
+                <CardContent className="pt-6">
+                  <p className="text-center text-muted-foreground py-8">
+                    No recommended steps yet
+                  </p>
+                </CardContent>
               </Card> : <div className="space-y-2">
                 <h3 className="text-xl font-semibold flex items-center gap-2">
                   <span>Recommended Steps</span>
                 </h3>
-                <RecommendedStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} onOpenStepChat={handleOpenStepChat} isViewerSupporter={isViewerSupporter} />
+                <RecommendedStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} onOpenStepChat={handleOpenStepChat} />
                   </div>}
                 </div>}
             </TabsContent>
 
             {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && <TabsContent value="supporter" className="mt-0">
-                {activeTab === 'supporter' && <div className="max-w-4xl mx-auto">
-                    <SupporterSetupStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} isViewerSupporter={isViewerSupporter} />
+                {activeTab === 'supporter' && <div className="w-full">
+                    <SupporterSetupStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} />
                   </div>}
               </TabsContent>}
           </div>
