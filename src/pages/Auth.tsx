@@ -79,17 +79,26 @@ useEffect(() => {
   
   const isSupporterInvite = searchParams.get('redirect') === 'supporter-invite';
 
-  // Guard: redirect to home if user already has valid session and not in setup flows
+  // Guard: redirect signed-in users away from auth page immediately
   useEffect(() => {
-    if (user && !loading && !showPasswordSetup && !showSupporterSetup && !showLoginAnimation && !signingOut) {
+    if (user && !loading && !signingOut) {
       const mode = searchParams.get('mode');
-      // Skip redirect if in special modes
+      
+      // Allow special setup modes to remain on /auth
       if (mode === 'setup' || mode === 'supporter-setup' || mode === 'claim') {
         return;
       }
-      checkPasswordSetupNeeded();
+      
+      // If already showing setup flows, let them complete
+      if (showPasswordSetup || showSupporterSetup || showLoginAnimation) {
+        return;
+      }
+      
+      // Immediately navigate away so AuthProvider can load profile
+      console.log('Auth.tsx: User signed in, redirecting to home');
+      navigate('/', { replace: true });
     }
-  }, [user, loading, navigate, showPasswordSetup, showSupporterSetup, showLoginAnimation, signingOut, searchParams]);
+  }, [user, loading, signingOut, searchParams, showPasswordSetup, showSupporterSetup, showLoginAnimation, navigate]);
   const checkPasswordSetupNeeded = async () => {
     if (!user || showLoginAnimation) return;
     
