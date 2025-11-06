@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -35,6 +35,21 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Component to handle OAuth hash redirect after React boots
+const OAuthHashRedirector = () => {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const hash = sessionStorage.getItem('oauth_hash');
+    if (hash) {
+      sessionStorage.removeItem('oauth_hash');
+      navigate('/auth/callback' + hash, { replace: true });
+    }
+  }, [navigate]);
+  
+  return null;
+};
 
 const App = () => {
   // Configure StatusBar and Keyboard on app mount
@@ -97,6 +112,7 @@ const App = () => {
         <SafeAreaProbe />
         <BuildBadge />
         <BrowserRouter>
+          <OAuthHashRedirector />
           <div className="app-shell min-h-[100dvh] flex flex-col">
             <Routes>
               <Route path="/auth" element={<Auth />} />

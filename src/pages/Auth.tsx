@@ -79,12 +79,17 @@ useEffect(() => {
   
   const isSupporterInvite = searchParams.get('redirect') === 'supporter-invite';
 
-  // Redirect to dashboard after successful authentication
+  // Guard: redirect to home if user already has valid session and not in setup flows
   useEffect(() => {
-    if (user && !loading && !showPasswordSetup && !showSupporterSetup && !showLoginAnimation) {
+    if (user && !loading && !showPasswordSetup && !showSupporterSetup && !showLoginAnimation && !signingOut) {
+      const mode = searchParams.get('mode');
+      // Skip redirect if in special modes
+      if (mode === 'setup' || mode === 'supporter-setup' || mode === 'claim') {
+        return;
+      }
       checkPasswordSetupNeeded();
     }
-  }, [user, loading, navigate, showPasswordSetup, showSupporterSetup, showLoginAnimation]);
+  }, [user, loading, navigate, showPasswordSetup, showSupporterSetup, showLoginAnimation, signingOut, searchParams]);
   const checkPasswordSetupNeeded = async () => {
     if (!user || showLoginAnimation) return;
     
@@ -248,12 +253,12 @@ useEffect(() => {
         provider: provider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          ...(provider === 'google' ? { flowType: 'pkce' as any } : {}),
+          ...(provider === 'google' ? { flowType: 'pkce' } : {}),
           queryParams: provider === 'google' ? {
             access_type: 'offline',
             prompt: 'consent'
           } : undefined
-        } as any
+        }
       });
       if (error) {
         toast.error(error.message || `${provider} sign-in failed`);
