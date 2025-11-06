@@ -41,16 +41,10 @@ const OAuthHashRedirector = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    const stored = sessionStorage.getItem('oauth_hash');
-    const directHash = window.location.hash || '';
-    const directHasTokens = directHash && (directHash.includes('access_token=') || directHash.includes('id_token=') || directHash.includes('error='));
-    const effectiveHash = stored || (directHasTokens ? directHash : '');
-
-    if (effectiveHash) {
-      // Ensure it's staged for the callback to read
-      try { sessionStorage.setItem('oauth_hash', effectiveHash); } catch {}
-      // Navigate to the callback with hash so it can parse or rely on staged storage
-      navigate('/auth/callback' + effectiveHash, { replace: true });
+    const hash = sessionStorage.getItem('oauth_hash');
+    if (hash) {
+      sessionStorage.removeItem('oauth_hash');
+      navigate('/auth/callback' + hash, { replace: true });
     }
   }, [navigate]);
   

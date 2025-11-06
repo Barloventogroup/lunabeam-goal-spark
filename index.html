@@ -29,26 +29,12 @@
 
   <body>
     <script>
-      (function () {
+      (function() {
         try {
           var hash = window.location.hash || '';
-          var hasTokens = hash && (hash.indexOf('access_token=') !== -1 || hash.indexOf('id_token=') !== -1 || hash.indexOf('error=') !== -1);
-          if (hasTokens) {
-            // Stage full hash for React to process
-            try { sessionStorage.setItem('oauth_hash', hash); } catch (e) {}
-            // Optionally stage parsed tokens for fallbacks/debugging
-            try {
-              var params = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : hash);
-              var staged = {
-                access_token: params.get('access_token'),
-                refresh_token: params.get('refresh_token'),
-                id_token: params.get('id_token'),
-                provider_token: params.get('provider_token'),
-                type: params.get('type')
-              };
-              localStorage.setItem('sb_hash_tokens', JSON.stringify(staged));
-            } catch (e) {}
-            // Clean URL to avoid leaving tokens in the address bar
+          // Store OAuth tokens in sessionStorage and clean URL, let React handle redirect
+          if (hash && (hash.indexOf('access_token=') !== -1 || hash.indexOf('id_token=') !== -1 || hash.indexOf('error=') !== -1)) {
+            sessionStorage.setItem('oauth_hash', hash);
             history.replaceState({}, document.title, window.location.pathname + window.location.search);
           }
         } catch (e) {

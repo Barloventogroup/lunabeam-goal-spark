@@ -141,6 +141,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return false;
     };
 
+    // AGGRESSIVE OPTIMIZATION: Skip session check entirely on /auth pages (unless we have hash tokens)
+    const isAuthPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth');
+    
     // Process hash tokens immediately if present (async IIFE)
     (async () => {
       sessionSetFromHash = await handleLegacyHashSession();
@@ -149,11 +152,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('AuthProvider: Session set from hash, skipping other initialization');
         return;
       }
+      
+      // Only run auth page optimization if we didn't just set session from hash
+      if (isAuthPage && !sessionSetFromHash) {
+        // Instantly mark as ready for auth pages - no session check needed
+        console.log('AuthProvider: On auth page, skipping session check for instant load');
+        setLoading(false);
+        setContextReady(true);
+        setSession(null);
+        setUser(null);
+      }
     })();
 
-    // Watchdog timer: force ready after 1 second
+    // Reduced watchdog timer: force ready after 1 second for non-auth pages
     watchdogTimer = setTimeout(() => {
-      if (!cleanupDone) {
+      if (!cleanupDone && !isAuthPage) {
         console.warn('AuthProvider: Watchdog timer fired - forcing context ready');
         setLoading(false);
         setContextReady(true);
@@ -203,32 +216,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
         markReady();
         
-        // Load user profile when signed in (always load profile)
+        // Load user profile when signed in (skip on auth pages)
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('AuthProvider: User signed in, loading profile');
+          const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+          const isOnAuthPage = currentPath.startsWith('/auth');
           
-          // Check for pending supporter invite
-          const pendingInvite = localStorage.getItem('pending_supporter_invite');
-          if (pendingInvite) {
-            console.log('AuthProvider: Processing pending supporter invite');
-            setTimeout(async () => {
-              try {
-                const { PermissionsService } = await import('@/services/permissionsService');
-                await PermissionsService.acceptSupporterInvite(pendingInvite);
-                localStorage.removeItem('pending_supporter_invite');
-                console.log('AuthProvider: Supporter invite accepted');
-                window.location.href = '/';
-              } catch (error) {
-                console.error('AuthProvider: Failed to accept supporter invite:', error);
-                localStorage.removeItem('pending_supporter_invite');
-              }
-            }, 1000);
+          if (!isOnAuthPage) {
+            console.log('AuthProvider: User signed in, loading profile');
+            
+            // Check for pending supporter invite
+            const pendingInvite = localStorage.getItem('pending_supporter_invite');
+            if (pendingInvite) {
+              console.log('AuthProvider: Processing pending supporter invite');
+              setTimeout(async () => {
+                try {
+                  const { PermissionsService } = await import('@/services/permissionsService');
+                  await PermissionsService.acceptSupporterInvite(pendingInvite);
+                  localStorage.removeItem('pending_supporter_invite');
+                  console.log('AuthProvider: Supporter invite accepted');
+                  window.location.href = '/';
+                } catch (error) {
+                  console.error('AuthProvider: Failed to accept supporter invite:', error);
+                  localStorage.removeItem('pending_supporter_invite');
+                }
+              }, 1000);
+            } else {
+              setTimeout(() => {
+                loadProfile().catch((error) => {
+                  console.error('AuthProvider: Failed to load profile after sign in:', error);
+                });
+              }, 0);
+            }
           } else {
-            setTimeout(() => {
-              loadProfile().catch((error) => {
-                console.error('AuthProvider: Failed to load profile after sign in:', error);
-              });
-            }, 0);
+            console.log('AuthProvider: On auth page, skipping profile load');
           }
         }
       }
@@ -263,17 +283,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
         markReady();
         
-        // Load profile if user is already signed in
+        // Load profile if user is already signed in (skip on auth pages)
         if (session?.user) {
-          setTimeout(() => {
-            loadProfile().catch((error) => {
-              console.error('AuthProvider: Failed to load profile for existing session:', error);
-              if (error?.message?.includes('User from sub claim in JWT does not exist')) {
-                console.log('AuthProvider: Profile load failed with stale token, signing out');
-                supabase.auth.signOut();
-              }
-            });
-          }, 0);
+          const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+          const isOnAuthPage = currentPath.startsWith('/auth');
+          
+          if (!isOnAuthPage) {
+            setTimeout(() => {
+              loadProfile().catch((error) => {
+                console.error('AuthProvider: Failed to load profile for existing session:', error);
+                if (error?.message?.includes('User from sub claim in JWT does not exist')) {
+                  console.log('AuthProvider: Profile load failed with stale token, signing out');
+                  supabase.auth.signOut();
+                }
+              });
+            }, 0);
+          } else {
+            console.log('AuthProvider: On auth page, skipping profile load for existing session');
+          }
         }
       } catch (sessionError) {
         console.error('AuthProvider: Session check failed:', sessionError);
@@ -284,8 +311,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Always check session unless we already handled hash tokens
-    if (!sessionSetFromHash) {
+    // Only check session if NOT on auth page AND we didn't handle hash
+    if (!isAuthPage && !sessionSetFromHash) {
       initializeSession();
     }
 
