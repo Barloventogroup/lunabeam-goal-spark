@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +70,7 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const { user, signOut } = useAuth();
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [supporterContext, setSupporterContext] = useState<any>(null);
+  const [stepsLoading, setStepsLoading] = useState(true);
 
   // Get supporter context for supporters
   useEffect(() => {
@@ -87,8 +88,12 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   useEffect(() => {
     if (user) {
       console.log('Loading data for user:', user.id);
+      setStepsLoading(true);
       loadProfile();
-      loadGoals();
+      loadGoals().then(() => {
+        // Wait a bit for steps to load, then stop loading
+        setTimeout(() => setStepsLoading(false), 500);
+      });
       loadCheckIns();
       loadEvidence();
       loadFamilyCircles();
@@ -162,6 +167,14 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
     }
   }, [activeGoal?.id, loadSteps]);
 
+  // Debounced step reload for real-time updates
+  const debouncedLoadSteps = useCallback((goalId: string) => {
+    const timer = setTimeout(() => {
+      loadSteps(goalId);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [loadSteps]);
+
   // Auto-refresh steps when AI enhancement completes
   useEffect(() => {
     if (!activeGoal?.id) return;
@@ -175,14 +188,15 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
         filter: `goal_id=eq.${activeGoal.id}`
       }, (payload) => {
         console.log('[HomeDashboard] Steps updated, reloading...', payload);
-        loadSteps(activeGoal.id);
+        const cleanup = debouncedLoadSteps(activeGoal.id);
+        return cleanup;
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeGoal?.id, loadSteps]);
+  }, [activeGoal?.id, debouncedLoadSteps]);
   const recentCheckIns = activeGoal ? getRecentCheckIns(activeGoal.id) : [];
 
   // Calculate stats
@@ -215,8 +229,8 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const nextCheckIn = getNextCheckInDate();
   const isCheckInDue = nextCheckIn ? isToday(nextCheckIn) || nextCheckIn < new Date() : true;
   
-  // Find today's due step and next upcoming steps
-  const getTodaysStepsAndNext = () => {
+  // Memoized calculation of today's due steps and upcoming steps
+  const { todaysSteps, upcomingSteps } = useMemo(() => {
     const todaysSteps: Array<{step: any, goal: Goal}> = [];
     const upcomingSteps: Array<{step: any, goal: Goal, dueDate: Date}> = [];
     
@@ -240,16 +254,24 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
       }
     });
     
-    // Sort upcoming steps by due date
-    upcomingSteps.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
+    // Stable sorting: primary by due date, secondary by goal creation, tertiary by step ID
+    todaysSteps.sort((a, b) => {
+      const goalCompare = (a.goal.created_at || '').localeCompare(b.goal.created_at || '');
+      return goalCompare !== 0 ? goalCompare : a.step.id.localeCompare(b.step.id);
+    });
+    
+    upcomingSteps.sort((a, b) => {
+      const dateCompare = a.dueDate.getTime() - b.dueDate.getTime();
+      if (dateCompare !== 0) return dateCompare;
+      const goalCompare = (a.goal.created_at || '').localeCompare(b.goal.created_at || '');
+      return goalCompare !== 0 ? goalCompare : a.step.id.localeCompare(b.step.id);
+    });
     
     return {
       todaysSteps,
       upcomingSteps: upcomingSteps.slice(0, 3) // Show up to 3 upcoming steps
     };
-  };
-
-  const { todaysSteps, upcomingSteps } = getTodaysStepsAndNext();
+  }, [goals, steps]);
   const todaysDueItem = todaysSteps[0] || null;
   
   const hasActiveOrPlannedGoals = goals.some(goal => goal.status === 'active' || goal.status === 'planned');
@@ -342,15 +364,25 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
           </p>
         </div>
 
-        {/* Today's Focus Card - Always show */}
-        <TodaysFocusCard
-          step={todaysDueItem?.step}
-          goal={todaysDueItem?.goal}
-          upcomingSteps={upcomingSteps}
-          onCompleteStep={handleCompleteStep}
-          onViewStep={handleViewStep}
-          onNeedHelp={handleNeedHelp}
-        />
+        {/* Today's Focus Card - Show loading state or content */}
+        {stepsLoading ? (
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center min-h-[120px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <TodaysFocusCard
+            step={todaysDueItem?.step}
+            goal={todaysDueItem?.goal}
+            upcomingSteps={upcomingSteps}
+            onCompleteStep={handleCompleteStep}
+            onViewStep={handleViewStep}
+            onNeedHelp={handleNeedHelp}
+          />
+        )}
 
         {/* Checked In Today */}
         {!isFirstTimeUser && recentCheckIns.some(checkIn => isToday(new Date(checkIn.date))) && (

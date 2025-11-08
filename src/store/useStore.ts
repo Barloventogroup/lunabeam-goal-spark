@@ -186,16 +186,27 @@ export const useStore = create<AppState>()(
           console.log('Loaded new goals:', goals);
           set({ goals });
           
-          // Also refresh steps for the active goal
-          const activeGoal = goals.find(g => g.status === 'active');
-          if (activeGoal) {
+          // Batch load steps for all active/planned goals
+          const activeGoals = goals.filter(g => g.status === 'active' || g.status === 'planned');
+          if (activeGoals.length > 0) {
             try {
-              const steps = await stepsService.getSteps(activeGoal.id);
+              const stepsPromises = activeGoals.map(g => stepsService.getSteps(g.id));
+              const stepsResults = await Promise.allSettled(stepsPromises);
+              
+              const stepsMap: Record<string, Step[]> = {};
+              activeGoals.forEach((goal, index) => {
+                const result = stepsResults[index];
+                if (result.status === 'fulfilled') {
+                  stepsMap[goal.id] = result.value;
+                }
+              });
+              
+              // Single store update with all steps data
               set((state) => ({
-                steps: { ...state.steps, [activeGoal.id]: steps }
+                steps: { ...state.steps, ...stepsMap }
               }));
             } catch (error) {
-              console.error('Failed to load steps for active goal:', error);
+              console.error('Failed to batch load steps:', error);
             }
           }
         } catch (error) {
