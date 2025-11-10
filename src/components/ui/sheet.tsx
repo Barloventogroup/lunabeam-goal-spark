@@ -25,11 +25,14 @@ const sheetVariants = cva("fixed z-50 gap-4 bg-background shadow-lg transition e
     side: "right"
   }
 });
-interface SheetContentProps extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>, VariantProps<typeof sheetVariants> {}
+interface SheetContentProps extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>, VariantProps<typeof sheetVariants> {
+  showCloseButton?: boolean;
+}
 const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Content>, SheetContentProps>(({
   side = "right",
   className,
   children,
+  showCloseButton = true,
   ...props
 }, ref) => <SheetPortal>
     <SheetOverlay />
@@ -37,10 +40,12 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
     side
   }), className)} {...props}>
       {children}
-      <SheetPrimitive.Close className="absolute right-4 top-safe-with-margin rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </SheetPrimitive.Close>
+      {showCloseButton && (
+        <SheetPrimitive.Close className="absolute right-4 top-safe-with-margin rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </SheetPrimitive.Close>
+      )}
     </SheetPrimitive.Content>
   </SheetPortal>);
 SheetContent.displayName = SheetPrimitive.Content.displayName;

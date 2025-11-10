@@ -16,6 +16,7 @@ import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "../ui/sheet";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { CircularProgress } from "../ui/circular-progress";
+import { PageHeader } from "../ui/page-header";
 
 import { parseISO, isToday } from "date-fns";
 
@@ -518,11 +519,12 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
       {/* Step Detail Drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <SheetContent side="right" className="w-full sm:w-full max-w-none">
-          <SheetHeader className="border-b pb-4">
-            <SheetTitle>Recommended Steps</SheetTitle>
-          </SheetHeader>
-          <div className="flex-1 overflow-y-auto p-4">
+        <SheetContent side="right" className="w-full sm:w-full max-w-none p-0" showCloseButton={false}>
+          <PageHeader 
+            title="Recommended Steps" 
+            onBack={() => setDrawerOpen(false)} 
+          />
+          <div className="flex-1 overflow-y-auto p-4 pt-20">
             {drawerGoalId &&
               (() => {
                 const goal = goalsFromQuery.find((g) => g.id === drawerGoalId);
