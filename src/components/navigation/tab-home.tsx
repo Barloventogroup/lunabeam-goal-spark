@@ -290,28 +290,41 @@ export const TabHome: React.FC<TabHomeProps> = ({
     };
   };
 
-  // Load steps data when goals change
+  // Load steps data when goals change (with debouncing to prevent flickering)
   useEffect(() => {
-    const loadStepsData = async () => {
-      setIsLoadingSteps(true);
-      try {
-        const data = await getTodaysStepsAndNext();
-        setStepsData(data);
-      } catch (err) {
-        console.error("[TabHome] Failed to compute steps data:", err);
-        setStepsData({ todaysSteps: [], overdueSteps: [], upcomingSteps: [] });
-      } finally {
+    // Debounce: wait 100ms before computing to prevent rapid re-renders
+    const timeoutId = setTimeout(() => {
+      const loadStepsData = async () => {
+        // Only show loading spinner on initial load when we have no data
+        const hasNoData = stepsData.todaysSteps.length === 0 && 
+                          stepsData.overdueSteps.length === 0 && 
+                          stepsData.upcomingSteps.length === 0;
+        
+        if (hasNoData) {
+          setIsLoadingSteps(true);
+        }
+        
+        try {
+          const data = await getTodaysStepsAndNext();
+          setStepsData(data);
+        } catch (err) {
+          console.error("[TabHome] Failed to compute steps data:", err);
+          setStepsData({ todaysSteps: [], overdueSteps: [], upcomingSteps: [] });
+        } finally {
+          setIsLoadingSteps(false);
+        }
+      };
+
+      // Only compute when we have goals loaded and at least attempted to load steps
+      if (!goalsLoading && goalsFromQuery.length > 0) {
+        loadStepsData();
+      } else if (!goalsLoading) {
+        // No goals at all - set loading to false
         setIsLoadingSteps(false);
       }
-    };
+    }, 100); // 100ms debounce
 
-    // Only compute when we have goals loaded and at least attempted to load steps
-    if (!goalsLoading && goalsFromQuery.length > 0) {
-      loadStepsData();
-    } else if (!goalsLoading) {
-      // No goals at all - set loading to false
-      setIsLoadingSteps(false);
-    }
+    return () => clearTimeout(timeoutId);
   }, [goalsLoading, goalsFromQuery, steps]);
 
   const { todaysSteps, overdueSteps, upcomingSteps } = stepsData;
