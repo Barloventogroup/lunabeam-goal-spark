@@ -151,6 +151,9 @@ export default {
 				'.top-safe': {
 					top: 'env(safe-area-inset-top, 0px)',
 				},
+				'.top-safe-with-margin': {
+					top: 'calc(env(safe-area-inset-top, 0px) + 1rem)',
+				},
 				'.bottom-safe': {
 					bottom: 'env(safe-area-inset-bottom, 0px)',
 				},
