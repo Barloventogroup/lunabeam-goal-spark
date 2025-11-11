@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { database } from '@/services/database';
@@ -80,6 +80,7 @@ export function ParentOnboarding({
   const [showProfile, setShowProfile] = useState(false);
   const [generatedProfile, setGeneratedProfile] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [birthdayDrawerOpen, setBirthdayDrawerOpen] = useState(false);
   const {
     completeOnboarding,
     setProfile
@@ -385,12 +386,12 @@ export function ParentOnboarding({
   if (showProfile) {
     return <div className="min-h-[100dvh] flex flex-col">
       {/* Exit button */}
-      <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
+      <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-safe-with-margin right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
         <X className="h-4 w-4" />
       </Button>
       
       {/* HEADER - 50vh */}
-      <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+      <div className="h-[50vh] bg-white flex flex-col justify-end p-6 pt-safe-with-6">
         <div className="max-w-2xl mx-auto w-full">
           <div className="space-y-2">
             <h2 className="text-3xl font-semibold">{data.preferredName}'s Profile</h2>
@@ -413,7 +414,7 @@ export function ParentOnboarding({
       </div>
       
       {/* FOOTER - 6.25vh */}
-      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)]">
+      <div className="min-h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)] pb-safe-only">
         <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
         <div className="flex items-center gap-3">
           <BackButton onClick={handleBack} variant="text" />
@@ -429,12 +430,12 @@ export function ParentOnboarding({
   }
   return <div className="min-h-[100dvh] flex flex-col">
       {/* Exit button */}
-      <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
+      <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-safe-with-margin right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
         <X className="h-4 w-4" />
       </Button>
       
       {/* HEADER - 50vh */}
-      <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+      <div className="h-[50vh] bg-white flex flex-col justify-end p-6 pt-safe-with-6">
         <div className="max-w-2xl mx-auto w-full">
           {currentStep === 2 && <div className="space-y-2">
               <h2 className="text-3xl font-semibold">Who are you helping?</h2>
@@ -506,36 +507,46 @@ export function ParentOnboarding({
             </div>
           )}
           {currentStep === 3 && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-auto justify-start text-left font-normal",
-                    !data.birthday && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {data.birthday ? format(data.birthday, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={data.birthday}
-                  onSelect={(date) => setData({
-                    ...data,
-                    birthday: date
-                  })}
-                  disabled={(date) =>
-                    date > new Date() || date < new Date("1900-01-01")
-                  }
-                  showYearPicker
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setBirthdayDrawerOpen(true)}
+                className={cn(
+                  "w-auto justify-start text-left font-normal",
+                  !data.birthday && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {data.birthday ? format(data.birthday, "PPP") : <span>Pick a date</span>}
+              </Button>
+
+              <Drawer open={birthdayDrawerOpen} onOpenChange={setBirthdayDrawerOpen}>
+                <DrawerContent side="bottom" className="h-auto max-h-[80vh]">
+                  <DrawerHeader className="border-b">
+                    <DrawerTitle>Select Birthday</DrawerTitle>
+                  </DrawerHeader>
+                  <div className="p-4 overflow-y-auto">
+                    <Calendar
+                      mode="single"
+                      selected={data.birthday}
+                      onSelect={(date) => {
+                        setData({
+                          ...data,
+                          birthday: date
+                        });
+                        setBirthdayDrawerOpen(false);
+                      }}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      showYearPicker
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto mx-auto")}
+                    />
+                  </div>
+                </DrawerContent>
+              </Drawer>
+            </>
           )}
           {currentStep === 4 && (
             <div className="space-y-4">
@@ -745,7 +756,7 @@ export function ParentOnboarding({
       </div>
       
       {/* FOOTER - 6.25vh */}
-      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)]">
+      <div className="min-h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)] pb-safe-only">
         <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
         <div className="flex items-center gap-3">
           <BackButton onClick={handleBack} variant="text" />

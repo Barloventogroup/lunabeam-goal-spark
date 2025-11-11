@@ -163,6 +163,12 @@ export default {
 				'.pb-safe-content': {
 					paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 4rem)',
 				},
+				'.pt-safe-with-6': {
+					paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)',
+				},
+				'.pb-safe-only': {
+					paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+				},
 			})
 		},
 	],

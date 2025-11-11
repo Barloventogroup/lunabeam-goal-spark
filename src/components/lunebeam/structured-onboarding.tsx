@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { AIService } from '@/services/aiService';
@@ -104,6 +104,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const [generatedProfile, setGeneratedProfile] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [birthdayDrawerOpen, setBirthdayDrawerOpen] = useState(false);
   const { completeOnboarding, setProfile } = useStore();
 
   const getTotalSteps = () => {
@@ -312,12 +313,12 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   if (showProfile) {
     return <div className="min-h-[100dvh] flex flex-col">
       {/* Exit button */}
-      <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
+      <Button variant="ghost" size="sm" onClick={onExit} className="absolute top-safe-with-margin right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
         <X className="h-4 w-4" />
       </Button>
       
       {/* HEADER - 50vh */}
-      <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+      <div className="h-[50vh] bg-white flex flex-col justify-end p-6 pt-safe-with-6">
         <div className="max-w-2xl mx-auto w-full">
           <div className="space-y-2">
             <h2 className="text-3xl font-semibold">Your Profile</h2>
@@ -343,7 +344,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       </div>
       
       {/* FOOTER - 6.25vh */}
-      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)]">
+      <div className="min-h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)] pb-safe-only">
         <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
         <div className="flex items-center gap-3">
           <BackButton onClick={handleBack} variant="text" />
@@ -365,13 +366,13 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
         variant="ghost"
         size="sm"
         onClick={onExit}
-        className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50"
+        className="absolute top-safe-with-margin right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50"
       >
         <X className="h-4 w-4" />
       </Button>
       
       {/* HEADER - 50% */}
-      <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+      <div className="h-[50vh] bg-white flex flex-col justify-end p-6 pt-safe-with-6">
         <div className="max-w-2xl mx-auto w-full">
           {currentStep === 1 && (
             <div className="space-y-2">
@@ -469,33 +470,43 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
 
           {/* Step 2: Birthday */}
           {currentStep === 2 && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-auto justify-start text-left font-normal",
-                    !data.birthday && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {data.birthday ? format(data.birthday, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={data.birthday}
-                  onSelect={(date) => setData(prev => ({ ...prev, birthday: date }))}
-                  disabled={(date) =>
-                    date > new Date() || date < new Date("1900-01-01")
-                  }
-                  showYearPicker
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setBirthdayDrawerOpen(true)}
+                className={cn(
+                  "w-auto justify-start text-left font-normal",
+                  !data.birthday && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {data.birthday ? format(data.birthday, "PPP") : <span>Pick a date</span>}
+              </Button>
+
+              <Drawer open={birthdayDrawerOpen} onOpenChange={setBirthdayDrawerOpen}>
+                <DrawerContent side="bottom" className="h-auto max-h-[80vh]">
+                  <DrawerHeader className="border-b">
+                    <DrawerTitle>Select Birthday</DrawerTitle>
+                  </DrawerHeader>
+                  <div className="p-4 overflow-y-auto">
+                    <Calendar
+                      mode="single"
+                      selected={data.birthday}
+                      onSelect={(date) => {
+                        setData(prev => ({ ...prev, birthday: date }));
+                        setBirthdayDrawerOpen(false);
+                      }}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      showYearPicker
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto mx-auto")}
+                    />
+                  </div>
+                </DrawerContent>
+              </Drawer>
+            </>
           )}
 
           {/* Step 3: Superpowers */}
@@ -824,7 +835,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       </div>
       
       {/* FOOTER - 6.25% */}
-      <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)]">
+      <div className="min-h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)] pb-safe-only">
         <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
         <div className="flex items-center gap-3">
           {currentStep >= 1 && <BackButton variant="text" onClick={handleBack} />}
