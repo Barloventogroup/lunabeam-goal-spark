@@ -81,12 +81,12 @@ export function OnboardingFlow() {
     const isParent = roleData.role === 'parent';
     return <div className="min-h-[100dvh] flex flex-col">
         {/* Exit button */}
-        <Button variant="ghost" size="sm" onClick={handleExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
+        <Button variant="ghost" size="sm" onClick={handleExit} className="absolute top-safe-with-margin right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
           <X className="h-4 w-4" />
         </Button>
         
         {/* HEADER - 50% */}
-        <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+        <div className="h-[50vh] bg-white flex flex-col justify-end p-6 pt-safe-with-6">
           <div className="space-y-2 text-center">
             <h1 className="text-3xl font-semibold text-black">
               {isParent ? 'Perfect! You\'ll be set as the Admin.' : 'Great! Let\'s personalize your experience.'}
@@ -101,7 +101,7 @@ export function OnboardingFlow() {
         <div className="h-[43.75vh] bg-gray-100"></div>
         
         {/* FOOTER - 6.25% */}
-        <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)]">
+        <div className="min-h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)] pb-safe-only">
           <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
           <div className="flex items-center gap-3">
             <BackButton onClick={() => { setShowInterstitial(false); setShowRoleSelection(true); }} variant="text" />
@@ -115,12 +115,12 @@ export function OnboardingFlow() {
   if (showRoleSelection) {
     return <div className="min-h-[100dvh] flex flex-col">
         {/* Exit button */}
-        <Button variant="ghost" size="sm" onClick={handleExit} className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
+        <Button variant="ghost" size="sm" onClick={handleExit} className="absolute top-safe-with-margin right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50">
           <X className="h-4 w-4" />
         </Button>
         
         {/* HEADER - 50% */}
-        <div className="h-[50vh] bg-white flex flex-col justify-end p-6">
+        <div className="h-[50vh] bg-white flex flex-col justify-end p-6 pt-safe-with-6">
           <div className="max-w-2xl mx-auto w-full">
             <div className="text-left space-y-2">
               <CardTitle className="text-3xl">Welcome to Lunabeam!</CardTitle>
@@ -173,7 +173,7 @@ export function OnboardingFlow() {
         </div>
         
         {/* FOOTER - 6.25% */}
-        <div className="h-[6.25vh] bg-white flex items-center justify-between px-6 shadow-[0_-2px_8px_rgba(0,0,0,0.1)]">
+        <div className="min-h-[6.25vh] bg-white flex items-center justify-between px-6 shadow-[0_-2px_8px_rgba(0,0,0,0.1)] pb-safe-only">
           <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
           <Button onClick={() => handleRoleSelection(selectedRole)}>
             Continue

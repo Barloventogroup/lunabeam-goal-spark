@@ -44,7 +44,7 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
               The next questions will help me suggest goals and personalize your experience. Ready?
             </h1>
           </CardContent>
-          <div className="absolute bottom-6 right-6">
+          <div className="absolute right-6 pb-safe-only" style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}>
             <Button onClick={handleInterstitialNext}>
               Next
             </Button>
@@ -92,7 +92,7 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
           </CardContent>
           
           {role === 'parent' && (
-            <div className="absolute bottom-6 left-6 right-6 p-4 bg-muted/30 rounded-lg">
+            <div className="absolute left-6 right-6 p-4 bg-muted/30 rounded-lg pb-safe-only" style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}>
               <Label htmlFor="individual-email" className="text-sm font-semibold">
                 Individual's Email Address
               </Label>
@@ -111,7 +111,7 @@ export function OnboardingRoleSelection({ onComplete }: OnboardingRoleSelectionP
           )}
           
           {role === 'parent' && (
-            <div className="absolute bottom-6 right-6">
+            <div className="absolute right-6 pb-safe-only" style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}>
               <Button
                 onClick={handleParentContinue}
                 disabled={!canParentContinue}
