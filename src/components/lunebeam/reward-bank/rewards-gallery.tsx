@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,13 +41,15 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
     loadData();
   }, []);
 
-  const getProgress = (cost: number) => {
-    return Math.min((userPoints / cost) * 100, 100);
-  };
-
-  const canRedeem = (cost: number) => {
-    return userPoints >= cost;
-  };
+  // Memoize reward calculations for performance
+  const enrichedRewards = useMemo(() => {
+    return rewards.map(reward => ({
+      ...reward,
+      progress: Math.min((userPoints / reward.point_cost) * 100, 100),
+      canRedeem: userPoints >= reward.point_cost,
+      pointsNeeded: Math.max(0, reward.point_cost - userPoints)
+    }));
+  }, [rewards, userPoints]);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -87,11 +89,7 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
 
         {/* Rewards Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {rewards.map((reward) => {
-            const progress = getProgress(reward.point_cost);
-            const redeemable = canRedeem(reward.point_cost);
-            const pointsNeeded = Math.max(0, reward.point_cost - userPoints);
-
+          {enrichedRewards.map((reward) => {
             return (
               <Card key={reward.id} className="bg-card backdrop-blur hover:bg-card/80 transition-all duration-200 border-border">
                 <CardHeader className="pb-3">
@@ -129,12 +127,12 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
                         {userPoints} / {reward.point_cost}
                       </span>
                     </div>
-                    <Progress value={progress} className="h-2" />
+                    <Progress value={reward.progress} className="h-2" />
                   </div>
 
                   {/* Action Button */}
                   <div className="pt-2">
-                    {redeemable ? (
+                    {reward.canRedeem ? (
                       <Button 
                         onClick={() => setSelectedReward(reward)}
                         className="w-full bg-primary hover:bg-primary/90"
@@ -148,7 +146,7 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
                           variant="outline" 
                           className="w-full opacity-50 cursor-not-allowed"
                         >
-                          Need {pointsNeeded} more points
+                          Need {reward.pointsNeeded} more points
                         </Button>
                         <div className="flex items-center justify-center min-h-[2rem]">
                           <p className="text-sm text-muted-foreground font-medium">

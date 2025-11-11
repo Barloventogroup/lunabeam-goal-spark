@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Archive, ArchiveRestore } from "lucide-react";
+import { Plus, Edit, Archive, ArchiveRestore, Gift } from "lucide-react";
 import { rewardsService, Reward } from "@/services/rewardsService";
 import { RewardFormModal } from "./reward-form-modal";
 import { toast } from "sonner";
@@ -12,7 +12,7 @@ interface RewardsAdminListProps {
   onBack: () => void;
 }
 
-export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) => {
+export const RewardsAdminList: React.FC<RewardsAdminListProps> = React.memo(({ onBack }) => {
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -150,14 +150,11 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) =>
 
         {rewards.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-foreground mb-4">No rewards created yet</div>
-            <Button 
-              onClick={() => setShowForm(true)}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Your First Reward
-            </Button>
+            <Gift className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <div className="text-foreground mb-2">No rewards yet</div>
+            <div className="text-muted-foreground text-sm">
+              Use the "+ Add Reward" button above to create your first reward!
+            </div>
           </div>
         )}
       </div>
@@ -178,4 +175,4 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = ({ onBack }) =>
       />
     </div>
   );
-};
+});

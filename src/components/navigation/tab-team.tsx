@@ -826,14 +826,13 @@ export const TabTeam: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-3">
                   <Input 
                     placeholder="Enter first name" 
                     value={newIndividualName} 
                     onChange={e => setNewIndividualName(e.target.value)} 
-                    className="flex-1" 
                   />
-                  <Button onClick={createIndividual} disabled={!newIndividualName.trim() || creatingIndividual}>
+                  <Button onClick={createIndividual} disabled={!newIndividualName.trim() || creatingIndividual} className="w-full">
                     {creatingIndividual ? 'Adding...' : 'Add Individual'}
                   </Button>
                 </div>
@@ -970,7 +969,7 @@ export const TabTeam: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         {member.displayStatus === 'Connected' ? <Badge className="bg-green-100 text-green-800">
-                            ✓ Connected
+                            Connected
                           </Badge> : member.displayStatus === 'Invited' ? <Badge className="bg-yellow-50 text-yellow-700">
                             ⏳ Invited
                           </Badge> : <Badge className="bg-gray-50 text-gray-600">
