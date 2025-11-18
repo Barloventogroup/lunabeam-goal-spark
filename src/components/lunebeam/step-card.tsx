@@ -91,6 +91,7 @@ export const StepCard: React.FC<StepCardProps> = ({
 }) => {
   const substepCount = scaffoldingSteps.length;
   const hasSubsteps = substepCount > 0;
+  const isCompleted = step.status === 'done';
 
   return (
     <Card className={`relative ${isBlocked ? "opacity-50" : ""}`}>
@@ -116,28 +117,32 @@ export const StepCard: React.FC<StepCardProps> = ({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48 z-[60] border-0">
-                    <DropdownMenuItem
-                      className="text-base"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onCheckIn(step.id);
-                      }}
-                    >
-                      <ClipboardCheck className="mr-2 h-4 w-4" />
-                      Check-in
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator className="opacity-30" />
-                    <DropdownMenuItem
-                      className="text-base"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onComplete(step.id);
-                      }}
-                    >
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Complete
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator className="opacity-30" />
+                    {!isCompleted && (
+                      <>
+                        <DropdownMenuItem
+                          className="text-base"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onCheckIn(step.id);
+                          }}
+                        >
+                          <ClipboardCheck className="mr-2 h-4 w-4" />
+                          Check-in
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="opacity-30" />
+                        <DropdownMenuItem
+                          className="text-base"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onComplete(step.id);
+                          }}
+                        >
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Complete
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="opacity-30" />
+                      </>
+                    )}
                     <DropdownMenuItem
                       className="text-base"
                       onClick={(e) => {
@@ -148,28 +153,32 @@ export const StepCard: React.FC<StepCardProps> = ({
                       <Pencil className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="opacity-30" />
-                    <DropdownMenuItem
-                      className="text-base"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSkip(step.id);
-                      }}
-                    >
-                      <PauseCircle className="mr-2 h-4 w-4" />
-                      Pause
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator className="opacity-30" />
-                    <DropdownMenuItem
-                      className="text-base"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onBreakDown(step.id);
-                      }}
-                    >
-                      <Split className="mr-2 h-4 w-4" />
-                      {hasSubsteps ? `View ${substepCount} substep${substepCount !== 1 ? "s" : ""}` : "Break it down"}
-                    </DropdownMenuItem>
+                    {!isCompleted && (
+                      <>
+                        <DropdownMenuSeparator className="opacity-30" />
+                        <DropdownMenuItem
+                          className="text-base"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSkip(step.id);
+                          }}
+                        >
+                          <PauseCircle className="mr-2 h-4 w-4" />
+                          Pause
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="opacity-30" />
+                        <DropdownMenuItem
+                          className="text-base"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onBreakDown(step.id);
+                          }}
+                        >
+                          <Split className="mr-2 h-4 w-4" />
+                          {hasSubsteps ? `View ${substepCount} substep${substepCount !== 1 ? "s" : ""}` : "Break it down"}
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

@@ -229,6 +229,16 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   const handleAddSubstep = async (substep: any) => {
     if (!substep) return;
     
+    // Don't allow breaking down completed steps
+    if (step?.status === 'done') {
+      toast({
+        title: "Step Already Completed",
+        description: "You can't break down a step that's already completed.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     try {
       // Create scaffolding step instead of substep
@@ -238,17 +248,23 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
         .eq('id', substep.step_id)
         .single();
 
+      const effectiveGoalId = goal?.id ?? step?.goal_id;
+      
+      if (!effectiveGoalId) {
+        throw new Error('Missing goal_id for new substep');
+      }
+
       const { data, error } = await supabase
         .from('steps')
         .insert({
-          goal_id: goal?.id,
+          goal_id: effectiveGoalId,
           parent_step_id: substep.step_id,
           title: substep.title,
           notes: substep.description,
           is_scaffolding: true,
           scaffolding_level: (parentStep?.scaffolding_level || 0) + 1,
           order_index: (parentStep?.order_index || 0) + 1,
-          status: 'todo',
+          status: 'not_started',
           type: 'action',
           is_required: true,
           points: 2,
@@ -279,12 +295,27 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
       };
       setMessages(prev => [...prev, confirmMessage]);
 
-    } catch (error) {
-      console.error('Error adding substep:', error);
+    } catch (error: any) {
+      console.error('Error adding substep:', {
+        error,
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code,
+        parentStepStatus: step?.status,
+        payload: {
+          goal_id: goal?.id ?? step?.goal_id,
+          parent_step_id: substep?.step_id,
+          title: substep?.title,
+          status: 'not_started'
+        }
+      });
+      
+      const errorMessage = error?.message || 'Failed to add substep. Please try again.';
       toast({
-        title: "Error",
-        description: "Failed to add substep. Please try again.",
-        variant: "destructive"
+        title: "Error adding substep",
+        description: errorMessage,
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
