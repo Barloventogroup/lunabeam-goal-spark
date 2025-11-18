@@ -17,7 +17,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { goalsService, stepsService } from '@/services/goalsService';
 import { AIService } from '@/services/aiService';
-import type { GoalDomain } from '@/types';
+import type { GoalDomain, GoalPriority } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ExtractedGoal {
   title: string;
@@ -161,8 +162,14 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
     setIsCreating(true);
     
     try {
-      // Defensive validation
-      console.log('Creating goal with data:', goal);
+      // Get current user for debugging
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error('Authentication required. Please sign in and try again.');
+      }
+      
+      console.log('🔍 Creating goal for user:', user.id);
+      console.log('🔍 Goal data received:', goal);
       
       const isWizardGoal = 'smartGoal' in goal;
       const wizardGoal = isWizardGoal ? goal as WizardGoalData : null;
@@ -183,29 +190,29 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
         throw new Error('Goal category is required');
       }
       
-      console.log('Goal title:', goalTitle);
-      console.log('Goal description:', goalDescription);
-      console.log('Goal category:', category);
+      console.log('🔍 Goal title:', goalTitle);
+      console.log('🔍 Goal description:', goalDescription);
+      console.log('🔍 Goal category:', category);
       
       const mapCategoryToDomain = (cat: string): GoalDomain => {
-        switch (cat) {
-          case 'education': return 'school';
-          case 'employment': return 'work';
-          case 'health': return 'health';
-          case 'independent_living': return 'life';
-          case 'social_skills': return 'life';
-          case 'fun_recreation': return 'life';
-          case 'postsecondary': return 'school';
-          case 'housing': return 'life';
-          case 'Health & Well Being': return 'health';
-          case 'Education - Academic Readiness': return 'school';
-          case 'Employment': return 'work';
-          case 'Independent Living': return 'life';
-          case 'Social Skills': return 'life';
-          case 'Housing': return 'life';
-          case 'Postsecondary - Learning After School': return 'school';
-          default: return 'life';
-        }
+        const mapping: Record<string, GoalDomain> = {
+          'education': 'school',
+          'employment': 'work',
+          'health': 'health',
+          'independent_living': 'life',
+          'social_skills': 'life',
+          'fun_recreation': 'life',
+          'postsecondary': 'school',
+          'housing': 'life',
+          'Health & Well Being': 'health',
+          'Education - Academic Readiness': 'school',
+          'Employment': 'work',
+          'Independent Living': 'life',
+          'Social Skills': 'life',
+          'Housing': 'life',
+          'Postsecondary - Learning After School': 'school'
+        };
+        return mapping[cat] || 'life';
       };
 
       const mapStarterGoalToDomain = (goalTitle: string): GoalDomain => {
@@ -221,18 +228,22 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
       const due = new Date(startDate);
       due.setDate(due.getDate() + 6);
 
-      // Create the goal with validated data
-      console.log('Calling goalsService.createGoal...');
-      const createdGoal = await goalsService.createGoal({
+      const goalPayload = {
         title: goalTitle.trim(),
         description: goalDescription.trim(),
         domain: category === 'starter' ? mapStarterGoalToDomain(goalTitle) : mapCategoryToDomain(category),
-        priority: 'medium',
+        priority: 'medium' as GoalPriority,
         start_date: formatDate(startDate),
         due_date: formatDate(due),
-      });
+      };
+
+      console.log('🔍 Goal payload to be sent:', goalPayload);
       
-      console.log('Goal created successfully:', createdGoal);
+      // Create the goal with validated data
+      console.log('🔍 Calling goalsService.createGoal...');
+      const createdGoal = await goalsService.createGoal(goalPayload);
+      
+      console.log('✅ Goal created successfully:', createdGoal);
 
       // Create steps (only if we have micro steps)
       if (microSteps && microSteps.length > 0) {
@@ -252,16 +263,19 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
       
       onComplete();
     } catch (error: any) {
-      console.error('Error creating goal:', error);
-      console.error('Error details:', {
+      console.error('❌ Error creating goal:', error);
+      console.error('❌ Full error object:', {
         message: error?.message,
         code: error?.code,
         details: error?.details,
         hint: error?.hint,
+        status: error?.status,
       });
       
       // More specific error messages
-      let errorMessage = 'Something went wrong creating your goal. Mind giving it another shot?';
+      let errorMessage = 'Something went wrong creating your goal.';
+      let errorDetails = '';
+      
       if (error?.message) {
         if (error.message.includes('owner_id')) {
           errorMessage = 'Authentication error. Please try signing out and back in.';
@@ -269,12 +283,21 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
           errorMessage = 'Invalid goal category. Please try selecting a different category.';
         } else if (error.message.includes('title')) {
           errorMessage = 'Goal title is missing. Please try again.';
+        } else if (error.message.includes('goal_type')) {
+          errorMessage = 'Missing goal type configuration.';
+        } else {
+          errorMessage = error.message;
+        }
+        
+        // Add technical details for debugging
+        if (error.code) {
+          errorDetails = ` (Error: ${error.code})`;
         }
       }
       
       toast({
         title: 'Oops!',
-        description: errorMessage,
+        description: errorMessage + errorDetails,
         variant: 'destructive'
       });
     } finally {

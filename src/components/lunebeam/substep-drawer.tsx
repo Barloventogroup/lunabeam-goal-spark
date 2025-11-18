@@ -133,8 +133,8 @@ export const SubstepDrawer: React.FC<SubstepDrawerProps> = ({
   return (
     <>
       <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent side="right">
-      <DrawerHeader className="pt-safe">
+        <DrawerContent side="right" className="pt-safe-only">
+      <DrawerHeader>
         <div className="flex items-center gap-3 pb-2">
           <Button
             variant="ghost"
