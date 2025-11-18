@@ -1405,7 +1405,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       </Tabs>
 
       {/* Step Chat Modal */}
-      <StepChatModal isOpen={showStepChat} onClose={() => setShowStepChat(false)} step={selectedStep} goal={goal} onStepsUpdate={handleStepChatUpdate} />
+      <StepChatModal isOpen={showStepChat} onClose={() => setShowStepChat(false)} step={selectedStep} goal={goal} onStepsUpdate={handleStepChatUpdate} onStepsChange={loadGoalData} />
 
       {/* Steps Chat */}
       <StepsChat goal={goal} steps={steps} step={chatStep} isOpen={showChat} onClose={() => setShowChat(false)} />
