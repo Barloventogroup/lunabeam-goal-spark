@@ -197,14 +197,23 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
                 />
               </div>
 
-              {/* Active Toggle */}
-              <div className="flex items-center justify-between">
-                <Label htmlFor="active">Active</Label>
-                <Switch
-                  id="active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                />
+              {/* Active Toggle - Improved Layout */}
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    id="active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                  />
+                  <div className="flex-1">
+                    <Label htmlFor="active" className="text-sm font-medium cursor-pointer">
+                      {formData.is_active ? 'Active (visible to users)' : 'Inactive (hidden from users)'}
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {formData.is_active ? 'Users can see and redeem this reward' : 'Reward is archived and hidden'}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

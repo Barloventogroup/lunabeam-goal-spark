@@ -36,11 +36,19 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = React.memo(({ o
   }, []);
 
   const handleToggleActive = async (reward: Reward) => {
+    // Optimistic update
+    setRewards(prev => prev.map(r => 
+      r.id === reward.id ? { ...r, is_active: !r.is_active } : r
+    ));
+
     try {
       await rewardsService.toggleRewardActive(reward.id, !reward.is_active);
       toast.success(reward.is_active ? 'Reward archived' : 'Reward restored');
-      loadRewards();
     } catch (error) {
+      // Revert on error
+      setRewards(prev => prev.map(r => 
+        r.id === reward.id ? { ...r, is_active: reward.is_active } : r
+      ));
       console.error('Failed to toggle reward:', error);
       toast.error('Failed to update reward');
     }
