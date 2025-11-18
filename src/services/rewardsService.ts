@@ -37,11 +37,19 @@ export const ABSOLUTE_BOUNDS = { min: 10, max: 10000 };
 
 export const rewardsService = {
   // Get all rewards (users see only active ones)
-  async getRewards(activeOnly = false): Promise<Reward[]> {
+  async getRewards(options?: { activeOnly?: boolean; ownerOnly?: boolean }): Promise<Reward[]> {
+    const { activeOnly = false, ownerOnly = false } = options || {};
     let query = (supabase as any).from('rewards').select('*').order('created_at', { ascending: false });
     
     if (activeOnly) {
       query = query.eq('is_active', true);
+    }
+
+    if (ownerOnly) {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!userData.user) throw new Error('Not authenticated');
+      query = query.eq('owner_id', userData.user.id);
     }
     
     const { data, error } = await query;

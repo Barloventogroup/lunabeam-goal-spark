@@ -19,19 +19,34 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = React.memo(({ o
   const [editingReward, setEditingReward] = useState<Reward | null>(null);
 
   const loadRewards = async () => {
+    const TIMEOUT_MS = 7000;
+
     try {
       setLoading(true);
-      const data = await rewardsService.getRewards();
-      setRewards(data);
+      console.log('[RewardsAdminList] Loading rewards...');
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Rewards load timeout')), TIMEOUT_MS)
+      );
+
+      const data = await Promise.race([
+        rewardsService.getRewards({ ownerOnly: true }),
+        timeoutPromise,
+      ]);
+
+      setRewards(data as Reward[]);
+      console.log('[RewardsAdminList] Loaded', (data as Reward[]).length, 'rewards');
     } catch (error) {
-      console.error('Failed to load rewards:', error);
-      toast.error('Failed to load rewards');
+      console.error('[RewardsAdminList] Failed to load rewards:', error);
+      toast.error('Failed to load rewards. Please try again in a moment.');
     } finally {
       setLoading(false);
+      console.log('[RewardsAdminList] Finished loading');
     }
   };
 
   useEffect(() => {
+    console.log('[RewardsAdminList] Mounting, loading rewards');
     loadRewards();
   }, []);
 
@@ -74,8 +89,16 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = React.memo(({ o
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+        <PageHeader title="Reward Bank" onBack={onBack} />
+        <div className="px-4 pt-6 pb-6 space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-24 rounded-lg bg-muted animate-pulse"
+            />
+          ))}
+        </div>
       </div>
     );
   }
