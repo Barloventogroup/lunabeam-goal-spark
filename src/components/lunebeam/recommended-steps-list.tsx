@@ -62,6 +62,7 @@ interface RecommendedStepsListProps {
   onStepsChange?: () => void;
   onStepsUpdate?: (updatedSteps: Step[], updatedGoal: Goal) => void;
   onOpenStepChat?: (step: Step) => void;
+  substepDrawerTrigger?: { stepId: string; timestamp: number } | null;
 }
 
 interface StepGroup {
@@ -74,7 +75,8 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   goal,
   onStepsChange,
   onStepsUpdate,
-  onOpenStepChat
+  onOpenStepChat,
+  substepDrawerTrigger
 }) => {
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [currentHelpStep, setCurrentHelpStep] = useState<Step | null>(null);
@@ -95,6 +97,13 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   const generationIncomplete = (goal.metadata as any)?.generation_incomplete === true;
   const failedDays = (goal.metadata as any)?.failed_days || [];
   const successfulDays = (goal.metadata as any)?.successful_days || 0;
+
+  // Watch for external trigger to open substep drawer (from parent components)
+  useEffect(() => {
+    if (substepDrawerTrigger?.stepId) {
+      handleBreakDown(substepDrawerTrigger.stepId);
+    }
+  }, [substepDrawerTrigger?.timestamp]);
   const totalExpectedDays = (goal.metadata as any)?.total_expected_days || 0;
 
   // Fetch scaffolding steps for all steps (batched in single query)
@@ -1046,6 +1055,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
           goal={goal}
           onStepsUpdate={handleStepsUpdate}
           onStepsChange={onStepsChange}
+          onOpenSubstepDrawer={handleBreakDown}
         />
         
         {currentEditStep && (

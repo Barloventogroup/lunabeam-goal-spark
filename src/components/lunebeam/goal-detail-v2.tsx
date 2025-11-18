@@ -61,6 +61,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
     total: 0
   });
   const [activeTab, setActiveTab] = useState('summary');
+  const [substepDrawerTrigger, setSubstepDrawerTrigger] = useState<{ stepId: string; timestamp: number } | null>(null);
   const {
     toast
   } = useToast();
@@ -307,6 +308,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
   const handleGoalUpdate = () => {
     // Invalidate cache to refetch latest data
     loadGoalData();
+  };
+  const handleOpenSubstepDrawer = (stepId: string) => {
+    setSubstepDrawerTrigger({ stepId, timestamp: Date.now() });
   };
   const handleDeleteGoal = async () => {
     try {
@@ -1390,7 +1394,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
                 <h3 className="text-xl font-semibold flex items-center gap-2">
                   <span>Recommended Steps</span>
                 </h3>
-                <RecommendedStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} onOpenStepChat={handleOpenStepChat} />
+                <RecommendedStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} onOpenStepChat={handleOpenStepChat} substepDrawerTrigger={substepDrawerTrigger} />
                   </div>}
                 </div>}
             </TabsContent>
@@ -1405,7 +1409,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       </Tabs>
 
       {/* Step Chat Modal */}
-      <StepChatModal isOpen={showStepChat} onClose={() => setShowStepChat(false)} step={selectedStep} goal={goal} onStepsUpdate={handleStepChatUpdate} onStepsChange={loadGoalData} />
+      <StepChatModal isOpen={showStepChat} onClose={() => setShowStepChat(false)} step={selectedStep} goal={goal} onStepsUpdate={handleStepChatUpdate} onStepsChange={loadGoalData} onOpenSubstepDrawer={handleOpenSubstepDrawer} />
 
       {/* Steps Chat */}
       <StepsChat goal={goal} steps={steps} step={chatStep} isOpen={showChat} onClose={() => setShowChat(false)} />
