@@ -757,13 +757,43 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
   };
 
   const handleStepsUpdate = async (newSteps: Step[]) => {
+    // Trigger parent refetch which will cascade to substeps
     if (onStepsChange) {
       onStepsChange();
     }
     
+    // Manually refetch substeps for the current help step
     if (currentHelpStep) {
-      const substeps = dedupeSubsteps(await pointsService.getSubsteps(currentHelpStep.id));
-      setSubstepsMap(prev => ({ ...prev, [currentHelpStep.id]: substeps }));
+      try {
+        const { data: scaffoldingSteps, error } = await supabase
+          .from('steps')
+          .select('*')
+          .eq('parent_step_id', currentHelpStep.id)
+          .eq('is_scaffolding', true)
+          .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        
+        // Convert to Substep format
+        const substepsData = (scaffoldingSteps || []).map(s => ({
+          id: s.id,
+          step_id: currentHelpStep.id,
+          title: s.title,
+          description: s.notes,
+          is_planned: s.is_planned || false,
+          completed_at: s.status === 'done' ? s.updated_at : undefined,
+          initiated_at: s.initiated_at,
+          points_awarded: s.points_awarded || 0,
+          created_at: s.created_at,
+          updated_at: s.updated_at,
+          due_date: s.due_date
+        } as Substep));
+        
+        const dedupedSubsteps = dedupeSubsteps(substepsData);
+        setSubstepsMap(prev => ({ ...prev, [currentHelpStep.id]: dedupedSubsteps }));
+      } catch (error) {
+        console.error('Error refetching substeps:', error);
+      }
     }
   };
 
@@ -1015,6 +1045,7 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
           step={currentHelpStep}
           goal={goal}
           onStepsUpdate={handleStepsUpdate}
+          onStepsChange={onStepsChange}
         />
         
         {currentEditStep && (

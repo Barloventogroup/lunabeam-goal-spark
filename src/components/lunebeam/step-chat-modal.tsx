@@ -17,6 +17,7 @@ interface StepChatModalProps {
   step: Step | null;
   goal: Goal | null;
   onStepsUpdate?: (newSteps: Step[]) => void;
+  onStepsChange?: () => void;
 }
 
 interface ChatMessage {
@@ -37,7 +38,8 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   onClose,
   step,
   goal,
-  onStepsUpdate
+  onStepsUpdate,
+  onStepsChange
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -282,8 +284,9 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
       });
 
       // Trigger parent reload to refresh substeps display
-      if (onStepsUpdate && step) {
-        onStepsUpdate([step]);
+      // This will invalidate cache and refetch all goal data including new substeps
+      if (onStepsChange) {
+        onStepsChange();
       }
 
       // Add confirmation message to chat
