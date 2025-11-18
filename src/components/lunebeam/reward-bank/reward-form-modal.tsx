@@ -101,7 +101,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
 
   return (
     <Drawer open={open} onOpenChange={onClose}>
-      <DrawerContent className="h-[85vh] flex flex-col">
+      <DrawerContent side="right" className="h-full flex flex-col">
         <DrawerHeader className="border-b">
           <DrawerTitle>
             {reward ? 'Edit Reward' : 'Add New Reward'}

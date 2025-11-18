@@ -195,8 +195,8 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
         {renderActiveTab()}
       </div>
 
-      {/* Floating Action Button - Create Goal */}
-      {!isWizardActive && (
+      {/* Floating Action Button - Create Goal - Only show on Goals tab */}
+      {!isWizardActive && activeTab === 'goals' && (
         <button
           onClick={handleCreateGoal}
           className="fixed right-6 z-50 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 flex items-center justify-center"
