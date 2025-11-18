@@ -800,6 +800,16 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     const step = steps.find(s => s.id === stepId);
     if (!step) return;
     
+    // Don't allow breaking down completed steps
+    if (step.status === 'done') {
+      toast({
+        title: "Step Already Completed",
+        description: "You can't break down a step that's already completed.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSelectedStepForSubsteps(step);
     
     // Load substeps for this step
