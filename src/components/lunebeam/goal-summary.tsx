@@ -161,14 +161,49 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
     setIsCreating(true);
     
     try {
+      // Defensive validation
+      console.log('Creating goal with data:', goal);
+      
+      const isWizardGoal = 'smartGoal' in goal;
+      const wizardGoal = isWizardGoal ? goal as WizardGoalData : null;
+      const extractedGoal = isWizardGoal ? null : goal as ExtractedGoal;
+      
+      // Ensure we have a title
+      const goalTitle = wizardGoal?.goal || extractedGoal?.title;
+      if (!goalTitle || goalTitle.trim() === '') {
+        throw new Error('Goal title is required');
+      }
+      
+      // Ensure we have a description
+      const goalDescription = wizardGoal?.smartGoal || extractedGoal?.description || 'Custom goal';
+      
+      // Validate category
+      const category = goal.category;
+      if (!category) {
+        throw new Error('Goal category is required');
+      }
+      
+      console.log('Goal title:', goalTitle);
+      console.log('Goal description:', goalDescription);
+      console.log('Goal category:', category);
+      
       const mapCategoryToDomain = (cat: string): GoalDomain => {
         switch (cat) {
           case 'education': return 'school';
           case 'employment': return 'work';
           case 'health': return 'health';
           case 'independent_living': return 'life';
-          case 'social_skills': return 'life'; // Map social skills to life domain
-          case 'fun_recreation': return 'life'; // Map fun/recreation to life domain
+          case 'social_skills': return 'life';
+          case 'fun_recreation': return 'life';
+          case 'postsecondary': return 'school';
+          case 'housing': return 'life';
+          case 'Health & Well Being': return 'health';
+          case 'Education - Academic Readiness': return 'school';
+          case 'Employment': return 'work';
+          case 'Independent Living': return 'life';
+          case 'Social Skills': return 'life';
+          case 'Housing': return 'life';
+          case 'Postsecondary - Learning After School': return 'school';
           default: return 'life';
         }
       };
@@ -177,8 +212,8 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
         const titleLower = goalTitle.toLowerCase();
         if (titleLower.includes('water')) return 'health';
         if (titleLower.includes('bed')) return 'life';
-        if (titleLower.includes('hi')) return 'life'; // Map social to life domain
-        if (titleLower.includes('music')) return 'life'; // Map recreation to life domain
+        if (titleLower.includes('hi')) return 'life';
+        if (titleLower.includes('music')) return 'life';
         return 'life';
       };
 
@@ -186,39 +221,60 @@ Return only 3 concise preparation steps, each starting with an action verb. Each
       const due = new Date(startDate);
       due.setDate(due.getDate() + 6);
 
-      // Create the goal in Supabase
-      const isWizardGoal = 'smartGoal' in goal;
-      const wizardGoal = isWizardGoal ? goal as WizardGoalData : null;
-      const extractedGoal = isWizardGoal ? null : goal as ExtractedGoal;
-      
+      // Create the goal with validated data
+      console.log('Calling goalsService.createGoal...');
       const createdGoal = await goalsService.createGoal({
-        title: wizardGoal?.goal || extractedGoal?.title || 'Goal',
-        description: wizardGoal?.smartGoal || extractedGoal?.description || 'Generated goal',
-        domain: goal.category === 'starter' ? mapStarterGoalToDomain(wizardGoal?.goal || extractedGoal?.title || '') : mapCategoryToDomain(goal.category),
+        title: goalTitle.trim(),
+        description: goalDescription.trim(),
+        domain: category === 'starter' ? mapStarterGoalToDomain(goalTitle) : mapCategoryToDomain(category),
         priority: 'medium',
         start_date: formatDate(startDate),
         due_date: formatDate(due),
       });
+      
+      console.log('Goal created successfully:', createdGoal);
 
-      // Create up to 3 steps for the micro-goal using AI-generated steps
-      for (const stepTitle of microSteps) {
-        await stepsService.createStep(createdGoal.id, {
-          title: stepTitle,
-          is_required: true,
-        });
+      // Create steps (only if we have micro steps)
+      if (microSteps && microSteps.length > 0) {
+        console.log('Creating steps:', microSteps);
+        for (const stepTitle of microSteps) {
+          await stepsService.createStep(createdGoal.id, {
+            title: stepTitle,
+            is_required: true,
+          });
+        }
       }
       
       toast({
         title: 'Goal Created! 🎉',
-        description: `Your ${wizardGoal?.goal || extractedGoal?.title || 'goal'} is ready to go!`,
+        description: `Your ${goalTitle} is ready to go!`,
       });
       
       onComplete();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating goal:', error);
+      console.error('Error details:', {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint,
+      });
+      
+      // More specific error messages
+      let errorMessage = 'Something went wrong creating your goal. Mind giving it another shot?';
+      if (error?.message) {
+        if (error.message.includes('owner_id')) {
+          errorMessage = 'Authentication error. Please try signing out and back in.';
+        } else if (error.message.includes('domain')) {
+          errorMessage = 'Invalid goal category. Please try selecting a different category.';
+        } else if (error.message.includes('title')) {
+          errorMessage = 'Goal title is missing. Please try again.';
+        }
+      }
+      
       toast({
         title: 'Oops!',
-        description: 'Something went wrong creating your goal. Mind giving it another shot?',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {

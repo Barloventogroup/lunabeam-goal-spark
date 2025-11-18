@@ -175,10 +175,10 @@ Sound good?`,
     setComprehensiveGoalData(cleanGoalData);
     setIsCustomGoal(false);
 
-    const convertedGoal = {
-      title: goalTitle,
+    const convertedGoal: ExtractedGoal = {
+      title: goalTitle || 'Untitled Goal',
       description: `A ${category} goal: ${cleanGoalData.goal}`,
-      category: category,
+      category: category || 'life',
       steps: [
         'Start with a small step',
         'Keep going at your pace', 
@@ -187,6 +187,7 @@ Sound good?`,
       timeEstimate: '15-30 minutes'
     };
 
+    console.log('Comprehensive goal created:', convertedGoal);
     onGoalCreated(convertedGoal);
   };
 
