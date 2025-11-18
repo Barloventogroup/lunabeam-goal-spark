@@ -389,4 +389,15 @@
   .pb-safe-only {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+
+  /* COMBINED PADDING UTILITIES: Safe area + extra spacing */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .pt-safe-content {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
+  }
+  .pt-safe-with-6 {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 1.5rem);
+  }
 }
