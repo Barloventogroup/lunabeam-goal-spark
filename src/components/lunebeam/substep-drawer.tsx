@@ -134,21 +134,21 @@ export const SubstepDrawer: React.FC<SubstepDrawerProps> = ({
     <>
       <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DrawerContent side="right">
-          <DrawerHeader>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="shrink-0"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <DrawerTitle className="text-base">
-                {parentStep.title} - Substeps
-              </DrawerTitle>
-            </div>
-          </DrawerHeader>
+      <DrawerHeader className="pt-safe">
+        <div className="flex items-center gap-3 pb-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <DrawerTitle className="text-base">
+            {parentStep.title} - Substeps
+          </DrawerTitle>
+        </div>
+      </DrawerHeader>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {isEmpty ? (
