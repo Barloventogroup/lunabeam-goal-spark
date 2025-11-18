@@ -24,7 +24,7 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
     try {
       setLoading(true);
       const [rewardsData, pointsData] = await Promise.all([
-        rewardsService.getRewards(true), // Only active rewards
+        rewardsService.getRewards({ activeOnly: true }), // Only active rewards
         pointsService.getPointsSummary()
       ]);
       setRewards(rewardsData);
