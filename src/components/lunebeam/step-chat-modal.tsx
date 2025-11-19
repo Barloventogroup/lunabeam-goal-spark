@@ -293,10 +293,10 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
 
       // Auto-open substep drawer to show the newly added substep
       if (onOpenSubstepDrawer && step) {
-        // Small delay to ensure refetch completes
+        // Longer delay to ensure refetch and substeps loading completes
         setTimeout(() => {
           onOpenSubstepDrawer(step.id);
-        }, 300);
+        }, 1200);
       }
 
       // Add confirmation message to chat
