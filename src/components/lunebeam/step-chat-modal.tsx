@@ -479,7 +479,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-2xl w-full sm:w-[95vw] h-[100dvh] sm:h-[600px] max-h-[100dvh] flex flex-col z-[60] p-4 sm:p-6 pb-[calc(env(safe-area-inset-bottom,0px)+12px)]" 
+        className="inset-0 left-0 top-0 translate-x-0 translate-y-0 pt-[calc(env(safe-area-inset-top,0px)+8px)] pb-[calc(env(safe-area-inset-bottom,0px)+8px)] sm:inset-auto sm:left-1/2 sm:top-1/2 sm:translate-x-[-50%] sm:translate-y-[-50%] max-w-2xl w-full sm:w-[95vw] h-[100dvh] sm:h-[600px] max-h-[100dvh] flex flex-col z-[60] p-4 sm:p-6" 
         onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}
       >
         <DialogHeader className="flex-shrink-0">
@@ -496,7 +496,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
           )}
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* Cooldown Timer Display */}
           {cooldownUntil && new Date(cooldownUntil) > new Date() && (
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2 mb-2">
@@ -548,7 +548,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
             </div>
           )}
 
-          <ScrollArea className="flex-1 pr-4">
+          <ScrollArea className="flex-1 min-h-0 pr-4">
             <div className="space-y-4 py-2">
               {messages.map((message) => (
                 <div
@@ -624,7 +624,10 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
             </div>
           </ScrollArea>
 
-          <div className="border-t pt-2 mt-2 flex-shrink-0">
+          <div 
+            className="border-t pt-2 mt-2 flex-shrink-0"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)" }}
+          >
             {showGoalResetOptions ? (
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">
