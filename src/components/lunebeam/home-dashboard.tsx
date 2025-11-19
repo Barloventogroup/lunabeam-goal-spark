@@ -229,15 +229,17 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
   const nextCheckIn = getNextCheckInDate();
   const isCheckInDue = nextCheckIn ? isToday(nextCheckIn) || nextCheckIn < new Date() : true;
   
-  // Memoized calculation of today's due steps and upcoming steps
+  // Memoized calculation of today's due steps and upcoming steps (including substeps)
   const { todaysSteps, upcomingSteps } = useMemo(() => {
-    const todaysSteps: Array<{step: any, goal: Goal}> = [];
-    const upcomingSteps: Array<{step: any, goal: Goal, dueDate: Date}> = [];
+    const todaysSteps: Array<{step: any, goal: Goal, isSubstep?: boolean}> = [];
+    const upcomingSteps: Array<{step: any, goal: Goal, dueDate: Date, isSubstep?: boolean}> = [];
     
     goals.forEach(goal => {
       if (goal.status === 'active' || goal.status === 'planned') {
         const goalSteps = steps[goal.id] || [];
+        
         goalSteps.forEach(step => {
+          // Add parent steps that have due dates
           if (step.due_date && step.status === 'todo') {
             try {
               const dueDate = parseISO(step.due_date);
@@ -250,6 +252,27 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ onNavigate }) => {
               console.warn('Invalid due_date format for step:', step.id, step.due_date);
             }
           }
+          
+          // Also check if this step has substeps with due dates
+          const substeps = goalSteps.filter(s => 
+            s.parent_step_id === step.id && 
+            s.is_scaffolding === true &&
+            s.due_date &&
+            s.status === 'todo'
+          );
+          
+          substeps.forEach(substep => {
+            try {
+              const subDueDate = parseISO(substep.due_date);
+              if (isToday(subDueDate)) {
+                todaysSteps.push({ step: substep, goal, isSubstep: true });
+              } else if (subDueDate > new Date()) {
+                upcomingSteps.push({ step: substep, goal, dueDate: subDueDate, isSubstep: true });
+              }
+            } catch (error) {
+              console.warn('Invalid due_date format for substep:', substep.id, substep.due_date);
+            }
+          });
         });
       }
     });
