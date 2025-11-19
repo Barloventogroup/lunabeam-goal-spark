@@ -181,7 +181,7 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
           </div>
           <div></div>
         </div>
-        <div className="min-h-[100dvh] pt-safe-content">
+        <div className="min-h-[100dvh] pt-safe-header pb-safe-nav">
           <AIChat context="general" />
         </div>
       </div>
@@ -191,7 +191,7 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col max-w-full overflow-x-hidden">
       {/* Main content */}
-      <div className={`flex-1 max-w-full ${isWizardActive ? 'pb-0' : 'pb-20'}`}>
+      <div className={`flex-1 max-w-full ${isWizardActive ? 'pb-0' : 'pb-safe-nav'}`}>
         {renderActiveTab()}
       </div>
 

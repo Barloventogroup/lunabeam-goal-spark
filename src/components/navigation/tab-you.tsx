@@ -136,7 +136,7 @@ export const TabYou: React.FC<TabYouProps> = ({
   if (currentView === 'settingsPrivacy') {
     return <SettingsPrivacyView onBack={() => setCurrentView('profile')} />;
   }
-  return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+  return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-header pb-safe-nav">
       {/* Header */}
       <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">
         <div className="flex items-center justify-between">

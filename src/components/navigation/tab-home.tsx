@@ -390,7 +390,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
       )}
       {currentView === "dashboard" && (
       <>
-      <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+      <div className="min-h-[100dvh] bg-gradient-soft pt-safe-header pb-safe-nav">
         {/* Header */}
         <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 h-16 bg-card">
           <div className="flex items-center">
