@@ -705,7 +705,7 @@ function parseSubSteps(response: string, parentStep: any, goal: any): any[] {
     return [];
   }
   
-  if (!description || description.length < 10 || description.length > 200) {
+  if (!description || description.length < 10 || description.length > 400) {
     console.warn('Substep description invalid length');
     return [];
   }
