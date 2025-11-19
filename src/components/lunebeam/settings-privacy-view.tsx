@@ -59,10 +59,10 @@ export const SettingsPrivacyView: React.FC<SettingsPrivacyViewProps> = ({
       setIsSaving(false);
     }
   };
-  return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+  return <div className="min-h-[100dvh] bg-gradient-soft">
       <PageHeader title="Settings & Privacy" onBack={onBack} />
 
-      <div className="px-4 pt-6 pb-24 space-y-6">
+      <div className="px-4 pt-safe-header pb-safe-nav space-y-6">
         {/* Profile Visibility */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">

@@ -23,10 +23,10 @@ export const RewardsScreen: React.FC<RewardsScreenProps> = ({
     loadPoints();
   }, [loadGoals, loadPoints]);
   const totalPoints = pointsSummary?.totalPoints || 0;
-  return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+  return <div className="min-h-[100dvh] bg-gradient-soft">
       <PageHeader title="LunaPoints" onBack={onBack} />
 
-      <div className="px-4 pt-6 pb-6 space-y-6">
+      <div className="px-4 pt-safe-header pb-safe-nav space-y-6">
         
         {/* Overview Stats */}
         <Card className="text-center">

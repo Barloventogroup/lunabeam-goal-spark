@@ -103,14 +103,14 @@ export const RedemptionInbox: React.FC<RedemptionInboxProps> = ({ onBack }) => {
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-gradient-soft flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+    <div className="min-h-[100dvh] bg-gradient-soft">
       <PageHeader 
         title="Redemption Inbox" 
         onBack={onBack}
@@ -121,7 +121,7 @@ export const RedemptionInbox: React.FC<RedemptionInboxProps> = ({ onBack }) => {
         }
       />
 
-      <div className="px-4 pt-6 pb-6">
+      <div className="px-4 pt-safe-header pb-safe-nav space-y-4">
         <div className="space-y-8">
           {/* Pending Requests */}
           {pendingRedemptions.length > 0 && (

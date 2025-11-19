@@ -69,17 +69,17 @@ export const RewardsGallery: React.FC<RewardsGalleryProps> = ({ onBack }) => {
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-gradient-soft flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+    <div className="min-h-[100dvh] bg-gradient-soft">
       <PageHeader title="Reward Gallery" onBack={onBack} />
 
-      <div className="px-4 pt-6 pb-6">
+      <div className="px-4 pt-safe-header pb-safe-nav">
         {/* Points Display */}
         <div className="flex justify-end mb-6">
           <div className="bg-muted rounded-lg px-3 py-1 text-sm font-medium">
