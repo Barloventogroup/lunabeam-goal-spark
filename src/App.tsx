@@ -20,7 +20,7 @@ import { Capacitor, registerPlugin } from "@capacitor/core";
 const StatusBar = registerPlugin<any>('StatusBar');
 const Keyboard = registerPlugin<any>('Keyboard');
 const Style = { Dark: 'DARK', Light: 'LIGHT' } as const;
-import BuildBadge from "@/components/dev/BuildBadge";
+
 import SafeAreaDebugger from "@/components/dev/SafeAreaDebugger";
 import SafeAreaProbe from "@/components/dev/SafeAreaProbe";
 
@@ -95,7 +95,7 @@ const App = () => {
         <Sonner />
         <SafeAreaDebugger />
         <SafeAreaProbe />
-        <BuildBadge />
+        
         <BrowserRouter>
           <div className="app-shell min-h-[100dvh] flex flex-col">
             <Routes>
