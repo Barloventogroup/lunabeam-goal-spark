@@ -46,14 +46,25 @@ const DrawerContent = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed flex flex-col border bg-background",
-        side === 'bottom' && "inset-x-0 bottom-0 mt-24 h-auto rounded-t-[10px] z-50",
+        side === 'bottom' && "inset-x-0 mt-24 h-auto rounded-t-[10px] z-50",
         side === 'right' && "inset-y-0 right-0 h-full w-full rounded-l-[10px] z-[60]",
         className
       )}
+      style={{
+        ...(side === 'bottom' && {
+          bottom: 'var(--kb-height)',
+          maxHeight: 'calc(85vh - var(--kb-height))',
+        }),
+        ...(side === 'right' && {
+          paddingBottom: 'calc(1rem + var(--kb-height))',
+        }),
+      }}
       {...props}
     >
       {side === 'bottom' && <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />}
-      {children}
+      <div className="flex-1 overflow-y-auto">
+        {children}
+      </div>
     </DrawerPrimitive.Content>
   </DrawerPortal>
 ))

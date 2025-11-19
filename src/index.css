@@ -365,6 +365,32 @@
     user-select: none;
     -webkit-user-select: none;
   }
+
+  /* iOS Keyboard Handling */
+  body.keyboard-open {
+    overflow: hidden;
+  }
+  
+  /* Keyboard-aware bottom spacing utility */
+  .kb-safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), var(--kb-height));
+  }
+  
+  /* For fixed bottom elements that should stay above keyboard */
+  .kb-aware-fixed {
+    transition: bottom 0.3s ease-out;
+  }
+  
+  body.keyboard-open .kb-aware-fixed {
+    bottom: var(--kb-height);
+  }
+  
+  /* For scrollable containers that need keyboard spacing */
+  .kb-aware-scroll {
+    height: calc(100vh - var(--kb-height));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @layer utilities {

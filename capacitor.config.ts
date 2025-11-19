@@ -6,6 +6,13 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   // No server.url here - loads from capacitor://localhost by default
   // For live-reload during development, temporarily add server.url pointing to your dev server
+  plugins: {
+    Keyboard: {
+      resize: 'none',
+      style: 'dark',
+      resizeOnFullScreen: true,
+    },
+  },
 };
 
 export default config;
