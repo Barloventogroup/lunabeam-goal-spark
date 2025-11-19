@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Calendar, MoreHorizontal, Info, ClipboardCheck, CheckCircle2, Pencil, PauseCircle, Split } from "lucide-react";
+import { Calendar, MoreHorizontal, Info, ClipboardCheck, CheckCircle2, Pencil, PauseCircle, Split, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -106,10 +106,24 @@ export const StepCard: React.FC<StepCardProps> = ({
       <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
         <CardHeader className="pl-5 pr-4 py-3">
           <div className="flex flex-col gap-0.1">
-            {/* Title + 3-dot menu */}
+            {/* Title + 3-dot menu + chevron */}
             <div className="flex items-center justify-between gap-2">
-              <h4 className="font-medium text-base leading-tight flex-1">{step.title}</h4>
+              <h4 className="font-medium text-base leading-tight flex-1 pr-2">{step.title}</h4>
               <div className="flex items-center gap-1 shrink-0">
+                {hasSubsteps && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onBreakDown(step.id);
+                    }}
+                    aria-label={`View ${substepCount} substep${substepCount !== 1 ? 's' : ''}`}
+                  >
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}>
@@ -167,16 +181,6 @@ export const StepCard: React.FC<StepCardProps> = ({
                           Pause
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="opacity-30" />
-                        <DropdownMenuItem
-                          className="text-base"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onBreakDown(step.id);
-                          }}
-                        >
-                          <Split className="mr-2 h-4 w-4" />
-                          {hasSubsteps ? `View ${substepCount} substep${substepCount !== 1 ? "s" : ""}` : "Break it down"}
-                        </DropdownMenuItem>
                       </>
                     )}
                   </DropdownMenuContent>
@@ -192,9 +196,14 @@ export const StepCard: React.FC<StepCardProps> = ({
               </div>
             )}
 
-            {/* Status badge */}
-            <div className="mt-1">
+            {/* Status badge + Substep badge */}
+            <div className="mt-1 flex items-center gap-2">
               <Badge variant={getStatusBadgeVariant(step.status)}>{getStatusLabel(step.status)}</Badge>
+              {hasSubsteps && (
+                <Badge variant="outline" className="text-xs">
+                  {substepCount} substep{substepCount !== 1 ? 's' : ''}
+                </Badge>
+              )}
             </div>
 
             {/* Info icon */}
