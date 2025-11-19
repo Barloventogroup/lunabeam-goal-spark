@@ -235,7 +235,7 @@ export const LunaChatScreen: React.FC<LunaChatScreenProps> = ({
           parent_step_id: step.id,
           title: substep.title,
           notes: substep.description,
-          status: 'pending',
+          status: 'not_started',
           is_required: true,
           is_supporter_step: false,
           order_index: 999,
@@ -265,9 +265,10 @@ export const LunaChatScreen: React.FC<LunaChatScreenProps> = ({
       setMessages(prev => [...prev, confirmationMessage]);
     } catch (error) {
       console.error('Error adding substep:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast({
         title: "Error",
-        description: "Failed to add sub-step. Please try again.",
+        description: `Failed to add sub-step: ${errorMessage}`,
         variant: "destructive"
       });
     } finally {
