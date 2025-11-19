@@ -76,6 +76,18 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
     scrollToBottom();
   }, [messages]);
 
+  // Handle keyboard appearance
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleResize = () => {
+      setTimeout(() => scrollToBottom(), 100);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isOpen]);
+
   // Initialize conversation when modal opens with a step
   useEffect(() => {
     if (isOpen && step && !isInitialized) {
@@ -455,9 +467,24 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
     }
   };
 
+  const handleInputFocus = () => {
+    setTimeout(() => {
+      inputRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }, 300);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[95vw] h-[80vh] sm:h-[600px] flex flex-col z-[60] p-4 sm:p-6" onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}>
+      <DialogContent 
+        className="max-w-2xl w-[95vw] h-[80vh] sm:h-[600px] flex flex-col z-[60] p-4 sm:p-6" 
+        onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}
+        style={{
+          maxHeight: 'calc(100vh - var(--kb-height) - 20px)',
+        }}
+      >
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base font-normal">
             <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
@@ -637,6 +664,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyPress}
+                    onFocus={handleInputFocus}
                     placeholder="Ask Luna for help..."
                     disabled={isLoading || !!cooldownUntil || isLocked}
                     className="flex-1 text-sm"
