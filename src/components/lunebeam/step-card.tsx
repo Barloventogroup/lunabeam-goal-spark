@@ -167,6 +167,17 @@ export const StepCard: React.FC<StepCardProps> = ({
                       <Pencil className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator className="opacity-30" />
+                    <DropdownMenuItem
+                      className="text-base"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onBreakDown(step.id);
+                      }}
+                    >
+                      <Split className="mr-2 h-4 w-4" />
+                      Break it down
+                    </DropdownMenuItem>
                     {!isCompleted && (
                       <>
                         <DropdownMenuSeparator className="opacity-30" />
