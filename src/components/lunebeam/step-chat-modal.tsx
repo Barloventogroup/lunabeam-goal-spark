@@ -59,8 +59,10 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   const [reflectionQ1, setReflectionQ1] = useState('');
   const [reflectionQ2, setReflectionQ2] = useState('');
   const [reframingStatement, setReframingStatement] = useState('');
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -76,17 +78,31 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  // Handle keyboard appearance
+  // Keyboard awareness via visualViewport
   useEffect(() => {
-    if (!isOpen) return;
-    
-    const handleResize = () => {
-      setTimeout(() => scrollToBottom(), 100);
+    if (typeof window === "undefined" || !window.visualViewport) return;
+
+    const onResize = () => {
+      const vv = window.visualViewport!;
+      const heightDiff = window.innerHeight - vv.height;
+      setKeyboardOffset(heightDiff > 0 ? heightDiff : 0);
     };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isOpen]);
+
+    window.visualViewport.addEventListener("resize", onResize);
+    window.visualViewport.addEventListener("scroll", onResize);
+    onResize();
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", onResize);
+      window.visualViewport?.removeEventListener("scroll", onResize);
+    };
+  }, []);
+
+  // Auto-scroll when messages or keyboard changes
+  useEffect(() => {
+    if (!bottomRef.current) return;
+    bottomRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, keyboardOffset]);
 
   // Initialize conversation when modal opens with a step
   useEffect(() => {
@@ -479,7 +495,10 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="inset-0 left-0 top-0 translate-x-0 translate-y-0 pt-[calc(env(safe-area-inset-top,0px)+8px)] pb-[calc(env(safe-area-inset-bottom,0px)+8px)] sm:inset-auto sm:left-1/2 sm:top-1/2 sm:translate-x-[-50%] sm:translate-y-[-50%] max-w-2xl w-full sm:w-[95vw] h-[100dvh] sm:h-[600px] max-h-[100dvh] flex flex-col z-[60] p-4 sm:p-6" 
+        className="fixed inset-0 left-0 top-0 translate-x-0 translate-y-0 pt-[calc(env(safe-area-inset-top,0px)+8px)] pb-[calc(env(safe-area-inset-bottom,0px)+8px)] bg-background border-0 sm:border sm:inset-auto sm:left-1/2 sm:top-1/2 sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-2xl sm:w-[95vw] sm:h-[600px] sm:max-h-[600px] h-[100dvh] max-h-[100dvh] w-full flex flex-col z-[60] p-4 sm:p-6"
+        style={{
+          "--kb-offset": `${keyboardOffset}px`,
+        } as React.CSSProperties}
         onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}
       >
         <DialogHeader className="flex-shrink-0">
@@ -620,13 +639,13 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
                   </div>
                 </div>
               )}
-              <div ref={messagesEndRef} />
+              <div ref={bottomRef} className="h-4" />
             </div>
           </ScrollArea>
 
           <div 
             className="border-t pt-2 mt-2 flex-shrink-0"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)" }}
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + var(--kb-offset, 0px) + 8px)" }}
           >
             {showGoalResetOptions ? (
               <div className="space-y-2">
