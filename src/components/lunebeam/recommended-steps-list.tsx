@@ -851,9 +851,45 @@ export const RecommendedStepsList: React.FC<RecommendedStepsListProps> = ({
     
     setSelectedStepForSubsteps(step);
     
-    // Load substeps for this step
-    const substeps = substepsMap[stepId] || [];
-    setCurrentSubsteps(substeps);
+    // ALWAYS fetch fresh substeps from database to avoid stale state
+    try {
+      const { data: scaffoldingSteps, error } = await supabase
+        .from('steps')
+        .select('*')
+        .eq('parent_step_id', stepId)
+        .eq('is_scaffolding', true)
+        .order('created_at', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching substeps:', error);
+        setCurrentSubsteps([]);
+      } else {
+        // Convert to Substep format
+        const substepsData = (scaffoldingSteps || []).map(s => ({
+          id: s.id,
+          step_id: stepId,
+          title: s.title,
+          description: s.notes,
+          is_planned: s.is_planned || false,
+          completed_at: s.status === 'done' ? s.updated_at : undefined,
+          initiated_at: s.initiated_at,
+          points_awarded: s.points_awarded || 0,
+          created_at: s.created_at,
+          updated_at: s.updated_at,
+          due_date: s.due_date
+        } as Substep));
+        
+        const dedupedSubsteps = dedupeSubsteps(substepsData);
+        setCurrentSubsteps(dedupedSubsteps);
+        
+        // Update the map for consistency
+        setSubstepsMap(prev => ({ ...prev, [stepId]: dedupedSubsteps }));
+      }
+    } catch (error) {
+      console.error('Error loading substeps:', error);
+      setCurrentSubsteps([]);
+    }
+    
     setSubstepDrawerOpen(true);
   };
 
