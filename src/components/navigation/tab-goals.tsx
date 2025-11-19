@@ -250,7 +250,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
   if (showTabs) {
     const supportedIndividual = supporterContext.supportedIndividuals[0];
     return (
-      <div className="min-h-[100dvh] bg-background pt-safe-content">
+      <div className="min-h-[100dvh] bg-background pt-safe-header pb-safe-nav">
         {/* Header - hidden during wizard */}
         {!isWizardView && (
           <div className="fixed left-0 right-0 top-safe z-40 px-4 pb-4 pt-4 bg-card">

@@ -311,7 +311,7 @@ export function TabInvitations() {
   );
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-background to-muted/20 pt-safe-content">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-background to-muted/20 pt-safe-header pb-safe-nav">
       <div className="safe-area-padding">
         {/* Header */}
         <div className="fixed left-0 right-0 top-safe z-40 flex items-center gap-4 border-b border-border/60 px-4 pb-4 pt-4">

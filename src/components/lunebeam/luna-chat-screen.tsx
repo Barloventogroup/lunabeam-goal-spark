@@ -424,7 +424,7 @@ export const LunaChatScreen: React.FC<LunaChatScreenProps> = ({
       </header>
 
       {/* Main chat area */}
-      <div className="flex-1 min-h-0 flex flex-col overflow-hidden pb-20">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden pb-safe-nav">
         {/* Cooldown Timer Display */}
         {cooldownUntil && new Date(cooldownUntil) > new Date() && (
           <div className="mx-4 mt-3 p-3 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2">

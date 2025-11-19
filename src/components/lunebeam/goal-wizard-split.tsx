@@ -338,7 +338,7 @@ export const GoalWizardSplit: React.FC<GoalWizardSplitProps> = ({
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-soft flex flex-col pt-safe-content">
+    <div className="min-h-[100dvh] bg-gradient-soft flex flex-col pt-safe-header pb-safe-nav">
       {/* Header */}
       <div className="fixed left-0 right-0 top-safe z-40 flex items-center gap-4 bg-background/50 backdrop-blur-sm border-b px-4 pb-4 pt-4">
         <Button
