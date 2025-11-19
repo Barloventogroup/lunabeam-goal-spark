@@ -249,9 +249,9 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+      <div className="min-h-[100dvh] bg-gradient-soft">
         <PageHeader title="Notifications" onBack={onBack} />
-        <div className="px-4 pt-6 pb-6">
+        <div className="px-4 pt-safe-header pb-safe-nav">
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
               <Card key={i} className="animate-pulse">
@@ -270,14 +270,14 @@ export const NotificationsList: React.FC<NotificationsListProps> = ({ onBack }) 
   const unreadCount = notifications.filter(n => !n.read_at).length;
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+    <div className="min-h-[100dvh] bg-gradient-soft">
       <PageHeader 
         title="Notifications" 
         onBack={onBack}
         right={unreadCount > 0 ? <Badge variant="secondary">{unreadCount} unread</Badge> : undefined}
       />
 
-      <div className="px-4 pt-6 pb-6">
+      <div className="px-4 pt-safe-header pb-safe-nav">
         {/* Pagination moved to content area */}
         {renderPagination()}
         {notifications.length === 0 ? (

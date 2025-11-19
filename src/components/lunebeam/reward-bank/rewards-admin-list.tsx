@@ -89,9 +89,9 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = React.memo(({ o
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+      <div className="min-h-[100dvh] bg-gradient-soft">
         <PageHeader title="Reward Bank" onBack={onBack} />
-        <div className="px-4 pt-6 pb-6 space-y-3">
+        <div className="px-4 pt-safe-header pb-safe-nav space-y-3">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
@@ -104,7 +104,7 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = React.memo(({ o
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+    <div className="min-h-[100dvh] bg-gradient-soft">
       <PageHeader 
         title="Reward Bank" 
         onBack={onBack}
@@ -114,13 +114,12 @@ export const RewardsAdminList: React.FC<RewardsAdminListProps> = React.memo(({ o
             size="sm"
             className="h-8 px-3 text-sm bg-primary hover:bg-primary/90"
           >
-            <Plus className="w-4 h-4 mr-2" />
             Add Reward
           </Button>
         }
       />
 
-      <div className="px-4 pt-6 pb-6">
+      <div className="px-4 pt-safe-header pb-safe-nav space-y-3">
         {/* Rewards Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {rewards.map((reward) => (

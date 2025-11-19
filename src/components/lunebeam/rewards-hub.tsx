@@ -18,10 +18,10 @@ export const RewardsHub: React.FC<RewardsHubProps> = ({
   onNavigateToRedemptionInbox,
   showAdminFeatures = true
 }) => {
-  return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+  return <div className="min-h-[100dvh] bg-gradient-soft">
       <PageHeader title="Rewards" onBack={onBack} />
 
-      <div className="px-4 pt-6 pb-6 space-y-3">
+      <div className="px-4 pt-safe-header pb-safe-nav space-y-3">
         {/* Rewards */}
         <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onNavigateToRewards}>
           <CardContent className="p-4">

@@ -78,10 +78,10 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({
       day: 'numeric'
     });
   };
-  return <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+  return <div className="min-h-[100dvh] bg-gradient-soft">
       <PageHeader title="Achievements" onBack={onBack} />
 
-      <div className="px-4 pt-6 pb-6 space-y-6">
+      <div className="px-4 pt-safe-header pb-safe-nav space-y-6">
         {/* Overview Stats */}
         <div className="grid grid-cols-2 gap-4">
           <Card className="text-center">

@@ -358,10 +358,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
     });
   };
   return (
-    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-content">
+    <div className="min-h-[100dvh] bg-gradient-soft">
       <PageHeader title="Profile" onBack={onBack} />
 
-      <div className="px-6 pt-4 pb-4 space-y-6">
+      <div className="px-6 pt-safe-header pb-safe-nav space-y-6">
         {/* Profile Picture & Name */}
         {/* Avatar Card */}
         <Card>
