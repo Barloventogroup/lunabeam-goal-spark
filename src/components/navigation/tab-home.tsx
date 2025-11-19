@@ -428,7 +428,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
         <div className="p-4 space-y-6">
           {/* Welcome Message */}
-          <div className="pt-20">  {/* 64px header + 16px spacing */}
+          <div className="pt-16">  {/* Account for 64px fixed header */}
             {(() => {
               const isAdmin = userContext?.userType === "admin";
 
