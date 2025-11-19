@@ -479,11 +479,8 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-2xl w-[95vw] h-[80vh] sm:h-[600px] flex flex-col z-[60] p-4 sm:p-6" 
+        className="max-w-2xl w-full sm:w-[95vw] h-[100dvh] sm:h-[600px] max-h-[100dvh] flex flex-col z-[60] p-4 sm:p-6 pb-[calc(env(safe-area-inset-bottom,0px)+12px)]" 
         onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}
-        style={{
-          maxHeight: 'calc(100vh - var(--kb-height) - 20px)',
-        }}
       >
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base font-normal">
@@ -552,7 +549,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
           )}
 
           <ScrollArea className="flex-1 pr-4">
-            <div className="space-y-4 py-4">
+            <div className="space-y-4 py-2">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -627,7 +624,7 @@ export const StepChatModal: React.FC<StepChatModalProps> = ({
             </div>
           </ScrollArea>
 
-          <div className="border-t pt-3 mt-4 flex-shrink-0">
+          <div className="border-t pt-2 mt-2 flex-shrink-0">
             {showGoalResetOptions ? (
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">
