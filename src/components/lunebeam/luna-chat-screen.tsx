@@ -423,7 +423,7 @@ export const LunaChatScreen: React.FC<LunaChatScreenProps> = ({
       </header>
 
       {/* Main chat area */}
-      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden pb-20">
         {/* Cooldown Timer Display */}
         {cooldownUntil && new Date(cooldownUntil) > new Date() && (
           <div className="mx-4 mt-3 p-3 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2">
@@ -476,8 +476,8 @@ export const LunaChatScreen: React.FC<LunaChatScreenProps> = ({
         )}
 
         {/* Scrollable messages */}
-        <ScrollArea className="flex-1 min-h-0 kb-aware-scroll">
-          <div className="space-y-3 px-4 py-3">
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="space-y-3 px-4 py-3 pb-24">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -549,9 +549,10 @@ export const LunaChatScreen: React.FC<LunaChatScreenProps> = ({
             <div ref={bottomRef} className="h-3" />
           </div>
         </ScrollArea>
+      </div>
 
-        {/* Input area */}
-        <div className="border-t px-4 pt-3 pb-safe-only kb-safe-bottom bg-background flex-shrink-0">
+      {/* Input area - fixed at bottom, repositions above keyboard */}
+      <div className="fixed left-0 right-0 bottom-0 border-t px-4 pt-3 pb-safe-only kb-aware-fixed bg-background z-10">
           {showGoalResetOptions ? (
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground">
@@ -613,7 +614,6 @@ export const LunaChatScreen: React.FC<LunaChatScreenProps> = ({
             </>
           )}
         </div>
-      </div>
     </div>
   );
 };
