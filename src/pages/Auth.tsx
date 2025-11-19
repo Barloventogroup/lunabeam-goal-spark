@@ -445,11 +445,6 @@ useEffect(() => {
                 {isSignUp ? 'Already have an account? Sign in' : <>Don't have an account? Sign up</>}
               </button>}
           </div>
-          
-          {/* Build marker for verification */}
-          <div className="text-center mt-4">
-            <p className="text-xs text-muted-foreground/50">Build: 2025-10-24 14:30 UTC</p>
-          </div>
         </CardContent>
       </Card>
     </div>
