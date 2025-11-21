@@ -5,7 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
 
 // ============= SAFETY VIOLATION NOTIFICATION =============
 async function notifySafetyViolation(
@@ -321,20 +322,20 @@ Deno.serve(async (req) => {
     );
     
     // ============= LAYER 1: TRY OPENAI FIRST =============
-    console.log('\n=== LAYER 1: OpenAI (gpt-5-mini) ===');
+    console.log('\n=== LAYER 1: OpenAI (gpt-5-mini-2025-08-07) ===');
     
     try {
       const systemPrompt = buildSystemPrompt(payload.flow);
       const userPrompt = buildUserPrompt(payload, 1, '');
       
-      const openaiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'openai/gpt-5-mini',
+          model: 'gpt-5-mini-2025-08-07',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
@@ -365,7 +366,8 @@ Deno.serve(async (req) => {
               }
             }
           }],
-          tool_choice: { type: "function", function: { name: "generate_microsteps" } }
+          tool_choice: { type: "function", function: { name: "generate_microsteps" } },
+          max_completion_tokens: 800
         }),
       });
 
@@ -463,22 +465,22 @@ Deno.serve(async (req) => {
         const userPrompt = buildUserPrompt(payload, attemptNumber, retryGuidance);
 
         try {
-          // Call Lovable AI Gateway (Gemini)
-          const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          // Call Direct Gemini API
+          const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`;
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_AI_API_KEY}`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt }
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: combinedPrompt }]
+              }
             ],
             tools: [{
-              type: "function",
-              function: {
+              functionDeclarations: [{
                 name: "generate_microsteps",
                 description: "Generate exactly 4 theory-aligned micro-steps using natural, conversational language. Avoid template-like patterns. Write as a helpful human coach would speak.",
                 parameters: {
@@ -504,15 +506,23 @@ Deno.serve(async (req) => {
                   },
                   required: ["microSteps"]
                 }
-              }
+              }]
             }],
-            tool_choice: { type: "function", function: { name: "generate_microsteps" } }
+            toolConfig: {
+              functionCallingConfig: {
+                mode: "ANY",
+                allowedFunctionNames: ["generate_microsteps"]
+              }
+            },
+            generationConfig: {
+              maxOutputTokens: 1000
+            }
           }),
         });
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`Attempt ${attemptNumber} - AI Gateway error:`, response.status, errorText);
+          console.error(`Attempt ${attemptNumber} - Gemini API error:`, response.status, errorText);
           
           if (response.status === 429) {
             return new Response(
@@ -534,16 +544,16 @@ Deno.serve(async (req) => {
         }
 
         const data = await response.json();
-        console.log(`Attempt ${attemptNumber} - AI response received`);
+        console.log(`Attempt ${attemptNumber} - Gemini API response received`);
 
-        // Extract tool call result
-        const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-        if (!toolCall || toolCall.function.name !== 'generate_microsteps') {
-          console.error(`Attempt ${attemptNumber} - No valid tool call in response`);
+        // Extract function call result (Gemini format)
+        const functionCall = data.candidates?.[0]?.content?.parts?.[0]?.functionCall;
+        if (!functionCall || functionCall.name !== 'generate_microsteps') {
+          console.error(`Attempt ${attemptNumber} - No valid function call in response`);
           continue;
         }
 
-        const candidateSteps = JSON.parse(toolCall.function.arguments).microSteps;
+        const candidateSteps = functionCall.args.microSteps;
         
         // ============= LAYER 2: SAFETY SIGNAL DETECTION =============
         const stepsJSON = JSON.stringify(candidateSteps);
