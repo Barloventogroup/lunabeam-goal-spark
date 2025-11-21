@@ -694,10 +694,10 @@ async function callAIWithRetry(
   payload: PMGoalCreationInput,
   retryGuidance: string = ''
 ): Promise<GeneratedStep[]> {
-  // Use Lovable AI Gateway for OpenAI fallback to keep secrets in Supabase
-  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-  if (!lovableApiKey) {
-    throw new Error('LOVABLE_API_KEY not configured');
+  // Use direct OpenAI API for fallback
+  const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!openaiApiKey) {
+    throw new Error('OPENAI_API_KEY not configured');
   }
 
   const systemPrompt = buildPMSystemPrompt(payload);
@@ -766,21 +766,21 @@ async function callAIWithRetry(
     return null;
   };
 
-  console.log(`🔄 OpenAI fallback via Lovable Gateway (single try)`);
+  console.log(`🔄 OpenAI fallback via direct API (single try)`);
   const attemptStart = Date.now();
 
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
+        Authorization: `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'gpt-5-mini-2025-08-07',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -794,12 +794,12 @@ async function callAIWithRetry(
 
     clearTimeout(timeoutId);
     const attemptDuration = Date.now() - attemptStart;
-    console.log(`⏱️ OpenAI (gateway) attempt took ${attemptDuration}ms`);
+    console.log(`⏱️ OpenAI (direct) attempt took ${attemptDuration}ms`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ OpenAI (gateway) error:', response.status, errorText);
-      throw new Error(`OpenAI (gateway) error: ${response.status}`);
+      console.error('❌ OpenAI (direct) error:', response.status, errorText);
+      throw new Error(`OpenAI (direct) error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -825,14 +825,14 @@ async function callAIWithRetry(
       return parsed.steps;
     }
 
-    throw new Error('OpenAI (gateway) response missing steps');
+    throw new Error('OpenAI (direct) response missing steps');
   } catch (error: any) {
     const attemptDuration = Date.now() - attemptStart;
     if (error.name === 'AbortError' || error.message?.includes('aborted')) {
-      console.error(`❌ OpenAI (gateway) timed out after ${attemptDuration}ms`);
+      console.error(`❌ OpenAI (direct) timed out after ${attemptDuration}ms`);
       throw new Error(`Request timed out after ${AI_TIMEOUT_MS / 1000}s`);
     }
-    console.error('❌ OpenAI (gateway) failed:', error?.message || error);
+    console.error('❌ OpenAI (direct) failed:', error?.message || error);
     throw error;
   }
 }
@@ -1958,8 +1958,8 @@ serve(async (req) => {
             version: 1,
             source: 'pm-microsteps-scaffold',
             enhanced: true,
-            modelUsed: 'google/gemini-2.5-flash',
-            aiProvider: 'lovable-ai',
+            modelUsed: 'gemini-2.0-flash-exp',
+            aiProvider: 'gemini',
             generatedAt: new Date().toISOString()
           }
         }));
@@ -1978,10 +1978,10 @@ serve(async (req) => {
       const response = {
         steps: generatedSteps,
         microSteps: generatedSteps, // Backward-compat alias
-        metadata: {
-          modelUsed: 'google/gemini-2.5-flash',
-          aiProvider: 'lovable-ai',
-          generatedAt: new Date().toISOString(),
+      metadata: {
+        modelUsed: 'gemini-2.0-flash-exp',
+        aiProvider: 'gemini',
+        generatedAt: new Date().toISOString(),
           generationTimeMs: Date.now() - generationStart,
           goalContext: {
             goalId: payload.goalId,
