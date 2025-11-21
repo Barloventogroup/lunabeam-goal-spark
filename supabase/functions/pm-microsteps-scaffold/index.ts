@@ -838,16 +838,16 @@ async function callAIWithRetry(
 }
 
 /**
- * Primary AI provider: Lovable AI Gateway (Google Gemini 2.5 Flash)
+ * Primary AI provider: Direct Gemini API (Google Gemini 2.0 Flash)
  * Fast, reliable, and recommended for step generation
  */
-async function callLovableAIWithRetry(
+async function callGeminiAIWithRetry(
   payload: PMGoalCreationInput,
   retryGuidance: string = ''
 ): Promise<GeneratedStep[]> {
-  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-  if (!lovableApiKey) {
-    throw new Error('LOVABLE_API_KEY not configured');
+  const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
+  if (!googleApiKey) {
+    throw new Error('GOOGLE_AI_API_KEY not configured');
   }
 
   const systemPrompt = buildPMSystemPrompt(payload);
@@ -921,106 +921,107 @@ async function callLovableAIWithRetry(
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= MAX_LOVABLE_ATTEMPTS; attempt++) {
-    console.log(`🔄 Lovable AI attempt ${attempt}/${MAX_LOVABLE_ATTEMPTS}`);
+    console.log(`🔄 Gemini API attempt ${attempt}/${MAX_LOVABLE_ATTEMPTS}`);
     const attemptStart = Date.now();
 
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
-      // Select model based on complexity - granular tiers for optimal speed/quality
+      // Select maxTokens based on complexity
       const skillLevel = payload.skillAssessment.calculatedLevel;
       const durationWeeks = payload.duration_weeks;
       
-      let selectedModel: string;
       let maxTokens: number;
       
-      // Force flash on second attempt if first failed with lite
-      if (attempt === 2 && lastError?.message?.includes('Flash-lite returned 0 steps')) {
-        selectedModel = 'google/gemini-2.5-flash';
-        maxTokens = 1200;
-        console.log(`🧠 RETRY: Using flash (1200t) after flash-lite failed`);
-      }
-      // Tier 1: Ultra-fast for very simple goals (beginner, short duration)
-      else if (skillLevel <= 2 && durationWeeks <= 6) {
-        selectedModel = 'google/gemini-2.5-flash-lite';
+      // Tier 1: Simple goals
+      if (skillLevel <= 2 && durationWeeks <= 6) {
         maxTokens = 600;
-        console.log(`⚡ Using flash-lite (600t) for simple goal (skill=${skillLevel}, ${durationWeeks}w)`);
+        console.log(`⚡ Using 600 tokens for simple goal (skill=${skillLevel}, ${durationWeeks}w)`);
       }
-      // Tier 2: Fast for moderate goals
+      // Tier 2: Moderate goals
       else if (skillLevel <= 4 && durationWeeks <= 12) {
-        selectedModel = 'google/gemini-2.5-flash-lite';
         maxTokens = 800;
-        console.log(`🚀 Using flash-lite (800t) for moderate goal (skill=${skillLevel}, ${durationWeeks}w)`);
+        console.log(`🚀 Using 800 tokens for moderate goal (skill=${skillLevel}, ${durationWeeks}w)`);
       }
-      // Tier 3: Full model for complex goals (advanced skill, long duration)
+      // Tier 3: Complex goals
       else {
-        selectedModel = 'google/gemini-2.5-flash';
         maxTokens = 1200;
-        console.log(`🧠 Using flash (1200t) for complex goal (skill=${skillLevel}, ${durationWeeks}w)`);
+        console.log(`🧠 Using 1200 tokens for complex goal (skill=${skillLevel}, ${durationWeeks}w)`);
       }
       
-      console.log(`📤 Calling Lovable AI Gateway (${selectedModel}, max ${maxTokens} tokens)...`);
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      // Combine system prompt and user prompt for Gemini
+      const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`;
+      
+      console.log(`📤 Calling Direct Gemini API (gemini-2.0-flash-exp, max ${maxTokens} tokens)...`);
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${googleApiKey}`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${lovableApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: selectedModel,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: combinedPrompt }]
+            }
           ],
-          tools,
-          tool_choice: { type: 'function', function: { name: 'generate_pm_steps' } },
-          max_completion_tokens: maxTokens
+          tools: [{
+            functionDeclarations: [{
+              name: 'generate_pm_steps',
+              description: 'Generate Progressive Mastery steps for skill building',
+              parameters: tools[0].function.parameters
+            }]
+          }],
+          toolConfig: {
+            functionCallingConfig: {
+              mode: "ANY",
+              allowedFunctionNames: ["generate_pm_steps"]
+            }
+          },
+          generationConfig: {
+            maxOutputTokens: maxTokens
+          }
         }),
         signal: controller.signal
       });
 
       clearTimeout(timeoutId);
       const attemptDuration = Date.now() - attemptStart;
-      console.log(`⏱️ Lovable AI attempt ${attempt} took ${attemptDuration}ms`);
+      console.log(`⏱️ Gemini API attempt ${attempt} took ${attemptDuration}ms`);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Lovable AI error:', response.status, errorText);
+        console.error('❌ Gemini API error:', response.status, errorText);
 
         if (response.status === 429 || response.status === 402) {
-          lastError = new Error('Lovable AI rate limit or quota exceeded');
+          lastError = new Error('Gemini API rate limit or quota exceeded');
           if (attempt < MAX_LOVABLE_ATTEMPTS) {
-            const backoffDelay = attempt === 1 ? 1000 : 2000; // 1s then 2s
+            const backoffDelay = attempt === 1 ? 1000 : 2000;
             console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
             await new Promise(resolve => setTimeout(resolve, backoffDelay));
             continue;
           }
         }
 
-        throw new Error(`Lovable AI error: ${response.status}`);
+        throw new Error(`Gemini API error: ${response.status}`);
       }
 
       const data = await response.json();
-      const choice = data.choices?.[0];
-      const toolCalls = choice?.message?.tool_calls || choice?.tool_calls;
+      const functionCall = data.candidates?.[0]?.content?.parts?.[0]?.functionCall;
 
       let extractedSteps: GeneratedStep[] = [];
       
-      if (toolCalls && Array.isArray(toolCalls)) {
-        const fnCall = toolCalls.find((tc: any) => tc.type === 'function' && tc.function?.name === 'generate_pm_steps');
-        if (fnCall) {
-          const args = JSON.parse(fnCall.function.arguments || '{}');
-          if (args?.steps && Array.isArray(args.steps)) {
-            extractedSteps = args.steps;
-            console.log(`🛠️ Parsed tool_calls with ${extractedSteps.length} steps`);
-          }
+      if (functionCall && functionCall.name === 'generate_pm_steps') {
+        if (functionCall.args?.steps && Array.isArray(functionCall.args.steps)) {
+          extractedSteps = functionCall.args.steps;
+          console.log(`🛠️ Parsed function call with ${extractedSteps.length} steps`);
         }
       }
 
-      // Try JSON extraction if tool_calls didn't work
+      // Try JSON extraction if function call didn't work
       if (extractedSteps.length === 0) {
-        const content = choice?.message?.content ?? '';
+        const content = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
         const parsed = tryExtractJson(content);
         if (parsed?.steps && Array.isArray(parsed.steps)) {
           extractedSteps = parsed.steps;
@@ -1028,15 +1029,13 @@ async function callLovableAIWithRetry(
         }
       }
 
-      // CRITICAL: Treat 0 steps as failure
+      // CRITICAL: Treat fewer than 6 steps as failure
       if (extractedSteps.length < 6) {
-        console.error(`❌ Parsed tool_calls with ${extractedSteps.length} steps (need ≥6) → escalating`);
+        console.error(`❌ Parsed with ${extractedSteps.length} steps (need ≥6) → escalating`);
         
-        // If this was flash-lite and we got 0 steps, retry with flash
-        if (selectedModel === 'google/gemini-2.5-flash-lite' && extractedSteps.length === 0 && attempt < MAX_LOVABLE_ATTEMPTS) {
-          console.log('🔄 Escalating to flash for retry...');
-          lastError = new Error('Flash-lite returned 0 steps, retrying with flash');
-          // Force next attempt to use flash by continuing the loop
+        if (extractedSteps.length === 0 && attempt < MAX_LOVABLE_ATTEMPTS) {
+          console.log('🔄 Retrying after receiving 0 steps...');
+          lastError = new Error('Gemini returned 0 steps, retrying');
           await new Promise(resolve => setTimeout(resolve, 500));
           continue;
         }
@@ -1049,23 +1048,23 @@ async function callLovableAIWithRetry(
       const attemptDuration = Date.now() - attemptStart;
 
       if (error.name === 'AbortError' || error.message?.includes('aborted')) {
-        console.error(`❌ Lovable AI attempt ${attempt} timed out after ${attemptDuration}ms`);
-        lastError = new Error(`Lovable AI timed out after ${AI_TIMEOUT_MS / 1000}s`);
+        console.error(`❌ Gemini API attempt ${attempt} timed out after ${attemptDuration}ms`);
+        lastError = new Error(`Gemini API timed out after ${AI_TIMEOUT_MS / 1000}s`);
       } else {
-        console.error(`❌ Lovable AI attempt ${attempt} failed:`, error.message);
+        console.error(`❌ Gemini API attempt ${attempt} failed:`, error.message);
         lastError = error;
       }
 
       if (attempt < MAX_LOVABLE_ATTEMPTS) {
-        const backoffDelay = attempt === 1 ? 1000 : 2000; // 1s then 2s
+        const backoffDelay = attempt === 1 ? 1000 : 2000;
         console.log(`⏳ Backing off ${backoffDelay}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, backoffDelay));
       }
     }
   }
 
-  console.error(`❌ All ${MAX_LOVABLE_ATTEMPTS} Lovable AI attempts failed`);
-  throw lastError || new Error('Lovable AI failed after all retries');
+  console.error(`❌ All ${MAX_LOVABLE_ATTEMPTS} Gemini API attempts failed`);
+  throw lastError || new Error('Gemini API failed after all retries');
 }
 
 // Safety Violation Notification Helper
@@ -1603,11 +1602,11 @@ serve(async (req) => {
             } catch (openaiError: any) {
               console.warn(`⚠️ [${taskId}] OpenAI failed (${openaiError.message}), trying Gemini fallback...`);
               
-              // Fallback to Gemini (Lovable AI)
+              // Fallback to Gemini (Direct API)
               try {
-                console.log(`🤖 [${taskId}] Attempting Gemini generation (Lovable AI)...`);
+                console.log(`🤖 [${taskId}] Attempting Gemini generation (Direct API)...`);
                 const geminiStart = Date.now();
-                const rawSteps = await callLovableAIWithRetry(payload);
+                const rawSteps = await callGeminiAIWithRetry(payload);
                 console.log(`✅ [${taskId}] Gemini returned ${rawSteps.length} steps in ${Date.now() - geminiStart}ms`);
                 
                 console.log(`🔍 [${taskId}] Checking for safety violations...`);
@@ -1871,7 +1870,7 @@ serve(async (req) => {
         console.warn('⚠️ OpenAI failed, trying Gemini fallback...', openaiError.message);
         
         try {
-          const rawSteps = await callLovableAIWithRetry(payload);
+          const rawSteps = await callGeminiAIWithRetry(payload);
           
           // CRITICAL: Check Gemini steps too
           if (rawSteps.length < 6) {
