@@ -1221,17 +1221,16 @@ function validateBasicFormat(
 // LAYER 2: Gemini Judge Service Call
 async function callGeminiJudge(input: JudgeRequest): Promise<JudgeResponse | { error: string }> {
   try {
-    const response = await fetch(
-      `https://soyiqjdwnhtvopvwvfkq.supabase.co/functions/v1/gemini-judge-microsteps`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`
-        },
-        body: JSON.stringify(input)
-      }
-    );
+  const response = await fetch(
+    `https://soyiqjdwnhtvopvwvfkq.supabase.co/functions/v1/gemini-judge-microsteps`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(input)
+    }
+  );
 
     if (!response.ok) {
       console.error('Gemini Judge HTTP error:', response.status);
