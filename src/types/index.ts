@@ -18,6 +18,12 @@ export interface Profile {
   updated_at?: string;
   created_by_supporter?: string | null;
   user_type?: 'admin' | 'individual' | 'supporter' | 'hybrid'; // New field for role
+  
+  // EF Assessment data
+  ef_responses?: Array<{ itemId: string; value: number }>;  // Raw Tier-0 responses
+  ef_selected_pillars?: string[];   // Selected focus areas (EfPillarId[])
+  ef_assessment_date?: string;      // When assessment was completed
+  ef_assessment_perspective?: 'individual' | 'observer'; // Who completed it
 }
 
 export interface ConsentSection {

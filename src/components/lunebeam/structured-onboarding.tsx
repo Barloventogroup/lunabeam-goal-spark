@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import Lottie from 'lottie-react';
+import { SkillsScanStep } from './skills-scan-step';
+import type { EfPriorityArea } from '@/ef/efScoring';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
@@ -41,6 +43,11 @@ interface OnboardingData {
     shareScope: 'private' | 'summary' | 'details';
     supportStyle: 'gentle-reminders' | 'step-by-step' | 'celebrate-wins';
   };
+  
+  // EF Assessment fields
+  efResponses: Array<{ itemId: string; value: number }>;
+  efSelectedPillars: string[];
+  efPriorities: EfPriorityArea[];
 }
 
 interface StructuredOnboardingProps {
@@ -93,7 +100,10 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
     sharingPrefs: {
       shareScope: 'private',
       supportStyle: 'gentle-reminders'
-    }
+    },
+    efResponses: [],
+    efSelectedPillars: [],
+    efPriorities: []
   });
   const [customSuperpower, setCustomSuperpower] = useState('');
   const [customInterest, setCustomInterest] = useState('');
@@ -108,7 +118,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const { completeOnboarding, setProfile } = useStore();
 
   const getTotalSteps = () => {
-    return 6;
+    return 7; // name, birthday, superpowers, workstyle, barriers, sharing, skills scan
   };
 
   const handleNext = () => {
@@ -288,6 +298,10 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       onboarding_complete: true,
       user_type: 'individual' as const,
       has_seen_welcome: true, // Mark as seen
+      ef_responses: data.efResponses,
+      ef_selected_pillars: data.efSelectedPillars,
+      ef_assessment_date: data.efResponses.length > 0 ? new Date().toISOString() : undefined,
+      ef_assessment_perspective: data.role === 'parent' ? 'observer' as const : 'individual' as const
     };
 
     try {
@@ -306,6 +320,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       case 1: return data.name.trim().length > 0;
       case 2: return data.birthday !== undefined;
       case 3: return data.superpowers.length > 0;
+      case 7: return data.efResponses.length === 8 && data.efSelectedPillars.length > 0; // All items answered and at least 1 pillar selected
       default: return true;
     }
   };
@@ -430,6 +445,19 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
               <h2 className="text-3xl font-semibold">Sharing and Support</h2>
               <p className="text-foreground-soft">
                 How would you like to share your progress with supporters?
+              </p>
+            </div>
+          )}
+          
+          {currentStep === 7 && (
+            <div className="space-y-2">
+              <h2 className="text-3xl font-semibold">
+                {data.role === 'parent' 
+                  ? "What skills feel hardest for them?" 
+                  : "What skills feel hardest for you?"}
+              </h2>
+              <p className="text-sm text-black">
+                This helps us suggest goals and support that match {data.role === 'parent' ? 'their' : 'your'} needs
               </p>
             </div>
           )}
@@ -830,6 +858,29 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
                 <div className="text-sm text-muted-foreground">Supporters see detailed progress</div>
               </div>
             </div>
+          )}
+          
+          {/* Step 7: Skills Scan */}
+          {currentStep === 7 && (
+            <SkillsScanStep
+              role={data.role}
+              responses={data.efResponses}
+              selectedPillars={data.efSelectedPillars}
+              priorities={data.efPriorities}
+              onResponsesChange={(responses, priorities) => {
+                setData(prev => ({
+                  ...prev,
+                  efResponses: responses,
+                  efPriorities: priorities
+                }));
+              }}
+              onPillarsChange={(pillars) => {
+                setData(prev => ({
+                  ...prev,
+                  efSelectedPillars: pillars
+                }));
+              }}
+            />
           )}
         </div>
       </div>
