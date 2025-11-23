@@ -8,6 +8,8 @@ import { GoalsWizard } from "../lunebeam/goals-wizard";
 import { RedesignedGoalsWizard } from "../lunebeam/redesigned-goals-wizard";
 import { GoalProposalsView } from "../lunebeam/goal-proposals-view";
 import { SupporterGoalWizard } from "../lunebeam/supporter-goal-wizard";
+import { GoalCreationChoiceModal } from "../lunebeam/goal-creation-choice-modal";
+import { QuickGoalFlow } from "../lunebeam/quick-goal-flow";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +18,7 @@ import { NotificationBadge } from "../lunebeam/notification-badge";
 import { useStore } from "../../store/useStore";
 import { getSupporterContext } from "@/utils/supporterUtils";
 import { supabase } from "@/integrations/supabase/client";
+import { database } from "@/services/database";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 type GoalsView =
   | "list"
@@ -48,6 +51,10 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
   const [activeTab, setActiveTab] = useState<"own" | "individual">("own");
   const [supporterContext, setSupporterContext] = useState<any>(null);
   const [activeGoalsCount, setActiveGoalsCount] = useState(0);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [showQuickFlow, setShowQuickFlow] = useState(false);
+  const [userEfPillars, setUserEfPillars] = useState<string[]>([]);
+  const [hasEfData, setHasEfData] = useState(false);
   const { userContext } = useStore();
 
   // Get supporter context for supporters and hybrids
@@ -68,6 +75,24 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
       getCurrentUser();
     }
   }, [userContext]);
+
+  // Load user's EF data on mount
+  useEffect(() => {
+    const loadUserEfData = async () => {
+      try {
+        const profile = await database.getProfile();
+        if (profile?.ef_selected_pillars && profile.ef_selected_pillars.length > 0) {
+          setUserEfPillars(profile.ef_selected_pillars);
+          setHasEfData(true);
+        } else {
+          setHasEfData(false);
+        }
+      } catch (error) {
+        console.error("Error loading EF data:", error);
+      }
+    };
+    loadUserEfData();
+  }, []);
 
   // Load active goals count for badge
   useEffect(() => {
@@ -116,7 +141,18 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
         onWizardStateChange?.(false);
         break;
       case "create-goal":
+        // Show choice modal instead of directly opening wizard
+        setShowChoiceModal(true);
+        onWizardStateChange?.(false);
+        break;
+      case "quick-goal":
+        setShowQuickFlow(true);
+        setShowChoiceModal(false);
+        onWizardStateChange?.(true);
+        break;
+      case "advanced-goal":
         setCurrentView("create-wizard");
+        setShowChoiceModal(false);
         onWizardStateChange?.(true);
         break;
       case "view-proposals":
@@ -154,6 +190,23 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
     onWizardStateChange?.(false);
   };
   const renderCurrentView = () => {
+    // Show quick flow if active
+    if (showQuickFlow) {
+      return (
+        <QuickGoalFlow
+          efSelectedPillars={userEfPillars}
+          onComplete={(goalData) => {
+            setShowQuickFlow(false);
+            handleWizardGoalCreated(goalData);
+          }}
+          onCancel={() => {
+            setShowQuickFlow(false);
+            onWizardStateChange?.(false);
+          }}
+        />
+      );
+    }
+
     switch (currentView) {
       case "detail":
         return selectedGoalId ? (
@@ -238,7 +291,8 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
     currentView === "create-wizard" ||
     currentView === "create-wizard-supporter" ||
     currentView === "supporter-wizard" ||
-    currentView === "wizard";
+    currentView === "wizard" ||
+    showQuickFlow;
 
   // Show tabs for supporters and hybrids (but not in wizard views)
   const showTabs =
@@ -285,6 +339,15 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
   }
   return (
     <div className="min-h-[100dvh] bg-background" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4rem)" }}>
+      {/* Goal Creation Choice Modal */}
+      <GoalCreationChoiceModal
+        open={showChoiceModal}
+        onClose={() => setShowChoiceModal(false)}
+        onSelectQuickGoal={() => handleNavigate("quick-goal")}
+        onSelectAdvancedGoal={() => handleNavigate("advanced-goal")}
+        hasEfData={hasEfData}
+      />
+
       {/* Header - hidden during wizard */}
       {!isWizardView && (
         <div
@@ -294,7 +357,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">Goals</h1>
-              {activeGoalsCount > 0}
+              {activeGoalsCount > 0 && <Badge variant="secondary">{activeGoalsCount}</Badge>}
             </div>
             {onNavigateToNotifications && <NotificationBadge onNavigateToNotifications={onNavigateToNotifications} />}
           </div>
