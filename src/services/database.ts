@@ -62,7 +62,11 @@ export const database = {
       claimed_at: data.claimed_at,
       created_at: data.created_at,
       updated_at: data.updated_at,
-      avatar_url: data.avatar_url
+      avatar_url: data.avatar_url,
+      ef_responses: (data as any).ef_responses,
+      ef_selected_pillars: (data as any).ef_selected_pillars,
+      ef_assessment_date: (data as any).ef_assessment_date,
+      ef_assessment_perspective: (data as any).ef_assessment_perspective
     };
   },
 

@@ -58,11 +58,15 @@ interface FlowData {
 interface GoalCreationFlowV2Props {
   onComplete?: () => void;
   onExit?: () => void;
+  draftGoalId?: string;
+  mode?: 'full' | 'lite';
 }
 
 export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
   onComplete,
-  onExit
+  onExit,
+  draftGoalId,
+  mode = 'full'
 }) => {
   const [currentStep, setCurrentStep] = useState('greeting');
   const [flowData, setFlowData] = useState<FlowData>({});
@@ -107,6 +111,29 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
       }
     }
   }, []);
+
+  // Load draft goal if in lite mode
+  useEffect(() => {
+    if (draftGoalId && mode === 'lite') {
+      const loadDraft = async () => {
+        try {
+          const goal = await goalsService.getGoal(draftGoalId);
+          const metadata = goal.metadata || {};
+          
+          setFlowData({
+            goal_title: goal.title,
+            timeframe: metadata.timeframe || 'mid_term',
+          });
+          
+          // Skip greeting, start at timeframe confirmation
+          setCurrentStep('goal_type_selection');
+        } catch (error) {
+          console.error('Failed to load draft goal:', error);
+        }
+      };
+      loadDraft();
+    }
+  }, [draftGoalId, mode]);
 
   const updateFlowData = (key: keyof FlowData, value: any) => {
     setFlowData(prev => ({ ...prev, [key]: value }));
@@ -261,36 +288,42 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
     }
   };
 
-  const renderGreeting = () => (
-    <Card className="p-6 space-y-4">
-      <div className="space-y-3">
-        <h2 className="text-xl font-semibold">Welcome back 👋</h2>
-        <p className="text-muted-foreground">
-          Let's set up your goal in a few quick steps. You can exit anytime — I'll save your progress.
-        </p>
-        
-        {/* Owner Selection */}
-        <OwnerSelector
-          owners={owners}
-          selectedOwnerId={selectedOwnerId}
-          onOwnerChange={setSelectedOwnerId}
-          alwaysShow={showOwnerSelector}
-        />
-      </div>
-      <div className="flex gap-2">
-        <Button 
-          onClick={() => setCurrentStep('goal_entry')} 
-          className="flex-1"
-          disabled={!selectedOwnerId}
-        >
-          Let's start
-        </Button>
-        <Button variant="outline" onClick={handleExit} size="icon">
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-    </Card>
-  );
+  const renderGreeting = () => {
+    const isLiteMode = mode === 'lite';
+    const title = isLiteMode ? "Let's set up your goal" : "Welcome back 👋";
+    const subtitle = isLiteMode 
+      ? `We'll help you break down: "${flowData.goal_title}"`
+      : "Let's set up your goal in a few quick steps. You can exit anytime — I'll save your progress.";
+
+    return (
+      <Card className="p-6 space-y-4">
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold">{title}</h2>
+          <p className="text-muted-foreground">{subtitle}</p>
+          
+          {/* Owner Selection */}
+          <OwnerSelector
+            owners={owners}
+            selectedOwnerId={selectedOwnerId}
+            onOwnerChange={setSelectedOwnerId}
+            alwaysShow={showOwnerSelector}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setCurrentStep('goal_entry')} 
+            className="flex-1"
+            disabled={!selectedOwnerId}
+          >
+            Let's start
+          </Button>
+          <Button variant="outline" onClick={handleExit} size="icon">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </Card>
+    );
+  };
 
   const renderGoalEntry = () => {
     const [localTitle, setLocalTitle] = useState(flowData.goal_title || '');
