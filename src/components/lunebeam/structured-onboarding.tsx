@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Lottie from 'lottie-react';
 import { SkillsScanStep } from './skills-scan-step';
 import type { EfPriorityArea } from '@/ef/efScoring';
+import { GoalIntentStep } from './goal-intent-step';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
@@ -19,6 +20,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { AIService } from '@/services/aiService';
 import { X, Loader2, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { getPillarInfo, type EfPillarId } from '@/ef/efModel';
+import { goalsService } from '@/services/goalsService';
 import { cn } from '@/lib/utils';
 import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
 
@@ -48,6 +51,15 @@ interface OnboardingData {
   efResponses: Array<{ itemId: string; value: number }>;
   efSelectedPillars: string[];
   efPriorities: EfPriorityArea[];
+  
+  // Goal Intent fields
+  goalIntent?: {
+    title: string;
+    templateId?: string;
+    timeframe: 'short_term' | 'mid_term' | 'long_term';
+    focusAreas: string[];
+    draftGoalId?: string;
+  };
 }
 
 interface StructuredOnboardingProps {
@@ -101,9 +113,10 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       shareScope: 'private',
       supportStyle: 'gentle-reminders'
     },
-    efResponses: [],
-    efSelectedPillars: [],
-    efPriorities: []
+  efResponses: [],
+  efSelectedPillars: [],
+  efPriorities: [],
+  goalIntent: undefined
   });
   const [customSuperpower, setCustomSuperpower] = useState('');
   const [customInterest, setCustomInterest] = useState('');
@@ -118,11 +131,54 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const { completeOnboarding, setProfile } = useStore();
 
   const getTotalSteps = () => {
-    return 7; // name, birthday, superpowers, workstyle, barriers, sharing, skills scan
+    return 9; // name, birthday, superpowers, workstyle, barriers, sharing, skills scan, goal intent, confirmation
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const totalSteps = getTotalSteps();
+    
+    // If at step 8 with goal intent, create draft goal before moving to step 9
+    if (currentStep === 8 && data.goalIntent) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.error('No user found');
+          return;
+        }
+        
+        const goal = await goalsService.createGoal({
+          title: data.goalIntent.title,
+          description: `Created during onboarding. Focus areas: ${data.goalIntent.focusAreas.join(', ')}`,
+          priority: 'medium',
+          owner_id: user.id,
+          domain: 'other'
+        });
+        
+        // Update goal with EF metadata
+        await supabase
+          .from('goals')
+          .update({
+            metadata: {
+              created_via: 'onboarding_quickintent',
+              ef_focus_areas: data.goalIntent.focusAreas,
+              template_id: data.goalIntent.templateId,
+              needs_full_setup: true
+            }
+          })
+          .eq('id', goal.id);
+          
+        setData(prev => ({
+          ...prev,
+          goalIntent: { ...prev.goalIntent!, draftGoalId: goal.id }
+        }));
+        
+        setCurrentStep(9);
+        return;
+      } catch (error) {
+        console.error('Failed to create draft goal:', error);
+      }
+    }
+    
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -320,7 +376,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       case 1: return data.name.trim().length > 0;
       case 2: return data.birthday !== undefined;
       case 3: return data.superpowers.length > 0;
-      case 7: return data.efResponses.length === 8 && data.efSelectedPillars.length > 0; // All items answered and at least 1 pillar selected
+      case 7: return data.efResponses.length === 8 && data.efSelectedPillars.length > 0;
+      case 8: return data.goalIntent && data.goalIntent.title.trim().length > 0 && data.goalIntent.timeframe;
       default: return true;
     }
   };
@@ -458,6 +515,24 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
               </h2>
               <p className="text-sm text-black">
                 This helps us suggest goals and support that match {data.role === 'parent' ? 'their' : 'your'} needs
+              </p>
+            </div>
+          )}
+          
+          {currentStep === 8 && (
+            <div className="space-y-2">
+              <h2 className="text-3xl font-semibold">Pick one thing to make easier</h2>
+              <p className="text-sm text-black">
+                Based on your scan, here are some goals that might help in the next few weeks
+              </p>
+            </div>
+          )}
+          
+          {currentStep === 9 && (
+            <div className="space-y-2">
+              <h2 className="text-3xl font-semibold">You are all set! 🎉</h2>
+              <p className="text-sm text-black">
+                Ready to start working on your goal
               </p>
             </div>
           )}
@@ -881,6 +956,60 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
                 }));
               }}
             />
+          )}
+          
+          {/* Step 8: Goal Intent */}
+          {currentStep === 8 && (
+            <GoalIntentStep
+              selectedPillars={data.efSelectedPillars}
+              onGoalSelected={(goalData) => {
+                setData(prev => ({
+                  ...prev,
+                  goalIntent: goalData
+                }));
+              }}
+              onSkip={() => {
+                setData(prev => ({
+                  ...prev,
+                  goalIntent: undefined
+                }));
+                handleNext();
+              }}
+            />
+          )}
+          
+          {/* Step 9: Confirmation */}
+          {currentStep === 9 && data.goalIntent && (
+            <Card className="p-6 space-y-4">
+              <div className="space-y-3">
+                <p className="text-lg">
+                  We will start with: <strong>{data.goalIntent.title}</strong>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm text-muted-foreground">Focused on:</span>
+                  {data.goalIntent.focusAreas.map((pillarId) => {
+                    const pillarInfo = getPillarInfo(pillarId as EfPillarId);
+                    return (
+                      <Badge key={pillarId} variant="secondary">
+                        {pillarInfo.label}
+                      </Badge>
+                    );
+                  })}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  We will help you break this down into small, manageable steps you can actually do.
+                </p>
+              </div>
+              
+              <div className="space-y-2 pt-4">
+                <Button onClick={handleComplete} className="w-full">
+                  Finish setup - let's get started! 🚀
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  You can refine your goal and add more details later
+                </p>
+              </div>
+            </Card>
           )}
         </div>
       </div>
