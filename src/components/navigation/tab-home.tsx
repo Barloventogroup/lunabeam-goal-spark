@@ -29,6 +29,8 @@ import { PointsDisplay } from "../lunebeam/points-display";
 import { FirstTimeReminder } from "../lunebeam/first-time-reminder";
 import { TodaysFocusCard } from "../lunebeam/todays-focus-card";
 import { RecommendedStepsList } from "../lunebeam/recommended-steps-list";
+import { CompleteGoalSetupPrompt } from "../lunebeam/complete-goal-setup-prompt";
+import { GoalSetupConfirmationModal } from "../lunebeam/goal-setup-confirmation-modal";
 import { useStore } from "../../store/useStore";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "../../integrations/supabase/client";
@@ -62,6 +64,9 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [goalsLoaded, setGoalsLoaded] = useState(false);
   const [showMissedStepsCard, setShowMissedStepsCard] = useState(true);
+  const [showSetupModal, setShowSetupModal] = useState(false);
+  const [showGoalWizard, setShowGoalWizard] = useState(false);
+  const [setupPromptDismissed, setSetupPromptDismissed] = useState(false);
   const [stepsData, setStepsData] = useState<{
     todaysSteps: any[];
     overdueSteps: any[];
@@ -110,6 +115,17 @@ export const TabHome: React.FC<TabHomeProps> = ({
       sessionStorage.removeItem('onboarding-just-completed'); // Clear flag
     }
   }, [user, loadProfile, loadGoals, refetchGoals, loadPoints]);
+
+  // Check for dismissed setup prompts
+  useEffect(() => {
+    const goalsNeedingSetup = goalsFromQuery.filter(
+      g => g.metadata?.needs_full_setup === true && g.status === 'planned'
+    );
+    if (goalsNeedingSetup.length > 0) {
+      const dismissed = localStorage.getItem(`goal-setup-dismissed-${goalsNeedingSetup[0].id}`);
+      setSetupPromptDismissed(!!dismissed);
+    }
+  }, [goalsFromQuery]);
 
   // Sync React Query goals with Zustand store
   useEffect(() => {
@@ -387,6 +403,27 @@ export const TabHome: React.FC<TabHomeProps> = ({
     }
   };
 
+  const handleDismissSetup = (goalId: string) => {
+    localStorage.setItem(`goal-setup-dismissed-${goalId}`, 'true');
+    setSetupPromptDismissed(true);
+  };
+
+  const handleStartSetup = () => {
+    setShowSetupModal(true);
+  };
+
+  const handleConfirmSetup = () => {
+    setShowSetupModal(false);
+    setShowGoalWizard(true);
+  };
+
+  const handleWizardComplete = async () => {
+    setShowGoalWizard(false);
+    // Refresh goals list
+    loadGoals();
+    refetchGoals();
+  };
+
   return (
     <>
       {currentView === "rewards" && (
@@ -502,8 +539,27 @@ export const TabHome: React.FC<TabHomeProps> = ({
             </Card>
           )}
 
-          {/* First Time User Reminder */}
-          {isFirstTime && <FirstTimeReminder onNavigateToGoals={() => setCurrentView("add-goal")} />}
+          {/* Complete goal setup prompt or first time user reminder */}
+          {(() => {
+            const goalsNeedingSetup = goalsFromQuery.filter(
+              g => g.metadata?.needs_full_setup === true && g.status === 'planned'
+            );
+            const incompleteGoal = goalsNeedingSetup[0];
+
+            if (incompleteGoal && !setupPromptDismissed) {
+              return (
+                <CompleteGoalSetupPrompt
+                  goal={incompleteGoal}
+                  userName={displayName}
+                  onStartSetup={handleStartSetup}
+                  onDismiss={() => handleDismissSetup(incompleteGoal.id)}
+                />
+              );
+            } else if (isFirstTime) {
+              return <FirstTimeReminder onNavigateToGoals={() => setCurrentView("add-goal")} />;
+            }
+            return null;
+          })()}
 
           {/* Today's Focus Card - Always show */}
           {isLoadingSteps ? (
@@ -543,6 +599,44 @@ export const TabHome: React.FC<TabHomeProps> = ({
           weekOf={new Date().toISOString().split("T")[0]}
         />
       )}
+
+      {/* Goal Setup Confirmation Modal */}
+      {(() => {
+        const goalsNeedingSetup = goalsFromQuery.filter(
+          g => g.metadata?.needs_full_setup === true && g.status === 'planned'
+        );
+        const incompleteGoal = goalsNeedingSetup[0];
+
+        return (
+          <>
+            <GoalSetupConfirmationModal
+              isOpen={showSetupModal}
+              onClose={() => setShowSetupModal(false)}
+              onConfirm={handleConfirmSetup}
+              goalTitle={incompleteGoal?.title || ''}
+            />
+
+            {showGoalWizard && incompleteGoal && (
+              <div className="fixed inset-0 z-50 bg-background">
+                <RedesignedGoalsWizard
+                  onComplete={handleWizardComplete}
+                  onCancel={() => setShowGoalWizard(false)}
+                  prefillGoalId={incompleteGoal.id}
+                  prefillData={{
+                    title: incompleteGoal.title,
+                    category: incompleteGoal.domain,
+                    timeframe: incompleteGoal.metadata?.timeframe as string | undefined,
+                    ef_focus_areas: incompleteGoal.metadata?.ef_focus_areas as string[] | undefined,
+                    template_id: incompleteGoal.metadata?.template_id as string | undefined,
+                    frequency_per_week: incompleteGoal.frequency_per_week || undefined,
+                  }}
+                  isSupporter={false}
+                />
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {/* Step Detail Drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
