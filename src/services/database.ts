@@ -51,6 +51,8 @@ export const database = {
       user_id: data.user_id,
       first_name: data.first_name,
       email: data.email,
+      birthday: data.birthday,
+      metadata: data.metadata as any,
       strengths: data.strengths || [],
       interests: data.interests || [],
       challenges: data.challenges || [],
@@ -81,6 +83,8 @@ export const database = {
       .upsert({
         user_id: user.id,
         first_name: profile.first_name,
+        birthday: profile.birthday,
+        metadata: profile.metadata,
         strengths: profile.strengths,
         interests: profile.interests,
         challenges: profile.challenges,

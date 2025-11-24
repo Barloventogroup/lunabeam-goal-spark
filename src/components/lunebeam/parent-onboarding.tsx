@@ -63,7 +63,7 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
   const [customPronouns, setCustomPronouns] = useState('');
   const [birthdayDrawerOpen, setBirthdayDrawerOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const { completeOnboarding, setProfile } = useStore();
+  const { completeOnboarding, setProfile, refreshProfile, loadGoals } = useStore();
 
   const totalSteps = 6;
 
@@ -170,10 +170,12 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
           .eq('id', goal.id);
       }
 
-      // Step 5: Update store and complete
-      await setProfile(adminProfile as any);
+      // Step 5: Refresh profile and goals to get latest data
+      await refreshProfile();
+      await loadGoals();
+
+      // Step 6: Complete onboarding and navigate
       await completeOnboarding();
-      
       onComplete?.();
       
     } catch (error) {

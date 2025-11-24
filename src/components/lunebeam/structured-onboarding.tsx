@@ -50,7 +50,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   });
   const [birthdayDrawerOpen, setBirthdayDrawerOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const { completeOnboarding, setProfile } = useStore();
+  const { completeOnboarding, setProfile, refreshProfile, loadGoals } = useStore();
 
   const getTotalSteps = () => {
     return 5; // name, birthday, skills scan, goal intent, confirmation
@@ -102,13 +102,16 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
         onboarding_complete: true
       };
 
-      await supabase
+      const { error: profileError } = await supabase
         .from('profiles')
         .update(profileData)
         .eq('user_id', user.id);
 
-      // Update store profile
-      await setProfile(profileData as any);
+      if (profileError) {
+        console.error('Failed to save profile:', profileError);
+        toast.error('Failed to save your profile');
+        return;
+      }
 
       // Create goal if one was selected
       if (data.goalIntent) {
@@ -133,6 +136,10 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           })
           .eq('id', goal.id);
       }
+
+      // Refresh profile and goals to get latest data
+      await refreshProfile();
+      await loadGoals();
 
       // Complete onboarding and navigate to home
       await completeOnboarding();
