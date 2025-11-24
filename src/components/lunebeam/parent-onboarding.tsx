@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { SkillsScanStep } from './skills-scan-step';
-import { GoalIntentStep } from './goal-intent-step';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
@@ -16,7 +15,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { X, CalendarIcon, Check, Rocket } from 'lucide-react';
 import { format } from 'date-fns';
 import { EfPillarId } from '@/ef/efModel';
-import { goalsService } from '@/services/goalsService';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
@@ -28,14 +26,6 @@ interface ParentOnboardingData {
   
   // EF Challenge Areas (simplified for onboarding)
   ef_selected_pillars: EfPillarId[];
-  
-  // Goal Intent fields
-  goalIntent?: {
-    title: string;
-    templateId?: string;
-    timeframe: 'short_term' | 'mid_term' | 'long_term';
-    focusAreas: string[];
-  };
 }
 
 interface ParentOnboardingProps {
@@ -57,15 +47,14 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
     preferred_name: '',
     pronouns: '',
     birthday: undefined,
-    ef_selected_pillars: [],
-    goalIntent: undefined
+    ef_selected_pillars: []
   });
   const [customPronouns, setCustomPronouns] = useState('');
   const [birthdayDrawerOpen, setBirthdayDrawerOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const { completeOnboarding, setProfile, refreshProfile, loadGoals } = useStore();
 
-  const totalSteps = 6;
+  const totalSteps = 5;
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -145,40 +134,13 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
         } as any)
         .eq('user_id', individualUserId);
 
-      // Step 4: Create goal for individual (if selected)
-      if (data.goalIntent) {
-        const goal = await goalsService.createGoal({
-          title: data.goalIntent.title,
-          description: '',
-          priority: 'medium',
-          owner_id: individualUserId,
-          domain: 'other',
-          frequency_per_week: 3
-        });
-
-        await supabase
-          .from('goals')
-          .update({
-            metadata: {
-              created_via: 'onboarding_quickintent',
-              ef_focus_areas: data.ef_selected_pillars,
-              template_id: data.goalIntent.templateId,
-              timeframe: data.goalIntent.timeframe,
-              needs_full_setup: true,
-              created_by_supporter: true
-            }
-          })
-          .eq('id', goal.id);
-      }
-
-      // Step 5: Refresh profile and goals to get latest data
+      // Step 4: Refresh profile to get latest data
       await refreshProfile();
-      await loadGoals();
 
       // Wait longer for state updates to propagate to ALL components
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // Step 6: Complete onboarding and navigate
+      // Step 5: Complete onboarding and navigate
       await completeOnboarding();
       onComplete?.();
       
@@ -196,10 +158,7 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
       case 2: return !!data.pronouns;
       case 3: return !!data.birthday;
       case 4: return data.ef_selected_pillars.length > 0;
-      case 5: 
-        return data.goalIntent?.title 
-          && data.goalIntent?.timeframe;
-      case 6: return true;
+      case 5: return true;
       default: return false;
     }
   };
@@ -260,17 +219,6 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
           )}
           
           {currentStep === 5 && (
-            <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">
-                Pick one goal for {data.preferred_name}
-              </h2>
-              <p className="text-foreground-soft">
-                Let's start with something to work on in the next few weeks.
-              </p>
-            </div>
-          )}
-          
-          {currentStep === 6 && (
             <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-6 text-center">
               <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
                 <Check className="w-10 h-10 text-primary" />
@@ -377,17 +325,6 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
               }}
             />
           )}
-          
-          {currentStep === 5 && (
-            <GoalIntentStep
-              selectedPillars={data.ef_selected_pillars}
-              onGoalSelected={(goal) => {
-                setData({ ...data, goalIntent: goal });
-                handleNext();
-              }}
-              onSkip={() => handleNext()}
-            />
-          )}
         </div>
       </div>
       
@@ -395,11 +332,11 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
       <div className="min-h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)] pb-safe-only">
         <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
         <div className="flex items-center gap-4 flex-1 justify-end">
-          {currentStep > 1 && currentStep < 6 && (
+          {currentStep > 1 && currentStep < 5 && (
             <BackButton onClick={handleBack} variant="text" />
           )}
           
-          {currentStep < 6 && (
+          {currentStep < 5 && (
             <>
               <Progress value={progressPercentage} className="flex-1 max-w-[200px]" />
               <Button 
@@ -411,7 +348,7 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
             </>
           )}
           
-          {currentStep === 6 && (
+          {currentStep === 5 && (
             <Button 
               onClick={handleComplete} 
               disabled={isCreating}
