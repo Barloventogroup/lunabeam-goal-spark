@@ -13,7 +13,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
-import { X, CalendarIcon, Check } from 'lucide-react';
+import { X, CalendarIcon, Check, Rocket } from 'lucide-react';
 import { format } from 'date-fns';
 import { EfPillarId } from '@/ef/efModel';
 import { goalsService } from '@/services/goalsService';
@@ -130,10 +130,12 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
         throw new Error('Failed to create individual profile');
       }
 
-      // Step 3: Save EF data to individual's profile (using any for metadata)
+      // Step 3: Save EF data and birthday to individual's profile
       await supabase
         .from('profiles')
         .update({
+          first_name: data.preferred_name,
+          birthday: data.birthday?.toISOString().split('T')[0],
           metadata: {
             ef_selected_pillars: data.ef_selected_pillars,
             ef_selection_date: new Date().toISOString(),
@@ -407,9 +409,12 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
             <Button 
               onClick={handleComplete} 
               disabled={isCreating}
-              size="lg"
             >
-              {isCreating ? 'Setting up...' : "Let's Go!"}
+              {isCreating ? 'Setting up...' : (
+                <>
+                  Let's Go! <Rocket className="ml-1 h-5 w-5" />
+                </>
+              )}
             </Button>
           )}
         </div>
