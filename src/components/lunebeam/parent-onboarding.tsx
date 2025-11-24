@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { SkillsScanStep } from './skills-scan-step';
-import type { EfPriorityArea } from '@/ef/efScoring';
 import { GoalIntentStep } from './goal-intent-step';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,7 @@ import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { X, CalendarIcon, Check } from 'lucide-react';
 import { format } from 'date-fns';
-import { EF_ITEM_BANK } from '@/ef/efModel';
+import { EfPillarId } from '@/ef/efModel';
 import { goalsService } from '@/services/goalsService';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -27,10 +26,8 @@ interface ParentOnboardingData {
   pronouns: string;
   birthday: Date | undefined;
   
-  // EF Assessment fields
-  ef_responses: Array<{ itemId: string; value: number }>;
-  ef_selected_pillars: string[];
-  ef_priorities: EfPriorityArea[];
+  // EF Challenge Areas (simplified for onboarding)
+  ef_selected_pillars: EfPillarId[];
   
   // Goal Intent fields
   goalIntent?: {
@@ -60,9 +57,7 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
     preferred_name: '',
     pronouns: '',
     birthday: undefined,
-    ef_responses: [],
     ef_selected_pillars: [],
-    ef_priorities: [],
     goalIntent: undefined
   });
   const [customPronouns, setCustomPronouns] = useState('');
@@ -140,10 +135,10 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
         .from('profiles')
         .update({
           metadata: {
-            ef_responses: data.ef_responses,
             ef_selected_pillars: data.ef_selected_pillars,
-            ef_assessment_date: new Date().toISOString(),
-            ef_assessment_perspective: 'parent'
+            ef_selection_date: new Date().toISOString(),
+            ef_selection_source: 'onboarding_triage',
+            ef_selection_perspective: 'parent'
           }
         } as any)
         .eq('user_id', individualUserId);
@@ -192,9 +187,7 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
       case 1: return data.preferred_name.trim().length > 0;
       case 2: return !!data.pronouns;
       case 3: return !!data.birthday;
-      case 4: 
-        return data.ef_responses.length === EF_ITEM_BANK.length 
-          && data.ef_selected_pillars.length > 0;
+      case 4: return data.ef_selected_pillars.length > 0;
       case 5: 
         return data.goalIntent?.title 
           && data.goalIntent?.timeframe;
@@ -250,10 +243,10 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
           {currentStep === 4 && (
             <div className="space-y-2">
               <h2 className="text-3xl font-semibold">
-                What skills feel hardest for {data.preferred_name}?
+                What seems hardest for {data.preferred_name} right now?
               </h2>
               <p className="text-foreground-soft">
-                This helps us suggest the right goals and support for them.
+                Pick up to 3 areas that feel like they cause the most friction day to day. You can change this later.
               </p>
             </div>
           )}
@@ -370,16 +363,7 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
             <SkillsScanStep
               role="parent"
               individualName={data.preferred_name}
-              responses={data.ef_responses}
               selectedPillars={data.ef_selected_pillars}
-              priorities={data.ef_priorities}
-              onResponsesChange={(responses, priorities) => {
-                setData({
-                  ...data,
-                  ef_responses: responses,
-                  ef_priorities: priorities
-                });
-              }}
               onPillarsChange={(pillars) => {
                 setData({ ...data, ef_selected_pillars: pillars });
               }}

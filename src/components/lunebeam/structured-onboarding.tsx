@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { SkillsScanStep } from './skills-scan-step';
-import type { EfPriorityArea } from '@/ef/efScoring';
 import { GoalIntentStep } from './goal-intent-step';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
@@ -12,7 +11,7 @@ import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
 import { X, CalendarIcon, Check } from 'lucide-react';
 import { format } from 'date-fns';
-import { EF_ITEM_BANK } from '@/ef/efModel';
+import { EfPillarId } from '@/ef/efModel';
 import { goalsService } from '@/services/goalsService';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -22,10 +21,8 @@ interface OnboardingData {
   first_name: string;
   birthday: Date | undefined;
   
-  // EF Assessment fields
-  ef_responses: Array<{ itemId: string; value: number }>;
-  ef_selected_pillars: string[];
-  ef_priorities: EfPriorityArea[];
+  // EF Challenge Areas (simplified for onboarding)
+  ef_selected_pillars: EfPillarId[];
   
   // Goal Intent fields
   goalIntent?: {
@@ -48,9 +45,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
   const [data, setData] = useState<OnboardingData>({
     first_name: '',
     birthday: undefined,
-    ef_responses: [],
     ef_selected_pillars: [],
-    ef_priorities: [],
     goalIntent: undefined
   });
   const [birthdayDrawerOpen, setBirthdayDrawerOpen] = useState(false);
@@ -98,10 +93,11 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
         interests: [],
         challenges: [],
         comm_pref: 'text' as const,
-        ef_responses: data.ef_responses,
-        ef_selected_pillars: data.ef_selected_pillars,
-        ef_assessment_date: new Date().toISOString(),
-        ef_assessment_perspective: 'self' as const,
+        metadata: {
+          ef_selected_pillars: data.ef_selected_pillars,
+          ef_selection_date: new Date().toISOString(),
+          ef_selection_source: 'onboarding_triage'
+        },
         onboarding_complete: true
       };
 
@@ -153,9 +149,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
     switch (currentStep) {
       case 1: return data.first_name.trim().length > 0;
       case 2: return !!data.birthday;
-      case 3: 
-        return data.ef_responses.length === EF_ITEM_BANK.length 
-          && data.ef_selected_pillars.length > 0;
+      case 3: return data.ef_selected_pillars.length > 0;
       case 4: 
         return data.goalIntent?.title 
           && data.goalIntent?.timeframe;
@@ -201,9 +195,9 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           
           {currentStep === 3 && (
             <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">What skills feel hardest for you?</h2>
+              <h2 className="text-3xl font-semibold">What feels hardest right now?</h2>
               <p className="text-sm text-black">
-                This quick scan helps us suggest the right goals and support.
+                Pick up to 3 areas that feel like they cause the most friction day to day. You can change this later.
               </p>
             </div>
           )}
@@ -291,16 +285,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           {currentStep === 3 && (
             <SkillsScanStep
               role="individual"
-              responses={data.ef_responses}
               selectedPillars={data.ef_selected_pillars}
-              priorities={data.ef_priorities}
-              onResponsesChange={(responses, priorities) => {
-                setData({
-                  ...data,
-                  ef_responses: responses,
-                  ef_priorities: priorities
-                });
-              }}
               onPillarsChange={(pillars) => {
                 setData({ ...data, ef_selected_pillars: pillars });
               }}
