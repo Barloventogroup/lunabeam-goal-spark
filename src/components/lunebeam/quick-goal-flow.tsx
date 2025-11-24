@@ -97,7 +97,11 @@ export function QuickGoalFlow({
       <GoalCreationFlowV2
         draftGoalId={draftGoalId}
         mode="lite"
-        onComplete={() => onComplete({ goalId: draftGoalId })}
+        onComplete={(createdGoalId) => {
+          const finalGoalId = createdGoalId || draftGoalId;
+          console.log('[QuickGoalFlow] Completing with goalId:', finalGoalId);
+          onComplete({ goalId: finalGoalId });
+        }}
         onExit={onCancel}
       />
     );
