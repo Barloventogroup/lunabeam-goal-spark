@@ -31,6 +31,7 @@ export default function Auth() {
   const [signingOut, setSigningOut] = useState(false);
   const [showLoginAnimation, setShowLoginAnimation] = useState(false);
   const pendingSignInRef = useRef(false);
+  const signupToastShownRef = useRef(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -209,17 +210,25 @@ useEffect(() => {
         if (error) {
           toast.error(error.message);
         } else {
-          // Check if this is an account claim process
-          if (claimToken) {
-            toast.success('Account created! Please check your email to verify your account, then return to complete setup.');
-            setIsSignUp(false);
-          } else if (isSupporterInvite) {
-            toast.success('Account created! You will be connected as a supporter after verification.');
-            setIsSignUp(false);
-          } else {
-            toast.success('Account created! Please check your email to verify your account.');
-            setIsSignUp(false);
+          // Only show toast once per signup attempt
+          if (!signupToastShownRef.current) {
+            signupToastShownRef.current = true;
+            
+            // Check if this is an account claim process
+            if (claimToken) {
+              toast.success('Account created! Please check your email to verify your account, then return to complete setup.');
+            } else if (isSupporterInvite) {
+              toast.success('Account created! You will be connected as a supporter after verification.');
+            } else {
+              toast.success('Account created! Please check your email to verify your account.');
+            }
+            
+            // Reset the ref after a delay to allow future signups
+            setTimeout(() => {
+              signupToastShownRef.current = false;
+            }, 5000);
           }
+          setIsSignUp(false);
         }
       } else {
         pendingSignInRef.current = true;
