@@ -30,7 +30,6 @@ import { FirstTimeReminder } from "../lunebeam/first-time-reminder";
 import { TodaysFocusCard } from "../lunebeam/todays-focus-card";
 import { RecommendedStepsList } from "../lunebeam/recommended-steps-list";
 import { CompleteGoalSetupPrompt } from "../lunebeam/complete-goal-setup-prompt";
-import { GoalSetupConfirmationModal } from "../lunebeam/goal-setup-confirmation-modal";
 import { useStore } from "../../store/useStore";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "../../integrations/supabase/client";
@@ -48,6 +47,7 @@ interface TabHomeProps {
   onOpenChat: () => void;
   onNavigateToGoals: (goalId?: string, stepId?: string) => void;
   onNavigateToNotifications: () => void;
+  onNavigateToGoal?: (goalId: string) => void;
 }
 
 type HomeView = "dashboard" | "rewards" | "checkin" | "add-goal" | "reward-bank";
@@ -57,6 +57,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
   onOpenChat,
   onNavigateToGoals,
   onNavigateToNotifications,
+  onNavigateToGoal,
 }) => {
   const [currentView, setCurrentView] = useState<HomeView>("dashboard");
   const [showCheckinModal, setShowCheckinModal] = useState(false);
@@ -64,7 +65,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [goalsLoaded, setGoalsLoaded] = useState(false);
   const [showMissedStepsCard, setShowMissedStepsCard] = useState(true);
-  const [showSetupModal, setShowSetupModal] = useState(false);
   const [showGoalWizard, setShowGoalWizard] = useState(false);
   const [setupPromptDismissed, setSetupPromptDismissed] = useState(false);
   const [stepsData, setStepsData] = useState<{
@@ -409,19 +409,25 @@ export const TabHome: React.FC<TabHomeProps> = ({
   };
 
   const handleStartSetup = () => {
-    setShowSetupModal(true);
-  };
-
-  const handleConfirmSetup = () => {
-    setShowSetupModal(false);
     setShowGoalWizard(true);
   };
 
-  const handleWizardComplete = async () => {
+  const handleWizardComplete = async (goalData: any) => {
     setShowGoalWizard(false);
+    
+    // Clear the dismissed state for this goal
+    if (goalData?.goalId) {
+      localStorage.removeItem(`goal-setup-dismissed-${goalData.goalId}`);
+    }
+    
     // Refresh goals list
-    loadGoals();
+    await loadGoals();
     refetchGoals();
+    
+    // Navigate to goal detail in Goals tab
+    if (goalData?.goalId && onNavigateToGoal) {
+      onNavigateToGoal(goalData.goalId);
+    }
   };
 
   return (
@@ -600,7 +606,7 @@ export const TabHome: React.FC<TabHomeProps> = ({
         />
       )}
 
-      {/* Goal Setup Confirmation Modal */}
+      {/* Goal Setup Wizard */}
       {(() => {
         const goalsNeedingSetup = goalsFromQuery.filter(
           g => g.metadata?.needs_full_setup === true && g.status === 'planned'
@@ -609,13 +615,6 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
         return (
           <>
-            <GoalSetupConfirmationModal
-              isOpen={showSetupModal}
-              onClose={() => setShowSetupModal(false)}
-              onConfirm={handleConfirmSetup}
-              goalTitle={incompleteGoal?.title || ''}
-            />
-
             {showGoalWizard && incompleteGoal && (
               <div className="fixed inset-0 z-50 bg-background">
                 <RedesignedGoalsWizard

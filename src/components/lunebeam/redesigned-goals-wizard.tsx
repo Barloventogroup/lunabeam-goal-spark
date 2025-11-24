@@ -777,6 +777,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   prefillGoalId,
   prefillData
 }) => {
+  console.log('RedesignedGoalsWizard prefillData:', prefillData);
+  console.log('Frequency from prefill:', prefillData?.frequency_per_week);
+
   const [currentStep, setCurrentStep] = useState<number | null>(null); // Start with null to indicate loading
   const [actuallySupportsAnyone, setActuallySupportsAnyone] = useState<boolean | null>(null);
   const [data, setData] = useState<WizardData>({
@@ -3967,7 +3970,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         
         {/* Current Step - fills remaining space */}
         <div className="flex-1 overflow-auto px-4 pb-24" style={{
-        paddingTop: '72px'
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 120px)'
       }}>
           {renderCurrentStep()}
         </div>
