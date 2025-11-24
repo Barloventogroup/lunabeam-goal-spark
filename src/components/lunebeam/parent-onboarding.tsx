@@ -152,7 +152,8 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
           description: '',
           priority: 'medium',
           owner_id: individualUserId,
-          domain: 'other'
+          domain: 'other',
+          frequency_per_week: 3
         });
 
         await supabase

@@ -120,7 +120,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           description: '',
           priority: 'medium',
           owner_id: user.id,
-          domain: 'other'
+          domain: 'other',
+          frequency_per_week: 3
         });
 
         await supabase
