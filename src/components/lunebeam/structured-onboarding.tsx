@@ -141,8 +141,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       await refreshProfile();
       await loadGoals();
 
-      // Wait for state updates to propagate to all components
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait longer for state updates to propagate to ALL components
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // Complete onboarding and navigate to home
       await completeOnboarding();

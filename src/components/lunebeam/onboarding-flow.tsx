@@ -60,9 +60,19 @@ export function OnboardingFlow() {
     setShowRoleSelection(false);
     setShowInterstitial(false);
   };
-  const handleOnboardingComplete = () => {
-    // Set flag to trigger post-onboarding animation
+  const handleOnboardingComplete = async () => {
+    console.log('OnboardingFlow: Onboarding complete, setting flag and reloading data');
+    
+    // Set flag for AppRouter
     sessionStorage.setItem('onboarding-just-completed', 'true');
+    
+    // Force reload of fresh data BEFORE navigation
+    await loadProfile();
+    
+    // Small delay to ensure state propagation
+    await new Promise(resolve => setTimeout(resolve, 150));
+    
+    console.log('OnboardingFlow: Data refreshed, navigating to home');
     navigate('/');
   };
   const handleExit = async () => {
