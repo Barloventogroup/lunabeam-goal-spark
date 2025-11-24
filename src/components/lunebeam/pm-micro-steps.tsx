@@ -605,9 +605,16 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
 
   const level = assessment?.calculatedLevel || 3;
   
-  // Use a sensible default target frequency based on skill level
-  const defaultTargetFreq = level <= 2 ? 3 : (level >= 4 ? 5 : 4);
+  // Use prefilled frequency if available, otherwise calculate based on skill level
+  const defaultTargetFreq = data.frequency || (level <= 2 ? 3 : (level >= 4 ? 5 : 4));
   const targetFreq = data.pmPracticePlan?.targetFrequency || defaultTargetFreq;
+  
+  console.log('PMStep9_PracticePlan - frequency initialization:', {
+    prefilledFrequency: data.frequency,
+    calculatedDefault: level <= 2 ? 3 : (level >= 4 ? 5 : 4),
+    finalDefault: defaultTargetFreq,
+    pmPracticePlanFrequency: data.pmPracticePlan?.targetFrequency
+  });
   
   const smartStartPlan = progressiveMasteryService.suggestStartFrequency(level, targetFreq);
   const smartStartFreq = smartStartPlan.suggested_initial;
@@ -676,7 +683,10 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
               </div>
               <div className="flex-1">
                 <p className="text-base font-semibold text-foreground mb-1">
-                  Recommended: {smartStartFreq}× per week
+                  {data.frequency 
+                    ? `Your goal: ${smartStartFreq}× per week`
+                    : `Recommended: ${smartStartFreq}× per week`
+                  }
                 </p>
                 <p className="text-base text-muted-foreground">
                   {smartStartPlan.rationale}

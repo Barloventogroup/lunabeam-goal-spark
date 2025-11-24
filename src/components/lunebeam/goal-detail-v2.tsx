@@ -36,10 +36,12 @@ const GoalCalendarView = lazy(() => import('./goal-calendar-view').then(m => ({
 interface GoalDetailV2Props {
   goalId: string;
   onBack: () => void;
+  initialTab?: 'summary' | 'steps' | 'calendar' | 'supporter';
 }
 export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
   goalId,
-  onBack
+  onBack,
+  initialTab = 'summary'
 }) => {
   // Use React Query hook for data fetching (Phase 1)
   const {
@@ -60,7 +62,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
     current: 0,
     total: 0
   });
-  const [activeTab, setActiveTab] = useState('summary');
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [substepDrawerTrigger, setSubstepDrawerTrigger] = useState<{ stepId: string; timestamp: number } | null>(null);
   const {
     toast
