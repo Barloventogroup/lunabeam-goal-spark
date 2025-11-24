@@ -45,6 +45,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
 }) => {
   const [currentView, setCurrentView] = useState<GoalsView>("list");
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [selectedGoalInitialTab, setSelectedGoalInitialTab] = useState<'summary' | 'steps' | 'calendar' | 'supporter'>('summary');
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [aiGoal, setAiGoal] = useState<any>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -122,6 +123,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
   useEffect(() => {
     if (initialGoalId) {
       setSelectedGoalId(initialGoalId);
+      setSelectedGoalInitialTab('summary'); // Default to summary when navigating from other tabs
       setCurrentView("detail");
       onWizardStateChange?.(false);
     }
@@ -137,6 +139,7 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
     switch (view) {
       case "goal-detail":
         setSelectedGoalId(data);
+        setSelectedGoalInitialTab('summary'); // Default to summary when navigating normally
         setCurrentView("detail");
         onWizardStateChange?.(false);
         break;
@@ -178,11 +181,14 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
     setCurrentView("summary");
   };
   const handleWizardGoalCreated = (goalData?: any) => {
+    console.log("Goal created or updated from wizard:", goalData);
     setRefreshTrigger((prev) => prev + 1);
 
-    // If goalId is provided, navigate to goal detail
+    // If goalId is provided, navigate to goal detail with steps tab active
     if (goalData?.goalId) {
-      handleNavigate("goal-detail", goalData.goalId);
+      setSelectedGoalId(goalData.goalId);
+      setSelectedGoalInitialTab('steps'); // Open to steps tab
+      setCurrentView("detail");
     } else {
       // Fallback to list view
       setCurrentView("list");
@@ -210,7 +216,14 @@ export const TabGoals: React.FC<TabGoalsProps> = ({
     switch (currentView) {
       case "detail":
         return selectedGoalId ? (
-          <GoalDetailV2 goalId={selectedGoalId} onBack={() => handleNavigate("goals-list")} />
+          <GoalDetailV2 
+            goalId={selectedGoalId} 
+            onBack={() => {
+              handleNavigate("goals-list");
+              setSelectedGoalInitialTab('summary'); // Reset to summary for next time
+            }}
+            initialTab={selectedGoalInitialTab}
+          />
         ) : (
           <GoalsList onNavigate={handleNavigate} refreshTrigger={refreshTrigger} />
         );

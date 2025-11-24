@@ -126,6 +126,11 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
               setYouTabInitialView('notifications');
               setActiveTab('you');
             }}
+            onNavigateToGoal={(goalId: string) => {
+              console.log('Navigating to goal detail:', goalId);
+              setActiveTab('goals');
+              setSelectedGoalId(goalId);
+            }}
           />;
       }
     }
@@ -144,6 +149,11 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
             setYouTabInitialView('notifications');
             setActiveTab('you');
           }}
+          onNavigateToGoal={(goalId: string) => {
+            console.log('Navigating to goal detail:', goalId);
+            setActiveTab('goals');
+            setSelectedGoalId(goalId);
+          }}
         />;
       case 'goals':
         return <TabGoals onWizardStateChange={setIsWizardActive} initialGoalId={selectedGoalId} triggerCreate={triggerCreateGoal} />;
@@ -159,6 +169,11 @@ export const BottomTabs: React.FC<BottomTabsProps> = ({
           onNavigateToNotifications={() => {
             setYouTabInitialView('notifications');
             setActiveTab('you');
+          }}
+          onNavigateToGoal={(goalId: string) => {
+            console.log('Navigating to goal detail:', goalId);
+            setActiveTab('goals');
+            setSelectedGoalId(goalId);
           }}
         />;
     }
