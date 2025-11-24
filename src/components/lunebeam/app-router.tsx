@@ -84,9 +84,30 @@ const AppRouter: React.FC = () => {
       
       // Determine variant based on the transition type
       if (justCompletedOnboarding) {
-        // User just finished onboarding → first_time experience for this transition
-        setEntryVariant('first_time');
-        console.log('AppRouter: Set variant to first_time (onboarding completed)');
+        console.log('AppRouter: Onboarding just completed, reloading data to determine variant');
+        
+        // Reload profile and goals to get fresh data
+        loadProfile();
+        const { loadGoals } = useStore.getState();
+        loadGoals();
+        
+        // Small delay to ensure data loads
+        setTimeout(() => {
+          // Get updated state
+          const currentProfile = useStore.getState().profile;
+          const currentGoals = useStore.getState().goals;
+          
+          // Determine variant based on actual goals
+          const activeGoalsCount = currentGoals.filter(g => g.status === 'active' || g.status === 'planned').length;
+          const variant = resolveEntryVariant({
+            onboardingComplete: currentProfile?.onboarding_complete || false,
+            goalsLoaded: true,
+            activeGoalsCount
+          });
+          
+          setEntryVariant(variant);
+          console.log('AppRouter: Entry variant after onboarding:', variant, 'Goals:', activeGoalsCount);
+        }, 100);
       }
       
       // Clear the flags immediately
