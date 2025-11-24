@@ -174,6 +174,9 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
       await refreshProfile();
       await loadGoals();
 
+      // Wait for state updates to propagate to all components
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       // Step 6: Complete onboarding and navigate
       await completeOnboarding();
       onComplete?.();
