@@ -111,11 +111,13 @@ interface ValidationResult {
 }
 
 // AI Configuration
-// Build: 2025-10-17T02:00:00Z - Increased timeout to 30s for reliable sync generation
+// Build: 2025-10-17T02:00:00Z - Fast timeout for OpenAI (5s), then Gemini fallback, 10s overall max
 const MAX_LOVABLE_ATTEMPTS = 2; // Lovable AI gets 2 fast attempts
 const MAX_OPENAI_ATTEMPTS = 1; // OpenAI gets 1 fallback attempt
 const AI_MODEL = 'gpt-5-mini-2025-08-07'; // Fast, cost-efficient GPT-5 variant
-const AI_TIMEOUT_MS = 30000; // 30 seconds per attempt (increased for reliable sync mode)
+const OPENAI_TIMEOUT_MS = 5000; // 5 seconds for OpenAI (fast failover to Gemini)
+const GEMINI_TIMEOUT_MS = 5000; // 5 seconds for Gemini attempts
+const OVERALL_FUNCTION_TIMEOUT_MS = 10000; // 10 seconds overall maximum
 
 // Dangerous Keywords Array (from requirements section 5.1)
 const dangerousKeywords = [
@@ -771,7 +773,7 @@ async function callAIWithRetry(
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+    const timeoutId = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -830,7 +832,7 @@ async function callAIWithRetry(
     const attemptDuration = Date.now() - attemptStart;
     if (error.name === 'AbortError' || error.message?.includes('aborted')) {
       console.error(`❌ OpenAI (direct) timed out after ${attemptDuration}ms`);
-      throw new Error(`Request timed out after ${AI_TIMEOUT_MS / 1000}s`);
+      throw new Error(`Request timed out after ${OPENAI_TIMEOUT_MS / 1000}s`);
     }
     console.error('❌ OpenAI (direct) failed:', error?.message || error);
     throw error;
@@ -926,7 +928,7 @@ async function callGeminiAIWithRetry(
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+      const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
 
       // Select maxTokens based on complexity
       const skillLevel = payload.skillAssessment.calculatedLevel;
@@ -1228,7 +1230,7 @@ async function notifySafetyViolation(
 
 // Main Handler
 serve(async (req) => {
-  const startTime = Date.now();
+  const functionStartTime = Date.now();
   
   // Log request details
   console.log(`📥 [${new Date().toISOString()}] ${req.method} ${req.url}`);
@@ -1833,6 +1835,19 @@ serve(async (req) => {
       // SYNC MODE: Original behavior - wait for AI generation
       console.log('⏳ Sync mode: Waiting for AI generation...');
 
+      // Check overall function timeout before starting AI generation
+      if (Date.now() - functionStartTime > OVERALL_FUNCTION_TIMEOUT_MS) {
+        console.error('⏱️ Overall function timeout exceeded (10s) before AI generation');
+        return new Response(
+          JSON.stringify({ 
+            error: 'Generation took too long',
+            code: 'TIMEOUT',
+            useFallback: true 
+          }),
+          { status: 408, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       // 8. Generate steps using OpenAI FIRST, then Lovable AI (Gemini) fallback
       console.log('🤖 Starting AI step generation (OpenAI → Gemini) with Layer 2 safety...');
       const generationStart = Date.now();
@@ -1868,6 +1883,19 @@ serve(async (req) => {
         }
       } catch (openaiError: any) {
         console.warn('⚠️ OpenAI failed, trying Gemini fallback...', openaiError.message);
+        
+        // Check timeout before Gemini attempt
+        if (Date.now() - functionStartTime > OVERALL_FUNCTION_TIMEOUT_MS) {
+          console.error('⏱️ Overall function timeout exceeded (10s) before Gemini fallback');
+          return new Response(
+            JSON.stringify({ 
+              error: 'Generation took too long',
+              code: 'TIMEOUT',
+              useFallback: true 
+            }),
+            { status: 408, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         
         try {
           const rawSteps = await callGeminiAIWithRetry(payload);

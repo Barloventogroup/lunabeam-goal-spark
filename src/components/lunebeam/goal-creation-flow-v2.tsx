@@ -56,7 +56,7 @@ interface FlowData {
 }
 
 interface GoalCreationFlowV2Props {
-  onComplete?: () => void;
+  onComplete?: (goalId?: string) => void;
   onExit?: () => void;
   draftGoalId?: string;
   mode?: 'full' | 'lite';
@@ -190,7 +190,8 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
         description: "Your reminders are all set up.",
       });
       
-      onComplete?.();
+      const { id: createdGoalId } = await goalsService.getGoal(goalData.owner_id);
+      onComplete?.(createdGoalId);
     } catch (error) {
       toast({
         title: "Oops, something hiccupped",
@@ -266,6 +267,14 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
           data: { goalId: goal.id }
         });
       }
+
+      // Clean up draft goal if it exists
+      if (draftGoalId && draftGoalId !== goal.id) {
+        console.log('Cleaning up draft goal:', draftGoalId);
+        await goalsService.deleteGoal(draftGoalId).catch(err => 
+          console.warn('Failed to clean up draft goal:', err)
+        );
+      }
       
       // Clear draft
       localStorage.removeItem('goal_creation_draft_v2');
@@ -275,7 +284,8 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
         description: "Your learning journey begins now!",
       });
       
-      onComplete?.();
+      console.log('[GoalCreationFlow] Completing with PM goal ID:', goal.id);
+      onComplete?.(goal.id);
     } catch (error) {
       console.error('Failed to create PM goal:', error);
       toast({
@@ -290,9 +300,9 @@ export const GoalCreationFlowV2: React.FC<GoalCreationFlowV2Props> = ({
 
   const renderGreeting = () => {
     const isLiteMode = mode === 'lite';
-    const title = isLiteMode ? "Let's set up your goal" : "Welcome back 👋";
+    const title = isLiteMode ? "Let's build your action plan" : "Welcome back 👋";
     const subtitle = isLiteMode 
-      ? `We'll help you break down: "${flowData.goal_title}"`
+      ? "We'll help you create bite-sized steps that work with how you think and learn best."
       : "Let's set up your goal in a few quick steps. You can exit anytime — I'll save your progress.";
 
     return (

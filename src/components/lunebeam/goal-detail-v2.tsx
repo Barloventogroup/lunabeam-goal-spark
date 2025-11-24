@@ -560,12 +560,23 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       currentStatus: goalMetadata?.generationStatus
     });
 
+    console.log('[Generation Check]', {
+      goalId: goal?.id,
+      goalType: goal?.goal_type,
+      isPMGoal: goal?.goal_type === 'progressive_mastery',
+      metadata: goal?.metadata,
+      pmMetadata: (goal as any)?.pm_metadata,
+      stepsLength: steps.length
+    });
+
     // Check if this is a PM goal
     const isPMGoal = goal?.goal_type === 'progressive_mastery';
     if (isPMGoal) {
       console.log('[PM Generation] Detected PM goal, using PM generation path');
       return generatePMSteps();
     }
+    
+    console.log('[Generation] Not a PM goal, using standard generation');
     setGeneratingSteps(true);
     setGenerationError(false);
 
