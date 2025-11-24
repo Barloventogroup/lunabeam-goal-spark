@@ -21,6 +21,7 @@ import { Check } from 'lucide-react';
 
 interface SkillsScanStepProps {
   role: 'individual' | 'parent' | '';
+  individualName?: string; // For parent perspective
   responses: Array<{ itemId: string; value: number }>;
   selectedPillars: string[];
   priorities: EfPriorityArea[];
@@ -28,9 +29,10 @@ interface SkillsScanStepProps {
   onPillarsChange: (pillars: string[]) => void;
 }
 
-export function SkillsScanStep({
-  role,
-  responses,
+export function SkillsScanStep({ 
+  role, 
+  individualName,
+  responses, 
   selectedPillars,
   priorities,
   onResponsesChange,
@@ -116,13 +118,14 @@ export function SkillsScanStep({
       {/* Items Section */}
       <div className="space-y-4">
         {items.map((item) => (
-          <EfItemQuestion
-            key={item.id}
-            item={item}
-            perspective={perspective}
-            value={getResponseValue(item.id)}
-            onChange={(value) => handleResponseChange(item.id, value)}
-          />
+            <EfItemQuestion
+              key={item.id}
+              item={item}
+              perspective={perspective}
+              individualName={individualName}
+              value={getResponseValue(item.id)}
+              onChange={(value) => handleResponseChange(item.id, value)}
+            />
         ))}
       </div>
       
@@ -226,12 +229,21 @@ export function SkillsScanStep({
 interface EfItemQuestionProps {
   item: EfItem;
   perspective: 'individual' | 'observer';
+  individualName?: string;
   value: EfResponseValue | undefined;
   onChange: (value: EfResponseValue) => void;
 }
 
-function EfItemQuestion({ item, perspective, value, onChange }: EfItemQuestionProps) {
-  const questionText = getItemText(item, perspective);
+function EfItemQuestion({ item, perspective, individualName, value, onChange }: EfItemQuestionProps) {
+  let questionText = getItemText(item, perspective);
+  
+  // For parent perspective, inject the child's name
+  if (perspective === 'observer' && individualName) {
+    questionText = questionText.replace(
+      'How hard is it',
+      `How hard is it for ${individualName}`
+    );
+  }
   
   return (
     <Card className="p-4 space-y-3 bg-card">
