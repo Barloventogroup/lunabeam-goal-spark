@@ -98,6 +98,19 @@ export const TabHome: React.FC<TabHomeProps> = ({
     };
   }, [loadProfile, loadPoints, goalsLoading]);
 
+  // Force reload data when coming from onboarding
+  useEffect(() => {
+    const justCompletedOnboarding = sessionStorage.getItem('onboarding-just-completed');
+    if (justCompletedOnboarding === 'true' && user) {
+      console.log('TabHome: Detected post-onboarding, forcing data reload');
+      loadProfile();
+      loadGoals();
+      refetchGoals(); // React Query refetch
+      loadPoints();
+      sessionStorage.removeItem('onboarding-just-completed'); // Clear flag
+    }
+  }, [user, loadProfile, loadGoals, refetchGoals, loadPoints]);
+
   // Sync React Query goals with Zustand store
   useEffect(() => {
     if (!goalsLoading && goalsFromQuery.length > 0) {
@@ -122,16 +135,17 @@ export const TabHome: React.FC<TabHomeProps> = ({
 
   // Determine the correct name to display in greeting (synchronously to avoid flash)
   const getDisplayName = () => {
-    // If user has first_name in metadata, use it (admin's name)
+    // Force re-compute when profile changes - prioritize profile data from onboarding
+    if (profile?.first_name) {
+      const name = profile.first_name.toString().trim();
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+    // Fallback to user metadata (admin's name)
     if (user?.user_metadata?.first_name) {
       const adminName = user.user_metadata.first_name.toString().trim();
       return adminName.charAt(0).toUpperCase() + adminName.slice(1);
     }
-    // Fallback to profile name (individual's name)
-    if (profile?.first_name) {
-      return profile.first_name.charAt(0).toUpperCase() + profile.first_name.slice(1);
-    }
-    return "there";
+    return "User";
   };
 
   const displayName = getDisplayName();
