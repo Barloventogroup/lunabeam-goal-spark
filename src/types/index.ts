@@ -17,13 +17,22 @@ export interface Profile {
   created_at?: string;
   updated_at?: string;
   created_by_supporter?: string | null;
-  user_type?: 'admin' | 'individual' | 'supporter' | 'hybrid'; // New field for role
+  user_type?: 'admin' | 'individual' | 'supporter' | 'hybrid';
   
-  // EF Assessment data
-  ef_responses?: Array<{ itemId: string; value: number }>;  // Raw Tier-0 responses
-  ef_selected_pillars?: string[];   // Selected focus areas (EfPillarId[])
-  ef_assessment_date?: string;      // When assessment was completed
-  ef_assessment_perspective?: 'individual' | 'observer'; // Who completed it
+  // Metadata for onboarding data, EF assessments, etc.
+  metadata?: {
+    ef_selected_pillars?: string[];
+    ef_selection_date?: string;
+    ef_selection_source?: string;
+    ef_selection_perspective?: 'individual' | 'parent';
+    [key: string]: any;
+  };
+  
+  // EF Assessment data (deprecated - use metadata instead)
+  ef_responses?: Array<{ itemId: string; value: number }>;
+  ef_selected_pillars?: string[];
+  ef_assessment_date?: string;
+  ef_assessment_perspective?: 'individual' | 'observer';
 }
 
 export interface ConsentSection {

@@ -783,6 +783,7 @@ export type Database = {
           account_status: Database["public"]["Enums"]["account_status"]
           authentication_status: string | null
           avatar_url: string | null
+          birthday: string | null
           challenges: string[] | null
           claimed_at: string | null
           comm_pref: string
@@ -797,6 +798,7 @@ export type Database = {
           id: string
           interests: string[] | null
           is_self_registered: boolean
+          metadata: Json | null
           notification_settings: Json | null
           onboarding_complete: boolean
           password_set: boolean | null
@@ -812,6 +814,7 @@ export type Database = {
           account_status?: Database["public"]["Enums"]["account_status"]
           authentication_status?: string | null
           avatar_url?: string | null
+          birthday?: string | null
           challenges?: string[] | null
           claimed_at?: string | null
           comm_pref: string
@@ -826,6 +829,7 @@ export type Database = {
           id?: string
           interests?: string[] | null
           is_self_registered?: boolean
+          metadata?: Json | null
           notification_settings?: Json | null
           onboarding_complete?: boolean
           password_set?: boolean | null
@@ -841,6 +845,7 @@ export type Database = {
           account_status?: Database["public"]["Enums"]["account_status"]
           authentication_status?: string | null
           avatar_url?: string | null
+          birthday?: string | null
           challenges?: string[] | null
           claimed_at?: string | null
           comm_pref?: string
@@ -855,6 +860,7 @@ export type Database = {
           id?: string
           interests?: string[] | null
           is_self_registered?: boolean
+          metadata?: Json | null
           notification_settings?: Json | null
           onboarding_complete?: boolean
           password_set?: boolean | null

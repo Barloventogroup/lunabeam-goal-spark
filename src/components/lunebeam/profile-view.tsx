@@ -436,6 +436,63 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onBack }) => {
           </Card>
         </div>
 
+        {/* Executive Function Focus Areas */}
+        {profile?.metadata?.ef_selected_pillars && 
+         Array.isArray(profile.metadata.ef_selected_pillars) && 
+         profile.metadata.ef_selected_pillars.length > 0 && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Focus Areas</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  toast({
+                    title: "Coming soon",
+                    description: "Full Skills Scan coming in a future update."
+                  });
+                }}
+                className="text-base text-blue-500 hover:text-blue-600"
+              >
+                Retake
+              </Button>
+            </div>
+            <Card>
+              <CardContent className="py-4">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Areas you identified as priorities during onboarding
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {profile.metadata.ef_selected_pillars.map((pillarId: string) => {
+                    const pillarLabels: Record<string, string> = {
+                      'GETTING_STARTED_FINISHING': 'Getting started & finishing',
+                      'PLANNING_ORGANIZATION_TIME': 'Planning, organizing & time',
+                      'FOCUS_WORKING_MEMORY': 'Focus & remembering',
+                      'EMOTIONS_STRESS_OVERWHELM': 'Emotions & stress',
+                      'FLEXIBILITY_CHANGE': 'Handling change',
+                      'SELF_ADVOCACY_INDEPENDENCE': 'Self-advocacy'
+                    };
+                    return (
+                      <Badge 
+                        key={pillarId} 
+                        variant="secondary" 
+                        className="text-sm px-3 py-1"
+                      >
+                        {pillarLabels[pillarId] || pillarId}
+                      </Badge>
+                    );
+                  })}
+                </div>
+                {profile.metadata.ef_selection_date && (
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Completed: {format(new Date(profile.metadata.ef_selection_date), 'PPP')}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Edit Profile Drawer */}
         <Drawer open={isEditDrawerOpen} onOpenChange={setIsEditDrawerOpen}>
           <DrawerContent side="right">

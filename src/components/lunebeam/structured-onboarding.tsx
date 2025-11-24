@@ -9,7 +9,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/integrations/supabase/client';
-import { X, CalendarIcon, Check } from 'lucide-react';
+import { X, CalendarIcon, Check, Rocket } from 'lucide-react';
 import { format } from 'date-fns';
 import { EfPillarId } from '@/ef/efModel';
 import { goalsService } from '@/services/goalsService';
@@ -88,7 +88,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
       const profileData = {
         user_id: user.id,
         first_name: data.first_name,
-        birthday: data.birthday?.toISOString(),
+        birthday: data.birthday?.toISOString().split('T')[0],
         strengths: [],
         interests: [],
         challenges: [],
@@ -96,7 +96,8 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
         metadata: {
           ef_selected_pillars: data.ef_selected_pillars,
           ef_selection_date: new Date().toISOString(),
-          ef_selection_source: 'onboarding_triage'
+          ef_selection_source: 'onboarding_triage',
+          ef_selection_perspective: 'individual'
         },
         onboarding_complete: true
       };
@@ -329,9 +330,12 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
             <Button 
               onClick={handleComplete} 
               disabled={isCreating}
-              size="lg"
             >
-              {isCreating ? 'Setting up...' : "Let's Go!"}
+              {isCreating ? 'Setting up...' : (
+                <>
+                  Let's Go! <Rocket className="ml-1 h-5 w-5" />
+                </>
+              )}
             </Button>
           )}
         </div>
