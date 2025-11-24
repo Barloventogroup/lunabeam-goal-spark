@@ -17,7 +17,6 @@ import { format } from 'date-fns';
 import { EfPillarId } from '@/ef/efModel';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import lunabeamIcon from '@/assets/lunabeam-logo-icon.svg';
 
 interface ParentOnboardingData {
   preferred_name: string;
@@ -166,200 +165,209 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
   const progressPercentage = (currentStep / totalSteps) * 100;
 
   return (
-    <div className="min-h-[100dvh] flex flex-col">
-      {/* Exit button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onExit}
-        className="absolute top-safe-with-margin right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground z-50"
-      >
-        <X className="h-4 w-4" />
-      </Button>
+    <div className="min-h-[100dvh] bg-gradient-soft pt-safe-header pb-safe-nav">
+      {/* Fixed header with logo */}
+      <div className="fixed left-0 right-0 top-safe z-40 flex items-center justify-between px-4 h-16 bg-card border-b border-border">
+        <img 
+          src="/lovable-uploads/7f6e5283-da38-4bfc-ac26-ae239e843b39.png" 
+          alt="Lunabeam" 
+          className="h-7 w-auto object-contain" 
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onExit}
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
       
-      {/* HEADER - 50vh */}
-      <div className="h-[50vh] bg-white flex flex-col justify-end p-6 pt-safe-with-6">
-        <div className="max-w-2xl mx-auto w-full">
-          {currentStep === 1 && (
-            <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">Who are you helping?</h2>
-              <p className="text-foreground-soft">
-                What name do they prefer?
-              </p>
-            </div>
-          )}
-          
-          {currentStep === 2 && (
-            <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">What are their pronouns?</h2>
-              <p className="text-foreground-soft">
-                This helps us personalize their experience
-              </p>
-            </div>
-          )}
-          
-          {currentStep === 3 && (
-            <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">How old is {data.preferred_name || 'they'}?</h2>
-              <p className="text-foreground-soft">
-                We'll use this to personalize their experience
-              </p>
-            </div>
-          )}
-          
-          {currentStep === 4 && (
-            <div className="space-y-2">
-              <h2 className="text-3xl font-semibold">
-                What seems hardest for {data.preferred_name} right now?
-              </h2>
-              <p className="text-foreground-soft">
-                Pick up to 3 areas that feel like they cause the most friction day to day. You can change this later.
-              </p>
-            </div>
-          )}
-          
-          {currentStep === 5 && (
-            <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-6 text-center">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                <Check className="w-10 h-10 text-primary" />
-              </div>
-              
-              <div className="space-y-2">
-                <h2 className="text-3xl font-semibold">You're all set!</h2>
-                <p className="text-muted-foreground max-w-md">
-                  {data.preferred_name}'s profile is ready. They'll be able to start working on their goal right away.
+      {/* Scrollable content */}
+      <div className="px-4 pt-16 pb-24 overflow-y-auto max-w-2xl mx-auto">
+        {/* Question text appears here at ~128px from top */}
+        {currentStep !== 5 && (
+          <div className="space-y-2 mb-6">
+            {currentStep === 1 && (
+              <>
+                <h2 className="text-3xl font-semibold">Who are you helping?</h2>
+                <p className="text-sm text-muted-foreground">
+                  What name do they prefer?
                 </p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* BODY - 43.75vh */}
-      <div className="h-[43.75vh] bg-gray-100 overflow-y-auto p-6">
-        <div className="max-w-2xl mx-auto w-full">
-          {currentStep === 1 && (
-            <div className="space-y-6 bg-white p-8 rounded-lg shadow-md">
-              <Input
-                type="text"
-                placeholder="Enter their name"
-                value={data.preferred_name}
-                onChange={(e) => setData({ ...data, preferred_name: e.target.value })}
-                className="text-lg"
-                autoFocus
-              />
-            </div>
-          )}
-          
-          {currentStep === 2 && (
-            <div className="space-y-4 bg-white p-8 rounded-lg shadow-md">
-              <RadioGroup
-                value={data.pronouns}
-                onValueChange={(value) => setData({ ...data, pronouns: value })}
-              >
-                {PRONOUNS_OPTIONS.map((option) => (
-                  <div key={option} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option} id={option} />
-                    <Label htmlFor={option} className="cursor-pointer flex-1">
-                      {option}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-              
-              {data.pronouns === 'Custom' && (
-                <Input
-                  placeholder="Enter custom pronouns"
-                  value={customPronouns}
-                  onChange={(e) => setCustomPronouns(e.target.value)}
-                />
-              )}
-            </div>
-          )}
-          
-          {currentStep === 3 && (
-            <div className="space-y-6 bg-white p-8 rounded-lg shadow-md">
-              <button
-                onClick={() => setBirthdayDrawerOpen(true)}
-                className={cn(
-                  "w-full px-4 py-3 text-left border rounded-md flex items-center justify-between",
-                  data.birthday ? "border-primary" : "border-input"
-                )}
-              >
-                <span className={data.birthday ? "text-foreground" : "text-muted-foreground"}>
-                  {data.birthday ? format(data.birthday, 'MMMM d, yyyy') : 'Select their birthday'}
-                </span>
-                <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-              </button>
-              
-              <Drawer open={birthdayDrawerOpen} onOpenChange={setBirthdayDrawerOpen}>
-                <DrawerContent>
-                  <DrawerHeader>
-                    <DrawerTitle>Select their birthday</DrawerTitle>
-                  </DrawerHeader>
-                  <div className="p-4 flex justify-center">
-                    <Calendar
-                      mode="single"
-                      selected={data.birthday}
-                      onSelect={(date) => {
-                        setData({ ...data, birthday: date });
-                        setBirthdayDrawerOpen(false);
-                      }}
-                      disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
-                      initialFocus
-                      showYearPicker={true}
-                    />
-                  </div>
-                </DrawerContent>
-              </Drawer>
-            </div>
-          )}
-          
-          {currentStep === 4 && (
-            <SkillsScanStep
-              role="parent"
-              individualName={data.preferred_name}
-              selectedPillars={data.ef_selected_pillars}
-              onPillarsChange={(pillars) => {
-                setData({ ...data, ef_selected_pillars: pillars });
-              }}
+              </>
+            )}
+            
+            {currentStep === 2 && (
+              <>
+                <h2 className="text-3xl font-semibold">What are their pronouns?</h2>
+                <p className="text-sm text-muted-foreground">
+                  This helps us personalize their experience
+                </p>
+              </>
+            )}
+            
+            {currentStep === 3 && (
+              <>
+                <h2 className="text-3xl font-semibold">How old is {data.preferred_name || 'they'}?</h2>
+                <p className="text-sm text-muted-foreground">
+                  We'll use this to personalize their experience
+                </p>
+              </>
+            )}
+            
+            {currentStep === 4 && (
+              <>
+                <h2 className="text-3xl font-semibold">
+                  What seems hardest for {data.preferred_name} right now?
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Pick up to 3 areas that feel like they cause the most friction day to day. You can change this later.
+                </p>
+              </>
+            )}
+          </div>
+        )}
+        
+        {/* Input section in separate visual container */}
+        {currentStep === 1 && (
+          <div className="bg-card p-8 rounded-lg shadow-md border border-border">
+            <Input
+              type="text"
+              placeholder="Enter their name"
+              value={data.preferred_name}
+              onChange={(e) => setData({ ...data, preferred_name: e.target.value })}
+              className="text-lg"
+              autoFocus
             />
-          )}
-        </div>
+          </div>
+        )}
+        
+        {currentStep === 2 && (
+          <div className="bg-card p-8 rounded-lg shadow-md border border-border">
+            <RadioGroup
+              value={data.pronouns}
+              onValueChange={(value) => setData({ ...data, pronouns: value })}
+            >
+              {PRONOUNS_OPTIONS.map((option) => (
+                <div key={option} className="flex items-center space-x-2">
+                  <RadioGroupItem value={option} id={option} />
+                  <Label htmlFor={option} className="cursor-pointer flex-1">
+                    {option}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+            
+            {data.pronouns === 'Custom' && (
+              <Input
+                placeholder="Enter custom pronouns"
+                value={customPronouns}
+                onChange={(e) => setCustomPronouns(e.target.value)}
+                className="mt-4"
+              />
+            )}
+          </div>
+        )}
+        
+        {currentStep === 3 && (
+          <div className="bg-card p-8 rounded-lg shadow-md border border-border">
+            <button
+              onClick={() => setBirthdayDrawerOpen(true)}
+              className={cn(
+                "w-full px-4 py-3 text-left border rounded-md flex items-center justify-between",
+                data.birthday ? "border-primary" : "border-input"
+              )}
+            >
+              <span className={data.birthday ? "text-foreground" : "text-muted-foreground"}>
+                {data.birthday ? format(data.birthday, 'MMMM d, yyyy') : 'Select their birthday'}
+              </span>
+              <CalendarIcon className="h-5 w-5 text-muted-foreground" />
+            </button>
+            
+            <Drawer open={birthdayDrawerOpen} onOpenChange={setBirthdayDrawerOpen}>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>Select their birthday</DrawerTitle>
+                </DrawerHeader>
+                <div className="p-4 flex justify-center">
+                  <Calendar
+                    mode="single"
+                    selected={data.birthday}
+                    onSelect={(date) => {
+                      setData({ ...data, birthday: date });
+                      setBirthdayDrawerOpen(false);
+                    }}
+                    disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
+                    initialFocus
+                    showYearPicker={true}
+                  />
+                </div>
+              </DrawerContent>
+            </Drawer>
+          </div>
+        )}
+        
+        {currentStep === 4 && (
+          <SkillsScanStep
+            role="parent"
+            individualName={data.preferred_name}
+            selectedPillars={data.ef_selected_pillars}
+            onPillarsChange={(pillars) => {
+              setData({ ...data, ef_selected_pillars: pillars });
+            }}
+          />
+        )}
+        
+        {currentStep === 5 && (
+          <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-6 text-center">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+              <Check className="w-10 h-10 text-primary" />
+            </div>
+            
+            <div className="space-y-2">
+              <h2 className="text-3xl font-semibold">You're all set!</h2>
+              <p className="text-muted-foreground max-w-md">
+                {data.preferred_name}'s profile is ready. They'll be able to start working on their goal right away.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
       
-      {/* FOOTER - 6.25vh */}
-      <div className="min-h-[6.25vh] bg-white flex items-center justify-between px-6 gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.1)] pb-safe-only">
-        <img src={lunabeamIcon} alt="Lunabeam" className="h-16 w-16" />
-        <div className="flex items-center gap-4 flex-1 justify-end">
+      {/* Fixed footer with navigation */}
+      <div className="fixed bottom-safe left-0 right-0 bg-card border-t border-border flex items-center justify-between px-6 py-4 shadow-[0_-2px_8px_rgba(0,0,0,0.05)]">
+        <div className="flex items-center gap-4 w-full justify-between">
           {currentStep > 1 && currentStep < 5 && (
             <BackButton onClick={handleBack} variant="text" />
           )}
           
-          {currentStep < 5 && (
-            <>
-              <Progress value={progressPercentage} className="flex-1 max-w-[200px]" />
+          <div className="flex items-center gap-4 flex-1 justify-end">
+            {currentStep < 5 && (
+              <>
+                <Progress value={progressPercentage} className="flex-1 max-w-[200px]" />
+                <Button 
+                  onClick={handleNext} 
+                  disabled={!canProceed()}
+                >
+                  Continue
+                </Button>
+              </>
+            )}
+            
+            {currentStep === 5 && (
               <Button 
-                onClick={handleNext} 
-                disabled={!canProceed()}
+                onClick={handleComplete} 
+                disabled={isCreating}
+                className="ml-auto"
               >
-                Continue
+                {isCreating ? 'Setting up...' : (
+                  <>
+                    Let's Go! <Rocket className="ml-1 h-5 w-5" />
+                  </>
+                )}
               </Button>
-            </>
-          )}
-          
-          {currentStep === 5 && (
-            <Button 
-              onClick={handleComplete} 
-              disabled={isCreating}
-            >
-              {isCreating ? 'Setting up...' : (
-                <>
-                  Let's Go! <Rocket className="ml-1 h-5 w-5" />
-                </>
-              )}
-            </Button>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
