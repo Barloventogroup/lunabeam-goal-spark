@@ -56,14 +56,21 @@ export function SkillsScanStep({
       const computedPriorities = computeEfPriorities(items, efResponses);
       setLocalPriorities(computedPriorities);
       onResponsesChange(localResponses, computedPriorities);
-      
-      // Auto-select top focus areas if not in custom mode
-      if (!customSelectionMode && selectedPillars.length === 0 && localResponses.length === items.length) {
-        const topAreas = getTopEfFocusAreas(computedPriorities, 3);
-        onPillarsChange(topAreas);
-      }
     }
-  }, [localResponses.length, items.length]);
+  }, [localResponses, items.length, onResponsesChange]);
+  
+  // Auto-select top focus areas when all questions are answered
+  useEffect(() => {
+    if (
+      localResponses.length === items.length && 
+      selectedPillars.length === 0 && 
+      !customSelectionMode &&
+      localPriorities.length > 0
+    ) {
+      const topAreas = getTopEfFocusAreas(localPriorities, 3);
+      onPillarsChange(topAreas);
+    }
+  }, [localResponses.length, items.length, selectedPillars.length, customSelectionMode, localPriorities, onPillarsChange]);
   
   // Handle response change for an item
   const handleResponseChange = (itemId: string, value: EfResponseValue) => {
