@@ -40,7 +40,8 @@ export function QuickGoalFlow({
         description: `Focus areas: ${goalData.focusAreas.join(', ')}`,
         priority: 'medium',
         owner_id: user.id,
-        domain: 'other'
+        domain: 'other',
+        frequency_per_week: 3
       });
       
       // Update goal with EF metadata
