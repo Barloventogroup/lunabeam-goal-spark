@@ -93,6 +93,15 @@ interface RedesignedGoalsWizardProps {
   onCancel: () => void;
   initialIndividualId?: string;
   isSupporter?: boolean;
+  prefillGoalId?: string;
+  prefillData?: {
+    title?: string;
+    category?: string;
+    timeframe?: string;
+    ef_focus_areas?: string[];
+    template_id?: string;
+    frequency_per_week?: number;
+  };
 }
 interface SupportedIndividual {
   user_id: string;
@@ -764,14 +773,17 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   onComplete,
   onCancel,
   initialIndividualId,
-  isSupporter = false
+  isSupporter = false,
+  prefillGoalId,
+  prefillData
 }) => {
   const [currentStep, setCurrentStep] = useState<number | null>(null); // Start with null to indicate loading
   const [actuallySupportsAnyone, setActuallySupportsAnyone] = useState<boolean | null>(null);
   const [data, setData] = useState<WizardData>({
     recipient: initialIndividualId ? 'other' : 'self',
     supportedPersonId: initialIndividualId,
-    goalTitle: '',
+    goalTitle: prefillData?.title || '',
+    category: prefillData?.category,
     hasPrerequisites: true,
     prerequisites: {
       ready: true
@@ -787,7 +799,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       q3_help_needed: 1
     },
     startDate: new Date(),
-    frequency: 3,
+    frequency: prefillData?.frequency_per_week || 3,
     isMyIdea: true
   });
   const [prevGoalType, setPrevGoalType] = useState<string | undefined>(undefined);
@@ -1662,14 +1674,37 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           }
         };
 
-        // Safety check already performed, proceed with goal creation
-        console.log('Creating goal with data:', {
+        // Safety check already performed, proceed with goal creation/update
+        console.log(prefillGoalId ? 'Updating goal' : 'Creating goal', 'with data:', {
           title: goalDataWithMetadata.title,
           goal_type: goalDataWithMetadata.goal_type,
           wizardGoalType: data.goalType,
           isPM: data.goalType === 'progressive_mastery'
         });
-        const createdGoal = await goalsService.createGoal(goalDataWithMetadata);
+        
+        let createdGoal;
+        if (prefillGoalId) {
+          // Update existing goal - use proper typing for goal_type
+          const updatePayload: any = {
+            ...goalDataWithMetadata,
+            id: undefined, // Remove id from update payload
+          };
+          // Ensure proper goal_type typing
+          if (updatePayload.goal_type === undefined || updatePayload.goal_type === null) {
+            delete updatePayload.goal_type;
+          }
+          updatePayload.metadata = {
+            ...goalDataWithMetadata.metadata,
+            needs_full_setup: false,
+            completed_setup_at: new Date().toISOString()
+          };
+          
+          await goalsService.updateGoal(prefillGoalId, updatePayload);
+          createdGoal = { id: prefillGoalId };
+        } else {
+          // Create new goal
+          createdGoal = await goalsService.createGoal(goalDataWithMetadata);
+        }
 
         // If Progressive Mastery, save additional metadata
         if (data.goalType === 'progressive_mastery') {
