@@ -268,16 +268,16 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
         )}
         
         {currentStep === 3 && (
-          <div className="bg-card p-4 rounded-lg shadow-md border border-border">
-            <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-foreground">Birthday</span>
-              <button
-                onClick={() => setBirthdayDrawerOpen(true)}
-                className="px-5 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground rounded-full transition-colors"
-              >
-                {data.birthday ? format(data.birthday, 'MMMM d, yyyy') : 'Select date'}
-              </button>
-            </div>
+          <>
+            <button
+              onClick={() => setBirthdayDrawerOpen(true)}
+              className="w-full h-11 px-3 py-2 text-lg text-left border border-input bg-background rounded-md hover:bg-accent hover:text-accent-foreground transition-colors flex items-center justify-between"
+            >
+              <span className={data.birthday ? "text-foreground" : "text-muted-foreground"}>
+                {data.birthday ? format(data.birthday, 'MMMM d, yyyy') : 'Select birthday'}
+              </span>
+              <CalendarIcon className="h-4 w-4 opacity-50" />
+            </button>
             
             <Drawer open={birthdayDrawerOpen} onOpenChange={setBirthdayDrawerOpen}>
               <DrawerContent>
@@ -299,7 +299,7 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
                 </div>
               </DrawerContent>
             </Drawer>
-          </div>
+          </>
         )}
         
         {currentStep === 4 && (
