@@ -157,10 +157,10 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
           <div className="space-y-2 mb-6">
             {currentStep === 1 && (
               <>
-                <h2 className="text-3xl font-semibold">What would you like to be called?</h2>
-                <p className="text-sm text-muted-foreground">
-                  Just your first name or nickname is perfect
-                </p>
+            <h2 className="text-3xl font-semibold">What's your name?</h2>
+            <p className="text-sm text-muted-foreground">
+              First name or nickname is fine
+            </p>
               </>
             )}
             
@@ -186,16 +186,14 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
         
         {/* Input section in separate visual container */}
         {currentStep === 1 && (
-          <div className="bg-card p-8 rounded-lg shadow-md border border-border">
-            <Input
-              type="text"
-              placeholder="Enter your name"
-              value={data.first_name}
-              onChange={(e) => setData({ ...data, first_name: e.target.value })}
-              className="text-lg"
-              autoFocus
-            />
-          </div>
+          <Input
+            type="text"
+            placeholder="Enter your name"
+            value={data.first_name}
+            onChange={(e) => setData({ ...data, first_name: e.target.value })}
+            className="text-lg"
+            autoFocus
+          />
         )}
         
         {currentStep === 2 && (
