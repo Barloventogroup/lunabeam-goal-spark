@@ -218,7 +218,7 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
             {currentStep === 4 && (
               <>
                 <h2 className="text-3xl font-semibold">
-                  What seems hardest for {data.preferred_name} right now?
+                  What's hardest for {data.preferred_name}?
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   Pick up to 3 areas that feel like they cause the most friction day to day. You can change this later.
