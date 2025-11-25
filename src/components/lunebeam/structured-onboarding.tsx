@@ -175,7 +175,7 @@ export function StructuredOnboarding({ onComplete, roleData, onExit, onBack }: S
             
             {currentStep === 3 && (
               <>
-                <h2 className="text-3xl font-semibold">What feels hardest right now?</h2>
+                <h2 className="text-3xl font-semibold">What's hardest right now?</h2>
                 <p className="text-sm text-muted-foreground">
                   Pick up to 3 areas that feel like they cause the most friction day to day. You can change this later.
                 </p>
