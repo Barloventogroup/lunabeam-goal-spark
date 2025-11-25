@@ -190,10 +190,10 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
           <div className="space-y-2 mb-6">
             {currentStep === 1 && (
               <>
-                <h2 className="text-3xl font-semibold">Who are you helping?</h2>
-                <p className="text-sm text-muted-foreground">
-                  What name do they prefer?
-                </p>
+            <h2 className="text-3xl font-semibold">What's their name?</h2>
+            <p className="text-sm text-muted-foreground">
+              The person you're helping
+            </p>
               </>
             )}
             
@@ -230,16 +230,14 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
         
         {/* Input section in separate visual container */}
         {currentStep === 1 && (
-          <div className="bg-card p-8 rounded-lg shadow-md border border-border">
-            <Input
-              type="text"
-              placeholder="Enter their name"
-              value={data.preferred_name}
-              onChange={(e) => setData({ ...data, preferred_name: e.target.value })}
-              className="text-lg"
-              autoFocus
-            />
-          </div>
+          <Input
+            type="text"
+            placeholder="Enter their name"
+            value={data.preferred_name}
+            onChange={(e) => setData({ ...data, preferred_name: e.target.value })}
+            className="text-lg"
+            autoFocus
+          />
         )}
         
         {currentStep === 2 && (
