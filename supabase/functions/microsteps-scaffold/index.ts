@@ -415,9 +415,31 @@ Deno.serve(async (req) => {
                 originalInput: payload
               });
               
-              if (judgeResult.error) {
-                console.warn('⚠️ Gemini Judge unavailable, but OpenAI steps passed basic checks');
-              } else if (judgeResult.pass_fail === 'SAFETY_VIOLATION' || judgeResult.total_score === 0) {
+              // Fallback to OpenAI Judge if Gemini fails
+              if ('error' in judgeResult) {
+                console.warn('⚠️ Gemini Judge unavailable, trying OpenAI Judge fallback');
+                judgeResult = await callOpenAIJudge({
+                  microSteps: candidateSteps,
+                  originalInput: payload
+                });
+                
+                // If both judges fail, reject the generation
+                if ('error' in judgeResult) {
+                  console.error('❌ Both Gemini and OpenAI judges failed');
+                  return new Response(
+                    JSON.stringify({ 
+                      error: 'Quality validation temporarily unavailable. Please try again in a few moments.',
+                      useFallback: true
+                    }),
+                    { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                  );
+                }
+              }
+
+              // Now judgeResult is guaranteed to be a valid JudgeResponse
+              const validJudgeResult = judgeResult as JudgeResponse;
+
+              if (validJudgeResult.pass_fail === 'SAFETY_VIOLATION' || validJudgeResult.total_score === 0) {
                 console.error('⚠️ LAYER 3 SAFETY VIOLATION flagged by Judge');
                 if (userId) {
                   await supabase.from('safety_violations_log').insert({
@@ -428,9 +450,9 @@ Deno.serve(async (req) => {
                     motivation: payload.motivation,
                     barriers: `${payload.barrier1}, ${payload.barrier2}`,
                     ai_response: JSON.stringify(candidateSteps),
-                    violation_reason: judgeResult.critique_for_retry
+                    violation_reason: validJudgeResult.critique_for_retry
                   });
-                  await notifySafetyViolation(supabase, userId, payload.goalTitle, 'layer_3_judge', judgeResult.critique_for_retry);
+                  await notifySafetyViolation(supabase, userId, payload.goalTitle, 'layer_3_judge', validJudgeResult.critique_for_retry);
                 }
                 return new Response(
                   JSON.stringify({ 
@@ -440,8 +462,8 @@ Deno.serve(async (req) => {
                   }),
                   { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
                 );
-              } else if (judgeResult.pass_fail === 'PASS' || !judgeResult.error) {
-                console.log('✅ OpenAI Layer SUCCESS (Judge score:', judgeResult.total_score, '/110)');
+              } else if (validJudgeResult.pass_fail === 'PASS') {
+                console.log('✅ OpenAI Layer SUCCESS (Judge score:', validJudgeResult.total_score, '/110)');
                 microSteps = candidateSteps;
               }
             }
@@ -454,20 +476,17 @@ Deno.serve(async (req) => {
       console.warn('⚠️ OpenAI Layer failed:', openaiError);
     }
     
-    // ============= LAYER 2: FALLBACK TO GEMINI WITH JUDGE =============
+    // ============= LAYER 2: FALLBACK TO GEMINI (SINGLE ATTEMPT) =============
     if (!microSteps) {
-      console.log('\n=== LAYER 2: Gemini (with Judge retries) ===');
+      console.log('\n=== LAYER 2: Gemini generation (single attempt, no retries) ===');
       
-      for (attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber++) {
-        console.log(`\n=== Gemini Attempt ${attemptNumber}/${maxAttempts} ===`);
-        
-        const systemPrompt = buildSystemPrompt(payload.flow);
-        const userPrompt = buildUserPrompt(payload, attemptNumber, retryGuidance);
+      const systemPrompt = buildSystemPrompt(payload.flow);
+      const userPrompt = buildUserPrompt(payload, 1, '');
 
-        try {
-          // Call Direct Gemini API
-          const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`;
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_AI_API_KEY}`, {
+      try {
+        // Single Gemini generation attempt
+        const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`;
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_AI_API_KEY}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -482,7 +501,7 @@ Deno.serve(async (req) => {
             tools: [{
               functionDeclarations: [{
                 name: "generate_microsteps",
-                description: "Generate exactly 4 theory-aligned micro-steps using natural, conversational language. Avoid template-like patterns. Write as a helpful human coach would speak.",
+                description: "Generate exactly 4 theory-aligned micro-steps using natural, conversational language.",
                 parameters: {
                   type: "object",
                   properties: {
@@ -492,11 +511,7 @@ Deno.serve(async (req) => {
                         type: "object",
                         properties: {
                           title: { type: "string", maxLength: 60 },
-                          description: { 
-                            type: "string", 
-                            maxLength: 300,
-                            description: "Brief context (15-25 words max). No motivational fluff. Essential details only."
-                          }
+                          description: { type: "string", maxLength: 300 }
                         },
                         required: ["title", "description"]
                       },
@@ -520,182 +535,132 @@ Deno.serve(async (req) => {
           }),
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Attempt ${attemptNumber} - Gemini API error:`, response.status, errorText);
+        if (response.ok) {
+          const data = await response.json();
+          const functionCall = data.candidates?.[0]?.content?.parts?.[0]?.functionCall;
           
-          if (response.status === 429) {
-            return new Response(
-              JSON.stringify({ error: 'Rate limit exceeded', useFallback: true }),
-              { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          }
-          
-          if (response.status === 402) {
-            return new Response(
-              JSON.stringify({ error: 'Credits required', useFallback: true }),
-              { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          }
-
-          // Continue to next attempt on other errors
-          console.log(`Attempt ${attemptNumber} failed, trying next attempt...`);
-          continue;
-        }
-
-        const data = await response.json();
-        console.log(`Attempt ${attemptNumber} - Gemini API response received`);
-
-        // Extract function call result (Gemini format)
-        const functionCall = data.candidates?.[0]?.content?.parts?.[0]?.functionCall;
-        if (!functionCall || functionCall.name !== 'generate_microsteps') {
-          console.error(`Attempt ${attemptNumber} - No valid function call in response`);
-          continue;
-        }
-
-        const candidateSteps = functionCall.args.microSteps;
-        
-        // ============= LAYER 2: SAFETY SIGNAL DETECTION =============
-        const stepsJSON = JSON.stringify(candidateSteps);
-        if (stepsJSON.includes('[SAFETY_VIOLATION_SIGNAL]')) {
-          console.error(`⚠️ LAYER 2 SAFETY VIOLATION detected at attempt ${attemptNumber}`);
-          
-          if (userId) {
-            // Log to database
-            await supabase.from('safety_violations_log').insert({
-              user_id: userId,
-              violation_layer: 'layer_2_generation',
-              goal_title: payload.goalTitle,
-              goal_category: payload.category,
-              motivation: payload.motivation,
-              barriers: `${payload.barrier1}, ${payload.barrier2}`,
-              ai_response: stepsJSON,
-              violation_reason: 'AI model detected nuanced safety violation during generation'
-            });
+          if (functionCall && functionCall.name === 'generate_microsteps') {
+            const candidateSteps = functionCall.args.microSteps;
             
-            // Notify compliance & supporter
-            await notifySafetyViolation(supabase, userId, payload.goalTitle, 'layer_2_generation', 'Nuanced content violation');
+            if (Array.isArray(candidateSteps) && candidateSteps.length === 4) {
+              const basicChecks = validateBasicFormat(candidateSteps, payload);
+              
+              if (basicChecks.valid) {
+                // Try Gemini Judge, fallback to OpenAI Judge
+                let judgeResult = await callGeminiJudge({
+                  microSteps: candidateSteps,
+                  originalInput: payload
+                });
+                
+                if ('error' in judgeResult) {
+                  console.warn('⚠️ Gemini Judge unavailable, trying OpenAI Judge');
+                  judgeResult = await callOpenAIJudge({
+                    microSteps: candidateSteps,
+                    originalInput: payload
+                  });
+                }
+                
+                if (!('error' in judgeResult)) {
+                  const validJudge = judgeResult as JudgeResponse;
+                  if (validJudge.pass_fail === 'PASS') {
+                    console.log('✅ Gemini Layer SUCCESS (Judge score:', validJudge.total_score, '/110)');
+                    microSteps = candidateSteps;
+                  }
+                }
+              }
+            }
           }
-          
-          return new Response(
-            JSON.stringify({ 
-              error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
-              safety_violation: true,
-              no_retry: true
-            }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+        } else {
+          console.warn('⚠️ Gemini generation failed:', response.status);
         }
-
-        if (!Array.isArray(candidateSteps) || candidateSteps.length !== 4) {
-          console.error(`Attempt ${attemptNumber} - Invalid microSteps format (expected 4, got ${candidateSteps?.length}):`, candidateSteps);
-          continue;
-        }
-
-        // LAYER 1: Hardcoded Guards (Basic Format)
-        const basicChecks = validateBasicFormat(candidateSteps, payload);
-        if (!basicChecks.valid) {
-          console.error(`Attempt ${attemptNumber} - Basic format failed:`, basicChecks.errors);
-          continue;
-        }
-
-        // LAYER 2: Gemini Judge Service (Semantic Validation)
-        const judgeResult = await callGeminiJudge({
-          microSteps: candidateSteps,
-          originalInput: payload
-        });
-
-        if (judgeResult.error) {
-          console.error('❌ Gemini Judge service unavailable');
-          return new Response(
-            JSON.stringify({ 
-              error: 'We cannot provide micro-steps at this time. Let\'s try again later.',
-              useFallback: true 
-            }),
-            { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        // ============= LAYER 3: JUDGE SAFETY VIOLATION =============
-        if (judgeResult.pass_fail === 'SAFETY_VIOLATION' || judgeResult.total_score === 0) {
-          console.error('⚠️ LAYER 3 SAFETY VIOLATION flagged by Gemini Judge');
-          
-          if (userId) {
-            // Log to database
-            await supabase.from('safety_violations_log').insert({
-              user_id: userId,
-              violation_layer: 'layer_3_judge',
-              goal_title: payload.goalTitle,
-              goal_category: payload.category,
-              motivation: payload.motivation,
-              barriers: `${payload.barrier1}, ${payload.barrier2}`,
-              ai_response: JSON.stringify(candidateSteps),
-              violation_reason: judgeResult.critique_for_retry
-            });
-            
-            // Notify compliance & supporter
-            await notifySafetyViolation(supabase, userId, payload.goalTitle, 'layer_3_judge', judgeResult.critique_for_retry);
-          }
-          
-          return new Response(
-            JSON.stringify({ 
-              error: "I'm sorry, I cannot process that request. Please try rephrasing your goal, focusing on positive, legal, and healthy outcomes.",
-              safety_violation: true,
-              no_retry: true
-            }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        // Check for coherence failure (hard blocker)
-        if (judgeResult.scoring_breakdown.D_coherence_score === 0) {
-          console.error(`Attempt ${attemptNumber} - COHERENCE FAILURE (D score: 0/10)`);
-          console.log('⚠️ Step flagged as pragmatically nonsensical:', judgeResult.critique_for_retry);
-          
-          retryGuidance = `${judgeResult.critique_for_retry}\n\nIMPORTANT: Previous step was flagged as pragmatically nonsensical or unhygienic. Focus on actions people naturally do in real life. Avoid touching trash, staring at objects, or any awkward/unhygienic actions.`;
-          
-          if (attemptNumber < maxAttempts) {
-            console.log(`🔄 Retrying with enhanced coherence guidance...`);
-            continue;
-          }
-          
-          console.error('All attempts exhausted (coherence failure)');
-          break;
-        }
-
-        if (judgeResult.pass_fail === 'FAIL' && judgeResult.total_score < 70) {
-          console.error(`Attempt ${attemptNumber} - Gemini Judge FAIL (score: ${judgeResult.total_score}/110)`);
-          console.log('📝 Critique for retry:', judgeResult.critique_for_retry);
-          
-          retryGuidance = judgeResult.critique_for_retry;
-          
-          if (attemptNumber < maxAttempts) {
-            console.log(`🔄 Retrying with Gemini guidance...`);
-            continue;
-          }
-          
-          console.error('All attempts exhausted');
-          break;
-        }
-
-        // SUCCESS! Valid steps generated
-        microSteps = candidateSteps;
-        console.log(`✅ Attempt ${attemptNumber} - Gemini Judge PASS (score: ${judgeResult.total_score}/110)`);
-        console.log(`   A (Priority): ${judgeResult.scoring_breakdown.A_priority_score}/50`);
-        console.log(`   B (Quality): ${judgeResult.scoring_breakdown.B_quality_score}/35`);
-        console.log(`   C (Timing): ${judgeResult.scoring_breakdown.C_timing_score}/15`);
-        console.log(`   D (Coherence): ${judgeResult.scoring_breakdown.D_coherence_score}/10`);
-        break;
-
       } catch (error) {
-        console.error(`Attempt ${attemptNumber} - Exception:`, error);
-        if (attemptNumber < maxAttempts) {
-          console.log(`🔄 Retrying after exception...`);
-          continue;
+        console.warn('⚠️ Gemini Layer exception:', error);
+      }
+      
+      // ============= LAYER 2B: OPENAI GENERATION FALLBACK =============
+      if (!microSteps) {
+        console.log('\n=== LAYER 2B: OpenAI generation fallback ===');
+        
+        try {
+          const systemPrompt = buildSystemPrompt(payload.flow);
+          const userPrompt = buildUserPrompt(payload, 1, '');
+          
+          const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${OPENAI_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o',
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+              ],
+              tools: [{
+                type: "function",
+                function: {
+                  name: "generate_microsteps",
+                  description: "Generate exactly 4 theory-aligned micro-steps",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      microSteps: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            title: { type: "string", maxLength: 60 },
+                            description: { type: "string", maxLength: 300 }
+                          },
+                          required: ["title", "description"]
+                        },
+                        minItems: 4,
+                        maxItems: 4
+                      }
+                    },
+                    required: ["microSteps"]
+                  }
+                }
+              }],
+              tool_choice: { type: "function", function: { name: "generate_microsteps" } },
+              max_completion_tokens: 800
+            }),
+          });
+          
+          if (openaiResponse.ok) {
+            const openaiData = await openaiResponse.json();
+            const toolCall = openaiData.choices?.[0]?.message?.tool_calls?.[0];
+            
+            if (toolCall && toolCall.function.name === 'generate_microsteps') {
+              const candidateSteps = JSON.parse(toolCall.function.arguments).microSteps;
+              
+              if (Array.isArray(candidateSteps) && candidateSteps.length === 4) {
+                const basicChecks = validateBasicFormat(candidateSteps, payload);
+                
+                if (basicChecks.valid) {
+                  // Use OpenAI Judge for OpenAI-generated steps
+                  const judgeResult = await callOpenAIJudge({
+                    microSteps: candidateSteps,
+                    originalInput: payload
+                  });
+                  
+                  if (!('error' in judgeResult)) {
+                    const validJudge = judgeResult as JudgeResponse;
+                    if (validJudge.pass_fail === 'PASS') {
+                      console.log('✅ OpenAI Fallback SUCCESS (Judge score:', validJudge.total_score, '/110)');
+                      microSteps = candidateSteps;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('❌ OpenAI fallback failed:', error);
         }
       }
     }
-  }
     
   // Check if we got valid steps from either AI layer
     if (!microSteps) {
@@ -1248,5 +1213,82 @@ async function callGeminiJudge(input: JudgeRequest): Promise<JudgeResponse | { e
   } catch (error) {
     console.error('Gemini Judge exception:', error);
     return { error: 'Judge service failed' };
+  }
+}
+
+// LAYER 2B: OpenAI Judge Fallback
+async function callOpenAIJudge(input: { microSteps: any[]; originalInput: any }): Promise<JudgeResponse | { error: string }> {
+  try {
+    console.log('🔄 Calling OpenAI Judge fallback (gpt-4o)');
+    
+    const systemPrompt = `You are a quality judge for micro-steps designed for neurodivergent individuals with executive function challenges.
+
+Score the micro-steps on these criteria (total: 110 points):
+A. Priority Alignment (50 pts): Steps address stated barriers and follow proper activation sequence
+B. Quality (35 pts): Natural language, specific actions, appropriate difficulty
+C. Timing (15 pts): Proper time anchors and realistic scheduling
+D. Coherence (10 pts): Pragmatic, hygienic, socially appropriate actions
+
+Return ONLY a JSON object with this exact structure:
+{
+  "total_score": number (0-110),
+  "pass_fail": "PASS" | "FAIL" | "SAFETY_VIOLATION",
+  "critique_for_user": "brief user-facing feedback",
+  "critique_for_retry": "technical feedback for regeneration",
+  "scoring_breakdown": {
+    "A_priority_score": number (0-50),
+    "B_quality_score": number (0-35),
+    "C_timing_score": number (0-15),
+    "D_coherence_score": number (0-10)
+  }
+}
+
+PASS if total_score >= 70. Use SAFETY_VIOLATION only for harmful/illegal content.`;
+
+    const userPrompt = `Goal: ${input.originalInput.goalTitle}
+Category: ${input.originalInput.category}
+Barriers: ${input.originalInput.barrier1}, ${input.originalInput.barrier2}
+
+Micro-steps to judge:
+${input.microSteps.map((s: any, i: number) => `${i + 1}. ${s.title}\n   ${s.description}`).join('\n\n')}
+
+Provide scores and brief critique.`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        response_format: { type: "json_object" },
+        max_completion_tokens: 500
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('OpenAI Judge HTTP error:', response.status);
+      return { error: 'OpenAI Judge unavailable' };
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      return { error: 'No response from OpenAI Judge' };
+    }
+
+    const result = JSON.parse(content);
+    console.log('✅ OpenAI Judge response:', result.total_score, '/110');
+    return result as JudgeResponse;
+    
+  } catch (error) {
+    console.error('OpenAI Judge exception:', error);
+    return { error: 'OpenAI Judge failed' };
   }
 }
