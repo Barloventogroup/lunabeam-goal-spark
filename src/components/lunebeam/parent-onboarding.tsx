@@ -268,7 +268,7 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
         )}
         
         {currentStep === 3 && (
-          <div className="bg-card p-8 rounded-lg shadow-md border border-border">
+          <div className="bg-card p-4 rounded-lg shadow-md border border-border">
             <div className="flex items-center justify-between">
               <span className="text-base font-medium text-foreground">Birthday</span>
               <button
