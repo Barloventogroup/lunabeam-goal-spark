@@ -1,6 +1,10 @@
 import { format } from 'date-fns';
 import { AIService } from './aiService';
 
+// Rate limiting for free tier Gemini API (15 RPM = 1 request per 4 seconds)
+let lastApiCallTime = 0;
+const MIN_CALL_INTERVAL_MS = 5000; // 5 seconds between calls to stay under 15 RPM
+
 export interface MicroStep {
   title: string;
   description: string;
@@ -58,8 +62,8 @@ interface WizardData {
  * Uses neurodivergent-informed relationships between challenges
  */
 function inferSecondBarrier(
-  barrier1: string, 
-  goalType: string, 
+  barrier1: string,
+  goalType: string,
   category: string
 ): string {
   // Barrier relationships based on goal type
@@ -128,9 +132,9 @@ function inferSecondBarrier(
  */
 function convertToActionPhrase(goalTitle: string): string {
   if (!goalTitle) return 'your goal';
-  
+
   const lowerTitle = goalTitle.toLowerCase().trim();
-  
+
   // Remove time qualifiers (every morning, daily, etc.)
   const withoutTime = lowerTitle
     .replace(/\s+(every\s+(morning|day|night|evening|week|afternoon))/gi, '')
@@ -138,7 +142,7 @@ function convertToActionPhrase(goalTitle: string): string {
     .replace(/\s+for\s+\d+\s+(minutes?|hours?|weeks?|months?)/gi, '')
     .replace(/\s+\d+x?\s*\/?\s*(per\s+)?(week|day|month)/gi, '')
     .trim();
-  
+
   // Common action verbs that work well in gerund form (-ing)
   const gerundVerbs = [
     { base: 'practice', gerund: 'practicing' },
@@ -153,18 +157,18 @@ function convertToActionPhrase(goalTitle: string): string {
     { base: 'study', gerund: 'studying' },
     { base: 'cook', gerund: 'cooking' }
   ];
-  
+
   for (const verb of gerundVerbs) {
     if (withoutTime.startsWith(verb.base)) {
       return withoutTime.replace(new RegExp(`^${verb.base}`), verb.gerund);
     }
   }
-  
+
   // For "do X" phrases, convert to "doing X"
   if (withoutTime.startsWith('do ')) {
     return withoutTime.replace(/^do /, 'doing ');
   }
-  
+
   // Default: return cleaned version
   return withoutTime || goalTitle.toLowerCase();
 }
@@ -174,12 +178,12 @@ function convertToActionPhrase(goalTitle: string): string {
  */
 function extractGoalObject(goalTitle: string): string {
   const lowerTitle = goalTitle.toLowerCase().trim();
-  
+
   // Remove common leading verbs
   const withoutVerb = lowerTitle
     .replace(/^(practice|study|do|complete|work on|focus on|learn|read|write|cook|clean|exercise|meditate|stretch|walk|run)\s+/i, '')
     .trim();
-  
+
   return withoutVerb || goalTitle;
 }
 
@@ -189,11 +193,11 @@ function extractGoalObject(goalTitle: string): string {
 function translateToActionableVariables(data: WizardData): ActionableVariables {
   const dayOfWeek = format(data.startDate, 'EEEE');
   const startTime = data.customTime ? formatDisplayTime(data.customTime) : '8:00 AM';
-  
+
   // Handle new barrier structure (priority-based) or fallback to old structure
   const barrier1 = data.barriers?.priority1 || data.challengeAreas?.[0] || null;
   const barrier2 = data.barriers?.priority2 || data.challengeAreas?.[1] || null;
-  
+
   return {
     goalAction: convertToActionPhrase(data.goalTitle || 'your goal'),
     goalObject: extractGoalObject(data.goalTitle || 'your goal'),
@@ -215,11 +219,11 @@ function translateToActionableVariables(data: WizardData): ActionableVariables {
  */
 function formatDisplayTime(time: string): string {
   if (!time) return '8:00 AM';
-  
+
   const [hours, minutes] = time.split(':').map(Number);
   const period = hours >= 12 ? 'PM' : 'AM';
   const displayHours = hours % 12 || 12;
-  
+
   return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
 }
 
@@ -228,42 +232,42 @@ function formatDisplayTime(time: string): string {
  */
 function getSmartActivationCue(goalAction: string, startTime: string, dayOfWeek: string): string {
   const lower = goalAction.toLowerCase();
-  
+
   // Cleaning/organizing tasks
   if (lower.includes('clean') || lower.includes('tidy') || lower.includes('organize')) {
     return `At ${startTime} on ${dayOfWeek}, clear one surface (desk or nightstand) and place one item where it belongs for ${goalAction}.`;
   }
-  
+
   // Physical/exercise tasks
   if (lower.includes('exercise') || lower.includes('walk') || lower.includes('run') || lower.includes('workout')) {
     return `At ${startTime} on ${dayOfWeek}, put on your shoes and lace them up for ${goalAction}.`;
   }
-  
+
   // Creative tasks
   if (lower.includes('draw') || lower.includes('write') || lower.includes('practice') || lower.includes('paint')) {
     return `At ${startTime} on ${dayOfWeek}, open your materials and place them in front of you for ${goalAction}.`;
   }
-  
+
   // Reading tasks - distinguish leisure from academic
   if (lower.includes('read')) {
-    const isAcademicReading = lower.includes('study') || 
-                              lower.includes('textbook') || 
-                              lower.includes('homework') ||
-                              lower.includes('assignment') ||
-                              lower.includes('chapter');
-    
+    const isAcademicReading = lower.includes('study') ||
+      lower.includes('textbook') ||
+      lower.includes('homework') ||
+      lower.includes('assignment') ||
+      lower.includes('chapter');
+
     if (isAcademicReading) {
       return `At ${startTime} on ${dayOfWeek}, open your reading materials to the right page for ${goalAction}.`;
     } else {
       return `At ${startTime} on ${dayOfWeek}, pick up the book you're currently reading for ${goalAction}.`;
     }
   }
-  
+
   // Learning/study tasks
   if (lower.includes('study') || lower.includes('homework') || lower.includes('learn')) {
     return `At ${startTime} on ${dayOfWeek}, open your textbook or laptop to the right page or app for ${goalAction}.`;
   }
-  
+
   // Default: generic but sensible
   return `At ${startTime} on ${dayOfWeek}, prepare one thing you need to begin ${goalAction}.`;
 }
@@ -273,42 +277,42 @@ function getSmartActivationCue(goalAction: string, startTime: string, dayOfWeek:
  */
 function getSmartSupporterActivationCue(goalAction: string, startTime: string, dayOfWeek: string): string {
   const lower = goalAction.toLowerCase();
-  
+
   // Cleaning/organizing tasks
   if (lower.includes('clean') || lower.includes('tidy') || lower.includes('organize')) {
     return `At ${startTime} on ${dayOfWeek}, help them clear one surface and place one item where it belongs for ${goalAction}.`;
   }
-  
+
   // Physical/exercise tasks
   if (lower.includes('exercise') || lower.includes('walk') || lower.includes('run') || lower.includes('workout')) {
     return `At ${startTime} on ${dayOfWeek}, hand them their shoes and encourage them to put them on for ${goalAction}.`;
   }
-  
+
   // Creative tasks
   if (lower.includes('draw') || lower.includes('write') || lower.includes('practice') || lower.includes('paint')) {
     return `At ${startTime} on ${dayOfWeek}, place their materials in front of them for ${goalAction}.`;
   }
-  
+
   // Reading tasks - distinguish leisure from academic
   if (lower.includes('read')) {
-    const isAcademicReading = lower.includes('study') || 
-                              lower.includes('textbook') || 
-                              lower.includes('homework') ||
-                              lower.includes('assignment') ||
-                              lower.includes('chapter');
-    
+    const isAcademicReading = lower.includes('study') ||
+      lower.includes('textbook') ||
+      lower.includes('homework') ||
+      lower.includes('assignment') ||
+      lower.includes('chapter');
+
     if (isAcademicReading) {
       return `At ${startTime} on ${dayOfWeek}, help them open their reading materials to the right page for ${goalAction}.`;
     } else {
       return `At ${startTime} on ${dayOfWeek}, hand them the book they're currently reading for ${goalAction}.`;
     }
   }
-  
+
   // Learning/study tasks
   if (lower.includes('study') || lower.includes('homework') || lower.includes('learn')) {
     return `At ${startTime} on ${dayOfWeek}, help them open their textbook or laptop to the right page or app for ${goalAction}.`;
   }
-  
+
   // Default: generic but sensible
   return `At ${startTime} on ${dayOfWeek}, hand them the first thing they need for ${goalAction}.`;
 }
@@ -318,25 +322,25 @@ function getSmartSupporterActivationCue(goalAction: string, startTime: string, d
  */
 function getSmartActivationTitle(goalAction: string): string {
   const lower = goalAction.toLowerCase();
-  
+
   if (lower.includes('water') || lower.includes('drink')) return 'Grab water bottle';
   if (lower.includes('exercise') || lower.includes('walk') || lower.includes('run')) return 'Put on shoes';
   if (lower.includes('clean') || lower.includes('tidy')) return 'Clear one surface';
-  
+
   // Reading - distinguish leisure from academic
   if (lower.includes('read')) {
-    const isAcademicReading = lower.includes('study') || 
-                              lower.includes('textbook') || 
-                              lower.includes('homework') ||
-                              lower.includes('chapter');
+    const isAcademicReading = lower.includes('study') ||
+      lower.includes('textbook') ||
+      lower.includes('homework') ||
+      lower.includes('chapter');
     return isAcademicReading ? 'Open reading materials' : 'Pick up book';
   }
-  
+
   if (lower.includes('study') || lower.includes('homework')) return 'Open materials';
   if (lower.includes('practice') || lower.includes('instrument')) return 'Get instrument';
   if (lower.includes('cook') || lower.includes('meal')) return 'Get ingredients';
   if (lower.includes('write') || lower.includes('journal')) return 'Open notebook';
-  
+
   return 'Start preparing';
 }
 
@@ -469,10 +473,10 @@ export function getPMBarrierTemplate(
   goalTitle: string,
   skillLevel: number
 ): { title: string; description: string; estimatedDuration: number } {
-  
+
   const keywords = parseBarrierKeywords(context);
   const goalObject = extractGoalObject(goalTitle);
-  
+
   const templates: Record<string, { title: string; description: string }> = {
     initiation: keywords.sofa || keywords.bed ? {
       title: `Stand up and take one step toward practice`,
@@ -484,7 +488,7 @@ export function getPMBarrierTemplate(
       title: `Touch the practice materials`,
       description: `At practice time, your only job is to touch what you need for ${goalObject}. Pick it up, put it down. That's it. The hard part is starting.`
     },
-    
+
     attention: keywords.phone ? {
       title: `Put phone in another room, set 20-minute timer`,
       description: `Before starting ${goalObject}, walk your phone to another room (not just out of reach). Then set a visible 20-minute timer and focus on just one small part of practice.`
@@ -495,7 +499,7 @@ export function getPMBarrierTemplate(
       title: `Set visible 20-minute timer for focused work`,
       description: `Before starting ${goalObject}, set a timer you can see for 20 minutes. Tell yourself you only need to focus for these 20 minutes, then you can take a break.`
     },
-    
+
     time: keywords.forget || keywords.musicStand || keywords.supplies ? {
       title: `Put practice materials by the door tonight`,
       description: `Tonight before bed, gather everything you need for ${goalObject} and put it by the door. Set two phone alarms: one for 10 minutes before practice, one for practice time.`
@@ -503,7 +507,7 @@ export function getPMBarrierTemplate(
       title: `Set two alarms: prep reminder and start time`,
       description: `Set two alarms for ${goalObject}: one 10 minutes before practice time (to gather materials), and one at practice time. Label them clearly so you know what to do.`
     },
-    
+
     planning: keywords.overwhelmed ? {
       title: `Write down the tiniest first step (under 5 minutes)`,
       description: `On paper, break ${goalObject} into the smallest possible first action that takes under 5 minutes. Just do that one tiny piece. Ignore the rest for now.`
@@ -512,9 +516,9 @@ export function getPMBarrierTemplate(
       description: `Get paper and number it 1, 2, 3. For each number, write one tiny action for ${goalObject}. Each action should take less than 10 minutes. Just follow the numbers.`
     }
   };
-  
+
   const template = templates[barrierId] || templates.initiation;
-  
+
   return {
     ...template,
     estimatedDuration: barrierId === 'attention' ? 20 : 5
@@ -530,10 +534,10 @@ export function getPMSupporterBarrierTemplate(
   goalTitle: string,
   helperName: string
 ): { title: string; description: string; estimatedDuration: number } {
-  
+
   const keywords = parseBarrierKeywords(context);
   const goalObject = extractGoalObject(goalTitle);
-  
+
   const templates: Record<string, { title: string; description: string }> = {
     initiation: keywords.sofa || keywords.bed ? {
       title: `${helperName} helps them stand and walk to practice area`,
@@ -542,7 +546,7 @@ export function getPMSupporterBarrierTemplate(
       title: `${helperName} hands them materials and stays nearby`,
       description: `At practice time, ${helperName} brings the materials for ${goalObject} to them, places them within reach, and sits nearby for the first 5 minutes of practice.`
     },
-    
+
     attention: keywords.phone ? {
       title: `${helperName} collects phone, sets timer, checks in at 20 min`,
       description: `${helperName} asks for their phone at practice time, puts it in another room, and sets a visible 20-minute timer. Checks in when timer rings to celebrate focus.`
@@ -550,7 +554,7 @@ export function getPMSupporterBarrierTemplate(
       title: `${helperName} sets up space and 20-minute timer`,
       description: `${helperName} helps clear the practice space before ${goalObject}, sets a visible 20-minute timer, and checks in halfway through to see if they need support.`
     },
-    
+
     time: keywords.forget || keywords.supplies ? {
       title: `${helperName} preps materials the night before`,
       description: `The night before, ${helperName} helps gather everything needed for ${goalObject} and puts it by the door. Sets two alarms (prep + start) together.`
@@ -558,7 +562,7 @@ export function getPMSupporterBarrierTemplate(
       title: `${helperName} gives 10-minute and start-time reminders`,
       description: `${helperName} gives a friendly 10-minute warning before ${goalObject} practice, then a start-time check-in. Helps gather materials during the 10-minute window.`
     },
-    
+
     planning: keywords.overwhelmed ? {
       title: `${helperName} breaks task into one 5-minute action`,
       description: `Together, ${helperName} and them write down just the first tiny step for ${goalObject} (under 5 minutes). ${helperName} reassures them that's all they need to do today.`
@@ -567,9 +571,9 @@ export function getPMSupporterBarrierTemplate(
       description: `${helperName} sits down with paper, numbers 1-2-3, and together they write one small action per number for ${goalObject}. ${helperName} stays nearby as they follow the list.`
     }
   };
-  
+
   const template = templates[barrierId] || templates.initiation;
-  
+
   return {
     ...template,
     estimatedDuration: barrierId === 'attention' ? 20 : 10
@@ -582,14 +586,14 @@ export function getPMSupporterBarrierTemplate(
 function getSmartCompletionStep(goalAction: string, goalTitle: string, flow: 'individual' | 'supporter'): MicroStep {
   const lower = goalAction.toLowerCase();
   const object = extractGoalObject(goalTitle);
-  
+
   if (flow === 'supporter') {
     return {
       title: `Celebrate finishing`,
       description: `Be there as they complete ${object}. Help them mark the accomplishment - maybe snap a photo together, give a high-five, or ask them to share what they learned. Celebrate the effort!`
     };
   }
-  
+
   // Individual flow - keep it simple and natural
   return {
     title: `You did it!`,
@@ -608,10 +612,10 @@ export async function generateMicroStepsSmart(
     // Detect if prerequisite is concrete (single item) or uncertain
     const prereqText = data.customPrerequisites || '';
     const uncertaintyKeywords = ['not sure', 'don\'t know', 'need to find', 'where to', 'how to', 'unsure', 'no idea'];
-    const prerequisiteIsConcrete = prereqText.length > 0 && 
-                                   prereqText.length < 50 && // Short = likely concrete
-                                   !uncertaintyKeywords.some(kw => prereqText.toLowerCase().includes(kw));
-    
+    const prerequisiteIsConcrete = prereqText.length > 0 &&
+      prereqText.length < 50 && // Short = likely concrete
+      !uncertaintyKeywords.some(kw => prereqText.toLowerCase().includes(kw));
+
     // Handle new barrier structure (priority-based) or fallback to old structure  
     const barrier1 = data.barriers?.priority1 || data.challengeAreas?.[0] || 'initiation';
     const barrier2 = data.barriers?.priority2 || data.challengeAreas?.[1] || inferSecondBarrier(
@@ -651,11 +655,11 @@ export async function generateMicroStepsSmart(
 
     // Get helper name for personalization
     const helperName = data.teachingHelper?.helperName || data.supporterName || '';
-    
+
     // Combine barrier context from new structure or old field
     const barrierContextCombined = [
-      data.barriers?.context, 
-      data.barrierContext, 
+      data.barriers?.context,
+      data.barrierContext,
       ...contextHints
     ].filter(Boolean).join(' ');
 
@@ -678,14 +682,25 @@ export async function generateMicroStepsSmart(
     };
 
     console.log('[generateMicroStepsSmart] Calling AI service with payload:', payload);
+
+    // Rate limiting: ensure minimum interval between API calls
+    const now = Date.now();
+    const timeSinceLastCall = now - lastApiCallTime;
+    if (timeSinceLastCall < MIN_CALL_INTERVAL_MS) {
+      const waitTime = MIN_CALL_INTERVAL_MS - timeSinceLastCall;
+      console.log(`[Rate Limit] Waiting ${Math.round(waitTime / 1000)}s before API call (free tier protection)`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    lastApiCallTime = Date.now();
+
     const { microSteps, error } = await AIService.getMicroSteps(payload);
     console.log('[generateMicroStepsSmart] AI response:', { microSteps, error, stepCount: microSteps?.length });
-    
+
     if (error || !microSteps || microSteps.length !== 4) {
       console.error('AI generation failed:', { error, stepCount: microSteps?.length });
       throw new Error(`AI temporarily unavailable: ${error || 'No steps generated'}`);
     }
-    
+
     return microSteps;
   } catch (err) {
     console.error('Smart generation error:', err);
@@ -698,11 +713,11 @@ export async function generateMicroStepsSmart(
  */
 function parsePrerequisiteIntoAction(prereqText: string, dayOfWeek: string, flow: 'individual' | 'supporter'): string {
   const lower = prereqText.toLowerCase();
-  
+
   // Detect uncertainty/confusion keywords
   const uncertaintyKeywords = ['not sure', 'don\'t know', 'need to find', 'where to', 'how to', 'unsure'];
   const hasUncertainty = uncertaintyKeywords.some(kw => lower.includes(kw));
-  
+
   if (flow === 'supporter') {
     if (hasUncertainty || lower.includes('find') || lower.includes('locate')) {
       return `Before ${dayOfWeek}, help them research options online or ask around. Write down 2-3 possibilities on a sticky note so they have concrete choices.`;
@@ -715,7 +730,7 @@ function parsePrerequisiteIntoAction(prereqText: string, dayOfWeek: string, flow
     }
     return `Before ${dayOfWeek}, help them get everything ready for their goal.`;
   }
-  
+
   // Individual flow - generate natural research/exploration instructions
   if (hasUncertainty || lower.includes('find') || lower.includes('locate')) {
     if (lower.includes('friend') || lower.includes('people') || lower.includes('partner')) {
@@ -726,19 +741,19 @@ function parsePrerequisiteIntoAction(prereqText: string, dayOfWeek: string, flow
     }
     return `By Wednesday, spend about 20 minutes researching 3 possible options online. Make a list. Then by ${dayOfWeek}, choose your top option to try.`;
   }
-  
+
   if (lower.includes('help') || lower.includes('someone')) {
     return `By Wednesday, text or talk to 2 people who might be able to help. Then by ${dayOfWeek}, follow up with whoever said yes and confirm a time.`;
   }
-  
+
   if (lower.includes('material') || lower.includes('supplies') || lower.includes('book') || lower.includes('equipment')) {
     return `By Wednesday, gather all the materials you need. Then by ${dayOfWeek}, place them in one easy-to-find spot.`;
   }
-  
+
   if (lower.includes('permission') || lower.includes('approval')) {
     return `By Wednesday, ask for permission. Then by ${dayOfWeek}, get final confirmation.`;
   }
-  
+
   // Catch-all for other prerequisites
   return `By Wednesday, take the first step to address this: ${prereqText.slice(0, 60)}. Then by ${dayOfWeek}, double-check that you're ready.`;
 }
@@ -769,6 +784,6 @@ function getBarrierTitle(barrierId: string, context: 'primary' | 'secondary' | '
       prep: 'Create your sequence'
     }
   };
-  
+
   return titles[barrierId]?.[context] || 'Complete this step';
 }

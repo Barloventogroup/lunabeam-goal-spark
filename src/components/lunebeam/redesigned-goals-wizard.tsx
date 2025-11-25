@@ -168,6 +168,8 @@ const categories = [{
   detailedExamples: ['Play guitar for 30 minutes', 'Paint or draw weekly', 'Join a sports team', 'Play board games with friends', 'Learn a new hobby', 'Attend social events']
 }];
 
+import { efGoals } from '@/data/ef-goals-data';
+
 // Example goals interface and data
 interface ExampleGoal {
   id: string;
@@ -175,6 +177,7 @@ interface ExampleGoal {
   description: string;
   suggestedType: 'reminder' | 'progressive_mastery' | 'practice' | 'new_skill';
   categoryId: string;
+  efTags?: string[];
 }
 interface FrequencySuggestion {
   frequency: number;
@@ -185,267 +188,8 @@ interface TeachingHelper {
   helperName: string;
   relationship: 'parent' | 'coach' | 'friend' | 'supporter';
 }
-const exampleGoalsByCategory: Record<string, ExampleGoal[]> = {
-  health: [{
-    id: 'walk-daily',
-    title: 'Walk daily for 30 minutes',
-    description: 'Build cardiovascular health and energy through regular walking',
-    suggestedType: 'reminder',
-    categoryId: 'health'
-  }, {
-    id: 'stretch-morning',
-    title: 'Stretch every morning',
-    description: 'Improve flexibility and reduce tension with daily stretching',
-    suggestedType: 'reminder',
-    categoryId: 'health'
-  }, {
-    id: 'sleep-8hours',
-    title: 'Sleep 8 hours per night',
-    description: 'Establish consistent sleep schedule for better rest',
-    suggestedType: 'reminder',
-    categoryId: 'health'
-  }, {
-    id: 'drink-water',
-    title: 'Drink more water',
-    description: 'Stay hydrated by tracking daily water intake',
-    suggestedType: 'reminder',
-    categoryId: 'health'
-  }, {
-    id: 'meditation',
-    title: 'Practice meditation',
-    description: 'Build mindfulness and reduce stress through daily meditation',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'health'
-  }, {
-    id: 'healthy-meals',
-    title: 'Eat healthy meals',
-    description: 'Improve nutrition by planning and preparing balanced meals',
-    suggestedType: 'reminder',
-    categoryId: 'health'
-  }],
-  education: [{
-    id: 'homework-daily',
-    title: 'Complete homework daily',
-    description: 'Stay on top of assignments with consistent daily work',
-    suggestedType: 'reminder',
-    categoryId: 'education'
-  }, {
-    id: 'study-evening',
-    title: 'Study for 1 hour each evening',
-    description: 'Build strong study habits through regular practice',
-    suggestedType: 'reminder',
-    categoryId: 'education'
-  }, {
-    id: 'read-bedtime',
-    title: 'Read 30 minutes before bed',
-    description: 'Improve reading skills and comprehension through daily practice',
-    suggestedType: 'reminder',
-    categoryId: 'education'
-  }, {
-    id: 'organized-notes',
-    title: 'Take organized notes',
-    description: 'Learn effective note-taking strategies for better retention',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'education'
-  }, {
-    id: 'math-practice',
-    title: 'Practice math problems',
-    description: 'Strengthen math skills through regular problem-solving',
-    suggestedType: 'reminder',
-    categoryId: 'education'
-  }, {
-    id: 'test-prep',
-    title: 'Prepare for upcoming tests',
-    description: 'Develop effective test preparation strategies',
-    suggestedType: 'practice',
-    categoryId: 'education'
-  }],
-  employment: [{
-    id: 'resume-weekly',
-    title: 'Update resume weekly',
-    description: 'Keep resume current with latest skills and experiences',
-    suggestedType: 'reminder',
-    categoryId: 'employment'
-  }, {
-    id: 'interview-skills',
-    title: 'Practice interview skills',
-    description: 'Build confidence through mock interviews and preparation',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'employment'
-  }, {
-    id: 'learn-software',
-    title: 'Learn new software',
-    description: 'Expand technical skills by mastering new tools',
-    suggestedType: 'new_skill',
-    categoryId: 'employment'
-  }, {
-    id: 'network-professionals',
-    title: 'Network with professionals',
-    description: 'Build connections through regular professional interactions',
-    suggestedType: 'reminder',
-    categoryId: 'employment'
-  }, {
-    id: 'apply-jobs',
-    title: 'Apply for jobs daily',
-    description: 'Maintain consistent job search momentum',
-    suggestedType: 'reminder',
-    categoryId: 'employment'
-  }, {
-    id: 'work-portfolio',
-    title: 'Develop work portfolio',
-    description: 'Showcase skills and accomplishments professionally',
-    suggestedType: 'new_skill',
-    categoryId: 'employment'
-  }],
-  independent_living: [{
-    id: 'cook-meal',
-    title: 'Cook a meal from scratch',
-    description: 'Learn to prepare complete meals independently',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'independent_living'
-  }, {
-    id: 'clean-room',
-    title: 'Clean room',
-    description: 'Learn to clean and organize your room effectively',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'independent_living'
-  }, {
-    id: 'track-budget',
-    title: 'Track monthly budget',
-    description: 'Develop financial awareness through budget tracking',
-    suggestedType: 'reminder',
-    categoryId: 'independent_living'
-  }, {
-    id: 'public-transport',
-    title: 'Learn public transportation',
-    description: 'Master navigating buses, trains, and routes independently',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'independent_living'
-  }, {
-    id: 'laundry-independent',
-    title: 'Do laundry independently',
-    description: 'Learn the complete laundry process from start to finish',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'independent_living'
-  }, {
-    id: 'grocery-shopping',
-    title: 'Grocery shopping',
-    description: 'Plan and execute grocery trips independently',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'independent_living'
-  }],
-  social_skills: [{
-    id: 'start-conversations',
-    title: 'Start conversations with peers',
-    description: 'Build social confidence by initiating friendly interactions',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'social_skills'
-  }, {
-    id: 'speak-up-meetings',
-    title: 'Practice speaking up in meetings',
-    description: 'Develop self-advocacy skills in group settings',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'social_skills'
-  }, {
-    id: 'join-social-group',
-    title: 'Join a social group',
-    description: 'Connect with others who share similar interests',
-    suggestedType: 'new_skill',
-    categoryId: 'social_skills'
-  }, {
-    id: 'express-needs',
-    title: 'Express needs clearly',
-    description: 'Learn to communicate wants and needs effectively',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'social_skills'
-  }, {
-    id: 'team-projects',
-    title: 'Work on team projects',
-    description: 'Develop collaboration and teamwork skills',
-    suggestedType: 'practice',
-    categoryId: 'social_skills'
-  }, {
-    id: 'build-friendships',
-    title: 'Build friendships',
-    description: 'Strengthen social connections and relationships',
-    suggestedType: 'practice',
-    categoryId: 'social_skills'
-  }],
-  postsecondary: [{
-    id: 'research-programs',
-    title: 'Research college programs',
-    description: 'Explore and compare educational options after high school',
-    suggestedType: 'new_skill',
-    categoryId: 'postsecondary'
-  }, {
-    id: 'application-essays',
-    title: 'Complete application essays',
-    description: 'Craft compelling personal statements for applications',
-    suggestedType: 'new_skill',
-    categoryId: 'postsecondary'
-  }, {
-    id: 'campus-tours',
-    title: 'Visit campus tours',
-    description: 'Experience potential schools firsthand',
-    suggestedType: 'reminder',
-    categoryId: 'postsecondary'
-  }, {
-    id: 'apply-scholarships',
-    title: 'Apply for scholarships',
-    description: 'Seek financial aid opportunities for education',
-    suggestedType: 'reminder',
-    categoryId: 'postsecondary'
-  }, {
-    id: 'study-strategies',
-    title: 'Develop study strategies',
-    description: 'Learn effective techniques for college-level learning',
-    suggestedType: 'progressive_mastery',
-    categoryId: 'postsecondary'
-  }, {
-    id: 'career-path',
-    title: 'Plan career path',
-    description: 'Map out educational and career goals',
-    suggestedType: 'new_skill',
-    categoryId: 'postsecondary'
-  }],
-  fun_recreation: [{
-    id: 'play-guitar',
-    title: 'Play guitar for 30 minutes',
-    description: 'Build musical skills through regular practice',
-    suggestedType: 'reminder',
-    categoryId: 'fun_recreation'
-  }, {
-    id: 'paint-draw',
-    title: 'Paint or draw weekly',
-    description: 'Express creativity through visual art',
-    suggestedType: 'reminder',
-    categoryId: 'fun_recreation'
-  }, {
-    id: 'sports-team',
-    title: 'Join a sports team',
-    description: 'Participate in organized athletics and teamwork',
-    suggestedType: 'new_skill',
-    categoryId: 'fun_recreation'
-  }, {
-    id: 'board-games',
-    title: 'Play board games with friends',
-    description: 'Enjoy social gaming and strategic thinking',
-    suggestedType: 'reminder',
-    categoryId: 'fun_recreation'
-  }, {
-    id: 'new-hobby',
-    title: 'Learn a new hobby',
-    description: 'Explore and develop a completely new interest',
-    suggestedType: 'new_skill',
-    categoryId: 'fun_recreation'
-  }, {
-    id: 'social-events',
-    title: 'Attend social events',
-    description: 'Engage in community and social activities',
-    suggestedType: 'reminder',
-    categoryId: 'fun_recreation'
-  }]
-};
+// Using imported efGoals instead of hardcoded object
+const exampleGoalsByCategory: Record<string, ExampleGoal[]> = {}; // Kept for type compatibility if needed, but unused
 
 // Goal types
 const goalTypes = [{
@@ -462,21 +206,103 @@ const goalTypes = [{
 // Experience levels
 const challengeAreas = [{
   id: 'initiation',
-  label: 'Just Starting',
-  description: 'Initiation'
+  label: 'Getting started & finishing 🚀',
+  description: 'Starting tasks without delay and following through to completion'
 }, {
-  id: 'attention',
-  label: 'Staying Focused',
-  description: 'Attention'
+  id: 'planning_organization',
+  label: 'Planning, organizing & time 📋',
+  description: 'Managing materials, planning steps, and estimating time'
 }, {
-  id: 'time',
-  label: 'Remembering',
-  description: 'Time'
+  id: 'attention_memory',
+  label: 'Focus & remembering 🎯',
+  description: 'Staying focused and holding information in mind while working'
 }, {
-  id: 'planning',
-  label: 'Knowing What\'s Next',
-  description: 'Planning'
+  id: 'emotional_regulation',
+  label: 'Emotions & stress 💚',
+  description: 'Managing frustration, stress, and emotional responses'
+}, {
+  id: 'flexibility',
+  label: 'Handling change & switching 🔄',
+  description: 'Adapting when plans change and switching between tasks'
+}, {
+  id: 'self_advocacy',
+  label: 'Self-advocacy & independence 🌟',
+  description: 'Asking for help, self-monitoring, and building independence'
 }];
+
+// EF-specific sub-barriers for contextualized obstacle identification
+const efBarrierMapping: Record<string, Array<{ id: string, label: string, description: string }>> = {
+  'initiation': [
+    { id: 'unclear_start', label: "Don't know where to begin", description: 'Unclear what the first step should be' },
+    { id: 'distracted_before_start', label: 'Get distracted before starting', description: 'Lose focus before beginning the task' },
+    { id: 'lose_motivation', label: 'Lose motivation halfway through', description: 'Start strong but energy fades' },
+    { id: 'forget_to_start', label: 'Forget to start on time', description: 'Miss the planned start time' }
+  ],
+  'planning_organization': [
+    { id: 'unclear_steps', label: 'Unclear what steps to take', description: 'Don\'t know the sequence of actions' },
+    { id: 'lose_materials', label: 'Lose track of materials', description: 'Can\'t find what I need when I need it' },
+    { id: 'underestimate_time', label: 'Underestimate how long it takes', description: 'Run out of time before finishing' },
+    { id: 'overwhelmed_by_task', label: 'Get overwhelmed by the whole task', description: 'Task feels too big to tackle' }
+  ],
+  'attention_memory': [
+    { id: 'phone_distracts', label: 'Phone/notifications distract me', description: 'External interruptions pull focus away' },
+    { id: 'mind_wanders', label: 'Mind wanders to other things', description: 'Internal thoughts take over' },
+    { id: 'forget_what_doing', label: 'Forget what I was doing', description: 'Lose track mid-task' },
+    { id: 'cant_focus_long', label: 'Can\'t stay focused for long', description: 'Attention fades quickly' }
+  ],
+  'emotional_regulation': [
+    { id: 'too_anxious', label: 'Feel too anxious to try', description: 'Anxiety prevents starting' },
+    { id: 'get_frustrated', label: 'Get frustrated and quit', description: 'Low frustration tolerance' },
+    { id: 'worry_wrong', label: 'Worry about doing it wrong', description: 'Perfectionism blocks action' },
+    { id: 'feel_overwhelmed', label: 'Feel overwhelmed by pressure', description: 'Stress makes it hard to function' }
+  ],
+  'flexibility': [
+    { id: 'hard_adapt_changes', label: 'Hard to adapt when plans change', description: 'Struggle with unexpected shifts' },
+    { id: 'stuck_one_approach', label: 'Get stuck on one approach', description: 'Can\'t try different methods' },
+    { id: 'struggle_switch_tasks', label: 'Struggle to switch between tasks', description: 'Difficulty with task transitions' },
+    { id: 'react_poorly_interruptions', label: 'React poorly to interruptions', description: 'Get derailed by disruptions' }
+  ],
+  'self_advocacy': [
+    { id: 'dont_know_who_ask', label: 'Don\'t know who to ask for help', description: 'Unclear where to find support' },
+    { id: 'embarrassed_asking', label: 'Feel embarrassed asking questions', description: 'Social anxiety about seeking help' },
+    { id: 'unsure_explain_needs', label: 'Unsure how to explain what I need', description: 'Communication difficulty' },
+    { id: 'try_alone', label: 'Try to do everything alone', description: 'Resist asking for support' }
+  ]
+};
+
+// Map sub-barriers back to core EF types for micro-step generation
+const barrierToEFMapping: Record<string, string> = {
+  // Initiation sub-barriers
+  'unclear_start': 'planning',
+  'distracted_before_start': 'attention',
+  'lose_motivation': 'emotional_regulation',
+  'forget_to_start': 'time',
+  // Planning sub-barriers
+  'unclear_steps': 'planning',
+  'lose_materials': 'planning',
+  'underestimate_time': 'time',
+  'overwhelmed_by_task': 'planning',
+  // Attention/Memory sub-barriers
+  'phone_distracts': 'attention',
+  'mind_wanders': 'attention',
+  'forget_what_doing': 'time',
+  'cant_focus_long': 'attention',
+  // Emotional regulation sub-barriers
+  'too_anxious': 'emotional_regulation',
+  'get_frustrated': 'emotional_regulation',
+  'worry_wrong': 'emotional_regulation',
+  'feel_overwhelmed': 'emotional_regulation',
+  // Flexibility sub-barriers
+  'hard_adapt_changes': 'flexibility',
+  'stuck_one_approach': 'flexibility',
+  'struggle_switch_tasks': 'flexibility',
+  'react_poorly_interruptions': 'flexibility',
+  // Self-advocacy sub-barriers
+  'dont_know_who_ask': 'self_advocacy',
+  'embarrassed_asking': 'self_advocacy',
+  'unsure_explain_needs': 'self_advocacy',
+  'try_alone': 'self_advocacy'
+};
 
 // Support contexts
 const supportContexts = [{
@@ -662,6 +488,9 @@ interface WizardData {
   supportedPersonName?: string;
   isMyIdea?: boolean;
 
+  // Step 0.5: EF Focus
+  efFocus?: string;
+
   // Step 1: Goal description
   goalTitle: string;
   category?: string;
@@ -787,6 +616,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     supportedPersonId: initialIndividualId,
     goalTitle: prefillData?.title || '',
     category: prefillData?.category,
+    efFocus: prefillData?.ef_focus_areas?.[0] || undefined,
     hasPrerequisites: true,
     prerequisites: {
       ready: true
@@ -838,7 +668,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       startDate: data.startDate,
       category: data.category,
       hasPrerequisites: data.hasPrerequisites,
-      frequency: data.frequency
+      frequency: data.frequency,
+      efFocus: data.efFocus
     };
 
     // Clear type-specific fields
@@ -894,6 +725,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const [modalView, setModalView] = useState<'categories' | 'examples'>('categories');
   const [selectedCategoryForModal, setSelectedCategoryForModal] = useState<typeof categories[0] | null>(null);
   const [showFrequencySuggestion, setShowFrequencySuggestion] = useState(false);
+  const [showingResultsInterstitial, setShowingResultsInterstitial] = useState(false);
   const {
     toast
   } = useToast();
@@ -956,8 +788,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   useEffect(() => {
     if (currentStep === null && actuallySupportsAnyone !== null) {
       // Show step 0 if user actually supports anyone (regardless of user_type classification)
-      setCurrentStep(actuallySupportsAnyone ? 0 : 1);
-      if (!actuallySupportsAnyone) {
+      // If user is supporter, step 0 is "Who is this for?"
+      // If user is individual, step 0 is "EF Focus" (now inserted as step 0.5 effectively)
+
+      // Let's re-map the steps:
+      // Step 0: Who is this for? (Supporters only)
+      // Step 1: EF Focus (Everyone)
+      // Step 2: Goal Definition (Category/Title)
+
+      if (actuallySupportsAnyone) {
+        setCurrentStep(0);
+      } else {
+        setCurrentStep(1); // Skip "Who is this for?"
         setData(prev => ({
           ...prev,
           recipient: 'self'
@@ -977,7 +819,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         supportedPersonId: data.supportedPersonId,
         supportedPersonName: data.supportedPersonName,
         startDate: data.startDate,
-        frequency: 3
+        frequency: 3,
+        efFocus: data.efFocus
       };
       if (data.goalType === 'progressive_mastery') {
         // Switching to PM: clear habit-specific fields
@@ -1191,8 +1034,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
     // Progressive Mastery flow titles
     if (data.goalType === 'progressive_mastery') {
-      const pmSupporterTitles = ['Who is this goal for?', `What skill does ${isForOther ? name || 'they' : 'you'} want to learn?`, `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`, `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, 'Quick Skill Check', isForOther ? `How experienced is ${name || 'they'}?` : 'How experienced are you?', isForOther ? `How confident is ${name || 'they'}?` : 'How confident are you?', isForOther ? `How much help does ${name || 'they'} need?` : 'How much help do you need?', 'What might get in the way?', 'Who can help you learn this skill?', 'Set your practice schedule', 'Review Your Learning Plan'];
-      const pmNonSupporterTitles = ['What skill do you want to learn?', 'Why does this matter to you?', 'Prerequisites check', 'Quick Skill Check', 'How experienced are you?', 'How confident are you?', 'How much help do you need?', 'What might get in the way?', 'Who can help you learn this skill?', 'Set your practice schedule', 'Review Your Learning Plan'];
+      const pmSupporterTitles = ['Who is this goal for?', 'Focus Area', `What skill does ${isForOther ? name || 'they' : 'you'} want to learn?`, `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`, `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, 'Quick Skill Check', isForOther ? `How experienced is ${name || 'they'}?` : 'How experienced are you?', isForOther ? `How confident is ${name || 'they'}?` : 'How confident are you?', isForOther ? `How much help does ${name || 'they'} need?` : 'How much help do you need?', 'What might get in the way?', 'Who can help you learn this skill?', 'Set your practice schedule', 'Review Your Learning Plan'];
+      const pmNonSupporterTitles = ['Focus Area', 'What skill do you want to learn?', 'Why does this matter to you?', 'Prerequisites check', 'Quick Skill Check', 'How experienced are you?', 'How confident are you?', 'How much help do you need?', 'What might get in the way?', 'Who can help you learn this skill?', 'Set your practice schedule', 'Review Your Learning Plan'];
       if (actuallySupportsAnyone) {
         return pmSupporterTitles[currentStep] || 'Create Your Goal';
       } else {
@@ -1204,8 +1047,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const step9Title = skillLevel >= 4 ? data.goalType === 'new_skill' ? actuallySupportsAnyone ? `When will ${isForOther ? name || 'they' : 'you'} work on this project?` : "When will you work on this project?" : actuallySupportsAnyone ? `Let's build a reliable structure for ${isForOther ? name || 'they' : 'you'}` : "When will you do it?" : "Who can help you learn this skill?";
     const step10Title = skillLevel >= 4 ? "Who's in your corner?" : "Set your practice schedule";
     const step11Title = skillLevel >= 4 ? isSupporter ? "Rewards & Incentives" : "Review Your Plan" : "Review Your Learning Plan";
-    const supporterTitles = ['Who is this goal for?', `What is the one clear, observable action ${isForOther ? name || 'they' : 'you'} need${isForOther && name ? 's' : ''} to establish?`, `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`, `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, 'Quick Skill Check', 'Experience Level', 'Confidence Level', 'Support Needed', `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`, step9Title, step10Title, step11Title, 'Review Your Plan'];
-    const nonSupporterTitles = ['What do you want to do?', 'Why does this matter to you?', 'Prerequisites check', 'Quick Skill Check', 'Experience Level', 'Confidence Level', 'Support Needed', 'Which part usually feels the trickiest when you start this?', step9Title, step10Title, step11Title];
+    const supporterTitles = ['Who is this goal for?', 'Focus Area', `What is the one clear, observable action ${isForOther ? name || 'they' : 'you'} need${isForOther && name ? 's' : ''} to establish?`, `Why does this matter${isForOther ? name ? ` to ${name}` : ' to them' : ' to you'}?`, `Before ${isForOther ? name || 'they' : 'you'} start${isForOther && name ? 's' : ''}, what is the single most critical prerequisite that is currently missing?`, 'Quick Skill Check', 'Experience Level', 'Confidence Level', 'Support Needed', `Based on your observations, which specific executive function barrier will most likely slow ${name ? `${name}'s` : 'their'} progress?`, step9Title, step10Title, step11Title, 'Review Your Plan'];
+    const nonSupporterTitles = ['Focus Area', 'What do you want to do?', 'Why does this matter to you?', 'Prerequisites check', 'Quick Skill Check', 'Experience Level', 'Confidence Level', 'Support Needed', 'Which part usually feels the trickiest when you start this?', step9Title, step10Title, step11Title];
     if (actuallySupportsAnyone) {
       return supporterTitles[currentStep] || '';
     } else {
@@ -1316,32 +1159,34 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         case 0:
           return data.recipient === 'self' || data.recipient === 'other' && data.supportedPersonId;
         case 1:
-          return data.goalTitle.trim().length > 0 && !!data.goalType;
+          return !!data.efFocus;
         case 2:
+          return data.goalTitle.trim().length > 0 && !!data.goalType;
+        case 3:
           return true;
         // Motivation OPTIONAL
-        case 3:
+        case 4:
           return data.prerequisites?.ready === true || data.prerequisites?.ready === false && !!data.prerequisites?.needs;
         // Prerequisites REQUIRED
-        case 4:
+        case 5:
           return true;
         // Skill Assessment Intro - always can proceed
-        case 5:
+        case 6:
           return !!data.pmAssessment?.q1_experience;
         // Experience REQUIRED
-        case 6:
+        case 7:
           return !!data.pmAssessment?.q2_confidence;
         // Confidence REQUIRED
-        case 7:
+        case 8:
           return !!data.pmAssessment?.q3_help_needed;
         // Help Needed REQUIRED
-        case 8:
+        case 9:
           return true;
         // Barriers OPTIONAL
-        case 9:
+        case 10:
           return !!pmSelectedHelperId;
         // Helper selection required
-        case 10:
+        case 11:
           {
             const freq = data.pmPracticePlan?.targetFrequency ?? data.pmTargetFrequency;
             return !!freq && !!data.startDate;
@@ -1357,30 +1202,33 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Who is this for (supporters only)
         return data.recipient === 'self' || data.recipient === 'other' && data.supportedPersonId;
       case 1:
+        // EF Focus
+        return !!data.efFocus;
+      case 2:
         // Goal description + type
         return data.goalTitle.trim().length > 0 && !!data.goalType;
-      case 2:
+      case 3:
         // Motivation
         return !!data.motivation?.trim();
-      case 3:
+      case 4:
         // Prerequisites
         return true;
-      case 4:
+      case 5:
         // Skill Assessment Intro - always can proceed
         return true;
-      case 5:
+      case 6:
         // Experience assessment
         return !!data.pmSkillAssessment?.q1_experience;
-      case 6:
+      case 7:
         // Confidence assessment
         return !!data.pmSkillAssessment?.q2_confidence;
-      case 7:
+      case 8:
         // Help Needed assessment
         return !!data.pmSkillAssessment?.q3_help_needed;
-      case 8:
+      case 9:
         // Challenge areas (barriers)
         return (data.challengeAreas?.length || 0) > 0;
-      case 9:
+      case 10:
         {
           const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) || 1;
           if (skillLevel >= 4) {
@@ -1408,7 +1256,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             return !!pmSelectedHelperId;
           }
         }
-      case 10:
+      case 11:
         {
           const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) || 1;
           if (skillLevel >= 4) {
@@ -1422,7 +1270,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             return !!freq && !!data.startDate;
           }
         }
-      case 11:
+      case 12:
         {
           const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) || 1;
           if (skillLevel >= 4) {
@@ -1431,7 +1279,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             return true; // PM flow: confirm (always can proceed)
           }
         }
-      case 12:
+      case 13:
         return true;
       // Final confirm (habit with supporters)
       default:
@@ -1684,7 +1532,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           wizardGoalType: data.goalType,
           isPM: data.goalType === 'progressive_mastery'
         });
-        
+
         let createdGoal;
         if (prefillGoalId) {
           // Update existing goal - use proper typing for goal_type
@@ -1701,7 +1549,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             needs_full_setup: false,
             completed_setup_at: new Date().toISOString()
           };
-          
+
           await goalsService.updateGoal(prefillGoalId, updatePayload);
           createdGoal = { id: prefillGoalId };
         } else {
@@ -1796,6 +1644,8 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               pmHelper: data.pmHelper
             };
             await goalsService.updateMetadata(createdGoal.id, {
+              generationStatus: 'queued',
+              generationQueuedAt: new Date().toISOString(),
               wizardContext: completeWizardContext
             });
             console.log('Complete wizard context saved for Summary tab');
@@ -1910,66 +1760,90 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
   const renderCategoriesModal = () => {
     return <div className="flex flex-col h-full">
-        <div className="fixed left-0 right-0 top-0 z-40 bg-card h-16">
-          <div className="flex h-16 items-center gap-3 px-4">
-            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => setShowBrowseModal(false)}>
-              <ArrowLeft className="h-5 w-5" />
-              <span className="sr-only">Back</span>
-            </Button>
-            <h1 className="text-2xl font-bold flex-1">Browse Goal Ideas</h1>
-          </div>
+      <div className="fixed left-0 right-0 top-0 z-40 bg-card h-16">
+        <div className="flex h-16 items-center gap-3 px-4">
+          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => setShowBrowseModal(false)}>
+            <ArrowLeft className="h-5 w-5" />
+            <span className="sr-only">Back</span>
+          </Button>
+          <h1 className="text-2xl font-bold flex-1">Browse Goal Ideas</h1>
         </div>
+      </div>
 
-        <ScrollArea className="flex-1 px-6 pt-20 pb-4">
-          <div className="grid grid-cols-1 gap-3">
-            {categories.map(category => {
+      <ScrollArea className="flex-1 px-6 pt-20 pb-4">
+        <div className="grid grid-cols-1 gap-3">
+          {categories.map(category => {
             return <Card key={category.id} className="cursor-pointer hover:shadow-md transition-all duration-200 shadow-sm" onClick={() => {
               setSelectedCategoryForModal(category);
               setModalView('examples');
             }}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span className="text-2xl">{category.emoji}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base mb-1">{category.title}</h3>
-                        <p className="text-base text-muted-foreground line-clamp-2">
-                          {category.description}
-                        </p>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                    </div>
-                  </CardContent>
-                </Card>;
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-2xl">{category.emoji}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-base mb-1">{category.title}</h3>
+                    <p className="text-base text-muted-foreground line-clamp-2">
+                      {category.description}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                </div>
+              </CardContent>
+            </Card>;
           })}
-          </div>
-        </ScrollArea>
-      </div>;
+        </div>
+      </ScrollArea>
+    </div>;
   };
   const renderExampleGoalsModal = () => {
     if (!selectedCategoryForModal) return null;
-    const exampleGoals = exampleGoalsByCategory[selectedCategoryForModal.id] || [];
+
+    // Filter goals by category first
+    const categoryGoals = efGoals.filter(g => g.categoryId === selectedCategoryForModal.id);
+
+    // Map new EF areas to existing tags for filtering
+    const efMapping: Record<string, string[]> = {
+      'initiation': ['initiation'],
+      'planning_organization': ['planning_organization', 'planning', 'time', 'organization'],
+      'attention_memory': ['attention_memory', 'attention', 'memory', 'time'],
+      'emotional_regulation': ['emotional_regulation'],
+      'flexibility': ['flexibility', 'metacognition', 'planning'],
+      'self_advocacy': ['self_advocacy', 'social_skills', 'emotional_regulation']
+    };
+
+    // Filter by EF focus if selected
+    const filteredGoals = data.efFocus
+      ? categoryGoals.filter(g => {
+        const targetTags = efMapping[data.efFocus!] || [data.efFocus!];
+        return g.efTags?.some(tag => targetTags.includes(tag));
+      })
+      : categoryGoals;
+
+    // If no specific EF matches found, show all category goals to avoid empty state
+    const goalsToShow = filteredGoals.length > 0 ? filteredGoals : categoryGoals;
+
     return <div className="flex flex-col h-full">
-        <div className="fixed left-0 right-0 top-0 z-40 bg-card h-16">
-          <div className="flex h-16 items-center gap-3 px-4">
-            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => {
+      <div className="fixed left-0 right-0 top-0 z-40 bg-card h-16">
+        <div className="flex h-16 items-center gap-3 px-4">
+          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => {
             setModalView('categories');
             setSelectedCategoryForModal(null);
           }}>
-              <ArrowLeft className="h-5 w-5" />
-              <span className="sr-only">Back to categories</span>
-            </Button>
-            <h1 className="text-2xl font-bold flex-1 flex items-center gap-2">
-              <span>{selectedCategoryForModal.emoji}</span>
-              {selectedCategoryForModal.title}
-            </h1>
-          </div>
+            <ArrowLeft className="h-5 w-5" />
+            <span className="sr-only">Back to categories</span>
+          </Button>
+          <h1 className="text-2xl font-bold flex-1 flex items-center gap-2">
+            <span>{selectedCategoryForModal.emoji}</span>
+            {selectedCategoryForModal.title}
+          </h1>
         </div>
+      </div>
 
-        <ScrollArea className="flex-1 px-6 pt-20 pb-4">
-          <div className="space-y-3">
-            {exampleGoals.map(goal => {
+      <ScrollArea className="flex-1 px-6 pt-20 pb-4">
+        <div className="space-y-3">
+          {goalsToShow.map(goal => {
             const getBadge = () => {
               switch (goal.suggestedType) {
                 case 'progressive_mastery':
@@ -2010,31 +1884,53 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               setModalView('categories');
               setSelectedCategoryForModal(null);
             }}>
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-base">{goal.title}</h3>
-                      <p className="text-base text-muted-foreground leading-relaxed">
-                        {goal.description}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>;
+              <CardContent className="p-4">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-base">{goal.title}</h3>
+                  <p className="text-base text-muted-foreground leading-relaxed">
+                    {goal.description}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>;
           })}
-          </div>
+        </div>
 
-          <div className="text-center pt-4 mt-4 border-t">
-            
-          </div>
-        </ScrollArea>
-      </div>;
+        <div className="text-center pt-4 mt-4 border-t">
+
+        </div>
+      </ScrollArea>
+    </div>;
   };
   const renderBrowseModal = () => {
     return <Sheet open={showBrowseModal} onOpenChange={setShowBrowseModal}>
-        <SheetContent side="right" className="w-full sm:max-w-full p-0 overflow-hidden">
-          {modalView === 'categories' ? renderCategoriesModal() : renderExampleGoalsModal()}
-        </SheetContent>
-      </Sheet>;
+      <SheetContent side="right" className="w-full sm:max-w-full p-0 overflow-hidden">
+        {modalView === 'categories' ? renderCategoriesModal() : renderExampleGoalsModal()}
+      </SheetContent>
+    </Sheet>;
   };
+  // Pre-select EF Focus from prefillData
+  useEffect(() => {
+    if (prefillData?.ef_focus_areas && prefillData.ef_focus_areas.length > 0 && !data.efFocus) {
+      // Try to find a matching area by ID or label
+      const userPillars = prefillData.ef_focus_areas;
+      const match = challengeAreas.find(area =>
+        userPillars.some(p =>
+          p.toLowerCase() === area.id ||
+          area.label.toLowerCase().includes(p.toLowerCase()) ||
+          p.toLowerCase().includes('initiation') && area.id === 'initiation' ||
+          p.toLowerCase().includes('planning') && area.id === 'planning_organization' ||
+          p.toLowerCase().includes('focus') && area.id === 'attention_memory' ||
+          p.toLowerCase().includes('emotion') && area.id === 'emotional_regulation'
+        )
+      );
+
+      if (match) {
+        updateData({ efFocus: match.id });
+      }
+    }
+  }, [prefillData]);
+
   const renderStep0 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col bg-background">
@@ -2042,7 +1938,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         <CardTitle className="text-2xl">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground">{text.step0.subtitle}</p>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <div className="max-w-2xl mx-auto w-full space-y-4">
           <Card className={cn("cursor-pointer transition-all border-0 shadow-sm hover:shadow-md relative p-6", data.recipient === 'self' && "bg-primary/5")} onClick={() => updateData({
@@ -2053,7 +1949,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <div className="font-semibold">For myself</div>
             </div>
           </Card>
-          
+
           <Card className={cn("cursor-pointer transition-all border-0 shadow-sm hover:shadow-md relative p-6", data.recipient === 'other' && "bg-primary/5")} onClick={() => updateData({
             recipient: 'other'
           })}>
@@ -2062,18 +1958,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <div className="font-semibold">For someone I support</div>
             </div>
           </Card>
-          
+
           {data.recipient === 'other' && <div className="space-y-3 pt-4">
-              <Label className="text-base">Select person:</Label>
-              <div className="grid gap-2">
-                {supportedPeople.map(person => <Button key={person.id} variant={data.supportedPersonId === person.id ? 'default' : 'outline'} className="justify-start" onClick={() => updateData({
+            <Label className="text-base">Select person:</Label>
+            <div className="grid gap-2">
+              {supportedPeople.map(person => <Button key={person.id} variant={data.supportedPersonId === person.id ? 'default' : 'outline'} className="justify-start" onClick={() => updateData({
                 supportedPersonId: person.id,
                 supportedPersonName: person.name
               })}>
-                    {person.name}
-                  </Button>)}
-              </div>
-            </div>}
+                {person.name}
+              </Button>)}
+            </div>
+          </div>}
         </div>
       </CardContent>
     </Card>;
@@ -2082,91 +1978,91 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
     return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} questionIcon="🎯" questionText={text.step1.question} helpText={text.step1.subtitle} inputType="custom" onBack={prevStep} onContinue={nextStep} continueDisabled={!data.goalTitle?.trim() || !data.trackingMode} hideHeader hideFooter>
-        <div className="space-y-8">
-          {/* Goal Title Textarea */}
-          <div className="space-y-2">
-            <Textarea id="goal-title" placeholder="Name your new Goal" value={data.goalTitle} onChange={e => updateData({
+      <div className="space-y-8">
+        {/* Goal Title Textarea */}
+        <div className="space-y-2">
+          <Textarea id="goal-title" placeholder="Name your new Goal" value={data.goalTitle} onChange={e => updateData({
             goalTitle: e.target.value
           })} className="text-base py-3 min-h-[48px] resize-none" rows={1} />
-          </div>
-          
-          {/* Browse Goals Card */}
-          <Card className="cursor-pointer hover:shadow-lg transition-all" onClick={() => setShowBrowseModal(true)}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Lightbulb className="h-6 w-6 text-primary" />
-                </div>
-                <div className="text-left flex-1">
-                  <div className="font-semibold text-base mb-1">Browse Goal Ideas</div>
-                  <p className="text-base text-muted-foreground">
-                    Explore 50+ example goals
-                  </p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-              </div>
-            </CardContent>
-          </Card>
+        </div>
 
-          {/* Tracking Mode Selection */}
-          <div className="space-y-4 pt-4 pb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-left">
-              What type of goal is this?
-            </h1>
-            
-            {/* Habit Card */}
-            <Card className={cn("cursor-pointer shadow-sm hover:shadow-md", data.trackingMode === 'habit' && "bg-primary/5")} onClick={() => {
+        {/* Browse Goals Card */}
+        <Card className="cursor-pointer hover:shadow-lg transition-all" onClick={() => setShowBrowseModal(true)}>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Lightbulb className="h-6 w-6 text-primary" />
+              </div>
+              <div className="text-left flex-1">
+                <div className="font-semibold text-base mb-1">Browse Goal Ideas</div>
+                <p className="text-base text-muted-foreground">
+                  Explore 50+ example goals
+                </p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tracking Mode Selection */}
+        <div className="space-y-4 pt-4 pb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-left">
+            What type of goal is this?
+          </h1>
+
+          {/* Habit Card */}
+          <Card className={cn("cursor-pointer shadow-sm hover:shadow-md", data.trackingMode === 'habit' && "bg-primary/5")} onClick={() => {
             updateData({
               trackingMode: 'habit',
               goalType: 'reminder'
             });
           }}>
-              <CardContent className="p-4 relative">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🔁</span>
-                  <div className="text-left flex-1">
-                    <div className="font-semibold">
-                      Habit
-                    </div>
-                    <p className="text-base text-muted-foreground mt-1">
-                      Showing up regularly to build a stable, repeatable pattern in your day
-                    </p>
+            <CardContent className="p-4 relative">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">🔁</span>
+                <div className="text-left flex-1">
+                  <div className="font-semibold">
+                    Habit
                   </div>
+                  <p className="text-base text-muted-foreground mt-1">
+                    Showing up regularly to build a stable, repeatable pattern in your day
+                  </p>
                 </div>
-                {data.trackingMode === 'habit' && (
-                  <Check className="h-5 w-5 text-primary absolute top-3 right-3" />
-                )}
-              </CardContent>
-            </Card>
-            
-            {/* Skill Card */}
-            <Card className={cn("cursor-pointer shadow-sm hover:shadow-md", data.trackingMode === 'skill' && "bg-primary/5")} onClick={() => {
+              </div>
+              {data.trackingMode === 'habit' && (
+                <Check className="h-5 w-5 text-primary absolute top-3 right-3" />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Skill Card */}
+          <Card className={cn("cursor-pointer shadow-sm hover:shadow-md", data.trackingMode === 'skill' && "bg-primary/5")} onClick={() => {
             updateData({
               trackingMode: 'skill',
               goalType: 'progressive_mastery'
             });
           }}>
-              <CardContent className="p-4 relative">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🎯</span>
-                  <div className="text-left flex-1">
-                    <div className="font-semibold">
-                      Skill
-                    </div>
-                    <p className="text-base text-muted-foreground mt-1">
-                      Focus on one skill until you're good, or achieve a concrete, visible win
-                    </p>
+            <CardContent className="p-4 relative">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">🎯</span>
+                <div className="text-left flex-1">
+                  <div className="font-semibold">
+                    Skill
                   </div>
+                  <p className="text-base text-muted-foreground mt-1">
+                    Focus on one skill until you're good, or achieve a concrete, visible win
+                  </p>
                 </div>
-                {data.trackingMode === 'skill' && (
-                  <Check className="h-5 w-5 text-primary absolute top-3 right-3" />
-                )}
-              </CardContent>
-            </Card>
-            
-          </div>
+              </div>
+              {data.trackingMode === 'skill' && (
+                <Check className="h-5 w-5 text-primary absolute top-3 right-3" />
+              )}
+            </CardContent>
+          </Card>
+
         </div>
-      </QuestionScreen>;
+      </div>
+    </QuestionScreen>;
   };
   const renderStep2 = () => {
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
@@ -2190,14 +2086,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }]} value={data.hasPrerequisites ? 'yes' : 'no'} onChange={value => updateData({
       hasPrerequisites: value === 'yes'
     })} expandOnValue="yes" expandedContent={<div className="space-y-2">
-            <Label htmlFor="prerequisite-item" className="text-base">{text.step3.conditionalInput.label}</Label>
-            <Input id="prerequisite-item" placeholder={text.step3.conditionalInput.placeholder} value={data.customPrerequisites || ''} onChange={e => updateData({
+      <Label htmlFor="prerequisite-item" className="text-base">{text.step3.conditionalInput.label}</Label>
+      <Input id="prerequisite-item" placeholder={text.step3.conditionalInput.placeholder} value={data.customPrerequisites || ''} onChange={e => updateData({
         customPrerequisites: e.target.value
       })} autoFocus />
-            <p className="text-base text-muted-foreground">
-              Focus on the single most important thing needed to begin
-            </p>
-          </div>} onBack={() => prevStep()} onContinue={() => nextStep()} required continueDisabled={data.hasPrerequisites && !data.customPrerequisites} hideHeader hideFooter />;
+      <p className="text-base text-muted-foreground">
+        Focus on the single most important thing needed to begin
+      </p>
+    </div>} onBack={() => prevStep()} onContinue={() => nextStep()} required continueDisabled={data.hasPrerequisites && !data.customPrerequisites} hideHeader hideFooter />;
   };
   const renderStep4 = () => {
     const handleChallengeToggle = (challengeId: string) => {
@@ -2206,11 +2102,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       if (isSelected) {
         // Deselect
         const newAreas = current.filter(id => id !== challengeId);
+        // Map sub-barriers to EF types for micro-step generation
+        const mappedBarrier1 = newAreas[0] ? (barrierToEFMapping[newAreas[0]] || newAreas[0]) : undefined;
+        const mappedBarrier2 = newAreas[1] ? (barrierToEFMapping[newAreas[1]] || newAreas[1]) : undefined;
         updateData({
           challengeAreas: newAreas,
           barriers: {
-            priority1: newAreas[0],
-            priority2: newAreas[1],
+            priority1: mappedBarrier1,
+            priority2: mappedBarrier2,
             context: data.barriers?.context || ''
           }
         });
@@ -2218,11 +2117,14 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         // Select (limit to 2)
         if (current.length < 2) {
           const newAreas = [...current, challengeId];
+          // Map sub-barriers to EF types for micro-step generation
+          const mappedBarrier1 = newAreas[0] ? (barrierToEFMapping[newAreas[0]] || newAreas[0]) : undefined;
+          const mappedBarrier2 = newAreas[1] ? (barrierToEFMapping[newAreas[1]] || newAreas[1]) : undefined;
           updateData({
             challengeAreas: newAreas,
             barriers: {
-              priority1: newAreas[0],
-              priority2: newAreas[1],
+              priority1: mappedBarrier1,
+              priority2: mappedBarrier2,
               context: data.barriers?.context || ''
             }
           });
@@ -2236,7 +2138,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     };
     const generateFrequencySuggestion = (barrier1: string, barrier2: string) => {
       const suggestions: Record<string, FrequencySuggestion> = {
-        'time': {
+        'planning_organization': {
           frequency: 2,
           rationale: "Starting small gives you time to build the habit without feeling overwhelmed."
         },
@@ -2244,16 +2146,24 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           frequency: 7,
           rationale: "Daily repetition helps overcome starting difficulty and builds momentum."
         },
-        'attention': {
+        'attention_memory': {
           frequency: 3,
           rationale: "A few days per week lets you maintain focus while building the habit gradually."
         },
-        'planning': {
+        'emotional_regulation': {
           frequency: 3,
-          rationale: "Regular but not daily practice helps you develop structure without burnout."
+          rationale: "Regular but not daily practice helps you develop resilience without burnout."
+        },
+        'flexibility': {
+          frequency: 3,
+          rationale: "Practice adapting to change a few times a week to build flexibility."
+        },
+        'self_advocacy': {
+          frequency: 2,
+          rationale: "Start with a few opportunities to practice speaking up."
         }
       };
-      const suggestion = suggestions[barrier1] || {
+      const suggestion = suggestions[barrier1] || suggestions[barrier2] || {
         frequency: 3,
         rationale: "This frequency balances consistency with sustainability."
       };
@@ -2263,20 +2173,61 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
       setShowFrequencySuggestion(true);
     };
     const getBarrierPrompt = (barrierId: string) => {
+      const goalTitle = data.goalTitle || 'this goal';
       const prompts: Record<string, string> = {
-        'initiation': "When do you typically struggle to get started? Morning, evening, or specific situations?",
-        'time': "When do you typically forget? Morning, evening, or specific situations?",
-        'attention': "What typically distracts you during this activity?",
-        'planning': "What makes it hard to know what to do next?"
+        'unclear_start': `When you're about to start "${goalTitle}", what makes it unclear where to begin?`,
+        'distracted_before_start': `What typically distracts you right before you start "${goalTitle}"?`,
+        'lose_motivation': `When does your motivation typically fade during "${goalTitle}"?`,
+        'forget_to_start': `What situations make you forget to start "${goalTitle}" on time?`,
+        'unclear_steps': `What makes the steps unclear when working on "${goalTitle}"?`,
+        'lose_materials': `What materials do you typically lose track of for "${goalTitle}"?`,
+        'underestimate_time': `How much time do you usually think "${goalTitle}" takes vs. reality?`,
+        'overwhelmed_by_task': `What about "${goalTitle}" feels overwhelming?`,
+        'phone_distracts': `When do phone notifications typically interrupt "${goalTitle}"?`,
+        'mind_wanders': `What thoughts typically pull you away from "${goalTitle}"?`,
+        'forget_what_doing': `When do you typically lose track during "${goalTitle}"?`,
+        'cant_focus_long': `How long can you usually focus on "${goalTitle}" before attention fades?`,
+        'too_anxious': `What about "${goalTitle}" triggers anxiety?`,
+        'get_frustrated': `What typically frustrates you during "${goalTitle}"?`,
+        'worry_wrong': `What are you worried about doing wrong with "${goalTitle}"?`,
+        'feel_overwhelmed': `What pressure do you feel around "${goalTitle}"?`,
+        'hard_adapt_changes': `What kind of changes throw you off during "${goalTitle}"?`,
+        'stuck_one_approach': `What approach do you get stuck on for "${goalTitle}"?`,
+        'struggle_switch_tasks': `What makes it hard to switch to/from "${goalTitle}"?`,
+        'react_poorly_interruptions': `How do interruptions affect your work on "${goalTitle}"?`,
+        'dont_know_who_ask': `Who might be able to help with "${goalTitle}"?`,
+        'embarrassed_asking': `What makes it embarrassing to ask for help with "${goalTitle}"?`,
+        'unsure_explain_needs': `What do you need help with for "${goalTitle}"?`,
+        'try_alone': `Why do you prefer to do "${goalTitle}" alone?`
       };
-      return prompts[barrierId] || "Tell us more about this challenge";
+      return prompts[barrierId] || `Tell us more about this challenge with "${goalTitle}"`;
     };
     const getBarrierPlaceholder = (barrierId: string) => {
       const placeholders: Record<string, string> = {
-        'initiation': "e.g., I struggle more in the mornings when I'm tired...",
-        'time': "e.g., I forget when I'm distracted by my phone...",
-        'attention': "e.g., My phone notifications pull me away...",
-        'planning': "e.g., I get stuck after the first step..."
+        'unclear_start': "e.g., There are too many possible first steps...",
+        'distracted_before_start': "e.g., I see my phone and start scrolling...",
+        'lose_motivation': "e.g., After 10 minutes I start thinking about other things...",
+        'forget_to_start': "e.g., I get caught up in other activities...",
+        'unclear_steps': "e.g., I don't know what comes after the first step...",
+        'lose_materials': "e.g., My notes get buried under other papers...",
+        'underestimate_time': "e.g., I think it takes 20 min but it's really 45...",
+        'overwhelmed_by_task': "e.g., It feels like too much to do all at once...",
+        'phone_distracts': "e.g., Notifications keep popping up...",
+        'mind_wanders': "e.g., I start thinking about what's for dinner...",
+        'forget_what_doing': "e.g., I look away and forget my place...",
+        'cant_focus_long': "e.g., After 15 minutes my mind starts drifting...",
+        'too_anxious': "e.g., I worry I'll mess it up...",
+        'get_frustrated': "e.g., When it doesn't work right away I want to quit...",
+        'worry_wrong': "e.g., I'm afraid of making mistakes...",
+        'feel_overwhelmed': "e.g., There's too much pressure to do it perfectly...",
+        'hard_adapt_changes': "e.g., If my plan changes I don't know what to do...",
+        'stuck_one_approach': "e.g., I keep trying the same thing even when it's not working...",
+        'struggle_switch_tasks': "e.g., I can't shift gears when interrupted...",
+        'react_poorly_interruptions': "e.g., I get frustrated and can't get back on track...",
+        'dont_know_who_ask': "e.g., I'm not sure who knows about this...",
+        'embarrassed_asking': "e.g., I feel like I should already know this...",
+        'unsure_explain_needs': "e.g., I don't know how to describe what I'm stuck on...",
+        'try_alone': "e.g., I don't want to bother anyone..."
       };
       return placeholders[barrierId] || "Share specific details...";
     };
@@ -2287,36 +2238,45 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     // Calculate level context - use whichever assessment has data
     const assessment = data.pmSkillAssessment || data.pmAssessment;
     const levelContext = assessment?.calculatedLevel ? `Starting level: ${getSkillLevelDisplay(assessment).emoji} ${getSkillLevelDisplay(assessment).label}` : undefined;
-    return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} goalTitle={data.goalTitle} goalContext={levelContext} questionIcon="🤔" questionText={getStepTitle()} helpText="Identifying barriers helps create a personalized practice plan" inputType="custom" onBack={() => prevStep()} onContinue={() => nextStep()} hideHeader hideFooter>
-        <div className="space-y-3">
-          {challengeAreas.map(challenge => {
+    // Get EF-specific barriers or fall back to all areas
+    const availableBarriers = data.efFocus && efBarrierMapping[data.efFocus]
+      ? efBarrierMapping[data.efFocus]
+      : challengeAreas;
+
+    const questionText = data.goalTitle
+      ? `When you think about "${data.goalTitle}", what specific obstacles might get in your way?`
+      : "What specific obstacles might get in your way?";
+
+    return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} goalTitle={data.goalTitle} goalContext={levelContext} questionIcon="🤔" questionText={questionText} helpText="These details help us create micro-steps that work around your specific challenges" inputType="custom" onBack={() => prevStep()} onContinue={() => nextStep()} hideHeader hideFooter>
+      <div className="space-y-3">
+        {availableBarriers.map(challenge => {
           const isSelected = data.challengeAreas?.includes(challenge.id) || false;
           const selectionOrder = data.challengeAreas?.indexOf(challenge.id);
           const priorityLabel = selectionOrder === 0 ? '1st' : selectionOrder === 1 ? '2nd' : null;
           return <Card key={challenge.id} className={cn("cursor-pointer transition-all relative shadow-md", isSelected ? "bg-primary/5 ring-2 ring-primary" : "hover:shadow-lg hover:bg-accent/50")} onClick={() => handleChallengeToggle(challenge.id)}>
-                {isSelected && priorityLabel && <Badge variant={priorityLabel === '1st' ? 'destructive' : 'outline'} className="absolute top-2 right-2 text-xs">
-                    {priorityLabel} Priority
-                  </Badge>}
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
-                    <div className="text-left flex-1">
-                      <div className="font-semibold">{challenge.label}</div>
-                      <div className="text-sm text-muted-foreground">({challenge.description})</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>;
+            {isSelected && priorityLabel && <Badge variant={priorityLabel === '1st' ? 'destructive' : 'outline'} className="absolute top-2 right-2 text-xs">
+              {priorityLabel} Priority
+            </Badge>}
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+                <div className="text-left flex-1">
+                  <div className="font-semibold">{challenge.label}</div>
+                  <div className="text-sm text-muted-foreground">{challenge.description}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>;
         })}
-        </div>
-        
-        {/* Structured barrier context - shows after 2 barriers selected */}
-        {data.challengeAreas?.length === 2 && primaryBarrier && <div className="space-y-2 pt-4 border-t animate-in fade-in slide-in-from-top-2 duration-300">
-            <Label htmlFor="barrier-context">Tell us more about "{primaryBarrierLabel}"</Label>
-            <p className="text-sm text-muted-foreground">
-              {getBarrierPrompt(primaryBarrier)}
-            </p>
-            <Textarea id="barrier-context" placeholder={getBarrierPlaceholder(primaryBarrier)} value={data.barriers?.context || ''} onChange={e => updateData({
+      </div>
+
+      {/* Structured barrier context - shows after 2 barriers selected */}
+      {data.challengeAreas?.length === 2 && primaryBarrier && <div className="space-y-2 pt-4 border-t animate-in fade-in slide-in-from-top-2 duration-300">
+        <Label htmlFor="barrier-context">Tell us more about "{primaryBarrierLabel}"</Label>
+        <p className="text-sm text-muted-foreground">
+          {getBarrierPrompt(primaryBarrier)}
+        </p>
+        <Textarea id="barrier-context" placeholder={getBarrierPlaceholder(primaryBarrier)} value={data.barriers?.context || ''} onChange={e => updateData({
           barriers: {
             ...data.barriers,
             priority1: data.challengeAreas![0],
@@ -2324,11 +2284,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             context: e.target.value
           }
         })} className="resize-none text-lg" rows={3} />
-            <p className="text-sm text-green-600 flex items-center gap-1 mt-2">
-              Great! Being honest about challenges is the first step to overcoming them. 💪
-            </p>
-          </div>}
-      </QuestionScreen>;
+        <p className="text-sm text-green-600 flex items-center gap-1 mt-2">
+          Great! Being honest about challenges is the first step to overcoming them. 💪
+        </p>
+      </div>}
+    </QuestionScreen>;
   };
   const renderStep5 = () => {
     const isProject = data.goalType === 'new_skill';
@@ -2336,56 +2296,56 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="pb-6 pt-0">
         {data.goalTitle && <div className="text-center pb-4 border-b mb-6">
-            <h2 className="text-xl font-semibold text-foreground tracking-wide truncate">{data.goalTitle}</h2>
-          </div>}
+          <h2 className="text-xl font-semibold text-foreground tracking-wide truncate">{data.goalTitle}</h2>
+        </div>}
         <CardTitle className="text-3xl font-bold text-left">{getStepTitle()}</CardTitle>
         <p className="text-muted-foreground text-left text-base mt-2">
           {isProject ? "Set your project timeline and first learning session" : "Set your practice schedule"}
         </p>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {/* Section A: Recurrence Schedule - Only for Habit/Practice */}
         {isHabitOrPractice && <div className="space-y-3">
-            <Label className="flex items-center gap-1">
-              <span>Recurrence Schedule</span>
-              <span className="text-destructive">*</span>
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              How often will {actuallySupportsAnyone ? data.supportedPersonName || 'they' : 'you'} practice or perform this habit?
-            </p>
+          <Label className="flex items-center gap-1">
+            <span>Recurrence Schedule</span>
+            <span className="text-destructive">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            How often will {actuallySupportsAnyone ? data.supportedPersonName || 'they' : 'you'} practice or perform this habit?
+          </p>
 
-            {/* Quick select options */}
-            <div className="grid grid-cols-3 gap-2">
-              <Button type="button" variant="outline" className={cn("h-auto py-3 flex flex-col items-center", data.selectedDays?.length === 7 && "border-primary bg-primary/5")} onClick={() => {
+          {/* Quick select options */}
+          <div className="grid grid-cols-3 gap-2">
+            <Button type="button" variant="outline" className={cn("h-auto py-3 flex flex-col items-center", data.selectedDays?.length === 7 && "border-primary bg-primary/5")} onClick={() => {
               updateData({
                 selectedDays: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
                 frequency: 7
               });
             }}>
-                <span className="font-semibold">Daily</span>
-                <span className="text-xs text-muted-foreground">Every day</span>
-              </Button>
-              
-              <Button type="button" variant="outline" className={cn("h-auto py-3 flex flex-col items-center", data.selectedDays?.length === 2 && data.selectedDays.includes('sat') && data.selectedDays.includes('sun') && "border-primary bg-primary/5")} onClick={() => {
+              <span className="font-semibold">Daily</span>
+              <span className="text-xs text-muted-foreground">Every day</span>
+            </Button>
+
+            <Button type="button" variant="outline" className={cn("h-auto py-3 flex flex-col items-center", data.selectedDays?.length === 2 && data.selectedDays.includes('sat') && data.selectedDays.includes('sun') && "border-primary bg-primary/5")} onClick={() => {
               updateData({
                 selectedDays: ['sat', 'sun'],
                 frequency: 2
               });
             }}>
-                <span className="font-semibold">Weekends</span>
-                <span className="text-xs text-muted-foreground">Sat & Sun</span>
-              </Button>
-              
-              <Button type="button" variant="outline" className={cn("h-auto py-3 flex flex-col items-center", data.selectedDays && data.selectedDays.length > 0 && data.selectedDays.length !== 7 && !(data.selectedDays.length === 2 && data.selectedDays.includes('sat') && data.selectedDays.includes('sun')) && "border-primary bg-primary/5")}>
-                <span className="font-semibold">Custom</span>
-                <span className="text-xs text-muted-foreground">Pick days</span>
-              </Button>
-            </div>
-            
-            {/* Individual day toggles */}
-            <div className="flex gap-1 justify-between">
-              {[{
+              <span className="font-semibold">Weekends</span>
+              <span className="text-xs text-muted-foreground">Sat & Sun</span>
+            </Button>
+
+            <Button type="button" variant="outline" className={cn("h-auto py-3 flex flex-col items-center", data.selectedDays && data.selectedDays.length > 0 && data.selectedDays.length !== 7 && !(data.selectedDays.length === 2 && data.selectedDays.includes('sat') && data.selectedDays.includes('sun')) && "border-primary bg-primary/5")}>
+              <span className="font-semibold">Custom</span>
+              <span className="text-xs text-muted-foreground">Pick days</span>
+            </Button>
+          </div>
+
+          {/* Individual day toggles */}
+          <div className="flex gap-1 justify-between">
+            {[{
               code: 'mon',
               label: 'M',
               full: 'Monday'
@@ -2423,24 +2383,24 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   frequency: newDays.length
                 });
               }} title={day.full}>
-                    {day.label}
-                  </Button>;
+                {day.label}
+              </Button>;
             })}
-            </div>
-            
-            {data.selectedDays && data.selectedDays.length > 0 && <div className="text-center p-4 bg-green-50 rounded-lg animate-in fade-in duration-300">
-                <p className="text-sm text-green-700 font-medium">
-                  ✓ {data.selectedDays.length} {data.selectedDays.length === 1 ? 'day' : 'days'}/week scheduled
-                </p>
-                <p className="text-xs text-green-600 mt-1">
-                  {data.selectedDays.length === 7 ? "Every day of the week" : data.selectedDays.length === 1 ? data.selectedDays[0].toUpperCase() : data.selectedDays.map(d => d.toUpperCase()).join(', ')}
-                </p>
-                {data.frequencySuggestionAccepted && <p className="text-xs text-green-600 mt-1">
-                    Smart choice! Starting with {data.selectedDays.length} days builds confidence without burnout.
-                  </p>}
-              </div>}
+          </div>
+
+          {data.selectedDays && data.selectedDays.length > 0 && <div className="text-center p-4 bg-green-50 rounded-lg animate-in fade-in duration-300">
+            <p className="text-sm text-green-700 font-medium">
+              ✓ {data.selectedDays.length} {data.selectedDays.length === 1 ? 'day' : 'days'}/week scheduled
+            </p>
+            <p className="text-xs text-green-600 mt-1">
+              {data.selectedDays.length === 7 ? "Every day of the week" : data.selectedDays.length === 1 ? data.selectedDays[0].toUpperCase() : data.selectedDays.map(d => d.toUpperCase()).join(', ')}
+            </p>
+            {data.frequencySuggestionAccepted && <p className="text-xs text-green-600 mt-1">
+              Smart choice! Starting with {data.selectedDays.length} days builds confidence without burnout.
+            </p>}
           </div>}
-        
+        </div>}
+
         {/* Section B: Time Picker - ALWAYS REQUIRED */}
         <div className="space-y-2">
           <Label className="flex items-center gap-1">
@@ -2460,11 +2420,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             {data.customTime ? formatDisplayTime(data.customTime) : "Pick a time"}
           </Button>
         </div>
-        
+
         {/* Section C: Date Fields - Conditional Layout */}
         {isProject ?
-        // PROJECT LAYOUT: Project Completion Date (required) + First Attempt Date (required)
-        <div className="space-y-4">
+          // PROJECT LAYOUT: Project Completion Date (required) + First Attempt Date (required)
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label className="flex items-center gap-1">
                 <span>Project Completion Date</span>
@@ -2474,9 +2434,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 When {actuallySupportsAnyone ? `will ${data.supportedPersonName || 'they'}` : 'do you'} want to finish learning this skill?
               </p>
               <Popover open={showDatePicker && datePickerType === 'completion'} onOpenChange={open => {
-              setShowDatePicker(open);
-              if (open) setDatePickerType('completion');
-            }}>
+                setShowDatePicker(open);
+                if (open) setDatePickerType('completion');
+              }}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className={cn("w-full justify-start", dateValidationError && "border-destructive text-destructive")}>
                     <CalendarIcon className="h-4 w-4 mr-2" />
@@ -2485,24 +2445,24 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar mode="single" selected={data.projectCompletionDate} onSelect={date => {
-                  if (date) {
-                    updateData({
-                      projectCompletionDate: date
-                    });
-                    setShowDatePicker(false);
-                  }
-                }} disabled={date => {
-                  // Can't be today or earlier
-                  if (date <= new Date()) return true;
+                    if (date) {
+                      updateData({
+                        projectCompletionDate: date
+                      });
+                      setShowDatePicker(false);
+                    }
+                  }} disabled={date => {
+                    // Can't be today or earlier
+                    if (date <= new Date()) return true;
 
-                  // Can't be before or same as start date
-                  if (date <= data.startDate) return true;
-                  return false;
-                }} />
+                    // Can't be before or same as start date
+                    if (date <= data.startDate) return true;
+                    return false;
+                  }} />
                 </PopoverContent>
               </Popover>
             </div>
-            
+
             <div className="space-y-2">
               <Label className="flex items-center gap-1">
                 <span>First Learning Session Date</span>
@@ -2512,9 +2472,9 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 When will {actuallySupportsAnyone ? data.supportedPersonName || 'they' : 'you'} start working on this?
               </p>
               <Popover open={showDatePicker && datePickerType === 'start'} onOpenChange={open => {
-              setShowDatePicker(open);
-              if (open) setDatePickerType('start');
-            }}>
+                setShowDatePicker(open);
+                if (open) setDatePickerType('start');
+              }}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className={cn("w-full justify-start", dateValidationError && "border-destructive text-destructive")}>
                     <CalendarIcon className="h-4 w-4 mr-2" />
@@ -2523,51 +2483,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar mode="single" selected={data.startDate} onSelect={date => {
-                  if (date) {
-                    updateData({
-                      startDate: date
-                    });
-                    setShowDatePicker(false);
-                  }
-                }} disabled={date => {
-                  // Can't be in the past
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  if (date < today) return true;
-
-                  // Can't be after or equal to completion date
-                  if (data.projectCompletionDate && date >= data.projectCompletionDate) return true;
-                  return false;
-                }} />
-                </PopoverContent>
-              </Popover>
-            </div>
-            
-            <div className="text-xs text-muted-foreground">
-              💡 The AI will work backwards from your completion date to create a learning plan
-            </div>
-          </div> :
-        // HABIT/PRACTICE LAYOUT: Start Date (required) + End Date (optional)
-        <div className="space-y-3">
-            <Label>Timeline</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs flex items-center gap-1">
-                  Start date
-                  <span className="text-destructive">*</span>
-                </Label>
-                <Popover open={showDatePicker && datePickerType === 'start'} onOpenChange={open => {
-                setShowDatePicker(open);
-                if (open) setDatePickerType('start');
-              }}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start", dateValidationError && "border-destructive text-destructive")}>
-                      <CalendarIcon className="h-4 w-4 mr-2" />
-                      {format(data.startDate, 'MMM d')}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={data.startDate} onSelect={date => {
                     if (date) {
                       updateData({
                         startDate: date
@@ -2580,21 +2495,66 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     today.setHours(0, 0, 0, 0);
                     if (date < today) return true;
 
-                    // If end date exists, can't be after or equal to end date
-                    if (data.endDate && date >= data.endDate) return true;
+                    // Can't be after or equal to completion date
+                    if (data.projectCompletionDate && date >= data.projectCompletionDate) return true;
                     return false;
                   }} />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="text-xs text-muted-foreground">
+              💡 The AI will work backwards from your completion date to create a learning plan
+            </div>
+          </div> :
+          // HABIT/PRACTICE LAYOUT: Start Date (required) + End Date (optional)
+          <div className="space-y-3">
+            <Label>Timeline</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs flex items-center gap-1">
+                  Start date
+                  <span className="text-destructive">*</span>
+                </Label>
+                <Popover open={showDatePicker && datePickerType === 'start'} onOpenChange={open => {
+                  setShowDatePicker(open);
+                  if (open) setDatePickerType('start');
+                }}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-full justify-start", dateValidationError && "border-destructive text-destructive")}>
+                      <CalendarIcon className="h-4 w-4 mr-2" />
+                      {format(data.startDate, 'MMM d')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={data.startDate} onSelect={date => {
+                      if (date) {
+                        updateData({
+                          startDate: date
+                        });
+                        setShowDatePicker(false);
+                      }
+                    }} disabled={date => {
+                      // Can't be in the past
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      if (date < today) return true;
+
+                      // If end date exists, can't be after or equal to end date
+                      if (data.endDate && date >= data.endDate) return true;
+                      return false;
+                    }} />
                   </PopoverContent>
                 </Popover>
               </div>
-              
+
               <div className="space-y-1">
                 <Label className="text-xs">End date (optional)</Label>
                 <Popover open={showDatePicker && datePickerType === 'end'} onOpenChange={open => {
-                setShowDatePicker(open);
-                if (open) setDatePickerType('end');
-              }}>
-                <PopoverTrigger asChild>
+                  setShowDatePicker(open);
+                  if (open) setDatePickerType('end');
+                }}>
+                  <PopoverTrigger asChild>
                     <Button variant="outline" className={cn("w-full justify-start", dateValidationError && "border-destructive text-destructive")}>
                       <CalendarIcon className="h-4 w-4 mr-2" />
                       {data.endDate ? format(data.endDate, 'MMM d') : 'Open-ended'}
@@ -2602,49 +2562,49 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar mode="single" selected={data.endDate} onSelect={date => {
-                    updateData({
-                      endDate: date
-                    });
-                    setShowDatePicker(false);
-                  }} disabled={date => {
-                    // Must be after start date (at least 1 day later)
-                    const minEndDate = new Date(data.startDate);
-                    minEndDate.setDate(minEndDate.getDate() + 1);
-                    if (date < minEndDate) return true;
-                    return false;
-                  }} />
+                      updateData({
+                        endDate: date
+                      });
+                      setShowDatePicker(false);
+                    }} disabled={date => {
+                      // Must be after start date (at least 1 day later)
+                      const minEndDate = new Date(data.startDate);
+                      minEndDate.setDate(minEndDate.getDate() + 1);
+                      if (date < minEndDate) return true;
+                      return false;
+                    }} />
                   </PopoverContent>
                 </Popover>
               </div>
             </div>
-            
+
             <div className="text-xs text-muted-foreground">
               💡 Habits are often ongoing - you can leave the end date open
             </div>
 
             {/* Occurrence Counter for Habit Goals */}
             {data.endDate && data.selectedDays && data.selectedDays.length > 0 && <div className="p-3 bg-muted rounded-lg">
-                <p className="text-sm font-medium mb-1">Scheduled Occurrences</p>
-                <p className="text-xs text-muted-foreground">
-                  {(() => {
-                const validation = validateOccurrencesInDateRange(data.startDate, data.endDate, data.selectedDays);
-                return validation.occurrenceCount ? `${validation.occurrenceCount} practice session${validation.occurrenceCount > 1 ? 's' : ''} between ${format(data.startDate, 'MMM d')} and ${format(data.endDate, 'MMM d')}` : 'Calculating...';
-              })()}
-                </p>
-              </div>}
+              <p className="text-sm font-medium mb-1">Scheduled Occurrences</p>
+              <p className="text-xs text-muted-foreground">
+                {(() => {
+                  const validation = validateOccurrencesInDateRange(data.startDate, data.endDate, data.selectedDays);
+                  return validation.occurrenceCount ? `${validation.occurrenceCount} practice session${validation.occurrenceCount > 1 ? 's' : ''} between ${format(data.startDate, 'MMM d')} and ${format(data.endDate, 'MMM d')}` : 'Calculating...';
+                })()}
+              </p>
+            </div>}
           </div>}
 
         {/* Validation Messages */}
         {dateValidationError && <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-destructive">{dateValidationError}</p>
-          </div>}
+          <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-destructive">{dateValidationError}</p>
+        </div>}
 
         {dateValidationWarning && !dateValidationError && <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-amber-700 dark:text-amber-400">{dateValidationWarning}</p>
-          </div>}
-        
+          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-amber-700 dark:text-amber-400">{dateValidationWarning}</p>
+        </div>}
+
       </CardContent>
     </Card>;
   };
@@ -2713,12 +2673,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     return <Card className="w-full rounded-none border-0 shadow-none flex flex-col">
       <CardHeader className="pb-4 pt-0">
         {data.goalTitle && <div className="text-left px-4 pb-4 border-b mb-4">
-            <h2 className="text-xl font-semibold">{data.goalTitle}</h2>
-          </div>}
+          <h2 className="text-xl font-semibold">{data.goalTitle}</h2>
+        </div>}
         <CardTitle className="text-2xl">🎁 Rewards (Optional)</CardTitle>
         <p className="text-muted-foreground">{text.step7.subtitle}</p>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", !data.assignReward ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
           assignReward: false
@@ -2733,7 +2693,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.assignReward ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
           assignReward: true
         })}>
@@ -2747,11 +2707,11 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             </div>
           </CardContent>
         </Card>
-        
+
         {data.assignReward && <div className="space-y-3 pt-4 border-t">
-            <Label>Point value</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {[{
+          <Label>Point value</Label>
+          <div className="grid grid-cols-3 gap-2">
+            {[{
               value: 5,
               label: 'Small',
               desc: '5 pts'
@@ -2766,16 +2726,16 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             }].map(point => <Card key={point.value} className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.pointValue === point.value ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
               pointValue: point.value
             })}>
-                  <CardContent className="p-4">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      {data.pointValue === point.value && <Check className="h-4 w-4 text-primary" />}
-                      <div className="font-semibold text-center">{point.label}</div>
-                      <div className="text-xs text-muted-foreground">{point.desc}</div>
-                    </div>
-                  </CardContent>
-                </Card>)}
-            </div>
-          </div>}
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center justify-center gap-2">
+                  {data.pointValue === point.value && <Check className="h-4 w-4 text-primary" />}
+                  <div className="font-semibold text-center">{point.label}</div>
+                  <div className="text-xs text-muted-foreground">{point.desc}</div>
+                </div>
+              </CardContent>
+            </Card>)}
+          </div>
+        </div>}
       </CardContent>
     </Card>;
   };
@@ -2783,36 +2743,36 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   // Progressive Mastery render functions
   const renderPMSkillName = () => {
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl">What skill do you want to learn?</CardTitle>
-          <p className="text-muted-foreground">
-            Be specific! This will help us create the perfect learning plan.
-          </p>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="pmSkillName">Skill Name</Label>
-            <Input id="pmSkillName" value={data.pmSkillName || ''} onChange={e => updateData({
+      <CardHeader className="text-center pb-4">
+        <CardTitle className="text-2xl">What skill do you want to learn?</CardTitle>
+        <p className="text-muted-foreground">
+          Be specific! This will help us create the perfect learning plan.
+        </p>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="pmSkillName">Skill Name</Label>
+          <Input id="pmSkillName" value={data.pmSkillName || ''} onChange={e => updateData({
             pmSkillName: e.target.value
           })} placeholder="e.g., Making breakfast independently" className="text-base" />
-          </div>
+        </div>
 
-          <div className="space-y-2 pt-2">
-            <p className="text-sm font-medium">Examples:</p>
-            <div className="space-y-1 text-sm text-muted-foreground">
-              <p>• Making scrambled eggs</p>
-              <p>• Doing my own laundry</p>
-              <p>• Managing my weekly schedule</p>
-              <p>• Packing my school bag</p>
-            </div>
+        <div className="space-y-2 pt-2">
+          <p className="text-sm font-medium">Examples:</p>
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <p>• Making scrambled eggs</p>
+            <p>• Doing my own laundry</p>
+            <p>• Managing my weekly schedule</p>
+            <p>• Packing my school bag</p>
           </div>
+        </div>
 
-          <Button onClick={() => nextStep()} className="w-full" disabled={!data.pmSkillName || data.pmSkillName.trim().length < 3}>
-            Next
-          </Button>
-        </CardContent>
-      </Card>;
+        <Button onClick={() => nextStep()} className="w-full" disabled={!data.pmSkillName || data.pmSkillName.trim().length < 3}>
+          Next
+        </Button>
+      </CardContent>
+    </Card>;
   };
   const renderPMSkillAssessmentIntro = () => {
     const recipientName = data.recipient === 'other' && data.supportedPersonName ? data.supportedPersonName : 'you';
@@ -2834,140 +2794,140 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         pmAssessment: assessmentData // Set both for consistency
       });
 
-      // Skip to step 8 (barriers) - bypassing detailed Q1-Q3
-      setCurrentStep(8);
+      // Skip to step 9 (barriers) - bypassing detailed Q1-Q3 and help needed
+      setCurrentStep(9);
     };
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardContent className="pt-8 pb-6 px-6">
-          <div className="text-center space-y-6 max-w-2xl mx-auto">
-            {/* Icon */}
-            <div className="flex justify-center">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-                <Brain className="h-10 w-10 text-primary" />
+      <CardContent className="pt-8 pb-6 px-6">
+        <div className="text-center space-y-6 max-w-2xl mx-auto">
+          {/* Icon */}
+          <div className="flex justify-center">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+              <Brain className="h-10 w-10 text-primary" />
+            </div>
+          </div>
+
+          {/* Main message */}
+          <div className="space-y-3">
+            <h1 className="text-2xl md:text-3xl font-bold">
+              Let's check how good {isOther ? recipientName : 'you are'} {isOther ? 'is' : 'are'} at performing this goal independently
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              We can either do a quick 2-click assessment or ask 3 detailed questions
+            </p>
+          </div>
+
+          {/* Three choice options */}
+          <div className="space-y-3">
+            <div onClick={() => handleSimplifiedChoice('confident')} className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50">
+              <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-1">
+                <span className="font-semibold text-left block">{isOther ? `${recipientName} is already confident doing this` : "I'm already confident doing this"}</span>
+                <p className="text-sm text-muted-foreground text-left">
+                  {isOther ? `${recipientName} can` : 'I can'} do this independently without help
+                </p>
               </div>
             </div>
 
-            {/* Main message */}
-            <div className="space-y-3">
-              <h1 className="text-2xl md:text-3xl font-bold">
-                Let's check how good {isOther ? recipientName : 'you are'} {isOther ? 'is' : 'are'} at performing this goal independently
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                We can either do a quick 2-click assessment or ask 3 detailed questions
-              </p>
+            <div onClick={() => handleSimplifiedChoice('learning')} className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50">
+              <GraduationCap className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-1">
+                <span className="font-semibold text-left block">{isOther ? `${recipientName} is still learning this skill` : "I'm still learning this skill"}</span>
+                <p className="text-sm text-muted-foreground text-left">
+                  {isOther ? `${recipientName} needs` : 'I need'} practice and support to improve
+                </p>
+              </div>
             </div>
 
-            {/* Three choice options */}
-            <div className="space-y-3">
-              <div onClick={() => handleSimplifiedChoice('confident')} className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50">
-                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div className="flex-1 space-y-1">
-                  <span className="font-semibold text-left block">{isOther ? `${recipientName} is already confident doing this` : "I'm already confident doing this"}</span>
-                  <p className="text-sm text-muted-foreground text-left">
-                    {isOther ? `${recipientName} can` : 'I can'} do this independently without help
-                  </p>
-                </div>
-              </div>
-
-              <div onClick={() => handleSimplifiedChoice('learning')} className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50">
-                <GraduationCap className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div className="flex-1 space-y-1">
-                  <span className="font-semibold text-left block">{isOther ? `${recipientName} is still learning this skill` : "I'm still learning this skill"}</span>
-                  <p className="text-sm text-muted-foreground text-left">
-                    {isOther ? `${recipientName} needs` : 'I need'} practice and support to improve
-                  </p>
-                </div>
-              </div>
-
-              <div onClick={() => setCurrentStep(5)} className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50">
-                <ClipboardList className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div className="flex-1 space-y-1">
-                  <span className="font-semibold text-left block">Let me answer detailed questions</span>
-                  <p className="text-sm text-muted-foreground text-left">
-                    I want to provide more specific information (3 questions)
-                  </p>
-                </div>
+            <div onClick={() => setCurrentStep(6)} className="w-full p-4 flex items-start gap-3 rounded-lg shadow-md cursor-pointer transition-all hover:shadow-lg hover:bg-accent/50">
+              <ClipboardList className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-1">
+                <span className="font-semibold text-left block">Let me answer detailed questions</span>
+                <p className="text-sm text-muted-foreground text-left">
+                  I want to provide more specific information (3 questions)
+                </p>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>;
+        </div>
+      </CardContent>
+    </Card>;
   };
   const renderHabitSchedulingIntro = () => {
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardContent className="pt-8 pb-6 px-6">
-          <div className="text-center space-y-6 max-w-2xl mx-auto">
-            {/* Icon */}
-            <div className="flex justify-center">
-              <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center">
-                <Target className="h-10 w-10 text-green-500" />
-              </div>
-            </div>
-
-            {/* Main message */}
-            <div className="space-y-3">
-              <h1 className="text-2xl md:text-3xl font-bold">
-                Let's start building the plan to crush this goal! 💪
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                You've got the skills - now let's create a schedule that works for you
-              </p>
-            </div>
-
-            {/* What's next */}
-            <div className="bg-green-500/5 rounded-lg p-4 text-left border border-green-500/10">
-              <p className="text-sm text-muted-foreground font-medium mb-3">
-                Next up:
-              </p>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-0.5">•</span>
-                  <span>Set your practice schedule</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-0.5">•</span>
-                  <span>Choose who's in your corner</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-0.5">•</span>
-                  <span>Review and launch your goal</span>
-                </li>
-              </ul>
+      <CardContent className="pt-8 pb-6 px-6">
+        <div className="text-center space-y-6 max-w-2xl mx-auto">
+          {/* Icon */}
+          <div className="flex justify-center">
+            <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center">
+              <Target className="h-10 w-10 text-green-500" />
             </div>
           </div>
-        </CardContent>
-      </Card>;
+
+          {/* Main message */}
+          <div className="space-y-3">
+            <h1 className="text-2xl md:text-3xl font-bold">
+              Let's start building the plan to crush this goal! 💪
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              You've got the skills - now let's create a schedule that works for you
+            </p>
+          </div>
+
+          {/* What's next */}
+          <div className="bg-green-500/5 rounded-lg p-4 text-left border border-green-500/10">
+            <p className="text-sm text-muted-foreground font-medium mb-3">
+              Next up:
+            </p>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">•</span>
+                <span>Set your practice schedule</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">•</span>
+                <span>Choose who's in your corner</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">•</span>
+                <span>Review and launch your goal</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </CardContent>
+    </Card>;
   };
   const renderPMSkillAssessment = () => {
     return <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
-        <SkillAssessmentWizard goalTitle={data.pmSkillName || data.goalTitle || 'this skill'} onComplete={assessment => {
+      <SkillAssessmentWizard goalTitle={data.pmSkillName || data.goalTitle || 'this skill'} onComplete={assessment => {
         updateData({
           pmSkillAssessment: assessment
         });
         nextStep();
       }} onBack={() => setCurrentStep(currentStep! - 1)} />
-      </div>;
+    </div>;
   };
   const renderPMTargetFrequency = () => {
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl">How often would you eventually like to practice?</CardTitle>
-          <p className="text-muted-foreground">Don't worry, we'll start slower and build up gradually!</p>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-4 gap-2">
-            {[1, 2, 3, 4, 5, 6, 7].map(freq => <Card key={freq} className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.pmTargetFrequency === freq ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
+      <CardHeader className="text-center pb-4">
+        <CardTitle className="text-2xl">How often would you eventually like to practice?</CardTitle>
+        <p className="text-muted-foreground">Don't worry, we'll start slower and build up gradually!</p>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-4 gap-2">
+          {[1, 2, 3, 4, 5, 6, 7].map(freq => <Card key={freq} className={cn("cursor-pointer hover:shadow-md transition-all border-2", data.pmTargetFrequency === freq ? "border-primary bg-primary/5" : "border-border")} onClick={() => updateData({
             pmTargetFrequency: freq
           })}>
-                <CardContent className="p-4 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold">{freq}</span>
-                  <span className="text-xs">day{freq > 1 ? 's' : ''}/wk</span>
-                </CardContent>
-              </Card>)}
-          </div>
-        </CardContent>
-      </Card>;
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <span className="text-2xl font-bold">{freq}</span>
+              <span className="text-xs">day{freq > 1 ? 's' : ''}/wk</span>
+            </CardContent>
+          </Card>)}
+        </div>
+      </CardContent>
+    </Card>;
   };
   const renderPMTeachingHelper = () => {
     // Get skill level from the correct source based on goalType
@@ -2996,262 +2956,262 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     const shouldEmphasizeHelper = recommendation === 'helper';
     const shouldEmphasizeSolo = recommendation === 'solo';
     const levelContext = assessment ? `Starting level: ${getSkillLevelDisplay(assessment).emoji} ${getSkillLevelDisplay(assessment).label}` : undefined;
-    const helpText = skillLevel >= 4 
-      ? isForOther 
+    const helpText = skillLevel >= 4
+      ? isForOther
         ? `${recipientName} is ready to practice independently! Helpers are optional for feedback.`
         : "You're ready to practice independently! Helpers are optional for feedback."
       : isForOther
         ? `Choose how you'd like ${recipientName} to approach this goal`
         : "Choose how you'd like to approach this goal";
-    const questionText = isForOther 
+    const questionText = isForOther
       ? `Who can help ${recipientName} learn this skill?`
       : "Who can help you learn this skill?";
     return <QuestionScreen currentStep={currentStep} totalSteps={totalSteps} goalTitle={data.goalTitle} goalContext={levelContext} questionIcon="👥" questionText={questionText} helpText={helpText} inputType="custom" onBack={prevStep} onContinue={nextStep} continueDisabled={!pmSelectedHelperId && pmSelectedHelperId !== 'none'} hideHeader hideFooter>
-        <div className="space-y-3">
-          {/* Recommendation card for beginners */}
-          {skillLevel <= 2 && <Card className="border-2 border-accent bg-accent/5 shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                    <UserPlus className="h-5 w-5 text-accent-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-base font-semibold text-foreground mb-1">
-                      Recommended: Work with a helper
-                    </p>
-                    <p className="text-base text-muted-foreground">
-                      {isForOther 
-                        ? `Since ${recipientName} is just starting out, having guidance will help ${recipientName} learn faster and more safely.`
-                        : "Since you're just starting out, having guidance will help you learn faster and more safely."
-                      }
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>}
-          
-          {/* Conditionally render order based on skill level */}
-          {skillLevel <= 2 ? <>
-              {/* Helpers first for beginners */}
-              {userSupporters.length > 0 ? (
-                <div className="space-y-3">
-                  {userSupporters.map(supporter => (
-                    <Card 
-                      key={supporter.id} 
-                      className={cn(
-                        "cursor-pointer transition-all shadow-sm",
-                        pmSelectedHelperId === supporter.id ? "bg-primary/5" : ""
-                      )}
-                      onClick={() => setPMSelectedHelperId(supporter.id)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
-                          <Avatar className="w-8 h-8 flex-shrink-0">
-                            <AvatarImage src={supporter.profile?.avatar_url ? `${supporter.profile.avatar_url}${supporter.profile?.updated_at ? `?v=${new Date(supporter.profile.updated_at).getTime()}` : ''}` : undefined} />
-                            <AvatarFallback className="text-xs">
-                              {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="text-left flex-1 min-w-0">
-                            <div className="font-medium flex items-center gap-2 flex-wrap">
-                              <span className="truncate">{supporter.name}</span>
-                              {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs flex-shrink-0">Recommended</Badge>}
-                            </div>
-                            <div className="text-base text-muted-foreground">
-                              {skillLevel <= 2 
-                                ? isForOther 
-                                  ? `Will guide ${recipientName} step-by-step` 
-                                  : "Will guide you step-by-step"
-                                : skillLevel === 3 
-                                  ? isForOther
-                                    ? `Can help accelerate ${recipientName}'s progress`
-                                    : "Can help accelerate your progress"
-                                  : "Optional: Get Feedback From Me"
-                              }
-                            </div>
-                          </div>
+      <div className="space-y-3">
+        {/* Recommendation card for beginners */}
+        {skillLevel <= 2 && <Card className="border-2 border-accent bg-accent/5 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
+                <UserPlus className="h-5 w-5 text-accent-foreground" />
+              </div>
+              <div className="flex-1">
+                <p className="text-base font-semibold text-foreground mb-1">
+                  Recommended: Work with a helper
+                </p>
+                <p className="text-base text-muted-foreground">
+                  {isForOther
+                    ? `Since ${recipientName} is just starting out, having guidance will help ${recipientName} learn faster and more safely.`
+                    : "Since you're just starting out, having guidance will help you learn faster and more safely."
+                  }
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>}
+
+        {/* Conditionally render order based on skill level */}
+        {skillLevel <= 2 ? <>
+          {/* Helpers first for beginners */}
+          {userSupporters.length > 0 ? (
+            <div className="space-y-3">
+              {userSupporters.map(supporter => (
+                <Card
+                  key={supporter.id}
+                  className={cn(
+                    "cursor-pointer transition-all shadow-sm",
+                    pmSelectedHelperId === supporter.id ? "bg-primary/5" : ""
+                  )}
+                  onClick={() => setPMSelectedHelperId(supporter.id)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                      <Avatar className="w-8 h-8 flex-shrink-0">
+                        <AvatarImage src={supporter.profile?.avatar_url ? `${supporter.profile.avatar_url}${supporter.profile?.updated_at ? `?v=${new Date(supporter.profile.updated_at).getTime()}` : ''}` : undefined} />
+                        <AvatarFallback className="text-xs">
+                          {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="font-medium flex items-center gap-2 flex-wrap">
+                          <span className="truncate">{supporter.name}</span>
+                          {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs flex-shrink-0">Recommended</Badge>}
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-4 space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    No helpers available yet
-                  </p>
-                  {skillLevel <= 2 && <p className="text-xs text-amber-600">
-                      💡 Consider inviting a supporter from Settings to help you get started
-                    </p>}
-                </div>
-              )}
-              
-              <Card className={cn("cursor-pointer transition-all shadow-sm", pmSelectedHelperId === 'none' ? "bg-primary/5" : "", skillLevel <= 2 && "opacity-60 hover:opacity-100")} onClick={() => setPMSelectedHelperId('none')}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
-                    <div className="text-left flex-1">
-                      <div className="font-medium flex items-center gap-2">
-                        {isForOther ? `${recipientName} will work on this alone` : "On my own"}
-                        {shouldEmphasizeSolo && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
-                      </div>
-                      <div className="text-base text-muted-foreground">
-                        {skillLevel >= 4 
-                          ? isForOther
-                            ? `Perfect for ${recipientName}'s skill level - practice independently`
-                            : "Perfect for your skill level - practice independently"
-                          : skillLevel === 3 
+                        <div className="text-base text-muted-foreground">
+                          {skillLevel <= 2
                             ? isForOther
-                              ? `${recipientName} can manage this on their own`
-                              : "You can manage this on your own"
-                            : isForOther
-                              ? `⚠️ Consider starting ${recipientName} with a helper first`
-                              : "⚠️ Consider starting with a helper first"
-                        }
+                              ? `Will guide ${recipientName} step-by-step`
+                              : "Will guide you step-by-step"
+                            : skillLevel === 3
+                              ? isForOther
+                                ? `Can help accelerate ${recipientName}'s progress`
+                                : "Can help accelerate your progress"
+                              : "Optional: Get Feedback From Me"
+                          }
+                        </div>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 space-y-2">
+              <p className="text-sm text-muted-foreground">
+                No helpers available yet
+              </p>
+              {skillLevel <= 2 && <p className="text-xs text-amber-600">
+                💡 Consider inviting a supporter from Settings to help you get started
+              </p>}
+            </div>
+          )}
+
+          <Card className={cn("cursor-pointer transition-all shadow-sm", pmSelectedHelperId === 'none' ? "bg-primary/5" : "", skillLevel <= 2 && "opacity-60 hover:opacity-100")} onClick={() => setPMSelectedHelperId('none')}>
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                <div className="text-left flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    {isForOther ? `${recipientName} will work on this alone` : "On my own"}
+                    {shouldEmphasizeSolo && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
                   </div>
-                </CardContent>
-              </Card>
-            </> : <>
-              {/* "On my own" first for intermediate/advanced */}
-              <Card className={cn("cursor-pointer transition-all shadow-sm", pmSelectedHelperId === 'none' ? "bg-primary/5" : "")} onClick={() => setPMSelectedHelperId('none')}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
-                    <div className="text-left flex-1">
-                      <div className="font-medium flex items-center gap-2">
-                        {isForOther ? `${recipientName} will work on this alone` : "On my own"}
-                        {shouldEmphasizeSolo && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
-                      </div>
-                      <div className="text-base text-muted-foreground">
-                        {skillLevel >= 4 
-                          ? isForOther
-                            ? `Perfect for ${recipientName}'s skill level - practice independently`
-                            : "Perfect for your skill level - practice independently"
-                          : skillLevel === 3 
+                  <div className="text-base text-muted-foreground">
+                    {skillLevel >= 4
+                      ? isForOther
+                        ? `Perfect for ${recipientName}'s skill level - practice independently`
+                        : "Perfect for your skill level - practice independently"
+                      : skillLevel === 3
+                        ? isForOther
+                          ? `${recipientName} can manage this on their own`
+                          : "You can manage this on your own"
+                        : isForOther
+                          ? `⚠️ Consider starting ${recipientName} with a helper first`
+                          : "⚠️ Consider starting with a helper first"
+                    }
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </> : <>
+          {/* "On my own" first for intermediate/advanced */}
+          <Card className={cn("cursor-pointer transition-all shadow-sm", pmSelectedHelperId === 'none' ? "bg-primary/5" : "")} onClick={() => setPMSelectedHelperId('none')}>
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                {pmSelectedHelperId === 'none' && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                <div className="text-left flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    {isForOther ? `${recipientName} will work on this alone` : "On my own"}
+                    {shouldEmphasizeSolo && <Badge variant="secondary" className="text-xs">Recommended</Badge>}
+                  </div>
+                  <div className="text-base text-muted-foreground">
+                    {skillLevel >= 4
+                      ? isForOther
+                        ? `Perfect for ${recipientName}'s skill level - practice independently`
+                        : "Perfect for your skill level - practice independently"
+                      : skillLevel === 3
+                        ? isForOther
+                          ? `${recipientName} can manage this on their own`
+                          : "You can manage this on your own"
+                        : isForOther
+                          ? `${recipientName} will practice independently (may take longer)`
+                          : "I'll practice independently (may take longer)"
+                    }
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+
+          {/* Helpers second */}
+          {userSupporters.length > 0 && (
+            <div className="space-y-3">
+              {userSupporters.map(supporter => (
+                <Card
+                  key={supporter.id}
+                  className={cn(
+                    "cursor-pointer transition-all shadow-sm",
+                    pmSelectedHelperId === supporter.id ? "bg-primary/5" : ""
+                  )}
+                  onClick={() => setPMSelectedHelperId(supporter.id)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
+                      <Avatar className="w-8 h-8 flex-shrink-0">
+                        <AvatarImage src={supporter.profile?.avatar_url ? `${supporter.profile.avatar_url}${supporter.profile?.updated_at ? `?v=${new Date(supporter.profile.updated_at).getTime()}` : ''}` : undefined} />
+                        <AvatarFallback className="text-xs">
+                          {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="font-medium flex items-center gap-2 flex-wrap">
+                          <span className="truncate">{supporter.name}</span>
+                          {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs flex-shrink-0">Recommended</Badge>}
+                        </div>
+                        <div className="text-base text-muted-foreground">
+                          {skillLevel <= 2
                             ? isForOther
-                              ? `${recipientName} can manage this on their own`
-                              : "You can manage this on your own"
-                            : isForOther
-                              ? `${recipientName} will practice independently (may take longer)`
-                              : "I'll practice independently (may take longer)"
-                        }
+                              ? `Will guide ${recipientName} step-by-step`
+                              : "Will guide you step-by-step"
+                            : skillLevel === 3
+                              ? isForOther
+                                ? `Can help accelerate ${recipientName}'s progress`
+                                : "Can help accelerate your progress"
+                              : "Optional: Get feedback from me"
+                          }
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-
-              {/* Helpers second */}
-              {userSupporters.length > 0 && (
-                <div className="space-y-3">
-                  {userSupporters.map(supporter => (
-                    <Card 
-                      key={supporter.id} 
-                      className={cn(
-                        "cursor-pointer transition-all shadow-sm", 
-                        pmSelectedHelperId === supporter.id ? "bg-primary/5" : ""
-                      )} 
-                      onClick={() => setPMSelectedHelperId(supporter.id)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          {pmSelectedHelperId === supporter.id && <Check className="h-5 w-5 text-primary flex-shrink-0" />}
-                          <Avatar className="w-8 h-8 flex-shrink-0">
-                            <AvatarImage src={supporter.profile?.avatar_url ? `${supporter.profile.avatar_url}${supporter.profile?.updated_at ? `?v=${new Date(supporter.profile.updated_at).getTime()}` : ''}` : undefined} />
-                            <AvatarFallback className="text-xs">
-                              {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="text-left flex-1 min-w-0">
-                            <div className="font-medium flex items-center gap-2 flex-wrap">
-                              <span className="truncate">{supporter.name}</span>
-                              {shouldEmphasizeHelper && <Badge variant="secondary" className="text-xs flex-shrink-0">Recommended</Badge>}
-                            </div>
-                            <div className="text-base text-muted-foreground">
-                              {skillLevel <= 2 
-                                ? isForOther 
-                                  ? `Will guide ${recipientName} step-by-step` 
-                                  : "Will guide you step-by-step"
-                                : skillLevel === 3 
-                                  ? isForOther
-                                    ? `Can help accelerate ${recipientName}'s progress`
-                                    : "Can help accelerate your progress"
-                                  : "Optional: Get feedback from me"
-                              }
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </>}
-        </div>
-      </QuestionScreen>;
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>}
+      </div>
+    </QuestionScreen>;
   };
   const renderPMDuration = () => {
     return <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl">When will you practice?</CardTitle>
-          <p className="text-muted-foreground">Choose your practice schedule</p>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          {/* Start Date - Required */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1 text-base font-medium">
-              <span>Start Date</span>
-              <span className="text-destructive">*</span>
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left h-12">
-                  <CalendarIcon className="h-4 w-4 mr-2" />
-                  {data.startDate ? format(data.startDate, 'PPP') : 'Pick start date'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={data.startDate} onSelect={date => date && updateData({
+      <CardHeader className="text-center pb-4">
+        <CardTitle className="text-2xl">When will you practice?</CardTitle>
+        <p className="text-muted-foreground">Choose your practice schedule</p>
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        {/* Start Date - Required */}
+        <div className="space-y-2">
+          <Label className="flex items-center gap-1 text-base font-medium">
+            <span>Start Date</span>
+            <span className="text-destructive">*</span>
+          </Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left h-12">
+                <CalendarIcon className="h-4 w-4 mr-2" />
+                {data.startDate ? format(data.startDate, 'PPP') : 'Pick start date'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" selected={data.startDate} onSelect={date => date && updateData({
                 startDate: date
               })} disabled={date => date < new Date()} />
-              </PopoverContent>
-            </Popover>
-          </div>
+            </PopoverContent>
+          </Popover>
+        </div>
 
-          {/* End Date - Optional */}
-          <div className="space-y-2">
-            <Label className="text-base font-medium">End Date (Optional)</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left h-12">
-                  <CalendarIcon className="h-4 w-4 mr-2" />
-                  {data.endDate ? format(data.endDate, 'PPP') : 'Open-ended (no end date)'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={data.endDate} onSelect={date => updateData({
+        {/* End Date - Optional */}
+        <div className="space-y-2">
+          <Label className="text-base font-medium">End Date (Optional)</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left h-12">
+                <CalendarIcon className="h-4 w-4 mr-2" />
+                {data.endDate ? format(data.endDate, 'PPP') : 'Open-ended (no end date)'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" selected={data.endDate} onSelect={date => updateData({
                 endDate: date || undefined
               })} disabled={date => !data.startDate || date <= data.startDate} />
-              </PopoverContent>
-            </Popover>
-            <p className="text-xs text-muted-foreground">
-              💡 Leave open-ended if you want to practice indefinitely
-            </p>
-          </div>
+            </PopoverContent>
+          </Popover>
+          <p className="text-xs text-muted-foreground">
+            💡 Leave open-ended if you want to practice indefinitely
+          </p>
+        </div>
 
-          {/* Calculate duration in weeks if both dates selected */}
-          {data.startDate && data.endDate && <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-              <p className="text-sm font-medium">
-                Duration: {Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))} weeks
-              </p>
-            </div>}
-        </CardContent>
-      </Card>;
+        {/* Calculate duration in weeks if both dates selected */}
+        {data.startDate && data.endDate && <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+          <p className="text-sm font-medium">
+            Duration: {Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))} weeks
+          </p>
+        </div>}
+      </CardContent>
+    </Card>;
   };
   const renderConfirmStep = () => {
     const isProposal = isSupporter && data.recipient === 'other' && !canAssignDirectly;
@@ -3291,7 +3251,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     };
     const text = data.recipient === 'other' ? getSupporterFlowText(data.supportedPersonName) : INDIVIDUAL_FLOW_TEXT;
     return <>
-      
+
       <Card className="h-full w-full rounded-none border-0 shadow-none flex flex-col">
         <CardHeader className="pb-4 pt-6">
           {/* Main title left-aligned */}
@@ -3307,206 +3267,206 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
               <span>✨</span>
               <span>Goal Summary</span>
             </h3>
-            
+
             <div className="grid grid-cols-2 gap-4">
-                  {/* Skill Assessment - Always first if exists */}
-                  {data.pmAssessment && <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[160px]">
-                      <h4 className="text-base font-semibold text-red-700 mb-2 flex items-center gap-2">
-                        Skill Assessment
-                      </h4>
-                      <div className="space-y-1.5">
-                        <p className="text-base">
-                          <span className="text-muted-foreground text-base">Starting Level:</span>{' '}
-                          <span className="font-semibold">
-                            {(() => {
+              {/* Skill Assessment - Always first if exists */}
+              {data.pmAssessment && <div className="rounded-2xl bg-pink-50/50 p-4 border border-gray-200 min-h-[160px]">
+                <h4 className="text-base font-semibold text-red-700 mb-2 flex items-center gap-2">
+                  Skill Assessment
+                </h4>
+                <div className="space-y-1.5">
+                  <p className="text-base">
+                    <span className="text-muted-foreground text-base">Starting Level:</span>{' '}
+                    <span className="font-semibold">
+                      {(() => {
                         const {
                           label,
                           emoji
                         } = getSkillLevelDisplay(data.pmAssessment);
                         return `${label} ${emoji}`;
                       })()}
-                          </span>
-                        </p>
-                        <p className="text-base">
-                          <span className="text-muted-foreground text-base">Experience:</span>{' '}
-                          <span className="font-medium">{getExperienceLabel(data.pmAssessment.q1_experience)}</span>
-                        </p>
-                        <p className="text-base">
-                          <span className="text-muted-foreground text-base">Confidence:</span>{' '}
-                          <span className="font-medium">{getConfidenceLabel(data.pmAssessment.q2_confidence)}</span>
-                        </p>
-                        <p className="text-base">
-                          <span className="text-muted-foreground text-base">Help Needed:</span>{' '}
-                          <span className="font-medium">{getHelpNeededLabel(data.pmAssessment.q3_help_needed)}</span>
-                        </p>
-                      </div>
-                    </div>}
-
-                  {/* The Goal */}
-                  <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[160px]">
-                    <h4 className="text-base font-semibold text-blue-700 mb-2">The Goal</h4>
-                    <div className="space-y-1.5">
-                      <p className="text-base">
-                        <span className="text-muted-foreground text-base">Goal:</span>{' '}
-                        <span className="font-semibold">{data.goalTitle}</span>
-                      </p>
-                      {categoryLabel && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Category:</span>{' '}
-                          <span className="font-medium">{categoryLabel}</span>
-                        </p>}
-                      {motivationLabel && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Why:</span>{' '}
-                          <span className="font-medium">{truncate(motivationLabel, 40)}</span>
-                        </p>}
-                      {goalTypeLabel && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Type:</span>{' '}
-                          <span className="font-medium">{goalTypeLabel}</span>
-                        </p>}
-                    </div>
-                  </div>
-
-                  {/* Challenges */}
-                  <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[160px]">
-                    <h4 className="text-base font-semibold text-orange-700 mb-2">Challenges</h4>
-                    <div className="space-y-1.5">
-                      {/* Show barriers priorities */}
-                      {data.barriers?.priority1 && <p className="text-base">
-                          <span className="text-muted-foreground text-base">1st Priority:</span>{' '}
-                          <span className="font-medium">
-                            {challengeAreas.find(c => c.id === data.barriers.priority1)?.label}
-                          </span>
-                        </p>}
-                      {data.barriers?.priority2 && <p className="text-base">
-                          <span className="text-muted-foreground text-base">2nd Priority:</span>{' '}
-                          <span className="font-medium">
-                            {challengeAreas.find(c => c.id === data.barriers.priority2)?.label}
-                          </span>
-                        </p>}
-                      {/* Show barriers details text */}
-                      {data.barriers?.details && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Details:</span>{' '}
-                          <span className="font-medium">{truncate(data.barriers.details, 50)}</span>
-                        </p>}
-                      {/* Show prerequisites status */}
-                      {data.prerequisites && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Prerequisites:</span>{' '}
-                          <span className="font-medium">
-                            {data.prerequisites.ready ? 'Ready to start' : 'Need some things'}
-                            {!data.prerequisites.ready && data.prerequisites.needs && ` - ${truncate(data.prerequisites.needs, 30)}`}
-                          </span>
-                        </p>}
-                    </div>
-                  </div>
-
-                  {/* When and How Often */}
-                  <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[160px]">
-                    <h4 className="text-base font-semibold text-emerald-700 mb-2">When & How Often</h4>
-                    <div className="space-y-1.5">
-                      {data.startDate && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Starts:</span>{' '}
-                          <span className="font-medium">{new Date(data.startDate).toLocaleDateString()}</span>
-                        </p>}
-                      {data.endDate && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Ends:</span>{' '}
-                          <span className="font-medium">{new Date(data.endDate).toLocaleDateString()}</span>
-                        </p>}
-                      {frequencyLabel && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Frequency:</span>{' '}
-                          <span className="font-medium">{frequencyLabel}</span>
-                        </p>}
-                      {abbreviatedDays && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Days:</span>{' '}
-                          <span className="font-medium">{abbreviatedDays}</span>
-                        </p>}
-                      {(data.timeOfDay || data.customTime) && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Time:</span>{' '}
-                          <span className="font-medium">{data.customTime ? formatDisplayTime(data.customTime) : data.timeOfDay}</span>
-                        </p>}
-                      {data.pmPracticePlan?.startTime && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Practice Time:</span>{' '}
-                          <span className="font-medium">{formatDisplayTime(data.pmPracticePlan.startTime)}</span>
-                        </p>}
-                      {data.pmPracticePlan?.sendAdvanceReminder && data.pmPracticePlan?.startTime && <p className="text-base">
-                          <span className="text-muted-foreground text-base">Reminder:</span>{' '}
-                          <span className="font-medium">10 min before ({(() => {
-                        const [hours, minutes] = data.pmPracticePlan.startTime.split(':');
-                        const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
-                        const reminderMinutes = totalMinutes >= 10 ? totalMinutes - 10 : totalMinutes + 1440 - 10;
-                        const reminderHour = Math.floor(reminderMinutes / 60) % 24;
-                        const reminderMin = reminderMinutes % 60;
-                        const period = reminderHour >= 12 ? 'PM' : 'AM';
-                        const displayHour = reminderHour % 12 || 12;
-                        return `${displayHour}:${String(reminderMin).padStart(2, '0')} ${period}`;
-                      })()})</span>
-                        </p>}
-                    </div>
-                  </div>
-
-                  {/* The Team */}
-                  <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 min-h-[160px]">
-                    <h4 className="text-base font-semibold text-purple-700 mb-2">The Team</h4>
-                    <div className="space-y-1.5">
-                      {/* PM flow: show helper */}
-                      {data.pmHelper && <>
-                          <p className="text-base">
-                            <span className="text-muted-foreground text-base">Learning:</span>{' '}
-                            <span className="font-medium">
-                              {data.pmHelper.helperId === 'none' ? 'Independently' : 'With support'}
-                            </span>
-                          </p>
-                          {data.pmHelper.helperId !== 'none' && <p className="text-base">
-                              <span className="text-muted-foreground text-base">Helper:</span>{' '}
-                              <span className="font-medium">{data.pmHelper.helperName || 'Helper'}</span>
-                            </p>}
-                        </>}
-                      
-                      {/* Habit flow: show support context and supporters */}
-                      {!data.pmHelper && <>
-                          <p className="text-base">
-                            <span className="text-muted-foreground text-base">Working:</span>{' '}
-                            <span className="font-medium">
-                              {data.supportContext === 'alone' ? 'Independently' : supportContextLabel || 'With support'}
-                            </span>
-                          </p>
-                          {data.supportContext !== 'alone' && data.primarySupporterName && <p className="text-base">
-                              <span className="text-muted-foreground text-base">Supporter:</span>{' '}
-                              <span className="font-medium">
-                                {data.primarySupporterName}
-                              </span>
-                            </p>}
-                          {data.selectedSupporters && data.selectedSupporters.length > 1 && <p className="text-base">
-                              <span className="text-muted-foreground text-base">Additional:</span>{' '}
-                              <span className="font-medium">
-                                {data.selectedSupporters.length - 1} 
-                                {data.selectedSupporters.length - 1 === 1 ? ' supporter' : ' supporters'}
-                              </span>
-                            </p>}
-                        </>}
-                    </div>
-                  </div>
+                    </span>
+                  </p>
+                  <p className="text-base">
+                    <span className="text-muted-foreground text-base">Experience:</span>{' '}
+                    <span className="font-medium">{getExperienceLabel(data.pmAssessment.q1_experience)}</span>
+                  </p>
+                  <p className="text-base">
+                    <span className="text-muted-foreground text-base">Confidence:</span>{' '}
+                    <span className="font-medium">{getConfidenceLabel(data.pmAssessment.q2_confidence)}</span>
+                  </p>
+                  <p className="text-base">
+                    <span className="text-muted-foreground text-base">Help Needed:</span>{' '}
+                    <span className="font-medium">{getHelpNeededLabel(data.pmAssessment.q3_help_needed)}</span>
+                  </p>
                 </div>
+              </div>}
+
+              {/* The Goal */}
+              <div className="rounded-2xl bg-blue-50/50 p-4 border border-gray-200 min-h-[160px]">
+                <h4 className="text-base font-semibold text-blue-700 mb-2">The Goal</h4>
+                <div className="space-y-1.5">
+                  <p className="text-base">
+                    <span className="text-muted-foreground text-base">Goal:</span>{' '}
+                    <span className="font-semibold">{data.goalTitle}</span>
+                  </p>
+                  {categoryLabel && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Category:</span>{' '}
+                    <span className="font-medium">{categoryLabel}</span>
+                  </p>}
+                  {motivationLabel && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Why:</span>{' '}
+                    <span className="font-medium">{truncate(motivationLabel, 40)}</span>
+                  </p>}
+                  {goalTypeLabel && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Type:</span>{' '}
+                    <span className="font-medium">{goalTypeLabel}</span>
+                  </p>}
+                </div>
+              </div>
+
+              {/* Challenges */}
+              <div className="rounded-2xl bg-orange-50/50 p-4 border border-gray-200 min-h-[160px]">
+                <h4 className="text-base font-semibold text-orange-700 mb-2">Challenges</h4>
+                <div className="space-y-1.5">
+                  {/* Show barriers priorities */}
+                  {data.barriers?.priority1 && <p className="text-base">
+                    <span className="text-muted-foreground text-base">1st Priority:</span>{' '}
+                    <span className="font-medium">
+                      {challengeAreas.find(c => c.id === data.barriers.priority1)?.label}
+                    </span>
+                  </p>}
+                  {data.barriers?.priority2 && <p className="text-base">
+                    <span className="text-muted-foreground text-base">2nd Priority:</span>{' '}
+                    <span className="font-medium">
+                      {challengeAreas.find(c => c.id === data.barriers.priority2)?.label}
+                    </span>
+                  </p>}
+                  {/* Show barriers details text */}
+                  {data.barriers?.details && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Details:</span>{' '}
+                    <span className="font-medium">{truncate(data.barriers.details, 50)}</span>
+                  </p>}
+                  {/* Show prerequisites status */}
+                  {data.prerequisites && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Prerequisites:</span>{' '}
+                    <span className="font-medium">
+                      {data.prerequisites.ready ? 'Ready to start' : 'Need some things'}
+                      {!data.prerequisites.ready && data.prerequisites.needs && ` - ${truncate(data.prerequisites.needs, 30)}`}
+                    </span>
+                  </p>}
+                </div>
+              </div>
+
+              {/* When and How Often */}
+              <div className="rounded-2xl bg-emerald-50/50 p-4 border border-gray-200 min-h-[160px]">
+                <h4 className="text-base font-semibold text-emerald-700 mb-2">When & How Often</h4>
+                <div className="space-y-1.5">
+                  {data.startDate && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Starts:</span>{' '}
+                    <span className="font-medium">{new Date(data.startDate).toLocaleDateString()}</span>
+                  </p>}
+                  {data.endDate && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Ends:</span>{' '}
+                    <span className="font-medium">{new Date(data.endDate).toLocaleDateString()}</span>
+                  </p>}
+                  {frequencyLabel && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Frequency:</span>{' '}
+                    <span className="font-medium">{frequencyLabel}</span>
+                  </p>}
+                  {abbreviatedDays && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Days:</span>{' '}
+                    <span className="font-medium">{abbreviatedDays}</span>
+                  </p>}
+                  {(data.timeOfDay || data.customTime) && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Time:</span>{' '}
+                    <span className="font-medium">{data.customTime ? formatDisplayTime(data.customTime) : data.timeOfDay}</span>
+                  </p>}
+                  {data.pmPracticePlan?.startTime && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Practice Time:</span>{' '}
+                    <span className="font-medium">{formatDisplayTime(data.pmPracticePlan.startTime)}</span>
+                  </p>}
+                  {data.pmPracticePlan?.sendAdvanceReminder && data.pmPracticePlan?.startTime && <p className="text-base">
+                    <span className="text-muted-foreground text-base">Reminder:</span>{' '}
+                    <span className="font-medium">10 min before ({(() => {
+                      const [hours, minutes] = data.pmPracticePlan.startTime.split(':');
+                      const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
+                      const reminderMinutes = totalMinutes >= 10 ? totalMinutes - 10 : totalMinutes + 1440 - 10;
+                      const reminderHour = Math.floor(reminderMinutes / 60) % 24;
+                      const reminderMin = reminderMinutes % 60;
+                      const period = reminderHour >= 12 ? 'PM' : 'AM';
+                      const displayHour = reminderHour % 12 || 12;
+                      return `${displayHour}:${String(reminderMin).padStart(2, '0')} ${period}`;
+                    })()})</span>
+                  </p>}
+                </div>
+              </div>
+
+              {/* The Team */}
+              <div className="rounded-2xl bg-purple-50/50 p-4 border border-gray-200 min-h-[160px]">
+                <h4 className="text-base font-semibold text-purple-700 mb-2">The Team</h4>
+                <div className="space-y-1.5">
+                  {/* PM flow: show helper */}
+                  {data.pmHelper && <>
+                    <p className="text-base">
+                      <span className="text-muted-foreground text-base">Learning:</span>{' '}
+                      <span className="font-medium">
+                        {data.pmHelper.helperId === 'none' ? 'Independently' : 'With support'}
+                      </span>
+                    </p>
+                    {data.pmHelper.helperId !== 'none' && <p className="text-base">
+                      <span className="text-muted-foreground text-base">Helper:</span>{' '}
+                      <span className="font-medium">{data.pmHelper.helperName || 'Helper'}</span>
+                    </p>}
+                  </>}
+
+                  {/* Habit flow: show support context and supporters */}
+                  {!data.pmHelper && <>
+                    <p className="text-base">
+                      <span className="text-muted-foreground text-base">Working:</span>{' '}
+                      <span className="font-medium">
+                        {data.supportContext === 'alone' ? 'Independently' : supportContextLabel || 'With support'}
+                      </span>
+                    </p>
+                    {data.supportContext !== 'alone' && data.primarySupporterName && <p className="text-base">
+                      <span className="text-muted-foreground text-base">Supporter:</span>{' '}
+                      <span className="font-medium">
+                        {data.primarySupporterName}
+                      </span>
+                    </p>}
+                    {data.selectedSupporters && data.selectedSupporters.length > 1 && <p className="text-base">
+                      <span className="text-muted-foreground text-base">Additional:</span>{' '}
+                      <span className="font-medium">
+                        {data.selectedSupporters.length - 1}
+                        {data.selectedSupporters.length - 1 === 1 ? ' supporter' : ' supporters'}
+                      </span>
+                    </p>}
+                  </>}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Proposal notice */}
           {isProposal && <div className="p-2.5 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <p className="text-xs text-blue-800 dark:text-blue-200">
-                💡 This goal will be sent as a proposal since you don't have direct assignment permissions for {data.supportedPersonName}.
-              </p>
-            </div>}
+            <p className="text-xs text-blue-800 dark:text-blue-200">
+              💡 This goal will be sent as a proposal since you don't have direct assignment permissions for {data.supportedPersonName}.
+            </p>
+          </div>}
 
           {/* Call-to-Action */}
-              <div className="flex gap-3">
-                <Button onClick={handleSubmit} disabled={loading} className="w-full">
-                  Activate Plan
-                </Button>
-              </div>
+          <div className="flex gap-3">
+            <Button onClick={handleSubmit} disabled={loading} className="w-full">
+              Activate Plan
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </>;
   };
 
+
   // State for interstitial screen
-  const [showingResultsInterstitial, setShowingResultsInterstitial] = useState(false);
   const [interstitialData, setInterstitialData] = useState<{
     level: number;
     label: string;
@@ -3530,11 +3490,71 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
   }, [data.goalType, currentStep, data.pmSkillAssessment?.calculatedLevel, data.pmAssessment?.calculatedLevel, data.teachingHelper?.helperId]);
 
+
+  // Custom handler for step 8 (PMStep7_HelpNeeded) to show results interstitial
+  const handleStep8Continue = () => {
+    console.log('[Wizard] Step 8 Continue clicked');
+
+    // Calculate skill level
+    const assessment = data.pmAssessment || data.pmSkillAssessment || {};
+    const q1 = assessment.q1_experience || 0;
+    const q2 = assessment.q2_confidence || 0;
+    const q3 = assessment.q3_help_needed || 0;
+
+    if (q1 === 0 || q2 === 0 || q3 === 0) {
+      console.log('[Wizard] Missing assessment data, proceeding without interstitial');
+      nextStep();
+      return;
+    }
+
+    const average = Math.round((q1 + q2 + q3) / 3);
+    const labels = ['Beginner', 'Developing', 'Practicing', 'Skilled', 'Independent'];
+    const level = average;
+    const label = labels[average - 1] || 'Beginner';
+
+    console.log('[Wizard] Calculated level:', { level, label });
+
+    // Update data with calculated level
+    updateData({
+      pmAssessment: {
+        ...data.pmAssessment,
+        calculatedLevel: level,
+        levelLabel: label
+      },
+      pmSkillAssessment: {
+        ...(data.pmSkillAssessment || {}),
+        calculatedLevel: level,
+        levelLabel: label
+      }
+    });
+
+    // Show interstitial
+    console.log('[Wizard] Showing interstitial');
+    setShowingResultsInterstitial(true);
+
+    // Auto-continue after 3 seconds
+    setTimeout(() => {
+      console.log('[Wizard] Hiding interstitial and proceeding');
+      setShowingResultsInterstitial(false);
+      nextStep();
+    }, 3000);
+  };
+
+  // Wrapper to check current step when button is clicked
+  const handlePMStepContinue = () => {
+    console.log('[Wizard] PM Step Continue clicked, currentStep:', currentStep);
+    if (currentStep === 8) {
+      handleStep8Continue();
+    } else {
+      nextStep();
+    }
+  };
+
   // Props for PM micro-steps
   const pmStepProps = {
     data,
     updateData,
-    goNext: nextStep,
+    goNext: handlePMStepContinue,
     goBack: prevStep,
     currentStep: currentStep || 0,
     totalSteps: 10,
@@ -3542,9 +3562,85 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     currentUserId: '',
     goalTitle: data.goalTitle,
     setShowingResultsInterstitial,
-    interstitialData,
+    interstitialData: null,
     showingResultsInterstitial
   };
+  const renderEFFocusStep = () => {
+    // Check if the current selection matches the user's pre-filled profile data
+    const isProfileMatch = (areaId: string) => {
+      if (!prefillData?.ef_focus_areas) return false;
+      // Simple check: if the pre-selected area matches this card
+      // We assume the initial useEffect set data.efFocus based on the profile
+      // But we want to highlight which one came from their profile
+      const userPillars = prefillData.ef_focus_areas;
+      const area = challengeAreas.find(a => a.id === areaId);
+      if (!area) return false;
+
+      return userPillars.some(p =>
+        p.toLowerCase() === areaId ||
+        area.label.toLowerCase().includes(p.toLowerCase()) ||
+        p.toLowerCase().includes('initiation') && areaId === 'initiation' ||
+        p.toLowerCase().includes('planning') && areaId === 'planning_organization' ||
+        p.toLowerCase().includes('focus') && areaId === 'attention_memory' ||
+        p.toLowerCase().includes('emotion') && areaId === 'emotional_regulation'
+      );
+    };
+
+    return <QuestionScreen
+      currentStep={currentStep}
+      totalSteps={totalSteps}
+      questionIcon="🧠"
+      questionText="Which area feels like the biggest challenge right now?"
+      helpText="We will suggest goals tailored to this area."
+      inputType="custom"
+      onBack={prevStep}
+      onContinue={nextStep}
+      continueDisabled={!data.efFocus}
+      hideHeader
+      hideFooter
+    >
+      <div className="space-y-3">
+        {challengeAreas.map(area => {
+          const isSelected = data.efFocus === area.id;
+          const isRecommended = isProfileMatch(area.id);
+
+          return <Card
+            key={area.id}
+            className={cn(
+              "cursor-pointer transition-all relative shadow-md",
+              isSelected ? "bg-primary/5 ring-2 ring-primary" : "hover:shadow-lg hover:bg-accent/50",
+              isRecommended && !isSelected && "ring-1 ring-blue-300 bg-blue-50/30"
+            )}
+            onClick={() => updateData({ efFocus: area.id })}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                {isSelected ? (
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                ) : isRecommended ? (
+                  <Star className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5 fill-blue-100" />
+                ) : (
+                  <div className="w-5 h-5" /> // Spacer
+                )}
+                <div className="text-left flex-1">
+                  <div className="flex items-center gap-2">
+                    <div className="font-semibold">{area.label}</div>
+                    {isRecommended && (
+                      <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200">
+                        Your Focus
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="text-sm text-muted-foreground">({area.description})</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>;
+        })}
+      </div>
+    </QuestionScreen>;
+  };
+
   const renderCurrentStep = () => {
     // Progressive Mastery flow intercepts after goal type selection
     if (data.goalType === 'progressive_mastery') {
@@ -3553,36 +3649,39 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           return renderStep0();
         // Who is this for
         case 1:
+          return renderEFFocusStep();
+        // EF Focus
+        case 2:
           return renderStep1();
         // Goal description + type
-        case 2:
+        case 3:
           return <PMStep2_Motivation {...pmStepProps} />;
         // Motivation
-        case 3:
+        case 4:
           return <PMStep3_Prerequisites {...pmStepProps} />;
         // Prerequisites
-        case 4:
+        case 5:
           return renderPMSkillAssessmentIntro();
         // NEW: Intro screen
-        case 5:
+        case 6:
           return <PMStep5_Experience {...pmStepProps} />;
         // Experience
-        case 6:
+        case 7:
           return <PMStep6_Confidence {...pmStepProps} />;
         // Confidence
-        case 7:
+        case 8:
           return <PMStep7_HelpNeeded {...pmStepProps} />;
         // Help Needed + Calculate Level
-        case 8:
+        case 9:
           return <PMStep4_Barriers {...pmStepProps} onSwitchToHabit={() => switchGoalType('reminder')} />;
         // Barriers
-        case 9:
+        case 10:
           return renderPMTeachingHelper();
         // Helper Selection with intelligent recommendations
-        case 10:
+        case 11:
           return <PMStep9_PracticePlan {...pmStepProps} />;
         // Practice frequency + dates
-        case 11:
+        case 12:
           return renderConfirmStep();
         // PM: Summary
         default:
@@ -3596,30 +3695,33 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         return renderStep0();
       // Who is this for (supporters only)
       case 1:
+        return renderEFFocusStep();
+      // EF Focus
+      case 2:
         return renderStep1();
       // Goal description + type
-      case 2:
+      case 3:
         return renderStep2();
       // Motivation
-      case 3:
+      case 4:
         return renderStep3();
       // Prerequisites
-      case 4:
+      case 5:
         return renderPMSkillAssessmentIntro();
       // NEW: Skill Assessment Intro
-      case 5:
+      case 6:
         return <PMStep5_Experience {...pmStepProps} />;
       // Experience assessment
-      case 6:
+      case 7:
         return <PMStep6_Confidence {...pmStepProps} />;
       // Confidence assessment
-      case 7:
+      case 8:
         return <PMStep7_HelpNeeded {...pmStepProps} />;
       // Help Needed + Results
-      case 8:
+      case 9:
         return renderStep4();
       // Challenge areas (barriers)
-      case 9:
+      case 10:
         {
           // Dynamic branching based on skill level
           const skillLevel = data.pmSkillAssessment?.calculatedLevel || 1;
@@ -3631,7 +3733,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             return renderPMTeachingHelper();
           }
         }
-      case 10:
+      case 11:
         {
           const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) || 1;
           if (skillLevel >= 4) {
@@ -3642,7 +3744,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             return <PMStep9_PracticePlan {...pmStepProps} />;
           }
         }
-      case 11:
+      case 12:
         {
           const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) || 1;
           if (skillLevel >= 4) {
@@ -3653,7 +3755,7 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
             return renderConfirmStep();
           }
         }
-      case 12:
+      case 13:
         return renderConfirmStep();
       // Final confirm (habit flow with supporters)
       default:
@@ -3664,18 +3766,6 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   const skillLevel = (data.goalType === 'progressive_mastery' ? data.pmAssessment?.calculatedLevel : data.pmSkillAssessment?.calculatedLevel) || 1;
   const lastStepIndex = (() => {
     if (data.goalType === 'progressive_mastery') {
-      return 11;
-    } else {
-      // Habit flow
-      if (skillLevel >= 4) {
-        return isSupporter ? 12 : 11;
-      } else {
-        return 11; // Low skill switches to PM flow
-      }
-    }
-  })();
-  const totalSteps = (() => {
-    if (data.goalType === 'progressive_mastery') {
       return 12;
     } else {
       // Habit flow
@@ -3683,6 +3773,18 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
         return isSupporter ? 13 : 12;
       } else {
         return 12; // Low skill switches to PM flow
+      }
+    }
+  })();
+  const totalSteps = (() => {
+    if (data.goalType === 'progressive_mastery') {
+      return 13;
+    } else {
+      // Habit flow
+      if (skillLevel >= 4) {
+        return isSupporter ? 14 : 13;
+      } else {
+        return 13; // Low skill switches to PM flow
       }
     }
   })();
@@ -3697,27 +3799,27 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
 
     // Progressive Mastery flow
     if (data.goalType === 'progressive_mastery') {
-      if (currentStep! >= 0 && currentStep! <= 3) return {
+      if (currentStep! >= 0 && currentStep! <= 4) return {
         label: 'The Goal',
         index: 1,
         total: 5
       };
-      if (currentStep === 4 || currentStep === 5 || currentStep === 6 || currentStep === 7) return {
+      if (currentStep === 5 || currentStep === 6 || currentStep === 7 || currentStep === 8) return {
         label: 'Skill Assessment',
         index: 2,
         total: 5
       };
-      if (currentStep === 8) return {
+      if (currentStep === 9) return {
         label: 'Context & Challenges',
         index: 3,
         total: 5
       };
-      if (currentStep === 9 || currentStep === 10) return {
+      if (currentStep === 10 || currentStep === 11) return {
         label: 'Support & Practice Plan',
         index: 4,
         total: 5
       };
-      if (currentStep === 11) return {
+      if (currentStep === 12) return {
         label: 'Review & Confirm',
         index: 5,
         total: 5
@@ -3725,23 +3827,23 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
     }
     if (actuallySupportsAnyone) {
       // Supporter flow - 5 sections (habit flow)
-      if (currentStep! >= 0 && currentStep! <= 3) return {
+      if (currentStep! >= 0 && currentStep! <= 4) return {
         label: 'The Goal',
         index: 1,
         total: 5
       };
-      if (currentStep === 4 || currentStep === 5 || currentStep === 6 || currentStep === 7) return {
+      if (currentStep === 5 || currentStep === 6 || currentStep === 7 || currentStep === 8) return {
         label: 'Skill Assessment',
         index: 2,
         total: 5
       };
-      if (currentStep === 8) return {
+      if (currentStep === 9) return {
         label: 'Challenges',
         index: 3,
         total: 5
       };
-      // Step 9 is dynamic based on skill level
-      if (currentStep === 9) {
+      // Step 10 is dynamic based on skill level
+      if (currentStep === 10) {
         return skillLevel >= 4 ? {
           label: 'When and How Often',
           index: 4,
@@ -3752,30 +3854,30 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           total: 5
         };
       }
-      if (currentStep === 10 || currentStep === 11) return {
+      if (currentStep === 11 || currentStep === 12) return {
         label: 'Commitment & Activation',
         index: 5,
         total: 5
       };
     } else {
       // Non-supporter flow - 5 sections (habit flow)
-      if (currentStep! >= 1 && currentStep! <= 3) return {
+      if (currentStep! >= 1 && currentStep! <= 4) return {
         label: 'The Goal',
         index: 1,
         total: 5
       };
-      if (currentStep === 4 || currentStep === 5 || currentStep === 6 || currentStep === 7) return {
+      if (currentStep === 5 || currentStep === 6 || currentStep === 7 || currentStep === 8) return {
         label: 'Skill Assessment',
         index: 2,
         total: 5
       };
-      if (currentStep === 8) return {
+      if (currentStep === 9) return {
         label: 'Challenges',
         index: 3,
         total: 5
       };
-      // Step 9 is dynamic based on skill level
-      if (currentStep === 9) {
+      // Step 10 is dynamic based on skill level
+      if (currentStep === 10) {
         return skillLevel >= 4 ? {
           label: 'When and How Often',
           index: 4,
@@ -3786,12 +3888,12 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
           total: 5
         };
       }
-      if (currentStep === 10) return {
+      if (currentStep === 11) return {
         label: 'Your First Steps',
         index: 5,
         total: 5
       };
-      if (currentStep === 11) return {
+      if (currentStep === 12) return {
         label: 'Commitment & Activation',
         index: 5,
         total: 5
@@ -3932,112 +4034,199 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
   // Show loading state while determining initial step
   if (currentStep === null) {
     return <div className="min-h-[100dvh] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
-        <div className="max-w-md mx-auto py-6 space-y-6">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
+      <div className="max-w-md mx-auto py-6 space-y-6">
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-      </div>;
+      </div>
+    </div>;
   }
+
+  // Render skill assessment results interstitial
+  if (showingResultsInterstitial) {
+    const assessment = data.pmAssessment || data.pmSkillAssessment;
+    const calculatedLevel = assessment?.calculatedLevel || 1;
+    const levelLabel = assessment?.levelLabel || 'Beginner';
+    const levelEmojis = ['🌱', '📚', '🚀', '⭐', '🏆'];
+    const levelColors = ['text-green-600', 'text-blue-600', 'text-purple-600', 'text-yellow-600', 'text-orange-600'];
+
+    const getLevelDescription = (level: number): string => {
+      switch (level) {
+        case 1:
+          return "You're just starting out, and that's perfect! Everyone begins here. We'll guide you step by step.";
+        case 2:
+          return "You've got some basics down! We'll build on what you know and help you grow.";
+        case 3:
+          return "You're making great progress! We'll help you refine your skills and build confidence.";
+        case 4:
+          return "You're really skilled at this! We'll help you reach full mastery and independence.";
+        case 5:
+          return "You're already independent! We'll help you maintain consistency and keep improving.";
+        default:
+          return "Let's get started on your learning journey!";
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex items-center justify-center p-4 animate-fade-in">
+        <Card className="w-full max-w-2xl">
+          <CardContent className="pt-12 pb-8 px-8">
+            <div className="text-center space-y-8">
+              {/* Big emoji */}
+              <div className="flex justify-center animate-scale-in">
+                <div className="text-8xl mb-4">
+                  {levelEmojis[calculatedLevel - 1]}
+                </div>
+              </div>
+
+              {/* Level label */}
+              <div className="space-y-3">
+                <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                  Your Starting Level
+                </div>
+                <h1 className={cn("text-4xl md:text-5xl font-bold", levelColors[calculatedLevel - 1])}>
+                  {levelLabel}
+                </h1>
+              </div>
+
+              {/* Progress bar */}
+              <div className="space-y-3 max-w-md mx-auto">
+                <div className="h-3 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-1000 ease-out",
+                      calculatedLevel === 1 && "bg-green-500 w-[20%]",
+                      calculatedLevel === 2 && "bg-blue-500 w-[40%]",
+                      calculatedLevel === 3 && "bg-purple-500 w-[60%]",
+                      calculatedLevel === 4 && "bg-yellow-500 w-[80%]",
+                      calculatedLevel === 5 && "bg-orange-500 w-[100%]"
+                    )}
+                  />
+                </div>
+                <div className="flex justify-between text-base text-muted-foreground">
+                  <span>Beginner</span>
+                  <span>Independent</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
+                <p className="text-base text-foreground leading-relaxed">
+                  {getLevelDescription(calculatedLevel)}
+                </p>
+              </div>
+
+              {/* Auto-continue indicator */}
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground animate-pulse">
+                <Clock className="h-4 w-4" />
+                <span>Continuing automatically...</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return <div className="min-h-[100dvh] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col">
-      <div className="flex-1 flex flex-col">
-        {/* Header - fixed with safe area */}
-        <div className="fixed left-0 right-0 z-50 bg-card/80 backdrop-blur border-b border-border px-4 pb-4 pt-4" style={{
+    <div className="flex-1 flex flex-col">
+      {/* Header - fixed with safe area */}
+      <div className="fixed left-0 right-0 z-50 bg-card/80 backdrop-blur border-b border-border px-4 pb-4 pt-4" style={{
         top: 'env(safe-area-inset-top, 0px)'
       }}>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={currentStep === (isSupporter ? 0 : 1) ? onCancel : prevStep} className="p-2">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold">{section.label}</h1>
-              <p className="text-sm text-muted-foreground">
-                Step {section.index} of {section.total}
-              </p>
-            </div>
-            <Button variant="ghost" size="sm" onClick={onCancel}>
-              <X className="h-4 w-4" />
-            </Button>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={currentStep === (isSupporter ? 0 : 1) ? onCancel : prevStep} className="p-2">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold">{section.label}</h1>
+            <p className="text-sm text-muted-foreground">
+              Step {section.index} of {section.total}
+            </p>
           </div>
-          
-          {/* Progress Bar */}
-          <div className="w-full bg-muted rounded-full h-2 mt-4">
-            <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{
+          <Button variant="ghost" size="sm" onClick={onCancel}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="w-full bg-muted rounded-full h-2 mt-4">
+          <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{
             width: `${section.index / section.total * 100}%`
           }} />
-          </div>
         </div>
-        
-        {/* Current Step - fills remaining space */}
-        <div className="flex-1 overflow-auto px-4 pb-24" style={{
+      </div>
+
+      {/* Current Step - fills remaining space */}
+      <div className="flex-1 overflow-auto px-4 pb-24" style={{
         paddingTop: 'calc(env(safe-area-inset-top, 0px) + 120px)'
       }}>
-          {renderCurrentStep()}
-        </div>
-        
-        {/* Continue button - fixed bottom-right with safe area */}
-        {!isLastStep && !showingResultsInterstitial && <div className="fixed right-4 z-50" style={{
+        {renderCurrentStep()}
+      </div>
+
+      {/* Continue button - fixed bottom-right with safe area */}
+      {!isLastStep && !showingResultsInterstitial && <div className="fixed right-4 z-50" style={{
         bottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)'
       }}>
-            <Button onClick={handleContinue} disabled={!canProceed()} className="h-12 px-8 text-lg font-semibold shadow-lg">
-              Continue
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
-          </div>}
-        
-        {/* Category Selection Dialog */}
-        <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
-          <DialogContent className="max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>Choose a category</DialogTitle>
-            </DialogHeader>
-            
-            <Carousel className="w-full">
-              <CarouselContent>
-                {Array.from({
+        <Button onClick={handlePMStepContinue} disabled={!canProceed()} className="h-12 px-8 text-lg font-semibold shadow-lg">
+          Continue
+          <ArrowRight className="h-5 w-5 ml-2" />
+        </Button>
+      </div>}
+
+      {/* Category Selection Dialog */}
+      <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Choose a category</DialogTitle>
+          </DialogHeader>
+
+          <Carousel className="w-full">
+            <CarouselContent>
+              {Array.from({
                 length: Math.ceil(categories.length / 3)
               }, (_, i) => <CarouselItem key={i}>
-                    <div className="grid grid-cols-1 gap-4 p-1">
-                      {categories.slice(i * 3, (i + 1) * 3).map(category => <Card key={category.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCategorySelect(category.id)}>
-                          <CardContent className="p-4">
-                            <div className="flex items-start gap-3">
-                              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                                <category.icon className="h-5 w-5 text-primary" />
-                              </div>
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-sm">{category.title}</h3>
-                                <p className="text-xs text-muted-foreground mt-1">{category.description}</p>
-                                <p className="text-xs text-primary mt-2">Examples: {category.examples}</p>
-                              </div>
-                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                          </CardContent>
-                        </Card>)}
-                    </div>
-                  </CarouselItem>)}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
-          </DialogContent>
-        </Dialog>
-        
-        {/* Supporter Selection Dialog */}
-        <Dialog open={showSupporterDialog} onOpenChange={setShowSupporterDialog}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Select Your Allies</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              {userSupporters.length === 0 ? <div className="text-center py-8 px-4">
-                  <p className="text-muted-foreground mb-2">
-                    You have no supporters yet.
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    You can invite people to cheer for you in the Community tab.
-                  </p>
-                </div> : <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {userSupporters.map(supporter => {
+                <div className="grid grid-cols-1 gap-4 p-1">
+                  {categories.slice(i * 3, (i + 1) * 3).map(category => <Card key={category.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCategorySelect(category.id)}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <category.icon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-sm">{category.title}</h3>
+                          <p className="text-xs text-muted-foreground mt-1">{category.description}</p>
+                          <p className="text-xs text-primary mt-2">Examples: {category.examples}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </CardContent>
+                  </Card>)}
+                </div>
+              </CarouselItem>)}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </DialogContent>
+      </Dialog>
+
+      {/* Supporter Selection Dialog */}
+      <Dialog open={showSupporterDialog} onOpenChange={setShowSupporterDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select Your Allies</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {userSupporters.length === 0 ? <div className="text-center py-8 px-4">
+              <p className="text-muted-foreground mb-2">
+                You have no supporters yet.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                You can invite people to cheer for you in the Community tab.
+              </p>
+            </div> : <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              {userSupporters.map(supporter => {
                 const isSelected = (data.selectedSupporters || []).includes(supporter.id);
                 return <Card key={supporter.id} className={cn("cursor-pointer hover:shadow-md transition-all border-2", isSelected ? "border-primary bg-primary/5" : "border-border")} onClick={() => {
                   const currentSelection = data.selectedSupporters || [];
@@ -4063,91 +4252,91 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                     primarySupporterName
                   });
                 }}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
-                            {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
-                            <Avatar className="w-8 h-8">
-                              <AvatarImage src={supporter.profile?.avatar_url ? `${supporter.profile.avatar_url}${supporter.profile?.updated_at ? `?v=${new Date(supporter.profile.updated_at).getTime()}` : ''}` : undefined} />
-                              <AvatarFallback className="text-xs">
-                                {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="flex-1">{supporter.name}</span>
-                          </div>
-                        </CardContent>
-                      </Card>;
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage src={supporter.profile?.avatar_url ? `${supporter.profile.avatar_url}${supporter.profile?.updated_at ? `?v=${new Date(supporter.profile.updated_at).getTime()}` : ''}` : undefined} />
+                        <AvatarFallback className="text-xs">
+                          {supporter.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="flex-1">{supporter.name}</span>
+                    </div>
+                  </CardContent>
+                </Card>;
               })}
-                </div>}
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setShowSupporterDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={() => setShowSupporterDialog(false)} disabled={!data.selectedSupporters || data.selectedSupporters.length === 0}>
-                  Confirm
-                </Button>
-              </div>
+            </div>}
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setShowSupporterDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => setShowSupporterDialog(false)} disabled={!data.selectedSupporters || data.selectedSupporters.length === 0}>
+                Confirm
+              </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Custom Time Picker Dialog */}
-        <Dialog open={showTimePicker} onOpenChange={setShowTimePicker}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Pick a time</DialogTitle>
-            </DialogHeader>
-            
-            <div className="space-y-4 p-4">
-              <Label>Select time</Label>
-              <div className="grid grid-cols-3 gap-3">
-                {/* Hour */}
-                <Select value={tempHour} onValueChange={setTempHour}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="HH" />
-                  </SelectTrigger>
-                  <SelectContent className="pointer-events-auto">
-                    {[...Array(12)].map((_, i) => {
+      {/* Custom Time Picker Dialog */}
+      <Dialog open={showTimePicker} onOpenChange={setShowTimePicker}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Pick a time</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 p-4">
+            <Label>Select time</Label>
+            <div className="grid grid-cols-3 gap-3">
+              {/* Hour */}
+              <Select value={tempHour} onValueChange={setTempHour}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="HH" />
+                </SelectTrigger>
+                <SelectContent className="pointer-events-auto">
+                  {[...Array(12)].map((_, i) => {
                     const h = (i + 1).toString().padStart(2, "0");
                     return <SelectItem key={h} value={h}>{h}</SelectItem>;
                   })}
-                  </SelectContent>
-                </Select>
+                </SelectContent>
+              </Select>
 
-                {/* Minute */}
-                <Select value={tempMinute} onValueChange={setTempMinute}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="MM" />
-                  </SelectTrigger>
-                  <SelectContent className="pointer-events-auto">
-                    {Array.from({
+              {/* Minute */}
+              <Select value={tempMinute} onValueChange={setTempMinute}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="MM" />
+                </SelectTrigger>
+                <SelectContent className="pointer-events-auto">
+                  {Array.from({
                     length: 12
                   }, (_, i) => (i * 5).toString().padStart(2, "0")).map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                </SelectContent>
+              </Select>
 
-                {/* AM/PM */}
-                <Select value={tempPeriod} onValueChange={(v: "AM" | "PM") => setTempPeriod(v)}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="AM/PM" />
-                  </SelectTrigger>
-                  <SelectContent className="pointer-events-auto">
-                    <SelectItem value="AM">AM</SelectItem>
-                    <SelectItem value="PM">PM</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* AM/PM */}
+              <Select value={tempPeriod} onValueChange={(v: "AM" | "PM") => setTempPeriod(v)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="AM/PM" />
+                </SelectTrigger>
+                <SelectContent className="pointer-events-auto">
+                  <SelectItem value="AM">AM</SelectItem>
+                  <SelectItem value="PM">PM</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" className="flex-1" onClick={() => {
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" className="flex-1" onClick={() => {
                 updateData({
                   customTime: '',
                   timeOfDay: undefined
                 });
                 setShowTimePicker(false);
               }}>
-                  Clear
-                </Button>
-                <Button className="flex-1" disabled={!tempHour || !tempMinute || !tempPeriod} onClick={() => {
+                Clear
+              </Button>
+              <Button className="flex-1" disabled={!tempHour || !tempMinute || !tempPeriod} onClick={() => {
                 const time24 = build24hTime(parseInt(tempHour, 10), tempMinute, tempPeriod);
                 updateData({
                   customTime: time24,
@@ -4155,15 +4344,15 @@ export const RedesignedGoalsWizard: React.FC<RedesignedGoalsWizardProps> = ({
                 });
                 setShowTimePicker(false);
               }}>
-                  Confirm
-                </Button>
-              </div>
+                Confirm
+              </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Browse Goals Modal */}
-        {renderBrowseModal()}
-      </div>
-    </div>;
+      {/* Browse Goals Modal */}
+      {renderBrowseModal()}
+    </div>
+  </div>;
 };

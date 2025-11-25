@@ -139,9 +139,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       generationError,
       hasWizardContext: !!(goal as any)?.metadata?.wizardContext
     });
-    const shouldGenerate = goal && steps.length === 0 && (goal as any).metadata?.wizardContext && !generatingSteps && !generationError && status !== 'completed' && (
-    // Don't retry completed
-    isQueued || pendingNoStart || isPendingStalled || !status); // Allow generation for these states
+    const shouldGenerate = goal && steps.length === 0 && (goal as any).metadata?.wizardContext && !generatingSteps && !generationError && status !== 'completed' && status !== 'failed' && (
+      // Don't retry completed or failed
+      isQueued || pendingNoStart || isPendingStalled || !status); // Allow generation for these states
 
     if (shouldGenerate) {
       // Log reason for generation
@@ -156,7 +156,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       }
       generateStepsForNewGoal();
     }
-  }, [goal, steps]);
+  }, [goalId, (goal as any)?.metadata?.generationStatus, steps.length, generatingSteps, generationError]);
   useEffect(() => {
     // On mount, check if goal has stale 'pending' or 'queued' status
     const checkStaleGeneration = async () => {
@@ -185,7 +185,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
             } as any
           }).eq('id', goal.id);
 
-          // Reload to trigger fresh attempt
+          // Reload to show failed status (will not auto-retry due to 'failed' status)
           await loadGoalData();
           return;
         }
@@ -205,7 +205,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
             } as any
           }).eq('id', goal.id);
 
-          // Reload to trigger fresh attempt
+          // Reload to show failed status (will not auto-retry due to 'failed' status)
           await loadGoalData();
           return;
         }
@@ -260,6 +260,13 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
     if (!isHabitGoal || !metadata?.plannedOccurrences) return;
     const lastChecked = metadata?.lastGenerationCheck;
     const now = new Date();
+
+    // Skip if goal is currently being auto-generated (prevents duplicate API calls)
+    const generationStatus = metadata?.generationStatus;
+    if (generationStatus === 'queued' || generationStatus === 'pending') {
+      console.log('Skipping daily generation - goal is being auto-generated');
+      return;
+    }
 
     // Only check at most twice per day
     if (lastChecked) {
@@ -575,7 +582,7 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
       console.log('[PM Generation] Detected PM goal, using PM generation path');
       return generatePMSteps();
     }
-    
+
     console.log('[Generation] Not a PM goal, using standard generation');
     setGeneratingSteps(true);
     setGenerationError(false);
@@ -838,8 +845,9 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
               retryCount++;
               console.error(`Attempt ${retryCount}/${maxRetries} failed for day ${dayIndex + 1}:`, error);
               if (error.message?.includes('429') || error.message?.includes('rate limit')) {
-                console.log(`Rate limited. Waiting 5 seconds before retry ${retryCount}...`);
-                await new Promise(resolve => setTimeout(resolve, 5000));
+                // Don't retry on rate limits - fail immediately
+                console.error('Rate limited - stopping generation immediately');
+                throw new Error('Rate limit exceeded. Please wait a few minutes and try again.');
               } else if (retryCount >= maxRetries) {
                 throw error;
               } else {
@@ -1113,24 +1121,24 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
   // Loading skeleton (Phase 6)
   if (isLoading || !data) {
     return <div className="flex flex-col h-screen bg-background">
-        <div className="flex-shrink-0 space-y-4 px-4 pt-5 pb-4 bg-background border-b border-border">
-          <div className="flex items-center gap-2">
-            <BackButton onClick={onBack} />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-8 w-64" />
-              <div className="flex gap-2">
-                <Skeleton className="h-5 w-20" />
-                <Skeleton className="h-5 w-24" />
-                <Skeleton className="h-5 w-32" />
-              </div>
+      <div className="flex-shrink-0 space-y-4 px-4 pt-5 pb-4 bg-background border-b border-border">
+        <div className="flex items-center gap-2">
+          <BackButton onClick={onBack} />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <div className="flex gap-2">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-5 w-32" />
             </div>
           </div>
-          <Skeleton className="h-10 w-full" />
         </div>
-        <div className="flex-1 overflow-y-auto px-4 py-4">
-          <Skeleton className="h-96 w-full" />
-        </div>
-      </div>;
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <Skeleton className="h-96 w-full" />
+      </div>
+    </div>;
   }
 
   // Handle case where goal not found
@@ -1144,227 +1152,227 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
     return null;
   }
   return <div className="flex flex-col h-screen bg-background">
-      {/* Removed full-screen loading overlay - now using inline message in Recommended Steps tab */}
+    {/* Removed full-screen loading overlay - now using inline message in Recommended Steps tab */}
 
-      {/* Error state with retry button */}
-      {generationError && <div className="absolute top-0 left-0 right-0 z-50 mx-4 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg shadow-lg">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h4 className="font-semibold text-red-800">Step Generation Failed</h4>
-              <p className="text-sm text-red-700 mt-1">
-                We couldn't create your plan. This might be due to:
-              </p>
-              <ul className="text-sm text-red-700 mt-2 ml-4 list-disc">
-                <li>Invalid date range (no selected days fall within your goal period)</li>
-                <li>System overload (try again in a moment)</li>
-                <li>Connection issues</li>
-              </ul>
-              <div className="flex gap-2 mt-3">
-                <Button size="sm" variant="outline" onClick={() => {
-                setGenerationError(false);
-                generateStepsForNewGoal();
-              }} disabled={generatingSteps}>
-                  {generatingSteps ? <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Retrying...
-                    </> : 'Retry Generation'}
-                </Button>
-                <Button size="sm" variant="ghost" onClick={onBack}>
-                  Back to Goals
-                </Button>
-              </div>
+    {/* Error state with retry button */}
+    {generationError && <div className="absolute top-0 left-0 right-0 z-50 mx-4 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg shadow-lg">
+      <div className="flex items-start gap-3">
+        <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+        <div className="flex-1">
+          <h4 className="font-semibold text-red-800">Step Generation Failed</h4>
+          <p className="text-sm text-red-700 mt-1">
+            We couldn't create your plan. This might be due to:
+          </p>
+          <ul className="text-sm text-red-700 mt-2 ml-4 list-disc">
+            <li>Invalid date range (no selected days fall within your goal period)</li>
+            <li>System overload (try again in a moment)</li>
+            <li>Connection issues</li>
+          </ul>
+          <div className="flex gap-2 mt-3">
+            <Button size="sm" variant="outline" onClick={() => {
+              setGenerationError(false);
+              generateStepsForNewGoal();
+            }} disabled={generatingSteps}>
+              {generatingSteps ? <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Retrying...
+              </> : 'Retry Generation'}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={onBack}>
+              Back to Goals
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>}
+
+    {/* Unified Header and Tabs */}
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col h-full">
+      <HeaderTabsContainer
+        tabs={
+          <TabsList className="w-full p-0 px-4 items-center justify-start overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide h-10">
+            <TabsTrigger value="summary" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
+              Summary
+            </TabsTrigger>
+            <TabsTrigger value="steps" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
+              Steps
+              {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && <Badge className="ml-2 flex items-center h-5 py-0 px-2 text-[11px] leading-none" variant="secondary">
+                {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length}
+              </Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
+              Results
+            </TabsTrigger>
+            {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && <TabsTrigger value="supporter" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[140px]">
+              Supporter Setup
+              <Badge className="ml-2 flex items-center h-5 py-0 px-2 text-[11px] leading-none" variant="secondary">
+                {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
+              </Badge>
+            </TabsTrigger>}
+          </TabsList>
+        }
+      >
+        {/* Header Content */}
+        <div className="flex items-start gap-4">
+          <BackButton onClick={onBack} />
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold text-foreground capitalize">{goal.title}</h1>
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <Badge variant={getStatusColor(goal.status)}>
+                {goal.status === 'active' ? 'Active' : goal.status}
+              </Badge>
+              {goal.domain && getDomainDisplayName(goal.domain) && getDomainDisplayName(goal.domain) !== 'General' && <Badge variant="outline" className="capitalize">
+                {getDomainDisplayName(goal.domain)}
+              </Badge>}
+              {goal.due_date && <Badge variant="outline" className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                <span className="truncate">Due {formatDate(goal.due_date)}</span>
+              </Badge>}
+
+              {/* Ownership badges */}
+              {currentUser && goal.owner_id !== currentUser.id && ownerProfile && <Badge variant="outline" className="text-xs">
+                <Users className="h-3 w-3 mr-1" />
+                For {ownerProfile.first_name}
+              </Badge>}
+              {currentUser && goal.created_by !== currentUser.id && creatorProfile && goal.owner_id === currentUser.id && <Badge variant="outline" className="text-xs">
+                <UserCheck className="h-3 w-3 mr-1" />
+                Created by {creatorProfile.first_name}
+              </Badge>}
+
+              {/* Progressive Mastery skill level badge */}
+              {(goal as any)?.metadata?.skill_assessment && <Badge variant="secondary" className="text-xs">
+                <Brain className="h-3 w-3 mr-1" />
+                {(goal as any).metadata.skill_assessment.level_label?.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Unknown'}
+                {(goal as any).metadata.skill_assessment.skipped && <span className="ml-1 text-muted-foreground">(Self-assessed)</span>}
+              </Badge>}
+
+              {/* Habit goal generation status */}
+              {goal.frequency_per_week && goal.frequency_per_week > 0 && (goal as any)?.metadata?.totalPlannedOccurrences && <Badge variant="secondary" className="text-xs">
+                Day {Math.floor(steps.length / 4)} of {(goal as any).metadata.totalPlannedOccurrences} generated
+              </Badge>}
+
+              {/* Progress metrics - next to badges */}
+              {progress && <div className="flex items-center gap-2 flex-shrink-0">
+                <CircularProgress value={progress.percent || 0} size={32} strokeWidth={3} color="#2393CC" />
+                <div className="text-lg font-bold text-primary">
+                  {progress.percent}%
+                </div>
+              </div>}
             </div>
           </div>
-        </div>}
+        </div>
+      </HeaderTabsContainer>
 
-      {/* Unified Header and Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col h-full">
-        <HeaderTabsContainer
-          tabs={
-            <TabsList className="w-full p-0 px-4 items-center justify-start overflow-x-auto overflow-y-hidden inline-flex scrollbar-hide h-10">
-              <TabsTrigger value="summary" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
-                Summary
-              </TabsTrigger>
-              <TabsTrigger value="steps" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
-                Steps
-                {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length > 0 && <Badge className="ml-2 flex items-center h-5 py-0 px-2 text-[11px] leading-none" variant="secondary">
-                    {steps.filter(s => !s.is_supporter_step && s.status !== 'done').length}
-                  </Badge>}
-              </TabsTrigger>
-              <TabsTrigger value="calendar" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[100px]">
-                Results
-              </TabsTrigger>
-              {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && <TabsTrigger value="supporter" className="h-9 md:h-10 px-4 py-0 leading-none flex items-center justify-center gap-2 shadow-none data-[state=active]:shadow-none flex-shrink-0 min-w-[140px]">
-                  Supporter Setup
-                  <Badge className="ml-2 flex items-center h-5 py-0 px-2 text-[11px] leading-none" variant="secondary">
-                    {steps.filter(s => s.is_supporter_step && s.status !== 'done').length}
-                  </Badge>
-                </TabsTrigger>}
-            </TabsList>
-          }
-        >
-          {/* Header Content */}
-          <div className="flex items-start gap-4">
-            <BackButton onClick={onBack} />
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-foreground capitalize">{goal.title}</h1>
-              <div className="flex flex-wrap items-center gap-2 mt-1">
-                <Badge variant={getStatusColor(goal.status)}>
-                  {goal.status === 'active' ? 'Active' : goal.status}
-                </Badge>
-                {goal.domain && getDomainDisplayName(goal.domain) && getDomainDisplayName(goal.domain) !== 'General' && <Badge variant="outline" className="capitalize">
-                    {getDomainDisplayName(goal.domain)}
-                  </Badge>}
-                {goal.due_date && <Badge variant="outline" className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    <span className="truncate">Due {formatDate(goal.due_date)}</span>
-                  </Badge>}
-                
-                {/* Ownership badges */}
-                {currentUser && goal.owner_id !== currentUser.id && ownerProfile && <Badge variant="outline" className="text-xs">
-                    <Users className="h-3 w-3 mr-1" />
-                    For {ownerProfile.first_name}
-                  </Badge>}
-                {currentUser && goal.created_by !== currentUser.id && creatorProfile && goal.owner_id === currentUser.id && <Badge variant="outline" className="text-xs">
-                    <UserCheck className="h-3 w-3 mr-1" />
-                    Created by {creatorProfile.first_name}
-                  </Badge>}
-                
-                {/* Progressive Mastery skill level badge */}
-                {(goal as any)?.metadata?.skill_assessment && <Badge variant="secondary" className="text-xs">
-                    <Brain className="h-3 w-3 mr-1" />
-                    {(goal as any).metadata.skill_assessment.level_label?.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Unknown'}
-                    {(goal as any).metadata.skill_assessment.skipped && <span className="ml-1 text-muted-foreground">(Self-assessed)</span>}
-                  </Badge>}
-                
-                {/* Habit goal generation status */}
-                {goal.frequency_per_week && goal.frequency_per_week > 0 && (goal as any)?.metadata?.totalPlannedOccurrences && <Badge variant="secondary" className="text-xs">
-                    Day {Math.floor(steps.length / 4)} of {(goal as any).metadata.totalPlannedOccurrences} generated
-                  </Badge>}
-                
-                {/* Progress metrics - next to badges */}
-                {progress && <div className="flex items-center gap-2 flex-shrink-0">
-                    <CircularProgress value={progress.percent || 0} size={32} strokeWidth={3} color="#2393CC" />
-                    <div className="text-lg font-bold text-primary">
-                      {progress.percent}%
-                    </div>
-                  </div>}
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto" data-scroll-container>
+        <div className="px-4 py-4">
+          <TabsContent value="summary" className="mt-0">
+            {activeTab === 'summary' && <div className="w-full">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <GoalFactorSummary goal={goal} wizardContext={(() => {
+                  const existingContext = (goal as any).metadata?.wizardContext;
+                  if (existingContext && existingContext.goalType === 'progressive_mastery' && existingContext.pmAssessment) {
+                    return existingContext;
+                  }
+                  // Reconstruct from goal.metadata for PM goals
+                  if ((goal as any).goal_type === 'progressive_mastery' || (goal as any)?.metadata?.skill_assessment) {
+                    const md = (goal as any).metadata || {};
+                    const sa = md.skill_assessment || {};
+                    const ss = md.smart_start || {};
+                    const helper = md.teaching_helper || {};
+                    const toTitle = (s?: string) => s ? s.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : undefined;
+                    const hasAssessment = typeof sa.q1_familiarity === 'number' || typeof sa.q2_confidence === 'number' || typeof sa.q3_independence === 'number' || typeof sa.q3_help_needed === 'number';
+
+                    // Reconstruct barriers from various possible sources
+                    const reconstructedBarriers = (() => {
+                      if (md.barriers && typeof md.barriers === 'object') {
+                        return md.barriers;
+                      }
+                      // Try to reconstruct from old format
+                      const priority1 = md.barrier_priority1 || md.challenge_priority1;
+                      const priority2 = md.barrier_priority2 || md.challenge_priority2;
+                      const details = md.barrier_details || md.challenge_details;
+                      if (priority1 || priority2 || details) {
+                        return {
+                          priority1,
+                          priority2,
+                          details
+                        };
+                      }
+                      return undefined;
+                    })();
+
+                    // Reconstruct prerequisites
+                    const reconstructedPrerequisites = (() => {
+                      if (md.prerequisites && typeof md.prerequisites === 'object') {
+                        return md.prerequisites;
+                      }
+                      if (md.prerequisites_ready !== undefined) {
+                        return {
+                          ready: md.prerequisites_ready,
+                          needs: md.prerequisites_needs
+                        };
+                      }
+                      return undefined;
+                    })();
+                    return {
+                      ...existingContext,
+                      goalTitle: goal.title,
+                      goalType: 'progressive_mastery',
+                      goalTypeLabel: 'Progressive Mastery',
+                      domain: goal.domain,
+                      frequency: goal.frequency_per_week,
+                      startDate: goal.start_date,
+                      endDate: goal.due_date,
+                      selectedDays: md.selected_days || [],
+                      customTime: md.custom_time,
+                      timeOfDay: md.time_of_day,
+                      pmAssessment: hasAssessment ? {
+                        q1_experience: sa.q1_familiarity,
+                        q2_confidence: sa.q2_confidence,
+                        q3_help_needed: typeof sa.q3_help_needed === 'number' ? sa.q3_help_needed : typeof sa.q3_independence === 'number' ? 6 - sa.q3_independence : undefined,
+                        calculatedLevel: sa.calculated_level,
+                        levelLabel: toTitle(sa.level_label)
+                      } : undefined,
+                      pmPracticePlan: {
+                        startingFrequency: ss.user_selected_initial ?? ss.suggested_initial ?? goal.frequency_per_week,
+                        targetFrequency: ss.target_frequency ?? goal.frequency_per_week,
+                        durationWeeks: goal.duration_weeks ?? null,
+                        smartStartAccepted: ss.suggestion_accepted ?? true
+                      },
+                      pmHelper: helper && (helper.helper_id || helper.helper_name) ? {
+                        helperId: helper.helper_id,
+                        helperName: helper.helper_name,
+                        supportTypes: helper.relationship
+                      } : undefined,
+                      goalMotivation: md.motivation,
+                      customMotivation: md.motivation_text,
+                      barriers: reconstructedBarriers,
+                      prerequisites: reconstructedPrerequisites
+                    };
+                  }
+                  return existingContext;
+                })()} />
+              </Suspense>
+            </div>}
+          </TabsContent>
+
+          <TabsContent value="calendar" className="mt-0">
+            {activeTab === 'calendar' && <div className="w-full">
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold flex items-center gap-2">
+                  <span>Results</span>
+                </h3>
+                <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                  <GoalCalendarView goal={goal} steps={steps} />
+                </Suspense>
               </div>
-            </div>
-          </div>
-        </HeaderTabsContainer>
+            </div>}
+          </TabsContent>
 
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto" data-scroll-container>
-          <div className="px-4 py-4">
-            <TabsContent value="summary" className="mt-0">
-              {activeTab === 'summary' && <div className="w-full">
-                  <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                    <GoalFactorSummary goal={goal} wizardContext={(() => {
-              const existingContext = (goal as any).metadata?.wizardContext;
-              if (existingContext && existingContext.goalType === 'progressive_mastery' && existingContext.pmAssessment) {
-                return existingContext;
-              }
-              // Reconstruct from goal.metadata for PM goals
-              if ((goal as any).goal_type === 'progressive_mastery' || (goal as any)?.metadata?.skill_assessment) {
-                const md = (goal as any).metadata || {};
-                const sa = md.skill_assessment || {};
-                const ss = md.smart_start || {};
-                const helper = md.teaching_helper || {};
-                const toTitle = (s?: string) => s ? s.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : undefined;
-                const hasAssessment = typeof sa.q1_familiarity === 'number' || typeof sa.q2_confidence === 'number' || typeof sa.q3_independence === 'number' || typeof sa.q3_help_needed === 'number';
-
-                // Reconstruct barriers from various possible sources
-                const reconstructedBarriers = (() => {
-                  if (md.barriers && typeof md.barriers === 'object') {
-                    return md.barriers;
-                  }
-                  // Try to reconstruct from old format
-                  const priority1 = md.barrier_priority1 || md.challenge_priority1;
-                  const priority2 = md.barrier_priority2 || md.challenge_priority2;
-                  const details = md.barrier_details || md.challenge_details;
-                  if (priority1 || priority2 || details) {
-                    return {
-                      priority1,
-                      priority2,
-                      details
-                    };
-                  }
-                  return undefined;
-                })();
-
-                // Reconstruct prerequisites
-                const reconstructedPrerequisites = (() => {
-                  if (md.prerequisites && typeof md.prerequisites === 'object') {
-                    return md.prerequisites;
-                  }
-                  if (md.prerequisites_ready !== undefined) {
-                    return {
-                      ready: md.prerequisites_ready,
-                      needs: md.prerequisites_needs
-                    };
-                  }
-                  return undefined;
-                })();
-                return {
-                  ...existingContext,
-                  goalTitle: goal.title,
-                  goalType: 'progressive_mastery',
-                  goalTypeLabel: 'Progressive Mastery',
-                  domain: goal.domain,
-                  frequency: goal.frequency_per_week,
-                  startDate: goal.start_date,
-                  endDate: goal.due_date,
-                  selectedDays: md.selected_days || [],
-                  customTime: md.custom_time,
-                  timeOfDay: md.time_of_day,
-                  pmAssessment: hasAssessment ? {
-                    q1_experience: sa.q1_familiarity,
-                    q2_confidence: sa.q2_confidence,
-                    q3_help_needed: typeof sa.q3_help_needed === 'number' ? sa.q3_help_needed : typeof sa.q3_independence === 'number' ? 6 - sa.q3_independence : undefined,
-                    calculatedLevel: sa.calculated_level,
-                    levelLabel: toTitle(sa.level_label)
-                  } : undefined,
-                  pmPracticePlan: {
-                    startingFrequency: ss.user_selected_initial ?? ss.suggested_initial ?? goal.frequency_per_week,
-                    targetFrequency: ss.target_frequency ?? goal.frequency_per_week,
-                    durationWeeks: goal.duration_weeks ?? null,
-                    smartStartAccepted: ss.suggestion_accepted ?? true
-                  },
-                  pmHelper: helper && (helper.helper_id || helper.helper_name) ? {
-                    helperId: helper.helper_id,
-                    helperName: helper.helper_name,
-                    supportTypes: helper.relationship
-                  } : undefined,
-                  goalMotivation: md.motivation,
-                  customMotivation: md.motivation_text,
-                  barriers: reconstructedBarriers,
-                  prerequisites: reconstructedPrerequisites
-                };
-              }
-              return existingContext;
-            })()} />
-                  </Suspense>
-                </div>}
-            </TabsContent>
-
-            <TabsContent value="calendar" className="mt-0">
-              {activeTab === 'calendar' && <div className="w-full">
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-semibold flex items-center gap-2">
-                      <span>Results</span>
-                    </h3>
-                    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                      <GoalCalendarView goal={goal} steps={steps} />
-                    </Suspense>
-                  </div>
-                </div>}
-            </TabsContent>
-
-            <TabsContent value="steps" className="mt-0">
-              {activeTab === 'steps' && <div className="w-full">
-                  {generatingSteps ? <Card>
+          <TabsContent value="steps" className="mt-0">
+            {activeTab === 'steps' && <div className="w-full">
+              {generatingSteps ? <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-center py-12 text-center">
                     <div className="space-y-3">
@@ -1408,26 +1416,26 @@ export const GoalDetailV2: React.FC<GoalDetailV2Props> = ({
                   <span>Recommended Steps</span>
                 </h3>
                 <RecommendedStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} onOpenStepChat={handleOpenStepChat} substepDrawerTrigger={substepDrawerTrigger} />
-                  </div>}
-                </div>}
-            </TabsContent>
+              </div>}
+            </div>}
+          </TabsContent>
 
-            {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && <TabsContent value="supporter" className="mt-0">
-                {activeTab === 'supporter' && <div className="w-full">
-                    <SupporterSetupStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} />
-                  </div>}
-              </TabsContent>}
-          </div>
+          {isViewerSupporter && steps.filter(s => s.is_supporter_step).length > 0 && <TabsContent value="supporter" className="mt-0">
+            {activeTab === 'supporter' && <div className="w-full">
+              <SupporterSetupStepsList steps={steps} goal={goal} onStepsChange={loadGoalData} onStepsUpdate={handleStepsUpdate} />
+            </div>}
+          </TabsContent>}
         </div>
-      </Tabs>
+      </div>
+    </Tabs>
 
-      {/* Step Chat Modal */}
-      <StepChatModal isOpen={showStepChat} onClose={() => setShowStepChat(false)} step={selectedStep} goal={goal} onStepsUpdate={handleStepChatUpdate} onStepsChange={loadGoalData} onOpenSubstepDrawer={handleOpenSubstepDrawer} />
+    {/* Step Chat Modal */}
+    <StepChatModal isOpen={showStepChat} onClose={() => setShowStepChat(false)} step={selectedStep} goal={goal} onStepsUpdate={handleStepChatUpdate} onStepsChange={loadGoalData} onOpenSubstepDrawer={handleOpenSubstepDrawer} />
 
-      {/* Steps Chat */}
-      <StepsChat goal={goal} steps={steps} step={chatStep} isOpen={showChat} onClose={() => setShowChat(false)} />
+    {/* Steps Chat */}
+    <StepsChat goal={goal} steps={steps} step={chatStep} isOpen={showChat} onClose={() => setShowChat(false)} />
 
-      {/* Goal Edit Modal */}
-      <GoalEditModal isOpen={showEditModal} onOpenChange={setShowEditModal} goal={goal} onGoalUpdate={handleGoalUpdate} />
-    </div>;
+    {/* Goal Edit Modal */}
+    <GoalEditModal isOpen={showEditModal} onOpenChange={setShowEditModal} goal={goal} onGoalUpdate={handleGoalUpdate} />
+  </div>;
 };

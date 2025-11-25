@@ -41,7 +41,7 @@ interface PMStepsProps {
 export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
   const value = data.motivation || '';
-  
+
   return (
     <QuestionScreen
       currentStep={currentStep}
@@ -65,7 +65,7 @@ export const PMStep2_Motivation: React.FC<PMStepsProps> = ({ data, updateData, g
 
 export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
-  
+
   return (
     <QuestionScreen
       currentStep={currentStep}
@@ -90,8 +90,8 @@ export const PMStep3_Prerequisites: React.FC<PMStepsProps> = ({ data, updateData
       ]}
       value={data.prerequisites?.ready ? 'yes' : 'no'}
       onChange={(value) => {
-        updateData({ 
-          prerequisites: { 
+        updateData({
+          prerequisites: {
             ready: value === 'yes',
             needs: value === 'yes' ? undefined : data.prerequisites?.needs
           }
@@ -134,79 +134,79 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
   const levelLabel = data.pmAssessment?.levelLabel || 'Developing';
   const levelEmojis = ['🌱', '📚', '🚀', '⭐', '🏆'];
   const { toast } = useToast();
-  
+
   const levelContext = `Starting Level: ${levelLabel} ${levelEmojis[level - 1]}`;
-  
+
   const challengeOptions = [
-    { 
-      id: 'initiation', 
-      label: "Just Starting", 
+    {
+      id: 'initiation',
+      label: "Just Starting",
       description: "(Initiation)"
     },
-    { 
-      id: 'attention', 
-      label: "Staying Focused", 
+    {
+      id: 'attention',
+      label: "Staying Focused",
       description: "(Attention)"
     },
-    { 
-      id: 'time', 
-      label: "Remembering", 
+    {
+      id: 'time',
+      label: "Remembering",
       description: "(Time)"
     },
-    { 
-      id: 'planning', 
-      label: "Knowing What's Next", 
+    {
+      id: 'planning',
+      label: "Knowing What's Next",
       description: "(Planning)"
     }
   ];
 
   const barriers = typeof data.barriers === 'object' && data.barriers !== null
-    ? data.barriers 
+    ? data.barriers
     : { priority1: '', priority2: '', details: '' };
-  
+
   const handlePriorityToggle = (challengeId: string) => {
     const current = barriers as any;
-    
+
     if (current.priority1 === challengeId) {
       // Clicking 1st priority again - remove it, promote 2nd to 1st
-      updateData({ 
-        barriers: { 
+      updateData({
+        barriers: {
           ...current,
           priority1: current.priority2 || '',
           priority2: ''
-        } 
+        }
       });
     } else if (current.priority2 === challengeId) {
       // Clicking 2nd priority again - remove it
-      updateData({ 
-        barriers: { 
+      updateData({
+        barriers: {
           ...current,
           priority2: ''
-        } 
+        }
       });
     } else if (!current.priority1) {
       // No 1st priority - set as 1st
-      updateData({ 
-        barriers: { 
+      updateData({
+        barriers: {
           ...current,
           priority1: challengeId
-        } 
+        }
       });
     } else if (!current.priority2) {
       // Has 1st but no 2nd - set as 2nd
-      updateData({ 
-        barriers: { 
+      updateData({
+        barriers: {
           ...current,
           priority2: challengeId
-        } 
+        }
       });
     } else {
       // Both slots filled - replace 2nd priority
-      updateData({ 
-        barriers: { 
+      updateData({
+        barriers: {
           ...current,
           priority2: challengeId
-        } 
+        }
       });
     }
   };
@@ -247,21 +247,21 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
         <p className="text-base text-muted-foreground mb-6">
           Identifying barriers helps create a personalized practice plan that works around your challenges
         </p>
-        
+
         {/* Challenge Options */}
         <div className="space-y-3 mb-6">
           {challengeOptions.map((option) => {
             const priority = getPriorityBadge(option.id);
             const isSelected = priority !== null;
-            
+
             return (
               <button
                 key={option.id}
                 onClick={() => handlePriorityToggle(option.id)}
                 className={cn(
                   "w-full text-left p-4 rounded-lg transition-all shadow-sm hover:shadow-md",
-                  isSelected 
-                    ? 'bg-primary/5' 
+                  isSelected
+                    ? 'bg-primary/5'
                     : 'bg-card'
                 )}
               >
@@ -297,11 +297,11 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
           <Label className="text-base">Tell us more</Label>
           <Textarea
             value={(barriers as any).details || ''}
-            onChange={(e) => updateData({ 
-              barriers: { 
+            onChange={(e) => updateData({
+              barriers: {
                 ...(barriers as any),
-                details: e.target.value 
-              } 
+                details: e.target.value
+              }
             })}
             placeholder="Share any additional details here..."
             rows={3}
@@ -314,7 +314,8 @@ export const PMStep4_Barriers: React.FC<PMStepsProps & { onSwitchToHabit?: () =>
 
 export const PMStep5_Experience: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
-  
+  console.log('[PMStep5] Rendering Experience question', { currentStep, q1_experience: data.pmAssessment?.q1_experience });
+
   return (
     <QuestionScreen
       currentStep={currentStep}
@@ -352,7 +353,8 @@ export const PMStep5_Experience: React.FC<PMStepsProps> = ({ data, updateData, g
 
 export const PMStep6_Confidence: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, goalTitle }) => {
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
-  
+  console.log('[PMStep6] Rendering Confidence question', { currentStep, q2_confidence: data.pmAssessment?.q2_confidence });
+
   return (
     <QuestionScreen
       currentStep={currentStep}
@@ -419,16 +421,82 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
     }
   };
 
+  const calculateSkillLevel = () => {
+    const assessment = data.pmAssessment || data.pmSkillAssessment || {};
+    const q1 = assessment.q1_experience || 0;
+    const q2 = assessment.q2_confidence || 0;
+    const q3 = assessment.q3_help_needed || 0;
+
+    if (q1 === 0 || q2 === 0 || q3 === 0) {
+      return { level: 1, label: 'Beginner' };
+    }
+
+    const average = Math.round((q1 + q2 + q3) / 3);
+    const labels = ['Beginner', 'Developing', 'Practicing', 'Skilled', 'Independent'];
+
+    return {
+      level: average,
+      label: labels[average - 1] || 'Beginner'
+    };
+  };
+
+  const handleContinue = () => {
+    console.log('[PMStep7] handleContinue called', { setShowingResultsInterstitial: !!setShowingResultsInterstitial });
+
+    // Calculate skill level
+    const { level, label } = calculateSkillLevel();
+
+    console.log('[PMStep7] Calculated level:', { level, label });
+
+    // Update data with calculated level
+    updateData({
+      pmAssessment: {
+        ...data.pmAssessment,
+        calculatedLevel: level,
+        levelLabel: label
+      },
+      pmSkillAssessment: {
+        ...(data.pmSkillAssessment || {}),
+        calculatedLevel: level,
+        levelLabel: label
+      }
+    });
+
+    // Show interstitial if setter is available
+    if (setShowingResultsInterstitial) {
+      console.log('[PMStep7] Showing interstitial');
+      setShowingResultsInterstitial(true);
+    } else {
+      console.log('[PMStep7] No interstitial setter, proceeding directly');
+      // No interstitial available, just proceed
+      goNext();
+    }
+  };
+
+  // Auto-continue after showing interstitial
+  React.useEffect(() => {
+    if (showingResultsInterstitial) {
+      console.log('[PMStep7] Interstitial is showing, setting timeout');
+      const timer = setTimeout(() => {
+        console.log('[PMStep7] Timeout complete, hiding interstitial and proceeding');
+        setShowingResultsInterstitial?.(false);
+        goNext();
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showingResultsInterstitial]);
+
   const renderResultsInterstitial = () => {
-    const recipientName = data.recipient === 'other' && data.supportedPersonName 
-      ? data.supportedPersonName 
+    const recipientName = data.recipient === 'other' && data.supportedPersonName
+      ? data.supportedPersonName
       : 'you';
     const isOther = data.recipient === 'other';
     // Use interstitialData if provided, otherwise fall back to stored data
     const assessment = data.pmAssessment || data.pmSkillAssessment;
     const calculatedLevel = interstitialData?.level || assessment?.calculatedLevel || 1;
     const levelLabel = interstitialData?.label || assessment?.levelLabel || 'Beginner';
-    
+
     return (
       <div className="fixed inset-0 z-50 bg-background flex items-center justify-center p-4 animate-fade-in">
         <Card className="w-full max-w-2xl">
@@ -454,7 +522,7 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
               {/* Progress bar showing level */}
               <div className="space-y-3 max-w-md mx-auto">
                 <div className="h-3 bg-muted rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className={cn(
                       "h-full rounded-full transition-all duration-1000 ease-out",
                       calculatedLevel === 1 && "bg-green-500 w-[20%]",
@@ -491,10 +559,15 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
   };
 
   // Show interstitial results screen only when explicitly triggered
+  console.log('[PMStep7] Render check:', { showingResultsInterstitial, hasSetterFunction: !!setShowingResultsInterstitial });
+
   if (showingResultsInterstitial) {
+    console.log('[PMStep7] Rendering interstitial!');
     return renderResultsInterstitial();
   }
-  
+
+  console.log('[PMStep7] Rendering question form');
+
   // Otherwise show the question
   return (
     <QuestionScreen
@@ -523,7 +596,7 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
         }
       })}
       onBack={goBack}
-      onContinue={goNext}
+      onContinue={handleContinue}
       required
       hideHeader
       hideFooter
@@ -533,16 +606,16 @@ export const PMStep7_HelpNeeded: React.FC<PMStepsProps> = ({ data, updateData, g
 
 export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNext, goBack, currentStep, totalSteps, userSupporters, goalTitle }) => {
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
-  
-  const levelContext = data.pmAssessment?.calculatedLevel 
+
+  const levelContext = data.pmAssessment?.calculatedLevel
     ? `Starting Level: ${data.pmAssessment.levelLabel} ${['🌱', '📚', '🚀', '⭐', '🏆'][data.pmAssessment.calculatedLevel - 1]}`
     : undefined;
-  
+
   const options = [
-    { 
-      value: 'none', 
-      label: name === 'you' ? "I'll work on this independently" : `${name} will work on this independently`, 
-      description: 'Practice on my own' 
+    {
+      value: 'none',
+      label: name === 'you' ? "I'll work on this independently" : `${name} will work on this independently`,
+      description: 'Practice on my own'
     },
     ...userSupporters.map(s => ({
       value: s.id,
@@ -551,7 +624,7 @@ export const PMStep8_Helper: React.FC<PMStepsProps> = ({ data, updateData, goNex
       description: 'Supporter'
     }))
   ];
-  
+
   return (
     <QuestionScreen
       currentStep={currentStep}
@@ -588,44 +661,44 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
   const [timePickerOpen, setTimePickerOpen] = React.useState(false);
   const datesSectionRef = React.useRef<HTMLDivElement>(null);
   const name = data.recipient === 'other' ? data.supportedPersonName : 'you';
-  
-    // Support both PM flow (pmAssessment) and habit-to-PM flow (pmSkillAssessment)
-    const assessment = data.pmAssessment || data.pmSkillAssessment;
-    
-    console.log('PMStep9_PracticePlan - assessment data:', {
-      pmAssessment: data.pmAssessment,
-      pmSkillAssessment: data.pmSkillAssessment,
-      assessment,
-      calculatedLevel: assessment?.calculatedLevel
-    });
-    
-    const levelContext = assessment?.calculatedLevel 
-      ? `Starting level: ${['🌱', '📚', '🚀', '⭐', '🏆'][assessment.calculatedLevel - 1]} ${assessment.levelLabel}`
-      : undefined;
+
+  // Support both PM flow (pmAssessment) and habit-to-PM flow (pmSkillAssessment)
+  const assessment = data.pmAssessment || data.pmSkillAssessment;
+
+  console.log('PMStep9_PracticePlan - assessment data:', {
+    pmAssessment: data.pmAssessment,
+    pmSkillAssessment: data.pmSkillAssessment,
+    assessment,
+    calculatedLevel: assessment?.calculatedLevel
+  });
+
+  const levelContext = assessment?.calculatedLevel
+    ? `Starting level: ${['🌱', '📚', '🚀', '⭐', '🏆'][assessment.calculatedLevel - 1]} ${assessment.levelLabel}`
+    : undefined;
 
   const level = assessment?.calculatedLevel || 3;
-  
+
   // Use prefilled frequency if available, otherwise calculate based on skill level
   const defaultTargetFreq = data.frequency || (level <= 2 ? 3 : (level >= 4 ? 5 : 4));
   const targetFreq = data.pmPracticePlan?.targetFrequency || defaultTargetFreq;
-  
+
   console.log('PMStep9_PracticePlan - frequency initialization:', {
     prefilledFrequency: data.frequency,
     calculatedDefault: level <= 2 ? 3 : (level >= 4 ? 5 : 4),
     finalDefault: defaultTargetFreq,
     pmPracticePlanFrequency: data.pmPracticePlan?.targetFrequency
   });
-  
+
   const smartStartPlan = progressiveMasteryService.suggestStartFrequency(level, targetFreq);
   const smartStartFreq = smartStartPlan.suggested_initial;
-  
+
   // Auto-set practice plan if not already set
   React.useEffect(() => {
     if (!data.pmPracticePlan?.targetFrequency) {
-      const durationWeeks = data.startDate && data.endDate 
+      const durationWeeks = data.startDate && data.endDate
         ? Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
         : null;
-      
+
       updateData({
         pmPracticePlan: {
           ...data.pmPracticePlan,
@@ -638,7 +711,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
       });
     }
   }, []);
-  
+
   const isComplete = !!data.pmPracticePlan?.targetFrequency && !!data.startDate && !!data.pmPracticePlan?.startTime;
 
   console.log('PMStep9_PracticePlan - validation check:', {
@@ -648,7 +721,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
     isComplete,
     fullPmPracticePlan: data.pmPracticePlan
   });
-  
+
   // Auto-scroll to dates section when frequency is selected but no start date
   React.useEffect(() => {
     if (data.pmPracticePlan?.targetFrequency && !data.startDate && datesSectionRef.current) {
@@ -657,7 +730,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
       }, 300);
     }
   }, [data.pmPracticePlan?.targetFrequency, data.startDate]);
-  
+
   return (
     <QuestionScreen
       currentStep={currentStep}
@@ -683,7 +756,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
               </div>
               <div className="flex-1">
                 <p className="text-base font-semibold text-foreground mb-1">
-                  {data.frequency 
+                  {data.frequency
                     ? `Your goal: ${smartStartFreq}× per week`
                     : `Recommended: ${smartStartFreq}× per week`
                   }
@@ -696,10 +769,10 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                     size="sm"
                     className="mt-3"
                     onClick={() => {
-                      const durationWeeks = data.startDate && data.endDate 
+                      const durationWeeks = data.startDate && data.endDate
                         ? Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
                         : null;
-                      
+
                       updateData({
                         pmPracticePlan: {
                           ...data.pmPracticePlan,
@@ -719,7 +792,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Frequency Selector */}
         <div className="space-y-3">
           <Label className="text-base">Let me choose:</Label>
@@ -729,10 +802,10 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                 key={freq}
                 variant={data.pmPracticePlan?.targetFrequency === freq ? 'default' : 'outline'}
                 onClick={() => {
-                  const durationWeeks = data.startDate && data.endDate 
+                  const durationWeeks = data.startDate && data.endDate
                     ? Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
                     : null;
-                  
+
                   updateData({
                     pmPracticePlan: {
                       ...data.pmPracticePlan,
@@ -762,7 +835,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
         )}
 
         {/* Date Selection */}
-        <div 
+        <div
           ref={datesSectionRef}
           className={cn(
             "space-y-6 pt-4 border-t",
@@ -785,63 +858,63 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </SheetTrigger>
-          <SheetContent side="bottom" className="w-full sm:max-w-md p-0 mx-auto rounded-t-2xl max-h-[90vh]">
-            <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-4 pt-6">
-              <SheetClose asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <ChevronLeft className="h-5 w-5" />
-                  <span className="sr-only">Close</span>
-                </Button>
-              </SheetClose>
-              <div className="flex-1">
-                <SheetTitle>Select Start Date</SheetTitle>
-                <SheetDescription>Choose when you want to start practicing</SheetDescription>
-              </div>
-            </SheetHeader>
-            <ScrollArea className="h-[calc(100vh-140px)] w-full">
-              <div className="flex flex-col gap-6 p-4">
-                {[0, 1, 2].map((monthOffset) => {
-                  const displayMonth = new Date();
-                  displayMonth.setMonth(displayMonth.getMonth() + monthOffset);
-                  
-                  return (
-                    <div key={monthOffset} className="border-b last:border-b-0 pb-6 last:pb-0">
-                      <Calendar 
-                        mode="single" 
-                        selected={data.startDate}
-                        month={displayMonth}
-                        onMonthChange={() => {}}
-                        onSelect={(date: Date | undefined) => {
-                          if (!date) return;
-                          const durationWeeks = date && data.endDate 
-                            ? Math.ceil((data.endDate.getTime() - date.getTime()) / (7 * 24 * 60 * 60 * 1000))
-                            : null;
-                          updateData({ 
-                            startDate: date,
-                            pmPracticePlan: {
-                              ...data.pmPracticePlan,
-                              targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
-                              startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
-                              smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
-                              durationWeeks: durationWeeks
-                            }
-                          });
-                          // Close the sheet after selection
-                          setTimeout(() => setStartDateSheetOpen(false), 150);
-                        }}
-                        disabled={(date: Date) => date < new Date()}
-                        className="pointer-events-auto w-full"
-                        classNames={{
-                          nav: "hidden"
-                        }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-              </ScrollArea>
-            </SheetContent>
-          </Sheet>
+              <SheetContent side="bottom" className="w-full sm:max-w-md p-0 mx-auto rounded-t-2xl max-h-[90vh]">
+                <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-4 pt-6">
+                  <SheetClose asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <ChevronLeft className="h-5 w-5" />
+                      <span className="sr-only">Close</span>
+                    </Button>
+                  </SheetClose>
+                  <div className="flex-1">
+                    <SheetTitle>Select Start Date</SheetTitle>
+                    <SheetDescription>Choose when you want to start practicing</SheetDescription>
+                  </div>
+                </SheetHeader>
+                <ScrollArea className="h-[calc(100vh-140px)] w-full">
+                  <div className="flex flex-col gap-6 p-4">
+                    {[0, 1, 2].map((monthOffset) => {
+                      const displayMonth = new Date();
+                      displayMonth.setMonth(displayMonth.getMonth() + monthOffset);
+
+                      return (
+                        <div key={monthOffset} className="border-b last:border-b-0 pb-6 last:pb-0">
+                          <Calendar
+                            mode="single"
+                            selected={data.startDate}
+                            month={displayMonth}
+                            onMonthChange={() => { }}
+                            onSelect={(date: Date | undefined) => {
+                              if (!date) return;
+                              const durationWeeks = date && data.endDate
+                                ? Math.ceil((data.endDate.getTime() - date.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                                : null;
+                              updateData({
+                                startDate: date,
+                                pmPracticePlan: {
+                                  ...data.pmPracticePlan,
+                                  targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
+                                  startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
+                                  smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
+                                  durationWeeks: durationWeeks
+                                }
+                              });
+                              // Close the sheet after selection
+                              setTimeout(() => setStartDateSheetOpen(false), 150);
+                            }}
+                            disabled={(date: Date) => date < new Date()}
+                            className="pointer-events-auto w-full"
+                            classNames={{
+                              nav: "hidden"
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
           </div>
 
           {/* Start Time - Required when start date is set */}
@@ -851,10 +924,10 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                 <span>Start Time</span>
                 <span className="text-destructive">*</span>
               </Label>
-              
+
               {/* Time Display Button */}
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full justify-between text-left h-12"
                 onClick={() => setTimePickerOpen(true)}
               >
@@ -874,7 +947,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </Button>
-              
+
               {/* Time Wheel Picker Drawer */}
               <TimeWheelPicker
                 value={data.pmPracticePlan?.startTime}
@@ -895,7 +968,7 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                 open={timePickerOpen}
                 onOpenChange={setTimePickerOpen}
               />
-              
+
               {/* Reminder Toggle - Only show when start time is selected */}
               {data.pmPracticePlan?.startTime && (
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
@@ -947,62 +1020,62 @@ export const PMStep9_PracticePlan: React.FC<PMStepsProps> = ({ data, updateData,
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </SheetTrigger>
-          <SheetContent side="bottom" className="w-full sm:max-w-md p-0 mx-auto rounded-t-2xl max-h-[90vh]">
-            <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-4 pt-6">
-              <SheetClose asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <ChevronLeft className="h-5 w-5" />
-                  <span className="sr-only">Close</span>
-                </Button>
-              </SheetClose>
-              <div className="flex-1">
-                <SheetTitle>Select End Date (Optional)</SheetTitle>
-                <SheetDescription>Choose when you want to complete this goal, or leave open-ended</SheetDescription>
-              </div>
-            </SheetHeader>
-            <ScrollArea className="h-[calc(100vh-140px)] w-full">
-              <div className="flex flex-col gap-6 p-4">
-                {[0, 1, 2, 3, 4, 5].map((monthOffset) => {
-                  const displayMonth = new Date();
-                  displayMonth.setMonth(displayMonth.getMonth() + monthOffset);
-                  
-                  return (
-                    <div key={monthOffset} className="border-b last:border-b-0 pb-6 last:pb-0">
-                      <Calendar 
-                        mode="single" 
-                        selected={data.endDate}
-                        month={displayMonth}
-                        onMonthChange={() => {}}
-                        onSelect={(date?: Date) => {
-                          const durationWeeks = data.startDate && date 
-                            ? Math.ceil((date.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
-                            : null;
-                          updateData({ 
-                            endDate: date,
-                            pmPracticePlan: {
-                              ...data.pmPracticePlan,
-                              targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
-                              startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
-                              smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
-                              durationWeeks: durationWeeks
-                            }
-                          });
-                          // Close the sheet after selection
-                          setTimeout(() => setEndDateSheetOpen(false), 150);
-                        }}
-                        disabled={(date: Date) => !data.startDate || date <= data.startDate}
-                        className="pointer-events-auto w-full"
-                        classNames={{
-                          nav: "hidden"
-                        }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-              </ScrollArea>
-            </SheetContent>
-          </Sheet>
+              <SheetContent side="bottom" className="w-full sm:max-w-md p-0 mx-auto rounded-t-2xl max-h-[90vh]">
+                <SheetHeader className="flex flex-row items-center gap-4 border-b pb-4 px-4 pt-6">
+                  <SheetClose asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <ChevronLeft className="h-5 w-5" />
+                      <span className="sr-only">Close</span>
+                    </Button>
+                  </SheetClose>
+                  <div className="flex-1">
+                    <SheetTitle>Select End Date (Optional)</SheetTitle>
+                    <SheetDescription>Choose when you want to complete this goal, or leave open-ended</SheetDescription>
+                  </div>
+                </SheetHeader>
+                <ScrollArea className="h-[calc(100vh-140px)] w-full">
+                  <div className="flex flex-col gap-6 p-4">
+                    {[0, 1, 2, 3, 4, 5].map((monthOffset) => {
+                      const displayMonth = new Date();
+                      displayMonth.setMonth(displayMonth.getMonth() + monthOffset);
+
+                      return (
+                        <div key={monthOffset} className="border-b last:border-b-0 pb-6 last:pb-0">
+                          <Calendar
+                            mode="single"
+                            selected={data.endDate}
+                            month={displayMonth}
+                            onMonthChange={() => { }}
+                            onSelect={(date?: Date) => {
+                              const durationWeeks = data.startDate && date
+                                ? Math.ceil((date.getTime() - data.startDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
+                                : null;
+                              updateData({
+                                endDate: date,
+                                pmPracticePlan: {
+                                  ...data.pmPracticePlan,
+                                  targetFrequency: data.pmPracticePlan?.targetFrequency || defaultTargetFreq,
+                                  startingFrequency: data.pmPracticePlan?.startingFrequency || smartStartFreq,
+                                  smartStartAccepted: data.pmPracticePlan?.smartStartAccepted || false,
+                                  durationWeeks: durationWeeks
+                                }
+                              });
+                              // Close the sheet after selection
+                              setTimeout(() => setEndDateSheetOpen(false), 150);
+                            }}
+                            disabled={(date: Date) => !data.startDate || date <= data.startDate}
+                            className="pointer-events-auto w-full"
+                            classNames={{
+                              nav: "hidden"
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
           </div>
 
           {/* Calculate duration in weeks if both dates selected */}
