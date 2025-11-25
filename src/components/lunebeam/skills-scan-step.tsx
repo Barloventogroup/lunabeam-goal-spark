@@ -13,12 +13,12 @@ interface SkillsScanStepProps {
 }
 
 const PILLAR_SUBTITLES: Record<EfPillarId, string> = {
-  GETTING_STARTED_FINISHING: 'Starting tasks and actually finishing them.',
-  PLANNING_ORGANIZATION_TIME: 'Keeping track of deadlines, stuff, and time.',
-  FOCUS_WORKING_MEMORY: 'Staying focused and remembering what to do next.',
-  EMOTIONS_STRESS_OVERWHELM: 'Getting overwhelmed, frustrated, or shut down.',
-  FLEXIBILITY_CHANGE: 'When plans change or it\'s time to switch activities.',
-  SELF_ADVOCACY_INDEPENDENCE: 'Asking for help, explaining what I need.'
+  GETTING_STARTED_FINISHING: 'Starting and finishing tasks',
+  PLANNING_ORGANIZATION_TIME: 'Managing time and staying organized',
+  FOCUS_WORKING_MEMORY: 'Staying focused and on track',
+  EMOTIONS_STRESS_OVERWHELM: 'Handling stress and frustration',
+  FLEXIBILITY_CHANGE: 'Adapting when plans change',
+  SELF_ADVOCACY_INDEPENDENCE: 'Asking for help when needed'
 };
 
 export function SkillsScanStep({ 
@@ -85,9 +85,6 @@ export function SkillsScanStep({
               onClick={() => handlePillarToggle(pillarId)}
             >
               <div className="flex items-start gap-3">
-                {/* Conditional checkmark - only when selected */}
-                {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
-                
                 {/* Content */}
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
@@ -102,6 +99,9 @@ export function SkillsScanStep({
                     {PILLAR_SUBTITLES[pillarId]}
                   </p>
                 </div>
+                
+                {/* Conditional checkmark - only when selected, on the right */}
+                {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
               </div>
             </Card>
           );
