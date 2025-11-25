@@ -271,18 +271,15 @@ export function ParentOnboarding({ onComplete, onExit, onBack }: ParentOnboardin
         
         {currentStep === 3 && (
           <div className="bg-card p-8 rounded-lg shadow-md border border-border">
-            <button
-              onClick={() => setBirthdayDrawerOpen(true)}
-              className={cn(
-                "w-full px-4 py-3 text-left border rounded-md flex items-center justify-between",
-                data.birthday ? "border-primary" : "border-input"
-              )}
-            >
-              <span className={data.birthday ? "text-foreground" : "text-muted-foreground"}>
-                {data.birthday ? format(data.birthday, 'MMMM d, yyyy') : 'Select their birthday'}
-              </span>
-              <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-            </button>
+            <div className="flex items-center justify-between">
+              <span className="text-base font-medium text-foreground">Birthday</span>
+              <button
+                onClick={() => setBirthdayDrawerOpen(true)}
+                className="px-5 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground rounded-full transition-colors"
+              >
+                {data.birthday ? format(data.birthday, 'MMMM d, yyyy') : 'Select date'}
+              </button>
+            </div>
             
             <Drawer open={birthdayDrawerOpen} onOpenChange={setBirthdayDrawerOpen}>
               <DrawerContent>
