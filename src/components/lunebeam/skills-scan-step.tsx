@@ -77,23 +77,16 @@ export function SkillsScanStep({
             <Card
               key={pillarId}
               className={cn(
-                "p-4 cursor-pointer transition-all border-2",
+                "p-4 cursor-pointer transition-all shadow-md",
                 isSelected 
-                  ? "border-primary bg-primary/5 shadow-sm" 
-                  : "border-border hover:border-primary/50 hover:bg-accent/5"
+                  ? "bg-primary/5 ring-2 ring-primary" 
+                  : "hover:shadow-lg hover:bg-accent/50"
               )}
               onClick={() => handlePillarToggle(pillarId)}
             >
               <div className="flex items-start gap-3">
-                {/* Checkbox */}
-                <div className={cn(
-                  "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5",
-                  isSelected ? "bg-primary border-primary" : "border-muted-foreground"
-                )}>
-                  {isSelected && (
-                    <Check className="w-3 h-3 text-primary-foreground" />
-                  )}
-                </div>
+                {/* Conditional checkmark - only when selected */}
+                {isSelected && <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />}
                 
                 {/* Content */}
                 <div className="flex-1 space-y-1">
